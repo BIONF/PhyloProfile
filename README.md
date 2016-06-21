@@ -9,4 +9,3 @@ Download all the files to your computer and keep their original folder structure
 Open Terminal, goto the folder that contains 2 R files ui.R and server.R
 Run the app by typing: R -e 'shiny::runApp('',launch.browser=TRUE)'
 Note: R has to be installed on your machine. The required packages will be automatically installed if necessary.
-
