@@ -9,3 +9,10 @@ Currently, two information represented on the profile are the Feature Architectu
 (2) Open Terminal, go to the folder that contains 2 files ui.R and server.R.
 (3) Run the app by typing: R -e 'shiny::runApp('',launch.browser=TRUE)'.
 Note: R has to be installed on your machine. The required packages will be automatically installed if necessary.
+
+# Bugs
+Any bug reports or comments, suggestions are highly appreciated
+
+# Contact
+Vinh Tran
+tran@bio.uni-frankfurt.de
