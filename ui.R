@@ -1,6 +1,6 @@
-library(shiny)
-library(shinyBS)
-library(DT)
+if (!require("shiny")) {install.packages("shiny")}
+if (!require("shinyBS")) {install.packages("shinyBS")}
+if (!require("DT")) {install.packages("DT")}
 
 shinyUI(fluidPage(
   # Application title

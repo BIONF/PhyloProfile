@@ -1,13 +1,12 @@
-library(shiny)
-library(shinyBS)
-
-library(ggplot2)
-library(reshape)
-library(plyr)
-library(dplyr)
-library(scales)
-library(grid)
-library(gridExtra)
+if (!require("shiny")) {install.packages("shiny")}
+if (!require("shinyBS")) {install.packages("shinyBS")}
+if (!require("ggplot2")) {install.packages("ggplot2")}
+if (!require("reshape")) {install.packages("reshape")}
+if (!require("plyr")) {install.packages("plyr")}
+if (!require("dplyr")) {install.packages("dplyr")}
+if (!require("scales")) {install.packages("scales")}
+if (!require("grid")) {install.packages("grid")}
+if (!require("gridExtra")) {install.packages("gridExtra")}
 
 options(shiny.maxRequestSize=30*1024^2)  ## size limit for input 30mb
 shinyServer(function(input, output, session) {
@@ -716,8 +715,8 @@ shinyServer(function(input, output, session) {
     #data <- sortedTaxaList()
     #data <- dataFiltered()
     #data <- dataSupertaxa()
-    #data <- dataHeat()
-    data <- downloadData()
+    data <- dataHeat()
+    #data <- downloadData()
     data
   })
   
