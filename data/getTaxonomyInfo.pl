@@ -192,6 +192,7 @@ foreach my $taxon(@allTaxa){
 
 #			print $c,"/",scalar(@in),"\n"; 
 			$c++;
+		}
 	}
 }
 
