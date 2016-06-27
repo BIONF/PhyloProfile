@@ -107,87 +107,91 @@ foreach my $taxon(@allTaxa){
 			);
 
 		### get name, parentID and parentRank of this ncbiID
-		my $name = $name{$ncbiID};
-		$rankID{$rank{$ncbiID}} = $ncbiID;
+		unless($name{$ncbiID}){
+			print "CHECK $ncbiID\n";
+		} else {
+			my $name = $name{$ncbiID};
+			$rankID{$rank{$ncbiID}} = $ncbiID;
 
-		my $parentID = $parent{$ncbiID};
-		my $parentRank = $rank{$parentID};
+			my $parentID = $parent{$ncbiID};
+			my $parentRank = $rank{$parentID};
 
-#		print $ncbiID," - ",$name," - ",$rank{$ncbiID},"\n",$parentID," - ",$parentRank,"\n";
+#			print $ncbiID," - ",$name," - ",$rank{$ncbiID},"\n",$parentID," - ",$parentRank,"\n";
 
-		### get all rankIDs
-		my @allParentIDs = ($parentID);
-		unless($parentID == 1){
-			do{
-				foreach my $rankName(@defaultRanks){
-					#print $rankName;<>;
-					if($parentRank eq $rankName){
-						$rankID{$rankName} = $parentID;
+			### get all rankIDs
+			my @allParentIDs = ($parentID);
+			unless($parentID == 1){
+				do{
+					foreach my $rankName(@defaultRanks){
+						#print $rankName;<>;
+						if($parentRank eq $rankName){
+							$rankID{$rankName} = $parentID;
+						}
+					}
+					$parentID = $parent{$parentID};
+					$parentRank = $rank{$parentID};
+					push(@allParentIDs,$parentID);
+#					print $parentID," - ",$parentRank," - ",$name{$parentID},"\n";
+				} until ($parentID == 1);
+			}
+
+			### if any rankID not exists, get the last "norank" ID before hitting the next upper rank
+			my $allParentIDs = join(";",@allParentIDs);
+			for(my $i=0; $i<scalar(@defaultRanks)-1; $i++){
+				if($rankID{$defaultRanks[$i]} eq "NA"){
+#					print "no ID for $defaultRanks[$i]\n";
+					my $tmpRank = $defaultRanks[$i];
+					$tmpRank =~ s/sub//; $tmpRank =~ s/super//; $tmpRank =~ s/infra//; $tmpRank =~ s/parv//;
+					if($defaultRanks[$i] =~ /species/){
+						$tmpRank =~ s/subgroup//; $tmpRank =~ s/group//;
+					}
+					if($rankID{$tmpRank} ne "NA"){
+						$rankID{$defaultRanks[$i]} = $rankID{$tmpRank};
+					} else {
+#						$rankID{$rankName} = getPrevID($allParentIDs,$defaultRanks[$i],$defaultRanks[$i+1]);
+						$rankID{$defaultRanks[$i]} = getPrevID($allParentIDs,$defaultRanks[$i],$defaultRanks[$i+1]);
+#						if($rankID{$defaultRanks[$i]} ne "NA"){ print "NEW ID = $rankID{$defaultRanks[$i]}\n";}
 					}
 				}
-				$parentID = $parent{$parentID};
-				$parentRank = $rank{$parentID};
-				push(@allParentIDs,$parentID);
-#				print $parentID," - ",$parentRank," - ",$name{$parentID},"\n";
-			} until ($parentID == 1);
-		}
+			}
+		
+			### taxonID for kingdom
+			if($rankID{"kingdom"} and $name{$rankID{"kingdom"}} and $name{$rankID{"kingdom"}} =~ /group/){
+				$rankID{"kingdom"} = $rankID{"superkingdom"};
+			}		
+		
 
-		### if any rankID not exists, get the last "norank" ID before hitting the next upper rank
-		my $allParentIDs = join(";",@allParentIDs);
-		for(my $i=0; $i<scalar(@defaultRanks)-1; $i++){
-			if($rankID{$defaultRanks[$i]} eq "NA"){
-#				print "no ID for $defaultRanks[$i]\n";
-				my $tmpRank = $defaultRanks[$i];
-				$tmpRank =~ s/sub//; $tmpRank =~ s/super//; $tmpRank =~ s/infra//; $tmpRank =~ s/parv//;
-				if($defaultRanks[$i] =~ /species/){
-					$tmpRank =~ s/subgroup//; $tmpRank =~ s/group//;
-				}
-				if($rankID{$tmpRank} ne "NA"){
-					$rankID{$defaultRanks[$i]} = $rankID{$tmpRank};
+			### print output
+	#		print "$name\t$ncbiID";
+#			print OUT "$line\t$name";
+			print OUT "$c\t$taxon\t$ncbiID\t$name";
+			for(my $i=0; $i<scalar(@defaultRanks); $i++){
+	#			print "\t",$rankID{$rankName};
+				my $currentID = $rankID{$defaultRanks[$i]};
+				unless($currentID eq "NA"){
+					print OUT "\t",$currentID;
+				
+					### get spec name info
+					$reduceSpec{$currentID} = $currentID."\t".$name{$currentID}."\t".$rank{$currentID}."\t".$parent{$currentID};
 				} else {
-#					$rankID{$rankName} = getPrevID($allParentIDs,$defaultRanks[$i],$defaultRanks[$i+1]);
-					$rankID{$defaultRanks[$i]} = getPrevID($allParentIDs,$defaultRanks[$i],$defaultRanks[$i+1]);
-#					if($rankID{$defaultRanks[$i]} ne "NA"){ print "NEW ID = $rankID{$defaultRanks[$i]}\n";}
+					my $replaceID = "";
+					my $j = $i;
+					do{
+						$j ++;
+						$replaceID = $rankID{$defaultRanks[$j]};
+						
+					} until ($replaceID ne "NA");
+					print OUT "\t",$replaceID;
+				
+					### get spec name info
+					$reduceSpec{$replaceID} = $replaceID."\t".$name{$replaceID}."\t".$rank{$replaceID}."\t".$parent{$replaceID};
 				}
 			}
-		}
-		
-		### taxonID for kingdom
-		if($name{$rankID{"kingdom"}} =~ /group/){
-			$rankID{"kingdom"} = $rankID{"superkingdom"};
-		}		
-		
+#			<>;
+			print OUT "\n";
 
-		### print output
-	#	print "$name\t$ncbiID";
-#		print OUT "$line\t$name";
-		print OUT "$c\t$taxon\t$ncbiID\t$name";
-		for(my $i=0; $i<scalar(@defaultRanks); $i++){
-	#		print "\t",$rankID{$rankName};
-			my $currentID = $rankID{$defaultRanks[$i]};
-			unless($currentID eq "NA"){
-				print OUT "\t",$currentID;
-				
-				### get spec name info
-				$reduceSpec{$currentID} = $currentID."\t".$name{$currentID}."\t".$rank{$currentID}."\t".$parent{$currentID};
-			} else {
-				my $replaceID = "";
-				my $j = $i;
-				do{
-					$j ++;
-					$replaceID = $rankID{$defaultRanks[$j]};
-					
-				} until ($replaceID ne "NA");
-				print OUT "\t",$replaceID;
-				
-				### get spec name info
-				$reduceSpec{$replaceID} = $replaceID."\t".$name{$replaceID}."\t".$rank{$replaceID}."\t".$parent{$replaceID};
-			}
-		}
-#		<>;
-		print OUT "\n";
-
-#		print $c,"/",scalar(@in),"\n"; $c++;
+#			print $c,"/",scalar(@in),"\n"; 
+			$c++;
 	}
 }
 
