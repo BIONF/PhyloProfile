@@ -64,6 +64,7 @@ shift(@allTaxa);	# remove "geneID" tag
 
 ### getting ncbi ID of a complete taxonomy hierarchy for each NCBI Id from idList
 my @defaultRanks = (
+	'strain',
 	'species','speciessubgroup','speciesgroup',
 	'subgenus','genus',
 	'subtribe','tribe',
@@ -103,7 +104,8 @@ foreach my $taxon(@allTaxa){
 			"superfamily" => "NA", "family" => "NA", "subfamily" => "NA",
 			"tribe" => "NA", "subtribe" => "NA",
 			"genus" => "NA", "subgenus" => "NA",
-			"speciesgroup" => "NA", "speciessubgroup" => "NA", "species" => "NA"
+			"speciesgroup" => "NA", "speciessubgroup" => "NA", "species" => "NA",
+			"strain" => "NA"
 			);
 
 		### get name, parentID and parentRank of this ncbiID
@@ -111,10 +113,16 @@ foreach my $taxon(@allTaxa){
 			print "CHECK $ncbiID\n";
 		} else {
 			my $name = $name{$ncbiID};
-			$rankID{$rank{$ncbiID}} = $ncbiID;
+			if($rank{$ncbiID} eq "norank"){
+				$rankID{"strain"} = $ncbiID;
+			} else {
+				$rankID{$rank{$ncbiID}} = $ncbiID;
+			}
 
 			my $parentID = $parent{$ncbiID};
 			my $parentRank = $rank{$parentID};
+			
+
 
 #			print $ncbiID," - ",$name," - ",$rank{$ncbiID},"\n",$parentID," - ",$parentRank,"\n";
 
