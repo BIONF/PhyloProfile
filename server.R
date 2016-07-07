@@ -526,8 +526,8 @@ shinyServer(function(input, output, session) {
   ### show help if no plot present
   output$plot.ui <- renderUI({
     if(v$doPlot == FALSE){
-      if(!file.exists("www/beschreibung.png")){return(paste("WARNING: Cannot load \"beschreibung.png\" file in www folder!"))}
-      else{return (img(src="beschreibung.png", align = "left", height=600, width=800))}}
+      if(!file.exists("www/beschreibung.jpg")){return(paste("WARNING: Cannot load \"beschreibung.jpg\" file in www folder!"))}
+      else{return (img(src="beschreibung.jpg", align = "left", height=600, width=800))}}
     
     plotOutput("plot2",width=input$width,height = input$height,
                 click = "plot_click",
@@ -722,8 +722,8 @@ shinyServer(function(input, output, session) {
   
   ### show help
   output$help.ui <- renderUI({
-    if(!file.exists("www/beschreibung.png")){paste("Cannot load \"beschreibung.png\" file in www folder!")}
-    else{img(src="beschreibung.png", align = "left", height=700, width=800)}
+    if(!file.exists("www/beschreibung.jpg")){paste("Cannot load \"beschreibung.jpg\" file in www folder!")}
+    else{img(src="beschreibung.jpg", align = "left", height=700, width=800)}
   })
   
   ############### USED FOR TESTING
