@@ -11,7 +11,8 @@ shinyUI(fluidPage(
   fluidRow(
     column(2, offset = 0,
            fileInput("file1","Upload input matrix file: "),
-           actionButton("parse","Get info from input",style='padding:4px; font-size:85%')
+           actionButton("parse","Get info from input",style='padding:4px; font-size:85%'),
+           helpText("(Run this, whenever you have a new taxa set)")
     ),
     column(2,
            uiOutput("rankSelect")
