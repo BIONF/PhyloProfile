@@ -295,7 +295,7 @@ shinyServer(function(input, output, session) {
       out <- as.list(levels(data$geneID))
       out <- append("all",out)
       
-      selectInput('inSeq','Select sequence IDs of interest:',out,selected=out[1],multiple=FALSE)
+      selectInput('inSeq','Select sequence IDs of interest:',out,selected=out[1],multiple=TRUE)
     }
   })
   

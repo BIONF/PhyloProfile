@@ -56,7 +56,7 @@ shinyUI(fluidPage(
       textOutput("testOutput"),    ### use for testing output ###
       uiOutput("highlight"),
       uiOutput("geneIn"),
-      actionButton("do2", "Plot this selected sequence")
+      actionButton("do2", "Plot selected sequence(s)")
     ),
     
     # Main page
