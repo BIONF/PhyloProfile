@@ -17,7 +17,7 @@ Manually download all the files to your computer and keep the original folder st
 
 R -e 'shiny::runApp('',launch.browser=TRUE)'.
 
-Note: R has to be installed on your machine. The required packages will be automatically installed if necessary.
+Note: R has to be installed on your machine. The required packages will be automatically installed if necessary. If it says "Shiny" package is missing, please install it manually and run the app again.
 
 # Bugs
 Any bug reports or comments, suggestions are highly appreciated
