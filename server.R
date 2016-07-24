@@ -60,8 +60,8 @@ shinyServer(function(input, output, session) {
 #    filein <- input$file1
 #    if(is.null(filein)){return()}
     selectInput("rankSelect", label = "Select taxonomy rank:",
-                choices = list("1_strain"="05_strain","2_species" = "06_species","3_genus" = "10_genus", "4_family" = "14_family", "5_order" = "19_order", "6_class" = "23_class",
-                               "7_phylum" = "26_phylum", "8_kingdom" = "28_kingdom", "9_superkingdom" = "29_superkingdom","unselected"=""), 
+                choices = list("Strain"="05_strain","Species" = "06_species","Genus" = "10_genus", "Family" = "14_family", "Order" = "19_order", "Class" = "23_class",
+                               "Phylum" = "26_phylum", "Kingdom" = "28_kingdom", "Superkingdom" = "29_superkingdom","unselected"=""), 
                 selected = "")
   })
   
