@@ -644,30 +644,34 @@ shinyServer(function(input, output, session) {
 #    else{img(src="beschreibung.jpg", align = "left", height=700, width=800)}
     HTML(
       '<h1 style="color: #5e9ca0;">How the input file looks like?</h1>
-        <p>Input file is a matrix of "values" (e.g. FAS scores, normalized distances, etc.), where rows represent genes and columns represent taxa.</p>
-        <p>A gene may be present or absent in some taxa. A present "value" has to be in the range of 0 and 1. An absent "value" is written as NA.</p>
-        <p>The header of first column has to be "geneID". The header of each taxon must have this format "ncbi12345", in which 12345 is its NCBI taxon ID.</p>
-        <p><em>Still&nbsp;unclear? Take a look at the example file in /data/lca.FASmatrix :)</em></p>
+      <p>Input file is a matrix of "values" (e.g. FAS scores, normalized distances, etc.), where rows represent genes and columns represent taxa.</p>
+      <p>A gene may be present or absent in some taxa. A present "value" has to be in the range of 0 and 1. An absent "value" is written as NA.</p>
+      <p>The header of first column has to be "geneID". The header of each taxon must have this format "ncbi12345", in which 12345 is its NCBI taxon ID.</p>
+      <p><em>Still&nbsp;unclear? Take a look at the example file in /data/lca.FASmatrix :)</em></p>
       <p>&nbsp;</p>
       <h1 style="color: #5e9ca0;">Download function does not work</h1>
       <p>Problem: clicked on the "Download plot" (or Download filtered data) button, entered a file name on to "Download file" window and clicked Save, but the file...was not saved :(</p>
-                                                                                                                                                                                         <p>Solution:&nbsp;</p>
-                                                                                                                                                                                         <p>1) Use macOS to run the app :-P</p>
+      <p>Solution:&nbsp;</p>
+      <p>1) Use macOS to run the app :-P</p>
       <p>2) Click on "Open im Browser" to open the app using internet browser. Now the download function should work.</p>
-    <p><em>I tested this function using Ubuntu 14.04 LTS and it worked with Firefox web browser.</em>&nbsp;</p>
-    <p>&nbsp;&nbsp;</p>
-    <h1 style="color: #5e9ca0;">Errors while plotting</h1>
-    <p><span style="color: #ff0000;">Error: arguments imply differing number of rows: 0, 1</span></p>
-    <p>=&gt; does your input matrix contain only 1 line???</p>
-    <p><span style="color: #ff0000;">Error: id variables not found in data: geneID</span></p>
-    <p>=&gt; &nbsp;The header of gene column has to be "geneID".</p>
-    <p>&nbsp;</p>
-    <h1 style="color: #5e9ca0;">Bug reporting</h1>
-    <p>Any bug reports or comments, suggestions are highly appreciated ;-)</p>
-  <p>&nbsp;</p>
-  <p>&copy; 2016 Vinh Tran</p>
-  <p>contact:&nbsp;<a href="mailto:tran@bio.uni-frankfurt.de">tran@bio.uni-frankfurt.de</a></p>
-  <p>Please check the latest version at&nbsp;<a href="https://github.com/trvinh/phyloprofile">https://github.com/trvinh/phyloprofile</a></p>'
+      <p><em>I tested this function using Ubuntu 14.04 LTS and it worked with Firefox web browser.</em>&nbsp;</p>
+      <p>&nbsp;&nbsp;</p>
+      <h1 style="color: #5e9ca0;">Errors while plotting</h1>
+      <p><span style="color: #ff0000;">Error: arguments imply differing number of rows: 0, 1</span></p>
+      <p>=&gt; does your input matrix contain only 1 line???</p>
+      <p><span style="color: #ff0000;">Error: id variables not found in data: geneID</span></p>
+      <p>=&gt; &nbsp;the header of gene column has to be "geneID".</p>
+      <p>&nbsp;</p>
+      <h1 style="color: #5e9ca0;">Errors by&nbsp;showing Point\'s info</h1>
+      <p><span style="color: #ff0000;">Error:&nbsp;argument&nbsp;is of length zero</span></p>
+      <p>=&gt;&nbsp;re-select (super)taxon to highlight, it will work again :)</p>
+      <p>&nbsp;</p>
+      <h1 style="color: #5e9ca0;">Bug reporting</h1>
+      <p>Any bug reports or comments, suggestions are highly appreciated ;-)</p>
+      <p>&nbsp;</p>
+      <p>&copy; 2016 Vinh Tran</p>
+      <p>contact:&nbsp;<a href="mailto:tran@bio.uni-frankfurt.de">tran@bio.uni-frankfurt.de</a></p>
+      <p>Please check the latest version at&nbsp;<a href="https://github.com/trvinh/phyloprofile">https://github.com/trvinh/phyloprofile</a></p>'
     )
   })
   
