@@ -59,7 +59,7 @@ shinyServer(function(input, output, session) {
   output$rankSelect = renderUI({
 #    filein <- input$file1
 #    if(is.null(filein)){return()}
-    selectInput("rankSelect", label = "Select taxonomy rank (for grouping):",
+    selectInput("rankSelect", label = "Select taxonomy rank:",
                 choices = list("1_strain"="05_strain","2_species" = "06_species","3_genus" = "10_genus", "4_family" = "14_family", "5_order" = "19_order", "6_class" = "23_class",
                                "7_phylum" = "26_phylum", "8_kingdom" = "28_kingdom", "9_superkingdom" = "29_superkingdom","unselected"=""), 
                 selected = "")
@@ -92,16 +92,24 @@ shinyServer(function(input, output, session) {
   ### then output list of species onto UI
   output$select = renderUI({
     choice <- allTaxaList()
-    choice$fullName <- paste0(choice$fullName,"_",choice$ncbiID)
+#    choice$fullName <- paste0(choice$fullName,"_",choice$ncbiID)
     choice$fullName <- as.factor(choice$fullName)
     selectInput('inSelect','Choose (super)taxon of interest:',as.list(levels(choice$fullName)),levels(choice$fullName)[1])
   })
   
   output$highlight = renderUI({
-    choice <- allTaxaList()
-    choice$fullName <- paste0(choice$fullName,"_",choice$ncbiID)
-    choice$fullName <- as.factor(choice$fullName)
-    selectInput('inHighlight','Select (super)taxon to highlight:',as.list(levels(choice$fullName)),levels(choice$fullName)[1])
+#    if(input$xAxis == "taxa"){
+      choice <- allTaxaList()
+#      choice$fullName <- paste0(choice$fullName,"_",choice$ncbiID)
+      choice$fullName <- as.factor(choice$fullName)
+      selectInput('inHighlight','Select (super)taxon to highlight:',as.list(levels(choice$fullName)),levels(choice$fullName)[1])
+    # } else {
+    #   data <- as.data.frame(dataFiltered())
+    #   data$geneID <- as.character(data$geneID)
+    #   data$geneID <- as.factor(data$geneID)
+    #   out <- as.list(levels(data$geneID))
+    #   selectInput('inHighlight','Select sequence ID to highlight:',out,selected=out[1])
+    # }
   })
   
   ######## sorting supertaxa list
@@ -121,8 +129,8 @@ shinyServer(function(input, output, session) {
     rankNr = 0 + as.numeric(substr(rankSelect,1,2))     # get rank number (number of column in unsorted taxa list - dataframe Dt)
 
     # get selected supertaxon ID
-    split <- strsplit(as.character(input$inSelect),"_")
-    superID <- as.integer(split[[1]][2])
+    taxaList <- as.data.frame(read.table("data/taxonNameReduced.txt", sep='\t',header=T))
+    superID <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inSelect])
 
     ### sort taxa list
     ### first move all species that have the same ID of selected rank (level) to a new data frame
@@ -261,10 +269,13 @@ shinyServer(function(input, output, session) {
     ############## add presSpec and maxFAS into taxaMdData ##############
     presMdData <- merge(taxaMdData,finalPresSpecDt,by=c('geneID','supertaxon'),all.x = TRUE)
     fullMdData <- merge(presMdData,maxFasDt,by=c('geneID','supertaxon'), all.x = TRUE)
+    fullMdData <- merge(fullMdData,taxaCount,by=('supertaxon'), all.x = TRUE)
 
     names(fullMdData)[names(fullMdData)=="fas.x"] <- "fas"
     names(fullMdData)[names(fullMdData)=="fas.y"] <- "maxFas"
-
+    names(fullMdData)[names(fullMdData)=="freq"] <- "numberSpec"
+    
+    fullMdData$fullName <- as.vector(fullMdData$fullName)
     fullMdData ### parsed input data frame !!!
   })
 
@@ -311,137 +322,6 @@ shinyServer(function(input, output, session) {
   output$start <- renderText({
     c("start at:")
   })
-  
-  # ### dynamic UI (for stIndex and number of rows for profile matrix)
-  # observe({
-  #   filein <- input$file1
-  #   if(is.null(filein)){
-  #     return()
-  #   }
-  #   
-  #   # change max number (in input$stIndex & input$number) of plot lines according to input file
-  #   # & change step in stIndex according to number of rows plotting
-  #   data <- dataSupertaxa()
-  #   c <- length(unique(data$geneID))
-  # 
-  #   updateNumericInput(session, "stIndex",max = c,step = input$number)
-  #   updateNumericInput(session, "number",max = c)
-  # })
-  
-#   ### DISTRIBUTION PLOT
-#   output$plot1 <- renderPlot(width=500,heigh=500,{
-#     # check input file
-#     filein <- input$file1
-#     if(is.null(filein)){return()}
-# 
-#     ### get data
-#     data <- dataSupertaxa()
-# 
-#     ### modify data
-#     data[is.na(data)] <- 0
-#     dataPie <- data[data$presSpec>0.0,]   # dataPie: geneID        supertaxon       fas   presSpec      category
-#     dataPie$presSpec <- as.numeric(as.character(dataPie$presSpec))
-#     dataPie$category <- as.factor(as.character(dataPie$category))
-# 
-#     levels(dataPie$category) <- c(levels(dataPie$category), toString(input$inSelect))
-#     dataPie$category[dataPie$supertaxon == input$inSelect] <- toString(input$inSelect)
-# 
-#     ### calculate age for each group
-#     dataAge <- data.frame("geneID"=character(0),"Age"=integer(0),"group"=character(0),stringsAsFactors=FALSE)
-# 
-#     groupList <- as.matrix(dataPie[dataPie[,2] == input$inSelect & !is.na(dataPie[,4]),]) # dataPie[,2] is supertaxon, dataPie[,4] is presSpec
-#     for(i in 1:nrow(groupList)){
-# #      print (groupList[i,2])
-#       # get all rows of this group/gene (based on comparing geneID)
-#       sub <- dataPie[dataPie[,1] == groupList[i,1],]  # groupList[i,1] is geneID of row i
-#       # count categories exit in this group
-#       categories <- plyr::count(sub,"category")
-#       # calculate ageType
-#       fungi = 0
-#       unikonta = 0
-#       eukaryota = 0
-#       archaea = 0
-#       bacteria = 0
-#       for(k in 1:nrow(categories)){
-#         if(!is.na(categories[k,1])){
-# #         print (categories[k,])
-#           if(categories[k,1] == "fungi"){fungi = 1}
-#           if(categories[k,1] == "unikonta"){unikonta = 1}
-#           if(categories[k,1] == "eukaryota"){eukaryota = 1}
-#           if(categories[k,1] == "archaea"){archaea = 1}
-#           if(categories[k,1] == "bacteria"){bacteria = 1}
-#         }
-#       }
-#       age = as.integer(100000 + fungi*10000 + unikonta*1000 + eukaryota*100 + archaea*10 + bacteria*1)
-# #      print (c(groupList[i,2],age))
-#       # save to ageData
-#       dataAge[i,] <- c(groupList[i,2],age,"")
-#     }
-# 
-#     ### classify proteins into 7 categories
-#     dataAge$group<-dataAge$Age
-#     dataAge$group[dataAge$Age == "100000"] <- toString(input$inSelect)
-#     dataAge$group[dataAge$Age == 110000] <- "2_Fungi"
-#     dataAge$group[dataAge$Age == 111000] <- "3_Unikonta"
-#     dataAge$group[dataAge$Age == 101000] <- "3_Unikonta"
-# 
-#     dataAge$group[dataAge$Age == 111100] <- "4_Eukaryota"
-#     dataAge$group[dataAge$Age == 101100] <- "4_Eukaryota"
-#     dataAge$group[dataAge$Age == 110100] <- "4_Eukaryota"
-#     dataAge$group[dataAge$Age == 100100] <- "7_Undef"
-# 
-#     dataAge$group[dataAge$Age == 111110] <- "5_Archaea"
-#     dataAge$group[dataAge$Age == 101110] <- "5_Archaea"
-#     dataAge$group[dataAge$Age == 110110] <- "5_Archaea"
-#     dataAge$group[dataAge$Age == 111010] <- "5_Archaea"
-#     dataAge$group[dataAge$Age == 100110] <- "7_Undef"
-#     dataAge$group[dataAge$Age == 101010] <- "7_Undef"
-#     dataAge$group[dataAge$Age == 110010] <- "7_Undef"
-#     dataAge$group[dataAge$Age == 100010] <- "7_Undef"
-# 
-#     dataAge$group[dataAge$Age == 111111] <- "6_Bacteria"
-#     dataAge$group[dataAge$Age == 101111] <- "6_Bacteria"
-#     dataAge$group[dataAge$Age == 110111] <- "6_Bacteria"
-#     dataAge$group[dataAge$Age == 111011] <- "6_Bacteria"
-#     dataAge$group[dataAge$Age == 111101] <- "6_Bacteria"
-#     dataAge$group[dataAge$Age == 100111] <- "6_Bacteria"
-#     dataAge$group[dataAge$Age == 101011] <- "6_Bacteria"
-#     dataAge$group[dataAge$Age == 101101] <- "6_Bacteria"
-#     dataAge$group[dataAge$Age == 110011] <- "7_Undef"
-#     dataAge$group[dataAge$Age == 110101] <- "6_Bacteria"
-#     dataAge$group[dataAge$Age == 111001] <- "6_Bacteria"
-#     dataAge$group[dataAge$Age == 100011] <- "7_Undef"
-#     dataAge$group[dataAge$Age == 110001] <- "7_Undef"
-#     dataAge$group[dataAge$Age == 101001] <- "7_Undef"
-#     dataAge$group[dataAge$Age == 100101] <- "7_Undef"
-#     dataAge$group[dataAge$Age == 100001] <- "7_Undef"
-# 
-#     #head(dataAge)
-#     dataAge$group
-#     ### plot
-#     factor(dataAge$group)
-#     w <- plyr::count(dataAge,'group')
-#     w
-# 
-#     # p1 = ggplot(w,aes(x="",y=freq,fill=group)) +
-#     #   geom_bar(stat="identity",width=1) +
-#     #   coord_polar("y",start=0)
-#     # p1 = p1 + scale_fill_brewer(palette = "Set2") +
-#     #   theme(axis.text.x=element_blank(),axis.text.y=element_blank(),axis.ticks=element_blank(),panel.background = element_blank()) +
-#     #   labs(x="",y="")
-#     # #    p1
-# 
-#     p2 = ggplot(w,aes(x=group,y=freq,fill=group)) +
-#       geom_bar(stat="identity") +
-#       geom_text(aes(y=freq+5,label=percent(freq/sum(freq))),size=3)
-#     p2 = p2 + scale_fill_brewer(palette = "Set2") +
-#       theme(axis.text.x=element_text(hjust=1,angle=60),axis.text.y=element_blank(),axis.ticks=element_blank(),panel.background = element_blank()
-#             ,legend.position="none") +
-#       labs(x="",y="")
-#       p2
-# 
-# #    grid.arrange(p1,p2,ncol=1)
-#   })
   
   ### heatmap data input
   dataHeat <- reactive({
@@ -493,34 +373,56 @@ shinyServer(function(input, output, session) {
 
       dataHeat <- dataHeat()
       ### plotting
-      p = ggplot(dataHeat, aes(y = geneID, x = supertaxon)) +        ## global aes
-        scale_fill_gradient(low = "gray95", high = "khaki", na.value="gray95", guide=FALSE) +
-        geom_point(aes(colour = fas, size = presSpec))  +    ## geom_point for circle illusion
-        scale_color_gradient(low = "darkorange",high = "steelblue")#+       ## color of the corresponding aes
-      scale_size(range = c(0,3))             ## to tune the size of circles
+      if(input$xAxis == "genes"){
+        p = ggplot(dataHeat, aes(x = geneID, y = supertaxon)) +        ## global aes
+          scale_fill_gradient(low = "gray95", high = "khaki", na.value="gray95", guide=FALSE) +
+          geom_point(aes(colour = fas, size = presSpec))  +    ## geom_point for circle illusion
+          scale_color_gradient(low = "darkorange",high = "steelblue")#+       ## color of the corresponding aes
+        scale_size(range = c(0,3))             ## to tune the size of circles
+        
+        base_size <- 9
+        p = p+geom_hline(yintercept=0.5,colour="dodgerblue4")
+        p = p+geom_hline(yintercept=1.5,colour="dodgerblue4")
+        p = p+theme(axis.text.x = element_text(angle=60,hjust=1))
+      } else {
+        p = ggplot(dataHeat, aes(y = geneID, x = supertaxon)) +        ## global aes
+          scale_fill_gradient(low = "gray95", high = "khaki", na.value="gray95", guide=FALSE) +
+          geom_point(aes(colour = fas, size = presSpec))  +    ## geom_point for circle illusion
+          scale_color_gradient(low = "darkorange",high = "steelblue")#+       ## color of the corresponding aes
+        scale_size(range = c(0,3))             ## to tune the size of circles
+  
+        base_size <- 9
+        p = p+geom_vline(xintercept=0.5,colour="dodgerblue4")
+        p = p+geom_vline(xintercept=1.5,colour="dodgerblue4")
+        p = p+theme(axis.text.x = element_text(angle=60,hjust=1))
+      }
 
-      base_size <- 9
-      p = p+geom_vline(xintercept=0.5,colour="dodgerblue4")
-      p = p+geom_vline(xintercept=1.5,colour="dodgerblue4")
-      p = p+theme(axis.text.x = element_text(angle=60,hjust=1))
-
-      ###### highline the selected species
-      ## get selected highlight taxon
-      full <- as.character(input$inHighlight)
-      split <- strsplit(as.character(input$inHighlight),"_")
-      inHighlight <- as.integer(split[[1]][2])
-      ## get taxonID together with it sorted index
-      highlightTaxon <- toString(dataHeat[dataHeat$supertaxonID == inHighlight,2][1])
-      ## get index
-      selectedIndex = as.numeric(as.character(substr(highlightTaxon,2,4)))
-      ## draw a rect to highlight this taxon's column
-      rect <- data.frame(xmin=selectedIndex-0.5, xmax=selectedIndex+0.5, ymin=-Inf, ymax=Inf)
-      p = p + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax),
-                    color="yellow",
-                    alpha=0.3,
-                    inherit.aes = FALSE)
-
-      p
+        ## get selected highlight taxon ID
+        taxaList <- as.data.frame(read.table("data/taxonNameReduced.txt", sep='\t',header=T))
+        inHighlight <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inHighlight])
+        
+        ## get taxonID together with it sorted index
+        highlightTaxon <- toString(dataHeat[dataHeat$supertaxonID == inHighlight,2][1])
+        ## get index
+        selectedIndex = as.numeric(as.character(substr(highlightTaxon,2,4)))
+        ## draw a rect to highlight this taxon's column
+      if(input$xAxis == "taxa"){
+        rect <- data.frame(xmin=selectedIndex-0.5, xmax=selectedIndex+0.5, ymin=-Inf, ymax=Inf)
+        p = p + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax),
+                      color="yellow",
+                      alpha=0.3,
+                      inherit.aes = FALSE)
+  
+        p
+      } else {
+        rect <- data.frame(ymin=selectedIndex-0.5, ymax=selectedIndex+0.5, xmin=-Inf, xmax=Inf)
+        p = p + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax),
+                          color="yellow",
+                          alpha=0.3,
+                          inherit.aes = FALSE)
+        
+        p
+      }
     })
 
   ### show beschreibung file if no plot present
@@ -608,19 +510,29 @@ shinyServer(function(input, output, session) {
     if (v$doPlot == FALSE) return()
     
     # get selected supertaxon name
-    split <- strsplit(as.character(input$inSelect),"_")
-    inSelect <- as.numeric(split[[1]][2])
+    taxaList <- as.data.frame(read.table("data/taxonNameReduced.txt", sep='\t',header=T))
+    inSelect <- as.numeric(taxaList$ncbiID[taxaList$fullName == input$inSelect])
 
     dataHeat <- dataHeat()
 
+    ### get values
     if (is.null(input$plot_click$x)) return()
     else{
+      ### get cooridiate point
+      if(input$xAxis == "genes"){
+        corX = round(input$plot_click$y);
+        corY = round(input$plot_click$x)
+      } else {
+        corX = round(input$plot_click$x);
+        corY = round(input$plot_click$y)
+      }
+      
       # get geneID
       genes <- as.matrix(dataHeat[dataHeat$supertaxonID == inSelect & !is.na(dataHeat$presSpec),])
-      geneID <- toString(genes[round(input$plot_click$y)])
+      geneID <- toString(genes[corY])
       # get supertaxon (spec)
       supertaxa <- levels(dataHeat$supertaxon)
-      spec <- toString(supertaxa[round(input$plot_click$x)])
+      spec <- toString(supertaxa[corX])
       # get FAS and percentage of present species
       FAS <- dataHeat$fas[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
       Percent <- dataHeat$presSpec[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
@@ -644,7 +556,6 @@ shinyServer(function(input, output, session) {
       a <- toString(paste(info[1],substr(info[2],6,nchar(info[2])), sep = " ; "))
       b <- toString(paste("maxFas:",info[3],"; %spec:",info[4]))
       paste(a,b,sep="\n")
-#      paste("hello", "world", sep="\n")
     }
   })
 
@@ -687,15 +598,21 @@ shinyServer(function(input, output, session) {
     
     dataOut <- as.data.frame(dataOut[dataOut$presSpec >= input$percent & dataOut$fas >= input$fas,])
 
-    dataOut <- dataOut[,c("geneID","abbrName","ncbiID","supertaxon","fas")]
-    dataOut <- dataOut[order(dataOut$geneID,dataOut$abbrName),]
+    dataOut <- dataOut[,c("geneID","fullName","ncbiID","supertaxon","fas","numberSpec","presSpec")]
+    dataOut <- dataOut[order(dataOut$geneID,dataOut$supertaxon),]
     dataOut <- dataOut[complete.cases(dataOut),]
     
     dataOut$geneID <- as.character(dataOut$geneID)
-    dataOut$abbrName <- as.character(dataOut$abbrName)
+    dataOut$fullName <- as.character(dataOut$fullName)
     dataOut$ncbiID <- substr(dataOut$ncbiID,5,nchar(as.character(dataOut$ncbiID)))
     dataOut$supertaxon <- substr(dataOut$supertaxon,6,nchar(as.character(dataOut$supertaxon)))
     dataOut$fas <- as.character(dataOut$fas)
+    dataOut$numberSpec <- as.integer(dataOut$numberSpec)
+    dataOut$presSpec <- as.numeric(dataOut$presSpec)
+
+    
+    names(dataOut)[names(dataOut)=="presSpec"] <- "%Spec"
+    names(dataOut)[names(dataOut)=="numberSpec"] <- "totalSpec"
     dataOut <- as.matrix(dataOut)
     dataOut
   })
@@ -712,11 +629,12 @@ shinyServer(function(input, output, session) {
   ### data table
   output$dis <- renderDataTable({
     if(v$doPlot == FALSE){return()}
+    #data <- allTaxaList()
     #data <- sortedTaxaList()
     #data <- dataFiltered()
     #data <- dataSupertaxa()
-    data <- dataHeat()
-    #data <- downloadData()
+    #data <- dataHeat()
+    data <- downloadData()
     data
   })
   
@@ -772,10 +690,11 @@ shinyServer(function(input, output, session) {
     # inSelect <- as.integer(split[[1]][2])
     # paste(full,inSelect)
     
-    # ### print position of highlighted taxa
+    ### print position of highlighted taxa
     # full <- as.character(input$inHighlight)
     # split <- strsplit(as.character(input$inHighlight),"_")
     # inHighlight <- as.integer(split[[1]][2])
+    # #paste(full)
     # 
     # dataHeat <- dataHeat()
     # highlightTaxon <- toString(dataHeat[dataHeat$supertaxonID == inHighlight,2][1])
@@ -802,15 +721,19 @@ shinyServer(function(input, output, session) {
     # }
     
     # ### print value of x and y of plot_click
-    # paste0("x=", input$plot_click$x, "\ny=", input$plot_click$y)
+#    paste0("x=", input$plot_click$x, "\ny=", input$plot_click$y)
+    
     # ### print value of selected point
-    # split <- strsplit(as.character(input$inSelect),"_")
-    # inSelect <- as.numeric(split[[1]][2])
-    # dataHeat <- dataHeat()
+#    taxaList <- as.data.frame(read.table("data/taxonNameReduced.txt", sep='\t',header=T))
+#    inSelect <- as.numeric(taxaList$ncbiID[taxaList$fullName == input$inSelect])
+    
+#    split <- strsplit(as.character(input$inSelect),"_")
+#    inSelect <- as.numeric(split[[1]][2])
+#    dataHeat <- dataHeat()
     
 
-    if (is.null(input$plot_click$x)) return()
-    else{
+    # if (is.null(input$plot_click$x)) return()
+    # else{
       # get geneID
       # genes <- as.matrix(dataHeat[dataHeat$supertaxonID == inSelect,])
       # genes[1]
@@ -829,7 +752,7 @@ shinyServer(function(input, output, session) {
       #   info <- c(geneID,as.character(spec),round(as.numeric(FAS),2),round(as.numeric(Percent),2))
       #   #substr(spec,6,nchar(as.character(spec)))
       # }
-    }
+    # }
     
     # ### list of all sequence IDs
     # data <- as.data.frame(dataHeat())

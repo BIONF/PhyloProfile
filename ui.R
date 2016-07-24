@@ -4,7 +4,7 @@ if (!require("DT")) {install.packages("DT")}
 
 shinyUI(fluidPage(
   # Application title
-  titlePanel("Phylogenetic profile App"),
+  titlePanel("Phylogenetic profile app"),
   
   # Sidebar for input file
   wellPanel(
@@ -14,12 +14,9 @@ shinyUI(fluidPage(
            actionButton("parse","Get info from input",style='padding:4px; font-size:85%'),
            helpText("(Run this, whenever you have a new taxa set)")
     ),
-    column(2,
-           uiOutput("rankSelect")
-    ),
-    column(2,
-           uiOutput("select"),
-           actionButton("do", "Plot")
+    column(3,
+           uiOutput("rankSelect"),
+           uiOutput("select")
     ),
     column(2,
            numericInput("number","# rows for profile",min=1,max=1600,step=10,value=30,width=150),
@@ -29,6 +26,17 @@ shinyUI(fluidPage(
     column(1,
            numericInput("width","Width(px)",min=600,max=3200,step=50,value=600,width=100),
            numericInput("height","Height(px)",min=600,max=1600,step=50,value=600,width=100)
+    ),
+    column(1,
+           radioButtons(
+             inputId="xAxis",
+             label="x-Axis:",
+             choices=list(
+               "taxa",
+               "genes"
+             ),
+             selected="taxa"),
+          actionButton("do", "Plot")
     ),
     column(2,
            sliderInput("fas",
@@ -63,7 +71,7 @@ shinyUI(fluidPage(
     mainPanel(
       tabsetPanel(
 #        tabPanel ("Distribution",plotOutput("plot1")),
-        tabPanel ("Present/absent profile",uiOutput("plot.ui"),
+        tabPanel ("Presence/absence profile",uiOutput("plot.ui"),
                   downloadButton('plotDownload','Download plot'),
                   bsModal("modalBS", "Detailed plot", "go", size = "large",
                           uiOutput("detailPlot.ui"),
