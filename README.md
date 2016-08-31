@@ -1,8 +1,8 @@
 # PhyloProfile App
 
-PhyloProfile App is a Shiny(R)-based app for visualizing the phylogenetic profile of a list of gene sequences.
+PhyloProfile App is a Shiny(R)-based app for visualizing the phylogenetic profile of a list of genes.
 The profile can be plotted with different taxonomy ranks (species, family, phylum, etc.), which would be useful for analyzing the presence absence of sequences in a large amount of taxa.
-Currently, two information represented on the profile are the Feature Architecture Similarity scores and Percentage of species that have orthologs with the reference sequences. These two information can be filtered from the plot by changing the corresponding cutoff manually.
+Currently, two information represented on the profile are the Feature Architecture Similarity (FAS) scores and percentage of species that have orthologs with the reference sequences. The second value is only available if you group initial taxa into higher taxonomy rank (for example, you need to analyse the profile in phylum level, while your input taxa is in species level). These two information can be filtered from the plot by changing the corresponding cutoff manually.
 
 # Usage
 (1) Clone this git repository to your computer using this command:
