@@ -38,27 +38,27 @@ shinyServer(function(input, output, session) {
     else{
       if(v1$parseInput == FALSE){return()}
       else{
-      titleline <- readLines(filein$datapath, n=1) 
-      
-      # Create 0-row data frame which will be used to store data
-      dat <- data.frame(x = numeric(0), y = numeric(0))   ### use for progess bar
-      withProgress(message = 'Parsing input file', value = 0, {
-        cmd <- paste("perl ", getwd(),"/data/getTaxonomyInfo.pl", 
-                     #                 " -i ", getwd(),"/data/",input$file1,
-                     " -i \"", titleline,"\"", 
-                     " -n ", getwd(),"/data/taxonNamesFull.txt",
-                     " -o ", getwd(),"/data",
-                     sep='')
-        system(cmd) 
-      })
+        titleline <- readLines(filein$datapath, n=1) 
+        
+        # Create 0-row data frame which will be used to store data
+        dat <- data.frame(x = numeric(0), y = numeric(0))   ### use for progess bar
+        withProgress(message = 'Parsing input file', value = 0, {
+          cmd <- paste("perl ", getwd(),"/data/getTaxonomyInfo.pl", 
+                       #                 " -i ", getwd(),"/data/",input$file1,
+                       " -i \"", titleline,"\"", 
+                       " -n ", getwd(),"/data/taxonNamesFull.txt",
+                       " -o ", getwd(),"/data",
+                       sep='')
+          system(cmd) 
+        })
       }
     }
   })
   
   ######## list of taxonomy ranks for plotting
   output$rankSelect = renderUI({
-#    filein <- input$file1
-#    if(is.null(filein)){return()}
+    #    filein <- input$file1
+    #    if(is.null(filein)){return()}
     selectInput("rankSelect", label = "Select taxonomy rank:",
                 choices = list("Strain"="05_strain","Species" = "06_species","Genus" = "10_genus", "Family" = "14_family", "Order" = "19_order", "Class" = "23_class",
                                "Phylum" = "26_phylum", "Kingdom" = "28_kingdom", "Superkingdom" = "29_superkingdom","unselected"=""), 
@@ -67,7 +67,7 @@ shinyServer(function(input, output, session) {
   
   ####### get list of all (super)taxa
   allTaxaList <- reactive({
-#  output$select = renderUI({
+    #  output$select = renderUI({
     filein <- input$file1
     if(is.null(filein)){return()}
     
@@ -75,14 +75,14 @@ shinyServer(function(input, output, session) {
     if(rankSelect == ""){return()}
     ### load list of unsorted taxa
     Dt <- as.data.frame(read.table("data/taxonID.list.fullRankID", sep='\t',header=T))
-
+    
     ### load list of taxon name
     nameList <- as.data.frame(read.table("data/taxonNameReduced.txt", sep='\t',header=T,fill = TRUE))
     nameList$fullName <- as.character(nameList$fullName)
-
+    
     rankName = substr(rankSelect,4,nchar(rankSelect))   # get rank name from rankSelect
     rankNr = 0 + as.numeric(substr(rankSelect,1,2))     # get rank number (number of column in unsorted taxa list - dataframe Dt)
-
+    
     choice <- as.data.frame
     choice <- rbind(Dt[rankNr])
     colnames(choice) <- "ncbiID"
@@ -92,17 +92,17 @@ shinyServer(function(input, output, session) {
   ### then output list of species onto UI
   output$select = renderUI({
     choice <- allTaxaList()
-#    choice$fullName <- paste0(choice$fullName,"_",choice$ncbiID)
+    #    choice$fullName <- paste0(choice$fullName,"_",choice$ncbiID)
     choice$fullName <- as.factor(choice$fullName)
     selectInput('inSelect','Choose (super)taxon of interest:',as.list(levels(choice$fullName)),levels(choice$fullName)[1])
   })
   
   output$highlight = renderUI({
-#    if(input$xAxis == "taxa"){
-      choice <- allTaxaList()
-#      choice$fullName <- paste0(choice$fullName,"_",choice$ncbiID)
-      choice$fullName <- as.factor(choice$fullName)
-      selectInput('inHighlight','Select (super)taxon to highlight:',as.list(levels(choice$fullName)),levels(choice$fullName)[1])
+    #    if(input$xAxis == "taxa"){
+    choice <- allTaxaList()
+    #      choice$fullName <- paste0(choice$fullName,"_",choice$ncbiID)
+    choice$fullName <- as.factor(choice$fullName)
+    selectInput('inHighlight','Select (super)taxon to highlight:',as.list(levels(choice$fullName)),levels(choice$fullName)[1])
     # } else {
     #   data <- as.data.frame(dataFiltered())
     #   data$geneID <- as.character(data$geneID)
@@ -115,23 +115,23 @@ shinyServer(function(input, output, session) {
   ######## sorting supertaxa list
   sortedTaxaList <- reactive({
     if(v$doPlot == FALSE){return()}
-
+    
     ### load list of unsorted taxa
     Dt <- as.data.frame(read.table("data/taxonID.list.fullRankID", sep='\t',header=T))
-
+    
     ### load list of taxon name
     nameList <- as.data.frame(read.table("data/taxonNameReduced.txt", sep='\t',header=T,fill = TRUE))
     nameList$fullName <- as.character(nameList$fullName)
-
+    
     ### input parameters
     rankSelect = input$rankSelect
     rankName = substr(rankSelect,4,nchar(rankSelect))   # get rank name from rankSelect
     rankNr = 0 + as.numeric(substr(rankSelect,1,2))     # get rank number (number of column in unsorted taxa list - dataframe Dt)
-
+    
     # get selected supertaxon ID
     taxaList <- as.data.frame(read.table("data/taxonNameReduced.txt", sep='\t',header=T))
     superID <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inSelect])
-
+    
     ### sort taxa list
     ### first move all species that have the same ID of selected rank (level) to a new data frame
     ### then move species that have different ID of selected rank (level), but have the same ID of the higher level
@@ -155,25 +155,25 @@ shinyServer(function(input, output, session) {
         break
       }
     }
-
+    
     ### join sortedDt and the rest of Dt list (species of other superkingdom than the one of selected supertaxon)
     sortedDt <- rbind(sortedDt,Dt)
-
+    
     ### get only taxonIDs list of selected rank and rename columns
     sortedOut <- subset(sortedDt,select=c("No.","abbrName","ncbiID","fullName",as.character(rankName)))
     colnames(sortedOut) <- c("No.","abbrName","species","fullName","ncbiID")
-
+    
     ### add name of supertaxa into sortedOut list
     sortedOut <- merge(sortedOut,nameList,by="ncbiID",all.x = TRUE,sort = FALSE)
-
+    
     ### add order_prefix to supertaxon name
     ### and add prefix "ncbi" to taxon_ncbiID (column "species")
     prefix = 1001
-
+    
     sortedOut$sortedSupertaxon <- 0   ## create new column for sorted supertaxon
     sortedOut$sortedSupertaxon[1] <- paste0(prefix,"_",sortedOut$fullName.y[1])
     sortedOut$species[1] <- paste0("ncbi",sortedOut$species[1])
-
+    
     for(i in 2:nrow(sortedOut)){
       if(sortedOut$fullName.y[i] != sortedOut$fullName.y[i-1]){     ## increase prefix if changing to another supertaxon
         prefix = prefix + 1
@@ -181,96 +181,96 @@ shinyServer(function(input, output, session) {
       sortedOut$sortedSupertaxon[i] <- paste0(prefix,"_",sortedOut$fullName.y[i])
       sortedOut$species[i] <- paste0("ncbi",sortedOut$species[i])
     }
-
+    
     ### final sorted supertaxa list
     sortedOut$taxonID <- 0
     sortedOut$category <- "cat"
     sortedOut <- sortedOut[,c("No.","abbrName","taxonID","fullName.x","species","ncbiID","sortedSupertaxon","rank","category")]
     colnames(sortedOut) <- c("No.","abbrName","taxonID","fullName","ncbiID","supertaxonID","supertaxon","rank","category")
-
+    
     sortedOut$taxonID <- as.integer(sortedOut$taxonID)
     sortedOut$ncbiID <- as.factor(sortedOut$ncbiID)
     sortedOut$supertaxon <- as.factor(sortedOut$supertaxon)
     sortedOut$category <- as.factor(sortedOut$category)
-
+    
     ### return data frame
     sortedOut
   })
-
+  
   ######## parsing data from input matrix
   dataFiltered <- reactive({
     ##### matrix input
     filein <- input$file1
     if(is.null(filein)){return()}
     data <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T))
-
+    
     # convert into paired columns
     mdData <- melt(data,id="geneID")
     colnames(mdData) <- c("geneID","ncbiID","fas")
-
+    
     ##### taxonomy file input
-#    taxaList <- as.data.frame(read.table("data/taxonomyList.txt", sep='\t',header=T))
+    #    taxaList <- as.data.frame(read.table("data/taxonomyList.txt", sep='\t',header=T))
     taxaList <- sortedTaxaList()
-
+    
     # get frequency of all supertaxa
     taxaCount <- plyr::count(taxaList,'supertaxon')
-
+    
     ### merge mdData and taxaList to get taxonomy info
     taxaMdData <- merge(mdData,taxaList,by='ncbiID')
-
+    
     ############## calculate percent present species ##############
     ### get geneID and supertaxon
     geneIDsupertaxon <- subset(taxaMdData,select=c('geneID','supertaxon'))
     geneIDsupertaxon <- geneIDsupertaxon[!duplicated(geneIDsupertaxon), ] # remove duplicated rows
-
+    
     ### remove NA rows from taxaMdData
     taxaMdDataNoNA <- taxaMdData[!is.na(taxaMdData$fas),]
-
+    
     ### count present frequency of supertaxon for each gene
     geneSupertaxonCount <- plyr::count(taxaMdDataNoNA,c('geneID','supertaxon'))
-
+    
     ### merge with taxaCount to get total number of species of each supertaxon and calculate presSpec
     presSpecDt <- merge(geneSupertaxonCount,taxaCount,by='supertaxon')
     presSpecDt$presSpec <- presSpecDt$freq.x/presSpecDt$freq.y
     presSpecDt <- presSpecDt[order(presSpecDt$geneID),]
     presSpecDt <- presSpecDt[,c("geneID","supertaxon","presSpec")]
-
+    
     ### add absent supertaxon into presSpecDt
     finalPresSpecDt <- merge(presSpecDt,geneIDsupertaxon,by=c('geneID','supertaxon'),all.y = TRUE)
     finalPresSpecDt$presSpec[is.na(finalPresSpecDt$presSpec)] <- 0
-
+    
     ############## calculate max FAS for every supertaxon of each gene ##############
     maxFasDt <- data.frame("geneID"=character(), "supertaxon"=character(),"fas"=numeric(),stringsAsFactors=FALSE)
     allGeneID <- levels(taxaMdData$geneID)
-
+    
     # Create 0-row data frame which will be used to store data
     dat <- data.frame(x = numeric(0), y = numeric(0))   ### use for progess bar
     withProgress(message = 'please wait....', value = 0, {
-
-        for(i in 1:nlevels(taxaMdData$geneID)){
-          # get subset for each gene
-          subDt <- taxaMdDataNoNA[taxaMdDataNoNA$geneID == allGeneID[i],]
-          # get max FAS for each supertaxon of this gene
-          maxSupertaxon <- by(subDt, subDt$supertaxon, function(X) X[which.max(X$fas),])
-          maxSupertaxon <- do.call("rbind", maxSupertaxon)
-          maxSupertaxon <- maxSupertaxon[,c("geneID","supertaxon","fas")]
-          # join into maxFasDt
-          maxFasDt <- rbind(maxFasDt,maxSupertaxon)
-
-          # a stand-in for a long-running computation.
-          dat <- rbind(dat, data.frame(x = rnorm(1), y = rnorm(1)))
-          # Increment the progress bar, and update the detail text.
-          incProgress(1/nlevels(taxaMdData$geneID), detail = paste("", percent(i/nlevels(taxaMdData$geneID))))
-          # Pause for 0.1 seconds to simulate a long computation.
-          Sys.sleep(0.1)
-        }
+      
+      for(i in 1:nlevels(taxaMdData$geneID)){
+        # get subset for each gene
+        subDt <- taxaMdDataNoNA[taxaMdDataNoNA$geneID == allGeneID[i],]
+        # get max FAS for each supertaxon of this gene
+        maxSupertaxon <- by(subDt, subDt$supertaxon, function(X) X[which.max(X$fas),])
+        maxSupertaxon <- do.call("rbind", maxSupertaxon)
+        maxSupertaxon <- maxSupertaxon[,c("geneID","supertaxon","fas")]
+        # join into maxFasDt
+        maxFasDt <- rbind(maxFasDt,maxSupertaxon)
+        
+        # a stand-in for a long-running computation.
+        dat <- rbind(dat, data.frame(x = rnorm(1), y = rnorm(1)))
+        # Increment the progress bar, and update the detail text.
+        incProgress(1/nlevels(taxaMdData$geneID), detail = paste("", percent(i/nlevels(taxaMdData$geneID))))
+        # Pause for 0.1 seconds to simulate a long computation.
+        Sys.sleep(0.1)
+      }
     })
-
+    
     ############## add presSpec and maxFAS into taxaMdData ##############
     presMdData <- merge(taxaMdData,finalPresSpecDt,by=c('geneID','supertaxon'),all.x = TRUE)
     fullMdData <- merge(presMdData,maxFasDt,by=c('geneID','supertaxon'), all.x = TRUE)
     fullMdData <- merge(fullMdData,taxaCount,by=('supertaxon'), all.x = TRUE)
-
+    
     names(fullMdData)[names(fullMdData)=="fas.x"] <- "fas"
     names(fullMdData)[names(fullMdData)=="fas.y"] <- "maxFas"
     names(fullMdData)[names(fullMdData)=="freq"] <- "numberSpec"
@@ -278,16 +278,16 @@ shinyServer(function(input, output, session) {
     fullMdData$fullName <- as.vector(fullMdData$fullName)
     fullMdData ### parsed input data frame !!!
   })
-
+  
   ### reduce data from species level to supertaxa level
   ### this data set contain only supertaxa and their value (%present and max fas) for each gene
   dataSupertaxa <- reactive({
     fullMdData <- dataFiltered()
-
+    
     ### get data set for phyloprofile plotting (contains only supertaxa info)
     superDf <- subset(fullMdData,select=c('geneID','supertaxon','supertaxonID','maxFas','presSpec','category'))
     superDf <- superDf[!duplicated(superDf), ]
-
+    
     ### output
     names(superDf)[names(superDf)=="maxFas"] <- "fas"
     superDf
@@ -327,32 +327,32 @@ shinyServer(function(input, output, session) {
   dataHeat <- reactive({
     percent_cutoff <- input$percent
     fas_cutoff <- input$fas
-
+    
     ### check input file
     filein <- input$file1
     if(is.null(filein)){return()}
     #      data <- read.table(file=filein$datapath, sep='\t',header=T)
     data <- dataSupertaxa()
-
+    
     # get selected supertaxon name
     split <- strsplit(as.character(input$inSelect),"_")
     inSelect <- as.character(split[[1]][1])
-
+    
     ### get sub set of data
     setID <- plyr::count(data,"geneID")
     #    subsetID <- setID[1:300,]
     nrHit <- input$stIndex + input$number - 1
     if(nrHit > nlevels(data$geneID)){nrHit <- nlevels(data$geneID)}
-
+    
     subsetID <- setID[input$stIndex:nrHit,]
     dataHeat <- merge(data,subsetID,by="geneID")
-
+    
     ### replace insufficient values according to the thresholds by NA or 0; and replace FAS 0.0 by NA
     dataHeat$presSpec[dataHeat$supertaxon != inSelect & dataHeat$presSpec < percent_cutoff] <- 0
     dataHeat$presSpec[dataHeat$supertaxon != inSelect & dataHeat$fas < fas_cutoff] <- 0
     dataHeat$fas[dataHeat$supertaxon != inSelect & dataHeat$fas < fas_cutoff] <- NA
     dataHeat$fas[dataHeat$fas == 0] <- NA
-
+    
     dataHeat <- droplevels(dataHeat)  ### delete unused levels
     dataHeat
     # if(input$inSeq != "all"){
@@ -361,7 +361,7 @@ shinyServer(function(input, output, session) {
     #   dataHeat
     # }
   })
-
+  
   ########### plot heatmap
   output$plot2 <- renderPlot(
     {
@@ -370,7 +370,7 @@ shinyServer(function(input, output, session) {
       # ### check input file
       # filein <- input$file1
       # if(is.null(filein)){return()}
-
+      
       dataHeat <- dataHeat()
       ### plotting
       if(input$xAxis == "genes"){
@@ -390,29 +390,29 @@ shinyServer(function(input, output, session) {
           geom_point(aes(colour = fas, size = presSpec))  +    ## geom_point for circle illusion
           scale_color_gradient(low = "darkorange",high = "steelblue")#+       ## color of the corresponding aes
         scale_size(range = c(0,3))             ## to tune the size of circles
-  
+        
         base_size <- 9
         p = p+geom_vline(xintercept=0.5,colour="dodgerblue4")
         p = p+geom_vline(xintercept=1.5,colour="dodgerblue4")
         p = p+theme(axis.text.x = element_text(angle=60,hjust=1))
       }
-
-        ## get selected highlight taxon ID
-        taxaList <- as.data.frame(read.table("data/taxonNameReduced.txt", sep='\t',header=T))
-        inHighlight <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inHighlight])
-        
-        ## get taxonID together with it sorted index
-        highlightTaxon <- toString(dataHeat[dataHeat$supertaxonID == inHighlight,2][1])
-        ## get index
-        selectedIndex = as.numeric(as.character(substr(highlightTaxon,2,4)))
-        ## draw a rect to highlight this taxon's column
+      
+      ## get selected highlight taxon ID
+      taxaList <- as.data.frame(read.table("data/taxonNameReduced.txt", sep='\t',header=T))
+      inHighlight <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inHighlight])
+      
+      ## get taxonID together with it sorted index
+      highlightTaxon <- toString(dataHeat[dataHeat$supertaxonID == inHighlight,2][1])
+      ## get index
+      selectedIndex = as.numeric(as.character(substr(highlightTaxon,2,4)))
+      ## draw a rect to highlight this taxon's column
       if(input$xAxis == "taxa"){
         rect <- data.frame(xmin=selectedIndex-0.5, xmax=selectedIndex+0.5, ymin=-Inf, ymax=Inf)
         p = p + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax),
-                      color="yellow",
-                      alpha=0.3,
-                      inherit.aes = FALSE)
-  
+                          color="yellow",
+                          alpha=0.3,
+                          inherit.aes = FALSE)
+        
         p
       } else {
         rect <- data.frame(ymin=selectedIndex-0.5, ymax=selectedIndex+0.5, xmin=-Inf, xmax=Inf)
@@ -424,7 +424,7 @@ shinyServer(function(input, output, session) {
         p
       }
     })
-
+  
   ### show beschreibung file if no plot present
   output$plot.ui <- renderUI({
     if(v$doPlot == FALSE){
@@ -432,22 +432,22 @@ shinyServer(function(input, output, session) {
       else{return (img(src="beschreibung.jpg", align = "left", height=600, width=800))}}
     
     plotOutput("plot2",width=input$width,height = input$height,
-                click = "plot_click",
-                hover = hoverOpts(
-                  id = "plot_hover",
-                  delay = input$hover_delay,
-                  delayType = input$hover_policy,
-                  nullOutside = input$hover_null_outside
-                )
+               click = "plot_click",
+               hover = hoverOpts(
+                 id = "plot_hover",
+                 delay = input$hover_delay,
+                 delayType = input$hover_policy,
+                 nullOutside = input$hover_null_outside
+               )
     )
   })
-
+  
   ### download plot
   output$plotDownload <- downloadHandler(
     filename = function() {c("plot.png")}, 
     content = function(file) {
       png(file, width = input$width, height = input$height)
-
+      
       dataHeat <- dataHeat()
       ### plotting
       p = ggplot(dataHeat, aes(y = geneID, x = supertaxon)) +        ## global aes
@@ -455,13 +455,13 @@ shinyServer(function(input, output, session) {
         geom_point(aes(colour = fas, size = presSpec))  +    ## geom_point for circle illusion
         scale_color_gradient(low = "darkorange",high = "steelblue")#+       ## color of the corresponding aes
       scale_size(range = c(0,3))             ## to tune the size of circles
-
+      
       base_size <- 9
       p = p+geom_vline(xintercept=0.5,colour="dodgerblue4")
       p = p+geom_vline(xintercept=1.5,colour="dodgerblue4")
       p = p+theme(axis.text.x = element_text(angle=60,hjust=1))
       print(p)
-
+      
       dev.off()
     }
   )
@@ -512,9 +512,9 @@ shinyServer(function(input, output, session) {
     # get selected supertaxon name
     taxaList <- as.data.frame(read.table("data/taxonNameReduced.txt", sep='\t',header=T))
     inSelect <- as.numeric(taxaList$ncbiID[taxaList$fullName == input$inSelect])
-
+    
     dataHeat <- dataHeat()
-
+    
     ### get values
     if (is.null(input$plot_click$x)) return()
     else{
@@ -536,7 +536,7 @@ shinyServer(function(input, output, session) {
       # get FAS and percentage of present species
       FAS <- dataHeat$fas[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
       Percent <- dataHeat$presSpec[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
-
+      
       if(is.na(as.numeric(Percent))){return()}
       else{
         info <- c(geneID,as.character(spec),round(as.numeric(FAS),2),round(as.numeric(Percent),2))
@@ -544,12 +544,12 @@ shinyServer(function(input, output, session) {
       }
     }
   })
-
+  
   ### show info
   output$pointInfo <- renderText({
     ### check input
     if (v$doPlot == FALSE) return()
-
+    
     info <- pointInfo() # info = geneID,supertaxon,maxFAS,%spec
     if(is.null(info)){return()}
     else{
@@ -558,7 +558,7 @@ shinyServer(function(input, output, session) {
       paste(a,b,sep="\n")
     }
   })
-
+  
   ### detailed species FAS scores plot
   output$detailPlot <- renderPlot({
     if (v$doPlot == FALSE) return()
@@ -568,7 +568,7 @@ shinyServer(function(input, output, session) {
     else{
       plotTaxon = info[2]
       plotGeneID = info[1]
-
+      
       fullDf <- dataFiltered()
       selDf <- as.data.frame(fullDf[fullDf$geneID == plotGeneID & fullDf$supertaxon == plotTaxon,])
       selDf
@@ -581,12 +581,12 @@ shinyServer(function(input, output, session) {
       gp
     }
   })
-
+  
   # plot detailed bar chart
   output$detailPlot.ui <- renderUI({
     plotOutput("detailPlot",width=400,height = input$detailedHeight)
   })
-
+  
   ### filtered data for download
   downloadData <- reactive({
     ### check input
@@ -597,7 +597,7 @@ shinyServer(function(input, output, session) {
     dataOut <- dataOut[!is.na(dataOut$geneID),]
     
     dataOut <- as.data.frame(dataOut[dataOut$presSpec >= input$percent & dataOut$fas >= input$fas,])
-
+    
     dataOut <- dataOut[,c("geneID","fullName","ncbiID","supertaxon","fas","numberSpec","presSpec")]
     dataOut <- dataOut[order(dataOut$geneID,dataOut$supertaxon),]
     dataOut <- dataOut[complete.cases(dataOut),]
@@ -609,14 +609,14 @@ shinyServer(function(input, output, session) {
     dataOut$fas <- as.character(dataOut$fas)
     dataOut$numberSpec <- as.integer(dataOut$numberSpec)
     dataOut$presSpec <- as.numeric(dataOut$presSpec)
-
+    
     
     names(dataOut)[names(dataOut)=="presSpec"] <- "%Spec"
     names(dataOut)[names(dataOut)=="numberSpec"] <- "totalSpec"
     dataOut <- as.matrix(dataOut)
     dataOut
   })
-
+  
   ### download data
   output$downloadData <- downloadHandler(
     filename = function(){c("dataFiltered.out")},
@@ -640,8 +640,8 @@ shinyServer(function(input, output, session) {
   
   ### show help
   output$help.ui <- renderUI({
-#    if(!file.exists("www/beschreibung.jpg")){paste("Cannot load \"beschreibung.jpg\" file in www folder!")}
-#    else{img(src="beschreibung.jpg", align = "left", height=700, width=800)}
+    #    if(!file.exists("www/beschreibung.jpg")){paste("Cannot load \"beschreibung.jpg\" file in www folder!")}
+    #    else{img(src="beschreibung.jpg", align = "left", height=700, width=800)}
     HTML(
       '<h1 style="color: #5e9ca0;">How the input file looks like?</h1>
       <p>Input file is a matrix of "values" (e.g. FAS scores, normalized distances, etc.), where rows represent genes and columns represent taxa.</p>
@@ -657,10 +657,12 @@ shinyServer(function(input, output, session) {
       <p><em>I tested this function using Ubuntu 14.04 LTS and it worked with Firefox web browser.</em>&nbsp;</p>
       <p>&nbsp;&nbsp;</p>
       <h1 style="color: #5e9ca0;">Errors while plotting</h1>
-      <p><span style="color: #ff0000;">Error: arguments imply differing number of rows: 0, 1</span></p>
+      <p><span style="color: #ff0000;"><strong>Error</strong>: arguments imply differing number of rows: 0, 1</span></p>
       <p>=&gt; does your input matrix contain only 1 line???</p>
-      <p><span style="color: #ff0000;">Error: id variables not found in data: geneID</span></p>
+      <p><span style="color: #ff0000;"><strong>Error</strong>: id variables not found in data: geneID</span></p>
       <p>=&gt; &nbsp;the header of gene column has to be "geneID".</p>
+      <p><span style="color: #ff0000;"><strong>Error</strong>: second argument must be a list</span></p>
+      <p>=&gt; please check if any of input genes is absent in all taxa, i.e. the complete row is filled with NA. The tool, unfortunately, does not accept these genes.</p>
       <p>&nbsp;</p>
       <h1 style="color: #5e9ca0;">Errors by&nbsp;showing Point\'s info</h1>
       <p><span style="color: #ff0000;">Error:&nbsp;argument&nbsp;is of length zero</span></p>
@@ -672,7 +674,7 @@ shinyServer(function(input, output, session) {
       <p>&copy; 2016 Vinh Tran</p>
       <p>contact:&nbsp;<a href="mailto:tran@bio.uni-frankfurt.de">tran@bio.uni-frankfurt.de</a></p>
       <p>Please check the latest version at&nbsp;<a href="https://github.com/trvinh/phyloprofile">https://github.com/trvinh/phyloprofile</a></p>'
-    )
+      )
   })
   
   ############### USED FOR TESTING
@@ -706,14 +708,14 @@ shinyServer(function(input, output, session) {
     # paste(highlightTaxon,selectedIndex)
     
     ### print selected taxonomy rank
-#    input$rankSelect
+    #    input$rankSelect
     
     ### print percentage and fas cutoff
-#    paste(input$percent,input$fas)
-#    as.numeric(as.character(substr(input$inHighlight,1,3)))
+    #    paste(input$percent,input$fas)
+    #    as.numeric(as.character(substr(input$inHighlight,1,3)))
     
     ### print point info
-#    paste(pointInfo())
+    #    paste(pointInfo())
     
     ### print taxonName and geneID for detailed plot
     # info <- pointInfo()  # info = geneID,supertaxon,maxFAS,%spec
@@ -725,37 +727,37 @@ shinyServer(function(input, output, session) {
     # }
     
     # ### print value of x and y of plot_click
-#    paste0("x=", input$plot_click$x, "\ny=", input$plot_click$y)
+    #    paste0("x=", input$plot_click$x, "\ny=", input$plot_click$y)
     
     # ### print value of selected point
-#    taxaList <- as.data.frame(read.table("data/taxonNameReduced.txt", sep='\t',header=T))
-#    inSelect <- as.numeric(taxaList$ncbiID[taxaList$fullName == input$inSelect])
+    #    taxaList <- as.data.frame(read.table("data/taxonNameReduced.txt", sep='\t',header=T))
+    #    inSelect <- as.numeric(taxaList$ncbiID[taxaList$fullName == input$inSelect])
     
-#    split <- strsplit(as.character(input$inSelect),"_")
-#    inSelect <- as.numeric(split[[1]][2])
-#    dataHeat <- dataHeat()
+    #    split <- strsplit(as.character(input$inSelect),"_")
+    #    inSelect <- as.numeric(split[[1]][2])
+    #    dataHeat <- dataHeat()
     
-
+    
     # if (is.null(input$plot_click$x)) return()
     # else{
-      # get geneID
-      # genes <- as.matrix(dataHeat[dataHeat$supertaxonID == inSelect,])
-      # genes[1]
-      # geneID <- toString(genes[round(input$plot_click$y)])
-      # geneID
-      # # get supertaxon (spec)
-      # supertaxa <- levels(dataHeat$supertaxon)
-      # spec <- toString(supertaxa[round(input$plot_click$x)])
-      # paste0("x=", input$plot_click$x, "\ny=", input$plot_click$y, spec)
-      # # get FAS and percentage of present species
-      # FAS <- dataHeat$fas[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
-      # Percent <- dataHeat$presSpec[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
-      #
-      # if(is.na(as.numeric(Percent))){return()}
-      # else{
-      #   info <- c(geneID,as.character(spec),round(as.numeric(FAS),2),round(as.numeric(Percent),2))
-      #   #substr(spec,6,nchar(as.character(spec)))
-      # }
+    # get geneID
+    # genes <- as.matrix(dataHeat[dataHeat$supertaxonID == inSelect,])
+    # genes[1]
+    # geneID <- toString(genes[round(input$plot_click$y)])
+    # geneID
+    # # get supertaxon (spec)
+    # supertaxa <- levels(dataHeat$supertaxon)
+    # spec <- toString(supertaxa[round(input$plot_click$x)])
+    # paste0("x=", input$plot_click$x, "\ny=", input$plot_click$y, spec)
+    # # get FAS and percentage of present species
+    # FAS <- dataHeat$fas[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
+    # Percent <- dataHeat$presSpec[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
+    #
+    # if(is.na(as.numeric(Percent))){return()}
+    # else{
+    #   info <- c(geneID,as.character(spec),round(as.numeric(FAS),2),round(as.numeric(Percent),2))
+    #   #substr(spec,6,nchar(as.character(spec)))
+    # }
     # }
     
     # ### list of all sequence IDs
@@ -764,6 +766,5 @@ shinyServer(function(input, output, session) {
     # data$geneID <- as.factor(data$geneID)
     # out <- as.list(levels(data$geneID))
     # paste(out)
- })
+  })
 })
-
