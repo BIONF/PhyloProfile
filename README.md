@@ -15,7 +15,7 @@ Manually download all the files to your computer and keep the original folder st
 
 (2) Go to the folder that contains 2 files ui.R and server.R and run the app by typing: 
 
-R -e 'shiny::runApp('',launch.browser=TRUE)'.
+R -e 'shiny::runApp(,launch.browser=TRUE)'.
 
 Note: R has to be installed on your machine. The required packages will be automatically installed if necessary. If it says "Shiny" package is missing, please install it manually and run the app again.
 
