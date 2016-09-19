@@ -1,4 +1,6 @@
-if (!require("shiny")) {install.packages("shiny")}
+if (!require("shiny")) {
+  install.packages("shiny")
+}
 if (!require("shinyBS")) {install.packages("shinyBS")}
 if (!require("ggplot2")) {install.packages("ggplot2")}
 if (!require("reshape")) {install.packages("reshape")}

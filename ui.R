@@ -71,7 +71,8 @@ shinyUI(fluidPage(
     mainPanel(
       tabsetPanel(
 #        tabPanel ("Distribution",plotOutput("plot1")),
-        tabPanel ("Presence/absence profile",uiOutput("plot.ui"),
+        tabPanel ("Presence/absence profile",
+                  uiOutput("plot.ui"),
                   downloadButton('plotDownload','Download plot'),
                   bsModal("modalBS", "Detailed plot", "go", size = "large",
                           uiOutput("detailPlot.ui"),
