@@ -8,7 +8,7 @@ Currently, two information represented on the profile are the Feature Architectu
 # Usage
 (1) Clone this git repository to your computer using this command:
 
-git clone https://github.com/trvinh/phyloprofile
+>git clone https://github.com/trvinh/phyloprofile
 
 OR 
 
@@ -16,11 +16,11 @@ Manually download all the files to your computer and keep the original folder st
 
 (2) Install dependent R packages:
 
-Rscript installPackages.R
+>Rscript installPackages.R
 
 (3) Run PhyloProfile tool: 
 
-R -e 'shiny::runApp(,launch.browser=TRUE)'.
+>R -e 'shiny::runApp(,launch.browser=TRUE)'.
 
 NOTE: R and Rscript has to be installed on your machine.
 
