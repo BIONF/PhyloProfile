@@ -1,6 +1,4 @@
-if (!require("shiny")) {
-  install.packages("shiny")
-}
+if (!require("shiny")) {install.packages("shiny")}
 if (!require("shinyBS")) {install.packages("shinyBS")}
 if (!require("ggplot2")) {install.packages("ggplot2")}
 if (!require("reshape")) {install.packages("reshape")}
@@ -9,6 +7,7 @@ if (!require("dplyr")) {install.packages("dplyr")}
 if (!require("scales")) {install.packages("scales")}
 if (!require("grid")) {install.packages("grid")}
 if (!require("gridExtra")) {install.packages("gridExtra")}
+if (!require("ape")) {install.packages("ape")}
 
 options(shiny.maxRequestSize=30*1024^2)  ## size limit for input 30mb
 shinyServer(function(input, output, session) {
@@ -33,7 +32,7 @@ shinyServer(function(input, output, session) {
     if(is.null(filein)){v1$parseInput <- FALSE}
   })
   
-  ######### create taxonID.list.fullRankID and taxonNameReduced.txt from input file (if necessary)
+  ######### create taxonID.list.fullRankID and taxonNamesReduced.txt from input file (if necessary)
   observe({
     filein <- input$file1
     if(is.null(filein)){return()}
@@ -79,11 +78,12 @@ shinyServer(function(input, output, session) {
     Dt <- as.data.frame(read.table("data/taxonID.list.fullRankID", sep='\t',header=T))
     
     ### load list of taxon name
-    nameList <- as.data.frame(read.table("data/taxonNameReduced.txt", sep='\t',header=T,fill = TRUE))
+    nameList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T,fill = TRUE))
     nameList$fullName <- as.character(nameList$fullName)
     
     rankName = substr(rankSelect,4,nchar(rankSelect))   # get rank name from rankSelect
     rankNr = 0 + as.numeric(substr(rankSelect,1,2))     # get rank number (number of column in unsorted taxa list - dataframe Dt)
+#    rankNr = 5
     
     choice <- as.data.frame
     choice <- rbind(Dt[rankNr])
@@ -122,7 +122,7 @@ shinyServer(function(input, output, session) {
     Dt <- as.data.frame(read.table("data/taxonID.list.fullRankID", sep='\t',header=T))
     
     ### load list of taxon name
-    nameList <- as.data.frame(read.table("data/taxonNameReduced.txt", sep='\t',header=T,fill = TRUE))
+    nameList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T,fill = TRUE))
     nameList$fullName <- as.character(nameList$fullName)
     
     ### input parameters
@@ -131,35 +131,67 @@ shinyServer(function(input, output, session) {
     rankNr = 0 + as.numeric(substr(rankSelect,1,2))     # get rank number (number of column in unsorted taxa list - dataframe Dt)
     
     # get selected supertaxon ID
-    taxaList <- as.data.frame(read.table("data/taxonNameReduced.txt", sep='\t',header=T))
-    superID <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inSelect])
+    taxaList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T))
+    superID <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inSelect & taxaList$rank == rankName])
     
     ### sort taxa list
     ### first move all species that have the same ID of selected rank (level) to a new data frame
     ### then move species that have different ID of selected rank (level), but have the same ID of the higher level
     ### repeat until reach to superkingdom (rankNr = ncol(sortedDt)) or to the end of taxa list
-    sortedDt <- data.frame()
-    repeat{
-      subDt <- Dt[Dt[,rankNr]==superID,]
-      if(nrow(subDt) < 1){
-        rankNr = rankNr + 1
-        if(rankNr > ncol(sortedDt)){break}
-        else {superID = sortedDt[rankNr][1,]}
-      } else{
-        Dt <- anti_join(Dt, subDt, by=rankName)   # delete already removed lines from Dt dataframe
-        sortedDt <- rbind(sortedDt,subDt)
-        rankNr = rankNr + 1
-        if(rankNr > ncol(sortedDt)){break}
-        else{superID = sortedDt[rankNr][1,]}
-      }
-      
-      if(nrow(Dt) < 1 | rankNr == ncol(sortedDt)+1){
-        break
-      }
-    }
+    # sortedDt <- data.frame()
+    # repeat{
+    #   subDt <- Dt[Dt[,rankNr]==superID,]
+    #   if(nrow(subDt) < 1){
+    #     rankNr = rankNr + 1
+    #     if(rankNr > ncol(sortedDt)){break}
+    #     else {superID = sortedDt[rankNr][1,]}
+    #   } else{
+    #     Dt <- anti_join(Dt, subDt, by=rankName)   # delete already removed lines from Dt dataframe
+    #     sortedDt <- rbind(sortedDt,subDt)
+    #     rankNr = rankNr + 1
+    #     if(rankNr > ncol(sortedDt)){break}
+    #     else{superID = sortedDt[rankNr][1,]}
+    #   }
+    #   
+    #   if(nrow(Dt) < 1 | rankNr == ncol(sortedDt)+1){
+    #     break
+    #   }
+    # }
+    # 
+    # ### join sortedDt and the rest of Dt list (species of other superkingdom than the one of selected supertaxon)
+    # sortedDt <- rbind(sortedDt,Dt)
     
-    ### join sortedDt and the rest of Dt list (species of other superkingdom than the one of selected supertaxon)
-    sortedDt <- rbind(sortedDt,Dt)
+    ################ sort taxa list using info from pruned common tree
+    ### read full common tree
+    tree <- read.tree("data/commontree.phy.ids_mod")
+    ### prune common tree
+    filein <- input$file1
+    list <- readLines(filein$datapath, n=1) # get title line of input matrix (which contains list of all taxa IDs)
+    listMod <- gsub("ncbi","",list)
+    listMod <- gsub("geneID\t","",listMod)
+    ids <- unlist(strsplit(listMod,"\t"))
+    pruned.tree<-drop.tip(tree, setdiff(tree$tip.label, ids));
+    ### get representative ID for rooting (one member of selected supertaxon)
+    repID <- Dt[Dt[,rankNr]==superID,][,3][1]
+    root <- toString(repID)
+    ### reroot the pruned tree
+    unrootTree <- unroot(pruned.tree)
+    rerootTree <- root(unrootTree,root,resolve.root = TRUE)  ## reroot the tree based on selected ID from input$inSelect
+    ### get sorting taxa
+    newTree <- read.tree(text=write.tree(rerootTree))
+    orderedTaxa <- rev(newTree$tip.label)
+    # orderedTaxa
+    # length(orderedTaxa)
+    # orderedTaxa[2]
+    
+    ### now sort dataframe Dt
+    sortedDt <- data.frame()
+    for(i in 1:length(orderedTaxa)){
+      subDt <- Dt[Dt[,"ncbiID"]==orderedTaxa[i],]
+      #  print(subDt)
+      sortedDt <- rbind(sortedDt,subDt)
+    }
+    # sortedDt
     
     ### get only taxonIDs list of selected rank and rename columns
     sortedOut <- subset(sortedDt,select=c("No.","abbrName","ncbiID","fullName",as.character(rankName)))
@@ -400,7 +432,7 @@ shinyServer(function(input, output, session) {
       }
       
       ## get selected highlight taxon ID
-      taxaList <- as.data.frame(read.table("data/taxonNameReduced.txt", sep='\t',header=T))
+      taxaList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T))
       inHighlight <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inHighlight])
       
       ## get taxonID together with it sorted index
@@ -431,7 +463,8 @@ shinyServer(function(input, output, session) {
   output$plot.ui <- renderUI({
     if(v$doPlot == FALSE){
       if(!file.exists("www/beschreibung.jpg")){return(paste("WARNING: Cannot load \"beschreibung.jpg\" file in www folder!"))}
-      else{return (img(src="beschreibung.jpg", align = "left", height=600, width=800))}}
+      else{return (img(src="beschreibung.jpg", align = "left", height=600, width=800))}
+    }
     
     plotOutput("plot2",width=input$width,height = input$height,
                click = "plot_click",
@@ -512,9 +545,11 @@ shinyServer(function(input, output, session) {
     if (v$doPlot == FALSE) return()
     
     # get selected supertaxon name
-    taxaList <- as.data.frame(read.table("data/taxonNameReduced.txt", sep='\t',header=T))
-    inSelect <- as.numeric(taxaList$ncbiID[taxaList$fullName == input$inSelect])
-    
+    taxaList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T))
+    rankSelect = input$rankSelect
+    rankName = substr(rankSelect,4,nchar(rankSelect))
+    inSelect <- as.numeric(taxaList$ncbiID[taxaList$fullName == input$inSelect & taxaList$rank == rankName])
+
     dataHeat <- dataHeat()
     
     ### get values
@@ -732,7 +767,7 @@ shinyServer(function(input, output, session) {
     #    paste0("x=", input$plot_click$x, "\ny=", input$plot_click$y)
     
     # ### print value of selected point
-    #    taxaList <- as.data.frame(read.table("data/taxonNameReduced.txt", sep='\t',header=T))
+    #    taxaList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T))
     #    inSelect <- as.numeric(taxaList$ncbiID[taxaList$fullName == input$inSelect])
     
     #    split <- strsplit(as.character(input$inSelect),"_")
