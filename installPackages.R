@@ -1,7 +1,8 @@
 libs=c("shiny","shinyBS","ggplot2","reshape","plyr","dplyr","scales‌​","grid","gridExtra","ape")
-type=getOption("pkgType")                           
+type=getOption("pkgType")
+
     CheckInstallPackage <- function(packages, repos="http://cran.r-project.org",
-       depend=c("Depends", "Imports", "LinkingTo", "Suggests", "Enhances"), ...) {
+       depend="Depends", ...) {
          installed=as.data.frame(installed.packages())
     for(p in packages) {
         if(is.na(charmatch(p, installed[,1]))) { 
