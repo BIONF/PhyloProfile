@@ -8,12 +8,12 @@ use File::Path;
 
 =desc
 Parsing the output file of hamstr oneseq to create input file for phyloprofile tool
-(09.09.2016)
+(20.10.2016)
 =cut
 
 sub usage {
     my $msg = shift;
-    print "example: perl phyloProfile.pl -i oneseqOut -o output.matrix\n";
+    print "example: perl phyloProfile.pl -i oneseqOutFolder -o output.matrix\n";
     print "-i\thamstr oneseq output folder (*.extended.profile)\n";
     print "-o\tOutput file\n";
     die $msg."\n";
@@ -29,6 +29,9 @@ my $out = ($opt_o) ? $opt_o : usage("ERROR: No output file given\n");
 
 ### MAIN
 my @allOutFiles = glob("$oneseqDir/*.extended.profile");
+unless(@allOutFiles){
+	usage("ERROR: No extended.profile file found in $oneseqDir!\n");
+}
 
 my %taxaList;	# list of all taxa
 my %allGenes;	# list of all genes
@@ -79,6 +82,7 @@ foreach my $gene(sort keys %allGenes){
 }
 close (OUT);
 
+print "Finished! Check output file\n\t$out\n";
 
 exit;
 
