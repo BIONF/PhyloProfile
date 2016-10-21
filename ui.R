@@ -76,7 +76,8 @@ shinyUI(fluidPage(
                   downloadButton('plotDownload','Download plot'),
                   bsModal("modalBS", "Detailed plot", "go", size = "large",
                           uiOutput("detailPlot.ui"),
-                          numericInput("detailedHeight","plot_height(px)",min=100,max=1600,step=50,value=100,width=100)
+                          numericInput("detailedHeight","plot_height(px)",min=100,max=1600,step=50,value=100,width=100),
+                          textOutput("orthoID")
                           ),
                   bsModal("helpBS", "Help", "help", size = "large",
                           uiOutput("help.ui")

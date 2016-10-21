@@ -8,6 +8,7 @@ if (!require("scales")) {install.packages("scales")}
 if (!require("grid")) {install.packages("grid")}
 if (!require("gridExtra")) {install.packages("gridExtra")}
 if (!require("ape")) {install.packages("ape")}
+if (!require("stringr")) {install.packages("stringr")}
 
 options(shiny.maxRequestSize=30*1024^2)  ## size limit for input 30mb
 shinyServer(function(input, output, session) {
@@ -83,7 +84,6 @@ shinyServer(function(input, output, session) {
     
     rankName = substr(rankSelect,4,nchar(rankSelect))   # get rank name from rankSelect
     rankNr = 0 + as.numeric(substr(rankSelect,1,2))     # get rank number (number of column in unsorted taxa list - dataframe Dt)
-#    rankNr = 5
     
     choice <- as.data.frame
     choice <- rbind(Dt[rankNr])
@@ -133,33 +133,6 @@ shinyServer(function(input, output, session) {
     # get selected supertaxon ID
     taxaList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T))
     superID <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inSelect & taxaList$rank == rankName])
-    
-    ### sort taxa list
-    ### first move all species that have the same ID of selected rank (level) to a new data frame
-    ### then move species that have different ID of selected rank (level), but have the same ID of the higher level
-    ### repeat until reach to superkingdom (rankNr = ncol(sortedDt)) or to the end of taxa list
-    # sortedDt <- data.frame()
-    # repeat{
-    #   subDt <- Dt[Dt[,rankNr]==superID,]
-    #   if(nrow(subDt) < 1){
-    #     rankNr = rankNr + 1
-    #     if(rankNr > ncol(sortedDt)){break}
-    #     else {superID = sortedDt[rankNr][1,]}
-    #   } else{
-    #     Dt <- anti_join(Dt, subDt, by=rankName)   # delete already removed lines from Dt dataframe
-    #     sortedDt <- rbind(sortedDt,subDt)
-    #     rankNr = rankNr + 1
-    #     if(rankNr > ncol(sortedDt)){break}
-    #     else{superID = sortedDt[rankNr][1,]}
-    #   }
-    #   
-    #   if(nrow(Dt) < 1 | rankNr == ncol(sortedDt)+1){
-    #     break
-    #   }
-    # }
-    # 
-    # ### join sortedDt and the rest of Dt list (species of other superkingdom than the one of selected supertaxon)
-    # sortedDt <- rbind(sortedDt,Dt)
     
     ################ sort taxa list using info from pruned common tree
     ### read full common tree
@@ -236,11 +209,18 @@ shinyServer(function(input, output, session) {
     ##### matrix input
     filein <- input$file1
     if(is.null(filein)){return()}
-    data <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T))
+    data <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
     
     # convert into paired columns
     mdData <- melt(data,id="geneID")
-    colnames(mdData) <- c("geneID","ncbiID","fas")
+    
+    # split value column into orthoID and fas
+    splitDt <- (str_split_fixed(mdData$value, '#', 2))
+    # then join them back to mdData
+    mdData <- cbind(mdData,splitDt)
+    # rename columns
+    colnames(mdData) <- c("geneID","ncbiID","value","orthoID","fas")
+    mdData <- mdData[,c("geneID","ncbiID","fas","orthoID")]
     
     ##### taxonomy file input
     #    taxaList <- as.data.frame(read.table("data/taxonomyList.txt", sep='\t',header=T))
@@ -251,6 +231,7 @@ shinyServer(function(input, output, session) {
     
     ### merge mdData and taxaList to get taxonomy info
     taxaMdData <- merge(mdData,taxaList,by='ncbiID')
+    taxaMdData$fas <- as.numeric(as.character(taxaMdData$fas))
     
     ############## calculate percent present species ##############
     ### get geneID and supertaxon
@@ -274,7 +255,7 @@ shinyServer(function(input, output, session) {
     finalPresSpecDt$presSpec[is.na(finalPresSpecDt$presSpec)] <- 0
     
     ############## calculate max FAS for every supertaxon of each gene ##############
-    maxFasDt <- data.frame("geneID"=character(), "supertaxon"=character(),"fas"=numeric(),stringsAsFactors=FALSE)
+    maxFasDt <- data.frame("geneID"=character(), "supertaxon"=character(),"fas"=numeric(),"orthoID"=character(),stringsAsFactors=FALSE)
     allGeneID <- levels(taxaMdData$geneID)
     
     # Create 0-row data frame which will be used to store data
@@ -287,7 +268,7 @@ shinyServer(function(input, output, session) {
         # get max FAS for each supertaxon of this gene
         maxSupertaxon <- by(subDt, subDt$supertaxon, function(X) X[which.max(X$fas),])
         maxSupertaxon <- do.call("rbind", maxSupertaxon)
-        maxSupertaxon <- maxSupertaxon[,c("geneID","supertaxon","fas")]
+        maxSupertaxon <- maxSupertaxon[,c("geneID","supertaxon","fas","orthoID")]
         # join into maxFasDt
         maxFasDt <- rbind(maxFasDt,maxSupertaxon)
         
@@ -310,6 +291,7 @@ shinyServer(function(input, output, session) {
     names(fullMdData)[names(fullMdData)=="freq"] <- "numberSpec"
     
     fullMdData$fullName <- as.vector(fullMdData$fullName)
+    names(fullMdData)[names(fullMdData)=="orthoID.x"] <- "orthoID"
     fullMdData ### parsed input data frame !!!
   })
   
@@ -318,13 +300,23 @@ shinyServer(function(input, output, session) {
   dataSupertaxa <- reactive({
     fullMdData <- dataFiltered()
     
+    ### get representative orthoID that has max FAS for each supertaxon
+    maxOrthoID <- fullMdData[,c('geneID','supertaxon','fas','maxFas','orthoID')]
+    maxOrthoID <- subset(maxOrthoID,maxOrthoID$fas == maxOrthoID$maxFas)
+    colnames(maxOrthoID) <- c('geneID','supertaxon','fas','maxFas','orthoID')
+    maxOrthoID <- maxOrthoID[!is.na(maxOrthoID$orthoID),]
+    maxOrthoID <- maxOrthoID[,c('geneID','supertaxon','orthoID')]
+    maxOrthoID <- maxOrthoID[!duplicated(maxOrthoID[,1:2]), ]
+    
     ### get data set for phyloprofile plotting (contains only supertaxa info)
     superDf <- subset(fullMdData,select=c('geneID','supertaxon','supertaxonID','maxFas','presSpec','category'))
     superDf <- superDf[!duplicated(superDf), ]
+    superDfExt <- merge(superDf,maxOrthoID, by=c('geneID','supertaxon'),all.x=TRUE)
+    superDfExt <- superDfExt[,c("geneID","supertaxon","supertaxonID","maxFas","presSpec","category","orthoID")]
     
     ### output
-    names(superDf)[names(superDf)=="maxFas"] <- "fas"
-    superDf
+    names(superDfExt)[names(superDfExt)=="maxFas"] <- "fas"
+    superDfExt
   })
   
   ###### get list of all sequence IDs for selectize input
@@ -446,7 +438,14 @@ shinyServer(function(input, output, session) {
                           color="yellow",
                           alpha=0.3,
                           inherit.aes = FALSE)
-        
+        ### plot traceability values
+        # for(i in 1:10){
+        #   trace <- data.frame(xmin=i, xmax=i, ymin=0.5, ymax=1.5)
+        #   p = p + geom_rect(data=trace,aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax),
+        #                     color="green",
+        #                     alpha=0.3,
+        #                     inherit.aes = FALSE)
+        # }
         p
       } else {
         rect <- data.frame(ymin=selectedIndex-0.5, ymax=selectedIndex+0.5, xmin=-Inf, xmax=Inf)
@@ -549,7 +548,7 @@ shinyServer(function(input, output, session) {
     rankSelect = input$rankSelect
     rankName = substr(rankSelect,4,nchar(rankSelect))
     inSelect <- as.numeric(taxaList$ncbiID[taxaList$fullName == input$inSelect & taxaList$rank == rankName])
-
+    
     dataHeat <- dataHeat()
     
     ### get values
@@ -573,10 +572,12 @@ shinyServer(function(input, output, session) {
       # get FAS and percentage of present species
       FAS <- dataHeat$fas[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
       Percent <- dataHeat$presSpec[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
+      # get ortholog ID
+      orthoID <- dataHeat$orthoID[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
       
       if(is.na(as.numeric(Percent))){return()}
       else{
-        info <- c(geneID,as.character(spec),round(as.numeric(FAS),2),round(as.numeric(Percent),2))
+        info <- c(geneID,as.character(orthoID),as.character(spec),round(as.numeric(FAS),2),round(as.numeric(Percent),2))
         #substr(spec,6,nchar(as.character(spec)))
       }
     }
@@ -590,38 +591,57 @@ shinyServer(function(input, output, session) {
     info <- pointInfo() # info = geneID,supertaxon,maxFAS,%spec
     if(is.null(info)){return()}
     else{
-      a <- toString(paste(info[1],substr(info[2],6,nchar(info[2])), sep = " ; "))
-      b <- toString(paste("maxFas:",info[3],"; %spec:",info[4]))
-      paste(a,b,sep="\n")
+      a <- toString(paste(info[1],info[2], sep = " ; "))
+      b <- toString(paste(substr(info[3],6,nchar(info[3]))))
+      c <- toString(paste("maxFas:",info[4],"; %spec:",info[5]))
+      paste(a,b,c,sep="\n")
     }
   })
   
   ### detailed species FAS scores plot
-  output$detailPlot <- renderPlot({
+  # data for detailed plot
+  detailPlotDt <- reactive({
     if (v$doPlot == FALSE) return()
     
     info <- pointInfo()  # info = geneID,supertaxon,maxFAS,%spec
     if(is.null(info)){return()}
     else{
-      plotTaxon = info[2]
+      plotTaxon = info[3]
       plotGeneID = info[1]
       
       fullDf <- dataFiltered()
       selDf <- as.data.frame(fullDf[fullDf$geneID == plotGeneID & fullDf$supertaxon == plotTaxon,])
       selDf
-      gp = ggplot(selDf, aes(y=fas,x=fullName)) +
-        geom_bar(colour="steelblue", fill="steelblue", stat="identity") +
-        coord_flip() +
-        labs(x="") #+
-      #geom_text(aes(label=fas), vjust=3)
-      gp = gp+theme(axis.text.x = element_text(angle=90,hjust=1))
-      gp
     }
+  })
+  
+  # render plot
+  output$detailPlot <- renderPlot({
+    if (v$doPlot == FALSE) return()
+
+    selDf <- detailPlotDt()
+    selDf$x_label <- paste(selDf$orthoID,"@",selDf$fullName,sep = "")
+    
+    gp = ggplot(selDf, aes(y=fas,x=x_label)) +
+      geom_bar(colour="steelblue", fill="steelblue", stat="identity") +
+      coord_flip() +
+      labs(x="") #+
+    #geom_text(aes(label=fas), vjust=3)
+    gp = gp+theme(axis.text.x = element_text(angle=90,hjust=1))
+    gp
   })
   
   # plot detailed bar chart
   output$detailPlot.ui <- renderUI({
-    plotOutput("detailPlot",width=400,height = input$detailedHeight)
+    plotOutput("detailPlot",width=400,height = input$detailedHeight,
+               click = "plot_click_detail",
+               hover = hoverOpts(
+                 id = "plot_hover_2",
+                 delay = input$hover_delay,
+                 delayType = input$hover_policy,
+                 nullOutside = input$hover_null_outside
+               )
+    )
   })
   
   ### filtered data for download
@@ -647,7 +667,6 @@ shinyServer(function(input, output, session) {
     dataOut$numberSpec <- as.integer(dataOut$numberSpec)
     dataOut$presSpec <- as.numeric(dataOut$presSpec)
     
-    
     names(dataOut)[names(dataOut)=="presSpec"] <- "%Spec"
     names(dataOut)[names(dataOut)=="numberSpec"] <- "totalSpec"
     dataOut <- as.matrix(dataOut)
@@ -671,7 +690,8 @@ shinyServer(function(input, output, session) {
     #data <- dataFiltered()
     #data <- dataSupertaxa()
     #data <- dataHeat()
-    data <- downloadData()
+    data <- detailPlotDt()
+    #data <- downloadData()
     data
   })
   
@@ -804,4 +824,4 @@ shinyServer(function(input, output, session) {
     # out <- as.list(levels(data$geneID))
     # paste(out)
   })
-})
+  })
