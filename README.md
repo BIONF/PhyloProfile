@@ -1,23 +1,28 @@
-# PhyloProfile App
+# PhyloProfile Tool
 
-PhyloProfile App is a Shiny(R)-based app for visualizing the phylogenetic profile of a list of genes.
+PhyloProfile Tool is a Shiny(R)-based tool for visualizing the phylogenetic profile of a list of genes.
 The profile can be plotted with different taxonomy ranks (species, family, phylum, etc.), which would be useful for analyzing the presence absence of sequences in a large amount of taxa.
-Currently, two information represented on the profile are the Feature Architecture Similarity (FAS) scores and percentage of species that have orthologs with the reference sequences. The second value is only available if you group initial taxa into higher taxonomy rank (for example, you need to analyse the profile in phylum level, while your input taxa is in species level). These two information can be filtered from the plot by changing the corresponding cutoff manually.
+
+Currently, two information represented on the profile are the Feature Architecture Similarity (FAS) scores and percentage of species that have orthologs with the reference sequences. The second value is only available when you group initial taxa into higher taxonomy rank (for example, you need to analyse the profile in phylum level, while your input taxa are in species level). These two information can be manually filtered from the plot by changing the corresponding cutoff.
 
 # Usage
 (1) Clone this git repository to your computer using this command:
 
-git clone https://github.com/trvinh/phyloprofile
+>git clone https://github.com/trvinh/phyloprofile
 
 OR 
 
 Manually download all the files to your computer and keep the original folder structure.
 
-(2) Go to the folder that contains 2 files ui.R and server.R and run the app by typing: 
+(2) Install dependent R packages:
 
-R -e 'shiny::runApp(,launch.browser=TRUE)'.
+>Rscript installPackages.R
 
-Note: R has to be installed on your machine. The required packages will be automatically installed if necessary. If it says "Shiny" package is missing, please install it manually and run the app again.
+(3) Run PhyloProfile tool: 
+
+>R -e 'shiny::runApp(,launch.browser=TRUE)'.
+
+NOTE: R and Rscript has to be installed on your machine.
 
 # Bugs
 Any bug reports or comments, suggestions are highly appreciated
