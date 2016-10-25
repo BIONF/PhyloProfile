@@ -3,7 +3,7 @@
 PhyloProfile Tool is a Shiny(R)-based tool for visualizing the phylogenetic profile of a list of genes.
 The profile can be plotted with different taxonomy ranks (species, family, phylum, etc.), which would be useful for analyzing the presence absence of sequences in a large amount of taxa.
 
-Currently, two information represented on the profile are the Feature Architecture Similarity (FAS) scores and percentage of species that have orthologs with the reference sequences. The second value is only available when you group initial taxa into higher taxonomy rank (for example, you need to analyse the profile in phylum level, while your input taxa are in species level). These two information can be manually filtered from the plot by changing the corresponding cutoff.
+Currently, the information represented on the profile are the Feature Architecture Similarity (FAS) scores, percentage of species that have orthologs with the reference sequences and the traceability score (optional). The "percentage of species" is only available when you group initial taxa into higher taxonomy rank (for example, you need to analyse the profile in phylum level, while your input taxa are in species level). These information can be manually filtered from the plot by changing the corresponding cutoff.
 
 # Usage
 (1) Clone this git repository to your computer using this command:
