@@ -59,8 +59,6 @@ shinyServer(function(input, output, session) {
   
   ######## list of taxonomy ranks for plotting
   output$rankSelect = renderUI({
-    #    filein <- input$file1
-    #    if(is.null(filein)){return()}
     selectInput("rankSelect", label = "Select taxonomy rank:",
                 choices = list("Strain"="05_strain","Species" = "06_species","Genus" = "10_genus", "Family" = "14_family", "Order" = "19_order", "Class" = "23_class",
                                "Phylum" = "26_phylum", "Kingdom" = "28_kingdom", "Superkingdom" = "29_superkingdom","unselected"=""), 
@@ -105,13 +103,6 @@ shinyServer(function(input, output, session) {
     #      choice$fullName <- paste0(choice$fullName,"_",choice$ncbiID)
     choice$fullName <- as.factor(choice$fullName)
     selectInput('inHighlight','Select (super)taxon to highlight:',as.list(levels(choice$fullName)),levels(choice$fullName)[1])
-    # } else {
-    #   data <- as.data.frame(dataFiltered())
-    #   data$geneID <- as.character(data$geneID)
-    #   data$geneID <- as.factor(data$geneID)
-    #   out <- as.list(levels(data$geneID))
-    #   selectInput('inHighlight','Select sequence ID to highlight:',out,selected=out[1])
-    # }
   })
   
   ######## sorting supertaxa list
@@ -210,7 +201,6 @@ shinyServer(function(input, output, session) {
     filein <- input$file1
     if(is.null(filein)){return()}
     data <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
-    
     # convert into paired columns
     mdData <- melt(data,id="geneID")
     
@@ -222,6 +212,17 @@ shinyServer(function(input, output, session) {
     colnames(mdData) <- c("geneID","ncbiID","value","orthoID","fas")
     mdData <- mdData[,c("geneID","ncbiID","fas","orthoID")]
     
+    #################### traceability matrix input
+#    dataTrace <- as.data.frame(read.table("data/lca.Tracematrix", sep='\t',header=T,check.names=FALSE,comment.char = ""))
+    filein2 <- input$file2
+    if(is.null(filein2)){
+      mdDataTrace <- mdData[,c("geneID","ncbiID")]
+      mdDataTrace$traceability <- 0
+    } else {
+      dataTrace <- as.data.frame(read.table(file=filein2$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+      mdDataTrace <- melt(dataTrace,id="geneID")
+      colnames(mdDataTrace) <- c("geneID","ncbiID","traceability")
+    }
     ##### taxonomy file input
     #    taxaList <- as.data.frame(read.table("data/taxonomyList.txt", sep='\t',header=T))
     taxaList <- sortedTaxaList()
@@ -229,9 +230,11 @@ shinyServer(function(input, output, session) {
     # get frequency of all supertaxa
     taxaCount <- plyr::count(taxaList,'supertaxon')
     
-    ### merge mdData and taxaList to get taxonomy info
+    ### merge mdData, mdDataTrace and taxaList to get taxonomy info
     taxaMdData <- merge(mdData,taxaList,by='ncbiID')
     taxaMdData$fas <- as.numeric(as.character(taxaMdData$fas))
+    
+    taxaMdDataTrace <- merge(mdDataTrace,taxaList,by='ncbiID')  #################### FOR TRACEABILITY SCORES
     
     ############## calculate percent present species ##############
     ### get geneID and supertaxon
@@ -255,39 +258,24 @@ shinyServer(function(input, output, session) {
     finalPresSpecDt$presSpec[is.na(finalPresSpecDt$presSpec)] <- 0
     
     ############## calculate max FAS for every supertaxon of each gene ##############
-    maxFasDt <- data.frame("geneID"=character(), "supertaxon"=character(),"fas"=numeric(),"orthoID"=character(),stringsAsFactors=FALSE)
-    allGeneID <- levels(taxaMdData$geneID)
+    maxFasDt <- aggregate(taxaMdDataNoNA[,"fas"],list(taxaMdDataNoNA$supertaxon,taxaMdDataNoNA$geneID),max)
+    colnames(maxFasDt) <- c("supertaxon","geneID","maxFas")
     
-    # Create 0-row data frame which will be used to store data
-    dat <- data.frame(x = numeric(0), y = numeric(0))   ### use for progess bar
-    withProgress(message = 'please wait....', value = 0, {
-      
-      for(i in 1:nlevels(taxaMdData$geneID)){
-        # get subset for each gene
-        subDt <- taxaMdDataNoNA[taxaMdDataNoNA$geneID == allGeneID[i],]
-        # get max FAS for each supertaxon of this gene
-        maxSupertaxon <- by(subDt, subDt$supertaxon, function(X) X[which.max(X$fas),])
-        maxSupertaxon <- do.call("rbind", maxSupertaxon)
-        maxSupertaxon <- maxSupertaxon[,c("geneID","supertaxon","fas","orthoID")]
-        # join into maxFasDt
-        maxFasDt <- rbind(maxFasDt,maxSupertaxon)
-        
-        # a stand-in for a long-running computation.
-        dat <- rbind(dat, data.frame(x = rnorm(1), y = rnorm(1)))
-        # Increment the progress bar, and update the detail text.
-        incProgress(1/nlevels(taxaMdData$geneID), detail = paste("", percent(i/nlevels(taxaMdData$geneID))))
-        # Pause for 0.1 seconds to simulate a long computation.
-        Sys.sleep(0.1)
-      }
-    })
+    ############## calculate mean TRACEABILITY SCORES for each super taxon
+    meanTraceDt <- aggregate(taxaMdDataTrace[,"traceability"],list(taxaMdDataTrace$supertaxon,taxaMdDataTrace$geneID),mean)
+    colnames(meanTraceDt) <- c("supertaxon","geneID","traceability")
     
+    ############## & join mean traceability together with max fas scores into one df
+    scoreDf <- merge(maxFasDt,meanTraceDt, by=c("supertaxon","geneID"), all = TRUE)
+
     ############## add presSpec and maxFAS into taxaMdData ##############
     presMdData <- merge(taxaMdData,finalPresSpecDt,by=c('geneID','supertaxon'),all.x = TRUE)
-    fullMdData <- merge(presMdData,maxFasDt,by=c('geneID','supertaxon'), all.x = TRUE)
+#    fullMdData <- merge(presMdData,maxFasDt,by=c('geneID','supertaxon'), all.x = TRUE)
+    fullMdData <- merge(presMdData,scoreDf,by=c('geneID','supertaxon'), all.x = TRUE)
     fullMdData <- merge(fullMdData,taxaCount,by=('supertaxon'), all.x = TRUE)
     
-    names(fullMdData)[names(fullMdData)=="fas.x"] <- "fas"
-    names(fullMdData)[names(fullMdData)=="fas.y"] <- "maxFas"
+#    names(fullMdData)[names(fullMdData)=="fas.x"] <- "fas"
+#    names(fullMdData)[names(fullMdData)=="fas.y"] <- "maxFas"
     names(fullMdData)[names(fullMdData)=="freq"] <- "numberSpec"
     
     fullMdData$fullName <- as.vector(fullMdData$fullName)
@@ -309,10 +297,10 @@ shinyServer(function(input, output, session) {
     maxOrthoID <- maxOrthoID[!duplicated(maxOrthoID[,1:2]), ]
     
     ### get data set for phyloprofile plotting (contains only supertaxa info)
-    superDf <- subset(fullMdData,select=c('geneID','supertaxon','supertaxonID','maxFas','presSpec','category'))
+    superDf <- subset(fullMdData,select=c('geneID','supertaxon','supertaxonID','maxFas','presSpec','category','traceability'))
     superDf <- superDf[!duplicated(superDf), ]
     superDfExt <- merge(superDf,maxOrthoID, by=c('geneID','supertaxon'),all.x=TRUE)
-    superDfExt <- superDfExt[,c("geneID","supertaxon","supertaxonID","maxFas","presSpec","category","orthoID")]
+    superDfExt <- superDfExt[,c("geneID","supertaxon","supertaxonID","maxFas","presSpec","category","orthoID","traceability")]
     
     ### output
     names(superDfExt)[names(superDfExt)=="maxFas"] <- "fas"
@@ -396,13 +384,15 @@ shinyServer(function(input, output, session) {
       # ### check input file
       # filein <- input$file1
       # if(is.null(filein)){return()}
+      filein2 <- input$file2
       
       dataHeat <- dataHeat()
       ### plotting
       if(input$xAxis == "genes"){
         p = ggplot(dataHeat, aes(x = geneID, y = supertaxon)) +        ## global aes
-          scale_fill_gradient(low = "gray95", high = "khaki", na.value="gray95", guide=FALSE) +
-          geom_point(aes(colour = fas, size = presSpec))  +    ## geom_point for circle illusion
+          scale_fill_gradient(low = "gray95", high = "khaki", na.value="gray95") +   ## fill color
+          geom_tile(aes(fill = traceability)) +    ## filled rect (traceability score)
+          geom_point(aes(colour = fas, size = presSpec))  +    ## geom_point for circle illusion (FAS and presence/absence)
           scale_color_gradient(low = "darkorange",high = "steelblue")#+       ## color of the corresponding aes
         scale_size(range = c(0,3))             ## to tune the size of circles
         
@@ -412,8 +402,9 @@ shinyServer(function(input, output, session) {
         p = p+theme(axis.text.x = element_text(angle=60,hjust=1))
       } else {
         p = ggplot(dataHeat, aes(y = geneID, x = supertaxon)) +        ## global aes
-          scale_fill_gradient(low = "gray95", high = "khaki", na.value="gray95", guide=FALSE) +
-          geom_point(aes(colour = fas, size = presSpec))  +    ## geom_point for circle illusion
+          scale_fill_gradient(low = "gray95", high = "khaki", na.value="gray95") +   ## fill color
+          geom_tile(aes(fill = traceability)) +# + scale_fill_gradient(low="gray95", high="red")) +    ## filled rect (traceability score)
+          geom_point(aes(colour = fas, size = presSpec))  +    ## geom_point for circle illusion (FAS and presence/absence
           scale_color_gradient(low = "darkorange",high = "steelblue")#+       ## color of the corresponding aes
         scale_size(range = c(0,3))             ## to tune the size of circles
         
@@ -422,7 +413,7 @@ shinyServer(function(input, output, session) {
         p = p+geom_vline(xintercept=1.5,colour="dodgerblue4")
         p = p+theme(axis.text.x = element_text(angle=60,hjust=1))
       }
-      
+     
       ## get selected highlight taxon ID
       taxaList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T))
       inHighlight <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inHighlight])
@@ -438,14 +429,6 @@ shinyServer(function(input, output, session) {
                           color="yellow",
                           alpha=0.3,
                           inherit.aes = FALSE)
-        ### plot traceability values
-        # for(i in 1:10){
-        #   trace <- data.frame(xmin=i, xmax=i, ymin=0.5, ymax=1.5)
-        #   p = p + geom_rect(data=trace,aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax),
-        #                     color="green",
-        #                     alpha=0.3,
-        #                     inherit.aes = FALSE)
-        # }
         p
       } else {
         rect <- data.frame(ymin=selectedIndex-0.5, ymax=selectedIndex+0.5, xmin=-Inf, xmax=Inf)
@@ -484,19 +467,37 @@ shinyServer(function(input, output, session) {
       
       dataHeat <- dataHeat()
       ### plotting
-      p = ggplot(dataHeat, aes(y = geneID, x = supertaxon)) +        ## global aes
-        scale_fill_gradient(low = "gray95", high = "khaki", na.value="gray95", guide=FALSE) +
-        geom_point(aes(colour = fas, size = presSpec))  +    ## geom_point for circle illusion
-        scale_color_gradient(low = "darkorange",high = "steelblue")#+       ## color of the corresponding aes
-      scale_size(range = c(0,3))             ## to tune the size of circles
-      
-      base_size <- 9
-      p = p+geom_vline(xintercept=0.5,colour="dodgerblue4")
-      p = p+geom_vline(xintercept=1.5,colour="dodgerblue4")
-      p = p+theme(axis.text.x = element_text(angle=60,hjust=1))
-      print(p)
-      
-      dev.off()
+      if(input$xAxis == "genes"){
+        p = ggplot(dataHeat, aes(x = geneID, y = supertaxon)) +        ## global aes
+          scale_fill_gradient(low = "gray95", high = "khaki", na.value="gray95") +   ## fill color
+          geom_tile(aes(fill = traceability)) +    ## filled rect (traceability score)
+          geom_point(aes(colour = fas, size = presSpec))  +    ## geom_point for circle illusion (FAS and presence/absence)
+          scale_color_gradient(low = "darkorange",high = "steelblue")#+       ## color of the corresponding aes
+        scale_size(range = c(0,3))             ## to tune the size of circles
+        
+        base_size <- 9
+        p = p+geom_hline(yintercept=0.5,colour="dodgerblue4")
+        p = p+geom_hline(yintercept=1.5,colour="dodgerblue4")
+        p = p+theme(axis.text.x = element_text(angle=60,hjust=1))
+        
+        print(p)
+        dev.off()
+      } else {
+        p = ggplot(dataHeat, aes(y = geneID, x = supertaxon)) +        ## global aes
+          scale_fill_gradient(low = "gray95", high = "khaki", na.value="gray95") +   ## fill color
+          geom_tile(aes(fill = traceability)) +    ## filled rect (traceability score)
+          geom_point(aes(colour = fas, size = presSpec))  +    ## geom_point for circle illusion (FAS and presence/absence
+          scale_color_gradient(low = "darkorange",high = "steelblue")#+       ## color of the corresponding aes
+        scale_size(range = c(0,3))             ## to tune the size of circles
+        
+        base_size <- 9
+        p = p+geom_vline(xintercept=0.5,colour="dodgerblue4")
+        p = p+geom_vline(xintercept=1.5,colour="dodgerblue4")
+        p = p+theme(axis.text.x = element_text(angle=60,hjust=1))
+        
+        print(p)
+        dev.off()
+      }
     }
   )
   
@@ -519,7 +520,8 @@ shinyServer(function(input, output, session) {
       
       ### plotting
       p = ggplot(dataHeat, aes(y = geneID, x = supertaxon)) +        ## global aes
-        scale_fill_gradient(low = "gray95", high = "khaki", na.value="gray95", guide=FALSE) +
+        scale_fill_gradient(low = "gray95", high = "khaki", na.value="gray95") +
+        geom_tile(aes(fill = traceability)) +    ## filled rect (traceability score)
         geom_point(aes(colour = fas, size = presSpec))  +    ## geom_point for circle illusion
         scale_color_gradient(low = "darkorange",high = "steelblue")#+       ## color of the corresponding aes
       scale_size(range = c(0,3))             ## to tune the size of circles
@@ -569,15 +571,16 @@ shinyServer(function(input, output, session) {
       # get supertaxon (spec)
       supertaxa <- levels(dataHeat$supertaxon)
       spec <- toString(supertaxa[corX])
-      # get FAS and percentage of present species
+      # get FAS, percentage of present species and traceability score
       FAS <- dataHeat$fas[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
       Percent <- dataHeat$presSpec[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
+      Trace <- dataHeat$traceability[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
       # get ortholog ID
       orthoID <- dataHeat$orthoID[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
       
       if(is.na(as.numeric(Percent))){return()}
       else{
-        info <- c(geneID,as.character(orthoID),as.character(spec),round(as.numeric(FAS),2),round(as.numeric(Percent),2))
+        info <- c(geneID,as.character(orthoID),as.character(spec),round(as.numeric(FAS),2),round(as.numeric(Percent),2),round(as.numeric(Trace),2))
         #substr(spec,6,nchar(as.character(spec)))
       }
     }
@@ -594,7 +597,8 @@ shinyServer(function(input, output, session) {
       a <- toString(paste(info[1],info[2], sep = " ; "))
       b <- toString(paste(substr(info[3],6,nchar(info[3]))))
       c <- toString(paste("maxFas:",info[4],"; %spec:",info[5]))
-      paste(a,b,c,sep="\n")
+      d <- toString(paste("traceability:",info[6]))
+      paste(a,b,c,d,sep="\n")
     }
   })
   
@@ -618,7 +622,7 @@ shinyServer(function(input, output, session) {
   # render plot
   output$detailPlot <- renderPlot({
     if (v$doPlot == FALSE) return()
-
+    
     selDf <- detailPlotDt()
     selDf$x_label <- paste(selDf$orthoID,"@",selDf$fullName,sep = "")
     
@@ -655,7 +659,7 @@ shinyServer(function(input, output, session) {
     
     dataOut <- as.data.frame(dataOut[dataOut$presSpec >= input$percent & dataOut$fas >= input$fas,])
     
-    dataOut <- dataOut[,c("geneID","fullName","ncbiID","supertaxon","fas","numberSpec","presSpec")]
+    dataOut <- dataOut[,c("geneID","orthoID","fullName","ncbiID","supertaxon","fas","numberSpec","presSpec","traceability")]
     dataOut <- dataOut[order(dataOut$geneID,dataOut$supertaxon),]
     dataOut <- dataOut[complete.cases(dataOut),]
     
@@ -690,8 +694,8 @@ shinyServer(function(input, output, session) {
     #data <- dataFiltered()
     #data <- dataSupertaxa()
     #data <- dataHeat()
-    data <- detailPlotDt()
-    #data <- downloadData()
+    #data <- detailPlotDt()
+    data <- downloadData()
     data
   })
   

@@ -10,7 +10,8 @@ shinyUI(fluidPage(
   wellPanel(
   fluidRow(
     column(2, offset = 0,
-           fileInput("file1","Upload input matrix file: "),
+           fileInput("file1","Presence/absence file: "),
+           fileInput("file2","Traceability matrix file: "),
            actionButton("parse","Get info from input",style='padding:4px; font-size:85%'),
            helpText("(Run this, whenever you have a new taxa set)")
     ),
