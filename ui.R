@@ -77,9 +77,10 @@ shinyUI(fluidPage(
                   downloadButton('plotDownload','Download plot'),
                   bsModal("modalBS", "Detailed plot", "go", size = "large",
                           uiOutput("detailPlot.ui"),
-                          numericInput("detailedHeight","plot_height(px)",min=100,max=1600,step=50,value=100,width=100),
-                          textOutput("orthoID")
-                          ),
+                          numericInput("detailedHeight","plot_height(px)",min=100,max=1600,step=50,value=100,width=100)
+                          ,verbatimTextOutput("detailClick")
+                          ,actionButton("do3", "Show domain architecture")
+                  ),
                   bsModal("helpBS", "Help", "help", size = "large",
                           uiOutput("help.ui")
                   ),
@@ -87,6 +88,10 @@ shinyUI(fluidPage(
                           uiOutput("selectedPlot.ui"),
                           numericInput("selectedHeight","Plot_height(px)",min=100,max=1600,step=50,value=400,width=100),
                           numericInput("selectedWidth","Plot_Width(px)",min=100,max=1600,step=50,value=800,width=100)
+                  ),
+                  bsModal("plotArchi","Domain architecture","do3", size = "medium",
+                          uiOutput("archiPlot.ui"),
+                          numericInput("archiHeight","plot_height(px)",min=100,max=1600,step=50,value=400,width=100)
                   )
                 ),
         tabPanel ("Data",dataTableOutput("dis"),

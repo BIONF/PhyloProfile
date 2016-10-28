@@ -10,6 +10,36 @@ if (!require("gridExtra")) {install.packages("gridExtra")}
 if (!require("ape")) {install.packages("ape")}
 if (!require("stringr")) {install.packages("stringr")}
 
+### function for plotting domain architecture
+plotting <- function(df,geneID,maxEnd){
+  gg <- ggplot(df, aes(y=feature, x=end, color = feature)) +
+    geom_segment(data=df, aes(y=feature, yend=feature, x=0, xend=maxEnd), color="#b2b2b2", size=0.15)
+  
+  ### draw line and points  
+  gg <- gg + geom_segment(data=df, aes(x=start, xend=end, y=feature, yend=feature, fill=feature),
+                          size=1.2)
+  gg <- gg + geom_point(data=df, aes(y=feature, x=start), color="#b2b2b2", size=3)
+  gg <- gg + geom_point(data=df, aes(y=feature, x=end), color="#edae52", size=3)
+  
+  ### add text above
+  gg <- gg + geom_text(data=df,
+                       aes(x=(start+end)/2, y=feature, label=round(weight,2)),
+                       color="#9fb059", size=2.5, vjust=-0.75, fontface="bold", family="Calibri")
+  
+  ### theme format
+  gg <- gg + scale_y_discrete(expand=c(0.075,0))
+  gg <- gg + labs(x=NULL, y=NULL, title=geneID)
+  gg <- gg + theme_bw(base_family="Calibri")
+  gg <- gg + theme(panel.border=element_blank())
+  gg <- gg + theme(axis.ticks=element_blank())
+  gg <- gg + theme(plot.title=element_text(face="bold"))
+  gg <- gg + theme(legend.position="none")
+  
+  ### return plot
+  return(gg)
+}
+
+###### MAIN
 options(shiny.maxRequestSize=30*1024^2)  ## size limit for input 30mb
 shinyServer(function(input, output, session) {
   
@@ -516,13 +546,13 @@ shinyServer(function(input, output, session) {
     if(input$inSeq == "all") {return()}
     else{
       dataHeat <- dataHeat()
-      dataHeat <- dataHeat[dataHeat$geneID == input$inSeq,]
+      dataHeat <- subset(dataHeat,geneID %in% input$inSeq)
       
       ### plotting
       p = ggplot(dataHeat, aes(y = geneID, x = supertaxon)) +        ## global aes
-        scale_fill_gradient(low = "gray95", high = "khaki", na.value="gray95") +
-        geom_tile(aes(fill = traceability)) +    ## filled rect (traceability score)
-        geom_point(aes(colour = fas, size = presSpec))  +    ## geom_point for circle illusion
+        scale_fill_gradient(low = "gray95", high = "khaki", na.value="gray95") +   ## fill color
+        geom_tile(aes(fill = traceability)) +# + scale_fill_gradient(low="gray95", high="red")) +    ## filled rect (traceability score)
+        geom_point(aes(colour = fas, size = presSpec))  +    ## geom_point for circle illusion (FAS and presence/absence
         scale_color_gradient(low = "darkorange",high = "steelblue")#+       ## color of the corresponding aes
       scale_size(range = c(0,3))             ## to tune the size of circles
       
@@ -602,7 +632,7 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  ### detailed species FAS scores plot
+  ### detailed FAS scores plotting
   # data for detailed plot
   detailPlotDt <- reactive({
     if (v$doPlot == FALSE) return()
@@ -648,7 +678,108 @@ shinyServer(function(input, output, session) {
     )
   })
   
-  ### filtered data for download
+  ### show info when clicking on detailed plot
+  output$detailClick <- renderText({
+    selDf <- detailPlotDt()
+    allOrthoID <- sort(selDf$orthoID)
+    
+    ### get coordinates of plot_click_detail
+    if (is.null(input$plot_click_detail$x)) return()
+    else{
+      corX = round(input$plot_click_detail$y)
+      corY = round(input$plot_click_detail$x)
+    }
+    
+    ### get pair of sequence IDs
+    seedID <- toString(selDf$geneID[1])
+    orthoID <- toString(allOrthoID[corX])
+    fas <- toString(selDf$fas[selDf$orthoID==orthoID])
+
+    if(orthoID != "NA"){
+      a <- paste0("seedID = ",seedID)
+      b <- paste0("orthoID = ",orthoID)
+      c <- paste0("FAS = ",fas)
+      paste(a,b,c,sep="\n")
+    }
+  })
+  
+  ### plot domain architecture
+  v3 <- reactiveValues(doPlot3 = FALSE)
+  observeEvent(input$do3, {
+    # 0 will be coerced to FALSE
+    # 1+ will be coerced to TRUE
+    v3$doPlot3 <- input$do3
+    filein <- input$file1
+    if(is.null(filein)){v3$doPlot3 <- FALSE}
+  })
+
+  output$archiPlot <- renderPlot({
+    if (v3$doPlot3 == FALSE) return()
+
+    ### info
+    selDf <- detailPlotDt()
+    allOrthoID <- sort(selDf$orthoID)
+    
+    # get coordinates of plot_click_detail
+    if (is.null(input$plot_click_detail$x)) return()
+    else{
+      corX = round(input$plot_click_detail$y)
+      corY = round(input$plot_click_detail$x)
+    }
+    
+    # get groupID and orthoID together with FAS score
+    group <- as.character(selDf$geneID[1])
+    ortho <- as.character(allOrthoID[corX])
+    fas <- as.character(selDf$fas[selDf$orthoID==ortho])
+    
+    ### load domain file    
+#    domainDf <- as.data.frame(read.table("data/lca.list.distribution.example.mDomains", sep='\t',header=T,comment.char=""))
+    domainIN <- unlist(strsplit(toString(input$file1),","))
+    fileName <- toString(domainIN[1])
+    fileFullPath <- paste0("data/",fileName,".mDomains")
+    if(file.exists(fileFullPath)){
+      domainDf <- as.data.frame(read.table(fileFullPath, sep='\t',header=T,comment.char=""))
+    
+      ### get sub dataframe
+      grepID = paste(group,"#",ortho,sep="")
+      subDomainDf <- domainDf[grep(grepID,domainDf$seedID),]
+  
+      ### ortho domains df
+      orthoDf <- filter(subDomainDf,orthoID==ortho)
+      orthoDf$feature <- as.character(orthoDf$feature)
+      ### seed domains df
+      seedDf <- filter(subDomainDf,orthoID != ortho)
+      seedDf$feature <- as.character(seedDf$feature)
+      seed = as.character(seedDf$orthoID[1])
+      
+      ### change order of one dataframe's features based on order of other df's features
+      if(length(orthoDf$feature) < length(seedDf$feature)){
+        seedDf$feature <- factor(seedDf$feature, levels=c(orthoDf$feature,seedDf$feature[seedDf$feature != orthoDf$feature]))
+      } else {
+        orthoDf$feature <- factor(orthoDf$feature, levels=c(seedDf$feature,orthoDf$feature[orthoDf$feature != seedDf$feature]))
+      }
+      
+      ### plotting
+      plot_ortho <- plotting(orthoDf,ortho,max(subDomainDf$end))
+      plot_seed <- plotting(seedDf,seed,max(subDomainDf$end))
+      
+      grid.arrange(plot_seed,plot_ortho,ncol=1)
+    } else {v3$doPlot3 = FALSE}
+  })
+  
+  output$archiPlot.ui <- renderUI({
+    if (v3$doPlot3 == FALSE) {
+      domainIN <- unlist(strsplit(toString(input$file1),","))
+      fileName <- toString(domainIN[1])
+      msg <- paste0("<p><span style=\"color: #ff0000;\"><strong>","data/",fileName,".mDomains not found!!!</strong></span></p>")
+      HTML(msg)
+    } else {
+      plotOutput("archiPlot",height = input$archiHeight)
+    }
+  })
+  
+  
+  ################ filtered data for download
   downloadData <- reactive({
     ### check input
     if (v$doPlot == FALSE) return()
@@ -693,9 +824,11 @@ shinyServer(function(input, output, session) {
     #data <- sortedTaxaList()
     #data <- dataFiltered()
     #data <- dataSupertaxa()
-    #data <- dataHeat()
+    data <- dataHeat()
+    data <- data[data$geneID == input$inSeq,]
+    
     #data <- detailPlotDt()
-    data <- downloadData()
+    #data <- downloadData()
     data
   })
   
@@ -741,7 +874,13 @@ shinyServer(function(input, output, session) {
   ############### USED FOR TESTING
   output$testOutput <- renderText({
     # ### print infile
-    #  filein <- input$file1
+    # filein <- input$file1
+    # filePath <- toString(filein)
+    # fileName <- unlist(strsplit(toString(input$file1),","))
+    # name <- toString(fileName[1])
+    # fullPath <- paste0("data/",name,".mDomains")
+    # print(fullPath)
+    
     #  if(is.null(filein)){return()}
     # titleline <- readLines(filein$datapath, n=1)
     # paste("perl ", getwd(),"/data/getTaxonomyInfo.pl", 
@@ -828,4 +967,4 @@ shinyServer(function(input, output, session) {
     # out <- as.list(levels(data$geneID))
     # paste(out)
   })
-  })
+})
