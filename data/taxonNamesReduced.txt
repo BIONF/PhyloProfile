@@ -1,1758 +1,1758 @@
 ncbiID	fullName	rank	parentID
-870	Dichelobacter nodosus	species	869
-85006	Micrococcales	order	1760
-4934	Lachancea kluyveri	species	300275
-9611	Canis	genus	9608
-9739	Tursiops truncatus	species	9738
-178475	Niphatidae	family	6049
-8353	Xenopus	genus	8360
-1118	Chroococcales	order	1301283
-73029	Dechloromonas	genus	75787
-376917	Lorisiformes	infraorder	376911
-27999	Perkinsidae	family	27998
-160034	Zopfia	genus	160033
-45157	Cyanidioschyzon merolae	species	45156
-451442	Rhizophydiales	order	451435
-1562	Desulfotomaculum	genus	186807
-1033996	Nitrososphaerales	order	1643678
-9277	Dasyuridae	family	38608
-13615	Monodelphis	genus	126287
-5262	Pucciniaceae	family	5258
-316278	Synechococcus sp. RCC307	species	1129
-13641	Polysphondylium	genus	33083
-31932	Nitrosopumilales	order	651137
-718219	Chlamydia trachomatis G/9301	norank	813
-374468	Nakaseomyces	genus	4893
-5062	Aspergillus oryzae	species	5052
-41666	Batrachia	superorder	8292
-5332	Schizophyllaceae	family	5338
-59463	Myotis lucifugus	species	9434
-55879	Rhabditoidea	superfamily	6236
-28211	Alphaproteobacteria	class	1224
-469383	Conexibacter woesei DSM 14684	norank	191495
-2	Bacteria	superkingdom	131567
-63418	Trichophyton equinum	species	5550
-314295	Hominoidea	superfamily	9526
-45349	Edwardsiidae	family	6103
-207598	Homininae	subfamily	9604
-9376	Soricidae	family	9362
-639021	Magnaporthales	order	222544
-373994	Rivularia sp. PCC 7116	species	373984
-31031	Tetraodontidae	family	32517
-379064	Cyanobacterium aponinum	species	102234
-9312	Macropus	genus	9307
-5145	Podospora anserina	species	5144
-28889	Crenarchaeota	phylum	1783275
-64471	Synechococcus sp. CC9311	species	1129
-2259	Thermococcaceae	family	2258
-9592	Gorilla	genus	207598
-6411	Helobdella	genus	6407
-54409	Pelagomonadales	order	35675
-7234	Drosophila persimilis	species	32358
-2260	Pyrococcus	genus	2259
-1176649	Agrobacterium fabrum	species	1183400
-131316	Passalora	genus	93133
-5036	Histoplasma	genus	299071
-30559	Megachiroptera	suborder	9397
-117743	Flavobacteriia	class	976
-3650	Cucurbitaceae	family	71239
-451435	Chytridiomycetes	class	4761
-62133	Capnodiaceae	family	134362
-3702	Arabidopsis thaliana	species	3701
-45156	Cyanidioschyzon	genus	265316
-265570	Sulfurovum	genus	34035
-2158	Methanobacteriales	order	183925
-3042	Chlamydomonadales	order	3166
-169418	Mustelinae	subfamily	9655
-35554	Geobacter sulfurreducens	species	28231
-32351	melanogaster subgroup	speciessubgroup	32346
-23513	Rutaceae	family	41937
-4827	Mucorales	order	451507
-5338	Agaricales	order	452333
-387092	Nitratiruptor sp. SB155-2	species	269258
-6448	Gastropoda	class	6447
-589350	Cryptomonadales	order	3027
-3244	Selaginellales	order	1521260
-4894	Schizosaccharomycetaceae	family	34346
-53541	Stegomyia	subgenus	7158
-2269	Thermofilum pendens	species	2268
-7668	Strongylocentrotus purpuratus	species	7664
-35500	Pecora	infraorder	9845
-28072	Nostoc sp. PCC 7524	species	1177
-977863	Curvularia lunata m118	norank	5503
-32346	melanogaster group	speciesgroup	32341
-413404	Candidatus Ruthia magnifica str. Cm (Calyptogena magnifica)	norank	386487
-7586	Echinodermata	phylum	33511
-243233	Methylococcus capsulatus str. Bath	norank	414
-134362	Capnodiales	order	451867
-59930	Cyanobium gracile	species	167375
-9738	Tursiops	genus	9726
-5825	Plasmodium chabaudi	species	418101
-813	Chlamydia trachomatis	species	810
-45307	Melanommataceae	family	92860
-431838	Intramacronucleata	subphylum	5878
-4527	Oryza	genus	1648021
-1173027	Microcoleus sp. PCC 7113	species	44471
-281106	Argynnaceae	family	159987
-497965	Cyanothece sp. PCC 7822	species	43988
-10015	Heteromyidae	family	33553
-33392	Endopterygota	infraclass	33340
-9986	Oryctolagus cuniculus	species	9984
-6236	Rhabditida	order	119089
-8826	Anseriformes	order	1549675
-56780	Syntrophus aciditrophicus SB	norank	316277
-2836	Bacillariophyta	phylum	33634
-4958	Debaryomyces	genus	766764
-114380	Desulfurococcales	order	183924
-372055	Lophiostoma macrostomum	species	45148
-13562	Heterobasidion	genus	40420
-45131	Botryosphaeriaceae	family	451869
-7777	Chondrichthyes	class	7776
-163742	Trifolieae	tribe	3814
-264688	Trichormus	genus	1162
-9845	Ruminantia	suborder	91561
-41665	Neopterygii	subclass	186623
-7157	Culicidae	family	41827
-93612	Setosphaeria turcica	species	39952
-5875	Theileria parva	species	5873
-703505	Patellaria	genus	37883
-27337	Verticillium dahliae	species	1036719
-74317	Maricaulis	genus	69657
-222543	Hypocreomycetidae	subclass	147550
-75966	Trebouxiophyceae	class	3041
-7245	Drosophila yakuba	species	32351
-548648	Dothidotthiaceae	family	92860
-191554	Hysteriales	order	451868
-283909	Capitella teleta	species	51293
-8364	Xenopus tropicalis	species	8363
-55176	Sporormiaceae	family	92860
-146891	Prochlorococcus marinus str. AS9601	norank	1219
-155978	Acaryochloris marina	species	155977
-269258	Nitratiruptor	genus	34035
-69657	Hyphomonadaceae	family	204455
-147367	Oryzoideae	subfamily	359160
-1173020	Chamaesiphon minutus PCC 6605	norank	1173032
-7424	Nasonia	genus	272242
-216260	Lottioidea	superfamily	69675
-221102	Moniliophthora	genus	654221
-7065	Tenebrionidae	family	71527
-34735	Apoidea	superfamily	7434
-7675	Echinoida	order	7674
-7894	Coelacanthiformes	order	118072
-1028384	Glomerellales	order	222543
-36914	Lodderomyces elongisporus	species	36913
-959	Bdellovibrio bacteriovorus	species	958
-32324	mulleri subgroup	speciessubgroup	32321
-9476	Tarsius	genus	9475
-1485	Clostridium	genus	31979
-54308	Pleurocapsa minor	species	44474
-28890	Euryarchaeota	phylum	2157
-116557	Phyllopoda	subclass	6658
-47757	Adrianichthyidae	family	28781
-868	Cardiobacteriaceae	family	135615
-1158	Oscillatoria	genus	1150
-6340	Annelida	phylum	1206795
-7625	Echinoidea	class	7624
-31032	Takifugu	genus	31031
-55169	Botryosphaeria dothidea	species	45132
-340080	Parameciidae	family	33825
-70791	Nectria haematococca mpVI	norank	140110
-160035	Zopfia rhizophila	species	160034
-10228	Trichoplax adhaerens	species	10227
-7638	Euechinoidea	subclass	7625
-176299	Agrobacterium fabrum str. C58	norank	1176649
-668547	Teratosphaeriaceae	family	134362
-1525212	Bathycoccaceae	family	13792
+119069	Hydrogenophilales	order	28216
+9361	Dasypus novemcinctus	species	9360
+6843	Chelicerata	subphylum	6656
+33170	Eremothecium	genus	4893
+338192	Nitrosopumilus maritimus	species	338191
+548651	Dothidotthia	genus	548648
+54299	Chroococcidiopsis thermalis	species	54298
 5429	Sporobolomyces	genus	1799696
-107465	Teloschistales	order	388435
-31028	Tetraodontoidei	suborder	31022
-40420	Bondarzewiaceae	family	452342
-162481	Microbotryomycetes	class	29000
-1080233	Zasmidium cellare ATCC 36951	norank	395010
-1033978	Plectosphaerellaceae	family	1028384
-30577	Erinaceinae	subfamily	9363
-172820	Apusomonadidae	family	554296
-39416	Tuber melanosporum	species	36048
-1799696	Sporidiobolaceae	family	231213
-6412	Helobdella robusta	species	6411
-7711	Chordata	phylum	33511
-3066	Volvox	genus	3065
-10140	Cavia	genus	10139
-32367	willistoni subgroup	speciessubgroup	32365
-183924	Thermoprotei	class	28889
-2303	Thermoplasma acidophilum	species	2302
-4897	Schizosaccharomyces japonicus	species	4895
-147572	Piedraia	genus	147571
-193568	Nanoarchaeum	genus	192989
-7227	Drosophila melanogaster	species	32351
-38605	Didelphimorphia	order	9263
-147573	Piedraia hortae var. hortae	varietas	147572
-303	Pseudomonas putida	species	136845
-379583	Feliformia	suborder	33554
-2257	Natronomonas pharaonis	species	63743
-1185	Rivulariaceae	family	1161
-942	Anaplasmataceae	family	766
-9685	Felis catus	species	9682
-227334	Coniophorineae	suborder	68889
-3689	Populus	genus	238069
-869	Dichelobacter	genus	868
-35472	Coccomyxaceae	family	75981
-273057	Sulfolobus solfataricus P2	norank	2287
-71275	rosids	subclass	1437201
-73020	Isochrysidales	order	2830
-114185	Candidatus Carsonella	genus	114403
-1351751	Parastagonospora	genus	5020
-224756	Methanomicrobia	class	28890
-35718	Chaetomiaceae	family	5139
-9005	Phasianidae	family	8976
-3065	Volvocaceae	family	3042
-33554	Carnivora	order	314145
-29879	Neurospora discreta	species	5140
-70535	Edhazardia	genus	322152
-4006	Linum usitatissimum	species	4005
-9810	Hyracoidea	order	311790
-1124	Chlorogloeopsis fritschii	species	1123
-395961	Cyanothece sp. PCC 7425	species	43988
-32049	Synechococcus sp. PCC 7002	species	1129
-5215	Tremellaceae	family	5234
-4932	Saccharomyces cerevisiae	species	4930
-91561	Cetartiodactyla	norank	314145
-543	Enterobacteriaceae	family	91347
-4896	Schizosaccharomyces pombe	species	4895
-77225	Pteropodinae	subfamily	9398
+307595	Gloeobacterales	order	307596
+1224	Proteobacteria	phylum	2
+2225	Methanococcoides	genus	2206
+9475	Tarsiidae	family	376912
+9371	Echinops telfairi	species	9370
+336810	Candidatus Sulcia muelleri	species	336809
+5052	Aspergillus	genus	1131492
+265570	Sulfurovum	genus	34035
+31234	Caenorhabditis remanei	species	6237
+13735	Pelodiscus sinensis	species	204969
+6035	Encephalitozoon cuniculi	species	6033
+8511	Iguania	suborder	1329911
+56635	Aeropyrum	genus	2272
+2870	Phaeophyceae	phylum	569578
+38574	Leishmania donovani species complex	speciesgroup	38568
+4894	Schizosaccharomycetaceae	family	34346
+5500	Coccidioides	genus	1593277
+718219	Chlamydia trachomatis G/9301	norank	813
+115784	Phaffomycetaceae	family	4892
+68295	Thermoanaerobacterales	order	186801
+183968	Thermococci	class	28890
+55170	Didymella	genus	683158
+237179	Sphaerulina	genus	93133
+374469	Vanderwaltozyma	genus	4893
+403667	Vitales	order	91834
+55148	Deinococcus proteolyticus	species	1298
+1152	Pseudanabaena	genus	1150
+5022	Leptosphaeria maculans	species	220671
+27335	Verticillium albo-atrum	species	1036719
+1080228	Synechocystis sp. PCC 6803 substr. GT-I	norank	1148
+5821	Plasmodium berghei	species	418101
+5506	Fusarium	genus	110618
+5094	Talaromyces	genus	28568
+4751	Fungi	kingdom	33154
+7896	Latimeria	genus	7895
+227086	Bigelowiella natans	species	227085
+690899	Lentithecium fluviatile	species	690896
+9823	Sus scrofa	species	9822
+235880	Acalypheae	tribe	235629
+153609	Moniliophthora perniciosa	species	221102
+482564	Oscillatoria nigro-viridis	species	1158
+1126	Microcystis aeruginosa	species	1125
+13562	Heterobasidion	genus	40420
+85915	Pleomassariaceae	family	92860
+376917	Lorisiformes	infraorder	376911
+485	Neisseria gonorrhoeae	species	482
 413	Methylococcus	genus	403
-40297	Galagidae	family	376917
-9835	Camelidae	family	9834
-6934	Parasitiformes	superorder	6933
-43786	Culicomorpha	infraorder	7148
-6237	Caenorhabditis	genus	55885
+36914	Lodderomyces elongisporus	species	36913
+715298	Lentitheciaceae	family	1255046
+292564	Cyanobium gracile PCC 6307	norank	59930
+6342	Capitellida	order	105387
+265072	Methylobacillus flagellatus KT	norank	405
+2284	Sulfolobus	genus	118883
 4892	Saccharomycetales	order	4891
 37883	Patellariaceae	family	37882
-59689	Arabidopsis lyrata	species	3701
-1643678	Nitrososphaeria	class	651137
-9478	Tarsius syrichta	species	9476
-88646	Teloschistaceae	family	1302176
-242159	Ostreococcus `lucimarinus`	species	70447
-6035	Encephalitozoon cuniculi	species	6033
-4155	Erythranthe guttata	species	1502711
-1255046	Massarineae	suborder	92860
-51292	Capitellidae	family	6342
-483074	Baudoinia	genus	668547
-43746	Ephydroidea	superfamily	43741
-5198	Cladoniaceae	family	157822
-183980	Archaeoglobi	class	28890
-204428	Chlamydiae	phylum	1783257
-323261	Nitrosococcus oceani ATCC 19707	norank	1229
-55528	Guillardia	genus	589343
-410358	Methanocorpusculum labreanum Z	norank	83984
-561967	Lepidopterella	genus	281106
-7736	Branchiostomidae	family	7735
-2281	Sulfolobales	order	183924
-38568	Leishmania	subgenus	5658
-67593	Phytophthora sojae	species	4783
-33386	Macrosiphini	tribe	133076
-2272	Desulfurococcaceae	family	114380
-554915	Amoebozoa	norank	2759
-3440	Ranunculaceae	family	41768
-1080229	Synechocystis sp. PCC 6803 substr. PCC-N	norank	1148
-2159	Methanobacteriaceae	family	2158
-41873	Mamiellaceae	family	13792
-6656	Arthropoda	phylum	88770
-33634	Stramenopiles	norank	2759
-2234	Archaeoglobus fulgidus	species	2233
-9030	Gallus	genus	9072
-184431	Coprinopsis	genus	184208
-5752	Heterolobosea	class	2759
-548651	Dothidotthia	genus	548648
-1344955	Rhizopodaceae	family	1344963
-75787	Rhodocyclaceae	family	206389
-85915	Pleomassariaceae	family	92860
-272242	Pteromalinae	subfamily	7423
-5076	Penicillium chrysogenum	species	254878
-44689	Dictyostelium discoideum	species	5782
-1301283	Oscillatoriophycideae	subclass	1117
-307595	Gloeobacterales	order	307596
-4956	Zygosaccharomyces rouxii	species	4953
-1150	Oscillatoriales	order	1301283
-1489913	Atherinomorphae	superorder	1489908
-1217	Prochlorococcaceae	family	1212
-1644056	Haloferacaceae	family	1644055
-325165	Nomascus	genus	9577
-6032	Apansporoblastina	suborder	6029
-35460	Chlorellales	order	75966
-554155	Arthroderma otae CBS 113480	norank	63405
-485916	Desulfotomaculum acetoxidans DSM 771	norank	58138
-54298	Chroococcidiopsis	genus	52604
-6243	Rhabditidae	family	55879
-54125	Pristionchus	genus	54124
-418966	Noelaerhabdaceae	family	73020
-9785	Loxodonta africana	species	9784
-37616	Viannia	subgenus	5658
-6029	Microsporidia	phylum	4751
-5179	Sclerotinia	genus	28983
-5550	Trichophyton	genus	34384
-5322	Pleurotus ostreatus	species	5320
-38832	Micromonas	genus	41873
-1760	Actinobacteria	class	201174
-94695	Methanosarcinales	order	224756
-5197	Lecanorales	order	388435
-110618	Nectriaceae	family	5125
-225164	Lottia gigantea	species	72691
-167542	Prochlorococcus marinus str. MIT 9515	norank	1219
-36911	Clavispora lusitaniae	species	36910
-9359	Dasypodidae	family	948951
-4837	Phycomyces blakesleeanus	species	4836
-10139	Caviidae	family	33550
-395010	Zasmidium cellare	species	395590
-2797	Bangiophyceae	class	2763
-33169	Eremothecium gossypii	species	33170
-115784	Phaffomycetaceae	family	4892
-37611	Estrildidae	family	175121
-809	Chlamydiaceae	family	51291
-155892	Caulobacter vibrioides	species	75
-186801	Clostridia	class	1239
-1189	Stigonematales	order	1117
-9823	Sus scrofa	species	9822
-1728959	Aurantioideae	subfamily	23513
-331636	Chlamydia psittaci 6BC	norank	83554
-452284	Ustilaginomycotina	subphylum	5204
-206389	Rhodocyclales	order	28216
-2233	Archaeoglobus	genus	2232
-4952	Yarrowia lipolytica	species	4951
-5039	Blastomyces dermatitidis	species	229219
-221670	Cucurbitariaceae	family	715340
-407951	Neofusicoccum	genus	45131
-443906	Clavibacter michiganensis subsp. michiganensis NCPPB 382	norank	33013
-46659	Thermoplasmataceae	family	2301
-766	Rickettsiales	order	28211
-1218	Prochlorococcus	genus	1217
-6293	Wuchereria bancrofti	species	6292
-399129	Cryphonectriaceae	family	5114
-206351	Neisseriales	order	28216
-3977	Euphorbiaceae	family	3646
-100043	Pleomassaria	genus	85915
-100026	Hysterium	genus	100025
-85023	Microbacteriaceae	family	85006
-213481	Bdellovibrionales	order	28221
-5850	Plasmodium knowlesi	species	418103
-91836	malvids	norank	71275
-118163	Pleurocapsa sp. PCC 7327	norank	54308
-6180	Strigeidida	order	6179
-64363	Dothistroma septosporum	species	242508
-119069	Hydrogenophilales	order	28216
-9480	Callitrichinae	subfamily	9498
-142864	Cylindrospermum stagnale	species	56106
-7459	Apis	genus	83321
-9258	Ornithorhynchus anatinus	species	9257
-41084	Polyphaga	suborder	7041
-3052	Chlamydomonas	genus	3051
 9608	Canidae	family	379584
-9975	Lagomorpha	order	314147
-45147	Lophiostomataceae	family	92860
-102235	Cyanobacterium stanieri	species	102234
-63737	Nostoc punctiforme PCC 73102	norank	272131
-653667	Schizosaccharomyces cryophilus OY26	norank	866546
-55153	Sciuridae	family	33553
-7238	Drosophila sechellia	species	32351
-84588	Synechococcus sp. WH 8102	species	1129
-28983	Sclerotiniaceae	family	5178
-9397	Chiroptera	order	314145
-1048752	Candidatus Caldiarchaeum	genus	651142
-42302	Lasiosphaeriaceae	family	5139
-104366	Pleurotaceae	family	5338
-4895	Schizosaccharomyces	genus	4894
-2319	Methanopyrus	genus	183713
-3847	Glycine max	species	1462606
-6126	Acroporidae	family	123757
-866546	Schizosaccharomyces cryophilus	species	4895
-717774	Marinomonas mediterranea MMB-1	norank	119864
-186623	Actinopteri	class	7898
-59922	Prochlorococcus marinus str. MIT 9303	norank	1219
-13149	Microcebus	genus	30615
-271823	Trypethelium	genus	271822
-8976	Galliformes	order	1549675
-77658	Daphniidae	family	116561
-45351	Nematostella vectensis	species	45350
-27592	Bovinae	subfamily	9895
-192875	Capsaspora owczarzaki	species	192874
-418107	Plasmodium (Laverania)	subgenus	5820
-1172	Anabaena variabilis	species	1163
-160233	Ignicoccus hospitalis	species	54258
-589351	Hemiselmidaceae	family	589350
-51293	Capitella	genus	51292
-4577	Zea mays	species	4575
-40125	Bipolaris victoriae	species	33194
-9669	Mustela putorius furo	subspecies	9668
-34478	Spizellomycetales	order	451435
-5125	Hypocreales	order	222543
-338191	Nitrosopumilus	genus	338190
-7220	Drosophila erecta	species	32351
-4575	Zea	genus	1648029
-5809	Sarcocystidae	family	423054
-4910	Kluyveromyces	genus	4893
-4922	Komagataella pastoris	species	460517
-5141	Neurospora crassa	species	5140
-2225	Methanococcoides	genus	2206
-8043	Gadiformes	order	1489843
-9598	Pan troglodytes	species	9596
-5206	Filobasidiella	genus	5215
-55529	Guillardia theta	species	55528
-59729	Taeniopygia guttata	species	59728
-5765	Vahlkampfiidae	family	41165
-102234	Cyanobacterium	genus	1118
-4924	Scheffersomyces stipitis	species	766733
-5037	Histoplasma capsulatum	species	5036
-4776	Peronosporales	order	4762
-65393	Cyanothece sp. PCC 7424	species	43988
-7895	Coelacanthidae	family	7894
-9978	Ochotona princeps	species	9977
-394221	Maricaulis maris MCS10	norank	74318
-278021	Antonospora locustae	species	67677
-8509	Squamata	order	8504
-7176	Culex quinquefasciatus	species	518105
-69292	Gasterosteus	genus	69291
-148303	Magnaporthe	genus	81093
-33836	Coscinodiscophyceae	class	2836
-7203	Brachycera	suborder	7147
-406427	Anthoathecata	order	37516
-34384	Arthrodermataceae	family	33183
-7158	Aedes	genus	1056966
-28216	Betaproteobacteria	class	1224
-2877	Ectocarpales	order	2870
-869210	Marinithermus hydrothermalis DSM 14884	norank	186192
-292566	Dactylococcopsis salina	species	13034
-35823	Arthrospira	genus	1150
-9358	Choloepus hoffmanni	species	9357
-28376	Anolis	genus	81957
-5334	Schizophyllum commune	species	5333
-8048	Gadus	genus	8045
-356	Rhizobiales	order	28211
-70771	Pyrobaculum neutrophilum	species	2276
-372787	Fischerella thermalis	species	1190
-76071	Beloniformes	order	1489913
-42374	Candida dubliniensis	species	1535326
-529818	Thecamonas trahens	species	877559
-41980	Metallosphaera	genus	118883
-8088	Oryziinae	subfamily	47757
-9976	Ochotonidae	family	9975
-30560	Microchiroptera	suborder	9397
-451869	Botryosphaeriales	order	159987
-10088	Mus	genus	39107
-976	Bacteroidetes	phylum	68336
-186191	Marinithermus	genus	188786
-112489	Dissoconium aciculare	species	112488
-554065	Chlorella variabilis	species	3071
-460517	Komagataella	genus	115784
-5351	Tricholomataceae	family	5338
-4914	Lachancea waltii	species	300275
-311790	Afrotheria	superorder	9347
-4761	Chytridiomycota	phylum	4751
-414	Methylococcus capsulatus	species	413
-265316	Cyanidiaceae	family	265318
-187420	Methanothermobacter thermautotrophicus str. Delta H	norank	145262
-7041	Coleoptera	order	33392
-6033	Encephalitozoon	genus	36734
-227086	Bigelowiella natans	species	227085
-3694	Populus trichocarpa	species	3689
-766728	Meyerozyma	genus	766764
-9593	Gorilla gorilla	species	9592
-9479	Platyrrhini	parvorder	314293
-2258	Thermococcales	order	183968
-114378	Thermofilaceae	family	2266
-15368	Brachypodium distachyon	species	15367
-183710	Deinococcaceae	family	118964
-5499	Passalora fulva	species	131316
-43816	Anophelinae	subfamily	7157
-5671	Leishmania infantum	species	38574
-31234	Caenorhabditis remanei	species	6237
-5061	Aspergillus niger	species	5052
-43845	Drosophilinae	subfamily	7214
-340100	Bordetella petrii DSM 12804	norank	94624
-213422	Geobacteraceae	family	69541
-948950	Pilosa	order	9348
-2208	Methanosarcina barkeri	species	2207
-76886	Caldivirga	genus	2267
-83984	Methanocorpusculum labreanum	species	2192
-7091	Bombyx mori	species	7090
-2182	Methanococcales	order	183939
-33071	Gloeobacter	genus	307595
-31281	Enterocytozoon bieneusi	species	27971
-3705	Brassica	genus	981071
-140110	Nectria haematococca	species	232080
-7237	Drosophila pseudoobscura	species	32358
-10066	Muridae	family	337687
-33851	Bacillariales	order	33850
-5507	Fusarium oxysporum	species	171631
-4558	Sorghum bicolor	species	4557
-69676	Lottiidae	family	216260
-714581	Trypetheliales	order	159987
-5020	Phaeosphaeriaceae	family	715340
-2276	Pyrobaculum	genus	2267
-1224	Proteobacteria	phylum	2
-33849	Bacillariophyceae	class	2836
-9813	Procavia capensis	species	9812
-3245	Selaginellaceae	family	3244
-200644	Flavobacteriales	order	117743
-766764	Debaryomycetaceae	family	4892
-5217	Tremella mesenterica	species	105767
-27994	Theileriidae	family	5863
-37569	Bombycoidea	superfamily	104431
-5819	Haemosporida	order	422676
-47251	Leptolyngbya	genus	1150
-35786	Coprothermobacter proteolyticus	species	68335
-8049	Gadus morhua	species	8048
-33194	Bipolaris	genus	28556
-75	Caulobacter	genus	76892
-7712	Tunicata	subphylum	7711
-9796	Equus caballus	species	35510
-101203	Saprolegnia parasitica	species	4769
-145260	Methanothermobacter	genus	2159
-29202	Thalassiosiraceae	family	33847
-27977	Nosema	genus	27974
-1648021	Oryzinae	subtribe	147380
-33178	Aspergillus terreus	species	5052
-930090	Bipolaris oryzae ATCC 44560	norank	101162
-93059	Prochlorococcus marinus str. MIT 9211	norank	1219
-167546	Prochlorococcus marinus str. MIT 9301	norank	1219
-7719	Ciona intestinalis	species	7718
-36910	Clavispora	genus	27319
-6181	Schistosoma	genus	31245
-718229	Sporormia fimetaria	species	45136
-33550	Hystricognathi	suborder	9989
-34489	Mucoraceae	family	1344963
-1183400	Agrobacterium tumefaciens complex	speciesgroup	357
-9126	Passeriformes	order	8825
-27319	Metschnikowiaceae	family	4892
-32443	Teleostei	infraclass	41665
-311458	Candidatus Caldiarchaeum subterraneum	species	1048752
-5478	Candida glabrata	species	600669
-1344963	Mucorineae	suborder	4827
-92938	Fischerella muscicola	species	1190
-42399	Vittaforma corneae	species	42398
-1205	Trichodesmium	genus	1150
-7897	Latimeria chalumnae	species	7896
-360105	Campylobacter curvus 525.92	norank	200
-5017	Bipolaris zeicola	species	33194
-33187	Uncinocarpus	genus	33184
-4554	Setaria	genus	1293361
-135621	Pseudomonadaceae	family	72274
-372781	Fischerella muscicola SAG 1427-1 = PCC 73103	norank	92938
-482564	Oscillatoria nigro-viridis	species	1158
-186039	Fragilariopsis cylindrus	species	186035
-5541	Thermomyces lanuginosus	species	5540
-665024	Bipolaris maydis ATCC 48331	norank	5016
-712	Pasteurellaceae	family	135625
-38608	Dasyuromorphia	order	9263
-452342	Russulales	order	355688
-317936	Nostoc sp. PCC 7107	species	1177
-71274	asterids	subclass	1437201
-388435	Lecanoromycetidae	subclass	1520881
-4931	Saccharomyces bayanus	species	4930
-59919	Prochlorococcus marinus subsp. pastoris str. CCMP1986	norank	142479
-5027	Pyrenophora	genus	28556
-1648028	Sorghinae	subtribe	147429
-147547	Lecanoromycetes	class	716546
-586132	Nematocida	genus	469895
-45148	Lophiostoma	genus	45147
-320583	Conexibacteraceae	family	588673
-13035	Dactylococcopsis salina PCC 8305	norank	292566
-55193	Malassezia	genus	742845
-196118	Methanocaldococcus	genus	196117
-309800	Haloferax volcanii DS2	norank	2246
-2206	Methanosarcinaceae	family	94695
-2850	Phaeodactylum tricornutum	species	2849
-46234	Anabaena sp. 90	species	1163
-2879	Ectocarpus	genus	2878
-49	Polyangiaceae	family	80812
-1126212	Macrophomina phaseolina MS6	norank	35725
-665912	Bipolaris sorokiniana ND90Pr	norank	45130
-766733	Scheffersomyces	genus	766764
-4783	Phytophthora	genus	4776
-191494	Conexibacter	genus	320583
-6933	Acari	subclass	6854
-1165	Anabaena cylindrica	species	1163
-164328	Phytophthora ramorum	species	4783
-5185	Pezizales	order	147549
-351746	Pseudomonas putida F1	norank	303
-3803	Fabaceae	family	72025
-93133	Mycosphaerellaceae	family	134362
-3699	Brassicales	order	91836
-2880	Ectocarpus siliculosus	species	2879
-204455	Rhodobacterales	order	28211
-186192	Marinithermus hydrothermalis	species	186191
-6658	Branchiopoda	class	6657
-36048	Tuber	genus	40289
-147537	Saccharomycotina	subphylum	716545
-41891	Coccomyxa	genus	35472
-4557	Sorghum	genus	1648028
-690896	Lentithecium	genus	715298
-387662	Candidatus Carsonella ruddii PV	norank	114186
-35127	Thalassiosira	genus	29202
-9498	Cebidae	family	9479
-9443	Primates	order	314146
-7090	Bombyx	genus	475327
-97479	Pyrenophora teres f. teres	forma	53485
-7070	Tribolium castaneum	species	7069
-497726	Nitrososphaera	genus	1033997
-742845	Malasseziaceae	family	162474
-5144	Podospora	genus	42302
-2190	Methanocaldococcus jannaschii	species	196118
-118969	Legionellales	order	1236
-121222	Pediculus	genus	121221
-405	Methylobacillus flagellatus	species	404
-5270	Ustilago maydis	species	5269
-5782	Dictyostelium	genus	33083
-27971	Enterocytozoon	genus	27970
-7916	Lepisosteus	genus	7915
-204458	Caulobacterales	order	28211
-188787	Deinococci	class	1297
-300275	Lachancea	genus	4893
-338192	Nitrosopumilus maritimus	species	338191
-9668	Mustela putorius	species	9665
-68335	Coprothermobacter	genus	227387
-56110	Oscillatoria acuminata PCC 6304	norank	118323
-1150837	Didymella exigua CBS 183.55	norank	100019
-2870	Phaeophyceae	phylum	569578
-264462	Bdellovibrio bacteriovorus HD100	norank	959
-7953	Cyprinidae	family	30727
-6080	Hydridae	family	1612408
-9257	Ornithorhynchus	genus	9256
-9834	Tylopoda	suborder	91561
-589343	Geminigeraceae	family	589342
-114186	Candidatus Carsonella ruddii	species	114185
-299071	Ajellomycetaceae	family	33183
-36861	Thiobacillus denitrificans	species	919
-426418	Pyrenophora tritici-repentis Pt-1C-BFP	norank	45151
-38749	Phaeodactylaceae	family	38748
-9371	Echinops telfairi	species	9370
-28009	Choanoflagellida	order	33154
-930091	Bipolaris victoriae FI3	norank	40125
-269084	Synechococcus elongatus PCC 6301	norank	32046
-4764	Saprolegniaceae	family	4763
-8839	Anas platyrhynchos	species	8835
-136845	Pseudomonas putida group	speciesgroup	286
-5346	Coprinopsis cinerea	species	184431
-292563	Cyanobacterium stanieri PCC 7202	norank	102235
-54124	Neodiplogasteridae	family	50827
-51511	Ciona savignyi	species	7718
-380703	Aeromonas hydrophila subsp. hydrophila ATCC 7966	norank	196023
-724	Haemophilus	genus	712
-314146	Euarchontoglires	superorder	1437010
-329726	Acaryochloris marina MBIC11017	norank	155978
-5199	Cladonia	genus	5198
-46877	Drosophilini	tribe	43845
-235880	Acalypheae	tribe	235629
-218851	Aquilegia coerulea	species	3450
-9615	Canis lupus familiaris	subspecies	9612
-292415	Thiobacillus denitrificans ATCC 25259	norank	36861
-5873	Theileria	genus	27994
-81824	Monosiga brevicollis	species	81525
-103690	Nostoc sp. PCC 7120	species	1177
-675120	Dothistroma septosporum NZE10	norank	64363
-418104	Plasmodium (Haemamoeba)	subgenus	5820
-1639119	Plasmodiidae	family	5819
-83344	Pseudocercospora fijiensis	species	131324
-118968	Coxiellaceae	family	118969
-32321	repleta group	speciesgroup	32281
-114525	Saccharomyces mikatae	species	4930
-186035	Fragilariopsis	genus	33852
-147541	Dothideomycetes	class	715962
-395590	Zasmidium	genus	93133
-9031	Gallus gallus	species	9030
-3987	Ricinus	genus	235880
-5180	Sclerotinia sclerotiorum	species	5179
-1162	Nostocaceae	family	1161
-9984	Oryctolagus	genus	9979
-5786	Dictyostelium purpureum	species	5782
-5820	Plasmodium	genus	1639119
-85982	Serpula lacrymans	species	80744
-40410	Cryptococcus neoformans var. neoformans	varietas	5207
-127916	Ichthyosporea	class	42461
-31277	Hymenostomatida	order	6020
-607660	Ponginae	subfamily	9604
-5761	Naegleria	genus	5765
-5598	Alternaria	genus	28556
-183663	Soricinae	subfamily	9376
-68985	Methanopyrales	order	183988
-145262	Methanothermobacter thermautotrophicus	species	145260
-213115	Desulfovibrionales	order	28221
-3749	Malus	genus	721813
-222544	Sordariomycetidae	subclass	147550
-311453	Anncaliia	genus	307623
-948951	Cingulata	order	9348
-1142	Synechocystis	genus	1118
-511995	Candidatus Azobacteroides pseudotrichonymphae genomovar. CFP2	norank	511435
-39107	Murinae	subfamily	10066
-306281	Fischerella muscicola PCC 7414	norank	92938
-37516	Hydroidolina	subclass	6074
-63402	Microsporum gypseum	species	34392
-348780	Natronomonas pharaonis DSM 2160	norank	2257
-8111	Perciformes	order	1489922
-56615	Puccinia graminis f. sp. tritici	norank	5297
-45136	Sporormia	genus	55176
-5762	Naegleria gruberi	species	5761
-717646	Baudoinia panamericana UAMH 10762	norank	1709381
-1163	Anabaena	genus	1162
-27970	Enterocytozoonidae	family	6032
-5016	Bipolaris maydis	species	33194
-175121	Passeroidea	superfamily	9126
-121225	Pediculus humanus	species	121222
-157822	Lecanorineae	suborder	5197
-76892	Caulobacteraceae	family	204458
-70987	Apinae	subfamily	7458
-1644055	Haloferacales	order	183963
-683158	Didymellaceae	family	715340
-1709381	Baudoinia panamericana	species	483074
-6935	Ixodida	order	6934
-9392	Scandentia	order	314146
-713887	Candidatus Atelocyanobacterium thalassa	species	1453359
-37727	Talaromyces marneffei	species	5094
-7214	Drosophilidae	family	43746
-135651	Caenorhabditis brenneri	species	6237
-1538075	Malasseziomycetes	class	452284
-102115	Stanieria	genus	52604
-5518	Fusarium graminearum	species	569360
-6102	Hexacorallia	subclass	6101
-10141	Cavia porcellus	species	10140
-38033	Chaetomium globosum	species	5149
-68889	Boletales	order	452333
-1173026	Gloeocapsa sp. PCC 7428	species	102231
-229219	Blastomyces	genus	299071
-159087	Dechloromonas aromatica RCB	norank	259537
-186490	Candidatus Baumannia cicadellinicola	species	198346
-364715	Trypethelium eluteriae	species	271823
-7952	Cypriniformes	order	186627
-88741	Xanthoria	genus	1301143
-36033	Vanderwaltozyma polyspora	species	374469
-34392	Microsporum	genus	34384
-8100	Cottioidei	suborder	8111
-55885	Peloderinae	subfamily	6243
-451871	Eurotiomycetidae	subclass	147545
-337726	Xerinae	subfamily	55153
-183939	Methanococci	class	28890
-119864	Marinomonas mediterranea	species	28253
-112488	Dissoconium	genus	744530
-45132	Botryosphaeria	genus	45131
-309798	Coprothermobacter proteolyticus DSM 5265	norank	35786
-2251	Haloferax	genus	1644056
-37882	Patellariales	order	159987
-6854	Arachnida	class	6843
-80840	Burkholderiales	order	28216
-4479	Poaceae	family	38820
-33553	Sciurognathi	suborder	9989
-42742	Gelatoporia subvermispora	species	98757
-389951	Serpulaceae	family	227334
-9401	Pteropus	genus	77225
-9913	Bos taurus	species	9903
-9255	Monotremata	order	9254
-280463	Emiliania huxleyi CCMP1516	norank	2903
-167375	Cyanobium	genus	1118
-5653	Kinetoplastida	order	33682
-5021	Leptosphaeria	genus	34374
-1177	Nostoc	genus	1162
-1148	Synechocystis sp. PCC 6803	species	1142
-3055	Chlamydomonas reinhardtii	species	3052
-83485	Linepithema humile	species	83484
-703506	Patellaria atrata	species	703505
-1047167	Zymoseptoria	genus	93133
-104341	Postia placenta	species	83235
-1779146	Heteroscleromorpha	subclass	6042
-32051	Synechococcus sp. WH 7803	species	1129
-5148	Sordariaceae	family	5139
-33342	Paraneoptera	infraclass	33340
-32378	grimshawi subgroup	speciessubgroup	48302
-6406	Rhynchobdellida	order	6403
-7664	Strongylocentrotus	genus	31181
-68295	Thermoanaerobacterales	order	186801
-930089	Bipolaris zeicola 26-R-13	norank	5017
-9721	Cetacea	order	91561
-307623	Tubulinosematidae	family	6032
-269797	Methanosarcina barkeri str. Fusaro	norank	2208
-146786	Thermosynechococcus elongatus	species	146785
-6665	Cladocera	suborder	84337
-147568	Myriangiaceae	family	45676
-696747	Arthrospira platensis NIES-39	norank	118562
-39700	Trypanozoon	subgenus	5690
-3067	Volvox carteri	species	3066
-1125	Microcystis	genus	1118
-183925	Methanobacteria	class	28890
-83484	Linepithema	genus	40139
-30319	Pipoidea	superfamily	8342
-29	Myxococcales	order	28221
-9431	Vespertilionidae	family	30560
-28568	Trichocomaceae	family	5042
-109871	Batrachochytrium dendrobatidis	species	100474
-72274	Pseudomonadales	order	1236
-400682	Amphimedon queenslandica	species	178513
-9307	Macropodidae	family	38609
-422676	Aconoidasida	class	5794
-4070	Solanaceae	family	4069
-3877	Medicago	genus	163742
-7915	Lepisosteidae	family	7914
-135613	Chromatiales	order	1236
-13642	Polysphondylium pallidum	species	13641
-8045	Gadidae	family	1489845
-85929	Sphaerulina musiva	species	237179
-178513	Amphimedon	genus	178475
-199306	Coccidioides posadasii	species	5500
-9304	Sarcophilus	genus	9277
-690899	Lentithecium fluviatile	species	690896
-1080228	Synechocystis sp. PCC 6803 substr. GT-I	norank	1148
-82654	Pseudanabaena sp. PCC 7367	species	1152
-919	Thiobacillus	genus	206349
-5267	Ustilaginales	order	5257
-37884	Rhytidhysteron	genus	100025
-9632	Ursidae	family	379584
-9726	Delphinidae	family	9722
-1161	Nostocales	order	1117
-7866	Callorhinchus	genus	7865
-1293361	Cenchrinae	subtribe	147428
-8782	Aves	class	436492
-1302176	Teloschistineae	suborder	107465
-3216	Funariaceae	family	3215
-5861	Plasmodium yoelii	species	418101
-241425	Crinalium epipsammum	species	241421
-121221	Pediculidae	family	30005
-3754	Prunus	genus	721805
-1699524	Eucalypteae	tribe	1699513
-76023	Halothece	genus	92682
-7918	Lepisosteus oculatus	species	7916
-4143	Lamiales	order	91888
-5073	Penicillium	genus	1131492
-33170	Eremothecium	genus	4893
-10016	Dipodomys	genus	38662
-7757	Petromyzon marinus	species	7756
-642	Aeromonas	genus	84642
-281109	Aulographaceae	family	159987
-1168544	Cucurbitaria berberidis CBS 394.84	norank	45142
-5259	Melampsoraceae	family	5258
-368408	Thermofilum pendens Hrk 5	norank	2269
-3051	Chlamydomonadaceae	family	3042
-374463	Baumannia cicadellinicola str. Hc (Homalodisca coagulata)	norank	186490
-2302	Thermoplasma	genus	46659
-6239	Caenorhabditis elegans	species	6237
-118883	Sulfolobaceae	family	2281
-63132	Geitlerinema	genus	1150
-5476	Candida albicans	species	1535326
-297308	Ixodoidea	superfamily	6935
-147554	Schizosaccharomycetes	class	451866
-498845	Candidatus Korarchaeum	genus	51967
-1173022	Crinalium epipsammum PCC 9333	norank	241425
-206379	Nitrosomonadaceae	family	32003
-9722	Odontoceti	suborder	9721
-5482	Candida tropicalis	species	1535326
-386487	Candidatus Ruthia magnifica	species	1541743
-424551	Solanoideae	subfamily	4070
-71139	Eucalyptus grandis	species	3932
-5501	Coccidioides immitis	species	5500
-5268	Ustilaginaceae	family	5267
-69014	Thermococcus kodakarensis KOD1	norank	311400
-33208	Metazoa	kingdom	33154
-1236	Gammaproteobacteria	class	1224
-3718	Capsella	genus	980083
-7460	Apis mellifera	species	7459
-314145	Laurasiatheria	superorder	1437010
-41431	Cyanothece sp. PCC 8801	species	43988
-28985	Kluyveromyces lactis	species	4910
-7713	Ascidiacea	class	7712
-2246	Haloferax volcanii	species	2251
-449447	Microcystis aeruginosa NIES-843	norank	1126
-1046	Chromatiaceae	family	135613
-4953	Zygosaccharomyces	genus	4893
-321614	Parastagonospora nodorum SN15	norank	13684
-7423	Pteromalidae	family	7422
-67677	Antonospora	genus	469895
-52604	Pleurocapsales	order	1117
-1513	Clostridium tetani	species	1485
-506	Alcaligenaceae	family	80840
-9577	Hylobatidae	family	314295
-70536	Edhazardia aedis	species	70535
-9780	Elephantidae	family	9779
-6960	Hexapoda	superclass	197562
-71527	Tenebrionoidea	superfamily	41088
-237179	Sphaerulina	genus	93133
-7028	Acyrthosiphon	genus	33386
-85604	Amphiesmenoptera	superorder	33392
-45151	Pyrenophora tritici-repentis	species	5027
-3071	Chlorella	genus	35461
-3883	Phaseolus	genus	163735
-485	Neisseria gonorrhoeae	species	482
-392814	Micromonas sp. CCMP490	species	38832
-100025	Hysteriaceae	family	191554
-32046	Synechococcus elongatus	species	1129
-33183	Onygenales	order	451871
-5129	Hypocreaceae	family	5125
-948953	Folivora	suborder	948950
-7458	Apidae	family	34735
-541	Zymomonas	genus	41297
-9604	Hominidae	family	314295
-204457	Sphingomonadales	order	28211
-4951	Yarrowia	genus	34353
-3450	Aquilegia	genus	1463137
-872	Desulfovibrio	genus	194924
-8825	Neognathae	superorder	8782
-1176130	Aulographum hederae	species	1176129
-6083	Hydra	genus	6080
-153609	Moniliophthora perniciosa	species	221102
-6020	Oligohymenophorea	class	431838
-204969	Pelodiscus	genus	34907
+6178	Trematoda	class	6157
+110618	Nectriaceae	family	5125
+37611	Estrildidae	family	175121
 81093	Magnaporthaceae	family	639021
 9655	Mustelidae	family	379584
-248742	Coccomyxa subellipsoidea	species	41891
-88036	Selaginella moellendorffii	species	3246
-91835	fabids	norank	71275
-9600	Pongo pygmaeus	species	9599
-554296	Apusozoa	norank	2759
-6087	Hydra vulgaris	species	6083
-8363	Silurana	subgenus	8353
-5874	Theileria annulata	species	5873
-133076	Aphidinae	subfamily	27482
-89593	Craniata	subphylum	7711
-4751	Fungi	kingdom	33154
-360115	Coxiella burnetii RSA 331	norank	777
-111781	Leptolyngbya sp. PCC 7376	species	47251
-395962	Cyanothece sp. PCC 8802	species	43988
-1535326	Candida	genus	1535325
-5503	Curvularia lunata	species	5502
-94624	Bordetella petrii	species	517
-163735	Phaseoleae	tribe	3814
-10227	Trichoplax	genus	10226
-741139	Lepidopterella palustris	species	561967
-33188	Uncinocarpus reesii	species	33187
-44056	Aureococcus anophagefferens	species	44055
-589342	Pyrenomonadales	order	3027
-9379	Sorex	genus	183663
-155977	Acaryochloris	genus	1118
-50827	Diplogasterida	order	119089
-3932	Eucalyptus	genus	1699524
-91888	lamiids	norank	71274
-44471	Microcoleus	genus	1150
-41196	Neolepidoptera	infraorder	41191
+374468	Nakaseomyces	genus	4893
 9596	Pan	genus	207598
-171637	Maloideae	subfamily	3745
-2191	Methanomicrobiales	order	224756
-101162	Bipolaris oryzae	species	33194
-206350	Methylophilales	order	28216
-271822	Trypetheliaceae	family	714581
-41165	Schizopyrenida	order	5752
-692275	Sphaerulina musiva SO2202	norank	85929
-338190	Nitrosopumilaceae	family	31932
-7088	Lepidoptera	order	85604
-35510	Equus	subgenus	9789
-41944	Myrtales	order	91836
-6157	Platyhelminthes	phylum	33213
-34078	Scytonema hofmanni	species	1203
-27998	Perkinsida	order	27997
-4555	Setaria italica	species	4554
-93060	Prochlorococcus marinus str. MIT 9215	norank	1219
-147571	Piedraiaceae	family	134362
-167539	Prochlorococcus marinus subsp. marinus str. CCMP1375	norank	142554
-100019	Didymella exigua	species	55170
-37885	Rhytidhysteron rufulum	species	37884
-31245	Schistosomatidae	family	31244
-4734	commelinids	subclass	1437197
-7230	Drosophila mojavensis	species	198037
-7716	Phlebobranchia	suborder	183770
-794803	Cenococcum geophilum 1.58	norank	5570
-45130	Bipolaris sorokiniana	species	33194
-9072	Phasianinae	subfamily	9005
-1182	Scytonemataceae	family	1161
-33154	Opisthokonta	norank	2759
-36734	Unikaryonidae	family	6032
-5806	Cryptosporidium	genus	35082
-32355	obscura group	speciesgroup	32341
-190650	Caulobacter crescentus CB15	norank	155892
-55824	Hirudinida	class	42113
-44474	Pleurocapsa	genus	52604
-5303	Polyporales	order	355688
-1117	Cyanobacteria	phylum	1798711
-1287680	Neofusicoccum parvum UCRNP2	norank	310453
-7742	Vertebrata	norank	89593
-91834	rosids incertae sedis	norank	71275
-3215	Funariales	order	114656
-1573	Clavibacter	genus	85023
-418101	Plasmodium (Vinckeia)	subgenus	5820
-10114	Rattus	genus	39107
-63577	Trichoderma atroviride	species	5543
-6231	Nematoda	phylum	1206794
-123757	Astrocoeniina	suborder	6125
-69291	Gasterosteidae	family	1490020
-314293	Simiiformes	infraorder	376913
-551115	Nostoc azollae 0708	norank	1164
-40384	Aspergillus kawachii	species	5052
-2287	Sulfolobus solfataricus	species	2284
-238069	Saliceae	tribe	3688
-1453359	Candidatus Atelocyanobacterium	genus	1118
-651137	Thaumarchaeota	phylum	1783275
-9977	Ochotona	genus	9976
-40559	Botrytis cinerea	species	33196
-8089	Oryzias	genus	8088
-5149	Chaetomium	genus	35718
-715298	Lentitheciaceae	family	1255046
-235629	Acalyphoideae	subfamily	3977
-33196	Botrytis	genus	28983
-41399	Phrymaceae	family	4143
-32011	Methylophilaceae	family	206350
-228410	Nitrosomonas europaea ATCC 19718	norank	915
-7425	Nasonia vitripennis	species	7424
-357	Agrobacterium	genus	227290
-54126	Pristionchus pacificus	species	54125
-29175	Neospora	genus	5809
-183988	Methanopyri	class	28890
-7864	Chimaeriformes	order	7863
-7147	Diptera	order	33392
-9360	Dasypus	genus	9359
-41768	Ranunculales	order	71241
-38609	Diprotodontia	order	9263
-34374	Leptosphaeriaceae	family	715340
-241421	Crinalium	genus	1150
-2231	Archaeoglobales	order	183980
-1219	Prochlorococcus marinus	species	1218
-4762	Oomycetes	class	33634
-5811	Toxoplasma gondii	species	5810
-9599	Pongo	genus	607660
-2830	Haptophyceae	norank	2759
-6296	Onchocercidae	family	6295
-65093	Halothece sp. PCC 7418	species	76023
-5057	Aspergillus clavatus	species	5052
-316277	Syntrophus aciditrophicus	species	43773
-118323	Oscillatoria acuminata	species	1158
-265072	Methylobacillus flagellatus KT	norank	405
-4530	Oryza sativa	species	4527
-1164	Trichormus azollae	species	264688
-5796	Coccidia	class	1280412
-9784	Loxodonta	genus	9780
-6040	Porifera	phylum	33208
-1036719	Verticillium	genus	1033978
-654128	Marasmiaceae	family	5338
-27974	Nosematidae	family	6032
-9370	Echinops	genus	176113
-28253	Marinomonas	genus	135620
-227387	Thermodesulfobiaceae	family	68295
-212717	Clostridium tetani E88	norank	1513
-1186	Calothrix	genus	1185
-336809	Candidatus Sulcia	genus	313602
-451868	Pleosporomycetidae	subclass	147541
-9305	Sarcophilus harrisii	species	9304
-5305	Phanerochaete	genus	396331
-3027	Cryptophyta	class	2759
-85819	Phthiraptera	order	33342
-7208	Loa	genus	6296
-9681	Felidae	family	379583
-119089	Chromadorea	class	6231
-33852	Bacillariaceae	family	33851
-227508	Megalonychidae	family	948953
-980083	Camelineae	tribe	3700
-403	Methylococcaceae	family	135618
-29882	Laccaria	genus	5351
-2759	Eukaryota	superkingdom	131567
-5234	Tremellales	order	155616
-9394	Tupaia	genus	9393
-8090	Oryzias latipes	species	8089
-72025	Fabales	order	91835
-31244	Schistosomatoidea	superfamily	6180
-5800	Eimeria	genus	5799
-8515	Iguanidae	family	8511
-33072	Gloeobacter violaceus	species	33071
-6125	Scleractinia	order	6102
-5204	Basidiomycota	phylum	451864
-147538	Pezizomycotina	subphylum	716545
-39952	Setosphaeria	genus	28556
-1541743	Candidatus Ruthia	genus	32036
-1129	Synechococcus	genus	1118
-83321	Apini	tribe	70987
-162484	Pucciniomycetes	class	29000
-72294	Campylobacteraceae	family	213849
-32358	pseudoobscura subgroup	speciessubgroup	32355
-58138	Desulfotomaculum acetoxidans	species	1562
-482	Neisseria	genus	481
-4899	Schizosaccharomyces octosporus	species	4895
-147570	Myriangium duriaei	species	147569
-272123	Anabaena cylindrica PCC 7122	norank	1165
-30538	Vicugna pacos	species	30539
-58839	Encephalitozoon intestinalis	species	6033
-321332	Synechococcus sp. JA-2-3B`a(2-13)	species	1129
-242231	Neisseria gonorrhoeae FA 1090	norank	485
-103449	Vavraia culicis	species	35235
-114524	Saccharomyces kudriavzevii	species	4930
-6669	Daphnia pulex	species	6668
-3701	Arabidopsis	genus	980083
-8464	Cryptodira	suborder	8459
-54258	Ignicoccus	genus	2272
-721805	Amygdaleae	norank	171637
-194	Campylobacter	genus	72294
-9903	Bos	genus	27592
-5502	Curvularia	genus	28556
-53527	Culex	subgenus	7174
-68933	Thermales	order	188787
-3603	Vitis	genus	3602
-74318	Maricaulis maris	species	74317
-116561	Anomopoda	infraorder	6665
-5052	Aspergillus	genus	1131492
-9645	Ailuropoda	genus	9632
-46769	Cenarchaeum	genus	205957
-1297	Deinococcus-Thermus	phylum	1783272
-7209	Loa loa	species	7208
-192874	Capsaspora	genus	127916
-162474	Malasseziales	order	1538075
-1502711	Erythranthe	genus	41399
-9821	Suidae	family	35497
-4787	Phytophthora infestans	species	4783
-9788	Equidae	family	9787
-69541	Desulfuromonadales	order	28221
-135618	Methylococcales	order	1236
-1035538	Mamiellophyceae	class	3152
-721813	Maleae	tribe	171637
-6042	Demospongiae	class	6040
-81525	Monosiga	genus	81524
-35725	Macrophomina phaseolina	species	35724
-42398	Vittaforma	genus	27974
-3688	Salicaceae	family	3646
-310453	Neofusicoccum parvum	species	407951
-9363	Erinaceidae	family	9362
-6843	Chelicerata	subphylum	6656
-3846	Glycine	genus	163735
-2268	Thermofilum	genus	114378
-70447	Ostreococcus	genus	1525212
-162425	Aspergillus nidulans	species	5052
-7244	Drosophila virilis	species	32335
-6657	Crustacea	subphylum	197562
-4069	Solanales	order	91888
-176113	Tenrecinae	subfamily	9369
-1648029	Tripsacinae	subtribe	147429
-28000	Perkinsus	genus	27999
-1123	Chlorogloeopsis	genus	1189
-6049	Haplosclerida	order	1779146
-1229	Nitrosococcus oceani	species	1227
-28256	Halomonadaceae	family	135619
-6407	Glossiphoniidae	family	6406
-603431	Gloniaceae	family	715341
-6103	Actiniaria	order	6102
-2903	Emiliania huxleyi	species	2902
-38662	Dipodomyinae	subfamily	10015
-5140	Neurospora	genus	5148
-451866	Taphrinomycotina	subphylum	4890
-147569	Myriangium	genus	147568
-8360	Xenopodinae	subfamily	8352
-574566	Coccomyxa subellipsoidea C-169	norank	248742
-28556	Pleosporaceae	family	715340
-291294	Tetrahymenidae	family	37093
-205957	Cenarchaeaceae	family	205948
-83233	Coriolaceae	family	5303
-59728	Taeniopygia	genus	40155
-147548	Leotiomycetes	class	715989
-61853	Nomascus leucogenys	species	325165
-4929	Meyerozyma guilliermondii	species	766728
-243231	Geobacter sulfurreducens PCA	norank	35554
-5543	Trichoderma	genus	5129
-40139	Dolichoderinae	subfamily	36668
-5320	Pleurotus	genus	104366
-240292	Anabaena variabilis ATCC 29413	norank	1172
-535722	Microsporum gypseum CBS 118893	norank	63402
-5178	Helotiales	order	147548
-59765	Fusarium oxysporum f. sp. lycopersici	norank	5507
-981071	Brassiceae	tribe	3700
-338152	Felinae	subfamily	9681
-4893	Saccharomycetaceae	family	4892
-259537	Dechloromonas aromatica	species	73029
-2267	Thermoproteaceae	family	2266
-3068	Volvox carteri f. nagariensis	forma	3067
-7148	Nematocera	suborder	7147
-3744	Rosales	order	91835
-99598	Calothrix sp. PCC 7507	species	1186
-5258	Pucciniales	order	162484
-183963	Halobacteria	class	28890
-8459	Testudines	order	1329799
-259564	Methanococcoides burtonii DSM 6242	norank	29291
-213468	Syntrophaceae	family	213462
-192989	Nanoarchaeota	phylum	1783276
-715340	Pleosporineae	suborder	92860
-46770	Cenarchaeum symbiosum	species	46769
-71239	Cucurbitales	order	91835
-336963	Uncinocarpus reesii 1704	norank	33188
-1173032	Chamaesiphon minutus	species	217161
-35675	Pelagophyceae	class	33634
-27339	Cladonia grayi	species	5199
-1170562	Calothrix sp. PCC 6303	norank	32054
-198037	mojavensis species complex	norank	32324
-3711	Brassica rapa	species	3705
-5691	Trypanosoma brucei	species	39700
-77924	Hemiselmis	genus	589351
-3745	Rosaceae	family	3744
-475327	Bombycinae	subfamily	7089
-203908	Melampsora larici-populina	species	5260
-481	Neisseriaceae	family	206351
-44534	Cellia	subgenus	7164
-10226	Placozoa	phylum	33208
-2192	Methanocorpusculum	genus	88404
-15367	Brachypodium	genus	147385
-33682	Euglenozoa	norank	2759
-6945	Ixodes scapularis	species	6944
-13735	Pelodiscus sinensis	species	204969
-10116	Rattus norvegicus	species	10114
-49274	Lycopersicon	subgenus	4107
-227085	Bigelowiella	genus	29197
-423054	Eimeriorina	suborder	75739
-418103	Plasmodium (Plasmodium)	subgenus	5820
-7029	Acyrthosiphon pisum	species	7028
-147550	Sordariomycetes	class	715989
-9362	Insectivora	order	314145
-755178	Cyanobacterium aponinum PCC 10605	norank	379064
-98038	Eutrema halophilum	species	98005
-27973	Encephalitozoon hellem	species	6033
-102116	Stanieria cyanosphaera	species	102115
-213462	Syntrophobacterales	order	28221
-84642	Aeromonadaceae	family	135624
-36080	Mucor circinelloides	species	4830
-451867	Dothideomycetidae	subclass	147541
-376915	Lemuriformes	infraorder	376911
-3166	Chlorophyceae	class	3041
-993615	Vittaforma corneae ATCC 50505	norank	42399
-337730	Marmotini	tribe	337726
-5022	Leptosphaeria maculans	species	220671
-7217	Drosophila ananassae	species	545632
-31022	Tetraodontiformes	order	1489922
-36668	Formicidae	family	34725
-7164	Anopheles	genus	43816
-7089	Bombycidae	family	37569
-146785	Thermosynechococcus	genus	1118
-5042	Eurotiales	order	451871
-135625	Pasteurellales	order	1236
-110662	Synechococcus sp. CC9605	species	1129
-7914	Semionotiformes	order	1489100
-4830	Mucor	genus	34489
-396331	Phanerochaetaceae	family	5303
-9979	Leporidae	family	9975
-29176	Neospora caninum	species	29175
-32594	Babesiidae	family	5863
-7739	Branchiostoma floridae	species	7737
-7524	Hemiptera	order	33342
-562	Escherichia coli	species	561
-7174	Culex	genus	53550
-8511	Iguania	suborder	1329911
-35082	Cryptosporidiidae	family	423054
-85681	Citrus clementina	species	2706
-7735	Cephalochordata	subphylum	7711
-114656	Funariidae	subclass	3214
-56106	Cylindrospermum	genus	1162
-2263	Thermococcus	genus	2259
-32335	virilis group	speciesgroup	32281
-387093	Sulfurovum sp. NBC37-1	species	265570
-265318	Cyanidiales	order	2797
-9364	Erinaceus	genus	30577
-128403	Scytonema hofmanni PCC 7110	norank	34078
-35720	Thielavia terrestris	species	35719
-29001	Alternaria brassicicola	species	5598
-705561	Polychaeton	genus	62133
-347515	Leishmania major strain Friedlin	norank	5664
-45142	Cucurbitaria berberidis	species	45141
-213483	Bdellovibrionaceae	family	213481
-50557	Insecta	class	6960
-723287	Anncaliia algerae	species	311453
-451507	Mucoromycotina	subphylum	112252
-2207	Methanosarcina	genus	2206
-43733	Muscomorpha	infraorder	7203
-246195	Dichelobacter nodosus VCS1703A	norank	870
-4836	Phycomyces	genus	1344966
-3814	Papilionoideae	subfamily	3803
-3750	Malus domestica	species	3749
-1206	Trichodesmium erythraeum	species	1205
-41827	Culicoidea	superfamily	43786
-31033	Takifugu rubripes	species	31032
-147429	Andropogoneae	tribe	1648033
-118964	Deinococcales	order	188787
-215467	Sphaerulina populicola	species	237179
-5207	Cryptococcus neoformans	species	552466
-2157	Archaea	superkingdom	131567
-98439	Fischerella thermalis PCC 7521	norank	372787
-693977	Deinococcus proteolyticus MRP	norank	55148
-376912	Tarsiiformes	infraorder	376913
-424574	Solaneae	tribe	424551
-5658	Leishmania	genus	1286322
-6178	Trematoda	class	6157
-27288	Naumovozyma castellii	species	278028
-1003877	Benincaseae	tribe	3650
-9265	Didelphidae	family	38605
-38581	Leishmania major species complex	speciesgroup	38568
-7955	Danio rerio	species	7954
-102231	Gloeocapsa	genus	1118
-671987	Setosphaeria turcica Et28A	norank	93612
-5864	Babesia	genus	32594
-135615	Cardiobacteriales	order	1236
-9483	Callithrix jacchus	species	9481
-53550	Culicini	tribe	43817
-4959	Debaryomyces hansenii	species	4958
-9787	Perissodactyla	order	314145
-30727	Cyprinoidea	superfamily	7952
-27291	Saccharomyces paradoxus	species	4930
-56635	Aeropyrum	genus	2272
-42254	Sorex araneus	species	9379
-5105	Ascosphaera apis	species	5104
-1176129	Aulographum	genus	281109
-5306	Phanerochaete chrysosporium	species	5305
-9398	Pteropodidae	family	30559
-55148	Deinococcus proteolyticus	species	1298
-46681	Entamoeba dispar	species	5758
-1190	Fischerella	genus	1189
-155616	Tremellomycetes	class	5302
-41937	Sapindales	order	91836
-41191	Glossata	suborder	7088
-7069	Tribolium	genus	1304792
-296587	Micromonas commoda	species	38832
-1056966	Aedini	tribe	43817
-39947	Oryza sativa Japonica Group	norank	4530
-81524	Codonosigidae	family	28009
-64495	Rhizopus oryzae	species	4842
-5569	Cenococcum	genus	603431
-82115	Rhizobiaceae	family	356
-705562	Polychaeton citri	species	705561
-914	Nitrosomonas	genus	206379
-33385	Aphidoidea	superfamily	143961
-5807	Cryptosporidium parvum	species	5806
-98757	Gelatoporia	genus	83233
-1301143	Xanthorioideae	subfamily	88646
-9527	Cercopithecidae	family	314294
-8830	Anatidae	family	8826
-28781	Adrianichthyoidei	suborder	76071
-111780	Stanieria cyanosphaera PCC 7437	norank	102116
-6183	Schistosoma mansoni	species	6181
-40289	Tuberaceae	family	5185
-5911	Tetrahymena thermophila	species	5890
-4930	Saccharomyces	genus	4893
-35461	Chlorellaceae	family	35460
-5758	Entamoeba	genus	33084
-35128	Thalassiosira pseudonana	species	35127
-9434	Myotis	genus	9431
-231213	Sporidiobolales	order	162481
-1344966	Phycomycetaceae	family	4827
-862964	Haemophilus influenzae 10810	norank	727
-40674	Mammalia	class	32524
-5654	Trypanosomatidae	family	5653
-100044	Pleomassaria siparia	species	100043
-3041	Chlorophyta	phylum	33090
-235883	Manihoteae	tribe	235631
-5302	Agaricomycotina	subphylum	5204
-29291	Methanococcoides burtonii	species	2225
-7865	Callorhinchidae	family	7864
-8342	Anura	order	41666
-107463	Xanthoria parietina	species	88741
-1463137	Thalictroideae	subfamily	3440
-184208	Psathyrellaceae	family	5338
-33825	Peniculida	order	6020
-10020	Dipodomys ordii	species	10016
-38574	Leishmania donovani species complex	speciesgroup	38568
-9369	Tenrecidae	family	311790
-5821	Plasmodium berghei	species	418101
-385169	Ostreococcus sp. RCC809	species	70447
-56636	Aeropyrum pernix	species	56635
-511145	Escherichia coli str. K-12 substr. MG1655	norank	83333
-4842	Rhizopus	genus	1344955
-37617	Leishmania braziliensis species complex	speciesgroup	37616
-32054	Calothrix parietina	species	1186
-4447	Liliopsida	class	1437183
-5116	Cryphonectria parasitica	species	5115
-4004	Linaceae	family	3646
-5297	Puccinia graminis	species	5296
-1497346	Thermoleophilia	class	201174
-301224	Cryptophyceae sp. RCC506	species	301223
-34907	Trionychidae	family	1579275
-511434	Candidatus Azobacteroides	genus	333046
-167555	Prochlorococcus marinus str. NATL1A	norank	1219
-5833	Plasmodium falciparum	species	418107
-147545	Eurotiomycetes	class	716546
-5854	Plasmodium reichenowi	species	418107
-9393	Tupaiidae	family	9392
-1298	Deinococcus	genus	183710
-311400	Thermococcus kodakarensis	species	2263
-34353	Dipodascaceae	family	4892
-1203	Scytonema	genus	1182
-6447	Mollusca	phylum	1206795
-5799	Eimeriidae	family	423054
-32365	willistoni group	speciesgroup	32341
-5802	Eimeria tenella	species	5800
-5103	Ascosphaeraceae	family	33183
-33184	Onygenaceae	family	33183
-28447	Clavibacter michiganensis	species	1573
-4763	Saprolegniales	order	4762
-1612408	Aplanulata	suborder	406427
-278028	Naumovozyma	genus	4893
-46631	Picrophilus	genus	46630
-194924	Desulfovibrionaceae	family	213115
-35493	Streptophyta	phylum	33090
-497727	Candidatus Nitrososphaera gargensis	species	497726
-135624	Aeromonadales	order	1236
-7717	Cionidae	family	7716
-100474	Batrachochytrium	genus	1142503
-6341	Polychaeta	class	6340
-106178	canis group	speciesgroup	943
-30611	Otolemur garnettii	species	30610
-5855	Plasmodium vivax	species	418103
-1288291	Anncaliia algerae PRA339	norank	723287
-91347	Enterobacteriales	order	1236
-3982	Manihot	genus	235883
-5333	Schizophyllum	genus	5332
-264203	Zymomonas mobilis subsp. mobilis ZM4 = ATCC 31821	norank	120045
-117187	Fusarium verticillioides	species	171627
-200643	Bacteroidia	class	976
-5540	Thermomyces	genus	28568
-5260	Melampsora	genus	5259
-1173263	Synechococcus sp. PCC 7502	species	1129
-9539	Macaca	genus	9528
-5480	Candida parapsilosis	species	1535326
-72691	Lottia	genus	69676
-944	Ehrlichia canis	species	106178
-2266	Thermoproteales	order	183924
-273075	Thermoplasma acidophilum DSM 1728	norank	2303
-76887	Caldivirga maquilingensis	species	76886
-54299	Chroococcidiopsis thermalis	species	54298
-51453	Trichoderma reesei	species	5543
-7746	Petromyzontidae	family	7745
-316279	Synechococcus sp. CC9902	species	1129
-391774	Desulfovibrio vulgaris DP4	norank	881
-235631	Crotonoideae	subfamily	3977
-548649	Dothidotthia symphoricarpi	species	548651
-862507	Mus	subgenus	10088
-183713	Methanopyraceae	family	68985
-314294	Cercopithecoidea	superfamily	9526
-13616	Monodelphis domestica	species	13615
-28231	Geobacter	genus	213422
-55170	Didymella	genus	683158
-6274	Spirurida	order	119089
-40563	Sporobolomyces roseus	species	5429
-183967	Thermoplasmata	class	28890
-3602	Vitaceae	family	403667
-160033	Zopfiaceae	family	159987
-8352	Pipidae	family	30319
-5114	Diaporthales	order	222544
-35497	Suina	infraorder	91561
-7165	Anopheles gambiae	species	44542
-204429	Chlamydiia	class	204428
-245562	Acidomyces richmondensis	species	245561
-9348	Xenarthra	superorder	9347
-448385	Sorangium cellulosum So ce56	norank	56
-543769	Rhizaria	norank	2759
-1212	Prochlorales	order	1117
-2320	Methanopyrus kandleri	species	2319
-88404	Methanocorpusculaceae	family	2191
-36913	Lodderomyces	genus	1535325
-915	Nitrosomonas europaea	species	914
-4815	Spizellomyces	genus	34479
-131324	Pseudocercospora	genus	93133
-286	Pseudomonas	genus	135621
-3655	Cucumis	genus	1003877
-34725	Vespoidea	superfamily	7434
-7159	Aedes aegypti	species	53541
-1141640	Ictidomys	genus	337730
-644	Aeromonas hydrophila	species	642
-8292	Amphibia	class	32523
-379584	Caniformia	suborder	33554
-7868	Callorhinchus milii	species	7866
-9526	Catarrhini	parvorder	314293
-35719	Thielavia	genus	35718
-32347	ananassae subgroup	speciessubgroup	32346
-958	Bdellovibrio	genus	213483
-45676	Myriangiales	order	451867
-80744	Serpula	genus	389951
-9528	Cercopithecinae	subfamily	9527
-7896	Latimeria	genus	7895
-237895	Cryptosporidium hominis	species	5806
-43179	Ictidomys tridecemlineatus	species	1141640
-1489845	Gadoidei	suborder	8043
-74547	Prochlorococcus marinus str. MIT 9313	norank	1219
-588673	Solirubrobacterales	order	1497346
-44055	Aureococcus	genus	54409
-34346	Schizosaccharomycetales	order	147554
-6036	Pansporoblastina	suborder	6029
-32281	Drosophila	subgenus	7215
-51967	Candidatus Korarchaeota	phylum	1783275
-4005	Linum	genus	4004
-6403	Hirudinea	subclass	55824
-881	Desulfovibrio vulgaris	species	872
-1489100	Holostei	infraclass	41665
-7399	Hymenoptera	order	33392
-41197	Heteroneura	parvorder	41196
-7624	Echinozoa	superclass	133551
-5139	Sordariales	order	222544
-195253	Synechococcus sp. PCC 6312	species	1129
-7240	Drosophila simulans	species	32351
-3700	Brassicaceae	family	3699
-184925	Chlorogloeopsis fritschii PCC 9212	norank	1124
-776	Coxiella	genus	118968
-1173025	Geitlerinema sp. PCC 7407	species	63132
-2878	Ectocarpaceae	family	2877
-2235	Halobacteriales	order	183963
-29883	Laccaria bicolor	species	29882
-197221	Thermosynechococcus elongatus BP-1	norank	146786
-336810	Candidatus Sulcia muelleri	species	336809
-2232	Archaeoglobaceae	family	2231
-56107	Cylindrospermum stagnale PCC 7417	norank	142864
-206349	Hydrogenophilaceae	family	119069
-46879	Drosophilina	subtribe	46877
-40155	Estrildinae	subfamily	37611
-45141	Cucurbitaria	genus	221670
-70448	Ostreococcus tauri	species	70447
-876142	Encephalitozoon intestinalis ATCC 50506	norank	58839
-84337	Diplostraca	order	116557
-8835	Anas	genus	8830
-46630	Picrophilaceae	family	2301
-99883	Tetraodon nigroviridis	species	47144
-3760	Prunus persica	species	3754
-160232	Nanoarchaeum equitans	species	193568
-183770	Enterogona	order	7713
-3880	Medicago truncatula	species	3877
-7863	Holocephali	subclass	7777
-321327	Synechococcus sp. JA-3-3Ab	species	1129
-80812	Sorangiineae	suborder	29
-68525	delta/epsilon subdivisions	subphylum	1224
-7674	Echinacea	superorder	7638
-6342	Capitellida	order	105387
-943	Ehrlichia	genus	942
-126287	Didelphinae	subfamily	9265
-100027	Hysterium pulicare	species	100026
-5500	Coccidioides	genus	1593277
-464988	Hemiselmis andersenii	species	77924
-5506	Fusarium	genus	110618
-28377	Anolis carolinensis	species	28376
-7898	Actinopterygii	superclass	117571
-30608	Microcebus murinus	species	13149
-63399	Arthroderma	genus	34384
-29000	Pucciniomycotina	subphylum	5204
-1490020	Gasterosteales	infraorder	8100
-205948	Cenarchaeales	order	651137
-1140	Synechococcus elongatus PCC 7942	norank	32046
-29875	Trichoderma virens	species	5543
-6238	Caenorhabditis briggsae	species	6237
-5664	Leishmania major	species	38581
-6074	Hydrozoa	class	6073
-35235	Vavraia	genus	35232
-13563	Heterobasidion annosum	species	256003
-191495	Conexibacter woesei	species	191494
-200	Campylobacter curvus	species	194
-9544	Macaca mulatta	species	9539
-5865	Babesia bovis	species	5864
-147369	Panicoideae	subfamily	147370
-1131492	Aspergillaceae	family	5042
-179408	Oscillatoria nigro-viridis PCC 7112	norank	482564
-6101	Anthozoa	class	6073
-3217	Physcomitrella	genus	3216
-2284	Sulfolobus	genus	118883
-2849	Phaeodactylum	genus	38749
-376913	Haplorrhini	suborder	9443
-251229	Chroococcidiopsis thermalis PCC 7203	norank	54299
-6073	Cnidaria	phylum	6072
-9646	Ailuropoda melanoleuca	species	9645
-498846	Candidatus Korarchaeum cryptofilum	species	498845
-213849	Campylobacterales	order	29547
-281687	Caenorhabditis japonica	species	6237
-5759	Entamoeba histolytica	species	5758
-81957	Polychrotinae	subfamily	8515
-155619	Agaricomycetes	class	5302
-27335	Verticillium albo-atrum	species	1036719
-5257	Ustilaginomycetes	class	452284
-45350	Nematostella	genus	45349
-9606	Homo sapiens	species	9605
-9665	Mustela	genus	169418
-9612	Canis lupus	species	9611
-5269	Ustilago	genus	5268
-3218	Physcomitrella patens	species	3217
-34479	Spizellomycetaceae	family	34478
-100047	Melanomma pulvis-pyrius	species	45308
-211165	Chlorogloeopsis fritschii PCC 6912	norank	1124
-29547	Epsilonproteobacteria	class	68525
-38820	Poales	order	4734
-31181	Strongylocentrotidae	family	7675
-5849	Plasmodium gallinaceum	species	418104
-30615	Cheirogaleidae	family	376915
-272131	Nostoc punctiforme	species	1177
-5570	Cenococcum geophilum	species	5569
-5888	Paramecium tetraurelia	species	5884
-3659	Cucumis sativus	species	3655
-4891	Saccharomycetes	class	147537
-9605	Homo	genus	207598
-243232	Methanocaldococcus jannaschii DSM 2661	norank	2190
-9812	Procavia	genus	9811
-98005	Eutrema	genus	981100
-32341	Sophophora	subgenus	7215
-5059	Aspergillus flavus	species	5052
-877559	Thecamonas	genus	172820
-376911	Strepsirrhini	suborder	9443
-307596	Gloeobacteria	class	1117
-1462606	Soja	subgenus	3846
-9789	Equus	genus	9788
-39643	Sorangium	genus	49
-63743	Natronomonas	genus	2236
-31276	Perkinsus marinus	species	28000
-1168546	Myriangium duriaei CBS 260.36	norank	147570
-269484	Ehrlichia canis str. Jake	norank	944
-53485	Pyrenophora teres	species	5027
-3246	Selaginella	genus	3245
-5884	Paramecium	genus	340080
-5104	Ascosphaera	genus	5103
-7718	Ciona	genus	7717
-13684	Parastagonospora nodorum	species	1351751
-6295	Filarioidea	superfamily	6274
-43989	Cyanothece sp. ATCC 51142	species	43988
-7954	Danio	genus	7953
-35232	Pleistophoridae	family	6036
-147428	Paniceae	tribe	1648036
-9811	Procaviidae	family	9810
-3646	Malpighiales	order	91835
-3885	Phaseolus vulgaris	species	3883
-38946	Paracoccidioides	genus	1593277
-51291	Chlamydiales	order	204429
-3931	Myrtaceae	family	41944
-41297	Sphingomonadaceae	family	204457
-641892	Candidatus Sulcia muelleri DMIN	norank	336810
-7434	Aculeata	suborder	7400
-1080230	Synechocystis sp. PCC 6803 substr. PCC-P	norank	1148
-30610	Otolemur	genus	40297
-43817	Culicinae	subfamily	7157
-43773	Syntrophus	genus	213468
-30539	Vicugna	genus	9835
+7915	Lepisosteidae	family	7914
 31979	Clostridiaceae	family	186802
-9357	Choloepus	genus	227508
-5115	Cryphonectria	genus	218105
-32003	Nitrosomonadales	order	28216
-38748	Naviculales	order	33850
-186627	Cypriniphysae	superorder	186626
-188786	Thermaceae	family	68933
-272557	Aeropyrum pernix K1	norank	56636
-810	Chlamydia	genus	1113537
-981100	Eutremeae	tribe	3700
-75739	Eucoccidiorida	order	5796
-635003	Fragilariopsis cylindrus CCMP1102	norank	186039
-7260	Drosophila willistoni	species	32367
-381046	Lachancea thermotolerans	species	300275
-28564	Talaromyces stipitatus	species	5094
-6127	Acropora	genus	6126
-6668	Daphnia	genus	77658
-203124	Trichodesmium erythraeum IMS101	norank	1206
-746128	Aspergillus fumigatus	species	5052
-1126	Microcystis aeruginosa	species	1125
-33340	Neoptera	subclass	7496
-33847	Thalassiosirales	order	33846
-373984	Rivularia	genus	1185
-147380	Oryzeae	tribe	147367
-2301	Thermoplasmatales	order	183967
-135620	Oceanospirillaceae	family	135619
-1152	Pseudanabaena	genus	1150
-9365	Erinaceus europaeus	species	9364
-263820	Picrophilus torridus DSM 9790	norank	82076
-426442	Ixodinae	subfamily	6939
-56	Sorangium cellulosum	species	39643
-2711	Citrus sinensis	species	2706
-47144	Tetraodon	genus	31031
-1047171	Zymoseptoria tritici	species	1047167
-7215	Drosophila	genus	186285
-83554	Chlamydia psittaci	species	810
-53953	Pyrococcus horikoshii	species	2260
-1033997	Nitrososphaeraceae	family	1033996
-33083	Dictyosteliida	order	142796
-82076	Picrophilus torridus	species	46631
-9989	Rodentia	order	314147
-511435	Candidatus Azobacteroides pseudotrichonymphae	species	511434
-5094	Talaromyces	genus	28568
-43687	Metallosphaera sedula	species	41980
-9822	Sus	genus	9821
-63405	Arthroderma otae	species	63399
-9481	Callithrix	genus	9480
-5890	Tetrahymena	genus	291294
-76773	Malassezia globosa	species	55193
-251221	Gloeobacter violaceus PCC 7421	norank	33072
-6292	Wuchereria	genus	6296
-186802	Clostridiales	order	186801
-201174	Actinobacteria	phylum	1783272
-403667	Vitales	order	91834
-121759	Paracoccidioides brasiliensis	species	38946
-196117	Methanocaldococcaceae	family	2182
-9315	Macropus eugenii	species	9312
-744530	Dissoconiaceae	family	134362
-217161	Chamaesiphon	genus	1118
-5660	Leishmania braziliensis	species	37617
-7756	Petromyzon	genus	7746
-105387	Scolecida	subclass	6341
-4890	Ascomycota	phylum	451864
-561	Escherichia	genus	543
-30005	Anoplura	suborder	85819
-32517	Tetradontoidea	superfamily	31028
-4769	Saprolegnia	genus	4764
-27482	Aphididae	family	33385
-132908	Pteropus vampyrus	species	9401
-13034	Dactylococcopsis	genus	1118
-7422	Chalcidoidea	superfamily	272201
-242508	Dothistroma	genus	93133
-83235	Postia	genus	83233
-81985	Capsella rubella	species	3718
-245561	Acidomyces	genus	159987
-292564	Cyanobium gracile PCC 6307	norank	59930
-171549	Bacteroidales	order	200643
-33630	Alveolata	norank	2759
-36630	Aspergillus fischeri	species	5052
-74546	Prochlorococcus marinus str. MIT 9312	norank	1219
-40302	Nosema ceranae	species	27977
-135619	Oceanospirillales	order	1236
-10090	Mus musculus	species	862507
-7222	Drosophila grimshawi	species	32378
-586133	Nematocida parisii	species	586132
-3988	Ricinus communis	species	3987
-545632	ananassae species complex	norank	32347
-69293	Gasterosteus aculeatus	species	69292
-35724	Macrophomina	genus	45131
-8504	Lepidosauria	superorder	32561
-6944	Ixodes	genus	426442
-13792	Mamiellales	order	1035538
-70779	Acropora digitifera	species	6127
-9682	Felis	genus	338152
-374847	Candidatus Korarchaeum cryptofilum OPF8	norank	498846
-1239	Firmicutes	phylum	1783272
-45308	Melanomma	genus	45307
-542	Zymomonas mobilis	species	541
-777	Coxiella burnetii	species	776
-147385	Brachypodieae	tribe	147368
-33090	Viridiplantae	kingdom	2759
-147549	Pezizomycetes	class	147538
-322152	Culicosporidae	family	469895
-41088	Cucujiformia	infraorder	41084
-7737	Branchiostoma	genus	7736
-5794	Apicomplexa	phylum	33630
-109760	Spizellomyces punctatus	species	4815
-92860	Pleosporales	order	451868
-186807	Peptococcaceae	family	186802
-183968	Thermococci	class	28890
-2763	Rhodophyta	norank	2759
-148305	Magnaporthe grisea	species	148303
-118562	Arthrospira platensis	species	35823
-7745	Petromyzontiformes	order	117569
-5690	Trypanosoma	genus	5654
-4081	Solanum lycopersicum	species	49274
-9779	Proboscidea	order	311790
-48302	grimshawi group	speciesgroup	48301
-5810	Toxoplasma	genus	5809
-5296	Puccinia	genus	5262
-452333	Agaricomycetidae	subclass	155619
-1227	Nitrosococcus	genus	1046
-147368	Pooideae	subfamily	359160
-9475	Tarsiidae	family	376912
-3214	Bryopsida	class	404260
-404	Methylobacillus	genus	32011
+1236	Gammaproteobacteria	class	1224
+9785	Loxodonta africana	species	9784
+6411	Helobdella	genus	6407
+38749	Phaeodactylaceae	family	38748
+81824	Monosiga brevicollis	species	81525
+7424	Nasonia	genus	272242
+265318	Cyanidiales	order	2797
+588673	Solirubrobacterales	order	1497346
 6179	Digenea	subclass	6178
-59920	Prochlorococcus marinus str. NATL2A	norank	1219
-28221	Deltaproteobacteria	class	68525
-727	Haemophilus influenzae	species	724
-105767	Tremella	genus	5215
-1286322	Leishmaniinae	subfamily	5654
-9361	Dasypus novemcinctus	species	9360
-374469	Vanderwaltozyma	genus	4893
+451507	Mucoromycotina	subphylum	112252
+68985	Methanopyrales	order	183988
+76773	Malassezia globosa	species	55193
+71139	Eucalyptus grandis	species	3932
+1489845	Gadoidei	suborder	8043
+83984	Methanocorpusculum labreanum	species	2192
+188787	Deinococci	class	1297
+449447	Microcystis aeruginosa NIES-843	norank	1126
+418104	Plasmodium (Haemamoeba)	subgenus	5820
+81985	Capsella rubella	species	3718
+7898	Actinopterygii	superclass	117571
+7174	Culex	genus	53550
+33083	Dictyosteliida	order	142796
+5020	Phaeosphaeriaceae	family	715340
+37569	Bombycoidea	superfamily	104431
+3450	Aquilegia	genus	1463137
+243232	Methanocaldococcus jannaschii DSM 2661	norank	2190
+404	Methylobacillus	genus	32011
+292563	Cyanobacterium stanieri PCC 7202	norank	102235
+5782	Dictyostelium	genus	33083
+498845	Candidatus Korarchaeum	genus	51967
+159087	Dechloromonas aromatica RCB	norank	259537
+82115	Rhizobiaceae	family	356
+7712	Tunicata	subphylum	7711
+5825	Plasmodium chabaudi	species	418101
+54126	Pristionchus pacificus	species	54125
+32355	obscura group	speciesgroup	32341
+1172	Anabaena variabilis	species	1163
+9986	Oryctolagus cuniculus	species	9984
+29001	Alternaria brassicicola	species	5598
+3646	Malpighiales	order	91835
+5759	Entamoeba histolytica	species	5758
+53550	Culicini	tribe	43817
+33550	Hystricognathi	suborder	9989
+376915	Lemuriformes	infraorder	376911
+43816	Anophelinae	subfamily	7157
+114186	Candidatus Carsonella ruddii	species	114185
+866546	Schizosaccharomyces cryophilus	species	4895
+5073	Penicillium	genus	1131492
+1036719	Verticillium	genus	1033978
+336809	Candidatus Sulcia	genus	313602
+5148	Sordariaceae	family	5139
+9480	Callitrichinae	subfamily	9498
+703505	Patellaria	genus	37883
+331636	Chlamydia psittaci 6BC	norank	83554
+192989	Nanoarchaeota	phylum	1783276
+55528	Guillardia	genus	589343
+5270	Ustilago maydis	species	5269
+5543	Trichoderma	genus	5129
+187420	Methanothermobacter thermautotrophicus str. Delta H	norank	145262
+69657	Hyphomonadaceae	family	204455
+135619	Oceanospirillales	order	1236
+4895	Schizosaccharomyces	genus	4894
+8045	Gadidae	family	1489845
+2849	Phaeodactylum	genus	38749
+117743	Flavobacteriia	class	976
+56	Sorangium cellulosum	species	39643
+9030	Gallus	genus	9072
+2878	Ectocarpaceae	family	2877
+7718	Ciona	genus	7717
+110662	Synechococcus sp. CC9605	species	1129
+33554	Carnivora	order	314145
+193568	Nanoarchaeum	genus	192989
+133076	Aphidinae	subfamily	27482
+32324	mulleri subgroup	speciessubgroup	32321
+32358	pseudoobscura subgroup	speciessubgroup	32355
+84588	Synechococcus sp. WH 8102	species	1129
+3745	Rosaceae	family	3744
+32517	Tetradontoidea	superfamily	31028
+85982	Serpula lacrymans	species	80744
+63132	Geitlerinema	genus	1150
+54308	Pleurocapsa minor	species	44474
+1129	Synechococcus	genus	1118
+452342	Russulales	order	355688
+723287	Anncaliia algerae	species	311453
+147368	Pooideae	subfamily	359160
+574566	Coccomyxa subellipsoidea C-169	norank	248742
+118883	Sulfolobaceae	family	2281
+69291	Gasterosteidae	family	1490020
+9813	Procavia capensis	species	9812
+32049	Synechococcus sp. PCC 7002	species	1129
+91836	malvids	norank	71275
+221670	Cucurbitariaceae	family	715340
+338190	Nitrosopumilaceae	family	31932
+5332	Schizophyllaceae	family	5338
+714581	Trypetheliales	order	159987
+31033	Takifugu rubripes	species	31032
+107463	Xanthoria parietina	species	88741
+103690	Nostoc sp. PCC 7120	species	1177
+55176	Sporormiaceae	family	92860
+5794	Apicomplexa	phylum	33630
+713887	Candidatus Atelocyanobacterium thalassa	species	1453359
+91561	Cetartiodactyla	norank	314145
+2232	Archaeoglobaceae	family	2231
+755178	Cyanobacterium aponinum PCC 10605	norank	379064
+6080	Hydridae	family	1612408
+316279	Synechococcus sp. CC9902	species	1129
+7737	Branchiostoma	genus	7736
+5875	Theileria parva	species	5873
+1125	Microcystis	genus	1118
+5888	Paramecium tetraurelia	species	5884
+259537	Dechloromonas aromatica	species	73029
+33849	Bacillariophyceae	class	2836
+196118	Methanocaldococcus	genus	196117
+28072	Nostoc sp. PCC 7524	species	1177
+33194	Bipolaris	genus	28556
+376913	Haplorrhini	suborder	9443
+376911	Strepsirrhini	suborder	9443
+49274	Lycopersicon	subgenus	4107
+482	Neisseria	genus	481
+67677	Antonospora	genus	469895
+188786	Thermaceae	family	68933
+337730	Marmotini	tribe	337726
+2272	Desulfurococcaceae	family	114380
+167375	Cyanobium	genus	1118
+37616	Viannia	subgenus	5658
+40563	Sporobolomyces roseus	species	5429
+213849	Campylobacterales	order	29547
+132908	Pteropus vampyrus	species	9401
+3754	Prunus	genus	721805
+300275	Lachancea	genus	4893
+683158	Didymellaceae	family	715340
+5762	Naegleria gruberi	species	5761
+100019	Didymella exigua	species	55170
+2207	Methanosarcina	genus	2206
+42398	Vittaforma	genus	27974
+930089	Bipolaris zeicola 26-R-13	norank	5017
+70779	Acropora digitifera	species	6127
+33178	Aspergillus terreus	species	5052
+56106	Cylindrospermum	genus	1162
+554915	Amoebozoa	norank	2759
+147367	Oryzoideae	subfamily	359160
+41197	Heteroneura	parvorder	41196
+51293	Capitella	genus	51292
+34392	Microsporum	genus	34384
+9369	Tenrecidae	family	311790
+5129	Hypocreaceae	family	5125
+10090	Mus musculus	species	862507
+388435	Lecanoromycetidae	subclass	1520881
+206349	Hydrogenophilaceae	family	119069
+6036	Pansporoblastina	suborder	6029
+43687	Metallosphaera sedula	species	41980
+184925	Chlorogloeopsis fritschii PCC 9212	norank	1124
+2251	Haloferax	genus	1644056
+283909	Capitella teleta	species	51293
+4893	Saccharomycetaceae	family	4892
+69014	Thermococcus kodakarensis KOD1	norank	311400
+1297	Deinococcus-Thermus	phylum	1783272
+147428	Paniceae	tribe	1648036
+1541743	Candidatus Ruthia	genus	32036
+5499	Passalora fulva	species	131316
+33386	Macrosiphini	tribe	133076
+29882	Laccaria	genus	5351
+7955	Danio rerio	species	7954
+1123	Chlorogloeopsis	genus	1189
+41827	Culicoidea	superfamily	43786
+387093	Sulfurovum sp. NBC37-1	species	265570
+35082	Cryptosporidiidae	family	423054
+3702	Arabidopsis thaliana	species	3701
+5810	Toxoplasma	genus	5809
+9611	Canis	genus	9608
+121759	Paracoccidioides brasiliensis	species	38946
+317936	Nostoc sp. PCC 7107	species	1177
+32443	Teleostei	infraclass	41665
+373994	Rivularia sp. PCC 7116	species	373984
+7091	Bombyx mori	species	7090
+118163	Pleurocapsa sp. PCC 7327	norank	54308
+3214	Bryopsida	class	404260
+75966	Trebouxiophyceae	class	3041
+213481	Bdellovibrionales	order	28221
+6960	Hexapoda	superclass	197562
+639021	Magnaporthales	order	222544
+99598	Calothrix sp. PCC 7507	species	1186
+1525212	Bathycoccaceae	family	13792
+9682	Felis	genus	338152
+76886	Caldivirga	genus	2267
+2258	Thermococcales	order	183968
+51967	Candidatus Korarchaeota	phylum	1783275
+102231	Gloeocapsa	genus	1118
+91888	lamiids	norank	71274
+42399	Vittaforma corneae	species	42398
+5850	Plasmodium knowlesi	species	418103
+7423	Pteromalidae	family	7422
 517	Bordetella	genus	506
+5338	Agaricales	order	452333
+55193	Malassezia	genus	742845
+9606	Homo sapiens	species	9605
+705562	Polychaeton citri	species	705561
+63405	Arthroderma otae	species	63399
+1351751	Parastagonospora	genus	5020
+6447	Mollusca	phylum	1206795
+112488	Dissoconium	genus	744530
+38033	Chaetomium globosum	species	5149
+194	Campylobacter	genus	72294
+5217	Tremella mesenterica	species	105767
+69541	Desulfuromonadales	order	28221
+27973	Encephalitozoon hellem	species	6033
+5057	Aspergillus clavatus	species	5052
+4899	Schizosaccharomyces octosporus	species	4895
+131324	Pseudocercospora	genus	93133
+272123	Anabaena cylindrica PCC 7122	norank	1165
+3067	Volvox carteri	species	3066
+311453	Anncaliia	genus	307623
+30608	Microcebus murinus	species	13149
+9358	Choloepus hoffmanni	species	9357
+41191	Glossata	suborder	7088
+5076	Penicillium chrysogenum	species	254878
+30611	Otolemur garnettii	species	30610
+73029	Dechloromonas	genus	75787
+407951	Neofusicoccum	genus	45131
+2281	Sulfolobales	order	183924
+715340	Pleosporineae	suborder	92860
+5799	Eimeriidae	family	423054
+29	Myxococcales	order	28221
+379064	Cyanobacterium aponinum	species	102234
+6083	Hydra	genus	6080
+184431	Coprinopsis	genus	184208
+5480	Candida parapsilosis	species	1535326
+5322	Pleurotus ostreatus	species	5320
+147369	Panicoideae	subfamily	147370
+980083	Camelineae	tribe	3700
+30610	Otolemur	genus	40297
+40125	Bipolaris victoriae	species	33194
+186807	Peptococcaceae	family	186802
+8360	Xenopodinae	subfamily	8352
+100027	Hysterium pulicare	species	100026
+5569	Cenococcum	genus	603431
+3699	Brassicales	order	91836
+3244	Selaginellales	order	1521260
+7777	Chondrichthyes	class	7776
+44055	Aureococcus	genus	54409
+45351	Nematostella vectensis	species	45350
+4447	Liliopsida	class	1437183
+241421	Crinalium	genus	1150
+351746	Pseudomonas putida F1	norank	303
+183967	Thermoplasmata	class	28890
+4558	Sorghum bicolor	species	4557
+5267	Ustilaginales	order	5257
+53541	Stegomyia	subgenus	7158
+8043	Gadiformes	order	1489843
+237895	Cryptosporidium hominis	species	5806
+31245	Schistosomatidae	family	31244
+1462606	Soja	subgenus	3846
+160233	Ignicoccus hospitalis	species	54258
+7220	Drosophila erecta	species	32351
+30319	Pipoidea	superfamily	8342
+104366	Pleurotaceae	family	5338
+46770	Cenarchaeum symbiosum	species	46769
+195253	Synechococcus sp. PCC 6312	species	1129
+34374	Leptosphaeriaceae	family	715340
+98757	Gelatoporia	genus	83233
+34907	Trionychidae	family	1579275
+6103	Actiniaria	order	6102
+8111	Perciformes	order	1489922
+6945	Ixodes scapularis	species	6944
+7245	Drosophila yakuba	species	32351
+27974	Nosematidae	family	6032
+35510	Equus	subgenus	9789
+4479	Poaceae	family	38820
+5105	Ascosphaera apis	species	5104
+1168546	Myriangium duriaei CBS 260.36	norank	147570
+183980	Archaeoglobi	class	28890
+77658	Daphniidae	family	116561
+9592	Gorilla	genus	207598
+39947	Oryza sativa Japonica Group	norank	4530
+561	Escherichia	genus	543
+2190	Methanocaldococcus jannaschii	species	196118
+5809	Sarcocystidae	family	423054
+6243	Rhabditidae	family	55879
+9443	Primates	order	314146
+3931	Myrtaceae	family	41944
+451442	Rhizophydiales	order	451435
+155977	Acaryochloris	genus	1118
+1218	Prochlorococcus	genus	1217
+5820	Plasmodium	genus	1639119
+309798	Coprothermobacter proteolyticus DSM 5265	norank	35786
+33072	Gloeobacter violaceus	species	33071
+46631	Picrophilus	genus	46630
+10140	Cavia	genus	10139
+204455	Rhodobacterales	order	28211
+83554	Chlamydia psittaci	species	810
+424574	Solaneae	tribe	424551
+9599	Pongo	genus	607660
+43746	Ephydroidea	superfamily	43741
+32281	Drosophila	subgenus	7215
+31932	Nitrosopumilales	order	651137
+1573	Clavibacter	genus	85023
+155619	Agaricomycetes	class	5302
+654128	Marasmiaceae	family	5338
+766733	Scheffersomyces	genus	766764
+9681	Felidae	family	379583
+862507	Mus	subgenus	10088
+7675	Echinoida	order	7674
+10015	Heteromyidae	family	33553
+1212	Prochlorales	order	1117
+102235	Cyanobacterium stanieri	species	102234
+1709381	Baudoinia panamericana	species	483074
+55885	Peloderinae	subfamily	6243
+36048	Tuber	genus	40289
+5059	Aspergillus flavus	species	5052
+146785	Thermosynechococcus	genus	1118
+1612408	Aplanulata	suborder	406427
+85681	Citrus clementina	species	2706
+147548	Leotiomycetes	class	715989
+34353	Dipodascaceae	family	4892
+136845	Pseudomonas putida group	speciesgroup	286
+2158	Methanobacteriales	order	183925
+9393	Tupaiidae	family	9392
+4005	Linum	genus	4004
+112489	Dissoconium aciculare	species	112488
+7434	Aculeata	suborder	7400
+4143	Lamiales	order	91888
+147554	Schizosaccharomycetes	class	451866
+31277	Hymenostomatida	order	6020
+33682	Euglenozoa	norank	2759
+118968	Coxiellaceae	family	118969
+1173027	Microcoleus sp. PCC 7113	species	44471
+399129	Cryphonectriaceae	family	5114
+93612	Setosphaeria turcica	species	39952
+741139	Lepidopterella palustris	species	561967
+5180	Sclerotinia sclerotiorum	species	5179
+387092	Nitratiruptor sp. SB155-2	species	269258
+31031	Tetraodontidae	family	32517
+63399	Arthroderma	genus	34384
+3932	Eucalyptus	genus	1699524
+98038	Eutrema halophilum	species	98005
+1643678	Nitrososphaeria	class	651137
+360105	Campylobacter curvus 525.92	norank	200
 2236	Halobacteriaceae	family	2235
+5258	Pucciniales	order	162484
+114378	Thermofilaceae	family	2266
+33208	Metazoa	kingdom	33154
+34078	Scytonema hofmanni	species	1203
+6412	Helobdella robusta	species	6411
+4952	Yarrowia lipolytica	species	4951
+5911	Tetrahymena thermophila	species	5890
+70535	Edhazardia	genus	322152
+9348	Xenarthra	superorder	9347
+2246	Haloferax volcanii	species	2251
+2268	Thermofilum	genus	114378
+63418	Trichophyton equinum	species	5550
+6293	Wuchereria bancrofti	species	6292
+203124	Trichodesmium erythraeum IMS101	norank	1206
+7214	Drosophilidae	family	43746
+114524	Saccharomyces kudriavzevii	species	4930
+6180	Strigeidida	order	6179
+33392	Endopterygota	infraclass	33340
+29879	Neurospora discreta	species	5140
+27977	Nosema	genus	27974
+5062	Aspergillus oryzae	species	5052
+28216	Betaproteobacteria	class	1224
+227085	Bigelowiella	genus	29197
+41196	Neolepidoptera	infraorder	41191
+36911	Clavispora lusitaniae	species	36910
 2902	Emiliania	genus	418966
-3983	Manihot esculenta	species	3982
-4107	Solanum	genus	424574
-40127	Neurospora tetrasperma	species	5140
+121221	Pediculidae	family	30005
+7624	Echinozoa	superclass	133551
+9476	Tarsius	genus	9475
+145260	Methanothermobacter	genus	2159
+8830	Anatidae	family	8826
+3877	Medicago	genus	163742
+915	Nitrosomonas europaea	species	914
+1644055	Haloferacales	order	183963
+160232	Nanoarchaeum equitans	species	193568
+4930	Saccharomyces	genus	4893
+9646	Ailuropoda melanoleuca	species	9645
+2302	Thermoplasma	genus	46659
+35500	Pecora	infraorder	9845
+1124	Chlorogloeopsis fritschii	species	1123
+31028	Tetraodontoidei	suborder	31022
+9605	Homo	genus	207598
+746128	Aspergillus fumigatus	species	5052
+30727	Cyprinoidea	superfamily	7952
+668547	Teratosphaeriaceae	family	134362
+32011	Methylophilaceae	family	206350
+63737	Nostoc punctiforme PCC 73102	norank	272131
+206350	Methylophilales	order	28216
+3659	Cucumis sativus	species	3655
+7895	Coelacanthidae	family	7894
+2880	Ectocarpus siliculosus	species	2879
+5570	Cenococcum geophilum	species	5569
+9265	Didelphidae	family	38605
+118964	Deinococcales	order	188787
+160033	Zopfiaceae	family	159987
+876142	Encephalitozoon intestinalis ATCC 50506	norank	58839
+2830	Haptophyceae	norank	2759
+5178	Helotiales	order	147548
+147549	Pezizomycetes	class	147538
+5691	Trypanosoma brucei	species	39700
+360115	Coxiella burnetii RSA 331	norank	777
+31022	Tetraodontiformes	order	1489922
+35719	Thielavia	genus	35718
+34384	Arthrodermataceae	family	33183
+7746	Petromyzontidae	family	7745
+204428	Chlamydiae	phylum	1783257
+372781	Fischerella muscicola SAG 1427-1 = PCC 73103	norank	92938
+55169	Botryosphaeria dothidea	species	45132
+1344966	Phycomycetaceae	family	4827
+1162	Nostocaceae	family	1161
+448385	Sorangium cellulosum So ce56	norank	56
+46234	Anabaena sp. 90	species	1163
+7897	Latimeria chalumnae	species	7896
+414	Methylococcus capsulatus	species	413
+7674	Echinacea	superorder	7638
+1117	Cyanobacteria	phylum	1798711
+357	Agrobacterium	genus	227290
+5145	Podospora anserina	species	5144
+167542	Prochlorococcus marinus str. MIT 9515	norank	1219
+9780	Elephantidae	family	9779
+28889	Crenarchaeota	phylum	1783275
+314146	Euarchontoglires	superorder	1437010
+142864	Cylindrospermum stagnale	species	56106
+45157	Cyanidioschyzon merolae	species	45156
+116561	Anomopoda	infraorder	6665
+7089	Bombycidae	family	37569
+172820	Apusomonadidae	family	554296
+1141640	Ictidomys	genus	337730
+4932	Saccharomyces cerevisiae	species	4930
+4769	Saprolegnia	genus	4764
+45350	Nematostella	genus	45349
+51292	Capitellidae	family	6342
 9895	Bovidae	family	35500
-29760	Vitis vinifera	species	3603
-9256	Ornithorhynchidae	family	9255
+27339	Cladonia grayi	species	5199
+1344963	Mucorineae	suborder	4827
+28890	Euryarchaeota	phylum	2157
+4891	Saccharomycetes	class	147537
+6029	Microsporidia	phylum	4751
+4956	Zygosaccharomyces rouxii	species	4953
+80812	Sorangiineae	suborder	29
+6933	Acari	subclass	6854
+33553	Sciurognathi	suborder	9989
+506	Alcaligenaceae	family	80840
+183663	Soricinae	subfamily	9376
+109760	Spizellomyces punctatus	species	4815
+43786	Culicomorpha	infraorder	7148
+167555	Prochlorococcus marinus str. NATL1A	norank	1219
+74317	Maricaulis	genus	69657
+3071	Chlorella	genus	35461
+68933	Thermales	order	188787
+2159	Methanobacteriaceae	family	2158
+9315	Macropus eugenii	species	9312
+721805	Amygdaleae	norank	171637
+5296	Puccinia	genus	5262
+30005	Anoplura	suborder	85819
+186490	Candidatus Baumannia cicadellinicola	species	198346
+238069	Saliceae	tribe	3688
+272242	Pteromalinae	subfamily	7423
+6073	Cnidaria	phylum	6072
+6074	Hydrozoa	class	6073
+51291	Chlamydiales	order	204429
+451869	Botryosphaeriales	order	159987
+4734	commelinids	subclass	1437197
+102115	Stanieria	genus	52604
+930090	Bipolaris oryzae ATCC 44560	norank	101162
+4827	Mucorales	order	451507
+426442	Ixodinae	subfamily	6939
+160034	Zopfia	genus	160033
+162481	Microbotryomycetes	class	29000
+263820	Picrophilus torridus DSM 9790	norank	82076
+8839	Anas platyrhynchos	species	8835
+51453	Trichoderma reesei	species	5543
+4577	Zea mays	species	4575
+8464	Cryptodira	suborder	8459
+1344955	Rhizopodaceae	family	1344963
+387662	Candidatus Carsonella ruddii PV	norank	114186
+5234	Tremellales	order	155616
+1028384	Glomerellales	order	222543
+1033996	Nitrososphaerales	order	1643678
+5139	Sordariales	order	222544
+5819	Haemosporida	order	422676
+41431	Cyanothece sp. PCC 8801	species	43988
+119864	Marinomonas mediterranea	species	28253
+4107	Solanum	genus	424574
+197221	Thermosynechococcus elongatus BP-1	norank	146786
+766	Rickettsiales	order	28211
+914	Nitrosomonas	genus	206379
+727	Haemophilus influenzae	species	724
+28256	Halomonadaceae	family	135619
+1176129	Aulographum	genus	281109
+423054	Eimeriorina	suborder	75739
+217161	Chamaesiphon	genus	1118
+1173022	Crinalium epipsammum PCC 9333	norank	241425
+2192	Methanocorpusculum	genus	88404
+9598	Pan troglodytes	species	9596
+307623	Tubulinosematidae	family	6032
+201174	Actinobacteria	phylum	1783272
+45308	Melanomma	genus	45307
+126287	Didelphinae	subfamily	9265
+9392	Scandentia	order	314146
+13792	Mamiellales	order	1035538
+1302176	Teloschistineae	suborder	107465
+586133	Nematocida parisii	species	586132
+271822	Trypetheliaceae	family	714581
+77924	Hemiselmis	genus	589351
+147572	Piedraia	genus	147571
+403	Methylococcaceae	family	135618
+511435	Candidatus Azobacteroides pseudotrichonymphae	species	511434
+4787	Phytophthora infestans	species	4783
+586132	Nematocida	genus	469895
+281109	Aulographaceae	family	159987
+56107	Cylindrospermum stagnale PCC 7417	norank	142864
+373984	Rivularia	genus	1185
+7625	Echinoidea	class	7624
+148303	Magnaporthe	genus	81093
+9481	Callithrix	genus	9480
+28556	Pleosporaceae	family	715340
+54258	Ignicoccus	genus	2272
+5257	Ustilaginomycetes	class	452284
+1453359	Candidatus Atelocyanobacterium	genus	1118
+35554	Geobacter sulfurreducens	species	28231
+942	Anaplasmataceae	family	766
+167539	Prochlorococcus marinus subsp. marinus str. CCMP1375	norank	142554
+5550	Trichophyton	genus	34384
+635003	Fragilariopsis cylindrus CCMP1102	norank	186039
+675120	Dothistroma septosporum NZE10	norank	64363
+642	Aeromonas	genus	84642
+59920	Prochlorococcus marinus str. NATL2A	norank	1219
+6934	Parasitiformes	superorder	6933
+3245	Selaginellaceae	family	3244
+140110	Nectria haematococca	species	232080
+135651	Caenorhabditis brenneri	species	6237
+36861	Thiobacillus denitrificans	species	919
+36080	Mucor circinelloides	species	4830
+98439	Fischerella thermalis PCC 7521	norank	372787
+10020	Dipodomys ordii	species	10016
+35235	Vavraia	genus	35232
+981071	Brassiceae	tribe	3700
+7742	Vertebrata	norank	89593
+2259	Thermococcaceae	family	2258
+163742	Trifolieae	tribe	3814
+27291	Saccharomyces paradoxus	species	4930
+9645	Ailuropoda	genus	9632
+179408	Oscillatoria nigro-viridis PCC 7112	norank	482564
+183988	Methanopyri	class	28890
+203908	Melampsora larici-populina	species	5260
+9835	Camelidae	family	9834
+70987	Apinae	subfamily	7458
+9722	Odontoceti	suborder	9721
+469383	Conexibacter woesei DSM 14684	norank	191495
+4761	Chytridiomycota	phylum	4751
+389951	Serpulaceae	family	227334
+43845	Drosophilinae	subfamily	7214
+5598	Alternaria	genus	28556
+379584	Caniformia	suborder	33554
+9812	Procavia	genus	9811
+5149	Chaetomium	genus	35718
+200644	Flavobacteriales	order	117743
+4070	Solanaceae	family	4069
+5873	Theileria	genus	27994
+9365	Erinaceus europaeus	species	9364
+1648028	Sorghinae	subtribe	147429
+85006	Micrococcales	order	1760
+944	Ehrlichia canis	species	106178
+1502711	Erythranthe	genus	41399
+45141	Cucurbitaria	genus	221670
+135624	Aeromonadales	order	1236
+111780	Stanieria cyanosphaera PCC 7437	norank	102116
+183924	Thermoprotei	class	28889
+5259	Melampsoraceae	family	5258
+1648021	Oryzinae	subtribe	147380
+9258	Ornithorhynchus anatinus	species	9257
+46769	Cenarchaeum	genus	205957
+184208	Psathyrellaceae	family	5338
+1150837	Didymella exigua CBS 183.55	norank	100019
+5116	Cryphonectria parasitica	species	5115
+72691	Lottia	genus	69676
+1186	Calothrix	genus	1185
+278021	Antonospora locustae	species	67677
+3883	Phaseolus	genus	163735
 2706	Citrus	genus	1728959
-43988	Cyanothece	genus	1118
-37347	Tupaia belangeri	species	9394
+481	Neisseriaceae	family	206351
+30539	Vicugna	genus	9835
+40155	Estrildinae	subfamily	37611
+712	Pasteurellaceae	family	135625
+692275	Sphaerulina musiva SO2202	norank	85929
+114380	Desulfurococcales	order	183924
+2234	Archaeoglobus fulgidus	species	2233
+418966	Noelaerhabdaceae	family	73020
+394221	Maricaulis maris MCS10	norank	74318
+35720	Thielavia terrestris	species	35719
+41297	Sphingomonadaceae	family	204457
+320583	Conexibacteraceae	family	588673
+211165	Chlorogloeopsis fritschii PCC 6912	norank	1124
+71275	rosids	subclass	1437201
+74318	Maricaulis maris	species	74317
+380703	Aeromonas hydrophila subsp. hydrophila ATCC 7966	norank	196023
+6236	Rhabditida	order	119089
+9544	Macaca mulatta	species	9539
+38605	Didelphimorphia	order	9263
+183939	Methanococci	class	28890
+272131	Nostoc punctiforme	species	1177
+1182	Scytonemataceae	family	1161
+6237	Caenorhabditis	genus	55885
+273075	Thermoplasma acidophilum DSM 1728	norank	2303
+2233	Archaeoglobus	genus	2232
+196117	Methanocaldococcaceae	family	2182
+5800	Eimeria	genus	5799
+119089	Chromadorea	class	6231
+7719	Ciona intestinalis	species	7718
+1080230	Synechocystis sp. PCC 6803 substr. PCC-P	norank	1148
+10228	Trichoplax adhaerens	species	10227
+1217	Prochlorococcaceae	family	1212
+36033	Vanderwaltozyma polyspora	species	374469
+1286322	Leishmaniinae	subfamily	5654
+33340	Neoptera	subclass	7496
+2	Bacteria	superkingdom	131567
+693977	Deinococcus proteolyticus MRP	norank	55148
+981100	Eutremeae	tribe	3700
+2157	Archaea	superkingdom	131567
+347515	Leishmania major strain Friedlin	norank	5664
+38820	Poales	order	4734
+9810	Hyracoidea	order	311790
+8509	Squamata	order	8504
+690896	Lentithecium	genus	715298
+5305	Phanerochaete	genus	396331
+4830	Mucor	genus	34489
+34346	Schizosaccharomycetales	order	147554
+30615	Cheirogaleidae	family	376915
+475327	Bombycinae	subfamily	7089
+5199	Cladonia	genus	5198
+9307	Macropodidae	family	38609
+5297	Puccinia graminis	species	5296
+5796	Coccidia	class	1280412
+107465	Teloschistales	order	388435
+37885	Rhytidhysteron rufulum	species	37884
+809	Chlamydiaceae	family	51291
+321614	Parastagonospora nodorum SN15	norank	13684
+269084	Synechococcus elongatus PCC 6301	norank	32046
 6939	Ixodidae	family	297308
+7090	Bombyx	genus	475327
+44689	Dictyostelium discoideum	species	5782
+1142	Synechocystis	genus	1118
+8363	Silurana	subgenus	8353
+269797	Methanosarcina barkeri str. Fusaro	norank	2208
+147545	Eurotiomycetes	class	716546
+8504	Lepidosauria	superorder	32561
+3880	Medicago truncatula	species	3877
+5664	Leishmania major	species	38581
+6407	Glossiphoniidae	family	6406
+269484	Ehrlichia canis str. Jake	norank	944
+45307	Melanommataceae	family	92860
+157822	Lecanorineae	suborder	5197
+5306	Phanerochaete chrysosporium	species	5305
+183925	Methanobacteria	class	28890
+5518	Fusarium graminearum	species	569360
+5207	Cryptococcus neoformans	species	552466
+39416	Tuber melanosporum	species	36048
+2266	Thermoproteales	order	183924
+37516	Hydroidolina	subclass	6074
+1189	Stigonematales	order	1117
+147550	Sordariomycetes	class	715989
+7713	Ascidiacea	class	7712
+2877	Ectocarpales	order	2870
+1173025	Geitlerinema sp. PCC 7407	species	63132
+162474	Malasseziales	order	1538075
+194924	Desulfovibrionaceae	family	213115
+28447	Clavibacter michiganensis	species	1573
+9784	Loxodonta	genus	9780
+50827	Diplogasterida	order	119089
+186035	Fragilariopsis	genus	33852
+5854	Plasmodium reichenowi	species	418107
+4910	Kluyveromyces	genus	4893
+243233	Methylococcus capsulatus str. Bath	norank	414
+6341	Polychaeta	class	6340
+10227	Trichoplax	genus	10226
+9401	Pteropus	genus	77225
+28376	Anolis	genus	81957
+56780	Syntrophus aciditrophicus SB	norank	316277
+13149	Microcebus	genus	30615
+3041	Chlorophyta	phylum	33090
+128403	Scytonema hofmanni PCC 7110	norank	34078
+316277	Syntrophus aciditrophicus	species	43773
+85819	Phthiraptera	order	33342
+1648029	Tripsacinae	subtribe	147429
+9978	Ochotona princeps	species	9977
+6656	Arthropoda	phylum	88770
+56615	Puccinia graminis f. sp. tritici	norank	5297
+5333	Schizophyllum	genus	5332
+4924	Scheffersomyces stipitis	species	766733
+3694	Populus trichocarpa	species	3689
+40289	Tuberaceae	family	5185
+35718	Chaetomiaceae	family	5139
+206379	Nitrosomonadaceae	family	32003
+121222	Pediculus	genus	121221
+43988	Cyanothece	genus	1118
+164328	Phytophthora ramorum	species	4783
+43989	Cyanothece sp. ATCC 51142	species	43988
+7260	Drosophila willistoni	species	32367
+31181	Strongylocentrotidae	family	7675
+607660	Ponginae	subfamily	9604
+511434	Candidatus Azobacteroides	genus	333046
+5351	Tricholomataceae	family	5338
+2208	Methanosarcina barkeri	species	2207
+6239	Caenorhabditis elegans	species	6237
+589351	Hemiselmidaceae	family	589350
+958	Bdellovibrio	genus	213483
+27337	Verticillium dahliae	species	1036719
+6183	Schistosoma mansoni	species	6181
+9779	Proboscidea	order	311790
+59463	Myotis lucifugus	species	9434
+27999	Perkinsidae	family	27998
+135613	Chromatiales	order	1236
+6126	Acroporidae	family	123757
+227334	Coniophorineae	suborder	68889
+3655	Cucumis	genus	1003877
+2879	Ectocarpus	genus	2878
+7159	Aedes aegypti	species	53541
+400682	Amphimedon queenslandica	species	178513
+5658	Leishmania	genus	1286322
+59930	Cyanobium gracile	species	167375
+7739	Branchiostoma floridae	species	7737
+204969	Pelodiscus	genus	34907
+9362	Insectivora	order	314145
+29883	Laccaria bicolor	species	29882
+45148	Lophiostoma	genus	45147
+426418	Pyrenophora tritici-repentis Pt-1C-BFP	norank	45151
+10088	Mus	genus	39107
+9255	Monotremata	order	9254
+242231	Neisseria gonorrhoeae FA 1090	norank	485
+88646	Teloschistaceae	family	1302176
+28009	Choanoflagellida	order	33154
+1168544	Cucurbitaria berberidis CBS 394.84	norank	45142
+32321	repleta group	speciesgroup	32281
+9483	Callithrix jacchus	species	9481
+28253	Marinomonas	genus	135620
+497726	Nitrososphaera	genus	1033997
+7065	Tenebrionidae	family	71527
+215467	Sphaerulina populicola	species	237179
+1056966	Aedini	tribe	43817
+82076	Picrophilus torridus	species	46631
+264688	Trichormus	genus	1162
+1080229	Synechocystis sp. PCC 6803 substr. PCC-N	norank	1148
+5507	Fusarium oxysporum	species	171631
+4931	Saccharomyces bayanus	species	4930
+30560	Microchiroptera	suborder	9397
+451866	Taphrinomycotina	subphylum	4890
+76071	Beloniformes	order	1489913
+6040	Porifera	phylum	33208
+41666	Batrachia	superorder	8292
+3066	Volvox	genus	3065
+2182	Methanococcales	order	183939
+6238	Caenorhabditis briggsae	species	6237
+93133	Mycosphaerellaceae	family	134362
+554065	Chlorella variabilis	species	3071
+127916	Ichthyosporea	class	42461
+13615	Monodelphis	genus	126287
+2903	Emiliania huxleyi	species	2902
+7863	Holocephali	subclass	7777
+27970	Enterocytozoonidae	family	6032
+5039	Blastomyces dermatitidis	species	229219
+7222	Drosophila grimshawi	species	32378
+9903	Bos	genus	27592
+959	Bdellovibrio bacteriovorus	species	958
+33188	Uncinocarpus reesii	species	33187
+81525	Monosiga	genus	81524
+862964	Haemophilus influenzae 10810	norank	727
+561967	Lepidopterella	genus	281106
+212717	Clostridium tetani E88	norank	1513
+7237	Drosophila pseudoobscura	species	32358
+5115	Cryphonectria	genus	218105
+178475	Niphatidae	family	6049
+9976	Ochotonidae	family	9975
+1118	Chroococcales	order	1301283
+1639119	Plasmodiidae	family	5819
+46630	Picrophilaceae	family	2301
+74547	Prochlorococcus marinus str. MIT 9313	norank	1219
+321327	Synechococcus sp. JA-3-3Ab	species	1129
+794803	Cenococcum geophilum 1.58	norank	5570
+314294	Cercopithecoidea	superfamily	9526
+9072	Phasianinae	subfamily	9005
+7240	Drosophila simulans	species	32351
+9913	Bos taurus	species	9903
+34489	Mucoraceae	family	1344963
+259564	Methanococcoides burtonii DSM 6242	norank	29291
+5786	Dictyostelium purpureum	species	5782
+7217	Drosophila ananassae	species	545632
+8352	Pipidae	family	30319
+1513	Clostridium tetani	species	1485
+311400	Thermococcus kodakarensis	species	2263
+62133	Capnodiaceae	family	134362
+37884	Rhytidhysteron	genus	100025
+301224	Cryptophyceae sp. RCC506	species	301223
+28564	Talaromyces stipitatus	species	5094
+348780	Natronomonas pharaonis DSM 2160	norank	2257
+71239	Cucurbitales	order	91835
+4527	Oryza	genus	1648021
+192875	Capsaspora owczarzaki	species	192874
+1497346	Thermoleophilia	class	201174
+376912	Tarsiiformes	infraorder	376913
+23513	Rutaceae	family	41937
+6087	Hydra vulgaris	species	6083
+5541	Thermomyces lanuginosus	species	5540
+4890	Ascomycota	phylum	451864
+43733	Muscomorpha	infraorder	7203
+3440	Ranunculaceae	family	41768
+8782	Aves	class	436492
+9312	Macropus	genus	9307
+5752	Heterolobosea	class	2759
+4557	Sorghum	genus	1648028
+340080	Parameciidae	family	33825
+44056	Aureococcus anophagefferens	species	44055
+589350	Cryptomonadales	order	3027
+155616	Tremellomycetes	class	5302
+72025	Fabales	order	91835
+5206	Filobasidiella	genus	5215
+1173263	Synechococcus sp. PCC 7502	species	1129
+6125	Scleractinia	order	6102
+4815	Spizellomyces	genus	34479
+30577	Erinaceinae	subfamily	9363
+9822	Sus	genus	9821
+34478	Spizellomycetales	order	451435
+9685	Felis catus	species	9682
+147538	Pezizomycotina	subphylum	716545
+70447	Ostreococcus	genus	1525212
+27592	Bovinae	subfamily	9895
+7868	Callorhinchus milii	species	7866
+213462	Syntrophobacterales	order	28221
+665912	Bipolaris sorokiniana ND90Pr	norank	45130
+4896	Schizosaccharomyces pombe	species	4895
+306281	Fischerella muscicola PCC 7414	norank	92938
+1163	Anabaena	genus	1162
+231213	Sporidiobolales	order	162481
+541	Zymomonas	genus	41297
+1048752	Candidatus Caldiarchaeum	genus	651142
+71527	Tenebrionoidea	superfamily	41088
+41768	Ranunculales	order	71241
+54409	Pelagomonadales	order	35675
+33090	Viridiplantae	kingdom	2759
+5114	Diaporthales	order	222544
+451871	Eurotiomycetidae	subclass	147545
+4763	Saprolegniales	order	4762
+919	Thiobacillus	genus	206349
+9632	Ursidae	family	379584
+9478	Tarsius syrichta	species	9476
+76892	Caulobacteraceae	family	204458
+311458	Candidatus Caldiarchaeum subterraneum	species	1048752
+5884	Paramecium	genus	340080
+4914	Lachancea waltii	species	300275
+9668	Mustela putorius	species	9665
+314145	Laurasiatheria	superorder	1437010
+100026	Hysterium	genus	100025
+9394	Tupaia	genus	9393
+46879	Drosophilina	subtribe	46877
+562	Escherichia coli	species	561
+92860	Pleosporales	order	451868
+186802	Clostridiales	order	186801
+46877	Drosophilini	tribe	43845
+7029	Acyrthosiphon pisum	species	7028
+27994	Theileriidae	family	5863
+147573	Piedraia hortae var. hortae	varietas	147572
+58839	Encephalitozoon intestinalis	species	6033
+948953	Folivora	suborder	948950
+44534	Cellia	subgenus	7164
+10066	Muridae	family	337687
+5540	Thermomyces	genus	28568
+9257	Ornithorhynchus	genus	9256
+59765	Fusarium oxysporum f. sp. lycopersici	norank	5507
+68525	delta/epsilon subdivisions	subphylum	1224
+91835	fabids	norank	71275
+1227	Nitrosococcus	genus	1046
+7028	Acyrthosiphon	genus	33386
+42254	Sorex araneus	species	9379
+4959	Debaryomyces hansenii	species	4958
+1173026	Gloeocapsa sp. PCC 7428	species	102231
+13684	Parastagonospora nodorum	species	1351751
+175121	Passeroidea	superfamily	9126
+395962	Cyanothece sp. PCC 8802	species	43988
+869210	Marinithermus hydrothermalis DSM 14884	norank	186192
+1799696	Sporidiobolaceae	family	231213
+54124	Neodiplogasteridae	family	50827
+69292	Gasterosteus	genus	69291
+213483	Bdellovibrionaceae	family	213481
+9665	Mustela	genus	169418
+6181	Schistosoma	genus	31245
+47251	Leptolyngbya	genus	1150
+413404	Candidatus Ruthia magnifica str. Cm (Calyptogena magnifica)	norank	386487
+104341	Postia placenta	species	83235
+169418	Mustelinae	subfamily	9655
+40674	Mammalia	class	32524
+9363	Erinaceidae	family	9362
+7238	Drosophila sechellia	species	32351
+27319	Metschnikowiaceae	family	4892
+183713	Methanopyraceae	family	68985
+83235	Postia	genus	83233
+299071	Ajellomycetaceae	family	33183
+8364	Xenopus tropicalis	species	8363
+8459	Testudines	order	1329799
+1760	Actinobacteria	class	201174
+39643	Sorangium	genus	49
+71274	asterids	subclass	1437201
+6854	Arachnida	class	6843
+3846	Glycine	genus	163735
+314293	Simiiformes	infraorder	376913
+204429	Chlamydiia	class	204428
+6033	Encephalitozoon	genus	36734
+5260	Melampsora	genus	5259
+323261	Nitrosococcus oceani ATCC 19707	norank	1229
+53953	Pyrococcus horikoshii	species	2260
+3885	Phaseolus vulgaris	species	3883
+653667	Schizosaccharomyces cryophilus OY26	norank	866546
+35786	Coprothermobacter proteolyticus	species	68335
+222544	Sordariomycetidae	subclass	147550
+32378	grimshawi subgroup	speciessubgroup	48302
+43817	Culicinae	subfamily	7157
+33630	Alveolata	norank	2759
+85023	Microbacteriaceae	family	85006
+543	Enterobacteriaceae	family	91347
+1185	Rivulariaceae	family	1161
+76023	Halothece	genus	92682
+766764	Debaryomycetaceae	family	4892
+13035	Dactylococcopsis salina PCC 8305	norank	292566
+207598	Homininae	subfamily	9604
+2320	Methanopyrus kandleri	species	2319
+641892	Candidatus Sulcia muelleri DMIN	norank	336810
+5197	Lecanorales	order	388435
+485916	Desulfotomaculum acetoxidans DSM 771	norank	58138
+29202	Thalassiosiraceae	family	33847
+5482	Candida tropicalis	species	1535326
+106178	canis group	speciesgroup	943
+325165	Nomascus	genus	9577
+63577	Trichoderma atroviride	species	5543
+94624	Bordetella petrii	species	517
+5654	Trypanosomatidae	family	5653
+46659	Thermoplasmataceae	family	2301
+777	Coxiella burnetii	species	776
+9593	Gorilla gorilla	species	9592
+7866	Callorhinchus	genus	7865
+72274	Pseudomonadales	order	1236
+45130	Bipolaris sorokiniana	species	33194
+5016	Bipolaris maydis	species	33194
+33342	Paraneoptera	infraclass	33340
+74546	Prochlorococcus marinus str. MIT 9312	norank	1219
+8048	Gadus	genus	8045
+251221	Gloeobacter violaceus PCC 7421	norank	33072
+3705	Brassica	genus	981071
+6669	Daphnia pulex	species	6668
+431838	Intramacronucleata	subphylum	5878
+45676	Myriangiales	order	451867
+337726	Xerinae	subfamily	55153
+1170562	Calothrix sp. PCC 6303	norank	32054
+38608	Dasyuromorphia	order	9263
+91347	Enterobacteriales	order	1236
+1161	Nostocales	order	1117
+7230	Drosophila mojavensis	species	198037
+222543	Hypocreomycetidae	subclass	147550
+70771	Pyrobaculum neutrophilum	species	2276
+33183	Onygenales	order	451871
+5103	Ascosphaeraceae	family	33183
+183710	Deinococcaceae	family	118964
+82654	Pseudanabaena sp. PCC 7367	species	1152
+29547	Epsilonproteobacteria	class	68525
+4958	Debaryomyces	genus	766764
+37882	Patellariales	order	159987
+93059	Prochlorococcus marinus str. MIT 9211	norank	1219
+3246	Selaginella	genus	3245
+45142	Cucurbitaria berberidis	species	45141
+9615	Canis lupus familiaris	subspecies	9612
+548649	Dothidotthia symphoricarpi	species	548651
+8835	Anas	genus	8830
+32341	Sophophora	subgenus	7215
+73020	Isochrysidales	order	2830
+9498	Cebidae	family	9479
+39107	Murinae	subfamily	10066
+29291	Methanococcoides burtonii	species	2225
+307596	Gloeobacteria	class	1117
+364715	Trypethelium eluteriae	species	271823
+88741	Xanthoria	genus	1301143
+930091	Bipolaris victoriae FI3	norank	40125
+5027	Pyrenophora	genus	28556
+118323	Oscillatoria acuminata	species	1158
+68889	Boletales	order	452333
+7894	Coelacanthiformes	order	118072
+6296	Onchocercidae	family	6295
+32051	Synechococcus sp. WH 7803	species	1129
+38748	Naviculales	order	33850
+40420	Bondarzewiaceae	family	452342
+59919	Prochlorococcus marinus subsp. pastoris str. CCMP1986	norank	142479
+545632	ananassae species complex	norank	32347
+1033997	Nitrososphaeraceae	family	1033996
+40410	Cryptococcus neoformans var. neoformans	varietas	5207
+70791	Nectria haematococca mpVI	norank	140110
+81524	Codonosigidae	family	28009
+41399	Phrymaceae	family	4143
+33634	Stramenopiles	norank	2759
+1562	Desulfotomaculum	genus	186807
+5303	Polyporales	order	355688
+3218	Physcomitrella patens	species	3217
+54298	Chroococcidiopsis	genus	52604
+7208	Loa	genus	6296
+7711	Chordata	phylum	33511
+4081	Solanum lycopersicum	species	49274
+5503	Curvularia lunata	species	5502
+1150	Oscillatoriales	order	1301283
+54125	Pristionchus	genus	54124
+1699524	Eucalypteae	tribe	1699513
+3701	Arabidopsis	genus	980083
+135615	Cardiobacteriales	order	1236
+1644056	Haloferacaceae	family	1644055
+9539	Macaca	genus	9528
+7176	Culex quinquefasciatus	species	518105
+2836	Bacillariophyta	phylum	33634
+5864	Babesia	genus	32594
+395961	Cyanothece sp. PCC 7425	species	43988
+1489100	Holostei	infraclass	41665
+123757	Astrocoeniina	suborder	6125
+9739	Tursiops truncatus	species	9738
+84337	Diplostraca	order	116557
+1463137	Thalictroideae	subfamily	3440
+3052	Chlamydomonas	genus	3051
+35823	Arthrospira	genus	1150
+147570	Myriangium duriaei	species	147569
+10139	Caviidae	family	33550
+5765	Vahlkampfiidae	family	41165
+1535326	Candida	genus	1535325
+9357	Choloepus	genus	227508
+9364	Erinaceus	genus	30577
+7524	Hemiptera	order	33342
+7735	Cephalochordata	subphylum	7711
+39952	Setosphaeria	genus	28556
+75787	Rhodocyclaceae	family	206389
+40297	Galagidae	family	376917
+100474	Batrachochytrium	genus	1142503
+497727	Candidatus Nitrososphaera gargensis	species	497726
+2231	Archaeoglobales	order	183980
+1538075	Malasseziomycetes	class	452284
+162484	Pucciniomycetes	class	29000
+55824	Hirudinida	class	42113
+993615	Vittaforma corneae ATCC 50505	norank	42399
+10114	Rattus	genus	39107
+186801	Clostridia	class	1239
+1080233	Zasmidium cellare ATCC 36951	norank	395010
+235629	Acalyphoideae	subfamily	3977
+1229	Nitrosococcus oceani	species	1227
+976	Bacteroidetes	phylum	68336
+705561	Polychaeton	genus	62133
+1173020	Chamaesiphon minutus PCC 6605	norank	1173032
+8088	Oryziinae	subfamily	47757
+114656	Funariidae	subclass	3214
+59728	Taeniopygia	genus	40155
+7227	Drosophila melanogaster	species	32351
+38662	Dipodomyinae	subfamily	10015
+703506	Patellaria atrata	species	703505
+85604	Amphiesmenoptera	superorder	33392
+191494	Conexibacter	genus	320583
+9975	Lagomorpha	order	314147
+392814	Micromonas sp. CCMP490	species	38832
+4897	Schizosaccharomyces japonicus	species	4895
+55529	Guillardia theta	species	55528
+65393	Cyanothece sp. PCC 7424	species	43988
+38832	Micromonas	genus	41873
+2850	Phaeodactylum tricornutum	species	2849
+5690	Trypanosoma	genus	5654
+511995	Candidatus Azobacteroides pseudotrichonymphae genomovar. CFP2	norank	511435
+529818	Thecamonas trahens	species	877559
+35675	Pelagophyceae	class	33634
+766728	Meyerozyma	genus	766764
+242508	Dothistroma	genus	93133
+9788	Equidae	family	9787
+146786	Thermosynechococcus elongatus	species	146785
+5144	Podospora	genus	42302
+135620	Oceanospirillaceae	family	135619
+101203	Saprolegnia parasitica	species	4769
+5861	Plasmodium yoelii	species	418101
+3602	Vitaceae	family	403667
+191495	Conexibacter woesei	species	191494
+47757	Adrianichthyidae	family	28781
+1164	Trichormus azollae	species	264688
+37347	Tupaia belangeri	species	9394
+53485	Pyrenophora teres	species	5027
+1287680	Neofusicoccum parvum UCRNP2	norank	310453
+65093	Halothece sp. PCC 7418	species	76023
+109871	Batrachochytrium dendrobatidis	species	100474
+1205	Trichodesmium	genus	1150
+3216	Funariaceae	family	3215
+50557	Insecta	class	6960
+37727	Talaromyces marneffei	species	5094
+5758	Entamoeba	genus	33084
+4764	Saprolegniaceae	family	4763
+221102	Moniliophthora	genus	654221
+2267	Thermoproteaceae	family	2266
+27971	Enterocytozoon	genus	27970
+4006	Linum usitatissimum	species	4005
+280463	Emiliania huxleyi CCMP1516	norank	2903
+40384	Aspergillus kawachii	species	5052
+9527	Cercopithecidae	family	314294
+245561	Acidomyces	genus	159987
+548648	Dothidotthiaceae	family	92860
+225164	Lottia gigantea	species	72691
+1255046	Massarineae	suborder	92860
+67593	Phytophthora sojae	species	4783
+1293361	Cenchrinae	subtribe	147428
+5478	Candida glabrata	species	600669
+33071	Gloeobacter	genus	307595
+9277	Dasyuridae	family	38608
+1033978	Plectosphaerellaceae	family	1028384
+1003877	Benincaseae	tribe	3650
+63743	Natronomonas	genus	2236
+176113	Tenrecinae	subfamily	9369
+227387	Thermodesulfobiaceae	family	68295
+543769	Rhizaria	norank	2759
+9526	Catarrhini	parvorder	314293
+8090	Oryzias latipes	species	8089
+1485	Clostridium	genus	31979
+5802	Eimeria tenella	species	5800
+148305	Magnaporthe grisea	species	148303
+70536	Edhazardia aedis	species	70535
+88404	Methanocorpusculaceae	family	2191
+5302	Agaricomycotina	subphylum	5204
+33836	Coscinodiscophyceae	class	2836
+45132	Botryosphaeria	genus	45131
+7164	Anopheles	genus	43816
+145262	Methanothermobacter thermautotrophicus	species	145260
+948950	Pilosa	order	9348
+33196	Botrytis	genus	28983
+340100	Bordetella petrii DSM 12804	norank	94624
+3711	Brassica rapa	species	3705
+5653	Kinetoplastida	order	33682
+28568	Trichocomaceae	family	5042
+6448	Gastropoda	class	6447
+311790	Afrotheria	superorder	9347
+213115	Desulfovibrionales	order	28221
+3688	Salicaceae	family	3646
+1035538	Mamiellophyceae	class	3152
+3803	Fabaceae	family	72025
+35232	Pleistophoridae	family	6036
+118969	Legionellales	order	1236
+58138	Desulfotomaculum acetoxidans	species	1562
+29175	Neospora	genus	5809
+292415	Thiobacillus denitrificans ATCC 25259	norank	36861
+89593	Craniata	subphylum	7711
+322152	Culicosporidae	family	469895
+243231	Geobacter sulfurreducens PCA	norank	35554
+1301283	Oscillatoriophycideae	subclass	1117
+4951	Yarrowia	genus	34353
+303	Pseudomonas putida	species	136845
+33154	Opisthokonta	norank	2759
+41165	Schizopyrenida	order	5752
+178513	Amphimedon	genus	178475
+2287	Sulfolobus solfataricus	species	2284
+422676	Aconoidasida	class	5794
+6101	Anthozoa	class	6073
+10141	Cavia porcellus	species	10140
+269258	Nitratiruptor	genus	34035
+9359	Dasypodidae	family	948951
+35724	Macrophomina	genus	45131
+5141	Neurospora crassa	species	5140
+55879	Rhabditoidea	superfamily	6236
+271823	Trypethelium	genus	271822
+5061	Aspergillus niger	species	5052
+338152	Felinae	subfamily	9681
+385169	Ostreococcus sp. RCC809	species	70447
+391774	Desulfovibrio vulgaris DP4	norank	881
+5346	Coprinopsis cinerea	species	184431
+245562	Acidomyces richmondensis	species	245561
+43773	Syntrophus	genus	213468
+45349	Edwardsiidae	family	6103
+35460	Chlorellales	order	75966
+5269	Ustilago	genus	5268
+80744	Serpula	genus	389951
+281106	Argynnaceae	family	159987
+186192	Marinithermus hydrothermalis	species	186191
+5042	Eurotiales	order	451871
+9431	Vespertilionidae	family	30560
+336963	Uncinocarpus reesii 1704	norank	33188
+386487	Candidatus Ruthia magnifica	species	1541743
+9984	Oryctolagus	genus	9979
+7234	Drosophila persimilis	species	32358
+72294	Campylobacteraceae	family	213849
+292566	Dactylococcopsis salina	species	13034
+31276	Perkinsus marinus	species	28000
+9738	Tursiops	genus	9726
+75739	Eucoccidiorida	order	5796
+9977	Ochotona	genus	9976
+5104	Ascosphaera	genus	5103
+9379	Sorex	genus	183663
+61853	Nomascus leucogenys	species	325165
+31281	Enterocytozoon bieneusi	species	27971
+167546	Prochlorococcus marinus str. MIT 9301	norank	1219
+88036	Selaginella moellendorffii	species	3246
+35493	Streptophyta	phylum	33090
+204457	Sphingomonadales	order	28211
+38568	Leishmania	subgenus	5658
+4934	Lachancea kluyveri	species	300275
+7209	Loa loa	species	7208
+9376	Soricidae	family	9362
+102116	Stanieria cyanosphaera	species	102115
+644	Aeromonas hydrophila	species	642
+42742	Gelatoporia subvermispora	species	98757
+2711	Citrus sinensis	species	2706
+278028	Naumovozyma	genus	4893
+4776	Peronosporales	order	4762
+5660	Leishmania braziliensis	species	37617
+53527	Culex	subgenus	7174
+36910	Clavispora	genus	27319
+264462	Bdellovibrio bacteriovorus HD100	norank	959
+246195	Dichelobacter nodosus VCS1703A	norank	870
+7668	Strongylocentrotus purpuratus	species	7664
+36668	Formicidae	family	34725
+40139	Dolichoderinae	subfamily	36668
+31032	Takifugu	genus	31031
+6944	Ixodes	genus	426442
+30538	Vicugna pacos	species	30539
+147569	Myriangium	genus	147568
+34735	Apoidea	superfamily	7434
+147429	Andropogoneae	tribe	1648033
+4762	Oomycetes	class	33634
+7757	Petromyzon marinus	species	7756
+6127	Acropora	genus	6126
+162425	Aspergillus nidulans	species	5052
+9305	Sarcophilus harrisii	species	9304
+5865	Babesia bovis	species	5864
+147568	Myriangiaceae	family	45676
+205957	Cenarchaeaceae	family	205948
+286	Pseudomonas	genus	135621
+589343	Geminigeraceae	family	589342
+33852	Bacillariaceae	family	33851
+5890	Tetrahymena	genus	291294
+717646	Baudoinia panamericana UAMH 10762	norank	1709381
+3750	Malus domestica	species	3749
+2257	Natronomonas pharaonis	species	63743
+45131	Botryosphaeriaceae	family	451869
+4837	Phycomyces blakesleeanus	species	4836
+870	Dichelobacter nodosus	species	869
+6049	Haplosclerida	order	1779146
+6406	Rhynchobdellida	order	6403
+5125	Hypocreales	order	222543
+1158	Oscillatoria	genus	1150
+9434	Myotis	genus	9431
+296587	Micromonas commoda	species	38832
+5179	Sclerotinia	genus	28983
+32367	willistoni subgroup	speciessubgroup	32365
+9669	Mustela putorius furo	subspecies	9668
+28221	Deltaproteobacteria	class	68525
+3988	Ricinus communis	species	3987
+7460	Apis mellifera	species	7459
+27998	Perkinsida	order	27997
+372787	Fischerella thermalis	species	1190
+6042	Demospongiae	class	6040
+155892	Caulobacter vibrioides	species	75
+2276	Pyrobaculum	genus	2267
+13034	Dactylococcopsis	genus	1118
+9612	Canis lupus	species	9611
+121225	Pediculus humanus	species	121222
+163735	Phaseoleae	tribe	3814
+4922	Komagataella pastoris	species	460517
+877559	Thecamonas	genus	172820
+5021	Leptosphaeria	genus	34374
+7459	Apis	genus	83321
+1047171	Zymoseptoria tritici	species	1047167
+9604	Hominidae	family	314295
+6032	Apansporoblastina	suborder	6029
+171637	Maloideae	subfamily	3745
+36734	Unikaryonidae	family	6032
+64471	Synechococcus sp. CC9311	species	1129
+45156	Cyanidioschyzon	genus	265316
+1779146	Heteroscleromorpha	subclass	6042
+59729	Taeniopygia guttata	species	59728
+3603	Vitis	genus	3602
+1203	Scytonema	genus	1182
+8515	Iguanidae	family	8511
+5215	Tremellaceae	family	5234
+190650	Caulobacter crescentus CB15	norank	155892
+977863	Curvularia lunata m118	norank	5503
+7736	Branchiostomidae	family	7735
+742845	Malasseziaceae	family	162474
+3068	Volvox carteri f. nagariensis	forma	3067
+38946	Paracoccidioides	genus	1593277
+7158	Aedes	genus	1056966
+9360	Dasypus	genus	9359
+1490020	Gasterosteales	infraorder	8100
+6665	Cladocera	suborder	84337
+9796	Equus caballus	species	35510
+206351	Neisseriales	order	28216
+69293	Gasterosteus aculeatus	species	69292
+35461	Chlorellaceae	family	35460
+114525	Saccharomyces mikatae	species	4930
+3055	Chlamydomonas reinhardtii	species	3052
+39700	Trypanozoon	subgenus	5690
+291294	Tetrahymenidae	family	37093
+34479	Spizellomycetaceae	family	34478
+5198	Cladoniaceae	family	157822
+3650	Cucurbitaceae	family	71239
+100044	Pleomassaria siparia	species	100043
+665024	Bipolaris maydis ATCC 48331	norank	5016
+424551	Solanoideae	subfamily	4070
+5761	Naegleria	genus	5765
+213422	Geobacteraceae	family	69541
+4555	Setaria italica	species	4554
+56110	Oscillatoria acuminata PCC 6304	norank	118323
+7458	Apidae	family	34735
+28985	Kluyveromyces lactis	species	4910
+9126	Passeriformes	order	8825
+603431	Gloniaceae	family	715341
+1219	Prochlorococcus marinus	species	1218
+48302	grimshawi group	speciesgroup	48301
+32346	melanogaster group	speciesgroup	32341
+2797	Bangiophyceae	class	2763
+242159	Ostreococcus `lucimarinus`	species	70447
+41873	Mamiellaceae	family	13792
+264203	Zymomonas mobilis subsp. mobilis ZM4 = ATCC 31821	norank	120045
+147385	Brachypodieae	tribe	147368
+5334	Schizophyllum commune	species	5333
+2301	Thermoplasmatales	order	183967
+872	Desulfovibrio	genus	194924
+2235	Halobacteriales	order	183963
+183963	Halobacteria	class	28890
+443906	Clavibacter michiganensis subsp. michiganensis NCPPB 382	norank	33013
+5833	Plasmodium falciparum	species	418107
+81957	Polychrotinae	subfamily	8515
+83485	Linepithema humile	species	83484
+2303	Thermoplasma acidophilum	species	2302
+13642	Polysphondylium pallidum	species	13641
+27482	Aphididae	family	33385
+94695	Methanosarcinales	order	224756
+33825	Peniculida	order	6020
+218851	Aquilegia coerulea	species	3450
+41891	Coccomyxa	genus	35472
+542	Zymomonas mobilis	species	541
+248742	Coccomyxa subellipsoidea	species	41891
+3065	Volvocaceae	family	3042
+535722	Microsporum gypseum CBS 118893	norank	63402
+7399	Hymenoptera	order	33392
+2269	Thermofilum pendens	species	2268
+42374	Candida dubliniensis	species	1535326
+396331	Phanerochaetaceae	family	5303
+7865	Callorhinchidae	family	7864
+7147	Diptera	order	33392
+5849	Plasmodium gallinaceum	species	418104
+6658	Branchiopoda	class	6657
+7165	Anopheles gambiae	species	44542
+4842	Rhizopus	genus	1344955
+589342	Pyrenomonadales	order	3027
+3987	Ricinus	genus	235880
+228410	Nitrosomonas europaea ATCC 19718	norank	915
+7954	Danio	genus	7953
+29000	Pucciniomycotina	subphylum	5204
+206389	Rhodocyclales	order	28216
+4069	Solanales	order	91888
+28781	Adrianichthyoidei	suborder	76071
+374847	Candidatus Korarchaeum cryptofilum OPF8	norank	498846
+42302	Lasiosphaeriaceae	family	5139
+9398	Pteropodidae	family	30559
+29760	Vitis vinifera	species	3603
+13616	Monodelphis domestica	species	13615
+451435	Chytridiomycetes	class	4761
+3749	Malus	genus	721813
+1131492	Aspergillaceae	family	5042
+671987	Setosphaeria turcica Et28A	norank	93612
+36630	Aspergillus fischeri	species	5052
+32003	Nitrosomonadales	order	28216
+395010	Zasmidium cellare	species	395590
+7916	Lepisosteus	genus	7915
+52604	Pleurocapsales	order	1117
+4783	Phytophthora	genus	4776
+32365	willistoni group	speciesgroup	32341
+321332	Synechococcus sp. JA-2-3B`a(2-13)	species	1129
+460517	Komagataella	genus	115784
+418101	Plasmodium (Vinckeia)	subgenus	5820
+28000	Perkinsus	genus	27999
+7088	Lepidoptera	order	85604
+10226	Placozoa	phylum	33208
+718229	Sporormia fimetaria	species	45136
+84642	Aeromonadaceae	family	135624
+8049	Gadus morhua	species	8048
+28983	Sclerotiniaceae	family	5178
+105767	Tremella	genus	5215
+68335	Coprothermobacter	genus	227387
+5874	Theileria annulata	species	5873
+6274	Spirurida	order	119089
+235631	Crotonoideae	subfamily	3977
+171549	Bacteroidales	order	200643
+100025	Hysteriaceae	family	191554
+28231	Geobacter	genus	213422
+651137	Thaumarchaeota	phylum	1783275
+9845	Ruminantia	suborder	91561
+9005	Phasianidae	family	8976
+3982	Manihot	genus	235883
+32046	Synechococcus elongatus	species	1129
+1177	Nostoc	genus	1162
+45136	Sporormia	genus	55176
+3744	Rosales	order	91835
+38581	Leishmania major species complex	speciesgroup	38568
+30559	Megachiroptera	suborder	9397
+724	Haemophilus	genus	712
+35725	Macrophomina phaseolina	species	35724
+868	Cardiobacteriaceae	family	135615
+3760	Prunus persica	species	3754
+33851	Bacillariales	order	33850
+40559	Botrytis cinerea	species	33196
+59922	Prochlorococcus marinus str. MIT 9303	norank	1219
+451867	Dothideomycetidae	subclass	147541
+6668	Daphnia	genus	77658
+83344	Pseudocercospora fijiensis	species	131324
+41980	Metallosphaera	genus	118883
+64363	Dothistroma septosporum	species	242508
+147571	Piedraiaceae	family	134362
+5140	Neurospora	genus	5148
+101162	Bipolaris oryzae	species	33194
+1165	Anabaena cylindrica	species	1163
+29875	Trichoderma virens	species	5543
+9811	Procaviidae	family	9810
+265316	Cyanidiaceae	family	265318
+92938	Fischerella muscicola	species	1190
+204458	Caulobacterales	order	28211
+7215	Drosophila	genus	186285
+45147	Lophiostomataceae	family	92860
+9528	Cercopithecinae	subfamily	9527
+5811	Toxoplasma gondii	species	5810
+551115	Nostoc azollae 0708	norank	1164
+147541	Dothideomycetes	class	715962
+554296	Apusozoa	norank	2759
+134362	Capnodiales	order	451867
+102234	Cyanobacterium	genus	1118
+147537	Saccharomycotina	subphylum	716545
+33184	Onygenaceae	family	33183
+8826	Anseriformes	order	1549675
+374463	Baumannia cicadellinicola str. Hc (Homalodisca coagulata)	norank	186490
+8976	Galliformes	order	1549675
+5806	Cryptosporidium	genus	35082
+1176649	Agrobacterium fabrum	species	1183400
+35497	Suina	infraorder	91561
+6295	Filarioidea	superfamily	6274
+869	Dichelobacter	genus	868
+7864	Chimaeriformes	order	7863
+1301143	Xanthorioideae	subfamily	88646
+9600	Pongo pygmaeus	species	9599
+5807	Cryptosporidium parvum	species	5806
+9787	Perissodactyla	order	314145
+8089	Oryzias	genus	8088
+6657	Crustacea	subphylum	197562
+35128	Thalassiosira pseudonana	species	35127
+35127	Thalassiosira	genus	29202
+4953	Zygosaccharomyces	genus	4893
+813	Chlamydia trachomatis	species	810
+191554	Hysteriales	order	451868
+8353	Xenopus	genus	8360
+6157	Platyhelminthes	phylum	33213
+3847	Glycine max	species	1462606
+114185	Candidatus Carsonella	genus	114403
+33187	Uncinocarpus	genus	33184
+2263	Thermococcus	genus	2259
+3718	Capsella	genus	980083
+9821	Suidae	family	35497
+83233	Coriolaceae	family	5303
+77225	Pteropodinae	subfamily	9398
+418107	Plasmodium (Laverania)	subgenus	5820
+32351	melanogaster subgroup	speciessubgroup	32346
+7914	Semionotiformes	order	1489100
+186039	Fragilariopsis cylindrus	species	186035
+8342	Anura	order	41666
+116557	Phyllopoda	subclass	6658
+2763	Rhodophyta	norank	2759
+3215	Funariales	order	114656
+2191	Methanomicrobiales	order	224756
+272557	Aeropyrum pernix K1	norank	56636
+7756	Petromyzon	genus	7746
+251229	Chroococcidiopsis thermalis PCC 7203	norank	54299
+15368	Brachypodium distachyon	species	15367
+314295	Hominoidea	superfamily	9526
+309800	Haloferax volcanii DS2	norank	2246
+32594	Babesiidae	family	5863
+80840	Burkholderiales	order	28216
+64495	Rhizopus oryzae	species	4842
+9721	Cetacea	order	91561
+32335	virilis group	speciesgroup	32281
+3700	Brassicaceae	family	3699
+8825	Neognathae	superorder	8782
+198037	mojavensis species complex	norank	32324
+111781	Leptolyngbya sp. PCC 7376	species	47251
+35472	Coccomyxaceae	family	75981
+13641	Polysphondylium	genus	33083
+1046	Chromatiaceae	family	135613
+5262	Pucciniaceae	family	5258
+229219	Blastomyces	genus	299071
+9397	Chiroptera	order	314145
+395590	Zasmidium	genus	93133
+381046	Lachancea thermotolerans	species	300275
+200	Campylobacter curvus	species	194
+49	Polyangiaceae	family	80812
+9726	Delphinidae	family	9722
+176299	Agrobacterium fabrum str. C58	norank	1176649
+6231	Nematoda	phylum	1206794
+100043	Pleomassaria	genus	85915
+452284	Ustilaginomycotina	subphylum	5204
+1728959	Aurantioideae	subfamily	23513
+7716	Phlebobranchia	suborder	183770
+7952	Cypriniformes	order	186627
+273057	Sulfolobus solfataricus P2	norank	2287
+7422	Chalcidoidea	superfamily	272201
+155978	Acaryochloris marina	species	155977
+5185	Pezizales	order	147549
+881	Desulfovibrio vulgaris	species	872
+56636	Aeropyrum pernix	species	56635
+9989	Rodentia	order	314147
+5268	Ustilaginaceae	family	5267
+310453	Neofusicoccum parvum	species	407951
+186191	Marinithermus	genus	188786
+7069	Tribolium	genus	1304792
+810	Chlamydia	genus	1113537
+1288291	Anncaliia algerae PRA339	norank	723287
+3814	Papilionoideae	subfamily	3803
+183770	Enterogona	order	7713
+41937	Sapindales	order	91836
+83321	Apini	tribe	70987
+186623	Actinopteri	class	7898
+5671	Leishmania infantum	species	38574
+34725	Vespoidea	superfamily	7434
+33847	Thalassiosirales	order	33846
+2260	Pyrococcus	genus	2259
+8292	Amphibia	class	32523
+46681	Entamoeba dispar	species	5758
+368408	Thermofilum pendens Hrk 5	norank	2269
+47144	Tetraodon	genus	31031
+9304	Sarcophilus	genus	9277
+38609	Diprotodontia	order	9263
+9979	Leporidae	family	9975
+7070	Tribolium castaneum	species	7069
+451868	Pleosporomycetidae	subclass	147541
+99883	Tetraodon nigroviridis	species	47144
+7148	Nematocera	suborder	7147
+6403	Hirudinea	subclass	55824
+3689	Populus	genus	238069
+59689	Arabidopsis lyrata	species	3701
+721813	Maleae	tribe	171637
+329726	Acaryochloris marina MBIC11017	norank	155978
+200643	Bacteroidia	class	976
+44471	Microcoleus	genus	1150
+3217	Physcomitrella	genus	3216
+7157	Culicidae	family	41827
+5501	Coccidioides immitis	species	5500
+3977	Euphorbiaceae	family	3646
+7717	Cionidae	family	7716
+7638	Euechinoidea	subclass	7625
+6340	Annelida	phylum	1206795
+147380	Oryzeae	tribe	147367
+8100	Cottioidei	suborder	8111
+5476	Candida albicans	species	1535326
+511145	Escherichia coli str. K-12 substr. MG1655	norank	83333
+9789	Equus	genus	9788
+135625	Pasteurellales	order	1236
+9834	Tylopoda	suborder	91561
+9256	Ornithorhynchidae	family	9255
+4836	Phycomyces	genus	1344966
+4530	Oryza sativa	species	4527
+3027	Cryptophyta	class	2759
+1489913	Atherinomorphae	superorder	1489908
+100047	Melanomma pulvis-pyrius	species	45308
+40302	Nosema ceranae	species	27977
+464988	Hemiselmis andersenii	species	77924
+372055	Lophiostoma macrostomum	species	45148
+227508	Megalonychidae	family	948953
+1140	Synechococcus elongatus PCC 7942	norank	32046
+103449	Vavraia culicis	species	35235
+1190	Fischerella	genus	1189
+498846	Candidatus Korarchaeum cryptofilum	species	498845
+1206	Trichodesmium erythraeum	species	1205
+93060	Prochlorococcus marinus str. MIT 9215	norank	1219
+43179	Ictidomys tridecemlineatus	species	1141640
+33169	Eremothecium gossypii	species	33170
+405	Methylobacillus flagellatus	species	404
+297308	Ixodoidea	superfamily	6935
+483074	Baudoinia	genus	668547
+41665	Neopterygii	subclass	186623
+7586	Echinodermata	phylum	33511
+338191	Nitrosopumilus	genus	338190
+7745	Petromyzontiformes	order	117569
+379583	Feliformia	suborder	33554
+27288	Naumovozyma castellii	species	278028
+216260	Lottioidea	superfamily	69675
+6020	Oligohymenophorea	class	431838
+44474	Pleurocapsa	genus	52604
+224756	Methanomicrobia	class	28890
+76887	Caldivirga maquilingensis	species	76886
+717774	Marinomonas mediterranea MMB-1	norank	119864
+205948	Cenarchaeales	order	651137
+1173032	Chamaesiphon minutus	species	217161
+160035	Zopfia rhizophila	species	160034
+3983	Manihot esculenta	species	3982
+40127	Neurospora tetrasperma	species	5140
+7244	Drosophila virilis	species	32335
+28211	Alphaproteobacteria	class	1224
+3042	Chlamydomonadales	order	3166
+6102	Hexacorallia	subclass	6101
+9031	Gallus gallus	species	9030
+7203	Brachycera	suborder	7147
+41084	Polyphaga	suborder	7041
+10016	Dipodomys	genus	38662
+135618	Methylococcales	order	1236
+406427	Anthoathecata	order	37516
+6292	Wuchereria	genus	6296
+31244	Schistosomatoidea	superfamily	6180
+4929	Meyerozyma guilliermondii	species	766728
+316278	Synechococcus sp. RCC307	species	1129
+186627	Cypriniphysae	superorder	186626
+28377	Anolis carolinensis	species	28376
+452333	Agaricomycetidae	subclass	155619
+98005	Eutrema	genus	981100
+70448	Ostreococcus tauri	species	70447
+2206	Methanosarcinaceae	family	94695
+10116	Rattus norvegicus	species	10114
+1176130	Aulographum hederae	species	1176129
+6935	Ixodida	order	6934
+85929	Sphaerulina musiva	species	237179
+410358	Methanocorpusculum labreanum Z	norank	83984
+4155	Erythranthe guttata	species	1502711
+943	Ehrlichia	genus	942
+146891	Prochlorococcus marinus str. AS9601	norank	1219
+5320	Pleurotus	genus	104366
+1047167	Zymoseptoria	genus	93133
+5036	Histoplasma	genus	299071
+147547	Lecanoromycetes	class	716546
+213468	Syntrophaceae	family	213462
+63402	Microsporum gypseum	species	34392
+235883	Manihoteae	tribe	235631
+497965	Cyanothece sp. PCC 7822	species	43988
+45151	Pyrenophora tritici-repentis	species	5027
+7664	Strongylocentrotus	genus	31181
+131316	Passalora	genus	93133
+51511	Ciona savignyi	species	7718
+418103	Plasmodium (Plasmodium)	subgenus	5820
+241425	Crinalium epipsammum	species	241421
+356	Rhizobiales	order	28211
+91834	rosids incertae sedis	norank	71275
+5204	Basidiomycota	phylum	451864
+1148	Synechocystis sp. PCC 6803	species	1142
+5037	Histoplasma capsulatum	species	5036
+2319	Methanopyrus	genus	183713
+192874	Capsaspora	genus	127916
+3166	Chlorophyceae	class	3041
+2759	Eukaryota	superkingdom	131567
+41944	Myrtales	order	91836
+5855	Plasmodium vivax	species	418103
+29176	Neospora caninum	species	29175
+75	Caulobacter	genus	76892
+776	Coxiella	genus	118968
+199306	Coccidioides posadasii	species	5500
+41088	Cucujiformia	infraorder	41084
+554155	Arthroderma otae CBS 113480	norank	63405
+5502	Curvularia	genus	28556
+4554	Setaria	genus	1293361
+32054	Calothrix parietina	species	1186
+696747	Arthrospira platensis NIES-39	norank	118562
+97479	Pyrenophora teres f. teres	forma	53485
+118562	Arthrospira platensis	species	35823
+744530	Dissoconiaceae	family	134362
+3051	Chlamydomonadaceae	family	3042
+240292	Anabaena variabilis ATCC 29413	norank	1172
+32347	ananassae subgroup	speciessubgroup	32346
+7918	Lepisosteus oculatus	species	7916
+135621	Pseudomonadaceae	family	72274
+13563	Heterobasidion annosum	species	256003
+9479	Platyrrhini	parvorder	314293
+4004	Linaceae	family	3646
+55153	Sciuridae	family	33553
+83484	Linepithema	genus	40139
+69676	Lottiidae	family	216260
+117187	Fusarium verticillioides	species	171627
+7041	Coleoptera	order	33392
+9370	Echinops	genus	176113
+1183400	Agrobacterium tumefaciens complex	speciesgroup	357
+33385	Aphidoidea	superfamily	143961
+7953	Cyprinidae	family	30727
+281687	Caenorhabditis japonica	species	6237
+7425	Nasonia vitripennis	species	7424
+15367	Brachypodium	genus	147385
+105387	Scolecida	subclass	6341
+5017	Bipolaris zeicola	species	33194
+1298	Deinococcus	genus	183710
+36913	Lodderomyces	genus	1535325
+1126212	Macrophomina phaseolina MS6	norank	35725
+1239	Firmicutes	phylum	1783272
+948951	Cingulata	order	9348
+37617	Leishmania braziliensis species complex	speciesgroup	37616
+9577	Hylobatidae	family	314295
+4575	Zea	genus	1648029

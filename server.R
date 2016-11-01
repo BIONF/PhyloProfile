@@ -738,8 +738,9 @@ shinyServer(function(input, output, session) {
     fileName <- toString(domainIN[1])
     fileFullPath <- paste0("data/",fileName,".mDomains")
     if(file.exists(fileFullPath)){
-      domainDf <- as.data.frame(read.table(fileFullPath, sep='\t',header=T,comment.char=""))
-    
+      domainDf <- as.data.frame(read.table(fileFullPath, sep='\t',header=FALSE,comment.char=""))
+      colnames(domainDf) <- c("seedID","orthoID","feature","start","end","weight")
+      
       ### get sub dataframe
       grepID = paste(group,"#",ortho,sep="")
       subDomainDf <- domainDf[grep(grepID,domainDf$seedID),]
