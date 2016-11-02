@@ -737,6 +737,7 @@ shinyServer(function(input, output, session) {
     domainIN <- unlist(strsplit(toString(input$file1),","))
     fileName <- toString(domainIN[1])
     fileFullPath <- paste0("data/",fileName,".mDomains")
+    
     if(file.exists(fileFullPath)){
       domainDf <- as.data.frame(read.table(fileFullPath, sep='\t',header=FALSE,comment.char=""))
       colnames(domainDf) <- c("seedID","orthoID","feature","start","end","weight")
@@ -775,7 +776,7 @@ shinyServer(function(input, output, session) {
       msg <- paste0("<p><span style=\"color: #ff0000;\"><strong>","data/",fileName,".mDomains not found!!!</strong></span></p>")
       HTML(msg)
     } else {
-      plotOutput("archiPlot",height = input$archiHeight)
+      plotOutput("archiPlot",height = input$archiHeight, width = input$archiWidth)
     }
   })
   
@@ -825,11 +826,9 @@ shinyServer(function(input, output, session) {
     #data <- sortedTaxaList()
     #data <- dataFiltered()
     #data <- dataSupertaxa()
-    data <- dataHeat()
-    data <- data[data$geneID == input$inSeq,]
-    
+    #data <- dataHeat()
     #data <- detailPlotDt()
-    #data <- downloadData()
+    data <- downloadData()
     data
   })
   

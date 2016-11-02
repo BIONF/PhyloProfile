@@ -89,9 +89,10 @@ shinyUI(fluidPage(
                           numericInput("selectedHeight","Plot_height(px)",min=100,max=1600,step=50,value=400,width=100),
                           numericInput("selectedWidth","Plot_Width(px)",min=100,max=1600,step=50,value=800,width=100)
                   ),
-                  bsModal("plotArchi","Domain architecture","do3", size = "medium",
+                  bsModal("plotArchi","Domain architecture","do3", size = "large",
                           uiOutput("archiPlot.ui"),
-                          numericInput("archiHeight","plot_height(px)",min=100,max=1600,step=50,value=400,width=100)
+                          numericInput("archiHeight","plot_height(px)",min=100,max=1600,step=50,value=400,width=100),
+                          numericInput("archiWidth","plot_width(px)",min=100,max=1600,step=50,value=800,width=100)
                   )
                 ),
         tabPanel ("Data",dataTableOutput("dis"),
