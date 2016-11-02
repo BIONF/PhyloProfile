@@ -56,10 +56,7 @@ foreach my $file(@allOutFiles){
 		my $taxonID = $hit[1];
 		my $hitID = $hit[0].":".$tmp[2];
 #		print "$geneID - $taxonID - $fas";<>;
-if($line =~ /niteu_5654/){
-	print $line,"\n";
-	print "$geneID - $taxonID - $fas";<>; 
-}
+
 		### save to %taxaList, %allGenes and %fas
 		$taxaList{"ncbi$taxonID"} = 1;
 		$fas{"$geneID#ncbi$taxonID"} = $hitID."#".$fas;

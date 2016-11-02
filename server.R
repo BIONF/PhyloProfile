@@ -62,7 +62,7 @@ shinyServer(function(input, output, session) {
     filein <- input$file1
     if(is.null(filein)){v1$parseInput <- FALSE}
   })
-  
+
   ######### create taxonID.list.fullRankID and taxonNamesReduced.txt from input file (if necessary)
   observe({
     filein <- input$file1
@@ -732,14 +732,12 @@ shinyServer(function(input, output, session) {
     ortho <- as.character(allOrthoID[corX])
     fas <- as.character(selDf$fas[selDf$orthoID==ortho])
     
-    ### load domain file    
-#    domainDf <- as.data.frame(read.table("data/lca.list.distribution.example.mDomains", sep='\t',header=T,comment.char=""))
-    domainIN <- unlist(strsplit(toString(input$file1),","))
-    fileName <- toString(domainIN[1])
-    fileFullPath <- paste0("data/",fileName,".mDomains")
-    
-    if(file.exists(fileFullPath)){
-      domainDf <- as.data.frame(read.table(fileFullPath, sep='\t',header=FALSE,comment.char=""))
+    ### load domain file
+    filein3 <- input$file3
+    if(is.null(filein3)){
+      v3$doPlot3 = FALSE
+    } else {
+      domainDf <- as.data.frame(read.table(file=filein3$datapath, sep='\t',header=FALSE,comment.char=""))
       colnames(domainDf) <- c("seedID","orthoID","feature","start","end","weight")
       
       ### get sub dataframe
@@ -766,14 +764,14 @@ shinyServer(function(input, output, session) {
       plot_seed <- plotting(seedDf,seed,max(subDomainDf$end))
       
       grid.arrange(plot_seed,plot_ortho,ncol=1)
-    } else {v3$doPlot3 = FALSE}
+    }
   })
   
   output$archiPlot.ui <- renderUI({
     if (v3$doPlot3 == FALSE) {
       domainIN <- unlist(strsplit(toString(input$file1),","))
       fileName <- toString(domainIN[1])
-      msg <- paste0("<p><span style=\"color: #ff0000;\"><strong>","data/",fileName,".mDomains not found!!!</strong></span></p>")
+      msg <- paste0("<p><span style=\"color: #ff0000;\"><strong>Please use \"Upload additional file(s)\" to provide information about domain architecture!!! </strong></span></p>")
       HTML(msg)
     } else {
       plotOutput("archiPlot",height = input$archiHeight, width = input$archiWidth)

@@ -11,9 +11,9 @@ shinyUI(fluidPage(
   fluidRow(
     column(2, offset = 0,
            fileInput("file1","Presence/absence file: "),
-           fileInput("file2","Traceability matrix file: "),
            actionButton("parse","Get info from input",style='padding:4px; font-size:85%'),
-           helpText("(Run this, whenever you have a new taxa set)")
+           helpText("(Run this, whenever you have a new taxa set)"),
+           actionButton("AddFile","Upload additional file(s)",style='padding:4px; font-size:100%')
     ),
     column(3,
            uiOutput("rankSelect"),
@@ -57,7 +57,12 @@ shinyUI(fluidPage(
       )
     )
   ),
-  
+
+  bsModal("modalnew", "Upload additional file(s)", "AddFile", size = "medium",
+          fileInput("file2","Traceability matrix: "),
+          fileInput("file3","Feature architectures: ")
+  ),
+
   sidebarLayout(
     fluid = FALSE,
     
