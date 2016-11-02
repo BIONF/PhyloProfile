@@ -721,7 +721,7 @@ shinyServer(function(input, output, session) {
     allOrthoID <- sort(selDf$orthoID)
     
     # get coordinates of plot_click_detail
-    if (is.null(input$plot_click_detail$x)) return()
+    if (is.null(input$plot_click_detail$x)) {v3$doPlot3 = FALSE}
     else{
       corX = round(input$plot_click_detail$y)
       corY = round(input$plot_click_detail$x)
@@ -771,7 +771,13 @@ shinyServer(function(input, output, session) {
     if (v3$doPlot3 == FALSE) {
       domainIN <- unlist(strsplit(toString(input$file1),","))
       fileName <- toString(domainIN[1])
-      msg <- paste0("<p><span style=\"color: #ff0000;\"><strong>Please use \"Upload additional file(s)\" to provide information about domain architecture!!! </strong></span></p>")
+      msg <- paste0(
+        "<p><span style=\"color: #ff0000;\"><strong>No information about domain architecture! Please check:</strong></span></p>
+          <ul style=\"list-style-type: square;\">
+          <li>if you selected any sequence in the Detailed plot?</li>
+          <li>if you uploaded the domain file using Upload additional file(s) option? (see input example in data/lca.FASmatrix.mDomains)</li>
+          </ul>"
+      )
       HTML(msg)
     } else {
       plotOutput("archiPlot",height = input$archiHeight, width = input$archiWidth)
@@ -835,16 +841,20 @@ shinyServer(function(input, output, session) {
     #    if(!file.exists("www/beschreibung.jpg")){paste("Cannot load \"beschreibung.jpg\" file in www folder!")}
     #    else{img(src="beschreibung.jpg", align = "left", height=700, width=800)}
     HTML(
-      '<h1 style="color: #5e9ca0;">How the input file looks like?</h1>
-      <p>Input file is a matrix of "values" (e.g. FAS scores, normalized distances, etc.), where rows represent genes and columns represent taxa.</p>
-      <p>A gene may be present or absent in some taxa. A present "value" has to be in the range of 0 and 1. An absent "value" is written as NA.</p>
+      '
+      <h1 style="color: #5e9ca0;">How the input file looks like?</h1>
+      <p>The main Input file is a matrix of "values" (e.g. FAS scores, normalized distances, etc.), where rows represent genes and columns represent taxa.</p>
+      <p>A gene may be present or absent in some taxa. A present "value" has to be in the range of 0 and 1. An absent "value" is written as NA. Gene ID and its value is concatenated via a "#" symbol.&nbsp;For example:</p>
+      <ul style="list-style-type: square;">
+      <li>gene0123#0.9837: gene0123 has a value of 0.9837</li>
+      <li>gene0999#NA: gene0999 is present but doesn\'t has any value</li>
+      <li>NA#NA: there is no ortholog has been found for this taxon</li>
+      </ul>
       <p>The header of first column has to be "geneID". The header of each taxon must have this format "ncbi12345", in which 12345 is its NCBI taxon ID.</p>
-      <p><em>Still&nbsp;unclear? Take a look at the example file in /data/lca.FASmatrix :)</em></p>
+      <p><em>More detail? Pleas take a look at the example file in /data/lca.FASmatrix :)</em></p>
       <p>&nbsp;</p>
       <h1 style="color: #5e9ca0;">Download function does not work</h1>
       <p>Problem: clicked on the "Download plot" (or Download filtered data) button, entered a file name on to "Download file" window and clicked Save, but the file...was not saved :(</p>
-      <p>Solution:&nbsp;</p>
-      <p>1) Use macOS to run the app :-P</p>
       <p>2) Click on "Open im Browser" to open the app using internet browser. Now the download function should work.</p>
       <p><em>I tested this function using Ubuntu 14.04 LTS and it worked with Firefox web browser.</em>&nbsp;</p>
       <p>&nbsp;&nbsp;</p>
@@ -860,12 +870,17 @@ shinyServer(function(input, output, session) {
       <p><span style="color: #ff0000;">Error:&nbsp;argument&nbsp;is of length zero</span></p>
       <p>=&gt;&nbsp;re-select (super)taxon to highlight, it will work again :)</p>
       <p>&nbsp;</p>
+      <h1 style="color: #5e9ca0;">Errors by plotting&nbsp;domain architecture</h1>
+      <p><span style="color: #ff0000;">Error:&nbsp;Aesthetics must be either length 1 or the same as the data (1): x, y, yend, xend</span></p>
+      <p>=&gt; please check if the ID of selected sequence, which is shown as orthoID in Detailed plot, is present in domain input file. This error is certainly caused by the missing ID in domain input file.</p>
+      <p>&nbsp;</p>
       <h1 style="color: #5e9ca0;">Bug reporting</h1>
       <p>Any bug reports or comments, suggestions are highly appreciated ;-)</p>
       <p>&nbsp;</p>
       <p>&copy; 2016 Vinh Tran</p>
       <p>contact:&nbsp;<a href="mailto:tran@bio.uni-frankfurt.de">tran@bio.uni-frankfurt.de</a></p>
-      <p>Please check the latest version at&nbsp;<a href="https://github.com/trvinh/phyloprofile">https://github.com/trvinh/phyloprofile</a></p>'
+      <p>Please check the latest version at&nbsp;<a href="https://github.com/trvinh/phyloprofile">https://github.com/trvinh/phyloprofile</a></p>
+      '
       )
   })
   
@@ -878,91 +893,5 @@ shinyServer(function(input, output, session) {
     # name <- toString(fileName[1])
     # fullPath <- paste0("data/",name,".mDomains")
     # print(fullPath)
-    
-    #  if(is.null(filein)){return()}
-    # titleline <- readLines(filein$datapath, n=1)
-    # paste("perl ", getwd(),"/data/getTaxonomyInfo.pl", 
-    #       #                 " -i ", getwd(),"/data/",input$file1,
-    #       " -i \"", titleline,"\"", 
-    #       " -n ", getwd(),"/data/taxonNamesFull.txt",
-    #       " -o ", getwd(),"/data",
-    #       sep='')
-    
-    # ### print selected supertaxon ID
-    # full <- as.character(input$inSelect)
-    # split <- strsplit(as.character(input$inSelect),"_")
-    # inSelect <- as.integer(split[[1]][2])
-    # paste(full,inSelect)
-    
-    ### print position of highlighted taxa
-    # full <- as.character(input$inHighlight)
-    # split <- strsplit(as.character(input$inHighlight),"_")
-    # inHighlight <- as.integer(split[[1]][2])
-    # #paste(full)
-    # 
-    # dataHeat <- dataHeat()
-    # highlightTaxon <- toString(dataHeat[dataHeat$supertaxonID == inHighlight,2][1])
-    # selectedIndex = as.numeric(as.character(substr(highlightTaxon,2,4)))
-    # paste(highlightTaxon,selectedIndex)
-    
-    ### print selected taxonomy rank
-    #    input$rankSelect
-    
-    ### print percentage and fas cutoff
-    #    paste(input$percent,input$fas)
-    #    as.numeric(as.character(substr(input$inHighlight,1,3)))
-    
-    ### print point info
-    #    paste(pointInfo())
-    
-    ### print taxonName and geneID for detailed plot
-    # info <- pointInfo()  # info = geneID,supertaxon,maxFAS,%spec
-    # if(is.null(info)){return()}
-    # else{
-    #   plotTaxon = info[2]
-    #   plotGeneID = info[1]
-    #   paste(plotTaxon,plotGeneID)
-    # }
-    
-    # ### print value of x and y of plot_click
-    #    paste0("x=", input$plot_click$x, "\ny=", input$plot_click$y)
-    
-    # ### print value of selected point
-    #    taxaList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T))
-    #    inSelect <- as.numeric(taxaList$ncbiID[taxaList$fullName == input$inSelect])
-    
-    #    split <- strsplit(as.character(input$inSelect),"_")
-    #    inSelect <- as.numeric(split[[1]][2])
-    #    dataHeat <- dataHeat()
-    
-    
-    # if (is.null(input$plot_click$x)) return()
-    # else{
-    # get geneID
-    # genes <- as.matrix(dataHeat[dataHeat$supertaxonID == inSelect,])
-    # genes[1]
-    # geneID <- toString(genes[round(input$plot_click$y)])
-    # geneID
-    # # get supertaxon (spec)
-    # supertaxa <- levels(dataHeat$supertaxon)
-    # spec <- toString(supertaxa[round(input$plot_click$x)])
-    # paste0("x=", input$plot_click$x, "\ny=", input$plot_click$y, spec)
-    # # get FAS and percentage of present species
-    # FAS <- dataHeat$fas[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
-    # Percent <- dataHeat$presSpec[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
-    #
-    # if(is.na(as.numeric(Percent))){return()}
-    # else{
-    #   info <- c(geneID,as.character(spec),round(as.numeric(FAS),2),round(as.numeric(Percent),2))
-    #   #substr(spec,6,nchar(as.character(spec)))
-    # }
-    # }
-    
-    # ### list of all sequence IDs
-    # data <- as.data.frame(dataHeat())
-    # data$geneID <- as.character(data$geneID)
-    # data$geneID <- as.factor(data$geneID)
-    # out <- as.list(levels(data$geneID))
-    # paste(out)
   })
 })
