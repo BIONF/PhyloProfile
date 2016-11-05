@@ -89,7 +89,7 @@ shinyUI(fluidPage(
   ),
   
   ####### popup windows for FASTA configurations
-  bsModal("config", "FASTA config", "getConfig", size = "medium",
+  bsModal("config", "FASTA config", "getConfig", size = "small",
           textInput("path","Main path:","")
           ,selectInput("dir_format","Directory format:",choices=list("path/speciesID.fa*"=1,"path/speciesID/speciesID.fa*"=2),selected="Path/speciesID.fasta")
           ,selectInput("file_ext","File extension:",choices=list("fa"="fa","fasta"="fasta","fas"="fas","txt"="txt"),selected="fa")
@@ -192,7 +192,7 @@ shinyUI(fluidPage(
     fixed = TRUE,
     h5("Point's info:"),
     verbatimTextOutput("pointInfo"),
-    bsButton("go", "Detailed plot", disabled = TRUE),
+    bsButton("go", "Detailed plot", style="success", disabled = TRUE),
     style = "opacity: 0.80"
   )
 ))
