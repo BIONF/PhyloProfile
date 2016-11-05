@@ -8,58 +8,58 @@ shinyUI(fluidPage(
   # Application title
   titlePanel("Phylogenetic profile app"),
   
-  # Sidebar for input file
+  ################### wellpanel for INPUTS ##########################
   wellPanel(
-  fluidRow(
-    column(3, offset = 0,
-           fileInput("file1","Presence/absence file: "),
-           bsButton("parse","Get info from input",disabled=TRUE),
-           helpText(""),
-           bsButton("AddFile","Upload additional file(s)",disabled = TRUE)
-    ),
-    column(3,
-           uiOutput("rankSelect"),
-           uiOutput("select"),
-           bsButton("getConfig","FASTA config",style="info")
-    ),
-    column(1,
-           numericInput("number","# rows ",min=1,max=1600,step=10,value=30,width=100),
-           numericInput("stIndex","start at:",min=1,max=1600,value=1,width=100)
-    ),
-    column(1,
-           numericInput("width","Width(px)",min=600,max=3200,step=50,value=600,width=100),
-           numericInput("height","Height(px)",min=600,max=1600,step=50,value=600,width=100)
-    ),
-    column(1,
-           radioButtons(
-             inputId="xAxis",
-             label="x-Axis:",
-             choices=list(
-               "taxa",
-               "genes"
-             ),
-             selected="taxa"),
-           bsButton("do", "PLOT",type="action",style="danger",size = "large",disabled = TRUE),
-           h5(""),
-           actionButton("setColor","Set colors",style='padding:4px; font-size:100%')
-    ),
-    column(2,
-           sliderInput("fas",
-                       "FAS cutoff: ",
-                       min = 0,
-                       max = 1,
-                       step = 0.05,
-                       value = 0.0,
-                       width = 200),
-           sliderInput("percent",
-                       "% of present species:",
-                       min = 0,
-                       max = 1,
-                       step = 0.05,
-                       value = 0.0,
-                       width = 200)
+    fluidRow(
+      column(3, offset = 0,
+             fileInput("file1","Presence/absence file: "),
+             bsButton("parse","Get info from input",disabled=TRUE),
+             helpText(""),
+             bsButton("AddFile","Upload additional file(s)",disabled = TRUE)
+      ),
+      column(3,
+             uiOutput("rankSelect"),
+             uiOutput("select"),
+             bsButton("getConfig","FASTA config",style="info")
+      ),
+      column(1,
+             numericInput("number","# rows ",min=1,max=1600,step=10,value=30,width=100),
+             numericInput("stIndex","start at:",min=1,max=1600,value=1,width=100)
+      ),
+      column(1,
+             numericInput("width","Width(px)",min=600,max=3200,step=50,value=600,width=100),
+             numericInput("height","Height(px)",min=600,max=1600,step=50,value=600,width=100)
+      ),
+      column(1,
+             radioButtons(
+               inputId="xAxis",
+               label="x-Axis:",
+               choices=list(
+                 "taxa",
+                 "genes"
+               ),
+               selected="taxa"),
+             bsButton("do", "PLOT",type="action",style="danger",size = "large",disabled = TRUE),
+             h5(""),
+             actionButton("setColor","Set colors",style='padding:4px; font-size:100%')
+      ),
+      column(2,
+             sliderInput("fas",
+                         "FAS cutoff: ",
+                         min = 0,
+                         max = 1,
+                         step = 0.05,
+                         value = 0.0,
+                         width = 200),
+             sliderInput("percent",
+                         "% of present species:",
+                         min = 0,
+                         max = 1,
+                         step = 0.05,
+                         value = 0.0,
+                         width = 200)
+        )
       )
-    )
   ),
   
   ####### popup to confirm parsing data from input file
@@ -97,6 +97,7 @@ shinyUI(fluidPage(
           
   ),
   
+  ################### SIDEBAR PANEL AND MAIN PANEL ################### 
   sidebarLayout(
     fluid = FALSE,
     
@@ -107,7 +108,7 @@ shinyUI(fluidPage(
       bsButton("do2", "Plot selected sequence(s)",disabled=TRUE)
     ),
     
-    # Main page
+    ################ Main page
     mainPanel(
       tabsetPanel(
 #        tabPanel ("Distribution",plotOutput("plot1")),
@@ -178,7 +179,7 @@ shinyUI(fluidPage(
     )
   ),
   
-  ### help button
+  ############# HELP button
   absolutePanel(
     bottom = 5, right = 30,
     fixed = TRUE,
@@ -186,7 +187,7 @@ shinyUI(fluidPage(
     style = "opacity: 0.80"
   ),
 
-  ### show click info
+  ############# PONIT's INFO BOX
   absolutePanel(
     bottom = 5, left = 30,
     fixed = TRUE,

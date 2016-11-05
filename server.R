@@ -11,8 +11,8 @@ if (!require("ape")) {install.packages("ape")}
 if (!require("stringr")) {install.packages("stringr")}
 if (!require("Biostrings")) {biocLite("Biostrings")}
 
-### function for plotting domain architecture
-plotting <- function(df,geneID){
+######## function for plotting domain architecture ########
+plotting <- function(df,geneID,fas){
   gg <- ggplot(df, aes(y=feature, x=end, color = feature)) +
     geom_segment(data=df, aes(y=feature, yend=feature, x=0, xend=1), color="#b2b2b2", size=0.15)
   
@@ -29,7 +29,7 @@ plotting <- function(df,geneID){
   
   ### theme format
   gg <- gg + scale_y_discrete(expand=c(0.075,0))
-  gg <- gg + labs(x=NULL, y=NULL, title=geneID)
+  gg <- gg + labs(x=NULL, y=NULL, title=paste0(geneID," - FAS=",fas))
   gg <- gg + theme_bw(base_family="Calibri")
   gg <- gg + theme(panel.border=element_blank())
   gg <- gg + theme(axis.ticks=element_blank())
@@ -40,10 +40,15 @@ plotting <- function(df,geneID){
   return(gg)
 }
 
-###### MAIN
+############################ MAIN ############################
 options(shiny.maxRequestSize=30*1024^2)  ## size limit for input 30mb
+
 shinyServer(function(input, output, session) {
-  ### reset colors
+  ############################################################# 
+  ####################  PRE-PROCESSING  #######################
+  #############################################################
+  
+  ######## reset colors
   observeEvent(input$defaultColorTrace, {
     shinyjs::reset("lowColor_trace")
     shinyjs::reset("highColor_trace")
@@ -54,13 +59,13 @@ shinyServer(function(input, output, session) {
     shinyjs::reset("highColor_fas")
   })
   
-  ### enable "parse" & "upload additional files" button after uploading main file
+  ######## enable "parse" & "upload additional files" button after uploading main file
   observeEvent(input$file1, ({
     updateButton(session, "parse", disabled = FALSE)
     updateButton(session, "AddFile", disabled = FALSE)
   }))
   
-  ### check if data is loaded and "parse" button (get info from input) is clicked and confirmed
+  ######## check if data is loaded and "parse" button (get info from input) is clicked and confirmed
   v1 <- reactiveValues(parseInput = FALSE)
   observeEvent(input$BUTyes, {
     toggleModal(session, "parseConfirm", toggle = "close")
@@ -70,7 +75,7 @@ shinyServer(function(input, output, session) {
     toggleModal(session, "parseConfirm", toggle = "close")
   })
   
-  ######### create taxonID.list.fullRankID and taxonNamesReduced.txt from input file (if necessary)
+  ######### create taxonID.list.fullRankID and taxonNamesReduced.txt from input file (if confirmed by BUTyes)
   observe({
     filein <- input$file1
     if(is.null(filein)){return()}
@@ -94,28 +99,6 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  ##### enable "PLOT" button
-  observeEvent(input$rankSelect,({
-    if(input$rankSelect == ""){
-      updateButton(session, "do", disabled = TRUE)
-    } else{
-      updateButton(session, "do", disabled = FALSE)
-    }
-  }))
-  
-  ##### check if data is loaded and "plot" button is clicked
-  v <- reactiveValues(doPlot = FALSE)
-  observeEvent(input$do, {
-    # 0 will be coerced to FALSE
-    # 1+ will be coerced to TRUE
-    v$doPlot <- input$do
-    filein <- input$file1
-    if(is.null(filein)){
-      v$doPlot <- FALSE
-      updateButton(session, "do", disabled = TRUE)
-    }
-  })
-  
   ######## list of taxonomy ranks for plotting
   output$rankSelect = renderUI({
     selectInput("rankSelect", label = "Select taxonomy rank:",
@@ -124,7 +107,7 @@ shinyServer(function(input, output, session) {
                 selected = "")
   })
   
-  ####### get list of all (super)taxa
+  ####### GET list of all (super)taxa
   allTaxaList <- reactive({
     #  output$select = renderUI({
     filein <- input$file1
@@ -148,23 +131,47 @@ shinyServer(function(input, output, session) {
     choice <- merge(choice,nameList,by="ncbiID",all = FALSE)
   })
   
-  ### then output list of species onto UI
+  ### then output list of (super)taxa onto UI
   output$select = renderUI({
     choice <- allTaxaList()
-    #    choice$fullName <- paste0(choice$fullName,"_",choice$ncbiID)
     choice$fullName <- as.factor(choice$fullName)
     selectInput('inSelect','Choose (super)taxon of interest:',as.list(levels(choice$fullName)),levels(choice$fullName)[1])
   })
   
   output$highlight = renderUI({
-    #    if(input$xAxis == "taxa"){
     choice <- allTaxaList()
-    #      choice$fullName <- paste0(choice$fullName,"_",choice$ncbiID)
     choice$fullName <- as.factor(choice$fullName)
     selectInput('inHighlight','Select (super)taxon to highlight:',as.list(levels(choice$fullName)),levels(choice$fullName)[1])
   })
   
-  ######## sorting supertaxa list
+  ######## enable "PLOT" button
+  observeEvent(input$rankSelect,({
+    if(input$rankSelect == ""){
+      updateButton(session, "do", disabled = TRUE)
+    } else{
+      updateButton(session, "do", disabled = FALSE)
+    }
+  }))
+  
+
+  ############################################################# 
+  ##################  PROCESSING INPUT DATA ###################
+  #############################################################
+  
+  ######## check if data is loaded and "plot" button is clicked
+  v <- reactiveValues(doPlot = FALSE)
+  observeEvent(input$do, {
+    # 0 will be coerced to FALSE
+    # 1+ will be coerced to TRUE
+    v$doPlot <- input$do
+    filein <- input$file1
+    if(is.null(filein)){
+      v$doPlot <- FALSE
+      updateButton(session, "do", disabled = TRUE)
+    }
+  })
+  
+  ######## sorting supertaxa list based on chosen reference taxon
   sortedTaxaList <- reactive({
     if(v$doPlot == FALSE){return()}
     
@@ -180,7 +187,7 @@ shinyServer(function(input, output, session) {
     rankName = substr(rankSelect,4,nchar(rankSelect))   # get rank name from rankSelect
     rankNr = 0 + as.numeric(substr(rankSelect,1,2))     # get rank number (number of column in unsorted taxa list - dataframe Dt)
     
-    # get selected supertaxon ID
+    ### get selected supertaxon ID
     taxaList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T))
     superID <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inSelect & taxaList$rank == rankName])
     
@@ -203,19 +210,14 @@ shinyServer(function(input, output, session) {
     ### get sorting taxa
     newTree <- read.tree(text=write.tree(rerootTree))
     orderedTaxa <- rev(newTree$tip.label)
-    # orderedTaxa
-    # length(orderedTaxa)
-    # orderedTaxa[2]
-    
+
     ### now sort dataframe Dt
     sortedDt <- data.frame()
     for(i in 1:length(orderedTaxa)){
       subDt <- Dt[Dt[,"ncbiID"]==orderedTaxa[i],]
-      #  print(subDt)
       sortedDt <- rbind(sortedDt,subDt)
     }
-    # sortedDt
-    
+
     ### get only taxonIDs list of selected rank and rename columns
     sortedOut <- subset(sortedDt,select=c("No.","abbrName","ncbiID","fullName",as.character(rankName)))
     colnames(sortedOut) <- c("No.","abbrName","species","fullName","ncbiID")
@@ -254,9 +256,12 @@ shinyServer(function(input, output, session) {
     sortedOut
   })
   
-  ######## parsing data from input matrix
+  ############### PARSING DATA FROM INPUT MATRIX:
+  ############### get traceability scores for coressponding orthologs (if trace matrix is provided) (2)
+  ############### get (super)taxa names (3)
+  ############### calculate percentage of presence (4), max FAS (5) and mean TRACEEBILITY (6) if group input taxa list into higher taxonomy rank
   dataFiltered <- reactive({
-    ##### matrix input
+    ### (1) LOADING INPUT MATRIX (1)
     filein <- input$file1
     if(is.null(filein)){return()}
     
@@ -275,8 +280,7 @@ shinyServer(function(input, output, session) {
     colnames(mdData) <- c("geneID","ncbiID","value","orthoID","fas")
     mdData <- mdData[,c("geneID","ncbiID","fas","orthoID")]
     
-    #################### traceability matrix input
-    #    dataTrace <- as.data.frame(read.table("data/lca.Tracematrix", sep='\t',header=T,check.names=FALSE,comment.char = ""))
+    ### (2) LOADING TRACEABILITY MATRIX and merge with input mdData (2) ###
     filein2 <- input$file2
     if(is.null(filein2)){
       mdDataTrace <- mdData[,c("geneID","ncbiID")]
@@ -286,68 +290,70 @@ shinyServer(function(input, output, session) {
       mdDataTrace <- melt(dataTrace,id="geneID")
       colnames(mdDataTrace) <- c("geneID","ncbiID","traceability")
     }
-    ##### taxonomy file input
-    #    taxaList <- as.data.frame(read.table("data/taxonomyList.txt", sep='\t',header=T))
+    
+    ### (3) GET SORTED TAXONOMY LIST (3) ###
     taxaList <- sortedTaxaList()
     
-    # get frequency of all supertaxa
+    # calculate frequency of all supertaxa
     taxaCount <- plyr::count(taxaList,'supertaxon')
     
-    ### merge mdData, mdDataTrace and taxaList to get taxonomy info
+    # merge mdData, mdDataTrace and taxaList to get taxonomy info
     taxaMdData <- merge(mdData,taxaList,by='ncbiID')
     taxaMdData$fas <- as.numeric(as.character(taxaMdData$fas))
-    
     taxaMdDataTrace <- merge(mdDataTrace,taxaList,by='ncbiID')  #################### FOR TRACEABILITY SCORES
     
-    ############## calculate percent present species ##############
-    ### get geneID and supertaxon
+    ### (4) calculate PERCENTAGE of PRESENT SPECIES (4) ###
+    # get geneID and supertaxon
     geneIDsupertaxon <- subset(taxaMdData,select=c('geneID','supertaxon'))
     geneIDsupertaxon <- geneIDsupertaxon[!duplicated(geneIDsupertaxon), ] # remove duplicated rows
     
-    ### remove NA rows from taxaMdData
+    # remove NA rows from taxaMdData
     taxaMdDataNoNA <- taxaMdData[!is.na(taxaMdData$fas),]
     
-    ### count present frequency of supertaxon for each gene
+    # count present frequency of supertaxon for each gene
     geneSupertaxonCount <- plyr::count(taxaMdDataNoNA,c('geneID','supertaxon'))
     
-    ### merge with taxaCount to get total number of species of each supertaxon and calculate presSpec
+    # merge with taxaCount to get total number of species of each supertaxon and calculate presSpec
     presSpecDt <- merge(geneSupertaxonCount,taxaCount,by='supertaxon')
     presSpecDt$presSpec <- presSpecDt$freq.x/presSpecDt$freq.y
     presSpecDt <- presSpecDt[order(presSpecDt$geneID),]
     presSpecDt <- presSpecDt[,c("geneID","supertaxon","presSpec")]
     
-    ### add absent supertaxon into presSpecDt
+    # add absent supertaxon into presSpecDt
     finalPresSpecDt <- merge(presSpecDt,geneIDsupertaxon,by=c('geneID','supertaxon'),all.y = TRUE)
     finalPresSpecDt$presSpec[is.na(finalPresSpecDt$presSpec)] <- 0
     
-    ############## calculate max FAS for every supertaxon of each gene ##############
+    ### (5) calculate MAX FAS for every supertaxon of each gene (5) ###
     maxFasDt <- aggregate(taxaMdDataNoNA[,"fas"],list(taxaMdDataNoNA$supertaxon,taxaMdDataNoNA$geneID),max)
     colnames(maxFasDt) <- c("supertaxon","geneID","maxFas")
     
-    ############## calculate mean TRACEABILITY SCORES for each super taxon
+    ### (6) calculate mean TRACEABILITY SCORES for each super taxon (6) ###
     meanTraceDt <- aggregate(taxaMdDataTrace[,"traceability"],list(taxaMdDataTrace$supertaxon,taxaMdDataTrace$geneID),mean)
     colnames(meanTraceDt) <- c("supertaxon","geneID","traceability")
     
-    ############## & join mean traceability together with max fas scores into one df
+    ### (5+6) & join mean traceability together with max fas scores into one df (5+6)
     scoreDf <- merge(maxFasDt,meanTraceDt, by=c("supertaxon","geneID"), all = TRUE)
     
-    ############## add presSpec and maxFAS into taxaMdData ##############
+    ### (4+5+6) add presSpec and maxFAS into taxaMdData (4+5+6)
     presMdData <- merge(taxaMdData,finalPresSpecDt,by=c('geneID','supertaxon'),all.x = TRUE)
-    #    fullMdData <- merge(presMdData,maxFasDt,by=c('geneID','supertaxon'), all.x = TRUE)
     fullMdData <- merge(presMdData,scoreDf,by=c('geneID','supertaxon'), all.x = TRUE)
     fullMdData <- merge(fullMdData,taxaCount,by=('supertaxon'), all.x = TRUE)
     
-    #    names(fullMdData)[names(fullMdData)=="fas.x"] <- "fas"
-    #    names(fullMdData)[names(fullMdData)=="fas.y"] <- "maxFas"
+    # rename "freq" into "numberSpec"
     names(fullMdData)[names(fullMdData)=="freq"] <- "numberSpec"
     
     fullMdData$fullName <- as.vector(fullMdData$fullName)
     names(fullMdData)[names(fullMdData)=="orthoID.x"] <- "orthoID"
     fullMdData ### parsed input data frame !!!
   })
+
   
-  ### reduce data from species level to supertaxa level
-  ### this data set contain only supertaxa and their value (%present and max fas) for each gene
+  ############################################################# 
+  ############## DATA & PLOT FOR MAIN PROFILE #################
+  #############################################################
+  
+  ######## REDUCE DATA FROM SPECIES LEVEL TO SUPERTAXA LEVEL
+  ######## this data set contain only supertaxa and their value (%present, max fas & mean tracebility) for each gene
   dataSupertaxa <- reactive({
     fullMdData <- dataFiltered()
     
@@ -370,9 +376,8 @@ shinyServer(function(input, output, session) {
     superDfExt
   })
   
-  ###### get list of all sequence IDs for selectize input
+  ######## get list of all sequence IDs for selectize input
   output$geneIn = renderUI({
-    #  output$select = renderUI({
     filein <- input$file1
     if(is.null(filein)){return(selectInput('inSeq','Select sequence IDs of interest:',"all"))}
     if(v$doPlot == FALSE){return(selectInput('inSeq','Select sequence IDs of interest:',"all"))}
@@ -386,13 +391,8 @@ shinyServer(function(input, output, session) {
       selectInput('inSeq','Select sequence IDs of interest:',out,selected=out[1],multiple=TRUE)
     }
   })
-  
-  ### text output side panel
-  output$start <- renderText({
-    c("start at:")
-  })
-  
-  ### heatmap data input
+
+  ######## heatmap data input
   dataHeat <- reactive({
     percent_cutoff <- input$percent
     fas_cutoff <- input$fas
@@ -406,17 +406,7 @@ shinyServer(function(input, output, session) {
     # get selected supertaxon name
     split <- strsplit(as.character(input$inSelect),"_")
     inSelect <- as.character(split[[1]][1])
-    
-    # ### get sub set of data
-    # setID <- plyr::count(data,"geneID")
-    # #    subsetID <- setID[1:300,]
-    # nrHit <- input$stIndex + input$number - 1
-    # if(nrHit > nlevels(data$geneID)){nrHit <- nlevels(data$geneID)}
-    # 
-    # subsetID <- setID[input$stIndex:nrHit,]
-    # dataHeat <- merge(data,subsetID,by="geneID")
-    # dataHeat <- data
-    
+
     ### replace insufficient values according to the thresholds by NA or 0; and replace FAS 0.0 by NA
     dataHeat$presSpec[dataHeat$supertaxon != inSelect & dataHeat$presSpec < percent_cutoff] <- 0
     dataHeat$presSpec[dataHeat$supertaxon != inSelect & dataHeat$fas < fas_cutoff] <- 0
@@ -425,24 +415,14 @@ shinyServer(function(input, output, session) {
     
     dataHeat <- droplevels(dataHeat)  ### delete unused levels
     dataHeat
-    # if(input$inSeq[1] != "all"){
-    #     dataHeat <- dataHeat[dataHeat$geneID == input$inSeq,]
-    # } else {
-    #   dataHeat
-    # }
   })
   
-  ########### plot heatmap
+  ########### create profile heatmap
   output$plot2 <- renderPlot(
     {
       if (v$doPlot == FALSE) return()
-      
-      # ### check input file
-      # filein <- input$file1
-      # if(is.null(filein)){return()}
-      filein2 <- input$file2
-      
       dataHeat <- dataHeat()
+      
       ### plotting
       if(input$xAxis == "genes"){
         p = ggplot(dataHeat, aes(x = geneID, y = supertaxon)) +        ## global aes
@@ -499,13 +479,14 @@ shinyServer(function(input, output, session) {
       }
     })
   
-  ### show beschreibung file if no plot present
+  ########### plot profile into plot.ui
   output$plot.ui <- renderUI({
+    # show beschreibung file if no plot present
     if(v$doPlot == FALSE){
       if(!file.exists("www/beschreibung.jpg")){return(paste("WARNING: Cannot load \"beschreibung.jpg\" file in www folder!"))}
       else{return (img(src="beschreibung.jpg", align = "left", height=600, width=800))}
     }
-    
+    # else, plot profile
     plotOutput("plot2",width=input$width,height = input$height,
                click = "plot_click",
                hover = hoverOpts(
@@ -517,7 +498,7 @@ shinyServer(function(input, output, session) {
     )
   })
   
-  ### download plot
+  ########### download plot
   output$plotDownload <- downloadHandler(
     filename = function() {c("plot.pdf")}, 
     content = function(file) {
@@ -558,8 +539,13 @@ shinyServer(function(input, output, session) {
       }
     }
   )
+
   
-  ######## plot selected sequence
+  ############################################################# 
+  ################# PLOT SELECTED SEQUENCES ###################
+  #############################################################
+  
+  ######## check if button is clicked
   v2 <- reactiveValues(doPlot2 = FALSE)
   observeEvent(input$do2, {
     # 0 will be coerced to FALSE
@@ -569,12 +555,13 @@ shinyServer(function(input, output, session) {
     if(is.null(filein)){v2$doPlot2 <- FALSE}
   })
   
+  ######## create plot (same as main plot)
   output$selectedPlot <- renderPlot({
     if (v2$doPlot2 == FALSE) return()
     if(input$inSeq[1] == "all") {return()}
     else{
       dataHeat <- dataHeat()
-      dataHeat <- subset(dataHeat,geneID %in% input$inSeq)
+      dataHeat <- subset(dataHeat,geneID %in% input$inSeq)  ##### <=== select data from dataHeat for selected sequences only
       
       ### plotting
       if(input$xAxis_selected == "taxa"){
@@ -609,14 +596,14 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  # enable "plot selected sequences" button
+  ######## enable "plot selected sequences" button
   observeEvent(input$inSeq, ({
     if(input$inSeq[1] != "all"){
       updateButton(session, "do2", disabled = FALSE)
     }
   }))
   
-  # plot selected sequences
+  ######## plot selected sequences heatmap
   output$selectedPlot.ui <- renderUI({
     if(input$inSeq[1] == "all"){return()}
     plotOutput("selectedPlot",width=input$selectedWidth,height = input$selectedHeight,
@@ -630,8 +617,8 @@ shinyServer(function(input, output, session) {
     )
   })
   
-  # show info on selected plot
-  # get info clicked point
+  ######## show info on selected plot (also the same as get info from main plot)
+  ### get info clicked point
   selectedInfo <- reactive({
     ### check input
     if (v$doPlot == FALSE) return()
@@ -677,7 +664,7 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  # show info
+  ### show info
   output$selectedClick <- renderText({
     ### check input
     info <- selectedInfo() # info = groupID,orthoID,supertaxon,maxFAS,%spec,trace
@@ -691,23 +678,21 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  # FASTA sequence
+  ### show FASTA sequence in popup windows of selected plot
   output$fasta_selected <- renderText({
     info <- selectedInfo() # info = groupID,orthoID,supertaxon,maxFAS,%spec,trace
     if(is.null(info)){return()}
     else{
       seqID <- toString(info[2])
       paste(seqID)
-      
-      # path="/Users/trvinh/Desktop/WORK/micros_fasta"
-      # dir_format = 1  # dir_format_1: path/file.fa;  dir_format_2: path/specID/file.fa
-      # file_ext = "fa"
-      # id_format = 2 # id_format_1: "species:seqID"; id_format_2: "seqID"
+
+      ### fasta path and format      
       path = input$path
       dir_format = input$dir_format
       file_ext = input$file_ext
       id_format = input$id_format
       
+      ### get species ID and seqID 
       specTMP <- unlist(strsplit(seqID,":"))
       specID = specTMP[1]
       if(id_format == 2){
@@ -727,8 +712,7 @@ shinyServer(function(input, output, session) {
         seq_name = names(fastaFile)
         sequence = paste(fastaFile)
         fa <- data.frame(seq_name, sequence)
-        head(fa)
-        
+
         seq <- fa$sequence[fa$seq_name == seqID]
         if(length(seq) < 1){
           paste0(seqID," not found in ",f,"! Please check id_format in FASTA config again!")
@@ -741,7 +725,7 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  # download selected plot ******************** NOT WORKING *************************
+  ######## download selected plot ******************** NOT WORKING *************************
   output$selectedDownload <- downloadHandler(
     filename = function() {c("selected_plot.pdf")}, 
     content = function(file) {
@@ -768,8 +752,12 @@ shinyServer(function(input, output, session) {
     }
   )
   
-  ######## get click info and plot detailed chart
-  #### get info clicked point
+  
+  ############################################################# 
+  ##################### DETAILED PLOT ########################
+  #############################################################
+  
+  ######## get info clicked point
   pointInfo <- reactive({
     ### check input
     if (v$doPlot == FALSE) return()
@@ -810,17 +798,16 @@ shinyServer(function(input, output, session) {
       if(is.na(as.numeric(Percent))){return()}
       else{
         info <- c(geneID,as.character(orthoID),as.character(spec),round(as.numeric(FAS),2),round(as.numeric(Percent),2),round(as.numeric(Trace),2))
-        #substr(spec,6,nchar(as.character(spec)))
       }
     }
   })
   
-  ### show info
+  ######## show info into "point's info" box
   output$pointInfo <- renderText({
     ### check input
     if (v$doPlot == FALSE) return()
     
-    info <- pointInfo() # info = geneID,supertaxon,maxFAS,%spec
+    info <- pointInfo()  # info = groupID,orthoID,supertaxon,maxFAS,%spec,trace
     if(is.null(info)){return()}
     else{
       a <- toString(paste(info[1],info[2], sep = " ; "))
@@ -831,12 +818,11 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  ### detailed FAS scores plotting
-  # data for detailed plot
+  ######## data for detailed FAS plot
   detailPlotDt <- reactive({
     if (v$doPlot == FALSE) return()
     
-    info <- pointInfo()  # info = geneID,supertaxon,maxFAS,%spec
+    info <- pointInfo()   # info = groupID,orthoID,supertaxon,maxFAS,%spec,trace
     if(is.null(info)){return()}
     else{
       plotTaxon = info[3]
@@ -848,7 +834,7 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  # render plot
+  ######## render detailed FAS plot
   output$detailPlot <- renderPlot({
     if (v$doPlot == FALSE) return()
     
@@ -864,12 +850,12 @@ shinyServer(function(input, output, session) {
     gp
   })
   
-  # enable "detailed plot" button
+  ######## enable "detailed plot" button
   observeEvent(pointInfo(), ({
     updateButton(session, "go", disabled = FALSE)
   }))
   
-  # plot detailed bar chart
+  ######## plot detailed bar chart
   output$detailPlot.ui <- renderUI({
     plotOutput("detailPlot",width=400,height = input$detailedHeight,
                click = "plot_click_detail",
@@ -882,7 +868,7 @@ shinyServer(function(input, output, session) {
     )
   })
   
-  ### GET info when clicking on detailed plot
+  ######## GET info when clicking on detailed plot
   pointInfoDetail <- reactive({
     selDf <- detailPlotDt()
     allOrthoID <- sort(selDf$orthoID)
@@ -917,7 +903,7 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  ### FASTA sequence
+  ######## FASTA sequence
   output$fasta <- renderText({
     if(v$doPlot == FALSE){return()}
     
@@ -927,15 +913,13 @@ shinyServer(function(input, output, session) {
       seqID <- toString(info[2])
       paste(seqID)
       
-      # path="/Users/trvinh/Desktop/WORK/micros_fasta"
-      # dir_format = 1  # dir_format_1: path/file.fa;  dir_format_2: path/specID/file.fa
-      # file_ext = "fa"
-      # id_format = 2 # id_format_1: "species:seqID"; id_format_2: "seqID"
+      ### fasta path and format      
       path = input$path
       dir_format = input$dir_format
       file_ext = input$file_ext
       id_format = input$id_format
       
+      ### get species ID and seqID 
       specTMP <- unlist(strsplit(seqID,":"))
       specID = specTMP[1]
       if(id_format == 2){
@@ -969,36 +953,30 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  ### plot domain architecture
+
+  ############################################################# 
+  ################ FEATURE ARCHITECTURE PLOT ##################
+  #############################################################
+  
+  ######## check clicked
   v3 <- reactiveValues(doPlot3 = FALSE)
   observeEvent(input$do3, {
-    # 0 will be coerced to FALSE
-    # 1+ will be coerced to TRUE
     v3$doPlot3 <- input$do3
     filein <- input$file1
     if(is.null(filein)){v3$doPlot3 <- FALSE}
   })
 
+  ######## create domain plot
   output$archiPlot <- renderPlot({
     if (v3$doPlot3 == FALSE) return()
 
     ### info
-    selDf <- detailPlotDt()
-    allOrthoID <- sort(selDf$orthoID)
+    info <- pointInfoDetail() # info = seedID, orthoID, FAS
+    group <- as.character(info[1])
+    ortho <- as.character(info[2])
+    fas <- as.character(info[3])
     
-    # get coordinates of plot_click_detail
-    if (is.null(input$plot_click_detail$x)) {v3$doPlot3 = FALSE}
-    else{
-      corX = round(input$plot_click_detail$y)
-      corY = round(input$plot_click_detail$x)
-    }
-    
-    # get groupID and orthoID together with FAS score
-    group <- as.character(selDf$geneID[1])
-    ortho <- as.character(allOrthoID[corX])
-    fas <- as.character(selDf$fas[selDf$orthoID==ortho])
-    
-    ### load domain file
+    ### parse domain file
     filein3 <- input$file3
     if(is.null(filein3)){
       v3$doPlot3 = FALSE
@@ -1006,7 +984,7 @@ shinyServer(function(input, output, session) {
       domainDf <- as.data.frame(read.table(file=filein3$datapath, sep='\t',header=FALSE,comment.char=""))
       colnames(domainDf) <- c("seedID","orthoID","feature","start","end","weight")
       
-      ### get sub dataframe
+      ### get sub dataframe based on selected groupID and orthoID
       grepID = paste(group,"#",ortho,sep="")
       subDomainDf <- domainDf[grep(grepID,domainDf$seedID),]
       
@@ -1026,13 +1004,14 @@ shinyServer(function(input, output, session) {
       }
       
       ### plotting
-      plot_ortho <- plotting(orthoDf,ortho)
-      plot_seed <- plotting(seedDf,seed)
+      plot_ortho <- plotting(orthoDf,ortho,fas)
+      plot_seed <- plotting(seedDf,seed,fas)
       
       grid.arrange(plot_seed,plot_ortho,ncol=1)
     }
   })
   
+  ######## render domain architecture plot
   output$archiPlot.ui <- renderUI({
     if (v3$doPlot3 == FALSE) {
       domainIN <- unlist(strsplit(toString(input$file1),","))
@@ -1051,7 +1030,11 @@ shinyServer(function(input, output, session) {
   })
   
   
-  ################ filtered data for download
+  ############################################################# 
+  ############### FILTERED DATA FOR DOWNLOADING ###############
+  #############################################################
+  
+  ######## filtered data for downloading
   downloadData <- reactive({
     ### check input
     if (v$doPlot == FALSE) return()
@@ -1080,7 +1063,7 @@ shinyServer(function(input, output, session) {
     dataOut
   })
   
-  ### download data
+  ######## download data
   output$downloadData <- downloadHandler(
     filename = function(){c("dataFiltered.out")},
     content = function(file){
@@ -1089,7 +1072,7 @@ shinyServer(function(input, output, session) {
     }
   )
   
-  ### data table
+  ######## data table ui tab
   output$dis <- renderDataTable({
     if(v$doPlot == FALSE){return()}
     #data <- allTaxaList()
@@ -1102,7 +1085,12 @@ shinyServer(function(input, output, session) {
     data
   })
   
-  ### show help
+  
+  ############################################################# 
+  ############### HELP & TEXT OUTPUT for TESTING ##############
+  #############################################################
+  
+  ######## show help
   output$help.ui <- renderUI({
     HTML(
       '
