@@ -1,4 +1,4 @@
-libs=c("shiny","shinyBS","ggplot2","reshape","plyr","dplyr","scales‌​","grid","gridExtra","ape")
+libs=c("shiny","shinyBS","ggplot2","reshape","plyr","dplyr","scales‌​","grid","gridExtra","ape","colourpicker","shinyjs")
 type=getOption("pkgType")
 
     CheckInstallPackage <- function(packages, repos="http://cran.r-project.org",
@@ -7,7 +7,9 @@ type=getOption("pkgType")
     for(p in packages) {
         if(is.na(charmatch(p, installed[,1]))) { 
           install.packages(p, repos=repos, dependencies=depend, ...) 
-                    }
+        }
       }
     } 
     CheckInstallPackage(packages=libs)
+    
+biocLite("Biostrings")

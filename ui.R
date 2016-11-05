@@ -1,6 +1,8 @@
 if (!require("shiny")) {install.packages("shiny")}
 if (!require("shinyBS")) {install.packages("shinyBS")}
 if (!require("DT")) {install.packages("DT")}
+if (!require("colourpicker")) {install.packages("colourpicker")}
+if (!require("shinyjs")) {install.packages("shinyjs")}
 
 shinyUI(fluidPage(
   # Application title
@@ -9,19 +11,19 @@ shinyUI(fluidPage(
   # Sidebar for input file
   wellPanel(
   fluidRow(
-    column(2, offset = 0,
+    column(3, offset = 0,
            fileInput("file1","Presence/absence file: "),
-           actionButton("parse","Get info from input",style='padding:4px; font-size:85%'),
-           helpText("(Run this, whenever you have a new taxa set)"),
-           actionButton("AddFile","Upload additional file(s)",style='padding:4px; font-size:100%')
+           bsButton("parse","Get info from input",disabled=TRUE),
+           helpText(""),
+           bsButton("AddFile","Upload additional file(s)",disabled = TRUE)
     ),
     column(3,
            uiOutput("rankSelect"),
-           uiOutput("select")
+           uiOutput("select"),
+           bsButton("getConfig","FASTA config",style="info")
     ),
-    column(2,
-           numericInput("number","# rows for profile",min=1,max=1600,step=10,value=30,width=150),
-           textOutput("totalRows"),
+    column(1,
+           numericInput("number","# rows ",min=1,max=1600,step=10,value=30,width=100),
            numericInput("stIndex","start at:",min=1,max=1600,value=1,width=100)
     ),
     column(1,
@@ -37,7 +39,9 @@ shinyUI(fluidPage(
                "genes"
              ),
              selected="taxa"),
-          actionButton("do", "Plot")
+           bsButton("do", "PLOT",type="action",style="danger",size = "large",disabled = TRUE),
+           h5(""),
+           actionButton("setColor","Set colors",style='padding:4px; font-size:100%')
     ),
     column(2,
            sliderInput("fas",
@@ -57,12 +61,42 @@ shinyUI(fluidPage(
       )
     )
   ),
+  
+  ####### popup to confirm parsing data from input file
+  bsModal("parseConfirm", "Get info from input", "parse", size = "medium",
+          HTML("Parsing taxonomy information from input file?"),
+          actionButton("BUTyes", "Yes"),
+          actionButton("BUTno", "No"),
+          helpText(em("***Note: only necessary when you have a new taxa list***"))
+  ),
 
+  ####### popup windows for uploading additional files (FAS & Traceability)
   bsModal("modalnew", "Upload additional file(s)", "AddFile", size = "medium",
           fileInput("file2","Traceability matrix: "),
           fileInput("file3","Feature architectures: ")
   ),
-
+  
+  ####### popup windows for setting plot colors
+  bsModal("color", "Set colors for profile", "setColor", size = "small",
+          shinyjs::useShinyjs(),
+          colourpicker::colourInput("lowColor_trace", "Low traceability", value = "grey95"),
+          colourpicker::colourInput("highColor_trace", "High traceability", value = "khaki"),
+          actionButton("defaultColorTrace","Default",style='padding:4px; font-size:100%'),
+          hr(),
+          colourpicker::colourInput("lowColor_fas", "Low FAS", value = "darkorange"),
+          colourpicker::colourInput("highColor_fas", "High FAS", value = "steelblue"),
+          actionButton("defaultColorFas","Default",style='padding:4px; font-size:100%')
+  ),
+  
+  ####### popup windows for FASTA configurations
+  bsModal("config", "FASTA config", "getConfig", size = "medium",
+          textInput("path","Main path:","")
+          ,selectInput("dir_format","Directory format:",choices=list("path/speciesID.fa*"=1,"path/speciesID/speciesID.fa*"=2),selected="Path/speciesID.fasta")
+          ,selectInput("file_ext","File extension:",choices=list("fa"="fa","fasta"="fasta","fas"="fas","txt"="txt"),selected="fa")
+          ,selectInput("id_format","ID format:",choices=list(">speciesID:seqID"=1,">seqID"=2),selected=2)
+          
+  ),
+  
   sidebarLayout(
     fluid = FALSE,
     
@@ -70,7 +104,7 @@ shinyUI(fluidPage(
       textOutput("testOutput"),    ### use for testing output ###
       uiOutput("highlight"),
       uiOutput("geneIn"),
-      actionButton("do2", "Plot selected sequence(s)")
+      bsButton("do2", "Plot selected sequence(s)",disabled=TRUE)
     ),
     
     # Main page
@@ -85,14 +119,52 @@ shinyUI(fluidPage(
                           numericInput("detailedHeight","plot_height(px)",min=100,max=1600,step=50,value=100,width=100)
                           ,verbatimTextOutput("detailClick")
                           ,actionButton("do3", "Show domain architecture")
+                          ,br()
+                          ,h4("Sequence:")
+                          ,verbatimTextOutput("fasta")
                   ),
                   bsModal("helpBS", "Help", "help", size = "large",
                           uiOutput("help.ui")
                   ),
                   bsModal("plotSeq","Plot selected sequence","do2", size = "large",
                           uiOutput("selectedPlot.ui"),
-                          numericInput("selectedHeight","Plot_height(px)",min=100,max=1600,step=50,value=400,width=100),
-                          numericInput("selectedWidth","Plot_Width(px)",min=100,max=1600,step=50,value=800,width=100)
+                          fluidRow(
+                            column(2,
+                                 br(),
+                                 numericInput("selectedHeight","Plot_height(px)",min=100,max=1600,step=50,value=400,width=100),
+                                 numericInput("selectedWidth","Plot_Width(px)",min=100,max=1600,step=50,value=800,width=100)
+                            ),
+                            column(2,
+                                   br(),
+                                   radioButtons(
+                                     inputId="xAxis_selected",
+                                     label="x-Axis:",
+                                     choices=list(
+                                       "taxa",
+                                       "genes"
+                                     ),
+                                     selected="taxa"),
+                                   radioButtons(
+                                     inputId="legend",
+                                     label="Legend pos:",
+                                     choices=list(
+                                       "top",
+                                       "right"
+                                     ),
+                                     selected="top")
+                            ),
+                            column(5,
+                                   br(),
+                                   HTML("<strong>Point's info:</strong>"),
+                                   verbatimTextOutput("selectedClick")
+                            ),
+                            column(2,
+                                   br(),
+                                   br(),
+                                   actionButton("selectedDownload","Download plot",disabled=TRUE)
+                            )
+                          ),
+                          verbatimTextOutput("fasta_selected")
                   ),
                   bsModal("plotArchi","Domain architecture","do3", size = "large",
                           uiOutput("archiPlot.ui"),
@@ -118,11 +190,9 @@ shinyUI(fluidPage(
   absolutePanel(
     bottom = 5, left = 30,
     fixed = TRUE,
-#    wellPanel(
-      h5("Point's info:"),
-      verbatimTextOutput("pointInfo"),
-      actionButton("go", "Detailed plot"),
-#    ),
+    h5("Point's info:"),
+    verbatimTextOutput("pointInfo"),
+    bsButton("go", "Detailed plot", disabled = TRUE),
     style = "opacity: 0.80"
   )
 ))
