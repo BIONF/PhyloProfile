@@ -9,7 +9,14 @@ if (!require("grid")) {install.packages("grid")}
 if (!require("gridExtra")) {install.packages("gridExtra")}
 if (!require("ape")) {install.packages("ape")}
 if (!require("stringr")) {install.packages("stringr")}
-if (!require("Biostrings")) {biocLite("Biostrings")}
+if (!require("Biostrings")) {
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("Biostrings")
+}
+
+############################################################# 
+######################## FUNCTIONS ##########################
+#############################################################
 
 ######## function for plotting domain architecture ########
 plotting <- function(df,geneID,fas){
@@ -40,14 +47,60 @@ plotting <- function(df,geneID,fas){
   return(gg)
 }
 
+######## show FASTA sequence in popup windows of selected plot
+getFasta <- function(file,seqID){
+  fasta <- ""
+  ### read file and get sequence
+  if(file.exists(file)){
+    fastaFile = readAAStringSet(file)
+      
+    seq_name = names(fastaFile)
+    sequence = paste(fastaFile)
+    fa <- data.frame(seq_name, sequence)
+      
+    seq <- fa$sequence[fa$seq_name == seqID]
+    if(length(seq) < 1){
+      fasta <- paste0(seqID," not found in ",file,"! Please check id_format in FASTA config again!")
+    } else{
+      fasta <- paste(paste0(">",seqID),seq,sep="\n")
+    }
+  } else {
+    fasta <- paste0(file," not found! Please check the path and dir_format in FASTA config again!")
+  }
+  ### return
+  return(fasta)
+}
+
+
 ############################ MAIN ############################
 options(shiny.maxRequestSize=30*1024^2)  ## size limit for input 30mb
 
 shinyServer(function(input, output, session) {
+ 
   ############################################################# 
   ####################  PRE-PROCESSING  #######################
   #############################################################
   
+  ######## check oneseq fasta file exists
+  output$oneSeq.existCheck <- renderUI({
+    f <- toString(input$oneseq.file)
+    if(!file.exists(f)){
+      helpText("File not exists!!")
+    } else {
+      if(length(readLines(f, n=1)) == 0){
+        helpText("is not a fasta file!!")
+      } else {
+        firstLine <- readLines(f, n=1)
+        a <- substr(firstLine,1,1)
+        if(a == ">"){
+          HTML('<p><span style="color: #0000ff;"><strong>Please click CLOSE to comfirm!</strong></span></p>')
+        } else {
+          helpText("is not a fasta file!!")
+        }
+      }
+    }
+  })
+    
   ######## reset colors
   observeEvent(input$defaultColorTrace, {
     shinyjs::reset("lowColor_trace")
@@ -93,7 +146,7 @@ shinyServer(function(input, output, session) {
                        " -n ", getwd(),"/data/taxonNamesFull.txt",
                        " -o ", getwd(),"/data",
                        sep='')
-          system(cmd) 
+          system(cmd)
         })
       }
     }
@@ -153,7 +206,7 @@ shinyServer(function(input, output, session) {
     }
   }))
   
-
+  
   ############################################################# 
   ##################  PROCESSING INPUT DATA ###################
   #############################################################
@@ -204,6 +257,10 @@ shinyServer(function(input, output, session) {
     ### get representative ID for rooting (one member of selected supertaxon)
     repID <- Dt[Dt[,rankNr]==superID,][,3][1]
     root <- toString(repID)
+    if(root == "NA"){
+      root <- toString(ids[1])
+    }
+    
     ### reroot the pruned tree
     unrootTree <- unroot(pruned.tree)
     rerootTree <- root(unrootTree,root,resolve.root = TRUE)  ## reroot the tree based on selected ID from input$inSelect
@@ -268,6 +325,16 @@ shinyServer(function(input, output, session) {
     # get rows need to be read
     nrHit <- input$stIndex + input$number - 1
     data <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char="",nrows=nrHit))
+    
+    # OR just list of gene from a separated input file
+    listIn <- input$list
+    if(input$geneList_selected == 'from file'){
+      if(!is.null(listIn)){
+        list <- as.data.frame(read.table(file=listIn$datapath, header=FALSE))
+        dataOrig <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+        data <- dataOrig[dataOrig$geneID %in% list$V1,]
+      }
+    }
     
     # convert into paired columns
     mdData <- melt(data,id="geneID")
@@ -401,11 +468,30 @@ shinyServer(function(input, output, session) {
     filein <- input$file1
     if(is.null(filein)){return()}
     #      data <- read.table(file=filein$datapath, sep='\t',header=T)
-    dataHeat <- dataSupertaxa()
+    data <- dataSupertaxa()
     
     # get selected supertaxon name
     split <- strsplit(as.character(input$inSelect),"_")
     inSelect <- as.character(split[[1]][1])
+    
+    ### get sub set of data
+    setID <- plyr::count(data,"geneID")
+    #    subsetID <- setID[1:300,]
+    nrHit <- input$stIndex + input$number - 1
+    if(nrHit > nlevels(data$geneID)){nrHit <- nlevels(data$geneID)}
+    
+    subsetID <- setID[input$stIndex:nrHit,]
+    dataHeat <- merge(data,subsetID,by="geneID")
+    
+    # ### check input file
+    # filein <- input$file1
+    # if(is.null(filein)){return()}
+    # #      data <- read.table(file=filein$datapath, sep='\t',header=T)
+    # dataHeat <- dataSupertaxa()
+    # 
+    # # get selected supertaxon name
+    # split <- strsplit(as.character(input$inSelect),"_")
+    # inSelect <- as.character(split[[1]][1])
 
     ### replace insufficient values according to the thresholds by NA or 0; and replace FAS 0.0 by NA
     dataHeat$presSpec[dataHeat$supertaxon != inSelect & dataHeat$presSpec < percent_cutoff] <- 0
@@ -686,42 +772,31 @@ shinyServer(function(input, output, session) {
       seqID <- toString(info[2])
       paste(seqID)
 
-      ### fasta path and format      
-      path = input$path
-      dir_format = input$dir_format
-      file_ext = input$file_ext
-      id_format = input$id_format
-      
-      ### get species ID and seqID 
-      specTMP <- unlist(strsplit(seqID,":"))
-      specID = specTMP[1]
-      if(id_format == 2){
-        seqID = specTMP[2]
-      }
-      
-      ### full path fasta file
-      f <- paste0(path,"/",specID,".",file_ext)
-      if(dir_format == 2){
-        f <- paste0(path,"/",specID,"/",specID,".",file_ext)
-      }
-      
-      ### read file and get sequence
-      if(file.exists(f)){
-        fastaFile = readAAStringSet(f)
+      ### fasta path and format
+      if(input$input_type == 'oneSeq.extended.fa'){
+        f <- toString(input$oneseq.file)
+      } else{
+        path = input$path
+        dir_format = input$dir_format
+        file_ext = input$file_ext
+        id_format = input$id_format
         
-        seq_name = names(fastaFile)
-        sequence = paste(fastaFile)
-        fa <- data.frame(seq_name, sequence)
-
-        seq <- fa$sequence[fa$seq_name == seqID]
-        if(length(seq) < 1){
-          paste0(seqID," not found in ",f,"! Please check id_format in FASTA config again!")
-        } else{
-          paste(paste0(">",seqID),seq,sep="\n")
+        ### get species ID and seqID 
+        specTMP <- unlist(strsplit(seqID,":"))
+        specID = specTMP[1]
+        if(id_format == 2){
+          seqID = specTMP[2]
         }
-      } else {
-        paste0(f," not found! Please check the path and dir_format in FASTA config again!")
+        
+        ### full path fasta file
+        f <- paste0(path,"/",specID,".",file_ext)
+        if(dir_format == 2){
+          f <- paste0(path,"/",specID,"/",specID,".",file_ext)
+        }
       }
+      
+      ### get fasta
+      paste(getFasta(f,seqID))
     }
   })
   
@@ -761,17 +836,17 @@ shinyServer(function(input, output, session) {
   pointInfo <- reactive({
     ### check input
     if (v$doPlot == FALSE) return()
-    
+
     # get selected supertaxon name
     taxaList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T))
     rankSelect = input$rankSelect
     rankName = substr(rankSelect,4,nchar(rankSelect))
     inSelect <- as.numeric(taxaList$ncbiID[taxaList$fullName == input$inSelect & taxaList$rank == rankName])
-    
+
     dataHeat <- dataHeat()
-    
+
     ### get values
-    if (is.null(input$plot_click$x)) return()
+    if (is.null(input$plot_click$x)) {return()}
     else{
       ### get cooridiate point
       if(input$xAxis == "genes"){
@@ -781,7 +856,7 @@ shinyServer(function(input, output, session) {
         corX = round(input$plot_click$x);
         corY = round(input$plot_click$y)
       }
-      
+
       # get geneID
       genes <- as.matrix(dataHeat[dataHeat$supertaxonID == inSelect & !is.na(dataHeat$presSpec),])
       geneID <- toString(genes[corY])
@@ -794,19 +869,19 @@ shinyServer(function(input, output, session) {
       Trace <- dataHeat$traceability[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
       # get ortholog ID
       orthoID <- dataHeat$orthoID[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
-      
+
       if(is.na(as.numeric(Percent))){return()}
       else{
         info <- c(geneID,as.character(orthoID),as.character(spec),round(as.numeric(FAS),2),round(as.numeric(Percent),2),round(as.numeric(Trace),2))
       }
     }
   })
-  
+
   ######## show info into "point's info" box
   output$pointInfo <- renderText({
     ### check input
     if (v$doPlot == FALSE) return()
-    
+
     info <- pointInfo()  # info = groupID,orthoID,supertaxon,maxFAS,%spec,trace
     if(is.null(info)){return()}
     else{
@@ -817,30 +892,30 @@ shinyServer(function(input, output, session) {
       paste(a,b,c,d,sep="\n")
     }
   })
-  
+
   ######## data for detailed FAS plot
   detailPlotDt <- reactive({
     if (v$doPlot == FALSE) return()
-    
+
     info <- pointInfo()   # info = groupID,orthoID,supertaxon,maxFAS,%spec,trace
     if(is.null(info)){return()}
     else{
       plotTaxon = info[3]
       plotGeneID = info[1]
-      
+
       fullDf <- dataFiltered()
       selDf <- as.data.frame(fullDf[fullDf$geneID == plotGeneID & fullDf$supertaxon == plotTaxon,])
       selDf
     }
   })
-  
+
   ######## render detailed FAS plot
   output$detailPlot <- renderPlot({
     if (v$doPlot == FALSE) return()
-    
+
     selDf <- detailPlotDt()
     selDf$x_label <- paste(selDf$orthoID,"@",selDf$fullName,sep = "")
-    
+
     gp = ggplot(selDf, aes(y=fas,x=x_label)) +
       geom_bar(colour="steelblue", fill="steelblue", stat="identity") +
       coord_flip() +
@@ -849,12 +924,15 @@ shinyServer(function(input, output, session) {
     gp = gp+theme(axis.text.x = element_text(angle=90,hjust=1))
     gp
   })
-  
-  ######## enable "detailed plot" button
-  observeEvent(pointInfo(), ({
-    updateButton(session, "go", disabled = FALSE)
-  }))
-  
+
+  # ######## enable "detailed plot" button
+  # observeEvent(pointInfo(), ({
+  #   info <- pointInfo()
+  #   if(length(info) > 2){
+  #     updateButton(session, "go", disabled = FALSE)
+  #   }
+  # }))
+
   ######## plot detailed bar chart
   output$detailPlot.ui <- renderUI({
     plotOutput("detailPlot",width=400,height = input$detailedHeight,
@@ -867,89 +945,78 @@ shinyServer(function(input, output, session) {
                )
     )
   })
-  
+
   ######## GET info when clicking on detailed plot
   pointInfoDetail <- reactive({
     selDf <- detailPlotDt()
     allOrthoID <- sort(selDf$orthoID)
-    
+
     ### get coordinates of plot_click_detail
     if (is.null(input$plot_click_detail$x)) return()
     else{
       corX = round(input$plot_click_detail$y)
       corY = round(input$plot_click_detail$x)
     }
-    
+
     ### get pair of sequence IDs & FAS
     seedID <- toString(selDf$geneID[1])
     orthoID <- toString(allOrthoID[corX])
     fas <- toString(selDf$fas[selDf$orthoID==orthoID])
-    
+
     ### return info
     if(orthoID != "NA"){
       info <- c(seedID,orthoID,fas)
     }
   })
-  
+
   ### SHOW info when clicking on detailed plot
   output$detailClick <- renderText({
     info <- pointInfoDetail() # info = seedID, orthoID, FAS
     if(is.null(info)){return()}
     else{
       a <- paste0("seedID = ",info[1])
-      b <- paste0("orthoID = ",info[2])
+      b <- paste0("hitID = ",info[2])
       c <- paste0("FAS = ",info[3])
       paste(a,b,c,sep="\n")
     }
   })
-  
+
   ######## FASTA sequence
   output$fasta <- renderText({
     if(v$doPlot == FALSE){return()}
-    
+
     info <- pointInfoDetail() # info = seedID, orthoID, FAS
     if(is.null(info)){return()}
     else{
       seqID <- toString(info[2])
       paste(seqID)
-      
-      ### fasta path and format      
-      path = input$path
-      dir_format = input$dir_format
-      file_ext = input$file_ext
-      id_format = input$id_format
-      
-      ### get species ID and seqID 
-      specTMP <- unlist(strsplit(seqID,":"))
-      specID = specTMP[1]
-      if(id_format == 2){
-        seqID = specTMP[2]
-      }
-      
-      ### full path fasta file
-      f <- paste0(path,"/",specID,".",file_ext)
-      if(dir_format == 2){
-        f <- paste0(path,"/",specID,"/",specID,".",file_ext)
-      }
-      
-      ### read file and get sequence
-      if(file.exists(f)){
-        fastaFile = readAAStringSet(f)
-        
-        seq_name = names(fastaFile)
-        sequence = paste(fastaFile)
-        fa <- data.frame(seq_name, sequence)
-        head(fa)
-        
-        seq <- fa$sequence[fa$seq_name == seqID]
-        if(length(seq) < 1){
-          paste0(seqID," not found in ",f,"! Please check id_format in FASTA config again!")
-        } else{
-          paste(paste0(">",seqID),seq,sep="\n")
-        }
+
+      ### fasta path and format
+      if(input$input_type == 'oneSeq.extended.fa'){
+        f <- toString(input$oneseq.file)
       } else {
-        paste0(f," not found! Please check the path and dir_format in FASTA config again!")
+        path = input$path
+        dir_format = input$dir_format
+        file_ext = input$file_ext
+        id_format = input$id_format
+
+        ### get species ID and seqID
+        specTMP <- unlist(strsplit(seqID,":"))
+        specID = specTMP[1]
+        if(id_format == 2){
+          seqID = specTMP[2]
+        }
+
+        ### full path fasta file
+        f <- paste0(path,"/",specID,".",file_ext)
+        if(dir_format == 2){
+          f <- paste0(path,"/",specID,"/",specID,".",file_ext)
+        }
       }
+
+      ### read file and get sequence
+      ### get fasta
+      paste(getFasta(f,seqID))
     }
   })
   
@@ -983,8 +1050,22 @@ shinyServer(function(input, output, session) {
     } else {
       domainDf <- as.data.frame(read.table(file=filein3$datapath, sep='\t',header=FALSE,comment.char=""))
       colnames(domainDf) <- c("seedID","orthoID","feature","start","end","weight")
-      
+
+      if(input$input_type == 'oneSeq.extended.fa'){
+        domainDf$seedID <- gsub("\\|",":",domainDf$seedID)
+        domainDf$orthoID <- gsub("\\|",":",domainDf$orthoID)
+      }
+
       ### get sub dataframe based on selected groupID and orthoID
+      if(input$input_type == 'oneSeq.extended.fa'){
+        orthoTMP <- unlist(strsplit(ortho, perl=TRUE, '\\|'))
+        orthoTMP <- head(orthoTMP,-1)
+        orthoNew <- paste0(orthoTMP,collapse = '',sep="|")
+        orthoNew <- substr(ortho, 1, nchar(ortho)-1)
+        orthoNew <- gsub("\\|",":",ortho)
+      }
+      if(length(orthoNew)>0){ortho <- orthoNew}
+
       grepID = paste(group,"#",ortho,sep="")
       subDomainDf <- domainDf[grep(grepID,domainDf$seedID),]
       
@@ -1084,7 +1165,6 @@ shinyServer(function(input, output, session) {
     data <- downloadData()
     data
   })
-  
   
   ############################################################# 
   ############### HELP & TEXT OUTPUT for TESTING ##############

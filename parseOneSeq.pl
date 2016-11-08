@@ -54,7 +54,8 @@ foreach my $file(@allOutFiles){
 		if($tmp[4]){ $fas = $tmp[4];}
 		my @hit = split(/\@/,$tmp[1]);
 		my $taxonID = $hit[1];
-		my $hitID = $hit[0].":".$tmp[2];
+#		my $hitID = $hit[0].":".$tmp[2];
+		my $hitID = $tmp[0]."|".$tmp[1]."|".$tmp[2]."|".$tmp[3];
 #		print "$geneID - $taxonID - $fas";<>;
 
 		### save to %taxaList, %allGenes and %fas

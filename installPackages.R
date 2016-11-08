@@ -1,4 +1,4 @@
-libs=c("shiny","shinyBS","ggplot2","reshape","plyr","dplyr","scales‌​","grid","gridExtra","ape","colourpicker","shinyjs")
+libs=c("shiny","shinyBS","ggplot2","reshape","plyr","dplyr","scales‌​","grid","gridExtra","ape","colourpicker","shinyjs","stringr)
 type=getOption("pkgType")
 
     CheckInstallPackage <- function(packages, repos="http://cran.r-project.org",
@@ -11,5 +11,6 @@ type=getOption("pkgType")
       }
     } 
     CheckInstallPackage(packages=libs)
-    
+
+source("https://bioconductor.org/biocLite.R")
 biocLite("Biostrings")

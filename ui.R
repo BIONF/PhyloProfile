@@ -18,13 +18,15 @@ shinyUI(fluidPage(
              bsButton("AddFile","Upload additional file(s)",disabled = TRUE)
       ),
       column(3,
+             shinyjs::useShinyjs(),
              uiOutput("rankSelect"),
              uiOutput("select"),
              bsButton("getConfig","FASTA config",style="info")
       ),
       column(1,
              numericInput("number","# rows ",min=1,max=1600,step=10,value=30,width=100),
-             numericInput("stIndex","start at:",min=1,max=1600,value=1,width=100)
+             numericInput("stIndex","start at:",min=1,max=1600,value=1,width=100),
+             bsButton("geneList","Upload gene list",style="warning")
       ),
       column(1,
              numericInput("width","Width(px)",min=600,max=3200,step=50,value=600,width=100),
@@ -67,34 +69,61 @@ shinyUI(fluidPage(
           HTML("Parsing taxonomy information from input file?"),
           actionButton("BUTyes", "Yes"),
           actionButton("BUTno", "No"),
-          helpText(em("***Note: only necessary when you have a new taxa list***"))
+          helpText(em("***Note: Please run this step whenever you have a new taxa set. For instance, if you have a new matrix file but the taxa remain the same, then DO NOT re-run this step!***"))
   ),
 
   ####### popup windows for uploading additional files (FAS & Traceability)
   bsModal("modalnew", "Upload additional file(s)", "AddFile", size = "medium",
-          fileInput("file2","Traceability matrix: "),
-          fileInput("file3","Feature architectures: ")
+          fileInput("file3","Feature architectures:"),
+          fileInput("file2","Traceability matrix:")
+  ),
+  
+  ####### popup windows for upload list of genes of interest
+  bsModal("geneListBs", "Gene list", "geneList", size = "small",
+          radioButtons(
+            inputId="geneList_selected",
+            label="Select list of genes of interest:",
+            choices=list(
+              "all",
+              "from file"
+            ),
+            selected="all"),
+          conditionalPanel(
+            condition = "input.geneList_selected == 'from file'",
+            fileInput("list","List of genes of interest:")
+          )
   ),
   
   ####### popup windows for setting plot colors
   bsModal("color", "Set colors for profile", "setColor", size = "small",
           shinyjs::useShinyjs(),
-          colourpicker::colourInput("lowColor_trace", "Low traceability", value = "grey95"),
-          colourpicker::colourInput("highColor_trace", "High traceability", value = "khaki"),
-          actionButton("defaultColorTrace","Default",style='padding:4px; font-size:100%'),
-          hr(),
           colourpicker::colourInput("lowColor_fas", "Low FAS", value = "darkorange"),
           colourpicker::colourInput("highColor_fas", "High FAS", value = "steelblue"),
-          actionButton("defaultColorFas","Default",style='padding:4px; font-size:100%')
+          actionButton("defaultColorFas","Default",style='padding:4px; font-size:100%'),
+          hr(),
+          colourpicker::colourInput("lowColor_trace", "Low traceability", value = "grey95"),
+          colourpicker::colourInput("highColor_trace", "High traceability", value = "khaki"),
+          actionButton("defaultColorTrace","Default",style='padding:4px; font-size:100%')
   ),
   
   ####### popup windows for FASTA configurations
   bsModal("config", "FASTA config", "getConfig", size = "small",
-          textInput("path","Main path:","")
-          ,selectInput("dir_format","Directory format:",choices=list("path/speciesID.fa*"=1,"path/speciesID/speciesID.fa*"=2),selected="Path/speciesID.fasta")
-          ,selectInput("file_ext","File extension:",choices=list("fa"="fa","fasta"="fasta","fas"="fas","txt"="txt"),selected="fa")
-          ,selectInput("id_format","ID format:",choices=list(">speciesID:seqID"=1,">seqID"=2),selected=2)
-          
+          selectInput("input_type", "Choose location for:",
+                      c("oneSeq.extended.fa", "Fasta folder")
+          ),
+          hr(),
+          conditionalPanel(
+            condition = "input.input_type == 'oneSeq.extended.fa'",
+            textInput("oneseq.file","Path:",""),
+            uiOutput("oneSeq.existCheck")
+          ),
+          conditionalPanel(
+            condition = "input.input_type == 'Fasta folder'",
+            textInput("path","Main path:","")
+            ,selectInput("dir_format","Directory format:",choices=list("path/speciesID.fa*"=1,"path/speciesID/speciesID.fa*"=2),selected="Path/speciesID.fasta")
+            ,selectInput("file_ext","File extension:",choices=list("fa"="fa","fasta"="fasta","fas"="fas","txt"="txt"),selected="fa")
+            ,selectInput("id_format","ID format:",choices=list(">speciesID:seqID"=1,">seqID"=2),selected=2)
+          )
   ),
   
   ################### SIDEBAR PANEL AND MAIN PANEL ################### 
@@ -133,7 +162,7 @@ shinyUI(fluidPage(
                             column(2,
                                  br(),
                                  numericInput("selectedHeight","Plot_height(px)",min=100,max=1600,step=50,value=400,width=100),
-                                 numericInput("selectedWidth","Plot_Width(px)",min=100,max=1600,step=50,value=800,width=100)
+                                 numericInput("selectedWidth","Plot_Width(px)",min=100,max=1000,step=50,value=800,width=100)
                             ),
                             column(2,
                                    br(),
@@ -172,10 +201,10 @@ shinyUI(fluidPage(
                           numericInput("archiHeight","plot_height(px)",min=100,max=1600,step=50,value=400,width=100),
                           numericInput("archiWidth","plot_width(px)",min=100,max=1600,step=50,value=800,width=100)
                   )
-                ),
+        ),
         tabPanel ("Data",dataTableOutput("dis"),
                   downloadButton('downloadData', 'Download filtered data'))
-      )
+        )
     )
   ),
   
@@ -193,7 +222,7 @@ shinyUI(fluidPage(
     fixed = TRUE,
     h5("Point's info:"),
     verbatimTextOutput("pointInfo"),
-    bsButton("go", "Detailed plot", style="success", disabled = TRUE),
+    bsButton("go", "Detailed plot", style="success", disabled = FALSE),
     style = "opacity: 0.80"
   )
 ))

@@ -86,13 +86,14 @@ foreach my $archi(@xml){
 		### get search species ID (if available)
 		my $searchSpec = "";
 		if($archi =~ /(.)+?\.xml/){
-			my $hit = $&;
-			my @hit = split(/@/,$hit);
-			$searchSpec = $hit[0];
+			my $hit = $&;		# plaga_4069@5849@1_22941_fas.xml
+			my @hit = split(/_/,$hit); 
+			pop(@hit), pop(@hit);
+			$searchSpec = join("_",@hit);
 		}
-		if($archi =~ /niteu_5654/){
-			print "YES!! $searchSpec\n";<>;
-		}
+#		if($archi =~ /niteu_5654/){
+#			print "YES!! $searchSpec\n";<>;
+#		}
 
 		### get seed ID
 		my $seedID = "";
@@ -110,7 +111,7 @@ foreach my $archi(@xml){
 			if($searchProt =~ /set_protein id=\"(.)+?\"/){
 				$searchID = $&;
 				$searchID =~ s/set_protein id=//; $searchID =~ s/\"//g;
-				if(length($searchSpec) > 0){ $searchID = $searchSpec.":".$searchID;}
+				if(length($searchSpec) > 0){ $searchID = $groupID."|".$searchSpec."|".$searchID;}
 
 				### get info
 				my @info = split(/<\/architecture>/,$searchProt);
