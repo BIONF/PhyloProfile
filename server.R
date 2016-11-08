@@ -71,6 +71,10 @@ getFasta <- function(file,seqID){
   return(fasta)
 }
 
+######## get last n characters from string x
+substrRight <- function(x, n){
+  substr(x, nchar(x)-n+1, nchar(x))
+}
 
 ############################ MAIN ############################
 options(shiny.maxRequestSize=30*1024^2)  ## size limit for input 30mb
@@ -1057,15 +1061,16 @@ shinyServer(function(input, output, session) {
       }
 
       ### get sub dataframe based on selected groupID and orthoID
+      orthoNew <- ""
       if(input$input_type == 'oneSeq.extended.fa'){
-        orthoTMP <- unlist(strsplit(ortho, perl=TRUE, '\\|'))
-        orthoTMP <- head(orthoTMP,-1)
-        orthoNew <- paste0(orthoTMP,collapse = '',sep="|")
-        orthoNew <- substr(ortho, 1, nchar(ortho)-1)
-        orthoNew <- gsub("\\|",":",ortho)
+        last2char <- substrRight(ortho,2)
+        if(last2char == '|0' | last2char == '|1'){
+          orthoNew <- substr(ortho, 1, nchar(ortho)-2)
+          orthoNew <- gsub("\\|",":",orthoNew)
+        }
       }
-      if(length(orthoNew)>0){ortho <- orthoNew}
-
+      if(nchar(orthoNew)>0){ortho <- orthoNew}
+      
       grepID = paste(group,"#",ortho,sep="")
       subDomainDf <- domainDf[grep(grepID,domainDf$seedID),]
       
@@ -1074,21 +1079,24 @@ shinyServer(function(input, output, session) {
       orthoDf$feature <- as.character(orthoDf$feature)
       ### seed domains df
       seedDf <- filter(subDomainDf,orthoID != ortho)
+      if(nrow(seedDf) == 0){seedDf <- orthoDf}
+
       seedDf$feature <- as.character(seedDf$feature)
       seed = as.character(seedDf$orthoID[1])
-      
+        
       ### change order of one dataframe's features based on order of other df's features
       if(length(orthoDf$feature) < length(seedDf$feature)){
         seedDf$feature <- factor(seedDf$feature, levels=c(orthoDf$feature,seedDf$feature[seedDf$feature != orthoDf$feature]))
       } else {
         orthoDf$feature <- factor(orthoDf$feature, levels=c(seedDf$feature,orthoDf$feature[orthoDf$feature != seedDf$feature]))
       }
-      
+        
       ### plotting
       plot_ortho <- plotting(orthoDf,ortho,fas)
       plot_seed <- plotting(seedDf,seed,fas)
-      
+        
       grid.arrange(plot_seed,plot_ortho,ncol=1)
+
     }
   })
   
