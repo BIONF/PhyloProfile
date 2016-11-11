@@ -60,7 +60,20 @@ foreach my $file(@allOutFiles){
 
 		### save to %taxaList, %allGenes and %fas
 		$taxaList{"ncbi$taxonID"} = 1;
-		$fas{"$geneID#ncbi$taxonID"} = $hitID."#".$fas;
+		unless($fas{"$geneID#ncbi$taxonID"}){
+			$fas{"$geneID#ncbi$taxonID"} = $hitID."#".$fas;
+		} else {
+			if($fas{"$geneID#ncbi$taxonID"} =~ /\#NA/){
+				$fas{"$geneID#ncbi$taxonID"} = $hitID."#".$fas;
+			} else {
+				unless($fas eq "NA"){
+					my @fasTMP = split(/\#/,$fas{"$geneID#ncbi$taxonID"});		
+					if($fasTMP[1] < $fas){
+						$fas{"$geneID#ncbi$taxonID"} = $hitID."#".$fas;
+					}
+				}
+			}
+		}
 		$allGenes{$geneID} = 1;
 	}
 }
