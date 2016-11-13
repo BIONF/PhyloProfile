@@ -114,8 +114,10 @@ shinyUI(fluidPage(
           hr(),
           conditionalPanel(
             condition = "input.input_type == 'oneSeq.extended.fa'",
-            textInput("oneseq.file","Path:",""),
+#            textInput("oneseq.file","Path:",""),
+            fileInput("oneSeqFasta",""),
             uiOutput("oneSeq.existCheck")
+
           ),
           conditionalPanel(
             condition = "input.input_type == 'Fasta folder'",

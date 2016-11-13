@@ -19,7 +19,7 @@ if (!require("Biostrings")) {
 #############################################################
 
 ######## function for plotting domain architecture ########
-plotting <- function(df,geneID,fas){
+plotting <- function(df,geneID,fas,sep){
   gg <- ggplot(df, aes(y=feature, x=end, color = feature)) +
     geom_segment(data=df, aes(y=feature, yend=feature, x=0, xend=1), color="#b2b2b2", size=0.15)
   
@@ -35,8 +35,9 @@ plotting <- function(df,geneID,fas){
                        color="#9fb059", size=2.5, vjust=-0.75, fontface="bold", family="Calibri")
   
   ### theme format
+  titleMod <- gsub(":",sep,geneID)
   gg <- gg + scale_y_discrete(expand=c(0.075,0))
-  gg <- gg + labs(x=NULL, y=NULL, title=paste0(geneID," - FAS=",fas))
+  gg <- gg + labs(x=NULL, y=NULL, title=paste0(titleMod," - FAS=",fas))
   gg <- gg + theme_bw(base_family="Calibri")
   gg <- gg + theme(panel.border=element_blank())
   gg <- gg + theme(axis.ticks=element_blank())
@@ -87,21 +88,25 @@ shinyServer(function(input, output, session) {
   
   ######## check oneseq fasta file exists
   output$oneSeq.existCheck <- renderUI({
-    f <- toString(input$oneseq.file)
-    if(!file.exists(f)){
-      helpText("File not exists!!")
-    } else {
-      if(length(readLines(f, n=1)) == 0){
-        helpText("is not a fasta file!!")
+    #f <- toString(input$oneseq.file)
+    if(is.null(input$oneSeqFasta)){ return()}
+    else{
+      f <- input$oneSeqFasta$datapath
+      if(!file.exists(f)){
+        helpText("File not exists!!")
       } else {
-        firstLine <- readLines(f, n=1)
-        a <- substr(firstLine,1,1)
-        if(a == ">"){
-          HTML('<p><span style="color: #0000ff;"><strong>Please click CLOSE to comfirm!</strong></span></p>')
-        } else {
+        if(length(readLines(f, n=1)) == 0){
           helpText("is not a fasta file!!")
+        } else {
+          firstLine <- readLines(f, n=1)
+          a <- substr(firstLine,1,1)
+          if(a == ">"){
+            HTML('<p><span style="color: #0000ff;"><strong>Please click CLOSE to comfirm!</strong></span></p>')
+          } else {
+            helpText("is not a fasta file!!")
+          }
         }
-      }
+      }      
     }
   })
     
@@ -760,8 +765,20 @@ shinyServer(function(input, output, session) {
     info <- selectedInfo() # info = groupID,orthoID,supertaxon,maxFAS,%spec,trace
     if(is.null(info)){return()}
     else{
-      a <- toString(paste(info[1],info[2], sep = " ; "))
-      b <- toString(paste(substr(info[3],6,nchar(info[3]))))
+      orthoID <- info[2]
+      ## parse orthoID for oneSeq
+      if(input$input_type == 'oneSeq.extended.fa'){
+        orthoIDTmp <- unlist(strsplit(toString(info[2]),"\\|"))
+        #orthoID = toString(paste0(orthoIDTmp[2],":",orthoIDTmp[3]))
+        orthoID = toString(orthoIDTmp[3])
+      }
+      if(orthoID=="NA"){orthoID <- info[2]}
+      
+      ## print output
+      #a <- toString(paste(info[1],orthoID, sep = " ; "))
+      a <- toString(paste("Seed-ID:",info[1]))
+      #b <- toString(paste(substr(info[3],6,nchar(info[3]))))
+      b <- toString(paste0("Hit-ID: ",orthoID," (",substr(info[3],6,nchar(info[3])),")"))
       c <- toString(paste("maxFas:",info[4],"; %spec:",info[5]))
       d <- toString(paste("traceability:",info[6]))
       paste(a,b,c,d,sep="\n")
@@ -778,7 +795,9 @@ shinyServer(function(input, output, session) {
 
       ### fasta path and format
       if(input$input_type == 'oneSeq.extended.fa'){
-        f <- toString(input$oneseq.file)
+#        f <- toString(input$oneseq.file)
+        fasIn <- input$oneSeqFasta
+        f <- toString(fasIn$datapath)
       } else{
         path = input$path
         dir_format = input$dir_format
@@ -889,8 +908,20 @@ shinyServer(function(input, output, session) {
     info <- pointInfo()  # info = groupID,orthoID,supertaxon,maxFAS,%spec,trace
     if(is.null(info)){return()}
     else{
-      a <- toString(paste(info[1],info[2], sep = " ; "))
-      b <- toString(paste(substr(info[3],6,nchar(info[3]))))
+      orthoID <- info[2]
+      ## parse orthoID for oneSeq
+      if(input$input_type == 'oneSeq.extended.fa'){
+        orthoIDTmp <- unlist(strsplit(toString(info[2]),"\\|"))
+        #orthoID = toString(paste0(orthoIDTmp[2],":",orthoIDTmp[3]))
+        orthoID = toString(orthoIDTmp[3])
+      }
+      if(orthoID=="NA"){orthoID <- info[2]}
+      
+      ## print output
+      #a <- toString(paste(info[1],orthoID, sep = " ; "))
+      a <- toString(paste("Seed-ID:",info[1]))
+      #b <- toString(paste(substr(info[3],6,nchar(info[3]))))
+      b <- toString(paste0("Hit-ID: ",orthoID," (",substr(info[3],6,nchar(info[3])),")"))
       c <- toString(paste("maxFas:",info[4],"; %spec:",info[5]))
       d <- toString(paste("traceability:",info[6]))
       paste(a,b,c,d,sep="\n")
@@ -997,7 +1028,9 @@ shinyServer(function(input, output, session) {
 
       ### fasta path and format
       if(input$input_type == 'oneSeq.extended.fa'){
-        f <- toString(input$oneseq.file)
+#        f <- toString(input$oneseq.file)
+        fasIn <- input$oneSeqFasta
+        f <- toString(fasIn$datapath)
       } else {
         path = input$path
         dir_format = input$dir_format
@@ -1090,10 +1123,12 @@ shinyServer(function(input, output, session) {
       } else {
         orthoDf$feature <- factor(orthoDf$feature, levels=c(seedDf$feature,orthoDf$feature[orthoDf$feature != seedDf$feature]))
       }
-        
+      
       ### plotting
-      plot_ortho <- plotting(orthoDf,ortho,fas)
-      plot_seed <- plotting(seedDf,seed,fas)
+      sep = ":"
+      if(!is.null(input$oneSeqFasta)){sep="|"}
+      plot_ortho <- plotting(orthoDf,ortho,fas,sep)
+      plot_seed <- plotting(seedDf,seed,fas,sep)
         
       grid.arrange(plot_seed,plot_ortho,ncol=1)
 
@@ -1235,6 +1270,7 @@ shinyServer(function(input, output, session) {
   output$testOutput <- renderText({
     # ### print infile
     # filein <- input$file1
+    # print(toString(filein))
     # filePath <- toString(filein)
     # fileName <- unlist(strsplit(toString(input$file1),","))
     # name <- toString(fileName[1])
