@@ -185,10 +185,9 @@ shinyServer(function(input, output, session) {
     nameList$fullName <- as.character(nameList$fullName)
     
     rankName = substr(rankSelect,4,nchar(rankSelect))   # get rank name from rankSelect
-    rankNr = 0 + as.numeric(substr(rankSelect,1,2))     # get rank number (number of column in unsorted taxa list - dataframe Dt)
-    
+#    rankNr = 0 + as.numeric(substr(rankSelect,1,2))     # get rank number (number of column in unsorted taxa list - dataframe Dt)
     choice <- as.data.frame
-    choice <- rbind(Dt[rankNr])
+    choice <- rbind(Dt[rankName])
     colnames(choice) <- "ncbiID"
     choice <- merge(choice,nameList,by="ncbiID",all = FALSE)
   })
@@ -236,69 +235,101 @@ shinyServer(function(input, output, session) {
   ######## sorting supertaxa list based on chosen reference taxon
   sortedTaxaList <- reactive({
     if(v$doPlot == FALSE){return()}
-    
+
     ### load list of unsorted taxa
     Dt <- as.data.frame(read.table("data/taxonID.list.fullRankID", sep='\t',header=T))
     
+    ### reduce the number of columns in the iriginal data frame by removing duplicate columns
+    # transpose orig dataframe
+    tDt <- as.data.frame(t(Dt)) 
+    # get duplicate rows (columns in original matrix)
+    dupDt <- tDt[duplicated(tDt), ]
+    # exclude "main" ranks from dupDt 
+    dupDt_mod <- dupDt[row.names(dupDt) != "strain" & row.names(dupDt) != "species" 
+                       & row.names(dupDt) != "genus" & row.names(dupDt) != "family"
+                       & row.names(dupDt) != "order" & row.names(dupDt) != "class"
+                       & row.names(dupDt) != "phylum" & row.names(dupDt) != "kingdom"
+                       & row.names(dupDt) != "superkingdom",]
+    # transpose again
+    tDupDt <- as.data.frame(t(dupDt_mod))
+    # list of columns need to be dropped
+    drop <- colnames(tDupDt)
+    # drop those columns from original Df
+    Dt <- Dt[,!(names(Dt) %in% drop)]
+
     ### load list of taxon name
     nameList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T,fill = TRUE))
     nameList$fullName <- as.character(nameList$fullName)
-    
+
     ### input parameters
     rankSelect = input$rankSelect
     rankName = substr(rankSelect,4,nchar(rankSelect))   # get rank name from rankSelect
-    rankNr = 0 + as.numeric(substr(rankSelect,1,2))     # get rank number (number of column in unsorted taxa list - dataframe Dt)
-    
-    ### get selected supertaxon ID
-    taxaList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T))
-    superID <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inSelect & taxaList$rank == rankName])
-    
-    ################ sort taxa list using info from pruned common tree
-    ### read full common tree
-    tree <- read.tree("data/commontree.phy.ids_mod")
-    ### prune common tree
-    filein <- input$file1
-    list <- readLines(filein$datapath, n=1) # get title line of input matrix (which contains list of all taxa IDs)
-    listMod <- gsub("ncbi","",list)
-    listMod <- gsub("geneID\t","",listMod)
-    ids <- unlist(strsplit(listMod,"\t"))
-    pruned.tree<-drop.tip(tree, setdiff(tree$tip.label, ids));
-    ### get representative ID for rooting (one member of selected supertaxon)
-    repID <- Dt[Dt[,rankNr]==superID,][,3][1]
-    root <- toString(repID)
-    if(root == "NA"){
-      root <- toString(ids[1])
-    }
-    
-    ### reroot the pruned tree
-    unrootTree <- unroot(pruned.tree)
-    rerootTree <- root(unrootTree,root,resolve.root = TRUE)  ## reroot the tree based on selected ID from input$inSelect
-    ### get sorting taxa
-    newTree <- read.tree(text=write.tree(rerootTree))
-    orderedTaxa <- rev(newTree$tip.label)
+    #rankNr = 0 + as.numeric(substr(rankSelect,1,2))     # get rank number (number of column in unsorted taxa list - dataframe Dt)
 
-    ### now sort dataframe Dt
+    # get selected supertaxon ID
+    taxaList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T))
+    superID <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inSelect])
+
+    ### sort taxa list
+    ### first move all species that have the same ID of selected rank (level) to a new data frame
+    ### and sort the rest of the data frame based on that rank.
+    ### then move species that have different ID of selected rank (level), but have the same ID of the higher level
+    ### repeat until reach to last column
+
     sortedDt <- data.frame()
-    for(i in 1:length(orderedTaxa)){
-      subDt <- Dt[Dt[,"ncbiID"]==orderedTaxa[i],]
-      sortedDt <- rbind(sortedDt,subDt)
+    firstLine <- Dt[Dt[,rankName]==superID,][1,]  # get all taxo info for 1 representative
+    sortedDt <- rbind(sortedDt,firstLine) # add to sortedDt
+    Dt <- anti_join(Dt, firstLine, by="ncbiID") # & then remove that line from Dt
+    
+    for(i in 5:ncol(Dt)){
+      Dt <- Dt[order(Dt[,i]),]
+      matchID <- sortedDt[,i][1]
+      subDt <- Dt[Dt[,i]==matchID,]
+      if(nrow(subDt) > 0){
+        sortedDt <- rbind(sortedDt,subDt)
+        Dt <- anti_join(Dt, subDt, by="ncbiID")   # delete already selected lines from Dt dataframe
+      }
     }
+
+    # sortedDt <- data.frame()
+    # repeat{
+    #   subDt <- Dt[Dt[,rankNr]==superID,]
+    #   if(nrow(subDt) < 1){
+    #     Dt <- Dt[order(Dt[,rankNr]),]     # sort the rest of old data frame
+    #     rankNr = rankNr + 1
+    #     if(rankNr > ncol(sortedDt)){break}
+    #     else {superID = sortedDt[rankNr][1,]}
+    #   } else{
+    #     Dt <- anti_join(Dt, subDt, by=rankName)   # delete already removed lines from Dt dataframe
+    #     sortedDt <- rbind(sortedDt,subDt)     # sort the rest of old data frame
+    #     rankNr = rankNr + 1
+    #     if(rankNr > ncol(sortedDt)){break}
+    #     else{superID = sortedDt[rankNr][1,]}
+    #   }
+    #
+    #   if(nrow(Dt) < 1 | rankNr == ncol(sortedDt)+1){
+    #     break
+    #   }
+    # }
+
+    ### join sortedDt and the rest of Dt list (species of other superkingdom than the one of selected supertaxon)
+    sortedDt <- rbind(sortedDt,Dt)
 
     ### get only taxonIDs list of selected rank and rename columns
     sortedOut <- subset(sortedDt,select=c("No.","abbrName","ncbiID","fullName",as.character(rankName)))
     colnames(sortedOut) <- c("No.","abbrName","species","fullName","ncbiID")
-    
+
     ### add name of supertaxa into sortedOut list
     sortedOut <- merge(sortedOut,nameList,by="ncbiID",all.x = TRUE,sort = FALSE)
-    
+
     ### add order_prefix to supertaxon name
     ### and add prefix "ncbi" to taxon_ncbiID (column "species")
     prefix = 1001
-    
+
     sortedOut$sortedSupertaxon <- 0   ## create new column for sorted supertaxon
     sortedOut$sortedSupertaxon[1] <- paste0(prefix,"_",sortedOut$fullName.y[1])
     sortedOut$species[1] <- paste0("ncbi",sortedOut$species[1])
-    
+
     for(i in 2:nrow(sortedOut)){
       if(sortedOut$fullName.y[i] != sortedOut$fullName.y[i-1]){     ## increase prefix if changing to another supertaxon
         prefix = prefix + 1
@@ -306,18 +337,18 @@ shinyServer(function(input, output, session) {
       sortedOut$sortedSupertaxon[i] <- paste0(prefix,"_",sortedOut$fullName.y[i])
       sortedOut$species[i] <- paste0("ncbi",sortedOut$species[i])
     }
-    
+
     ### final sorted supertaxa list
     sortedOut$taxonID <- 0
     sortedOut$category <- "cat"
     sortedOut <- sortedOut[,c("No.","abbrName","taxonID","fullName.x","species","ncbiID","sortedSupertaxon","rank","category")]
     colnames(sortedOut) <- c("No.","abbrName","taxonID","fullName","ncbiID","supertaxonID","supertaxon","rank","category")
-    
+
     sortedOut$taxonID <- as.integer(sortedOut$taxonID)
     sortedOut$ncbiID <- as.factor(sortedOut$ncbiID)
     sortedOut$supertaxon <- as.factor(sortedOut$supertaxon)
     sortedOut$category <- as.factor(sortedOut$category)
-    
+
     ### return data frame
     sortedOut
   })
@@ -722,7 +753,7 @@ shinyServer(function(input, output, session) {
     taxaList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T))
     rankSelect = input$rankSelect
     rankName = substr(rankSelect,4,nchar(rankSelect))
-    inSelect <- as.numeric(taxaList$ncbiID[taxaList$fullName == input$inSelect & taxaList$rank == rankName])
+    inSelect <- as.numeric(taxaList$ncbiID[taxaList$fullName == input$inSelect])
     
     dataHeat <- dataHeat()
     dataHeat <- subset(dataHeat,geneID %in% input$inSeq)
@@ -740,7 +771,8 @@ shinyServer(function(input, output, session) {
       }
       
       # get geneID
-      genes <- as.matrix(dataHeat[dataHeat$supertaxonID == inSelect & !is.na(dataHeat$presSpec),])
+#      genes <- as.matrix(dataHeat[dataHeat$supertaxonID == inSelect & !is.na(dataHeat$presSpec),])
+      genes <- levels(dataHeat$geneID)
       geneID <- toString(genes[corY])
       # get supertaxon (spec)
       supertaxa <- levels(dataHeat$supertaxon)
@@ -864,7 +896,7 @@ shinyServer(function(input, output, session) {
     taxaList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T))
     rankSelect = input$rankSelect
     rankName = substr(rankSelect,4,nchar(rankSelect))
-    inSelect <- as.numeric(taxaList$ncbiID[taxaList$fullName == input$inSelect & taxaList$rank == rankName])
+    inSelect <- as.numeric(taxaList$ncbiID[taxaList$fullName == input$inSelect])
 
     dataHeat <- dataHeat()
 
@@ -881,7 +913,8 @@ shinyServer(function(input, output, session) {
       }
 
       # get geneID
-      genes <- as.matrix(dataHeat[dataHeat$supertaxonID == inSelect & !is.na(dataHeat$presSpec),])
+#      genes <- as.matrix(dataHeat[dataHeat$supertaxonID == inSelect & !is.na(dataHeat$presSpec),])
+      genes <- levels(dataHeat$geneID)
       geneID <- toString(genes[corY])
       # get supertaxon (spec)
       supertaxa <- levels(dataHeat$supertaxon)
@@ -970,7 +1003,7 @@ shinyServer(function(input, output, session) {
 
   ######## plot detailed bar chart
   output$detailPlot.ui <- renderUI({
-    plotOutput("detailPlot",width=400,height = input$detailedHeight,
+    plotOutput("detailPlot",width=800,height = input$detailedHeight,
                click = "plot_click_detail",
                hover = hoverOpts(
                  id = "plot_hover_2",
