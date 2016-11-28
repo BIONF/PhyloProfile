@@ -121,10 +121,11 @@ shinyServer(function(input, output, session) {
     shinyjs::reset("highColor_fas")
   })
   
-  ######## enable "parse" & "upload additional files" button after uploading main file
+  ######## enable "add taxa", "parse" & "upload additional files" button after uploading main file
   observeEvent(input$file1, ({
     updateButton(session, "parse", disabled = FALSE)
     updateButton(session, "AddFile", disabled = FALSE)
+    updateButton(session, "addTaxa", disabled = FALSE)
   }))
   
   ######## check if data is loaded and "parse" button (get info from input) is clicked and confirmed
@@ -153,6 +154,7 @@ shinyServer(function(input, output, session) {
                        #                 " -i ", getwd(),"/data/",input$file1,
                        " -i \"", titleline,"\"", 
                        " -n ", getwd(),"/data/taxonNamesFull.txt",
+                       " -a ", getwd(),"/data/newTaxa.txt",
                        " -o ", getwd(),"/data",
                        sep='')
           system(cmd)
@@ -214,6 +216,27 @@ shinyServer(function(input, output, session) {
     }
   }))
   
+  ############################################################# 
+  ######################  ADD NEW TAXA  #######################
+  #############################################################
+  newTaxa <- reactiveValues()
+  newTaxa$Df <- data.frame("ncbiID"=numeric(),"fullName"=character(),"rank"=character(),"parentID"=numeric(),stringsAsFactors=FALSE)
+  newIndex <- reactiveValues()
+  newIndex$value <- 1
+  
+  observeEvent(input$newAdd, {
+    newTaxa$Df[newIndex$value,] <- c(input$newID,input$newName,input$newRank,input$newParent)
+    newIndex$value <- newIndex$value + 1
+    updateTextInput(session, "newID", value=as.numeric(input$newID)+1)
+    updateTextInput(session, "newName", value="")
+    updateTextInput(session, "newRank", value="norank")
+    updateTextInput(session, "newParent", value="")
+  })
+  
+  observeEvent(input$newDone, {
+    toggleModal(session, "addTaxaWindows", toggle = "close")
+    write.table(newTaxa$Df,"data/newTaxa.txt",sep="\t",eol="\n",row.names=FALSE,quote = FALSE)
+  })
   
   ############################################################# 
   ##################  PROCESSING INPUT DATA ###################
@@ -1226,7 +1249,7 @@ shinyServer(function(input, output, session) {
     filename = function(){c("dataFiltered.out")},
     content = function(file){
       dataOut <- downloadData()
-      write.table(dataOut,file,sep="\t",row.names = FALSE)
+      write.table(dataOut,file,sep="\t",row.names = FALSE,quote = FALSE)
     }
   )
   
@@ -1237,9 +1260,9 @@ shinyServer(function(input, output, session) {
     #data <- sortedTaxaList()
     #data <- dataFiltered()
     #data <- dataSupertaxa()
-    data <- dataHeat()
+    #data <- dataHeat()
     #data <- detailPlotDt()
-    #data <- downloadData()
+    data <- downloadData()
     data
   })
   

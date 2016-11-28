@@ -16,19 +16,21 @@ use Cwd;
 
 sub usage {
     my $msg = shift;
-    print "example: perl getTaxonomyInfo.pl -i taxonID_list -n /home/vinh/Desktop/data/project/taxonomy/taxonNamesFull.txt -o outputDir\n";
+    print "example: perl getTaxonomyInfo.pl -i taxonID_list -n /home/vinh/Desktop/data/project/taxonomy/taxonNamesFull.txt -a /home/vinh/Desktop/data/project/taxonomy/newTaxa.txt -o outputDir\n";
     print "-i\tTaxonID list\n";
     print "-n\tFile contains all NCBI IDs, their names and ranks\n";
+    print "-a\tFile contains newly added taxa IDs, their names and ranks\n";
     print "-o\tOutput dir\n";
     die $msg."\n";
 }
 
 # global variables
-our($opt_i,$opt_n,$opt_o);
-getopts('i:n:o:');
+our($opt_i,$opt_n,$opt_o,$opt_a);
+getopts('i:n:o:a:');
 
 my $idList = ($opt_i) ? $opt_i : usage("ERROR: No input ID list given\n");
 my $nameIN =  ($opt_n) ? $opt_n : usage("ERROR: No taxonNamesFull file given\n");
+my $nameNewIN = ($opt_a) ? $opt_a : usage("ERROR: No newly added taxa file given\n");
 my $outDir =  ($opt_o) ? $opt_o : usage("ERROR: No output dir given\n");
 
 # check file exists
@@ -54,6 +56,22 @@ foreach my $line(@nameIn){
 	$parent{$tmp[0]} = $tmp[3];
 }
 
+#### get the info for newly added taxa (if necessary)
+open(NEW,"$nameNewIN") || die "Cannot open $nameNewIN!!\n";
+my @nameNEW = <NEW>;
+close (NEW);
+
+if(scalar @nameNEW > 1){
+	foreach my $line(@nameNEW){
+		chomp($line);
+		my @tmp = split(/\t/,$line);	# id  name  rank  parentID
+		$id{$tmp[1]} = $tmp[0];
+		$name{$tmp[0]} = $tmp[1];
+		$rank{$tmp[0]} = $tmp[2];
+		$parent{$tmp[0]} = $tmp[3];
+	}
+}
+
 #print "Parsing taxonNamesFull.txt done!!\n";<>;
 
 ### GET LIST OF ALL TAXA from input file
@@ -64,6 +82,7 @@ foreach my $line(@nameIn){
 #$idList = "geneID	ncbi272557	ncbi9360";	# example for input a genus ID instead of species or strain
 #$idList = "geneID	ncbi4837";#	ncbi4932	ncbi3702	ncbi9606";
 #$idList = "geneID	ncbi436017";
+#$idList = "geneID	ncbi2000001	ncbi2000002	ncbi2000003	ncbi202950	ncbi2000004";
 #=cut
 
 my @allTaxa = split(/\t/,$idList);

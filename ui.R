@@ -13,6 +13,7 @@ shinyUI(fluidPage(
     fluidRow(
       column(3, offset = 0,
              fileInput("file1","Presence/absence file: "),
+             bsButton("addTaxa","Add new taxa",disabled=TRUE),
              bsButton("parse","Get info from input",disabled=TRUE),
              helpText(""),
              bsButton("AddFile","Upload additional file(s)",disabled = TRUE)
@@ -62,6 +63,17 @@ shinyUI(fluidPage(
                          width = 200)
         )
       )
+  ),
+  
+  ####### popup to confirm parsing data from input file
+  bsModal("addTaxaWindows", "Add new taxa", "addTaxa", size = "medium",
+          helpText(em("Use this form to add taxon that does not exist in NCBI taxonomy database")),
+          textInput("newID","ID (must be a number and greater than 1835343, e.g. 2000001)",2000001,width=500),
+          textInput("newName","Name (e.g. Saccharomyces cerevisiae strain ABC)","",width=500),
+          textInput("newRank","Rank (e.g. \"norank\" (for strain), species, order, etc.)","norank",width=500),
+          textInput("newParent","Parent ID (NCBI taxonomy ID of the next higher rank, e.g. 4932 (S.cerevisiae species))",4932,width=500),
+          actionButton("newAdd","Add"),
+          actionButton("newDone","Done")
   ),
   
   ####### popup to confirm parsing data from input file
