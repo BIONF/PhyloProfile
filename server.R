@@ -754,10 +754,10 @@ shinyServer(function(input, output, session) {
     rankSelect = input$rankSelect
     rankName = substr(rankSelect,4,nchar(rankSelect))
     inSelect <- as.numeric(taxaList$ncbiID[taxaList$fullName == input$inSelect])
-    
+
     dataHeat <- dataHeat()
     dataHeat <- subset(dataHeat,geneID %in% input$inSeq)
-    
+
     ### get values
     if (is.null(input$plot_click_selected$x)) return()
     else{
@@ -772,7 +772,8 @@ shinyServer(function(input, output, session) {
       
       # get geneID
 #      genes <- as.matrix(dataHeat[dataHeat$supertaxonID == inSelect & !is.na(dataHeat$presSpec),])
-      genes <- levels(dataHeat$geneID)
+#      genes <- levels(dataHeat$geneID)
+      genes <- sort(input$inSeq)
       geneID <- toString(genes[corY])
       # get supertaxon (spec)
       supertaxa <- levels(dataHeat$supertaxon)
@@ -1236,9 +1237,9 @@ shinyServer(function(input, output, session) {
     #data <- sortedTaxaList()
     #data <- dataFiltered()
     #data <- dataSupertaxa()
-    #data <- dataHeat()
+    data <- dataHeat()
     #data <- detailPlotDt()
-    data <- downloadData()
+    #data <- downloadData()
     data
   })
   
