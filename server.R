@@ -1320,18 +1320,7 @@ shinyServer(function(input, output, session) {
     #data <- dataHeat()
     #data <- detailPlotDt()
     data <- downloadData()
-#    data
-    
-    dataHeat <- dataHeat()
-    dataHeat$supertaxonMod <- substr(dataHeat$supertaxon,6,nchar(as.character(dataHeat$supertaxon)))
-    if(input$inTaxa[1] == "all" & input$inSeq[1] != "all"){
-      dataHeat <- subset(dataHeat,geneID %in% input$inSeq) ##### <=== select data from dataHeat for selected sequences only
-    } else if(input$inSeq[1] == "all" & input$inTaxa[1] != "all"){
-      dataHeat <- subset(dataHeat,supertaxonMod %in% input$inTaxa) ##### <=== select data from dataHeat for selected taxa only
-    } else {
-      dataHeat <- subset(dataHeat,geneID %in% input$inSeq & supertaxonMod %in% input$inTaxa) ##### <=== select data from dataHeat for selected sequences and taxa
-    }
-    dataHeat
+    data
   })
   
   ############################################################# 
