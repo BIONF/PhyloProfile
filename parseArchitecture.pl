@@ -11,6 +11,7 @@ use File::Path;
 Parsing domain architecture of proteins from FAS XML output file
 
 **Example input:
+mja@9365@1_MJ1072_fas.xml
 <?xml version="1.0"?>
 <out direction="single-->set" weighting="applied">
 	<single_protein id="nempa_5256_1:NEPG_00013" length="933">
@@ -91,9 +92,6 @@ foreach my $archi(@xml){
 			pop(@hit), pop(@hit);
 			$searchSpec = join("_",@hit);
 		}
-#		if($archi =~ /niteu_5654/){
-#			print "YES!! $searchSpec\n";<>;
-#		}
 
 		### get seed ID
 		my $seedID = "";

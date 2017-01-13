@@ -15,7 +15,7 @@ shinyUI(fluidPage(
              fileInput("file1","Presence/absence file: "),
              bsButton("addTaxa","Add new taxa",disabled=TRUE),
              bsButton("parse","Get info from input",disabled=TRUE),
-             helpText(""),
+             h5(""),
              bsButton("AddFile","Upload additional file(s)",disabled = TRUE)
       ),
       column(3,
@@ -27,23 +27,27 @@ shinyUI(fluidPage(
       column(1,
              numericInput("number","# rows ",min=1,max=1600,step=10,value=30,width=100),
              numericInput("stIndex","start at:",min=1,max=1600,value=1,width=100),
-             bsButton("geneList","Upload gene list",style="warning")
+             bsButton("do", "PLOT",type="action",style="danger",size = "large",disabled = TRUE)
       ),
       column(1,
              numericInput("width","Width(px)",min=600,max=3200,step=50,value=600,width=100),
-             numericInput("height","Height(px)",min=600,max=1600,step=50,value=600,width=100)
+             numericInput("height","Height(px)",min=600,max=1600,step=50,value=600,width=100),
+             actionButton("setSize","Set label size",style='padding:4px; font-size:100%')
       ),
       column(1,
-             radioButtons(
-               inputId="xAxis",
-               label="x-Axis:",
-               choices=list(
-                 "taxa",
-                 "genes"
-               ),
-               selected="taxa"),
-             bsButton("do", "PLOT",type="action",style="danger",size = "large",disabled = TRUE),
-             h5(""),
+             # radioButtons(
+             #   inputId="xAxis",
+             #   label="x-Axis:",
+             #   choices=list("taxa","genes"),
+             #   selected="taxa"),
+             selectInput("xAxis", label = "x-Axis:",
+                         choices = list("Taxa"="taxa", "Genes"="genes"), 
+                         selected = "taxa",
+                         width = 80),
+             selectInput("legendPos", label = "Legend:",
+                         choices = list("Right"="right", "Left"="left","Top"="top","Bottom"="bottom", "Hide"="none"), 
+                         selected = "right",
+                         width = 80),
              actionButton("setColor","Set colors",style='padding:4px; font-size:100%')
       ),
       column(2,
@@ -118,6 +122,13 @@ shinyUI(fluidPage(
           actionButton("defaultColorTrace","Default",style='padding:4px; font-size:100%')
   ),
   
+  ####### popup windows for setting axis label size
+  bsModal("axisSize", "Set size for", "setSize", size = "small",
+          numericInput("xSize","X-axis label (px)",min=8,max=99,step=1,value=8,width=200),
+          numericInput("ySize","Y-axis label (px)",min=8,max=99,step=1,value=8,width=200),
+          actionButton("defaultSize","Default",style='padding:4px; font-size:100%')
+  ),
+  
   ####### popup windows for FASTA configurations
   bsModal("config", "FASTA config", "getConfig", size = "small",
           selectInput("input_type", "Choose location for:",
@@ -148,6 +159,9 @@ shinyUI(fluidPage(
       textOutput("testOutput"),    ### use for testing output ###
       uiOutput("highlight"),
       uiOutput("geneIn"),
+      uiOutput("taxaIn"),
+      h5(""),
+      bsButton("geneList","Upload sequence list",style="warning"),
       bsButton("do2", "Plot selected sequence(s)",disabled=TRUE)
     ),
     

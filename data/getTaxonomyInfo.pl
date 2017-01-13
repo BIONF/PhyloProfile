@@ -82,7 +82,7 @@ if(scalar @nameNEW > 1){
 #$idList = "geneID	ncbi272557	ncbi9360";	# example for input a genus ID instead of species or strain
 #$idList = "geneID	ncbi4837";#	ncbi4932	ncbi3702	ncbi9606";
 #$idList = "geneID	ncbi436017";
-#$idList = "geneID	ncbi2000001	ncbi2000002	ncbi2000003	ncbi202950	ncbi2000004";
+#$idList = "geneID	ncbi1096996	ncbi2000001	ncbi2000002	ncbi2000003	ncbi202950	ncbi62977";
 #=cut
 
 my @allTaxa = split(/\t/,$idList);
@@ -96,7 +96,7 @@ foreach my $taxon(@allTaxa){
 	$ncbiID =~ s/ncbi//;
 
 	unless($name{$ncbiID}){
-#		print "$ncbiID not in taxonNamesFull. CHECK AGAIN\n";
+		print "$ncbiID not in taxonNamesFull. CHECK AGAIN\n";
 	} else {
 		my $name = $name{$ncbiID};
 		my $rank = $rank{$ncbiID};

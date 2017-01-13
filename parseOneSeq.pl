@@ -52,6 +52,7 @@ foreach my $file(@allOutFiles){
 		my $geneID = $tmp[0];
 		my $fas = "NA";
 		if($tmp[4]){ $fas = $tmp[4];}
+		
 		my @hit = split(/\@/,$tmp[1]);
 		my $taxonID = $hit[1];
 #		my $hitID = $hit[0].":".$tmp[2];

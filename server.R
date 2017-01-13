@@ -110,6 +110,12 @@ shinyServer(function(input, output, session) {
     }
   })
     
+  ######## reset label size
+  observeEvent(input$defaultSize, {
+    shinyjs::reset("xSize")
+    shinyjs::reset("ySize")
+  })
+  
   ######## reset colors
   observeEvent(input$defaultColorTrace, {
     shinyjs::reset("lowColor_trace")
@@ -204,7 +210,11 @@ shinyServer(function(input, output, session) {
   output$highlight = renderUI({
     choice <- allTaxaList()
     choice$fullName <- as.factor(choice$fullName)
-    selectInput('inHighlight','Select (super)taxon to highlight:',as.list(levels(choice$fullName)),levels(choice$fullName)[1])
+    
+    out <- as.list(levels(choice$fullName))
+    out <- append("none",out)
+
+    selectInput('inHighlight','Select (super)taxon to highlight:',out,selected=out[1])
   })
   
   ######## enable "PLOT" button
@@ -509,8 +519,8 @@ shinyServer(function(input, output, session) {
   ######## get list of all sequence IDs for selectize input
   output$geneIn = renderUI({
     filein <- input$file1
-    if(is.null(filein)){return(selectInput('inSeq','Select sequence IDs of interest:',"all"))}
-    if(v$doPlot == FALSE){return(selectInput('inSeq','Select sequence IDs of interest:',"all"))}
+    if(is.null(filein)){return(selectInput('inSeq','Select sequence(s) of interest:',"all"))}
+    if(v$doPlot == FALSE){return(selectInput('inSeq','Select sequence(s) of interest:',"all"))}
     else{
       data <- as.data.frame(dataFiltered())
       data$geneID <- as.character(data$geneID)
@@ -518,7 +528,23 @@ shinyServer(function(input, output, session) {
       out <- as.list(levels(data$geneID))
       out <- append("all",out)
       
-      selectInput('inSeq','Select sequence IDs of interest:',out,selected=out[1],multiple=TRUE)
+      selectInput('inSeq','Select sequence(s) of interest:',out,selected=out[1],multiple=TRUE)
+    }
+  })
+  
+  ######## get list of all taxa for selectize input
+  output$taxaIn = renderUI({
+    filein <- input$file1
+    if(is.null(filein)){return(selectInput('inTaxa','Select (super)taxon/(super)taxa of interest:',"all"))}
+    if(v$doPlot == FALSE){return(selectInput('inTaxa','Select (super)taxon/(super)taxa of interest:',"all"))}
+    else{
+      choice <- allTaxaList()
+      choice$fullName <- as.factor(choice$fullName)
+      
+      out <- as.list(levels(choice$fullName))
+      out <- append("all",out)
+      
+      selectInput('inTaxa','Select (super)taxon/(super)taxa of interest:',out,selected=out[1],multiple=TRUE)
     }
   })
 
@@ -572,7 +598,7 @@ shinyServer(function(input, output, session) {
       if (v$doPlot == FALSE) return()
       dataHeat <- dataHeat()
       
-      ### plotting
+      ### plot format
       if(input$xAxis == "genes"){
         p = ggplot(dataHeat, aes(x = geneID, y = supertaxon)) +        ## global aes
           scale_fill_gradient(low = input$lowColor_trace, high = input$highColor_trace, na.value="gray95") +   ## fill color (traceability)
@@ -585,7 +611,7 @@ shinyServer(function(input, output, session) {
         base_size <- 9
         p = p+geom_hline(yintercept=0.5,colour="dodgerblue4")
         p = p+geom_hline(yintercept=1.5,colour="dodgerblue4")
-        p = p+theme(axis.text.x = element_text(angle=60,hjust=1))
+        p = p+theme(axis.text.x = element_text(angle=60,hjust=1,size=input$xSize),axis.text.y = element_text(size=input$ySize))
       } else {
         p = ggplot(dataHeat, aes(y = geneID, x = supertaxon)) +        ## global aes
           scale_fill_gradient(low = input$lowColor_trace, high = input$highColor_trace, na.value="gray95") +   ## fill color (traceability)
@@ -595,37 +621,41 @@ shinyServer(function(input, output, session) {
         scale_size(range = c(0,3))             ## to tune the size of circles
         p = p + labs(x="Taxon")
         
+        
         base_size <- 9
         p = p+geom_vline(xintercept=0.5,colour="dodgerblue4")
         p = p+geom_vline(xintercept=1.5,colour="dodgerblue4")
-        p = p+theme(axis.text.x = element_text(angle=60,hjust=1))
+        p = p+theme(axis.text.x = element_text(angle=60,hjust=1,size=input$xSize),axis.text.y = element_text(size=input$ySize),
+                    legend.position = input$legendPos)
       }
       
-      ## get selected highlight taxon ID
-      taxaList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T))
-      inHighlight <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inHighlight])
-      
-      ## get taxonID together with it sorted index
-      highlightTaxon <- toString(dataHeat[dataHeat$supertaxonID == inHighlight,2][1])
-      ## get index
-      selectedIndex = as.numeric(as.character(substr(highlightTaxon,2,4)))
-      ## draw a rect to highlight this taxon's column
-      if(input$xAxis == "taxa"){
-        rect <- data.frame(xmin=selectedIndex-0.5, xmax=selectedIndex+0.5, ymin=-Inf, ymax=Inf)
-        p = p + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax),
-                          color="yellow",
-                          alpha=0.3,
-                          inherit.aes = FALSE)
-        p
-      } else {
-        rect <- data.frame(ymin=selectedIndex-0.5, ymax=selectedIndex+0.5, xmin=-Inf, xmax=Inf)
-        p = p + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax),
-                          color="yellow",
-                          alpha=0.3,
-                          inherit.aes = FALSE)
+      if(input$inHighlight != "none"){
+        ## get selected highlight taxon ID
+        taxaList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T))
+        inHighlight <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inHighlight])
         
-        p
+        ## get taxonID together with it sorted index
+        highlightTaxon <- toString(dataHeat[dataHeat$supertaxonID == inHighlight,2][1])
+        ## get index
+        selectedIndex = as.numeric(as.character(substr(highlightTaxon,2,4)))
+        ## draw a rect to highlight this taxon's column
+        if(input$xAxis == "taxa"){
+          rect <- data.frame(xmin=selectedIndex-0.5, xmax=selectedIndex+0.5, ymin=-Inf, ymax=Inf)
+          p = p + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax),
+                            color="yellow",
+                            alpha=0.3,
+                            inherit.aes = FALSE)
+        } else {
+          rect <- data.frame(ymin=selectedIndex-0.5, ymax=selectedIndex+0.5, xmin=-Inf, xmax=Inf)
+          p = p + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax),
+                            color="yellow",
+                            alpha=0.3,
+                            inherit.aes = FALSE)
+        }
       }
+      
+      ### do plotting
+      p
     })
   
   ########### plot profile into plot.ui
@@ -667,7 +697,7 @@ shinyServer(function(input, output, session) {
         base_size <- 9
         p = p+geom_hline(yintercept=0.5,colour="dodgerblue4")
         p = p+geom_hline(yintercept=1.5,colour="dodgerblue4")
-        p = p+theme(axis.text.x = element_text(angle=60,hjust=1))
+        p = p+theme(axis.text.x = element_text(angle=60,hjust=1,size=input$xSize),axis.text.y = element_text(size=input$ySize))
         print(p)
         dev.off()
       } else {
@@ -682,7 +712,7 @@ shinyServer(function(input, output, session) {
         base_size <- 9
         p = p+geom_vline(xintercept=0.5,colour="dodgerblue4")
         p = p+geom_vline(xintercept=1.5,colour="dodgerblue4")
-        p = p+theme(axis.text.x = element_text(angle=60,hjust=1))
+        p = p+theme(axis.text.x = element_text(angle=60,hjust=1,size=input$xSize),axis.text.y = element_text(size=input$ySize))
         print(p)
         dev.off()
       }
@@ -707,10 +737,17 @@ shinyServer(function(input, output, session) {
   ######## create plot (same as main plot)
   output$selectedPlot <- renderPlot({
     if (v2$doPlot2 == FALSE) return()
-    if(input$inSeq[1] == "all") {return()}
+    if(input$inSeq[1] == "all" & input$inTaxa[1] == "all") {return()}
     else{
       dataHeat <- dataHeat()
-      dataHeat <- subset(dataHeat,geneID %in% input$inSeq)  ##### <=== select data from dataHeat for selected sequences only
+      dataHeat$supertaxonMod <- substr(dataHeat$supertaxon,6,nchar(as.character(dataHeat$supertaxon)))
+      if(input$inTaxa[1] == "all" & input$inSeq[1] != "all"){
+        dataHeat <- subset(dataHeat,geneID %in% input$inSeq) ##### <=== select data from dataHeat for selected sequences only
+      } else if(input$inSeq[1] == "all" & input$inTaxa[1] != "all"){
+        dataHeat <- subset(dataHeat,supertaxonMod %in% input$inTaxa) ##### <=== select data from dataHeat for selected taxa only
+      } else {
+        dataHeat <- subset(dataHeat,geneID %in% input$inSeq & supertaxonMod %in% input$inTaxa) ##### <=== select data from dataHeat for selected sequences and taxa
+      }
       
       ### plotting
       if(input$xAxis_selected == "taxa"){
@@ -725,7 +762,7 @@ shinyServer(function(input, output, session) {
         base_size <- 9
         p = p+geom_vline(xintercept=0.5,colour="dodgerblue4")
         p = p+geom_vline(xintercept=1.5,colour="dodgerblue4")
-        p = p+theme(axis.text.x = element_text(angle=60,hjust=1),legend.position=input$legend)
+        p = p+theme(axis.text.x = element_text(angle=60,hjust=1,size=input$xSize),axis.text.y = element_text(size=input$ySize),legend.position=input$legend)
         p
       } else {
         p = ggplot(dataHeat, aes(x = geneID, y = supertaxon)) +        ## global aes
@@ -739,7 +776,7 @@ shinyServer(function(input, output, session) {
         base_size <- 9
         p = p+geom_vline(xintercept=0.5,colour="dodgerblue4")
         p = p+geom_vline(xintercept=1.5,colour="dodgerblue4")
-        p = p+theme(axis.text.x = element_text(angle=60,hjust=1),legend.position=input$legend)
+        p = p+theme(axis.text.x = element_text(angle=60,hjust=1,size=input$xSize),axis.text.y = element_text(size=input$ySize),legend.position=input$legend)
         p
       }
     }
@@ -752,9 +789,15 @@ shinyServer(function(input, output, session) {
     }
   }))
   
+  observeEvent(input$inTaxa, ({
+    if(input$inTaxa[1] != "all"){
+      updateButton(session, "do2", disabled = FALSE)
+    }
+  }))
+  
   ######## plot selected sequences heatmap
   output$selectedPlot.ui <- renderUI({
-    if(input$inSeq[1] == "all"){return()}
+    if(input$inSeq[1] == "all" & input$inTaxa[1]=="all"){toggleModal(session, "plotSeq", toggle = "close")}
     plotOutput("selectedPlot",width=input$selectedWidth,height = input$selectedHeight,
                click = "plot_click_selected",
                hover = hoverOpts(
@@ -779,8 +822,18 @@ shinyServer(function(input, output, session) {
     inSelect <- as.numeric(taxaList$ncbiID[taxaList$fullName == input$inSelect])
 
     dataHeat <- dataHeat()
-    dataHeat <- subset(dataHeat,geneID %in% input$inSeq)
-
+    ### get sub-dataframe of selected taxa and sequences
+    dataHeat$supertaxonMod <- substr(dataHeat$supertaxon,6,nchar(as.character(dataHeat$supertaxon)))
+    if(input$inTaxa[1] == "all" & input$inSeq[1] != "all"){
+      dataHeat <- subset(dataHeat,geneID %in% input$inSeq) ##### <=== select data from dataHeat for selected sequences only
+    } else if(input$inSeq[1] == "all" & input$inTaxa[1] != "all"){
+      dataHeat <- subset(dataHeat,supertaxonMod %in% input$inTaxa) ##### <=== select data from dataHeat for selected taxa only
+    } else {
+      dataHeat <- subset(dataHeat,geneID %in% input$inSeq & supertaxonMod %in% input$inTaxa) ##### <=== select data from dataHeat for selected sequences and taxa
+    }
+    ### drop all other supertaxon that are not in sub-dataframe
+    dataHeat$supertaxon <- factor(dataHeat$supertaxon)
+    
     ### get values
     if (is.null(input$plot_click_selected$x)) return()
     else{
@@ -886,6 +939,7 @@ shinyServer(function(input, output, session) {
       pdf(file)#, width = input$width, height = input$height)
       
       dataHeat <- dataHeat()
+      
       dataHeat <- subset(dataHeat,geneID %in% input$inSeq)
       
       ### plotting
@@ -1263,7 +1317,18 @@ shinyServer(function(input, output, session) {
     #data <- dataHeat()
     #data <- detailPlotDt()
     data <- downloadData()
-    data
+#    data
+    
+    dataHeat <- dataHeat()
+    dataHeat$supertaxonMod <- substr(dataHeat$supertaxon,6,nchar(as.character(dataHeat$supertaxon)))
+    if(input$inTaxa[1] == "all" & input$inSeq[1] != "all"){
+      dataHeat <- subset(dataHeat,geneID %in% input$inSeq) ##### <=== select data from dataHeat for selected sequences only
+    } else if(input$inSeq[1] == "all" & input$inTaxa[1] != "all"){
+      dataHeat <- subset(dataHeat,supertaxonMod %in% input$inTaxa) ##### <=== select data from dataHeat for selected taxa only
+    } else {
+      dataHeat <- subset(dataHeat,geneID %in% input$inSeq & supertaxonMod %in% input$inTaxa) ##### <=== select data from dataHeat for selected sequences and taxa
+    }
+    dataHeat
   })
   
   ############################################################# 
