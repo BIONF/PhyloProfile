@@ -833,6 +833,7 @@ shinyServer(function(input, output, session) {
     }
     ### drop all other supertaxon that are not in sub-dataframe
     dataHeat$supertaxon <- factor(dataHeat$supertaxon)
+    dataHeat$geneID <- factor(dataHeat$geneID)
     
     ### get values
     if (is.null(input$plot_click_selected$x)) return()
@@ -847,9 +848,11 @@ shinyServer(function(input, output, session) {
       }
       
       # get geneID
-#      genes <- as.matrix(dataHeat[dataHeat$supertaxonID == inSelect & !is.na(dataHeat$presSpec),])
-#      genes <- levels(dataHeat$geneID)
-      genes <- sort(input$inSeq)
+      if(input$inSeq[1] == "all"){
+        genes <- levels(dataHeat$geneID)
+      } else {
+        genes <- sort(input$inSeq)
+      }
       geneID <- toString(genes[corY])
       # get supertaxon (spec)
       supertaxa <- levels(dataHeat$supertaxon)
