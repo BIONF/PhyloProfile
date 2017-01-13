@@ -98,7 +98,7 @@ shinyUI(fluidPage(
   bsModal("geneListBs", "Gene list", "geneList", size = "small",
           radioButtons(
             inputId="geneList_selected",
-            label="Select list of genes of interest:",
+            label="Select list of sequences of interest:",
             choices=list(
               "all",
               "from file"
@@ -158,11 +158,11 @@ shinyUI(fluidPage(
     sidebarPanel(
       textOutput("testOutput"),    ### use for testing output ###
       uiOutput("highlight"),
-      uiOutput("geneIn"),
       uiOutput("taxaIn"),
+      uiOutput("geneIn"),
       h5(""),
-      bsButton("geneList","Upload sequence list",style="warning"),
-      bsButton("do2", "Plot selected sequence(s)",disabled=TRUE)
+      bsButton("geneList","Upload seq list"),
+      bsButton("do2", "Plot selected sequence(s)/taxa",disabled=TRUE,style="warning")
     ),
     
     ################ Main page
@@ -184,7 +184,7 @@ shinyUI(fluidPage(
                   bsModal("helpBS", "Help", "help", size = "large",
                           uiOutput("help.ui")
                   ),
-                  bsModal("plotSeq","Plot selected sequence","do2", size = "large",
+                  bsModal("plotSeq","Plot selected sequence(s)/taxa","do2", size = "large",
                           uiOutput("selectedPlot.ui"),
                           fluidRow(
                             column(2,
