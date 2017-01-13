@@ -16,7 +16,8 @@ shinyUI(fluidPage(
              bsButton("addTaxa","Add new taxa",disabled=TRUE),
              bsButton("parse","Get info from input",disabled=TRUE),
              h5(""),
-             bsButton("AddFile","Upload additional file(s)",disabled = TRUE)
+             bsButton("geneList","Modified seq list",disabled = TRUE),
+             bsButton("AddFile","Additional file(s)",disabled = TRUE)
       ),
       column(3,
              shinyjs::useShinyjs(),
@@ -95,10 +96,10 @@ shinyUI(fluidPage(
   ),
   
   ####### popup windows for upload list of genes of interest
-  bsModal("geneListBs", "Gene list", "geneList", size = "small",
+  bsModal("geneListBs", "Sequence list", "geneList", size = "small",
           radioButtons(
             inputId="geneList_selected",
-            label="Select list of sequences of interest:",
+            label="Choose list of sequences of interest:",
             choices=list(
               "all",
               "from file"
@@ -161,7 +162,6 @@ shinyUI(fluidPage(
       uiOutput("taxaIn"),
       uiOutput("geneIn"),
       h5(""),
-      bsButton("geneList","Upload seq list"),
       bsButton("do2", "Plot selected sequence(s)/taxa",disabled=TRUE,style="warning")
     ),
     
@@ -185,15 +185,12 @@ shinyUI(fluidPage(
                           uiOutput("help.ui")
                   ),
                   bsModal("plotSeq","Plot selected sequence(s)/taxa","do2", size = "large",
-                          uiOutput("selectedPlot.ui"),
                           fluidRow(
                             column(2,
-                                 br(),
                                  numericInput("selectedHeight","Plot_height(px)",min=100,max=1600,step=50,value=400,width=100),
                                  numericInput("selectedWidth","Plot_Width(px)",min=100,max=1000,step=50,value=800,width=100)
                             ),
                             column(2,
-                                   br(),
                                    radioButtons(
                                      inputId="xAxis_selected",
                                      label="x-Axis:",
@@ -201,27 +198,30 @@ shinyUI(fluidPage(
                                        "taxa",
                                        "genes"
                                      ),
-                                     selected="taxa"),
+                                     selected="taxa")
+                            ),
+                            column(2,
                                    radioButtons(
                                      inputId="legend",
-                                     label="Legend pos:",
+                                     label="Legend position:",
                                      choices=list(
                                        "top",
                                        "right"
                                      ),
                                      selected="top")
                             ),
-                            column(5,
-                                   br(),
-                                   HTML("<strong>Point's info:</strong>"),
-                                   verbatimTextOutput("selectedClick")
+                            column(2,
+                                   numericInput("ySizeSelect","y-Axis size",min=8,max=99,step=1,value=8,width=100),
+                                   numericInput("xSizeSelect","x-Axis size",min=8,max=99,step=1,value=8,width=100)       
                             ),
                             column(2,
-                                   br(),
-                                   br(),
                                    actionButton("selectedDownload","Download plot",disabled=TRUE)
                             )
                           ),
+                          uiOutput("selectedPlot.ui"),
+                          HTML("<strong>Point's info:</strong>"),
+                          verbatimTextOutput("selectedClick"),
+                          HTML("<strong>Sequence:</strong>"),
                           verbatimTextOutput("fasta_selected")
                   ),
                   bsModal("plotArchi","Domain architecture","do3", size = "large",

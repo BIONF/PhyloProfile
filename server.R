@@ -131,6 +131,7 @@ shinyServer(function(input, output, session) {
   observeEvent(input$file1, ({
     updateButton(session, "parse", disabled = FALSE)
     updateButton(session, "AddFile", disabled = FALSE)
+    updateButton(session, "geneList", disabled = FALSE)
     updateButton(session, "addTaxa", disabled = FALSE)
   }))
   
@@ -762,7 +763,7 @@ shinyServer(function(input, output, session) {
         base_size <- 9
         p = p+geom_vline(xintercept=0.5,colour="dodgerblue4")
         p = p+geom_vline(xintercept=1.5,colour="dodgerblue4")
-        p = p+theme(axis.text.x = element_text(angle=60,hjust=1,size=input$xSize),axis.text.y = element_text(size=input$ySize),legend.position=input$legend)
+        p = p+theme(axis.text.x = element_text(angle=60,hjust=1,size=input$xSizeSelect),axis.text.y = element_text(size=input$ySizeSelect),legend.position=input$legend)
         p
       } else {
         p = ggplot(dataHeat, aes(x = geneID, y = supertaxon)) +        ## global aes
@@ -776,7 +777,7 @@ shinyServer(function(input, output, session) {
         base_size <- 9
         p = p+geom_vline(xintercept=0.5,colour="dodgerblue4")
         p = p+geom_vline(xintercept=1.5,colour="dodgerblue4")
-        p = p+theme(axis.text.x = element_text(angle=60,hjust=1,size=input$xSize),axis.text.y = element_text(size=input$ySize),legend.position=input$legend)
+        p = p+theme(axis.text.x = element_text(angle=60,hjust=1,size=input$xSizeSelect),axis.text.y = element_text(size=input$ySizeSelect),legend.position=input$legend)
         p
       }
     }
