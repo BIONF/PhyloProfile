@@ -37,12 +37,13 @@ plotting <- function(df,geneID,fas,sep){
   ### theme format
   titleMod <- gsub(":",sep,geneID)
   gg <- gg + scale_y_discrete(expand=c(0.075,0))
-  gg <- gg + labs(x=NULL, y=NULL, title=paste0(titleMod," - FAS=",fas))
+  gg <- gg + labs(title=paste0(titleMod," - FAS=",fas))
   gg <- gg + theme_bw(base_family="Calibri")
   gg <- gg + theme(panel.border=element_blank())
   gg <- gg + theme(axis.ticks=element_blank())
   gg <- gg + theme(plot.title=element_text(face="bold"))
-  gg <- gg + theme(legend.position="none")
+  gg <- gg + theme(plot.title=element_text(hjust = 0.5))
+  gg <- gg + theme(legend.position="none",axis.title.x=element_blank())
   
   ### return plot
   return(gg)
@@ -1234,8 +1235,10 @@ shinyServer(function(input, output, session) {
         
       ### change order of one dataframe's features based on order of other df's features
       if(length(orthoDf$feature) < length(seedDf$feature)){
+        orthoDf <- orthoDf[order(orthoDf$feature), ]
         seedDf$feature <- factor(seedDf$feature, levels=c(orthoDf$feature,seedDf$feature[seedDf$feature != orthoDf$feature]))
       } else {
+        seedDf <- seedDf[order(seedDf$feature), ]
         orthoDf$feature <- factor(orthoDf$feature, levels=c(seedDf$feature,orthoDf$feature[orthoDf$feature != seedDf$feature]))
       }
       
