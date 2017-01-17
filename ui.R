@@ -114,7 +114,7 @@ shinyUI(fluidPage(
     tabPanel(
       "Input & settings",
       column(4,
-             strong(h4("Main input")),
+             strong(h4("Main input:")),
              fileInput("file1",h5("Presence/absence file:")),
              
              em("Do you have any taxon, which doesn't exist in the NCBI taxonomy database?"),
