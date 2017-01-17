@@ -5,70 +5,209 @@ if (!require("colourpicker")) {install.packages("colourpicker")}
 if (!require("shinyjs")) {install.packages("shinyjs")}
 
 shinyUI(fluidPage(
-  # Application title
-  titlePanel("Phylogenetic profile app"),
   
-  ################### wellpanel for INPUTS ##########################
-  wellPanel(
-    fluidRow(
-      column(3, offset = 0,
-             fileInput("file1","Presence/absence file: "),
-             bsButton("addTaxa","Add new taxa",disabled=TRUE),
-             bsButton("parse","Get info from input",disabled=TRUE),
+  tags$style(type="text/css", "body {padding-top: 70px;}"),
+  
+  # Application title
+  titlePanel("Phylogenetic profile tool"),
+  
+  ################### TOP wellpanel for plot configuration ##########################
+  conditionalPanel(
+    condition = "input.tabs=='Main profile'",
+    wellPanel(
+      fluidRow(
+        column(2,
+               radioButtons(
+                 inputId="xAxis",
+                 label="Choose type of x-axis:",
+                 choices=list("taxa","genes"),
+                 selected="taxa"
+               )
+        ),
+        column(1,
+               numericInput("width","Width (px)",min=600,max=3200,step=50,value=600,width=100),
+               numericInput("height","Height (px)",min=600,max=1600,step=50,value=600,width=100)
+        ),
+        column(2,
+               numericInput("xSize","X-axis label size(px)",min=8,max=99,step=1,value=8,width=150),
+               numericInput("ySize","Y-axis label size(px)",min=8,max=99,step=1,value=8,width=150)
+        ),
+        column(2,
+               numericInput("legendSize","Legend label size(px)",min=8,max=99,step=1,value=8,width=150),
+               selectInput("mainLegend", label = "Legend position:",
+                           choices = list("Right"="right", "Left"="left","Top"="top","Bottom"="bottom", "Hide"="none"), 
+                           selected = "right",
+                           width = 150)
+        ),
+        column(2,
+               sliderInput("fas",
+                           "FAS cutoff: ", min = 0, max = 1, step = 0.05, value = 0.0, width = 200),
+               actionButton("resetMain","Reset all")
+        ),
+        column(2,
+               sliderInput("percent",
+                           "% of present species:", min = 0, max = 1, step = 0.05, value = 0.0, width = 200),
+               tags$head(
+                 tags$style(HTML('#plotDownload{background-color:#A9E2F3}'))
+               ),
+               downloadButton('plotDownload','Download heatmap')
+        )
+      )
+    )
+  ),
+  
+  conditionalPanel(
+    condition = "input.tabs=='Customized profile'",
+    wellPanel(
+      fluidRow(
+        column(2,
+               radioButtons(
+                 inputId="xAxis_selected",
+                 label="Choose type of x-axis:",
+                 choices=list(
+                   "taxa",
+                   "genes"
+                 ),
+                 selected="taxa")
+        ),
+        column(1,
+               numericInput("selectedWidth","Width (px)",min=100,max=1000,step=50,value=600,width=100),
+               numericInput("selectedHeight","Height (px)",min=100,max=1600,step=50,value=600,width=100)
+        ),
+        column(2,
+               numericInput("xSizeSelect","X-axis label size(px)",min=8,max=99,step=1,value=8,width=150),
+               numericInput("ySizeSelect","Y-axis label size(px)",min=8,max=99,step=1,value=8,width=150)     
+        ),
+        column(2,
+               numericInput("legendSizeSelect","Legend label size(px)",min=8,max=99,step=1,value=8,width=150),
+               selectInput(
+                 "selectedLegend", label = "Legend position:",
+                 choices = list("Right"="right", "Left"="left","Top"="top","Bottom"="bottom", "Hide"="none"), 
+                 selected = "right",
+                 width = 150)
+        ),
+        column(2,
+               uiOutput("fasFilter.ui"),
+               actionButton("resetSelected","Reset all")
+        ),
+        column(2,
+               uiOutput("percentFilter.ui"),
+               tags$head(
+                 tags$style(HTML('#selectedDownload{background-color:#A9E2F3}'))
+               ),
+               downloadButton('selectedDownload', 'Download heatmap')
+        )
+      )
+    )
+  ),
+  
+  ################### main narvarpage tabs ##########################
+  navbarPage(
+    em("Menu"),
+    id ="tabs",
+    collapsible = TRUE,
+    inverse = TRUE,
+    fluid = TRUE,
+    position = "fixed-top",
+    
+    ########## INPUT TAB ###########
+    tabPanel(
+      "Input & settings",
+      column(4,
+             strong(h4("Main input")),
+             fileInput("file1",h5("Presence/absence file:")),
+             
+             em("Do you have any taxon, which doesn't exist in the NCBI taxonomy database?"),
+             radioButtons("newTaxaAsk","", c("Yes" = "Yes", "No" = "No"), inline=T, selected = "No"),
+             conditionalPanel(condition="input.newTaxaAsk == 'Yes'",
+                              bsButton("addTaxa","Add new taxa",disabled=TRUE)
+             ),
              h5(""),
-             bsButton("geneList","Modified seq list",disabled = TRUE),
-             bsButton("AddFile","Additional file(s)",disabled = TRUE)
+             
+             em("Does the taxa in your recently uploaded presence/absence file change? (Note: for 'first time users', please choose 'YES')"),
+             radioButtons("parseAsk","", c("Yes" = "Yes", "No" = "No"), inline=T, selected = "No"),
+             conditionalPanel(condition="input.parseAsk == 'Yes'",
+                              bsButton("parse","Get info from input",disabled=TRUE)
+             ),
+             hr(),
+             strong(h4("Choose genes of interest:")),
+             radioButtons(inputId="geneList_selected", label="", choices=list("all","from file"), selected="all", inline=T),
+             conditionalPanel(
+               condition = "input.geneList_selected == 'from file'",
+               fileInput("list","")
+             ),
+             hr()
       ),
       column(3,
+             strong(h4("Additional files (if any):")),
+             fileInput("file3",h5("Feature architectures:")),
+             fileInput("file2",h5("Traceability matrix:")),
+             hr(),
+             bsButton("getConfig","FASTA config"),
+             h5(""),
+             actionButton("setColor","Plot colors config",style='padding:4px; font-size:100%'),
+             hr()
+      ),
+      column(4,
+             strong(h4("Seed (super)taxon:")), 
              shinyjs::useShinyjs(),
              uiOutput("rankSelect"),
              uiOutput("select"),
-             bsButton("getConfig","FASTA config",style="info")
-      ),
-      column(1,
-             numericInput("number","# rows ",min=1,max=1600,step=10,value=30,width=100),
-             numericInput("stIndex","start at:",min=1,max=1600,value=1,width=100),
+             h5(""),
              bsButton("do", "PLOT",type="action",style="danger",size = "large",disabled = TRUE)
-      ),
-      column(1,
-             numericInput("width","Width(px)",min=600,max=3200,step=50,value=600,width=100),
-             numericInput("height","Height(px)",min=600,max=1600,step=50,value=600,width=100),
-             actionButton("setSize","Set label size",style='padding:4px; font-size:100%')
-      ),
-      column(1,
-             # radioButtons(
-             #   inputId="xAxis",
-             #   label="x-Axis:",
-             #   choices=list("taxa","genes"),
-             #   selected="taxa"),
-             selectInput("xAxis", label = "x-Axis:",
-                         choices = list("Taxa"="taxa", "Genes"="genes"), 
-                         selected = "taxa",
-                         width = 80),
-             selectInput("legendPos", label = "Legend:",
-                         choices = list("Right"="right", "Left"="left","Top"="top","Bottom"="bottom", "Hide"="none"), 
-                         selected = "right",
-                         width = 80),
-             actionButton("setColor","Set colors",style='padding:4px; font-size:100%')
-      ),
-      column(2,
-             sliderInput("fas",
-                         "FAS cutoff: ",
-                         min = 0,
-                         max = 1,
-                         step = 0.05,
-                         value = 0.0,
-                         width = 200),
-             sliderInput("percent",
-                         "% of present species:",
-                         min = 0,
-                         max = 1,
-                         step = 0.05,
-                         value = 0.0,
-                         width = 200)
+      )
+    ),
+    
+    ########## MAIN PROFILE TAB ###########
+    tabPanel(
+      "Main profile",
+      sidebarLayout(
+        sidebarPanel(
+          textOutput("testOutput"),    ### use for testing output ###
+          column(6,offset = 0,numericInput("number","Number of genes:",min=1,max=1600,step=10,value=30,width=150),style='padding:0px;'),
+          column(6,numericInput("stIndex","First gene index:",min=1,max=1600,value=1,width=200)),
+          #column(12,strong("Select (super)taxon to highlight:")),
+          uiOutput("highlight")
+        ),
+        mainPanel(
+          uiOutput("plot.ui")
         )
       )
+    ),
+    
+    ########## CUSTOMIZED PROFILE TAB ###########
+    tabPanel(
+      "Customized profile",
+      sidebarLayout(
+        sidebarPanel(
+          uiOutput("taxaIn"),
+          uiOutput("geneIn"),
+          h5(""),
+          bsButton("do2", "Plot selected sequence(s)/taxa",disabled=TRUE,style="warning")
+        ),
+        mainPanel(
+          uiOutput("selectedPlot.ui")
+        )
+      )
+    ),
+    
+    ########## DATA TAB ###########
+    tabPanel("(Filtered) data",dataTableOutput("dis"),
+             downloadButton('downloadData', 'Download filtered data')
+    ),
+    
+    ########## OTHERS TAB ###########
+    navbarMenu("More",
+               tabPanel("Description",
+                        img(src="beschreibung.jpg", align = "left", height=600, width=800)
+               ),
+               tabPanel("Q&A",
+                        uiOutput("help.ui")
+               )
+    )
   ),
+  
+  ################### LIST OF POP-UP WINDOWS ##########################
   
   ####### popup to confirm parsing data from input file
   bsModal("addTaxaWindows", "Add new taxa", "addTaxa", size = "medium",
@@ -88,28 +227,6 @@ shinyUI(fluidPage(
           actionButton("BUTno", "No"),
           helpText(em("***Note: Please run this step whenever you have a new taxa set. For instance, if you have a new matrix file but the taxa remain the same, then DO NOT re-run this step!***"))
   ),
-
-  ####### popup windows for uploading additional files (FAS & Traceability)
-  bsModal("modalnew", "Upload additional file(s)", "AddFile", size = "medium",
-          fileInput("file3","Feature architectures:"),
-          fileInput("file2","Traceability matrix:")
-  ),
-  
-  ####### popup windows for upload list of genes of interest
-  bsModal("geneListBs", "Sequence list", "geneList", size = "small",
-          radioButtons(
-            inputId="geneList_selected",
-            label="Choose list of sequences of interest:",
-            choices=list(
-              "all",
-              "from file"
-            ),
-            selected="all"),
-          conditionalPanel(
-            condition = "input.geneList_selected == 'from file'",
-            fileInput("list","List of genes of interest:")
-          )
-  ),
   
   ####### popup windows for setting plot colors
   bsModal("color", "Set colors for profile", "setColor", size = "small",
@@ -121,13 +238,6 @@ shinyUI(fluidPage(
           colourpicker::colourInput("lowColor_trace", "Low traceability", value = "grey95"),
           colourpicker::colourInput("highColor_trace", "High traceability", value = "khaki"),
           actionButton("defaultColorTrace","Default",style='padding:4px; font-size:100%')
-  ),
-  
-  ####### popup windows for setting axis label size
-  bsModal("axisSize", "Set size for", "setSize", size = "small",
-          numericInput("xSize","X-axis label (px)",min=8,max=99,step=1,value=8,width=200),
-          numericInput("ySize","Y-axis label (px)",min=8,max=99,step=1,value=8,width=200),
-          actionButton("defaultSize","Default",style='padding:4px; font-size:100%')
   ),
   
   ####### popup windows for FASTA configurations
@@ -151,106 +261,52 @@ shinyUI(fluidPage(
             ,selectInput("id_format","ID format:",choices=list(">speciesID:seqID"=1,">seqID"=2),selected=2)
           )
   ),
-  
-  ################### SIDEBAR PANEL AND MAIN PANEL ################### 
-  sidebarLayout(
-    fluid = FALSE,
-    
-    sidebarPanel(
-      textOutput("testOutput"),    ### use for testing output ###
-      uiOutput("highlight"),
-      uiOutput("taxaIn"),
-      uiOutput("geneIn"),
-      h5(""),
-      bsButton("do2", "Plot selected sequence(s)/taxa",disabled=TRUE,style="warning")
-    ),
-    
-    ################ Main page
-    mainPanel(
-      tabsetPanel(
-#        tabPanel ("Distribution",plotOutput("plot1")),
-        tabPanel ("Presence/absence profile",
-                  uiOutput("plot.ui"),
-                  downloadButton('plotDownload','Download plot'),
-                  bsModal("modalBS", "Detailed plot", "go", size = "large",
-                          uiOutput("detailPlot.ui"),
-                          numericInput("detailedHeight","plot_height(px)",min=100,max=1600,step=50,value=100,width=100)
-                          ,verbatimTextOutput("detailClick")
-                          ,actionButton("do3", "Show domain architecture")
-                          ,br()
-                          ,h4("Sequence:")
-                          ,verbatimTextOutput("fasta")
-                  ),
-                  bsModal("helpBS", "Help", "help", size = "large",
-                          uiOutput("help.ui")
-                  ),
-                  bsModal("plotSeq","Plot selected sequence(s)/taxa","do2", size = "large",
-                          fluidRow(
-                            column(2,
-                                 numericInput("selectedHeight","Plot_height(px)",min=100,max=1600,step=50,value=400,width=100),
-                                 numericInput("selectedWidth","Plot_Width(px)",min=100,max=1000,step=50,value=800,width=100)
-                            ),
-                            column(2,
-                                   radioButtons(
-                                     inputId="xAxis_selected",
-                                     label="x-Axis:",
-                                     choices=list(
-                                       "taxa",
-                                       "genes"
-                                     ),
-                                     selected="taxa")
-                            ),
-                            column(2,
-                                   radioButtons(
-                                     inputId="legend",
-                                     label="Legend position:",
-                                     choices=list(
-                                       "top",
-                                       "right"
-                                     ),
-                                     selected="top")
-                            ),
-                            column(2,
-                                   numericInput("ySizeSelect","y-Axis size",min=8,max=99,step=1,value=8,width=100),
-                                   numericInput("xSizeSelect","x-Axis size",min=8,max=99,step=1,value=8,width=100)       
-                            ),
-                            column(2,
-                                   actionButton("selectedDownload","Download plot",disabled=TRUE)
-                            )
-                          ),
-                          uiOutput("selectedPlot.ui"),
-                          HTML("<strong>Point's info:</strong>"),
-                          verbatimTextOutput("selectedClick"),
-                          HTML("<strong>Sequence:</strong>"),
-                          verbatimTextOutput("fasta_selected")
-                  ),
-                  bsModal("plotArchi","Domain architecture","do3", size = "large",
-                          uiOutput("archiPlot.ui"),
-                          numericInput("archiHeight","plot_height(px)",min=100,max=1600,step=50,value=400,width=100),
-                          numericInput("archiWidth","plot_width(px)",min=100,max=1600,step=50,value=800,width=100)
-                  )
-        ),
-        tabPanel ("Data",dataTableOutput("dis"),
-                  downloadButton('downloadData', 'Download filtered data'))
-        )
-    )
-  ),
-  
-  ############# HELP button
-  absolutePanel(
-    bottom = 5, right = 30,
-    fixed = TRUE,
-    actionButton("help", "HELP",style='padding:4px; font-size:80%'),
-    style = "opacity: 0.80"
+
+  ####### popup windows for detailed plot
+  bsModal("modalBS", "Detailed plot", "go", size = "large",
+          uiOutput("detailPlot.ui"),
+          numericInput("detailedHeight","plot_height(px)",min=100,max=1600,step=50,value=100,width=100)
+          ,verbatimTextOutput("detailClick")
+          ,actionButton("do3", "Show domain architecture")
+          ,br()
+          ,h4("Sequence:")
+          ,verbatimTextOutput("fasta")
   ),
 
-  ############# PONIT's INFO BOX
-  absolutePanel(
-    bottom = 5, left = 30,
-    fixed = TRUE,
-    h5("Point's info:"),
-    verbatimTextOutput("pointInfo"),
-    bsButton("go", "Detailed plot", style="success", disabled = FALSE),
-    style = "opacity: 0.80"
+  ####### popup windows for domain architecture plot
+  bsModal("plotArchi","Domain architecture","do3", size = "large",
+          fluidRow(
+            column(2,
+                   numericInput("archiHeight","plot_height(px)",min=100,max=1600,step=50,value=400,width=100)
+            ),
+            column(2,
+                   numericInput("archiWidth","plot_width(px)",min=100,max=1600,step=50,value=800,width=100)
+            ),
+            column(2,
+                   numericInput("titleArchiSize","Title size(px)",min=8,max=99,step=1,value=11,width=150)
+            ),
+            column(2,
+                   numericInput("labelArchiSize","Label size(px)",min=8,max=99,step=1,value=11,width=150)
+            )
+          ),
+          uiOutput("archiPlot.ui"),
+          downloadButton("archiDownload","Download plot")
+  ),
+  
+  ################### POINT INFO BOX ##########################
+  conditionalPanel(
+    condition = "input.tabs=='Main profile' || input.tabs=='Customized profile'",
+    ############# PONIT's INFO BOX
+    absolutePanel(
+      bottom = 5, left = 30,
+      fixed = TRUE,
+      h5("Point's info:"),
+      verbatimTextOutput("pointInfo"),
+      bsButton("go", "Detailed plot", style="success", disabled = FALSE),
+      style = "opacity: 0.80"
+    )
   )
-))
+
+  
+)
+)

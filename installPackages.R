@@ -1,4 +1,4 @@
-libs=c("shiny","shinyBS","ggplot2","reshape","plyr","dplyr","scales‌​","grid","gridExtra","ape","colourpicker","shinyjs","stringr)
+libs=c("shiny","shinyBS","ggplot2","reshape","plyr","dplyr","scales‌​","grid","gridExtra","ape","colourpicker","shinyjs","stringr","svglite")
 type=getOption("pkgType")
 
     CheckInstallPackage <- function(packages, repos="http://cran.r-project.org",
