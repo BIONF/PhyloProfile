@@ -542,19 +542,28 @@ shinyServer(function(input, output, session) {
     superDfExt
   })
   
+
   ######## get list of all sequence IDs for selectize input
   output$geneIn = renderUI({
     filein <- input$file1
-    if(is.null(filein)){return(selectInput('inSeq','Select sequence(s) of interest:',"all"))}
-    if(v$doPlot == FALSE){return(selectInput('inSeq','Select sequence(s) of interest:',"all"))}
+    fileCustom <- input$customFile
+    
+    if(is.null(filein) & is.null(fileCustom)){return(selectInput('inSeq','',"all"))}
+    if(v$doPlot == FALSE){return(selectInput('inSeq','',"all"))}
     else{
-      data <- as.data.frame(dataFiltered())
-      data$geneID <- as.character(data$geneID)
-      data$geneID <- as.factor(data$geneID)
-      out <- as.list(levels(data$geneID))
-      out <- append("all",out)
-      
-      selectInput('inSeq','Select sequence(s) of interest:',out,selected=out[1],multiple=TRUE)
+      if(is.null(fileCustom)){
+        data <- as.data.frame(dataFiltered())
+        data$geneID <- as.character(data$geneID)
+        data$geneID <- as.factor(data$geneID)
+        out <- as.list(levels(data$geneID))
+        out <- append("all",out)
+        selectInput('inSeq','',out,selected=out[1],multiple=TRUE)
+       } else {
+         customList <- as.data.frame(read.table(file=fileCustom$datapath, header=FALSE))
+         customList$V1 <- as.factor(customList$V1)
+         out <- as.list(levels(customList$V1))
+         selectInput('inSeq','',out,selected=out,multiple=TRUE)
+       }
     }
   })
   

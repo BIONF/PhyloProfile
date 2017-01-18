@@ -180,8 +180,16 @@ shinyUI(fluidPage(
       "Customized profile",
       sidebarLayout(
         sidebarPanel(
+          strong("Select sequence(s) of interest:"),
+          column(6,
+                 style='padding:0px;',
+                 uiOutput("geneIn")
+          ),
+          column(3,
+                 fileInput("customFile","",width='100%')
+          ),
           uiOutput("taxaIn"),
-          uiOutput("geneIn"),
+          
           h5(""),
           bsButton("do2", "Plot selected sequence(s)/taxa",disabled=TRUE,style="warning")
         ),
