@@ -710,9 +710,9 @@ shinyServer(function(input, output, session) {
   
   ########### download plot
   output$plotDownload <- downloadHandler(
-    filename = function() {c("plot.svg")}, 
+    filename = function() {c("plot.pdf")}, 
     content = function(file) {
-      ggsave(file, plot = mainPlot(), width = input$width*0.056458333, height = input$height*0.056458333, units="cm", dpi=300, device = "svg")
+      ggsave(file, plot = mainPlot(), width = input$width*0.056458333, height = input$height*0.056458333, units="cm", dpi=300, device = "pdf", limitsize=FALSE)
     }
   )
 
@@ -865,9 +865,9 @@ shinyServer(function(input, output, session) {
   
   ######## download selected plot
   output$selectedDownload <- downloadHandler(
-    filename = function() {c("selected_plot.svg")}, 
+    filename = function() {c("selected_plot.pdf")}, 
     content = function(file) {
-      ggsave(file, plot = selectedPlot(), width = input$selectedWidth*0.056458333, height = input$selectedHeight*0.056458333, units="cm", dpi=300, device = "svg")
+      ggsave(file, plot = selectedPlot(), width = input$selectedWidth*0.056458333, height = input$selectedHeight*0.056458333, units="cm", dpi=300, device = "pdf", limitsize=FALSE)
     }
   )
   
