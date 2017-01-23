@@ -10,6 +10,7 @@ if (!require("gridExtra")) {install.packages("gridExtra")}
 if (!require("ape")) {install.packages("ape")}
 if (!require("stringr")) {install.packages("stringr")}
 if (!require("stringr")) {install.packages("svglite")}
+if (!require("gtable")) {install.packages("gtable")}
 if (!require("Biostrings")) {
   source("https://bioconductor.org/biocLite.R")
   biocLite("Biostrings")
@@ -85,7 +86,8 @@ substrRight <- function(x, n){
 options(shiny.maxRequestSize=30*1024^2)  ## size limit for input 30mb
 
 shinyServer(function(input, output, session) {
- 
+#  session$onSessionEnded(stopApp) ### Automatically stop a Shiny app when closing the browser tab
+  
   ############################################################# 
   ####################  PRE-PROCESSING  #######################
   #############################################################
@@ -93,23 +95,23 @@ shinyServer(function(input, output, session) {
   ######## render filter slidebars for Customized plot
   output$fasFilter.ui <- renderUI({
     sliderInput("fas2",
-                "FAS cutoff: ", min = 0, max = 1, step = 0.05, value = input$fas, width = 200)
+                "FAS cutoff: ", min = 0, max = 1, step = 0.025, value = input$fas, width = 200)
   })
   
   output$percentFilter.ui <- renderUI({
     sliderInput("percent2",
-                "% of present species:", min = 0, max = 1, step = 0.05, value = input$percent, width = 200)
+                "% of present species:", min = 0, max = 1, step = 0.025, value = input$percent, width = 200)
   })
   ######## update value for "main" filter slidebars based on "Customized" slidebars
   observe({
     newFas <- input$fas2
     updateSliderInput(session, "fas", value = newFas,
-                      min = 0, max = 1, step = 0.05)
+                      min = 0, max = 1, step = 0.025)
   })
   observe({
     newPercent <- input$percent2
     updateSliderInput(session, "percent", value = newPercent,
-                      min = 0, max = 1, step = 0.05)
+                      min = 0, max = 1, step = 0.025)
   })
   
   ######## check oneseq fasta file exists
@@ -273,6 +275,19 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  ######## disable main input, genelist input and 3 initial questions
+  observe({
+    # use tabsetPanel 'id' argument to change tabs
+    if (input$do > 0) {
+      toggleState("file1")
+      toggleState("geneList_selected")
+      toggleState("sortGene")
+      toggleState("newTaxaAsk")
+      toggleState("parseAsk")
+      #updateTabsetPanel(session, "tabs", selected = "Main profile")
+    }
+  })
+  
   ############################################################# 
   ######################  ADD NEW TAXA  #######################
   #############################################################
@@ -425,6 +440,7 @@ shinyServer(function(input, output, session) {
     nrHit <- input$stIndex + input$number - 1
     data <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char="",nrows=nrHit))
     
+    
     # OR just list of gene from a separated input file
     listIn <- input$list
     if(input$geneList_selected == 'from file'){
@@ -433,6 +449,10 @@ shinyServer(function(input, output, session) {
         dataOrig <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
         data <- dataOrig[dataOrig$geneID %in% list$V1,]
       }
+    }
+    
+    if(input$sortGene == "No"){
+      data$geneID <- factor(data$geneID, levels = data$geneID)  ######### keep user defined geneID order 
     }
     
     # convert into paired columns
@@ -629,95 +649,209 @@ shinyServer(function(input, output, session) {
   
   ########### create profile heatmap
   mainPlot <- function(){
-      if (v$doPlot == FALSE) return()
-      dataHeat <- dataHeat()
+        if (v$doPlot == FALSE) return()
+        dataHeat <- dataHeat()
       
-      ### plot format
-      if(input$xAxis == "genes"){
-        p = ggplot(dataHeat, aes(x = geneID, y = supertaxon)) +        ## global aes
-          scale_fill_gradient(low = input$lowColor_trace, high = input$highColor_trace, na.value="gray95") +   ## fill color (traceability)
-          geom_tile(aes(fill = traceability)) +    ## filled rect (traceability score)
-          geom_point(aes(colour = fas, size = presSpec))  +    ## geom_point for circle illusion (FAS and presence/absence)
-          scale_color_gradient(low = input$lowColor_fas,high = input$highColor_fas)#+       ## color of the corresponding aes (FAS)
-        scale_size(range = c(0,3))             ## to tune the size of circles
-        p = p + labs(y="Taxon")
-        
-        base_size <- 9
-        p = p+geom_hline(yintercept=0.5,colour="dodgerblue4")
-        p = p+geom_hline(yintercept=1.5,colour="dodgerblue4")
-        p = p+theme(axis.text.x = element_text(angle=60,hjust=1,size=input$xSize),axis.text.y = element_text(size=input$ySize),
-                    axis.title.x = element_text(size=input$xSize), axis.title.y = element_text(size=input$ySize),
-                    legend.title=element_text(size=input$legendSize),legend.text=element_text(size=input$legendSize),legend.position = input$mainLegend)
-      } else {
-        p = ggplot(dataHeat, aes(y = geneID, x = supertaxon)) +        ## global aes
-          scale_fill_gradient(low = input$lowColor_trace, high = input$highColor_trace, na.value="gray95") +   ## fill color (traceability)
-          geom_tile(aes(fill = traceability)) +    ## filled rect (traceability score)
-          geom_point(aes(colour = fas, size = presSpec))  +    ## geom_point for circle illusion (FAS and presence/absence
-          scale_color_gradient(low = input$lowColor_fas,high = input$highColor_fas)#+       ## color of the corresponding aes
-        scale_size(range = c(0,3))             ## to tune the size of circles
-        p = p + labs(x="Taxon")
-        
-        
-        base_size <- 9
-        p = p+geom_vline(xintercept=0.5,colour="dodgerblue4")
-        p = p+geom_vline(xintercept=1.5,colour="dodgerblue4")
-        p = p+theme(axis.text.x = element_text(angle=60,hjust=1,size=input$xSize),axis.text.y = element_text(size=input$ySize),
-                    axis.title.x = element_text(size=input$xSize), axis.title.y = element_text(size=input$ySize),
-                    legend.title=element_text(size=input$legendSize),legend.text=element_text(size=input$legendSize),legend.position = input$mainLegend)
-      }
-      
-      if(input$inHighlight != "none"){
-        ## get selected highlight taxon ID
-        taxaList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T))
-        inHighlight <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inHighlight])
-        
-        ## get taxonID together with it sorted index
-        highlightTaxon <- toString(dataHeat[dataHeat$supertaxonID == inHighlight,2][1])
-        ## get index
-        selectedIndex = as.numeric(as.character(substr(highlightTaxon,2,4)))
-        ## draw a rect to highlight this taxon's column
-        if(input$xAxis == "taxa"){
-          rect <- data.frame(xmin=selectedIndex-0.5, xmax=selectedIndex+0.5, ymin=-Inf, ymax=Inf)
-          p = p + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax),
-                            color="yellow",
-                            alpha=0.3,
-                            inherit.aes = FALSE)
+        ### plot format
+        if(input$xAxis == "genes"){
+          p = ggplot(dataHeat, aes(x = geneID, y = supertaxon)) +        ## global aes
+            scale_fill_gradient(low = input$lowColor_trace, high = input$highColor_trace, na.value="gray95") +   ## fill color (traceability)
+            geom_tile(aes(fill = traceability)) +    ## filled rect (traceability score)
+            geom_point(aes(colour = fas, size = presSpec))  +    ## geom_point for circle illusion (FAS and presence/absence)
+            scale_color_gradient(low = input$lowColor_fas,high = input$highColor_fas)#+       ## color of the corresponding aes (FAS)
+          scale_size(range = c(0,3))             ## to tune the size of circles
+          p = p + labs(y="Taxon")
+          
+          base_size <- 9
+          p = p+geom_hline(yintercept=0.5,colour="dodgerblue4")
+          p = p+geom_hline(yintercept=1.5,colour="dodgerblue4")
+          p = p+theme(axis.text.x = element_text(angle=60,hjust=1,size=input$xSize),axis.text.y = element_text(size=input$ySize),
+                      axis.title.x = element_text(size=input$xSize), axis.title.y = element_text(size=input$ySize),
+                      legend.title=element_text(size=input$legendSize),legend.text=element_text(size=input$legendSize),legend.position = input$mainLegend)
         } else {
-          rect <- data.frame(ymin=selectedIndex-0.5, ymax=selectedIndex+0.5, xmin=-Inf, xmax=Inf)
-          p = p + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax),
-                            color="yellow",
-                            alpha=0.3,
-                            inherit.aes = FALSE)
+          p = ggplot(dataHeat, aes(y = geneID, x = supertaxon)) +        ## global aes
+            scale_fill_gradient(low = input$lowColor_trace, high = input$highColor_trace, na.value="gray95") +   ## fill color (traceability)
+            geom_tile(aes(fill = traceability)) +    ## filled rect (traceability score)
+            geom_point(aes(colour = fas, size = presSpec))  +    ## geom_point for circle illusion (FAS and presence/absence
+            scale_color_gradient(low = input$lowColor_fas,high = input$highColor_fas)#+       ## color of the corresponding aes
+          scale_size(range = c(0,3))             ## to tune the size of circles
+          p = p + labs(x="Taxon")
+          
+          
+          base_size <- 9
+          p = p+geom_vline(xintercept=0.5,colour="dodgerblue4")
+          p = p+geom_vline(xintercept=1.5,colour="dodgerblue4")
+          p = p+theme(axis.text.x = element_text(angle=60,hjust=1,size=input$xSize),axis.text.y = element_text(size=input$ySize),
+                      axis.title.x = element_text(size=input$xSize), axis.title.y = element_text(size=input$ySize),
+                      legend.title=element_text(size=input$legendSize),legend.text=element_text(size=input$legendSize),legend.position = input$mainLegend)
         }
-      }
+        
+        if(input$inHighlight != "none"){
+          ## get selected highlight taxon ID
+          taxaList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T))
+          inHighlight <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inHighlight])
+          
+          ## get taxonID together with it sorted index
+          highlightTaxon <- toString(dataHeat[dataHeat$supertaxonID == inHighlight,2][1])
+          ## get index
+          selectedIndex = as.numeric(as.character(substr(highlightTaxon,2,4)))
+          ## draw a rect to highlight this taxon's column
+          if(input$xAxis == "taxa"){
+            rect <- data.frame(xmin=selectedIndex-0.5, xmax=selectedIndex+0.5, ymin=-Inf, ymax=Inf)
+            p = p + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax),
+                              color="yellow",
+                              alpha=0.3,
+                              inherit.aes = FALSE)
+          } else {
+            rect <- data.frame(ymin=selectedIndex-0.5, ymax=selectedIndex+0.5, xmin=-Inf, xmax=Inf)
+            p = p + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax),
+                              color="yellow",
+                              alpha=0.3,
+                              inherit.aes = FALSE)
+          }
+        }
       
-      ### do plotting
-      p
+        ### do plotting
+        if(input$autoUpdate == FALSE){
+          # Add dependency on the update button (only update when button is clicked)
+          input$updateBtn
+          
+          # Add all the filters to the data based on the user inputs
+          # wrap in an isolate() so that the data won't update every time an input
+          # is changed
+          isolate({
+            p
+          })
+        } else {
+          p
+        }
     }
 
   ########### plot profile into plot.ui
   output$mainPlot <- renderPlot({
-    mainPlot()
+    if(input$autoUpdate == FALSE){
+      # Add dependency on the update button (only update when button is clicked)
+      input$updateBtn
+      
+      # Add all the filters to the data based on the user inputs
+      # wrap in an isolate() so that the data won't update every time an input
+      # is changed
+      isolate({
+        mainPlot()
+      })
+    } else {
+      mainPlot()
+    }
   })
   
   output$plot.ui <- renderUI({
     # show beschreibung file if no plot present
     if(v$doPlot == FALSE){
       return()
+    } else{
+      ## if autoupdate is NOT selected, use updateBtn to trigger plot changing
+      if(input$autoUpdate == FALSE){
+        # Add dependency on the update button (only update when button is clicked)
+        input$updateBtn
+
+        # Add all the filters to the data based on the user inputs
+        # wrap in an isolate() so that the data won't update every time an input
+        # is changed
+        isolate({
+          # else, plot profile
+          div(id = "plot-container",
+              tags$img(src = "spinner.gif",
+                       id = "loading-spinner"),
+              #uiOutput("plot.ui")
+              plotOutput("mainPlot",width=input$width,height = input$height,
+                         click = "plot_click",
+                         hover = hoverOpts(
+                           id = "plot_hover",
+                           delay = input$hover_delay,
+                           delayType = input$hover_policy,
+                           nullOutside = input$hover_null_outside
+                         )
+              )
+          )
+        })
+      } 
+      ## if autoupdate is true
+      else {
+        div(id = "plot-container",
+            tags$img(src = "spinner.gif",
+                     id = "loading-spinner"),
+            #uiOutput("plot.ui")
+            plotOutput("mainPlot",width=input$width,height = input$height,
+                       click = "plot_click",
+                       hover = hoverOpts(
+                         id = "plot_hover",
+                         delay = input$hover_delay,
+                         delayType = input$hover_policy,
+                         nullOutside = input$hover_null_outside
+                       )
+            )
+        )
+      }
     }
-    # else, plot profile
-    plotOutput("mainPlot",width=input$width,height = input$height,
-               click = "plot_click",
-               hover = hoverOpts(
-                 id = "plot_hover",
-                 delay = input$hover_delay,
-                 delayType = input$hover_policy,
-                 nullOutside = input$hover_null_outside
-               )
-    )
   })
   
-  ########### download plot
+  ########### plot guide axis lines into an absolute panel
+  # ##### get margin size of main plot
+  # mainMagin <- reactive({
+  #   p <- mainPlot()
+  #   fullSize <- as.list(par()$fin)
+  #   plotSize <- as.list(par()$pin)
+  #   print(par()$fin)
+  # })
+  
+  output$mainAxis <- renderPlot(bg="transparent",{
+    if(input$autoUpdate == FALSE){
+      # Add dependency on the update button (only update when button is clicked)
+      input$updateBtn
+      isolate({
+        #list <- allTaxaList()
+        p <- mainPlot()
+        g <- ggplotGrob(p)
+        
+        if(input$mainXAxisGuide == TRUE & input$mainYAxisGuide == FALSE){
+          s <- gtable_filter(g, 'axis-b', trim=F)  ### filter to get x-axis
+        } else if (input$mainXAxisGuide == FALSE & input$mainYAxisGuide == TRUE){
+          s <- gtable_filter(g, 'axis-l', trim=F)  ### filter to get y-axis
+        } else if (input$mainXAxisGuide == TRUE & input$mainYAxisGuide == TRUE){
+          s <- gtable_filter(g, 'axis-b|axis-l', trim=F)  ### filter to get x-axis and y-axis
+        }
+        
+        # draw axis(es)
+        grid.draw(s)
+      })
+    } else {
+      p <- mainPlot()
+      g <- ggplotGrob(p)
+      
+      if(input$mainXAxisGuide == TRUE & input$mainYAxisGuide == FALSE){
+        s <- gtable_filter(g, 'axis-b', trim=F)  ### filter to get x-axis
+      } else if (input$mainXAxisGuide == FALSE & input$mainYAxisGuide == TRUE){
+        s <- gtable_filter(g, 'axis-l', trim=F)  ### filter to get y-axis
+      } else if (input$mainXAxisGuide == TRUE & input$mainYAxisGuide == TRUE){
+        s <- gtable_filter(g, 'axis-b|axis-l', trim=F)  ### filter to get x-axis and y-axis
+      }
+      grid.draw(s)
+    }
+  })
+  
+  output$mainAxisRender <- renderUI({
+    if(input$autoUpdate == FALSE){
+      # Add dependency on the update button (only update when button is clicked)
+      input$updateBtn
+      isolate({
+        plotOutput("mainAxis", width=input$width, height=input$height)
+      })
+    } else{
+      plotOutput("mainAxis", width=input$width, height=input$height)
+    }
+  })
+  
+  ########### download main plot
   output$plotDownload <- downloadHandler(
     filename = function() {c("plot.pdf")}, 
     content = function(file) {
@@ -776,19 +910,29 @@ shinyServer(function(input, output, session) {
   ################# PLOT SELECTED SEQUENCES ###################
   #############################################################
   
+  ######## change label of plotCustom button if autoUpdateSelected is unchecked
+  output$plotCustomBtn <- renderUI({
+    if(input$autoUpdateSelected == FALSE){
+      bsButton("plotCustom", "Plot/Update selected sequence(s)/taxa",style="warning")
+    } else {
+      bsButton("plotCustom", "Plot selected sequence(s)/taxa",style="warning")
+    }
+  })
+  
+  
   ######## check if button is clicked
-  v2 <- reactiveValues(doPlot2 = FALSE)
-  observeEvent(input$do2, {
+  v2 <- reactiveValues(doPlotCustom = FALSE)
+  observeEvent(input$plotCustom, {
     # 0 will be coerced to FALSE
     # 1+ will be coerced to TRUE
-    v2$doPlot2 <- input$do2
+    v2$doPlotCustom <- input$plotCustom
     filein <- input$file1
-    if(is.null(filein)){v2$doPlot2 <- FALSE}
+    if(is.null(filein)){v2$doPlotCustom <- FALSE}
   })
   
   ######## create plot (same as main plot)
   selectedPlot <- function(){
-    if (v2$doPlot2 == FALSE) return()
+    if (v2$doPlotCustom == FALSE) return()
     if(input$inSeq[1] == "all" & input$inTaxa[1] == "all") {return()}
     else{
       dataHeat <- dataHeat()
@@ -817,7 +961,6 @@ shinyServer(function(input, output, session) {
         p = p+theme(axis.text.x = element_text(angle=60,hjust=1,size=input$xSizeSelect),axis.text.y = element_text(size=input$ySizeSelect),
                     axis.title.x = element_text(size=input$xSizeSelect), axis.title.y = element_text(size=input$ySizeSelect),
                     legend.title=element_text(size=input$legendSizeSelect),legend.text=element_text(size=input$legendSizeSelect),legend.position=input$selectedLegend)
-        p
       } else {
         p = ggplot(dataHeat, aes(x = geneID, y = supertaxon)) +        ## global aes
           scale_fill_gradient(low = input$lowColor_trace, high = input$highColor_trace, na.value="gray95") +   ## fill color (traceability)
@@ -833,42 +976,100 @@ shinyServer(function(input, output, session) {
         p = p+theme(axis.text.x = element_text(angle=60,hjust=1,size=input$xSizeSelect),axis.text.y = element_text(size=input$ySizeSelect),
                     axis.title.x = element_text(size=input$xSizeSelect), axis.title.y = element_text(size=input$ySizeSelect),
                     legend.title=element_text(size=input$legendSizeSelect),legend.text=element_text(size=input$legendSizeSelect),legend.position=input$selectedLegend)
+      }
+      
+      ### do plotting
+      if(input$autoUpdateSelected == FALSE){
+        # Add dependency on the update button (only update when button is clicked)
+        input$plotCustom
+        
+        # Add all the filters to the data based on the user inputs
+        # wrap in an isolate() so that the data won't update every time an input
+        # is changed
+        isolate({
+          p
+        })
+      } else {
         p
       }
     }
   }
   
   output$selectedPlot <- renderPlot({
-    selectedPlot()
+    if(input$autoUpdateSelected == FALSE){
+      # Add dependency on the update button (only update when button is clicked)
+      input$plotCustom
+      
+      # Add all the filters to the data based on the user inputs
+      # wrap in an isolate() so that the data won't update every time an input
+      # is changed
+      isolate({
+        selectedPlot()
+      })
+    } else {
+      selectedPlot()
+    }
   })
   
-  ######## enable "plot selected sequences" button
-  observeEvent(input$inSeq, ({
-    if(input$inSeq[1] != "all"){
-      updateButton(session, "do2", disabled = FALSE)
-    }
-  }))
-  
-  observeEvent(input$inTaxa, ({
-    if(input$inTaxa[1] != "all"){
-      updateButton(session, "do2", disabled = FALSE)
-    }
-  }))
+  # ######## enable "plot selected sequences" button
+  # observeEvent(input$inSeq, ({
+  #   if(input$inSeq[1] != "all"){
+  #     updateButton(session, "plotCustom", disabled = FALSE)
+  #   }
+  # }))
+  # 
+  # observeEvent(input$inTaxa, ({
+  #   if(input$inTaxa[1] != "all"){
+  #     updateButton(session, "plotCustom", disabled = FALSE)
+  #   }
+  # }))
   
   ######## plot selected sequences heatmap
   output$selectedPlot.ui <- renderUI({
     if(is.null(input$inSeq[1]) | is.null(input$inTaxa[1])){ return()}
     else if(input$inSeq[1] == "all" & input$inTaxa[1]=="all"){return()}
     else{
-      plotOutput("selectedPlot",width=input$selectedWidth,height = input$selectedHeight,
-                 click = "plot_click_selected",
-                 hover = hoverOpts(
-                   id = "plot_hover_selected",
-                   delay = input$hover_delay,
-                   delayType = input$hover_policy,
-                   nullOutside = input$hover_null_outside
-                 )
-      )
+      if(input$autoUpdateSelected == FALSE){
+        # Add dependency on the update button (only update when button is clicked)
+        input$plotCustom
+        
+        # Add all the filters to the data based on the user inputs
+        # wrap in an isolate() so that the data won't update every time an input
+        # is changed
+        isolate({
+          div(id = "plot-container",
+              tags$img(src = "spinner.gif",
+                       id = "loading-spinner"
+              ),
+              
+              plotOutput("selectedPlot",width=input$selectedWidth,height = input$selectedHeight,
+                         click = "plot_click_selected",
+                         hover = hoverOpts(
+                           id = "plot_hover_selected",
+                           delay = input$hover_delay,
+                           delayType = input$hover_policy,
+                           nullOutside = input$hover_null_outside
+                         )
+              )
+          )
+        })
+      } else {
+        div(id = "plot-container",
+            tags$img(src = "spinner.gif",
+                     id = "loading-spinner"
+            ),
+            
+            plotOutput("selectedPlot",width=input$selectedWidth,height = input$selectedHeight,
+                       click = "plot_click_selected",
+                       hover = hoverOpts(
+                         id = "plot_hover_selected",
+                         delay = input$hover_delay,
+                         delayType = input$hover_policy,
+                         nullOutside = input$hover_null_outside
+                       )
+            )
+        )
+      }
     }
   })
   
