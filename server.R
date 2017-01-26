@@ -473,6 +473,16 @@ shinyServer(function(input, output, session) {
       mdDataTrace$traceability <- 0
     } else {
       dataTrace <- as.data.frame(read.table(file=filein2$datapath, sep='\t',header=T,check.names=FALSE,comment.char="",nrows=nrHit))
+      
+      ## get subset of dataTrace if a list of genes is given
+      if(input$geneList_selected == 'from file'){
+        if(!is.null(listIn)){
+          list <- as.data.frame(read.table(file=listIn$datapath, header=FALSE))
+          dataOrig <- as.data.frame(read.table(file=filein2$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+          dataTrace <- dataOrig[dataOrig$geneID %in% list$V1,]
+        }
+      }
+      
       mdDataTrace <- melt(dataTrace,id="geneID")
       colnames(mdDataTrace) <- c("geneID","ncbiID","traceability")
     }
