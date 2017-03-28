@@ -1,1 +1,2 @@
-ncbiID  fullName        rank    parentID
+ncbiID	fullName	rank	parentID
+

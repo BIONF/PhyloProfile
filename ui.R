@@ -143,50 +143,83 @@ shinyUI(fluidPage(
         "Input & settings",
         column(4,
                strong(h4("Main input:")),
-               fileInput("file1",h5("Presence/absence file:")),
+               conditionalPanel(
+                 condition = "input.do",
+                 em(strong("RELOAD THIS TOOL TO UPLOAD A NEW INPUT FILE!!!",style = "color:red"))
+               ),
                
+               fileInput("file1",h5("Presence/absence file:")),
                strong(h4("Additional files (if any):")),
                fileInput("file3",h5("Feature architectures:")),
                fileInput("file2",h5("Traceability matrix:")),
                
-               hr(),
-               strong(h4("Choose genes of interest:")),
-               radioButtons(inputId="geneList_selected", label="", choices=list("all","from file"), selected="all", inline=T),
-               conditionalPanel(
-                 condition = "input.geneList_selected == 'from file'",
-                 fileInput("list","")
-               ),
                hr()
+               # strong(h4("Choose genes of interest:")),
+               # radioButtons(inputId="geneList_selected", label="", choices=list("all","from file"), selected="all", inline=T),
+               # conditionalPanel(
+               #   condition = "input.geneList_selected == 'from file'",
+               #   fileInput("list","")
+               # ),
+               # hr()
         ),
         column(3,
-               br(),
-               em("In your plot, do you want to auto-sort the gene IDs?"),
-               radioButtons("sortGene","", c("Yes" = "Yes", "No" = "No"), inline=T, selected = "Yes"),
-               
-               em("Do you have any taxon, which doesn't exist in the NCBI taxonomy database?"),
-               radioButtons("newTaxaAsk","", c("Yes" = "Yes", "No" = "No"), inline=T, selected = "No"),
-               conditionalPanel(condition="input.newTaxaAsk == 'Yes'",
-                                bsButton("addTaxa","Add new taxa",disabled=TRUE)
+               conditionalPanel(
+                 condition = 'output.unkTaxaStatus == 1',
+                 strong(h4("New taxa were found:")),
+                 dataTableOutput("unkTaxaFull")
                ),
-               h5(""),
                
-               em("Does the taxa in your recently uploaded presence/absence file change? (Note: for 'first time users', please choose 'YES')"),
-               radioButtons("parseAsk","", c("Yes" = "Yes", "No" = "No"), inline=T, selected = "No"),
-               conditionalPanel(condition="input.parseAsk == 'Yes'",
-                                bsButton("parse","Get info from input",disabled=TRUE)
-               ),
-               hr(),
-               bsButton("getConfig","FASTA config"),
-               h5(""),
-               actionButton("setColor","COLORS config",style='padding:4px; font-size:100%'),
-               hr()
+               conditionalPanel(
+                 condition = 'output.unkTaxaStatus == 0',
+                 
+                 strong(h4("Choose genes of interest:")),
+                 radioButtons(inputId="geneList_selected", label="", choices=list("all","from file"), selected="all", inline=T),
+                 conditionalPanel(
+                   condition = "input.geneList_selected == 'from file'",
+                   fileInput("list","")
+                 ),
+                 hr(),
+                 
+                 em("In your plot, do you want to auto-sort the gene IDs?"),
+                 radioButtons("sortGene","", c("Yes" = "Yes", "No" = "No"), inline=T, selected = "Yes"),
+                 hr(),
+                 
+                 bsButton("getConfig","FASTA config"),
+                 h5(""),
+                 actionButton("setColor","COLORS config",style='padding:4px; font-size:100%'),
+                 hr()
+               )
         ),
         column(4,
-               strong(h4("Seed (super)taxon:")),
-               uiOutput("rankSelect"),
-               uiOutput("select"),
-               h5(""),
-               bsButton("do", "PLOT",type="action",style="danger",size = "large",disabled = TRUE)
+               conditionalPanel(
+                 condition = 'output.unkTaxaStatus',
+                 strong(h4("PLEASE CHECK:")),
+                 em("Does the taxa in your recently uploaded presence/absence file change? (Note: for 'first time users', please choose 'YES')"),
+                 radioButtons("parseAsk","", c("Yes" = "Yes", "No" = "No"), inline=T, selected = "No"),
+                 conditionalPanel(condition="input.parseAsk == 'Yes'",
+                                  bsButton("parse","Get info from input",disabled=TRUE)
+                 ),
+                 h5(""),
+                 
+                 em("Do you have any taxon, which doesn't exist in the NCBI taxonomy database?"),
+                 radioButtons("newTaxaAsk","", c("Yes" = "Yes", "No" = "No"), inline=T, selected = "No"),
+                 conditionalPanel(condition="input.newTaxaAsk == 'Yes'",
+                                  bsButton("addTaxa","Add new taxa",disabled=TRUE)
+                 ),
+                 hr(),
+                 
+                 strong(h4("PLEASE RELOAD THIS TOOL AFTER ADDING NEW TAXA!!!"),style = "color:red")
+               ),
+               
+               conditionalPanel(
+                 condition = 'output.unkTaxaStatus == 0',
+                 strong(h4("Seed (super)taxon:")),
+                 uiOutput("rankSelect"),
+                 uiOutput("select"),
+                 h5(""),
+                 bsButton("do", "PLOT",type="action",style="danger",size = "large",disabled = TRUE),
+                 h5("")
+               )
         )
       ),
       
@@ -196,15 +229,21 @@ shinyUI(fluidPage(
         sidebarLayout(
           sidebarPanel(
             textOutput("testOutput"),    ### use for testing output ###
-            column(6,offset = 0,numericInput("number","Number of genes:",min=1,max=1600,step=10,value=30,width=150),style='padding:0px;'),
-            column(6,numericInput("stIndex","First gene index:",min=1,max=1600,value=1,width=200)),
-            #column(12,strong("Select (super)taxon to highlight:")),
-            uiOutput("highlight"),
+            column(4,offset = 0,numericInput("number","# of genes:",min=1,max=1600,step=10,value=30,width=150),style='padding:0px;'),
+            column(4,numericInput("stIndex","1st index:",min=1,max=1600,value=1,width=200)),
+            
+            column(4,uiOutput("highlightGeneUI")),
+            bsPopover("highlightGeneUI","","OR double click on heatmap","right"),
+            
+            uiOutput("highlightTaxonUI"),
+            bsPopover("highlightTaxonUI","","OR double click on heatmap","right"),
+            
             conditionalPanel(
               condition = "input.autoUpdate == false",
               bsButton("updateBtn","Update plot",style="warning")
             )
           ),
+          
           mainPanel(
             uiOutput("plot.ui"),
             
@@ -266,7 +305,7 @@ shinyUI(fluidPage(
     ),
     
     ################### LIST OF POP-UP WINDOWS ##########################
-    
+
     ####### popup to confirm parsing data from input file
     bsModal("addTaxaWindows", "Add new taxa", "addTaxa", size = "medium",
             helpText(em("Use this form to add taxon that does not exist in NCBI taxonomy database")),

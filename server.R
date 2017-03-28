@@ -9,8 +9,9 @@ if (!require("grid")) {install.packages("grid")}
 if (!require("gridExtra")) {install.packages("gridExtra")}
 if (!require("ape")) {install.packages("ape")}
 if (!require("stringr")) {install.packages("stringr")}
-if (!require("stringr")) {install.packages("svglite")}
+if (!require("svglite")) {install.packages("svglite")}
 if (!require("gtable")) {install.packages("gtable")}
+if (!require("data.table")) {install.packages("data.table")}
 if (!require("Biostrings")) {
   source("https://bioconductor.org/biocLite.R")
   biocLite("Biostrings")
@@ -21,9 +22,9 @@ if (!require("Biostrings")) {
 #############################################################
 
 ######## function for plotting domain architecture ########
-plotting <- function(df,geneID,fas,sep,labelSize,titleSize){
+plotting <- function(df,geneID,fas,sep,labelSize,titleSize,minStart,maxEnd){
   gg <- ggplot(df, aes(y=feature, x=end, color = feature)) +
-    geom_segment(data=df, aes(y=feature, yend=feature, x=0, xend=1), color="#b2b2b2", size=0.15)
+    geom_segment(data=df, aes(y=feature, yend=feature, x=minStart, xend=maxEnd), color="#b2b2b2", size=0.15)
   
   ### draw line and points  
   gg <- gg + geom_segment(data=df, aes(x=start, xend=end, y=feature, yend=feature, fill=feature),
@@ -167,6 +168,41 @@ shinyServer(function(input, output, session) {
     shinyjs::reset("highColor_fas")
   })
   
+  ######## check if there is any "unknown" taxon in input matrix
+  unkTaxa <- reactive({
+    filein <- input$file1
+    if(is.null(filein)){return()}
+    
+    # get list of all available taxon (from taxonID.list.fullrankID)
+    allTaxa <- unlist(as.list(fread("data/taxonID.list.fullrankID",sep = "\t", select = "abbrName")))
+    
+    # get list of input taxa (from main input file)
+    inputTaxa <- readLines(filein$datapath, n = 1)
+    inputTaxa <- unlist(strsplit(inputTaxa,split = '\t'))
+    inputTaxa <- inputTaxa[-1]   # remove "geneID" element from vector inputTaxa
+    
+    # list of unknown taxa
+    unkTaxa <- inputTaxa[!(inputTaxa %in% allTaxa)]
+    # return list of unkTaxa
+    unkTaxa
+  })
+  
+  ### get status of unkTaxa for conditional panel
+  output$unkTaxaStatus <- reactive({
+    unkTaxa <- unkTaxa()
+    length(unkTaxa) > 0
+  })
+  outputOptions(output, "unkTaxaStatus", suspendWhenHidden = FALSE)
+  
+  ### show full list of unkTaxa
+  output$unkTaxaFull <- renderDataTable(option = list(searching = FALSE),{
+    if(length(unkTaxa())>0){
+      tb <- as.data.frame(unkTaxa())
+      names(tb)[1] <- "New taxon"
+      tb
+    }
+  })
+  
   ######## enable "add taxa", "parse" & "upload additional files" button after uploading main file
   observeEvent(input$file1, ({
     updateButton(session, "parse", disabled = FALSE)
@@ -248,14 +284,71 @@ shinyServer(function(input, output, session) {
     selectInput('inSelect',h5('Choose (super)taxon of interest:'),as.list(levels(choice$fullName)),levels(choice$fullName)[1])
   })
   
-  output$highlight = renderUI({
+  output$highlightTaxonUI = renderUI({
     choice <- allTaxaList()
     choice$fullName <- as.factor(choice$fullName)
     
     out <- as.list(levels(choice$fullName))
     out <- append("none",out)
+    
+    selectInput('taxonHighlight','Select (super)taxon to highlight:',out,selected=out[1])
+  })
+  
+  #### update highlightTaxonUI based on double clicked dot
+  observe({
+    choice <- allTaxaList()
+    choice$fullName <- as.factor(choice$fullName)
 
-    selectInput('inHighlight','Select (super)taxon to highlight:',out,selected=out[1])
+    out <- as.list(levels(choice$fullName))
+    out <- append("none",out)
+
+    if(!is.null(input$plot_dblclick)){
+      if(input$xAxis == "genes"){
+        corX = round(input$plot_dblclick$y);
+        corY = round(input$plot_dblclick$x)
+      } else {
+        corX = round(input$plot_dblclick$x);
+        corY = round(input$plot_dblclick$y)
+      }
+      
+      dataHeat <- dataHeat()
+      supertaxa <- levels(dataHeat$supertaxon)
+      spec <- toString(supertaxa[corX])
+      selectedIndex = match(substr(spec,6,nchar(spec)),out)
+      
+      updateSelectInput(session,'taxonHighlight',label = 'Select (super)taxon to highlight:',choices=out,selected=out[selectedIndex])
+    }
+  })
+  
+  ######## Get list of genes for highlighting
+  output$highlightGeneUI = renderUI({
+    geneList <- preDataFiltered()
+    geneList$geneID <- as.factor(geneList$geneID)
+    
+    out <- as.list(levels(geneList$geneID))
+    out <- append("none",out)
+    
+    selectInput('geneHighlight','Highlight:',out,selected=out[1])
+  })
+
+  #### update highlightGeneUI based on double clicked dot
+  observe({
+    geneList <- preDataFiltered()
+    geneList$geneID <- as.factor(geneList$geneID)
+    
+    out <- as.list(levels(geneList$geneID))
+    out <- append("none",out)
+    
+    if(!is.null(input$plot_dblclick)){
+      if(input$xAxis == "genes"){
+        corX = round(input$plot_dblclick$y);
+        corY = round(input$plot_dblclick$x)
+      } else {
+        corX = round(input$plot_dblclick$x);
+        corY = round(input$plot_dblclick$y)
+      }
+      updateSelectInput(session,'geneHighlight',label = 'Highlight:',choices=out,selected=out[corY+1])
+    }
   })
   
   ######## enable "PLOT" button
@@ -263,7 +356,10 @@ shinyServer(function(input, output, session) {
     if(input$rankSelect == ""){
       updateButton(session, "do", disabled = TRUE)
     } else{
-      updateButton(session, "do", disabled = FALSE)
+      unkTaxa <- unkTaxa()
+      if(length(unkTaxa) == 0){
+        updateButton(session, "do", disabled = FALSE)
+      }
     }
   }))
   
@@ -288,6 +384,7 @@ shinyServer(function(input, output, session) {
     }
   })
   
+
   ############################################################# 
   ######################  ADD NEW TAXA  #######################
   #############################################################
@@ -431,7 +528,7 @@ shinyServer(function(input, output, session) {
   ############### get traceability scores for coressponding orthologs (if trace matrix is provided) (2)
   ############### get (super)taxa names (3)
   ############### calculate percentage of presence (4), max FAS (5) and mean TRACEEBILITY (6) if group input taxa list into higher taxonomy rank
-  dataFiltered <- reactive({
+  preDataFiltered <- reactive({
     ### (1) LOADING INPUT MATRIX (1)
     filein <- input$file1
     if(is.null(filein)){return()}
@@ -439,7 +536,6 @@ shinyServer(function(input, output, session) {
     # get rows need to be read
     nrHit <- input$stIndex + input$number - 1
     data <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char="",nrows=nrHit))
-    
     
     # OR just list of gene from a separated input file
     listIn <- input$list
@@ -455,6 +551,12 @@ shinyServer(function(input, output, session) {
       data$geneID <- factor(data$geneID, levels = data$geneID)  ######### keep user defined geneID order 
     }
     
+    ### return preDataFiltered
+    data
+  })
+  
+  dataFiltered <- reactive({
+    data <- preDataFiltered()
     # convert into paired columns
     mdData <- melt(data,id="geneID")
     
@@ -542,7 +644,6 @@ shinyServer(function(input, output, session) {
     names(fullMdData)[names(fullMdData)=="orthoID.x"] <- "orthoID"
     fullMdData ### parsed input data frame !!!
   })
-
   
   ############################################################# 
   ############## DATA & PLOT FOR MAIN PROFILE #################
@@ -696,13 +797,14 @@ shinyServer(function(input, output, session) {
                       legend.title=element_text(size=input$legendSize),legend.text=element_text(size=input$legendSize),legend.position = input$mainLegend)
         }
         
-        if(input$inHighlight != "none"){
+        ### highlight taxon
+        if(input$taxonHighlight != "none"){
           ## get selected highlight taxon ID
           taxaList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T))
-          inHighlight <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inHighlight])
+          taxonHighlight <- as.integer(taxaList$ncbiID[taxaList$fullName == input$taxonHighlight])
           
           ## get taxonID together with it sorted index
-          highlightTaxon <- toString(dataHeat[dataHeat$supertaxonID == inHighlight,2][1])
+          highlightTaxon <- toString(dataHeat[dataHeat$supertaxonID == taxonHighlight,2][1])
           ## get index
           selectedIndex = as.numeric(as.character(substr(highlightTaxon,2,4)))
           ## draw a rect to highlight this taxon's column
@@ -720,7 +822,32 @@ shinyServer(function(input, output, session) {
                               inherit.aes = FALSE)
           }
         }
-      
+        
+        ### highlight gene
+        if(input$geneHighlight != "none"){
+          ## get selected highlight gene ID
+          geneHighlight <- input$geneHighlight
+          
+          ## get index
+          allGenes <- levels(dataHeat$geneID)
+          selectedIndex = match(geneHighlight,allGenes)
+          
+          ## draw a rect to highlight this taxon's column
+          if(input$xAxis == "taxa"){
+            rect <- data.frame(ymin=selectedIndex-0.5, ymax=selectedIndex+0.5, xmin=-Inf, xmax=Inf)
+            p = p + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax),
+                              color="yellow",
+                              alpha=0.3,
+                              inherit.aes = FALSE)
+          } else {
+            rect <- data.frame(xmin=selectedIndex-0.5, xmax=selectedIndex+0.5, ymin=-Inf, ymax=Inf)
+            p = p + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax),
+                              color="yellow",
+                              alpha=0.3,
+                              inherit.aes = FALSE)
+          }
+        }
+        
         ### do plotting
         if(input$autoUpdate == FALSE){
           # Add dependency on the update button (only update when button is clicked)
@@ -775,6 +902,7 @@ shinyServer(function(input, output, session) {
               #uiOutput("plot.ui")
               plotOutput("mainPlot",width=input$width,height = input$height,
                          click = "plot_click",
+                         dblclick = "plot_dblclick",
                          hover = hoverOpts(
                            id = "plot_hover",
                            delay = input$hover_delay,
@@ -793,6 +921,7 @@ shinyServer(function(input, output, session) {
             #uiOutput("plot.ui")
             plotOutput("mainPlot",width=input$width,height = input$height,
                        click = "plot_click",
+                       dblclick = "plot_dblclick",
                        hover = hoverOpts(
                          id = "plot_hover",
                          delay = input$hover_delay,
@@ -804,6 +933,7 @@ shinyServer(function(input, output, session) {
       }
     }
   })
+  
   
   ########### plot guide axis lines into an absolute panel
   # ##### get margin size of main plot
@@ -895,7 +1025,7 @@ shinyServer(function(input, output, session) {
       }
       
       # get geneID
-      #      genes <- as.matrix(dataHeat[dataHeat$supertaxonID == inSelect & !is.na(dataHeat$presSpec),])
+      # genes <- as.matrix(dataHeat[dataHeat$supertaxonID == inSelect & !is.na(dataHeat$presSpec),])
       genes <- levels(dataHeat$geneID)
       geneID <- toString(genes[corY])
       # get supertaxon (spec)
@@ -908,11 +1038,33 @@ shinyServer(function(input, output, session) {
       # get ortholog ID
       orthoID <- dataHeat$orthoID[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
       
+      ### get list of all geneID that have the same ortholog
+      geneMatch <- dataHeat$geneID[dataHeat$orthoID == toString(orthoID)]
+      geneMatch <- geneMatch[!is.na(geneMatch)]
+      # list of all available geneID
+      geneList <- preDataFiltered()
+      geneList$geneID <- as.factor(geneList$geneID)
+      allGenes <- as.list(levels(geneList$geneID))
+      # get index of all matched genes (genes have the same ortholog)
+      pos <- which(allGenes %in% geneMatch)
+      pos <- paste(pos, collapse=',')
+
+      ### return info of clicked point      
       if(is.na(as.numeric(Percent))){return()}
       else{
-        info <- c(geneID,as.character(orthoID),as.character(spec),round(as.numeric(FAS),2),round(as.numeric(Percent),2),round(as.numeric(Trace),2))
+        info <- c(geneID,as.character(orthoID),as.character(spec),round(as.numeric(FAS),2),round(as.numeric(Percent),2),round(as.numeric(Trace),2),pos)
       }
     }
+  })
+  
+  ######## get list of same orthologs (hit_IDs) of a selected point
+  sameOrthoIndex <- reactive({
+    ### check input
+    if (v$doPlot == FALSE) return()
+    
+    ### info
+    info <- mainPointInfo()
+    pos <- info[7]
   })
   
   
@@ -1366,24 +1518,26 @@ shinyServer(function(input, output, session) {
         domainDf$seedID <- gsub("\\|",":",domainDf$seedID)
         domainDf$orthoID <- gsub("\\|",":",domainDf$orthoID)
       }
-      
-      ### get sub dataframe based on selected groupID and orthoID
-      orthoNew <- ""
-      if(input$input_type == 'oneSeq.extended.fa'){
-        last2char <- substrRight(ortho,2)
-        if(last2char == '|0' | last2char == '|1'){
-          orthoNew <- substr(ortho, 1, nchar(ortho)-2)
-          orthoNew <- gsub("\\|",":",orthoNew)
-        }
-      }
-      if(nchar(orthoNew)>0){ortho <- orthoNew}
+
+      ### get sub dataframe based on selected groupID and orthoID <<<<<============ HOLGER's NEW VERSION OF ONESEQ (14.03.17)
+      # orthoNew <- ""
+      # if(input$input_type == 'oneSeq.extended.fa'){
+      #   last2char <- substrRight(ortho,2)
+      #   if(last2char == '|0' | last2char == '|1'){
+      #     orthoNew <- substr(ortho, 1, nchar(ortho)-2)
+      #     orthoNew <- gsub("\\|",":",orthoNew)
+      #   }
+      # }
+      # if(nchar(orthoNew)>0){ortho <- orthoNew}
+      ortho <- gsub("\\|",":",ortho)
       
       grepID = paste(group,"#",ortho,sep="")
       subDomainDf <- domainDf[grep(grepID,domainDf$seedID),]
-      
+
       ### ortho domains df
       orthoDf <- filter(subDomainDf,orthoID==ortho)
       orthoDf$feature <- as.character(orthoDf$feature)
+      
       ### seed domains df
       seedDf <- filter(subDomainDf,orthoID != ortho)
       if(nrow(seedDf) == 0){seedDf <- orthoDf}
@@ -1403,8 +1557,8 @@ shinyServer(function(input, output, session) {
       ### plotting
       sep = ":"
       if(!is.null(input$oneSeqFasta)){sep="|"}
-      plot_ortho <- plotting(orthoDf,ortho,fas,sep,input$labelArchiSize,input$titleArchiSize)
-      plot_seed <- plotting(seedDf,seed,fas,sep,input$labelArchiSize,input$titleArchiSize)
+      plot_ortho <- plotting(orthoDf,ortho,fas,sep,input$labelArchiSize,input$titleArchiSize,min(subDomainDf$start),max(subDomainDf$end))
+      plot_seed <- plotting(seedDf,seed,fas,sep,input$labelArchiSize,input$titleArchiSize,min(subDomainDf$start),max(subDomainDf$end))
       
       # grid.arrange(plot_seed,plot_ortho,ncol=1)
       arrangeGrob(plot_seed,plot_ortho,ncol=1)
@@ -1493,6 +1647,7 @@ shinyServer(function(input, output, session) {
     if(v$doPlot == FALSE){return()}
     #data <- allTaxaList()
     #data <- sortedTaxaList()
+    #data <- preDataFiltered()
     #data <- dataFiltered()
     #data <- dataSupertaxa()
     #data <- dataHeat()
@@ -1569,5 +1724,6 @@ shinyServer(function(input, output, session) {
     # name <- toString(fileName[1])
     # fullPath <- paste0("data/",name,".mDomains")
     # print(fullPath)
+    # print(input$plot_dblclick$x)
   })
 })
