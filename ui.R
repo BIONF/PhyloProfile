@@ -69,7 +69,7 @@ shinyUI(fluidPage(
           column(2,
                  sliderInput("fas",
                              "FAS cutoff: ", min = 0, max = 1, step = 0.025, value = 0.0, width = 200),
-                 actionButton("resetMain","Reset size")
+                 actionButton("resetMain","Reset")
           ),
           column(2,
                  sliderInput("percent",
@@ -116,7 +116,7 @@ shinyUI(fluidPage(
           ),
           column(2,
                  uiOutput("fasFilter.ui"),
-                 actionButton("resetSelected","Reset size")
+                 actionButton("resetSelected","Reset")
           ),
           column(2,
                  uiOutput("percentFilter.ui"),
@@ -245,20 +245,28 @@ shinyUI(fluidPage(
           ),
           
           mainPanel(
-            uiOutput("plot.ui"),
-            
-            conditionalPanel(
-              condition = "input.mainXAxisGuide == true | input.mainYAxisGuide == true",
-              absolutePanel(
-                id="absAxis",
-                bottom = 0, left = 0,
-                heigh = NULL, width = NULL,
-                fixed = TRUE,
-                draggable = TRUE,
-                style = "opacity: 0.80",
+            tabsetPanel(
+              tabPanel("Main plot",
+                uiOutput("plot.ui"),
                 
-                uiOutput("mainAxisRender")
-              ) 
+                conditionalPanel(
+                  condition = "input.mainXAxisGuide == true | input.mainYAxisGuide == true",
+                  absolutePanel(
+                    id="absAxis",
+                    bottom = 0, left = 0,
+                    heigh = NULL, width = NULL,
+                    fixed = TRUE,
+                    draggable = TRUE,
+                    style = "opacity: 0.80",
+                    
+                    uiOutput("mainAxisRender")
+                  ) 
+                )
+              ),
+              
+              tabPanel("FAS score distribution",
+                uiOutput("fasDist.ui")
+              )
             )
           )
         )
@@ -305,7 +313,7 @@ shinyUI(fluidPage(
     ),
     
     ################### LIST OF POP-UP WINDOWS ##########################
-
+    
     ####### popup to confirm parsing data from input file
     bsModal("addTaxaWindows", "Add new taxa", "addTaxa", size = "medium",
             helpText(em("Use this form to add taxon that does not exist in NCBI taxonomy database")),

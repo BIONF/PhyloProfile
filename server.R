@@ -1067,6 +1067,89 @@ shinyServer(function(input, output, session) {
     pos <- info[7]
   })
   
+  ############################################################# 
+  ############## PLOT FAS SCORE DISTRIBUTION ##################
+  #############################################################
+  
+  #######
+  fasDistPlot <- function(){
+    if (v$doPlot == FALSE) return()
+    
+    # open main input file
+    filein <- input$file1
+    dataOrig <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+    
+    # convert into long format and remove line that contain NA (no ortholog)
+    mdData <- melt(dataOrig,id="geneID")
+    mdData <- mdData[!is.na(mdData$value),]
+    
+    # split "orthoID#fas" into 2 columns
+    splitDt <- as.data.frame(str_split_fixed(mdData$value, '#', 2))
+    colnames(splitDt) <- c("orthoID","fas")
+    
+    # convert factor into numeric for "fas" column
+    splitDt$fas<-as.numeric(as.character(splitDt$fas))
+    
+    # filter splitDt based on selected FAS cutoff
+    splitDt <- splitDt[splitDt$fas >= input$fas,]
+    
+    # calculate mean FAS score
+    splitDt$type <- "none"
+    cdat <- ddply(splitDt, "type", summarise, rating.mean=mean(fas))
+    
+    # plot FAS score distribution
+    p <- ggplot(splitDt, aes(x=fas)) +
+      geom_histogram(binwidth=.01, alpha=.5, position="identity") +
+      geom_vline(data=cdat, aes(xintercept=rating.mean,  colour=type),
+                 linetype="dashed", size=1) +
+      ggtitle(paste("Mean FAS score = ",round(mean(splitDt$fas),3)))
+    p <- p + theme(legend.position = "none",
+                   plot.title = element_text(hjust = 0.5),
+                   axis.title.x = element_text(size=input$xSize),axis.text.x = element_text(size=input$xSize),
+                   axis.title.y = element_text(size=input$ySize),axis.text.y = element_text(size=input$ySize)) + 
+         labs(x = "FAS score", y = "Frequency")
+    p
+  }
+  
+  output$fasDistPlot <- renderPlot(width = 512, height = 356,{
+    if(input$autoUpdate == FALSE){
+      # Add dependency on the update button (only update when button is clicked)
+      input$updateBtn
+      
+      # Add all the filters to the data based on the user inputs
+      # wrap in an isolate() so that the data won't update every time an input
+      # is changed
+      isolate({
+        fasDistPlot()
+      })
+    } else {
+      fasDistPlot()
+    }
+  })
+  
+  output$fasDist.ui <- renderUI({
+    if(v$doPlot == FALSE){
+      return()
+    } else{
+      ## if autoupdate is NOT selected, use updateBtn to trigger plot changing
+      if(input$autoUpdate == FALSE){
+        # Add dependency on the update button (only update when button is clicked)
+        input$updateBtn
+
+        # Add all the filters to the data based on the user inputs
+        # wrap in an isolate() so that the data won't update every time an input
+        # is changed
+        isolate({
+            plotOutput("fasDistPlot",width=input$width,height = input$height)
+        })
+      }
+      ## if autoupdate is true
+      else {
+        plotOutput("fasDistPlot",width=input$width,height = input$height)
+      }
+    }
+  })
+  
   
   ############################################################# 
   ################# PLOT SELECTED SEQUENCES ###################
@@ -1648,11 +1731,11 @@ shinyServer(function(input, output, session) {
     #data <- allTaxaList()
     #data <- sortedTaxaList()
     #data <- preDataFiltered()
-    #data <- dataFiltered()
+    data <- dataFiltered()
     #data <- dataSupertaxa()
     #data <- dataHeat()
     #data <- detailPlotDt()
-    data <- downloadData()
+    #data <- downloadData()
     data
   })
   

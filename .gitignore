@@ -1,5 +1,10 @@
 data/taxonID.list.fullRankID
-data/taxonNameReduced.txt
+data/taxonNamesReduced.txt
+data/lca.FASmatrix
+data/lca.FASmatrix.geneList
+data/lca.FASmatrix.mDomains
+data/lca.Tracematrix
+data/newTaxa.txt
 
 # History files
 .Rhistory
