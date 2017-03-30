@@ -1662,7 +1662,7 @@ shinyServer(function(input, output, session) {
         "<p><span style=\"color: #ff0000;\"><strong>No information about domain architecture! Please check:</strong></span></p>
         <ul style=\"list-style-type: square;\">
         <li>if you selected any sequence in the Detailed plot?</li>
-        <li>if you uploaded the domain file using Upload additional file(s) option? (see input example in data/lca.FASmatrix.mDomains)</li>
+        <li>if you uploaded the domain file using Upload additional file(s) option? (see input example in data/demo/test.domains)</li>
         </ul>"
       )
       HTML(msg)
@@ -1731,11 +1731,11 @@ shinyServer(function(input, output, session) {
     #data <- allTaxaList()
     #data <- sortedTaxaList()
     #data <- preDataFiltered()
-    data <- dataFiltered()
+    #data <- dataFiltered()
     #data <- dataSupertaxa()
     #data <- dataHeat()
     #data <- detailPlotDt()
-    #data <- downloadData()
+    data <- downloadData()
     data
   })
 
@@ -1757,13 +1757,13 @@ shinyServer(function(input, output, session) {
       <li>NA#NA: there is no ortholog has been found for this taxon</li>
       </ul>
       <p>The header of first column has to be "geneID". The header of each taxon must have this format "ncbi12345", in which 12345 is its NCBI taxon ID.</p>
-      <p><em>More detail? Pleas take a look at the example file in /data/lca.FASmatrix :)</em></p>
+      <p><em>More detail? Pleas take a look at the example file in /data/demo/test.main :)</em></p>
       <p>&nbsp;</p>
       <h1 style="color: #5e9ca0;">Additional files</h1>
       <p>2 additional input files can be provided are traceability score matrix and feature domain position list.</p>
       <p><strong>Traceability score matrix</strong> must have the same first row (beginning with "geneID" and followed by list of taxa) and first column (list of genes). <span style="color: #ff0000;"><strong>IMPORTANT</strong>: the <span style="text-decoration: underline;">amount</span> and <span style="text-decoration: underline;">order</span> of genes between 2 input matrixes have to be exactly the same!!</span>&nbsp;</p>
       <p><strong>Feature domain position list</strong>&nbsp;has 6 columns separated by tab: (1) pairID = groupID#searchProt_ID#seedID, (2) searchProt_ID, (3) feature name (pfam domain, smart domain,etc.), (4) start position, (5) end position, (6) weight value (only available for seed protein)</p>
-      <p><em>Pleas take a look at the example files &nbsp;lca.Tracematrix and lca.FASmatrix.mDomains in data/ folder for more details :)</em></p>
+      <p><em>Pleas take a look at the example files &nbsp;test.traceability and test.domains in data/demo/ folder for more details :)</em></p>
       <p>&nbsp;</p>
       <h1 style="color: #5e9ca0;">Download function does not work</h1>
       <p>Problem: clicked on the "Download plot" (or Download filtered data) button, entered a file name on to "Download file" window and clicked Save, but the file...was not saved :(</p>
