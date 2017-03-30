@@ -9,7 +9,7 @@ Currently, the information represented on the profile are the *Feature Architect
 In `data/demo/` you can find some test data including a main input file:
 >test.main
 
-2 other optional files for plotting protein domain architectures & traceability scores:
+2 optional files for plotting protein domain architectures & traceability scores:
 >test.architecture
 
 >test.traceability
@@ -34,10 +34,17 @@ Manually download all the files to your computer and keep the original folder st
 
 >R -e 'shiny::runApp(,launch.browser=TRUE)'
 
+(or open and run server.R / ui.R using RStudio)
+
 NOTE: R and Rscript has to be installed on your machine.
 
 # Bugs
-Any bug reports or comments, suggestions are highly appreciated
+Any bug reports or comments, suggestions are highly appreciated.
+
+# Acknowledgement
+I would like to thank
+1) [Bastian](https://github.com/gedankenstuecke) for the greate initial idea and his kind support,
+2) Members of [Ebersberger group](http://www.bio.uni-frankfurt.de/43045195/ak-ebersberger) for many valuable suggestions and ...bug reports :)
 
 # Contact
 Vinh Tran
