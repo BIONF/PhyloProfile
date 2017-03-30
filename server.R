@@ -172,7 +172,7 @@ shinyServer(function(input, output, session) {
     filein <- input$file1
     if(is.null(filein)){return()}
 
-    # get list of all available taxon (from taxonID.list.fullrankID)
+    # get list of all available taxon (from taxonID.list.fullRankID)
     allTaxa <- unlist(as.list(fread("data/taxonID.list.fullRankID",sep = "\t", select = "abbrName")))
 
     # get list of input taxa (from main input file)
