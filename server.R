@@ -574,6 +574,7 @@ shinyServer(function(input, output, session) {
       mdDataTrace <- mdData[,c("geneID","ncbiID")]
       mdDataTrace$traceability <- 0
     } else {
+      nrHit <- input$stIndex + input$number - 1
       dataTrace <- as.data.frame(read.table(file=filein2$datapath, sep='\t',header=T,check.names=FALSE,comment.char="",nrows=nrHit))
       
       ## get subset of dataTrace if a list of genes is given
