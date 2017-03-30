@@ -10,7 +10,7 @@ Currently, the information represented on the profile are the *Feature Architect
 
 >git clone https://github.com/trvinh/phyloprofile
 
-OR 
+OR
 
 Manually download all the files to your computer and keep the original folder structure.
 
@@ -18,9 +18,9 @@ Manually download all the files to your computer and keep the original folder st
 
 >Rscript installPackages.R
 
-(3) Run PhyloProfile tool: 
+(3) Run PhyloProfile tool:
 
->R -e 'shiny::runApp(,launch.browser=TRUE)'.
+>R -e 'shiny::runApp(,launch.browser=TRUE)'
 
 NOTE: R and Rscript has to be installed on your machine.
 
