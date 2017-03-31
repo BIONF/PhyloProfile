@@ -20,6 +20,33 @@ if (!require("Biostrings")) {
 ######################## FUNCTIONS ##########################
 #############################################################
 
+########## calculate percentage of present species ##########
+calcPresSpec <- function(taxaMdData, taxaCount){
+  ### taxaMdData = df("geneID","ncbiID","fas",....,"supertaxon")
+  # get geneID and supertaxon
+  geneIDsupertaxon <- subset(taxaMdData,select=c('geneID','supertaxon'))
+  geneIDsupertaxon <- geneIDsupertaxon[!duplicated(geneIDsupertaxon), ] # remove duplicated rows
+  
+  # remove NA rows from taxaMdData
+  taxaMdDataNoNA <- taxaMdData[!is.na(taxaMdData$fas),]
+  
+  # count present frequency of supertaxon for each gene
+  geneSupertaxonCount <- plyr::count(taxaMdDataNoNA,c('geneID','supertaxon'))
+  
+  # merge with taxaCount to get total number of species of each supertaxon and calculate presSpec
+  presSpecDt <- merge(geneSupertaxonCount,taxaCount,by='supertaxon')
+  presSpecDt$presSpec <- presSpecDt$freq.x/presSpecDt$freq.y
+  presSpecDt <- presSpecDt[order(presSpecDt$geneID),]
+  presSpecDt <- presSpecDt[,c("geneID","supertaxon","presSpec")]
+  
+  # add absent supertaxon into presSpecDt
+  finalPresSpecDt <- merge(presSpecDt,geneIDsupertaxon,by=c('geneID','supertaxon'),all.y = TRUE)
+  finalPresSpecDt$presSpec[is.na(finalPresSpecDt$presSpec)] <- 0
+  
+  # return finalPresSpecDt
+  finalPresSpecDt
+}
+
 ######## function for plotting domain architecture ########
 plotting <- function(df,geneID,fas,sep,labelSize,titleSize,minStart,maxEnd){
   gg <- ggplot(df, aes(y=feature, x=end, color = feature)) +
@@ -100,7 +127,7 @@ shinyServer(function(input, output, session) {
 
   output$percentFilter.ui <- renderUI({
     sliderInput("percent2",
-                "% of present species:", min = 0, max = 1, step = 0.025, value = input$percent, width = 200)
+                "% of present taxa:", min = 0, max = 1, step = 0.025, value = input$percent, width = 200)
   })
   ######## update value for "main" filter slidebars based on "Customized" slidebars
   observe({
@@ -459,16 +486,16 @@ shinyServer(function(input, output, session) {
 
     # get selected supertaxon ID
     taxaList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T))
-    superID <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inSelect])
+    superID <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inSelect & taxaList$rank == rankName])
 
     ### sort taxa list
     ### first move all species that have the same ID of selected rank (level) to a new data frame
     ### and sort the rest of the data frame based on that rank.
     ### then move species that have different ID of selected rank (level), but have the same ID of the higher level
     ### repeat until reach to last column
-
     sortedDt <- data.frame()
-    firstLine <- Dt[Dt[,rankName]==superID,][1,]  # get all taxo info for 1 representative
+
+    firstLine <- Dt[Dt[,rankName]==superID,][1,]  # get all taxon info for 1 representative
     sortedDt <- rbind(sortedDt,firstLine) # add to sortedDt
     Dt <- anti_join(Dt, firstLine, by="ncbiID") # & then remove that line from Dt
 
@@ -527,6 +554,7 @@ shinyServer(function(input, output, session) {
   ############### get traceability scores for coressponding orthologs (if trace matrix is provided) (2)
   ############### get (super)taxa names (3)
   ############### calculate percentage of presence (4), max FAS (5) and mean TRACEEBILITY (6) if group input taxa list into higher taxonomy rank
+  
   preDataFiltered <- reactive({
     ### (1) LOADING INPUT MATRIX (1)
     filein <- input$file1
@@ -600,28 +628,13 @@ shinyServer(function(input, output, session) {
     taxaMdData$fas <- as.numeric(as.character(taxaMdData$fas))
     taxaMdDataTrace <- merge(mdDataTrace,taxaList,by='ncbiID')  #################### FOR TRACEABILITY SCORES
 
-    ### (4) calculate PERCENTAGE of PRESENT SPECIES (4) ###
-    # get geneID and supertaxon
-    geneIDsupertaxon <- subset(taxaMdData,select=c('geneID','supertaxon'))
-    geneIDsupertaxon <- geneIDsupertaxon[!duplicated(geneIDsupertaxon), ] # remove duplicated rows
-
+    # ### (4) calculate PERCENTAGE of PRESENT SPECIES (4) ###
+    finalPresSpecDt <- calcPresSpec(taxaMdData, taxaCount)
+    
+    ### (5) calculate MAX FAS for every supertaxon of each gene (5) ###
     # remove NA rows from taxaMdData
     taxaMdDataNoNA <- taxaMdData[!is.na(taxaMdData$fas),]
-
-    # count present frequency of supertaxon for each gene
-    geneSupertaxonCount <- plyr::count(taxaMdDataNoNA,c('geneID','supertaxon'))
-
-    # merge with taxaCount to get total number of species of each supertaxon and calculate presSpec
-    presSpecDt <- merge(geneSupertaxonCount,taxaCount,by='supertaxon')
-    presSpecDt$presSpec <- presSpecDt$freq.x/presSpecDt$freq.y
-    presSpecDt <- presSpecDt[order(presSpecDt$geneID),]
-    presSpecDt <- presSpecDt[,c("geneID","supertaxon","presSpec")]
-
-    # add absent supertaxon into presSpecDt
-    finalPresSpecDt <- merge(presSpecDt,geneIDsupertaxon,by=c('geneID','supertaxon'),all.y = TRUE)
-    finalPresSpecDt$presSpec[is.na(finalPresSpecDt$presSpec)] <- 0
-
-    ### (5) calculate MAX FAS for every supertaxon of each gene (5) ###
+    # calculate max FAS
     maxFasDt <- aggregate(taxaMdDataNoNA[,"fas"],list(taxaMdDataNoNA$supertaxon,taxaMdDataNoNA$geneID),max)
     colnames(maxFasDt) <- c("supertaxon","geneID","maxFas")
 
@@ -1068,10 +1081,10 @@ shinyServer(function(input, output, session) {
   })
 
   #############################################################
-  ############## PLOT FAS SCORE DISTRIBUTION ##################
+  #### PLOT FAS SCORE & % OF PRESENT SPECIES DISTRIBUTION #####
   #############################################################
 
-  #######
+  ###### FAS score distribution plot
   fasDistPlot <- function(){
     if (v$doPlot == FALSE) return()
 
@@ -1102,7 +1115,8 @@ shinyServer(function(input, output, session) {
       geom_histogram(binwidth=.01, alpha=.5, position="identity") +
       geom_vline(data=cdat, aes(xintercept=rating.mean,  colour=type),
                  linetype="dashed", size=1) +
-      ggtitle(paste("Mean FAS score = ",round(mean(splitDt$fas),3)))
+      ggtitle(paste("Mean FAS score = ",round(mean(splitDt$fas),3))) +
+      theme_minimal()
     p <- p + theme(legend.position = "none",
                    plot.title = element_text(hjust = 0.5),
                    axis.title.x = element_text(size=input$xSize),axis.text.x = element_text(size=input$xSize),
@@ -1150,7 +1164,106 @@ shinyServer(function(input, output, session) {
     }
   })
 
+  ####### % present species distribution plot
+  
+  ## calculate % present species for input file
+  presSpecAllDt <- reactive({
+    # open main input file
+    filein <- input$file1
+    data <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+    
+    # convert into paired columns
+    mdData <- melt(data,id="geneID")
+    
+    # rename columns
+    colnames(mdData) <- c("geneID","ncbiID","fas")
 
+    # sorted supertaxa list
+    taxaList <- sortedTaxaList()
+     
+    # calculate frequency of all supertaxa
+    taxaCount <- plyr::count(taxaList,'supertaxon')
+     
+    # merge mdData and taxaList to get taxonomy info
+    taxaMdData <- merge(mdData,taxaList,by='ncbiID')
+    
+    # calculate % present species
+    finalPresSpecDt <- calcPresSpec(taxaMdData, taxaCount)
+    
+    finalPresSpecDt
+  })
+  
+  ## % presSpec distribution plot
+  presSpecPlot <- function(){
+    if (v$doPlot == FALSE) return()
+    
+    # data
+    dt <- presSpecAllDt()
+    # remove presSpec < cutoff
+    if(input$percent > 0){
+      dt <- dt[dt$presSpec >= input$percent,]
+    } else {
+      dt <- dt[dt$presSpec > 0,]
+    }
+    
+    # calculate mean FAS score
+    dt$type <- "none"
+    cdat <- ddply(dt, "type", summarise, rating.mean=mean(presSpec))
+    
+    # plot FAS score distribution
+    p <- ggplot(dt, aes(x=presSpec)) +
+      geom_histogram(binwidth=.01, alpha=.5, position="identity") +
+      geom_vline(data=cdat, aes(xintercept=rating.mean,  colour=type),
+                 linetype="dashed", size=1) +
+      ggtitle(paste("Mean % present taxa = ",round(mean(dt$presSpec),3))) +
+      theme_minimal()
+    p <- p + theme(legend.position = "none",
+                   plot.title = element_text(hjust = 0.5),
+                   axis.title.x = element_text(size=input$xSize),axis.text.x = element_text(size=input$xSize),
+                   axis.title.y = element_text(size=input$ySize),axis.text.y = element_text(size=input$ySize)) +
+      labs(x = "% present taxa", y = "Frequency")
+    p
+  }
+
+  output$presSpecPlot <- renderPlot(width = 512, height = 356,{
+    if(input$autoUpdate == FALSE){
+      # Add dependency on the update button (only update when button is clicked)
+      input$updateBtn
+      
+      # Add all the filters to the data based on the user inputs
+      # wrap in an isolate() so that the data won't update every time an input
+      # is changed
+      isolate({
+        presSpecPlot()
+      })
+    } else {
+      presSpecPlot()
+    }
+  })
+
+  output$presSpec.ui <- renderUI({
+    if(v$doPlot == FALSE){
+      return()
+    } else{
+      ## if autoupdate is NOT selected, use updateBtn to trigger plot changing
+      if(input$autoUpdate == FALSE){
+        # Add dependency on the update button (only update when button is clicked)
+        input$updateBtn
+        
+        # Add all the filters to the data based on the user inputs
+        # wrap in an isolate() so that the data won't update every time an input
+        # is changed
+        isolate({
+          plotOutput("presSpecPlot",width=input$width,height = input$height)
+        })
+      }
+      ## if autoupdate is true
+      else {
+        plotOutput("presSpecPlot",width=input$width,height = input$height)
+      }
+    }
+  })
+  
   #############################################################
   ################# PLOT SELECTED SEQUENCES ###################
   #############################################################
@@ -1329,7 +1442,7 @@ shinyServer(function(input, output, session) {
   ######## get info of a clicked point on selected plot (also the same as get info from main plot)
   selectedPointInfo <- reactive({
     ### check input
-    if (v$doPlot == FALSE) return()
+    if (v2$doPlotCustom == FALSE) return()
 
     # get selected supertaxon name
     taxaList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T))
@@ -1394,14 +1507,13 @@ shinyServer(function(input, output, session) {
 
   ######## show info into "point's info" box
   output$pointInfo <- renderText({
-    ### check input
-    if (v$doPlot == FALSE) return()
-
     ##### GET INFO BASED ON CURRENT TAB
     if(input$tabs == 'Main profile'){
       info <- mainPointInfo()  # info = groupID,orthoID,supertaxon,maxFAS,%spec,trace
     } else if(input$tabs=='Customized profile'){
       info <- selectedPointInfo()
+    } else {
+      return ()
     }
 
     if(is.null(info)){return()}
@@ -1735,7 +1847,8 @@ shinyServer(function(input, output, session) {
     #data <- dataSupertaxa()
     #data <- dataHeat()
     #data <- detailPlotDt()
-    data <- downloadData()
+    data <- presSpecAllDt()
+    #data <- downloadData()
     data
   })
 

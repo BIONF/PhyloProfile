@@ -73,7 +73,7 @@ shinyUI(fluidPage(
           ),
           column(2,
                  sliderInput("percent",
-                             "% of present species:", min = 0, max = 1, step = 0.025, value = 0.0, width = 200),
+                             "% of present taxa:", min = 0, max = 1, step = 0.025, value = 0.0, width = 200),
                  tags$head(
                    tags$style(HTML('#plotDownload{background-color:#A9E2F3}'))
                  ),
@@ -266,6 +266,10 @@ shinyUI(fluidPage(
               
               tabPanel("FAS score distribution",
                 uiOutput("fasDist.ui")
+              ),
+              
+              tabPanel("% present taxa distribution",
+                       uiOutput("presSpec.ui")
               )
             )
           )
