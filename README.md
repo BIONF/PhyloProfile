@@ -1,3 +1,6 @@
+![](www/beschreibung.jpg)
+
+
 # PhyloProfile Tool
 
 PhyloProfile Tool is a Shiny(R)-based tool for visualizing the phylogenetic profile of a list of genes.
