@@ -1,9 +1,9 @@
 data/taxonID.list.fullRankID
 data/taxonNamesReduced.txt
-data/lca.FASmatrix
-data/lca.FASmatrix.geneList
-data/lca.FASmatrix.mDomains
-data/lca.Tracematrix
+data/demo/test.main
+data/demo/geneList.txt
+data/demo/test.architecture
+data/demo/test.traceability
 data/newTaxa.txt
 
 # History files

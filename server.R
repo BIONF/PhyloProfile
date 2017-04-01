@@ -47,13 +47,37 @@ calcPresSpec <- function(taxaMdData, taxaCount){
   finalPresSpecDt
 }
 
+######## function for sorting one domain dataframe (ortho) based on the other domain Df (seed) ########
+sortDomains <- function(seedDf, orthoDf){
+  # get list of features in seedDf
+  featureList <- as.data.frame(levels(as.factor(seedDf$feature)))
+  colnames(featureList) <- c("feature")
+  # and add order number to each feature
+  featureList$orderNo <- seq(length(featureList$feature))
+  
+  # merge those info to orthoDf
+  orderedOrthoDf <- merge(orthoDf,featureList, all.x=TRUE)
+  
+  # sort orthoDf
+  index <- with(orderedOrthoDf, order(orderNo))
+  orderedOrthoDf <- orderedOrthoDf[index,]
+  
+  #turn feature column into a character vector
+  orderedOrthoDf$feature <- as.character(orderedOrthoDf$feature)
+  #then turn it back into an ordered factor (to keep this order while plotting)
+  orderedOrthoDf$feature <- factor(orderedOrthoDf$feature, levels=unique(orderedOrthoDf$feature))
+  
+  #return sorted df
+  orderedOrthoDf
+}
+
 ######## function for plotting domain architecture ########
 plotting <- function(df,geneID,fas,sep,labelSize,titleSize,minStart,maxEnd){
   gg <- ggplot(df, aes(y=feature, x=end, color = feature)) +
     geom_segment(data=df, aes(y=feature, yend=feature, x=minStart, xend=maxEnd), color="#b2b2b2", size=0.15)
 
   ### draw line and points
-  gg <- gg + geom_segment(data=df, aes(x=start, xend=end, y=feature, yend=feature, fill=feature),
+  gg <- gg + geom_segment(data=df, aes(x=start, xend=end, y=feature, yend=feature),#, fill=feature),
                           size=1.2)
   gg <- gg + geom_point(data=df, aes(y=feature, x=start), color="#b2b2b2", size=3)
   gg <- gg + geom_point(data=df, aes(y=feature, x=end), color="#edae52", size=3)
@@ -957,52 +981,52 @@ shinyServer(function(input, output, session) {
   #   print(par()$fin)
   # })
 
-  output$mainAxis <- renderPlot(bg="transparent",{
-    if(input$autoUpdate == FALSE){
-      # Add dependency on the update button (only update when button is clicked)
-      input$updateBtn
-      isolate({
-        #list <- allTaxaList()
-        p <- mainPlot()
-        g <- ggplotGrob(p)
-
-        if(input$mainXAxisGuide == TRUE & input$mainYAxisGuide == FALSE){
-          s <- gtable_filter(g, 'axis-b', trim=F)  ### filter to get x-axis
-        } else if (input$mainXAxisGuide == FALSE & input$mainYAxisGuide == TRUE){
-          s <- gtable_filter(g, 'axis-l', trim=F)  ### filter to get y-axis
-        } else if (input$mainXAxisGuide == TRUE & input$mainYAxisGuide == TRUE){
-          s <- gtable_filter(g, 'axis-b|axis-l', trim=F)  ### filter to get x-axis and y-axis
-        }
-
-        # draw axis(es)
-        grid.draw(s)
-      })
-    } else {
-      p <- mainPlot()
-      g <- ggplotGrob(p)
-
-      if(input$mainXAxisGuide == TRUE & input$mainYAxisGuide == FALSE){
-        s <- gtable_filter(g, 'axis-b', trim=F)  ### filter to get x-axis
-      } else if (input$mainXAxisGuide == FALSE & input$mainYAxisGuide == TRUE){
-        s <- gtable_filter(g, 'axis-l', trim=F)  ### filter to get y-axis
-      } else if (input$mainXAxisGuide == TRUE & input$mainYAxisGuide == TRUE){
-        s <- gtable_filter(g, 'axis-b|axis-l', trim=F)  ### filter to get x-axis and y-axis
-      }
-      grid.draw(s)
-    }
-  })
-
-  output$mainAxisRender <- renderUI({
-    if(input$autoUpdate == FALSE){
-      # Add dependency on the update button (only update when button is clicked)
-      input$updateBtn
-      isolate({
-        plotOutput("mainAxis", width=input$width, height=input$height)
-      })
-    } else{
-      plotOutput("mainAxis", width=input$width, height=input$height)
-    }
-  })
+  # output$mainAxis <- renderPlot(bg="transparent",{
+  #   if(input$autoUpdate == FALSE){
+  #     # Add dependency on the update button (only update when button is clicked)
+  #     input$updateBtn
+  #     isolate({
+  #       #list <- allTaxaList()
+  #       p <- mainPlot()
+  #       g <- ggplotGrob(p)
+  # 
+  #       if(input$mainXAxisGuide == TRUE & input$mainYAxisGuide == FALSE){
+  #         s <- gtable_filter(g, 'axis-b', trim=F)  ### filter to get x-axis
+  #       } else if (input$mainXAxisGuide == FALSE & input$mainYAxisGuide == TRUE){
+  #         s <- gtable_filter(g, 'axis-l', trim=F)  ### filter to get y-axis
+  #       } else if (input$mainXAxisGuide == TRUE & input$mainYAxisGuide == TRUE){
+  #         s <- gtable_filter(g, 'axis-b|axis-l', trim=F)  ### filter to get x-axis and y-axis
+  #       }
+  # 
+  #       # draw axis(es)
+  #       grid.draw(s)
+  #     })
+  #   } else {
+  #     p <- mainPlot()
+  #     g <- ggplotGrob(p)
+  # 
+  #     if(input$mainXAxisGuide == TRUE & input$mainYAxisGuide == FALSE){
+  #       s <- gtable_filter(g, 'axis-b', trim=F)  ### filter to get x-axis
+  #     } else if (input$mainXAxisGuide == FALSE & input$mainYAxisGuide == TRUE){
+  #       s <- gtable_filter(g, 'axis-l', trim=F)  ### filter to get y-axis
+  #     } else if (input$mainXAxisGuide == TRUE & input$mainYAxisGuide == TRUE){
+  #       s <- gtable_filter(g, 'axis-b|axis-l', trim=F)  ### filter to get x-axis and y-axis
+  #     }
+  #     grid.draw(s)
+  #   }
+  # })
+  # 
+  # output$mainAxisRender <- renderUI({
+  #   if(input$autoUpdate == FALSE){
+  #     # Add dependency on the update button (only update when button is clicked)
+  #     input$updateBtn
+  #     isolate({
+  #       plotOutput("mainAxis", width=input$width, height=input$height)
+  #     })
+  #   } else{
+  #     plotOutput("mainAxis", width=input$width, height=input$height)
+  #   }
+  # })
 
   ########### download main plot
   output$plotDownload <- downloadHandler(
@@ -1742,18 +1766,18 @@ shinyServer(function(input, output, session) {
 
       ### change order of one dataframe's features based on order of other df's features
       if(length(orthoDf$feature) < length(seedDf$feature)){
-        orthoDf <- orthoDf[order(orthoDf$feature), ]
-        seedDf$feature <- factor(seedDf$feature, levels=c(orthoDf$feature,seedDf$feature[seedDf$feature != orthoDf$feature]))
+        orderedOrthoDf <- orthoDf[order(orthoDf$feature), ]
+        orderedSeedDf <- sortDomains(orderedOrthoDf, seedDf)
       } else {
-        seedDf <- seedDf[order(seedDf$feature), ]
-        orthoDf$feature <- factor(orthoDf$feature, levels=c(seedDf$feature,orthoDf$feature[orthoDf$feature != seedDf$feature]))
+        orderedSeedDf <- seedDf[order(seedDf$feature), ]
+        orderedOrthoDf <- sortDomains(orderedSeedDf, orthoDf)
       }
 
       ### plotting
       sep = ":"
       if(!is.null(input$oneSeqFasta)){sep="|"}
-      plot_ortho <- plotting(orthoDf,ortho,fas,sep,input$labelArchiSize,input$titleArchiSize,min(subDomainDf$start),max(subDomainDf$end))
-      plot_seed <- plotting(seedDf,seed,fas,sep,input$labelArchiSize,input$titleArchiSize,min(subDomainDf$start),max(subDomainDf$end))
+      plot_ortho <- plotting(orderedOrthoDf,ortho,fas,sep,input$labelArchiSize,input$titleArchiSize,min(subDomainDf$start),max(subDomainDf$end))
+      plot_seed <- plotting(orderedSeedDf,seed,fas,sep,input$labelArchiSize,input$titleArchiSize,min(subDomainDf$start),max(subDomainDf$end))
 
       # grid.arrange(plot_seed,plot_ortho,ncol=1)
       arrangeGrob(plot_seed,plot_ortho,ncol=1)
