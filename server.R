@@ -1,7 +1,7 @@
 if (!require("shiny")) {install.packages("shiny")}
 if (!require("shinyBS")) {install.packages("shinyBS")}
 if (!require("ggplot2")) {install.packages("ggplot2")}
-if (!require("reshape")) {install.packages("reshape")}
+if (!require("reshape2")) {install.packages("reshape2")}
 if (!require("plyr")) {install.packages("plyr")}
 if (!require("dplyr")) {install.packages("dplyr")}
 if (!require("scales")) {install.packages("scales")}
@@ -20,13 +20,66 @@ if (!require("Biostrings")) {
 ######################## FUNCTIONS ##########################
 #############################################################
 
+########## calculate percentage of present species ##########
+calcPresSpec <- function(taxaMdData, taxaCount){
+  ### taxaMdData = df("geneID","ncbiID","orthoID","var1","var2",....,"supertaxon")
+  # get geneID and supertaxon
+  geneIDsupertaxon <- subset(taxaMdData,select=c('geneID','supertaxon'))
+  geneIDsupertaxon <- geneIDsupertaxon[!duplicated(geneIDsupertaxon), ] # remove duplicated rows
+  
+  # remove NA rows from taxaMdData
+  taxaMdDataNoNA <- taxaMdData[taxaMdData$orthoID != "NA",]
+#  taxaMdDataNoNA <- taxaMdData[!is.na(taxaMdData$var1),]
+#  taxaMdDataNoNA <- taxaMdData[!is.na(taxaMdData$var2),]
+  
+  # count present frequency of supertaxon for each gene
+  geneSupertaxonCount <- plyr::count(taxaMdDataNoNA,c('geneID','supertaxon'))
+  
+  # merge with taxaCount to get total number of species of each supertaxon and calculate presSpec
+  presSpecDt <- merge(geneSupertaxonCount,taxaCount,by='supertaxon')
+  presSpecDt$presSpec <- presSpecDt$freq.x/presSpecDt$freq.y
+  presSpecDt <- presSpecDt[order(presSpecDt$geneID),]
+  presSpecDt <- presSpecDt[,c("geneID","supertaxon","presSpec")]
+  
+  # add absent supertaxon into presSpecDt
+  finalPresSpecDt <- merge(presSpecDt,geneIDsupertaxon,by=c('geneID','supertaxon'),all.y = TRUE)
+  finalPresSpecDt$presSpec[is.na(finalPresSpecDt$presSpec)] <- 0
+  
+  # return finalPresSpecDt
+  finalPresSpecDt
+}
+
+######## function for sorting one domain dataframe (ortho) based on the other domain Df (seed) ########
+sortDomains <- function(seedDf, orthoDf){
+  # get list of features in seedDf
+  featureList <- as.data.frame(levels(as.factor(seedDf$feature)))
+  colnames(featureList) <- c("feature")
+  # and add order number to each feature
+  featureList$orderNo <- seq(length(featureList$feature))
+  
+  # merge those info to orthoDf
+  orderedOrthoDf <- merge(orthoDf,featureList, all.x=TRUE)
+  
+  # sort orthoDf
+  index <- with(orderedOrthoDf, order(orderNo))
+  orderedOrthoDf <- orderedOrthoDf[index,]
+  
+  #turn feature column into a character vector
+  orderedOrthoDf$feature <- as.character(orderedOrthoDf$feature)
+  #then turn it back into an ordered factor (to keep this order while plotting)
+  orderedOrthoDf$feature <- factor(orderedOrthoDf$feature, levels=unique(orderedOrthoDf$feature))
+  
+  #return sorted df
+  orderedOrthoDf
+}
+
 ######## function for plotting domain architecture ########
-plotting <- function(df,geneID,fas,sep,labelSize,titleSize,minStart,maxEnd){
+domain.plotting <- function(df,geneID,var1,sep,labelSize,titleSize,minStart,maxEnd){
   gg <- ggplot(df, aes(y=feature, x=end, color = feature)) +
     geom_segment(data=df, aes(y=feature, yend=feature, x=minStart, xend=maxEnd), color="#b2b2b2", size=0.15)
 
   ### draw line and points
-  gg <- gg + geom_segment(data=df, aes(x=start, xend=end, y=feature, yend=feature, fill=feature),
+  gg <- gg + geom_segment(data=df, aes(x=start, xend=end, y=feature, yend=feature),#, fill=feature),
                           size=1.2)
   gg <- gg + geom_point(data=df, aes(y=feature, x=start), color="#b2b2b2", size=3)
   gg <- gg + geom_point(data=df, aes(y=feature, x=end), color="#edae52", size=3)
@@ -39,7 +92,7 @@ plotting <- function(df,geneID,fas,sep,labelSize,titleSize,minStart,maxEnd){
   ### theme format
   titleMod <- gsub(":",sep,geneID)
   gg <- gg + scale_y_discrete(expand=c(0.075,0))
-  gg <- gg + labs(title=paste0(titleMod," - FAS=",fas))
+  gg <- gg + labs(title=paste0(titleMod," - ",var1))
   gg <- gg + theme_bw(base_family="Calibri")
   gg <- gg + theme(panel.border=element_blank())
   gg <- gg + theme(axis.ticks=element_blank())
@@ -92,20 +145,43 @@ shinyServer(function(input, output, session) {
   ####################  PRE-PROCESSING  #######################
   #############################################################
 
+  ######## PARSING VARIABLE 1 AND 2
+  ######## get var1_id and var2_id
+  output$variableID <- reactive({
+    ids <- as.list(c(input$var1_id,input$var2_id))
+  })
+  
+  ######## variable 1 & 2 cutoff slidebar (main plot)
+  output$var1_cutoff <- renderUI({
+    sliderInput("var1",paste(input$var1_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(0.0,1.0), width = 200)
+  })
+  output$var2_cutoff <- renderUI({
+    sliderInput("var2",paste(input$var2_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(0.0,1.0), width = 200)
+  })
+  
   ######## render filter slidebars for Customized plot
-  output$fasFilter.ui <- renderUI({
-    sliderInput("fas2",
-                "FAS cutoff: ", min = 0, max = 1, step = 0.025, value = input$fas, width = 200)
+  output$var1Filter.ui <- renderUI({
+    sliderInput("var1cus",paste(input$var1_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(input$var1[1],input$var1[2]), width = 200)
+  })
+  
+  output$var2Filter.ui <- renderUI({
+    sliderInput("var2cus",paste(input$var2_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(input$var2[1],input$var2[2]), width = 200)
   })
 
   output$percentFilter.ui <- renderUI({
     sliderInput("percent2",
-                "% of present species:", min = 0, max = 1, step = 0.025, value = input$percent, width = 200)
+                "% of present taxa:", min = 0, max = 1, step = 0.025, value = input$percent, width = 200)
   })
+  
   ######## update value for "main" filter slidebars based on "Customized" slidebars
   observe({
-    newFas <- input$fas2
-    updateSliderInput(session, "fas", value = newFas,
+    newVar1 <- input$var1cus
+    updateSliderInput(session, "var1", value = newVar1,
+                      min = 0, max = 1, step = 0.025)
+  })
+  observe({
+    newVar2 <- input$var2cus
+    updateSliderInput(session, "var2", value = newVar2,
                       min = 0, max = 1, step = 0.025)
   })
   observe({
@@ -114,6 +190,15 @@ shinyServer(function(input, output, session) {
                       min = 0, max = 1, step = 0.025)
   })
 
+  ######## list of available variables for distribution plot
+  output$selected.distribution = renderUI({
+    varList <- as.list(c(input$var1_id,input$var2_id,"% present taxa"))
+    selectInput('selected_dist',h5('Choose variable to plot:'),varList,varList[1])
+  })
+
+  
+  ########################################################
+  
   ######## check oneseq fasta file exists
   output$oneSeq.existCheck <- renderUI({
     #f <- toString(input$oneseq.file)
@@ -143,7 +228,8 @@ shinyServer(function(input, output, session) {
     shinyjs::reset("xSize")
     shinyjs::reset("ySize")
     shinyjs::reset("legendSize")
-    shinyjs::reset("fas")
+    shinyjs::reset("var1")
+    shinyjs::reset("var2")
     shinyjs::reset("percent")
   })
 
@@ -152,27 +238,28 @@ shinyServer(function(input, output, session) {
     shinyjs::reset("xSizeSelect")
     shinyjs::reset("ySizeSelect")
     shinyjs::reset("legendSizeSelect")
-    shinyjs::reset("fas")
+    shinyjs::reset("var1")
+    shinyjs::reset("var2")
     shinyjs::reset("percent")
   })
 
   ######## reset colors
   observeEvent(input$defaultColorTrace, {
-    shinyjs::reset("lowColor_trace")
-    shinyjs::reset("highColor_trace")
+    shinyjs::reset("lowColor_var2")
+    shinyjs::reset("highColor_var2")
   })
 
-  observeEvent(input$defaultColorFas, {
-    shinyjs::reset("lowColor_fas")
-    shinyjs::reset("highColor_fas")
+  observeEvent(input$defaultColorVar1, {
+    shinyjs::reset("lowColor_var1")
+    shinyjs::reset("highColor_var1")
   })
-
+  
   ######## check if there is any "unknown" taxon in input matrix
   unkTaxa <- reactive({
     filein <- input$file1
     if(is.null(filein)){return()}
 
-    # get list of all available taxon (from taxonID.list.fullrankID)
+    # get list of all available taxon (from taxonID.list.fullRankID)
     allTaxa <- unlist(as.list(fread("data/taxonID.list.fullRankID",sep = "\t", select = "abbrName")))
 
     # get list of input taxa (from main input file)
@@ -459,16 +546,16 @@ shinyServer(function(input, output, session) {
 
     # get selected supertaxon ID
     taxaList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T))
-    superID <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inSelect])
+    superID <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inSelect & taxaList$rank == rankName])
 
     ### sort taxa list
     ### first move all species that have the same ID of selected rank (level) to a new data frame
     ### and sort the rest of the data frame based on that rank.
     ### then move species that have different ID of selected rank (level), but have the same ID of the higher level
     ### repeat until reach to last column
-
     sortedDt <- data.frame()
-    firstLine <- Dt[Dt[,rankName]==superID,][1,]  # get all taxo info for 1 representative
+
+    firstLine <- Dt[Dt[,rankName]==superID,][1,]  # get all taxon info for 1 representative
     sortedDt <- rbind(sortedDt,firstLine) # add to sortedDt
     Dt <- anti_join(Dt, firstLine, by="ncbiID") # & then remove that line from Dt
 
@@ -524,9 +611,10 @@ shinyServer(function(input, output, session) {
   })
 
   ############### PARSING DATA FROM INPUT MATRIX:
-  ############### get traceability scores for coressponding orthologs (if trace matrix is provided) (2)
+  ############### get var2 scores for coressponding orthologs (if trace matrix is provided) (2)
   ############### get (super)taxa names (3)
-  ############### calculate percentage of presence (4), max FAS (5) and mean TRACEEBILITY (6) if group input taxa list into higher taxonomy rank
+  ############### calculate percentage of presence (4), max/min/mean/median VAR1 (5) and VAR2 (6) if group input taxa list into higher taxonomy rank
+  
   preDataFiltered <- reactive({
     ### (1) LOADING INPUT MATRIX (1)
     filein <- input$file1
@@ -559,35 +647,13 @@ shinyServer(function(input, output, session) {
     # convert into paired columns
     mdData <- melt(data,id="geneID")
 
-    # split value column into orthoID and fas
-    splitDt <- (str_split_fixed(mdData$value, '#', 2))
+    # split value column into orthoID and var1
+    splitDt <- (str_split_fixed(mdData$value, '#', 3))
     # then join them back to mdData
     mdData <- cbind(mdData,splitDt)
     # rename columns
-    colnames(mdData) <- c("geneID","ncbiID","value","orthoID","fas")
-    mdData <- mdData[,c("geneID","ncbiID","fas","orthoID")]
-
-    ### (2) LOADING TRACEABILITY MATRIX and merge with input mdData (2) ###
-    filein2 <- input$file2
-    if(is.null(filein2)){
-      mdDataTrace <- mdData[,c("geneID","ncbiID")]
-      mdDataTrace$traceability <- 0
-    } else {
-      nrHit <- input$stIndex + input$number - 1
-      dataTrace <- as.data.frame(read.table(file=filein2$datapath, sep='\t',header=T,check.names=FALSE,comment.char="",nrows=nrHit))
-
-      ## get subset of dataTrace if a list of genes is given
-      if(input$geneList_selected == 'from file'){
-        if(!is.null(listIn)){
-          list <- as.data.frame(read.table(file=listIn$datapath, header=FALSE))
-          dataOrig <- as.data.frame(read.table(file=filein2$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
-          dataTrace <- dataOrig[dataOrig$geneID %in% list$V1,]
-        }
-      }
-
-      mdDataTrace <- melt(dataTrace,id="geneID")
-      colnames(mdDataTrace) <- c("geneID","ncbiID","traceability")
-    }
+    colnames(mdData) <- c("geneID","ncbiID","value","orthoID","var1","var2")
+    mdData <- mdData[,c("geneID","ncbiID","var1","orthoID","var2")]
 
     ### (3) GET SORTED TAXONOMY LIST (3) ###
     taxaList <- sortedTaxaList()
@@ -597,42 +663,30 @@ shinyServer(function(input, output, session) {
 
     # merge mdData, mdDataTrace and taxaList to get taxonomy info
     taxaMdData <- merge(mdData,taxaList,by='ncbiID')
-    taxaMdData$fas <- as.numeric(as.character(taxaMdData$fas))
-    taxaMdDataTrace <- merge(mdDataTrace,taxaList,by='ncbiID')  #################### FOR TRACEABILITY SCORES
+    taxaMdData$var1 <- as.numeric(as.character(taxaMdData$var1))
+    taxaMdData$var2 <- as.numeric(as.character(taxaMdData$var2))
 
-    ### (4) calculate PERCENTAGE of PRESENT SPECIES (4) ###
-    # get geneID and supertaxon
-    geneIDsupertaxon <- subset(taxaMdData,select=c('geneID','supertaxon'))
-    geneIDsupertaxon <- geneIDsupertaxon[!duplicated(geneIDsupertaxon), ] # remove duplicated rows
-
+    # ### (4) calculate PERCENTAGE of PRESENT SPECIES (4) ###
+    finalPresSpecDt <- calcPresSpec(taxaMdData, taxaCount)
+    
+    ### (5) calculate max/min/mean/median VAR1 for every supertaxon of each gene (5) ###
     # remove NA rows from taxaMdData
-    taxaMdDataNoNA <- taxaMdData[!is.na(taxaMdData$fas),]
+    taxaMdDataNoNA <- taxaMdData[!is.na(taxaMdData$var1),]
+    # calculate m var1
+    mVar1Dt <- aggregate(taxaMdDataNoNA[,"var1"],list(taxaMdDataNoNA$supertaxon,taxaMdDataNoNA$geneID),FUN=input$var1_aggregateBy)
+    colnames(mVar1Dt) <- c("supertaxon","geneID","mVar1")
 
-    # count present frequency of supertaxon for each gene
-    geneSupertaxonCount <- plyr::count(taxaMdDataNoNA,c('geneID','supertaxon'))
+    ### (6) calculate max/min/mean/median VAR2 for each super taxon (6) ###
+    # remove NA rows from taxaMdData
+    taxaMdDataNoNA_trace <- taxaMdData[!is.na(taxaMdData$var2),]
+    # calculate max/min/mean/median VAR2
+    mVar2Dt <- aggregate(taxaMdDataNoNA_trace[,"var2"],list(taxaMdDataNoNA_trace$supertaxon,taxaMdDataNoNA_trace$geneID),FUN=input$var2_aggregateBy)
+    colnames(mVar2Dt) <- c("supertaxon","geneID","mVar2")
 
-    # merge with taxaCount to get total number of species of each supertaxon and calculate presSpec
-    presSpecDt <- merge(geneSupertaxonCount,taxaCount,by='supertaxon')
-    presSpecDt$presSpec <- presSpecDt$freq.x/presSpecDt$freq.y
-    presSpecDt <- presSpecDt[order(presSpecDt$geneID),]
-    presSpecDt <- presSpecDt[,c("geneID","supertaxon","presSpec")]
+    ### (5+6) & join mVar2 together with mVar1 scores into one df (5+6)
+    scoreDf <- merge(mVar1Dt,mVar2Dt, by=c("supertaxon","geneID"), all = TRUE)
 
-    # add absent supertaxon into presSpecDt
-    finalPresSpecDt <- merge(presSpecDt,geneIDsupertaxon,by=c('geneID','supertaxon'),all.y = TRUE)
-    finalPresSpecDt$presSpec[is.na(finalPresSpecDt$presSpec)] <- 0
-
-    ### (5) calculate MAX FAS for every supertaxon of each gene (5) ###
-    maxFasDt <- aggregate(taxaMdDataNoNA[,"fas"],list(taxaMdDataNoNA$supertaxon,taxaMdDataNoNA$geneID),max)
-    colnames(maxFasDt) <- c("supertaxon","geneID","maxFas")
-
-    ### (6) calculate mean TRACEABILITY SCORES for each super taxon (6) ###
-    meanTraceDt <- aggregate(taxaMdDataTrace[,"traceability"],list(taxaMdDataTrace$supertaxon,taxaMdDataTrace$geneID),mean)
-    colnames(meanTraceDt) <- c("supertaxon","geneID","traceability")
-
-    ### (5+6) & join mean traceability together with max fas scores into one df (5+6)
-    scoreDf <- merge(maxFasDt,meanTraceDt, by=c("supertaxon","geneID"), all = TRUE)
-
-    ### (4+5+6) add presSpec and maxFAS into taxaMdData (4+5+6)
+    ### (4+5+6) add presSpec and mVar1 into taxaMdData (4+5+6)
     presMdData <- merge(taxaMdData,finalPresSpecDt,by=c('geneID','supertaxon'),all.x = TRUE)
     fullMdData <- merge(presMdData,scoreDf,by=c('geneID','supertaxon'), all.x = TRUE)
     fullMdData <- merge(fullMdData,taxaCount,by=('supertaxon'), all.x = TRUE)
@@ -650,26 +704,27 @@ shinyServer(function(input, output, session) {
   #############################################################
 
   ######## REDUCE DATA FROM SPECIES LEVEL TO SUPERTAXA LEVEL
-  ######## this data set contain only supertaxa and their value (%present, max fas & mean tracebility) for each gene
+  ######## this data set contain only supertaxa and their value (%present, mVar1 & mVar2) for each gene
   dataSupertaxa <- reactive({
     fullMdData <- dataFiltered()
 
-    ### get representative orthoID that has max FAS for each supertaxon
-    maxOrthoID <- fullMdData[,c('geneID','supertaxon','fas','maxFas','orthoID')]
-    maxOrthoID <- subset(maxOrthoID,maxOrthoID$fas == maxOrthoID$maxFas)
-    colnames(maxOrthoID) <- c('geneID','supertaxon','fas','maxFas','orthoID')
-    maxOrthoID <- maxOrthoID[!is.na(maxOrthoID$orthoID),]
-    maxOrthoID <- maxOrthoID[,c('geneID','supertaxon','orthoID')]
-    maxOrthoID <- maxOrthoID[!duplicated(maxOrthoID[,1:2]), ]
+    ### get representative orthoID that has m VAR1 for each supertaxon
+    mOrthoID <- fullMdData[,c('geneID','supertaxon','var1','mVar1','orthoID')]
+    mOrthoID <- subset(mOrthoID,mOrthoID$var1 == mOrthoID$mVar1)
+    colnames(mOrthoID) <- c('geneID','supertaxon','var1','mVar1','orthoID')
+    mOrthoID <- mOrthoID[!is.na(mOrthoID$orthoID),]
+    mOrthoID <- mOrthoID[,c('geneID','supertaxon','orthoID')]
+    mOrthoID <- mOrthoID[!duplicated(mOrthoID[,1:2]), ]
 
     ### get data set for phyloprofile plotting (contains only supertaxa info)
-    superDf <- subset(fullMdData,select=c('geneID','supertaxon','supertaxonID','maxFas','presSpec','category','traceability'))
+    superDf <- subset(fullMdData,select=c('geneID','supertaxon','supertaxonID','mVar1','presSpec','category','mVar2'))
     superDf <- superDf[!duplicated(superDf), ]
-    superDfExt <- merge(superDf,maxOrthoID, by=c('geneID','supertaxon'),all.x=TRUE)
-    superDfExt <- superDfExt[,c("geneID","supertaxon","supertaxonID","maxFas","presSpec","category","orthoID","traceability")]
+    superDfExt <- merge(superDf,mOrthoID, by=c('geneID','supertaxon'),all.x=TRUE)
+    superDfExt <- superDfExt[,c("geneID","supertaxon","supertaxonID","mVar1","presSpec","category","orthoID","mVar2")]
 
     ### output
-    names(superDfExt)[names(superDfExt)=="maxFas"] <- "fas"
+    names(superDfExt)[names(superDfExt)=="mVar1"] <- "var1"
+    names(superDfExt)[names(superDfExt)=="mVar2"] <- "var2"
     superDfExt
   })
 
@@ -716,8 +771,14 @@ shinyServer(function(input, output, session) {
 
   ######## heatmap data input
   dataHeat <- reactive({
-    percent_cutoff <- input$percent
-    fas_cutoff <- input$fas
+    
+    ### get all cutoffs
+    percent_cutoff_min <- input$percent[1]
+    percent_cutoff_max <- input$percent[2]
+    var1_cutoff_min <- input$var1[1]
+    var1_cutoff_max <- input$var1[2]
+    var2_cutoff_min <- input$var2[1]
+    var2_cutoff_max <- input$var2[2]
 
     ### check input file
     filein <- input$file1
@@ -738,21 +799,18 @@ shinyServer(function(input, output, session) {
     subsetID <- setID[input$stIndex:nrHit,]
     dataHeat <- merge(data,subsetID,by="geneID")
 
-    # ### check input file
-    # filein <- input$file1
-    # if(is.null(filein)){return()}
-    # #      data <- read.table(file=filein$datapath, sep='\t',header=T)
-    # dataHeat <- dataSupertaxa()
-    #
-    # # get selected supertaxon name
-    # split <- strsplit(as.character(input$inSelect),"_")
-    # inSelect <- as.character(split[[1]][1])
-
-    ### replace insufficient values according to the thresholds by NA or 0; and replace FAS 0.0 by NA
-    dataHeat$presSpec[dataHeat$supertaxon != inSelect & dataHeat$presSpec < percent_cutoff] <- 0
-    dataHeat$presSpec[dataHeat$supertaxon != inSelect & dataHeat$fas < fas_cutoff] <- 0
-    dataHeat$fas[dataHeat$supertaxon != inSelect & dataHeat$fas < fas_cutoff] <- NA
-    # dataHeat$fas[dataHeat$fas == 0] <- NA
+    ### replace insufficient values according to the thresholds by NA or 0; and replace var1 0.0 by NA
+    dataHeat$presSpec[dataHeat$supertaxon != inSelect & dataHeat$presSpec < percent_cutoff_min] <- 0
+    dataHeat$presSpec[dataHeat$supertaxon != inSelect & dataHeat$presSpec > percent_cutoff_max] <- 0
+    dataHeat$presSpec[dataHeat$supertaxon != inSelect & dataHeat$var1 < var1_cutoff_min] <- 0
+    dataHeat$presSpec[dataHeat$supertaxon != inSelect & dataHeat$var1 > var1_cutoff_max] <- 0
+    dataHeat$presSpec[dataHeat$supertaxon != inSelect & dataHeat$var2 < var2_cutoff_min] <- 0
+    dataHeat$presSpec[dataHeat$supertaxon != inSelect & dataHeat$var2 > var2_cutoff_max] <- 0
+    
+    dataHeat$var1[dataHeat$supertaxon != inSelect & dataHeat$var1 < var1_cutoff_min] <- NA
+    dataHeat$var1[dataHeat$supertaxon != inSelect & dataHeat$var1 > var1_cutoff_max] <- NA
+    dataHeat$var2[dataHeat$supertaxon != inSelect & dataHeat$var2 < var2_cutoff_min] <- NA
+    dataHeat$var2[dataHeat$supertaxon != inSelect & dataHeat$var2 > var2_cutoff_max] <- NA
 
     dataHeat <- droplevels(dataHeat)  ### delete unused levels
     dataHeat
@@ -765,43 +823,43 @@ shinyServer(function(input, output, session) {
 
         ### plot format
         if(input$xAxis == "genes"){
-          p = ggplot(dataHeat, aes(x = geneID, y = supertaxon)) +        ## global aes
-            scale_fill_gradient(low = input$lowColor_trace, high = input$highColor_trace, na.value="gray95") +   ## fill color (traceability)
-            geom_tile(aes(fill = traceability)) +    ## filled rect (traceability score)
-            geom_point(aes(colour = fas, size = presSpec))  +    ## geom_point for circle illusion (FAS and presence/absence)
-            scale_color_gradient(low = input$lowColor_fas,high = input$highColor_fas)#+       ## color of the corresponding aes (FAS)
-          scale_size(range = c(0,3))             ## to tune the size of circles
+          p = ggplot(dataHeat, aes(x = geneID, y = supertaxon))        ## global aes
+        } else{
+          p = ggplot(dataHeat, aes(y = geneID, x = supertaxon))        ## global aes
+        }
+        
+        p = p + scale_fill_gradient(low = input$lowColor_var2, high = input$highColor_var2, na.value="gray95") +   ## fill color (var2)
+            geom_tile(aes(fill = var2)) +    ## filled rect (var2 score)
+            geom_point(aes(colour = var1, size = presSpec))  +    ## geom_point for circle illusion (var1 and presence/absence)
+            scale_color_gradient(low = input$lowColor_var1,high = input$highColor_var1)#+       ## color of the corresponding aes (var1)
+            scale_size(range = c(0,3))             ## to tune the size of circles
+            #+ stat_binhex()
+        base_size <- 9
+          
+        if(input$xAxis == "genes"){
           p = p + labs(y="Taxon")
-
-          base_size <- 9
           p = p+geom_hline(yintercept=0.5,colour="dodgerblue4")
           p = p+geom_hline(yintercept=1.5,colour="dodgerblue4")
-          p = p+theme(axis.text.x = element_text(angle=60,hjust=1,size=input$xSize),axis.text.y = element_text(size=input$ySize),
-                      axis.title.x = element_text(size=input$xSize), axis.title.y = element_text(size=input$ySize),
-                      legend.title=element_text(size=input$legendSize),legend.text=element_text(size=input$legendSize),legend.position = input$mainLegend)
-        } else {
-          p = ggplot(dataHeat, aes(y = geneID, x = supertaxon)) +        ## global aes
-            scale_fill_gradient(low = input$lowColor_trace, high = input$highColor_trace, na.value="gray95") +   ## fill color (traceability)
-            geom_tile(aes(fill = traceability)) +    ## filled rect (traceability score)
-            geom_point(aes(colour = fas, size = presSpec))  +    ## geom_point for circle illusion (FAS and presence/absence
-            scale_color_gradient(low = input$lowColor_fas,high = input$highColor_fas)#+       ## color of the corresponding aes
-          scale_size(range = c(0,3))             ## to tune the size of circles
+        } else{
           p = p + labs(x="Taxon")
-
-
-          base_size <- 9
           p = p+geom_vline(xintercept=0.5,colour="dodgerblue4")
           p = p+geom_vline(xintercept=1.5,colour="dodgerblue4")
-          p = p+theme(axis.text.x = element_text(angle=60,hjust=1,size=input$xSize),axis.text.y = element_text(size=input$ySize),
+        }
+          
+        p = p+theme(axis.text.x = element_text(angle=60,hjust=1,size=input$xSize),axis.text.y = element_text(size=input$ySize),
                       axis.title.x = element_text(size=input$xSize), axis.title.y = element_text(size=input$ySize),
                       legend.title=element_text(size=input$legendSize),legend.text=element_text(size=input$legendSize),legend.position = input$mainLegend)
-        }
 
         ### highlight taxon
         if(input$taxonHighlight != "none"){
           ## get selected highlight taxon ID
+          rankSelect = input$rankSelect
+          rankName = substr(rankSelect,4,nchar(rankSelect))   # get rank name from rankSelect
           taxaList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T))
-          taxonHighlight <- as.integer(taxaList$ncbiID[taxaList$fullName == input$taxonHighlight])
+          taxonHighlight <- taxaList$ncbiID[taxaList$fullName == input$taxonHighlight & taxaList$rank == rankName]
+          if(length(taxonHighlight) == 0L){
+            taxonHighlight <- taxaList$ncbiID[taxaList$fullName == input$taxonHighlight]
+          }
 
           ## get taxonID together with it sorted index
           highlightTaxon <- toString(dataHeat[dataHeat$supertaxonID == taxonHighlight,2][1])
@@ -810,17 +868,14 @@ shinyServer(function(input, output, session) {
           ## draw a rect to highlight this taxon's column
           if(input$xAxis == "taxa"){
             rect <- data.frame(xmin=selectedIndex-0.5, xmax=selectedIndex+0.5, ymin=-Inf, ymax=Inf)
-            p = p + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax),
-                              color="yellow",
-                              alpha=0.3,
-                              inherit.aes = FALSE)
           } else {
             rect <- data.frame(ymin=selectedIndex-0.5, ymax=selectedIndex+0.5, xmin=-Inf, xmax=Inf)
-            p = p + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax),
-                              color="yellow",
-                              alpha=0.3,
-                              inherit.aes = FALSE)
           }
+          
+          p = p + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax),
+                            color="yellow",
+                            alpha=0.3,
+                            inherit.aes = FALSE)
         }
 
         ### highlight gene
@@ -835,17 +890,14 @@ shinyServer(function(input, output, session) {
           ## draw a rect to highlight this taxon's column
           if(input$xAxis == "taxa"){
             rect <- data.frame(ymin=selectedIndex-0.5, ymax=selectedIndex+0.5, xmin=-Inf, xmax=Inf)
-            p = p + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax),
-                              color="yellow",
-                              alpha=0.3,
-                              inherit.aes = FALSE)
           } else {
             rect <- data.frame(xmin=selectedIndex-0.5, xmax=selectedIndex+0.5, ymin=-Inf, ymax=Inf)
-            p = p + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax),
-                              color="yellow",
-                              alpha=0.3,
-                              inherit.aes = FALSE)
           }
+          
+          p = p + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax),
+                            color="yellow",
+                            alpha=0.3,
+                            inherit.aes = FALSE)
         }
 
         ### do plotting
@@ -944,52 +996,52 @@ shinyServer(function(input, output, session) {
   #   print(par()$fin)
   # })
 
-  output$mainAxis <- renderPlot(bg="transparent",{
-    if(input$autoUpdate == FALSE){
-      # Add dependency on the update button (only update when button is clicked)
-      input$updateBtn
-      isolate({
-        #list <- allTaxaList()
-        p <- mainPlot()
-        g <- ggplotGrob(p)
-
-        if(input$mainXAxisGuide == TRUE & input$mainYAxisGuide == FALSE){
-          s <- gtable_filter(g, 'axis-b', trim=F)  ### filter to get x-axis
-        } else if (input$mainXAxisGuide == FALSE & input$mainYAxisGuide == TRUE){
-          s <- gtable_filter(g, 'axis-l', trim=F)  ### filter to get y-axis
-        } else if (input$mainXAxisGuide == TRUE & input$mainYAxisGuide == TRUE){
-          s <- gtable_filter(g, 'axis-b|axis-l', trim=F)  ### filter to get x-axis and y-axis
-        }
-
-        # draw axis(es)
-        grid.draw(s)
-      })
-    } else {
-      p <- mainPlot()
-      g <- ggplotGrob(p)
-
-      if(input$mainXAxisGuide == TRUE & input$mainYAxisGuide == FALSE){
-        s <- gtable_filter(g, 'axis-b', trim=F)  ### filter to get x-axis
-      } else if (input$mainXAxisGuide == FALSE & input$mainYAxisGuide == TRUE){
-        s <- gtable_filter(g, 'axis-l', trim=F)  ### filter to get y-axis
-      } else if (input$mainXAxisGuide == TRUE & input$mainYAxisGuide == TRUE){
-        s <- gtable_filter(g, 'axis-b|axis-l', trim=F)  ### filter to get x-axis and y-axis
-      }
-      grid.draw(s)
-    }
-  })
-
-  output$mainAxisRender <- renderUI({
-    if(input$autoUpdate == FALSE){
-      # Add dependency on the update button (only update when button is clicked)
-      input$updateBtn
-      isolate({
-        plotOutput("mainAxis", width=input$width, height=input$height)
-      })
-    } else{
-      plotOutput("mainAxis", width=input$width, height=input$height)
-    }
-  })
+  # output$mainAxis <- renderPlot(bg="transparent",{
+  #   if(input$autoUpdate == FALSE){
+  #     # Add dependency on the update button (only update when button is clicked)
+  #     input$updateBtn
+  #     isolate({
+  #       #list <- allTaxaList()
+  #       p <- mainPlot()
+  #       g <- ggplotGrob(p)
+  # 
+  #       if(input$mainXAxisGuide == TRUE & input$mainYAxisGuide == FALSE){
+  #         s <- gtable_filter(g, 'axis-b', trim=F)  ### filter to get x-axis
+  #       } else if (input$mainXAxisGuide == FALSE & input$mainYAxisGuide == TRUE){
+  #         s <- gtable_filter(g, 'axis-l', trim=F)  ### filter to get y-axis
+  #       } else if (input$mainXAxisGuide == TRUE & input$mainYAxisGuide == TRUE){
+  #         s <- gtable_filter(g, 'axis-b|axis-l', trim=F)  ### filter to get x-axis and y-axis
+  #       }
+  # 
+  #       # draw axis(es)
+  #       grid.draw(s)
+  #     })
+  #   } else {
+  #     p <- mainPlot()
+  #     g <- ggplotGrob(p)
+  # 
+  #     if(input$mainXAxisGuide == TRUE & input$mainYAxisGuide == FALSE){
+  #       s <- gtable_filter(g, 'axis-b', trim=F)  ### filter to get x-axis
+  #     } else if (input$mainXAxisGuide == FALSE & input$mainYAxisGuide == TRUE){
+  #       s <- gtable_filter(g, 'axis-l', trim=F)  ### filter to get y-axis
+  #     } else if (input$mainXAxisGuide == TRUE & input$mainYAxisGuide == TRUE){
+  #       s <- gtable_filter(g, 'axis-b|axis-l', trim=F)  ### filter to get x-axis and y-axis
+  #     }
+  #     grid.draw(s)
+  #   }
+  # })
+  # 
+  # output$mainAxisRender <- renderUI({
+  #   if(input$autoUpdate == FALSE){
+  #     # Add dependency on the update button (only update when button is clicked)
+  #     input$updateBtn
+  #     isolate({
+  #       plotOutput("mainAxis", width=input$width, height=input$height)
+  #     })
+  #   } else{
+  #     plotOutput("mainAxis", width=input$width, height=input$height)
+  #   }
+  # })
 
   ########### download main plot
   output$plotDownload <- downloadHandler(
@@ -1031,10 +1083,10 @@ shinyServer(function(input, output, session) {
       # get supertaxon (spec)
       supertaxa <- levels(dataHeat$supertaxon)
       spec <- toString(supertaxa[corX])
-      # get FAS, percentage of present species and traceability score
-      FAS <- dataHeat$fas[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
+      # get var1, percentage of present species and var2 score
+      var1 <- dataHeat$var1[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
       Percent <- dataHeat$presSpec[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
-      Trace <- dataHeat$traceability[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
+      Trace <- dataHeat$var2[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
       # get ortholog ID
       orthoID <- dataHeat$orthoID[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
 
@@ -1052,7 +1104,7 @@ shinyServer(function(input, output, session) {
       ### return info of clicked point
       if(is.na(as.numeric(Percent))){return()}
       else{
-        info <- c(geneID,as.character(orthoID),as.character(spec),round(as.numeric(FAS),2),round(as.numeric(Percent),2),round(as.numeric(Trace),2),pos)
+        info <- c(geneID,as.character(orthoID),as.character(spec),round(as.numeric(var1),2),round(as.numeric(Percent),2),round(as.numeric(Trace),2),pos)
       }
     }
   })
@@ -1067,51 +1119,65 @@ shinyServer(function(input, output, session) {
     pos <- info[7]
   })
 
-  #############################################################
-  ############## PLOT FAS SCORE DISTRIBUTION ##################
-  #############################################################
+  ###################################################################
+  #### PLOT var1/var2 SCORE & % OF PRESENT SPECIES DISTRIBUTION #####
+  ###################################################################
 
-  #######
-  fasDistPlot <- function(){
+  ###### var1 / var2 distribution data
+  distDf <- reactive({
     if (v$doPlot == FALSE) return()
-
+    
     # open main input file
     filein <- input$file1
     dataOrig <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
-
+    
     # convert into long format and remove line that contain NA (no ortholog)
     mdData <- melt(dataOrig,id="geneID")
-    mdData <- mdData[!is.na(mdData$value),]
-
-    # split "orthoID#fas" into 2 columns
-    splitDt <- as.data.frame(str_split_fixed(mdData$value, '#', 2))
-    colnames(splitDt) <- c("orthoID","fas")
-
-    # convert factor into numeric for "fas" column
-    splitDt$fas<-as.numeric(as.character(splitDt$fas))
-
-    # filter splitDt based on selected FAS cutoff
-    splitDt <- splitDt[splitDt$fas >= input$fas,]
-
-    # calculate mean FAS score
+    #    mdData <- mdData[!is.na(mdData$value),]
+    
+    # split "orthoID#var1#var2" into 3 columns
+    splitDt <- as.data.frame(str_split_fixed(mdData$value, '#', 3))
+    colnames(splitDt) <- c("orthoID","var1","var2")
+    splitDt <- splitDt[splitDt$var1 != "NA",]
+    
+    # convert factor into numeric for "var1" & "var2" column
+    splitDt$var1<-as.numeric(as.character(splitDt$var1))
+    splitDt$var2<-as.numeric(as.character(splitDt$var2))
+    
+    # filter splitDt based on selected var1 cutoff
+    splitDt <- splitDt[splitDt$var1 >= input$var1[1] & splitDt$var1 <= input$var1[2],]
+    # filter splitDt based on selected var2 cutoff
+    splitDt <- splitDt[splitDt$var2 >= input$var2[1] & splitDt$var2 <= input$var2[2],]
+    
+    # return dt
     splitDt$type <- "none"
-    cdat <- ddply(splitDt, "type", summarise, rating.mean=mean(fas))
+    splitDt
+  })
+  
+  ###### var1 score distribution plot
+  var1DistPlot <- function(){
+    if (v$doPlot == FALSE) return()
 
-    # plot FAS score distribution
-    p <- ggplot(splitDt, aes(x=fas)) +
+    splitDt <- distDf()
+    # calculate mean var1 score
+    cdat <- ddply(splitDt, "type", summarise, rating.mean=mean(var1))
+
+    # plot var1 score distribution
+    p <- ggplot(splitDt, aes(x=var1)) +
       geom_histogram(binwidth=.01, alpha=.5, position="identity") +
       geom_vline(data=cdat, aes(xintercept=rating.mean,  colour=type),
                  linetype="dashed", size=1) +
-      ggtitle(paste("Mean FAS score = ",round(mean(splitDt$fas),3)))
+      ggtitle(paste("Mean",input$var1_id,"=",round(mean(splitDt$var1),3))) +
+      theme_minimal()
     p <- p + theme(legend.position = "none",
                    plot.title = element_text(hjust = 0.5),
                    axis.title.x = element_text(size=input$xSize),axis.text.x = element_text(size=input$xSize),
                    axis.title.y = element_text(size=input$ySize),axis.text.y = element_text(size=input$ySize)) +
-         labs(x = "FAS score", y = "Frequency")
+         labs(x = input$var1_id, y = "Frequency")
     p
   }
 
-  output$fasDistPlot <- renderPlot(width = 512, height = 356,{
+  output$var1DistPlot <- renderPlot(width = 512, height = 356,{
     if(input$autoUpdate == FALSE){
       # Add dependency on the update button (only update when button is clicked)
       input$updateBtn
@@ -1120,14 +1186,14 @@ shinyServer(function(input, output, session) {
       # wrap in an isolate() so that the data won't update every time an input
       # is changed
       isolate({
-        fasDistPlot()
+        var1DistPlot()
       })
     } else {
-      fasDistPlot()
+      var1DistPlot()
     }
   })
 
-  output$fasDist.ui <- renderUI({
+  output$var1Dist.ui <- renderUI({
     if(v$doPlot == FALSE){
       return()
     } else{
@@ -1140,17 +1206,189 @@ shinyServer(function(input, output, session) {
         # wrap in an isolate() so that the data won't update every time an input
         # is changed
         isolate({
-            plotOutput("fasDistPlot",width=input$width,height = input$height)
+            plotOutput("var1DistPlot",width=input$width,height = input$height)
         })
       }
       ## if autoupdate is true
       else {
-        plotOutput("fasDistPlot",width=input$width,height = input$height)
+        plotOutput("var1DistPlot",width=input$width,height = input$height)
+      }
+    }
+  })
+  
+  ###### var2 score distribution plot
+  var2DistPlot <- function(){
+    if (v$doPlot == FALSE) return()
+    
+    splitDt <- distDf()
+    # calculate mean var1 score
+    cdat <- ddply(splitDt, "type", summarise, rating.mean=mean(var2))
+    
+    # plot var1 score distribution
+    p <- ggplot(splitDt, aes(x=var2)) +
+      geom_histogram(binwidth=.01, alpha=.5, position="identity") +
+      geom_vline(data=cdat, aes(xintercept=rating.mean,  colour=type),
+                 linetype="dashed", size=1) +
+      ggtitle(paste("Mean",input$var2_id,"=",round(mean(splitDt$var2),3))) +
+      theme_minimal()
+    p <- p + theme(legend.position = "none",
+                   plot.title = element_text(hjust = 0.5),
+                   axis.title.x = element_text(size=input$xSize),axis.text.x = element_text(size=input$xSize),
+                   axis.title.y = element_text(size=input$ySize),axis.text.y = element_text(size=input$ySize)) +
+      labs(x = input$var2_id, y = "Frequency")
+    p
+  }
+  
+  output$var2DistPlot <- renderPlot(width = 512, height = 356,{
+    if(input$autoUpdate == FALSE){
+      # Add dependency on the update button (only update when button is clicked)
+      input$updateBtn
+      
+      # Add all the filters to the data based on the user inputs
+      # wrap in an isolate() so that the data won't update every time an input
+      # is changed
+      isolate({
+        var2DistPlot()
+      })
+    } else {
+      var2DistPlot()
+    }
+  })
+  
+  output$var2Dist.ui <- renderUI({
+    if(v$doPlot == FALSE){
+      return()
+    } else{
+      ## if autoupdate is NOT selected, use updateBtn to trigger plot changing
+      if(input$autoUpdate == FALSE){
+        # Add dependency on the update button (only update when button is clicked)
+        input$updateBtn
+        
+        # Add all the filters to the data based on the user inputs
+        # wrap in an isolate() so that the data won't update every time an input
+        # is changed
+        isolate({
+          plotOutput("var2DistPlot",width=input$width,height = input$height)
+        })
+      }
+      ## if autoupdate is true
+      else {
+        plotOutput("var2DistPlot",width=input$width,height = input$height)
       }
     }
   })
 
+  ####### % present species distribution plot
+  
+  ## calculate % present species for input file
+  presSpecAllDt <- reactive({
+    # open main input file
+    filein <- input$file1
+    data <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+    
+    # convert into paired columns
+    mdData <- melt(data,id="geneID")
+    
+    # split value column into orthoID, var1 & var2
+    splitDt <- (str_split_fixed(mdData$value, '#', 3))
+    # then join them back to mdData
+    mdData <- cbind(mdData,splitDt)
+    # rename columns
+    colnames(mdData) <- c("geneID","ncbiID","value","orthoID","var1","var2")
+    mdData <- mdData[,c("geneID","ncbiID","var1","orthoID","var2")]
 
+    ### (3) GET SORTED TAXONOMY LIST (3) ###
+    taxaList <- sortedTaxaList()
+    
+    # calculate frequency of all supertaxa
+    taxaCount <- plyr::count(taxaList,'supertaxon')
+    
+    # merge mdData, mdDataTrace and taxaList to get taxonomy info
+    taxaMdData <- merge(mdData,taxaList,by='ncbiID')
+    taxaMdData$var1 <- as.numeric(as.character(taxaMdData$var1))
+    taxaMdData$var2 <- as.numeric(as.character(taxaMdData$var2))
+    
+    # calculate % present species
+    finalPresSpecDt <- calcPresSpec(taxaMdData, taxaCount)
+    
+    finalPresSpecDt
+  })
+  
+  ## % presSpec distribution plot
+  presSpecPlot <- function(){
+    if (v$doPlot == FALSE) return()
+    
+    # data
+    dt <- presSpecAllDt()
+    # remove presSpec < cutoff_min or > cutoff_max
+    if(input$percent[1] > 0){
+      dt <- dt[dt$presSpec >= input$percent[1] & dt$presSpec <= input$percent[2],]
+    } else {
+      if(input$percent[2] > 0){
+        dt <- dt[dt$presSpec > 0 & dt$presSpec <= input$percent[2],]
+      } else {
+        dt <- dt[dt$presSpec > 0,]
+      }
+    }
+    
+    # calculate mean presSpec score
+    dt$type <- "none"
+    cdat <- ddply(dt, "type", summarise, rating.mean=mean(presSpec))
+    
+    # plot presSpec distribution
+    p <- ggplot(dt, aes(x=presSpec)) +
+      geom_histogram(binwidth=.01, alpha=.5, position="identity") +
+      geom_vline(data=cdat, aes(xintercept=rating.mean,  colour=type),
+                 linetype="dashed", size=1) +
+      ggtitle(paste("Mean % present taxa = ",round(mean(dt$presSpec),3))) +
+      theme_minimal()
+    p <- p + theme(legend.position = "none",
+                   plot.title = element_text(hjust = 0.5),
+                   axis.title.x = element_text(size=input$xSize),axis.text.x = element_text(size=input$xSize),
+                   axis.title.y = element_text(size=input$ySize),axis.text.y = element_text(size=input$ySize)) +
+      labs(x = "% present taxa", y = "Frequency")
+    p
+  }
+
+  output$presSpecPlot <- renderPlot(width = 512, height = 356,{
+    if(input$autoUpdate == FALSE){
+      # Add dependency on the update button (only update when button is clicked)
+      input$updateBtn
+      
+      # Add all the filters to the data based on the user inputs
+      # wrap in an isolate() so that the data won't update every time an input
+      # is changed
+      isolate({
+        presSpecPlot()
+      })
+    } else {
+      presSpecPlot()
+    }
+  })
+
+  output$presSpec.ui <- renderUI({
+    if(v$doPlot == FALSE){
+      return()
+    } else{
+      ## if autoupdate is NOT selected, use updateBtn to trigger plot changing
+      if(input$autoUpdate == FALSE){
+        # Add dependency on the update button (only update when button is clicked)
+        input$updateBtn
+        
+        # Add all the filters to the data based on the user inputs
+        # wrap in an isolate() so that the data won't update every time an input
+        # is changed
+        isolate({
+          plotOutput("presSpecPlot",width=input$width,height = input$height)
+        })
+      }
+      ## if autoupdate is true
+      else {
+        plotOutput("presSpecPlot",width=input$width,height = input$height)
+      }
+    }
+  })
+  
   #############################################################
   ################# PLOT SELECTED SEQUENCES ###################
   #############################################################
@@ -1192,36 +1430,31 @@ shinyServer(function(input, output, session) {
 
       ### plotting
       if(input$xAxis_selected == "taxa"){
-        p = ggplot(dataHeat, aes(y = geneID, x = supertaxon)) +        ## global aes
-          scale_fill_gradient(low = input$lowColor_trace, high = input$highColor_trace, na.value="gray95") +   ## fill color (traceability)
-          geom_tile(aes(fill = traceability)) +# + scale_fill_gradient(low="gray95", high="red")) +    ## filled rect (traceability score)
-          geom_point(aes(colour = fas, size = presSpec))  +    ## geom_point for circle illusion (FAS and presence/absence)
-          scale_color_gradient(low = input$lowColor_fas,high = input$highColor_fas)#+       ## color of the corresponding aes (FAS)
-        scale_size(range = c(0,3))             ## to tune the size of circles
-        p = p + labs(x="Taxon")
-
-        base_size <- 9
-        p = p+geom_vline(xintercept=0.5,colour="dodgerblue4")
-        p = p+geom_vline(xintercept=1.5,colour="dodgerblue4")
-        p = p+theme(axis.text.x = element_text(angle=60,hjust=1,size=input$xSizeSelect),axis.text.y = element_text(size=input$ySizeSelect),
-                    axis.title.x = element_text(size=input$xSizeSelect), axis.title.y = element_text(size=input$ySizeSelect),
-                    legend.title=element_text(size=input$legendSizeSelect),legend.text=element_text(size=input$legendSizeSelect),legend.position=input$selectedLegend)
+        p = ggplot(dataHeat, aes(y = geneID, x = supertaxon))        ## global aes
       } else {
-        p = ggplot(dataHeat, aes(x = geneID, y = supertaxon)) +        ## global aes
-          scale_fill_gradient(low = input$lowColor_trace, high = input$highColor_trace, na.value="gray95") +   ## fill color (traceability)
-          geom_tile(aes(fill = traceability)) +    ## filled rect (traceability score)
-          geom_point(aes(colour = fas, size = presSpec))  +    ## geom_point for circle illusion (FAS and presence/absence)
-          scale_color_gradient(low = input$lowColor_fas,high = input$highColor_fas)#+       ## color of the corresponding aes (FAS)
-        scale_size(range = c(0,3))             ## to tune the size of circles
-        p = p + labs(y="Taxon")
-
-        base_size <- 9
+        p = ggplot(dataHeat, aes(x = geneID, y = supertaxon))
+      }
+      
+      p = p + scale_fill_gradient(low = input$lowColor_var2, high = input$highColor_var2, na.value="gray95") +   ## fill color (var2)
+          geom_tile(aes(fill = var2)) +# + scale_fill_gradient(low="gray95", high="red")) +    ## filled rect (var2 score)
+          geom_point(aes(colour = var1, size = presSpec))  +    ## geom_point for circle illusion (var1 and presence/absence)
+          scale_color_gradient(low = input$lowColor_var1,high = input$highColor_var1)#+       ## color of the corresponding aes (var1)
+          scale_size(range = c(0,3))             ## to tune the size of circles
+      base_size <- 9
+      
+      if(input$xAxis_selected == "taxa"){
+        p = p + labs(x="Taxon")
         p = p+geom_vline(xintercept=0.5,colour="dodgerblue4")
         p = p+geom_vline(xintercept=1.5,colour="dodgerblue4")
-        p = p+theme(axis.text.x = element_text(angle=60,hjust=1,size=input$xSizeSelect),axis.text.y = element_text(size=input$ySizeSelect),
+      } else {
+        p = p + labs(y="Taxon")
+        p = p+geom_hline(yintercept=0.5,colour="dodgerblue4")
+        p = p+geom_hline(yintercept=1.5,colour="dodgerblue4")
+      }
+ 
+      p = p+theme(axis.text.x = element_text(angle=60,hjust=1,size=input$xSizeSelect),axis.text.y = element_text(size=input$ySizeSelect),
                     axis.title.x = element_text(size=input$xSizeSelect), axis.title.y = element_text(size=input$ySizeSelect),
                     legend.title=element_text(size=input$legendSizeSelect),legend.text=element_text(size=input$legendSizeSelect),legend.position=input$selectedLegend)
-      }
 
       ### do plotting
       if(input$autoUpdateSelected == FALSE){
@@ -1329,7 +1562,7 @@ shinyServer(function(input, output, session) {
   ######## get info of a clicked point on selected plot (also the same as get info from main plot)
   selectedPointInfo <- reactive({
     ### check input
-    if (v$doPlot == FALSE) return()
+    if (v2$doPlotCustom == FALSE) return()
 
     # get selected supertaxon name
     taxaList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T))
@@ -1373,16 +1606,16 @@ shinyServer(function(input, output, session) {
       # get supertaxon (spec)
       supertaxa <- levels(dataHeat$supertaxon)
       spec <- toString(supertaxa[corX])
-      # get FAS, percentage of present species and traceability score
-      FAS <- dataHeat$fas[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
+      # get var1, percentage of present species and var2 score
+      var1 <- dataHeat$var1[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
       Percent <- dataHeat$presSpec[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
-      Trace <- dataHeat$traceability[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
+      Trace <- dataHeat$var2[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
       # get ortholog ID
       orthoID <- dataHeat$orthoID[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
 
       if(is.na(as.numeric(Percent))){return()}
       else{
-        info <- c(geneID,as.character(orthoID),as.character(spec),round(as.numeric(FAS),2),round(as.numeric(Percent),2),round(as.numeric(Trace),2))
+        info <- c(geneID,as.character(orthoID),as.character(spec),round(as.numeric(var1),2),round(as.numeric(Percent),2),round(as.numeric(Trace),2))
       }
     }
   })
@@ -1394,14 +1627,13 @@ shinyServer(function(input, output, session) {
 
   ######## show info into "point's info" box
   output$pointInfo <- renderText({
-    ### check input
-    if (v$doPlot == FALSE) return()
-
     ##### GET INFO BASED ON CURRENT TAB
     if(input$tabs == 'Main profile'){
-      info <- mainPointInfo()  # info = groupID,orthoID,supertaxon,maxFAS,%spec,trace
+      info <- mainPointInfo()  # info = groupID,orthoID,supertaxon,mVar1,%spec,trace
     } else if(input$tabs=='Customized profile'){
       info <- selectedPointInfo()
+    } else {
+      return ()
     }
 
     if(is.null(info)){return()}
@@ -1420,9 +1652,10 @@ shinyServer(function(input, output, session) {
       a <- toString(paste("Seed-ID:",info[1]))
       #b <- toString(paste(substr(info[3],6,nchar(info[3]))))
       b <- toString(paste0("Hit-ID: ",orthoID," (",substr(info[3],6,nchar(info[3])),")"))
-      c <- toString(paste("maxFas:",info[4],"; %spec:",info[5]))
-      d <- toString(paste("traceability:",info[6]))
-      paste(a,b,c,d,sep="\n")
+      c <- toString(paste(input$var1_aggregateBy,input$var1_id,":",info[4]))
+      d <- toString(paste(input$var2_aggregateBy,input$var2_id,":",info[6]))
+      e <- toString(paste("% present taxa:",info[5]))
+      paste(a,b,c,d,e,sep="\n")
     }
   })
 
@@ -1431,13 +1664,13 @@ shinyServer(function(input, output, session) {
   ##################### DETAILED PLOT #########################
   #############################################################
 
-  ######## data for detailed FAS plot
+  ######## data for detailed plot
   detailPlotDt <- reactive({
     if (v$doPlot == FALSE) return()
 
     ##### GET INFO BASED ON CURRENT TAB
     if(input$tabs == 'Main profile'){
-      info <- mainPointInfo()  # info = groupID,orthoID,supertaxon,maxFAS,%spec,trace
+      info <- mainPointInfo()  # info = groupID,orthoID,supertaxon,mVar1,%spec,trace
     } else if(input$tabs=='Customized profile'){
       info <- selectedPointInfo()
     }
@@ -1453,18 +1686,30 @@ shinyServer(function(input, output, session) {
     }
   })
 
-  ######## render detailed FAS plot
+  ######## render detailed plot
   output$detailPlot <- renderPlot({
     if (v$doPlot == FALSE) return()
 
     selDf <- detailPlotDt()
     selDf$x_label <- paste(selDf$orthoID,"@",selDf$fullName,sep = "")
+    
+    ### create joined DF for plotting var1 next to var2
+    var1Df <- subset(selDf, select = c("x_label","var1"))
+    var1Df$type <- input$var1_id
+    colnames(var1Df) <- c("id","score","var")
+    var2Df <- subset(selDf, select = c("x_label","var2"))
+    var2Df$type <- input$var2_id
+    colnames(var2Df) <- c("id","score","var")
+    
+    detailedDf <- rbind(var1Df,var2Df)
 
-    gp = ggplot(selDf, aes(y=fas,x=x_label)) +
-      geom_bar(colour="steelblue", fill="steelblue", stat="identity") +
+    ### create plot
+    gp = ggplot(detailedDf, aes(y=score,x=id,fill=var)) +
+      geom_bar(stat="identity", position=position_dodge()) +
       coord_flip() +
-      labs(x="") #+
-    #geom_text(aes(label=fas), vjust=3)
+      labs(x="") +
+      theme_minimal()
+    #geom_text(aes(label=var1), vjust=3)
     gp = gp+theme(axis.text.x = element_text(angle=90,hjust=1))
     gp
   })
@@ -1502,25 +1747,25 @@ shinyServer(function(input, output, session) {
       corY = round(input$plot_click_detail$x)
     }
 
-    ### get pair of sequence IDs & FAS
+    ### get pair of sequence IDs & var1
     seedID <- toString(selDf$geneID[1])
     orthoID <- toString(allOrthoID[corX])
-    fas <- toString(selDf$fas[selDf$orthoID==orthoID])
+    var1 <- toString(selDf$var1[selDf$orthoID==orthoID])
 
     ### return info
     if(orthoID != "NA"){
-      info <- c(seedID,orthoID,fas)
+      info <- c(seedID,orthoID,var1)
     }
   })
 
   ### SHOW info when clicking on detailed plot
   output$detailClick <- renderText({
-    info <- pointInfoDetail() # info = seedID, orthoID, FAS
+    info <- pointInfoDetail() # info = seedID, orthoID, var1
     if(is.null(info)){return()}
     else{
       a <- paste0("seedID = ",info[1])
       b <- paste0("hitID = ",info[2])
-      c <- paste0("FAS = ",info[3])
+      c <- paste0("var1 = ",info[3])
       paste(a,b,c,sep="\n")
     }
   })
@@ -1529,7 +1774,7 @@ shinyServer(function(input, output, session) {
   output$fasta <- renderText({
     if(v$doPlot == FALSE){return()}
 
-    info <- pointInfoDetail() # info = seedID, orthoID, FAS
+    info <- pointInfoDetail() # info = seedID, orthoID, var1
     if(is.null(info)){return()}
     else{
       seqID <- toString(info[2])
@@ -1584,13 +1829,13 @@ shinyServer(function(input, output, session) {
     if (v3$doPlot3 == FALSE) return()
 
     ### info
-    info <- pointInfoDetail() # info = seedID, orthoID, FAS
+    info <- pointInfoDetail() # info = seedID, orthoID, var1
     group <- as.character(info[1])
     ortho <- as.character(info[2])
-    fas <- as.character(info[3])
+    var1 <- as.character(info[3])
 
     ### parse domain file
-    filein3 <- input$file3
+    filein3 <- input$fileDomain
     if(is.null(filein3)){
       v3$doPlot3 = FALSE
     } else {
@@ -1630,18 +1875,18 @@ shinyServer(function(input, output, session) {
 
       ### change order of one dataframe's features based on order of other df's features
       if(length(orthoDf$feature) < length(seedDf$feature)){
-        orthoDf <- orthoDf[order(orthoDf$feature), ]
-        seedDf$feature <- factor(seedDf$feature, levels=c(orthoDf$feature,seedDf$feature[seedDf$feature != orthoDf$feature]))
+        orderedOrthoDf <- orthoDf[order(orthoDf$feature), ]
+        orderedSeedDf <- sortDomains(orderedOrthoDf, seedDf)
       } else {
-        seedDf <- seedDf[order(seedDf$feature), ]
-        orthoDf$feature <- factor(orthoDf$feature, levels=c(seedDf$feature,orthoDf$feature[orthoDf$feature != seedDf$feature]))
+        orderedSeedDf <- seedDf[order(seedDf$feature), ]
+        orderedOrthoDf <- sortDomains(orderedSeedDf, orthoDf)
       }
 
       ### plotting
       sep = ":"
       if(!is.null(input$oneSeqFasta)){sep="|"}
-      plot_ortho <- plotting(orthoDf,ortho,fas,sep,input$labelArchiSize,input$titleArchiSize,min(subDomainDf$start),max(subDomainDf$end))
-      plot_seed <- plotting(seedDf,seed,fas,sep,input$labelArchiSize,input$titleArchiSize,min(subDomainDf$start),max(subDomainDf$end))
+      plot_ortho <- domain.plotting(orderedOrthoDf,ortho,var1,sep,input$labelArchiSize,input$titleArchiSize,min(subDomainDf$start),max(subDomainDf$end))
+      plot_seed <- domain.plotting(orderedSeedDf,seed,var1,sep,input$labelArchiSize,input$titleArchiSize,min(subDomainDf$start),max(subDomainDf$end))
 
       # grid.arrange(plot_seed,plot_ortho,ncol=1)
       arrangeGrob(plot_seed,plot_ortho,ncol=1)
@@ -1662,7 +1907,7 @@ shinyServer(function(input, output, session) {
         "<p><span style=\"color: #ff0000;\"><strong>No information about domain architecture! Please check:</strong></span></p>
         <ul style=\"list-style-type: square;\">
         <li>if you selected any sequence in the Detailed plot?</li>
-        <li>if you uploaded the domain file using Upload additional file(s) option? (see input example in data/lca.FASmatrix.mDomains)</li>
+        <li>if you uploaded the domain file using Upload additional file(s) option? (see input example in data/demo/test.domains)</li>
         </ul>"
       )
       HTML(msg)
@@ -1696,9 +1941,11 @@ shinyServer(function(input, output, session) {
     dataOut <- as.data.frame(dataOut[dataOut$presSpec > 0,])
     dataOut <- dataOut[!is.na(dataOut$geneID),]
 
-    dataOut <- as.data.frame(dataOut[dataOut$presSpec >= input$percent & dataOut$fas >= input$fas,])
+    dataOut <- as.data.frame(dataOut[dataOut$presSpec >= input$percent[1] 
+                                     & dataOut$var1 >= input$var1[1] & dataOut$var1 <= input$var1[2]
+                                     & dataOut$var2 >= input$var2[1] & dataOut$var2 <= input$var2[2],])
 
-    dataOut <- dataOut[,c("geneID","orthoID","fullName","ncbiID","supertaxon","fas","numberSpec","presSpec","traceability")]
+    dataOut <- dataOut[,c("geneID","orthoID","fullName","ncbiID","supertaxon","var1","var2","numberSpec","presSpec")]
     dataOut <- dataOut[order(dataOut$geneID,dataOut$supertaxon),]
     dataOut <- dataOut[complete.cases(dataOut),]
 
@@ -1706,12 +1953,15 @@ shinyServer(function(input, output, session) {
     dataOut$fullName <- as.character(dataOut$fullName)
     dataOut$ncbiID <- substr(dataOut$ncbiID,5,nchar(as.character(dataOut$ncbiID)))
     dataOut$supertaxon <- substr(dataOut$supertaxon,6,nchar(as.character(dataOut$supertaxon)))
-    dataOut$fas <- as.character(dataOut$fas)
+    dataOut$var1 <- as.character(dataOut$var1)
+    dataOut$var2 <- as.character(dataOut$var2)
     dataOut$numberSpec <- as.integer(dataOut$numberSpec)
     dataOut$presSpec <- as.numeric(dataOut$presSpec)
 
     names(dataOut)[names(dataOut)=="presSpec"] <- "%Spec"
     names(dataOut)[names(dataOut)=="numberSpec"] <- "totalSpec"
+    names(dataOut)[names(dataOut)=="var1"] <- input$var1_id
+    names(dataOut)[names(dataOut)=="var2"] <- input$var2_id
     dataOut <- as.matrix(dataOut)
     dataOut
   })
@@ -1731,11 +1981,12 @@ shinyServer(function(input, output, session) {
     #data <- allTaxaList()
     #data <- sortedTaxaList()
     #data <- preDataFiltered()
-    data <- dataFiltered()
+    #data <- dataFiltered()
     #data <- dataSupertaxa()
     #data <- dataHeat()
     #data <- detailPlotDt()
-    #data <- downloadData()
+    #data <- presSpecAllDt()
+    data <- downloadData()
     data
   })
 
@@ -1757,13 +2008,13 @@ shinyServer(function(input, output, session) {
       <li>NA#NA: there is no ortholog has been found for this taxon</li>
       </ul>
       <p>The header of first column has to be "geneID". The header of each taxon must have this format "ncbi12345", in which 12345 is its NCBI taxon ID.</p>
-      <p><em>More detail? Pleas take a look at the example file in /data/lca.FASmatrix :)</em></p>
+      <p><em>More detail? Pleas take a look at the example file in /data/demo/test.main :)</em></p>
       <p>&nbsp;</p>
       <h1 style="color: #5e9ca0;">Additional files</h1>
       <p>2 additional input files can be provided are traceability score matrix and feature domain position list.</p>
       <p><strong>Traceability score matrix</strong> must have the same first row (beginning with "geneID" and followed by list of taxa) and first column (list of genes). <span style="color: #ff0000;"><strong>IMPORTANT</strong>: the <span style="text-decoration: underline;">amount</span> and <span style="text-decoration: underline;">order</span> of genes between 2 input matrixes have to be exactly the same!!</span>&nbsp;</p>
       <p><strong>Feature domain position list</strong>&nbsp;has 6 columns separated by tab: (1) pairID = groupID#searchProt_ID#seedID, (2) searchProt_ID, (3) feature name (pfam domain, smart domain,etc.), (4) start position, (5) end position, (6) weight value (only available for seed protein)</p>
-      <p><em>Pleas take a look at the example files &nbsp;lca.Tracematrix and lca.FASmatrix.mDomains in data/ folder for more details :)</em></p>
+      <p><em>Pleas take a look at the example files &nbsp;test.traceability and test.domains in data/demo/ folder for more details :)</em></p>
       <p>&nbsp;</p>
       <h1 style="color: #5e9ca0;">Download function does not work</h1>
       <p>Problem: clicked on the "Download plot" (or Download filtered data) button, entered a file name on to "Download file" window and clicked Save, but the file...was not saved :(</p>
@@ -1808,5 +2059,6 @@ shinyServer(function(input, output, session) {
     # fullPath <- paste0("data/",name,".mDomains")
     # print(fullPath)
     # print(input$plot_dblclick$x)
+    # paste(input$var1[1],input$var1[2])
   })
 })
