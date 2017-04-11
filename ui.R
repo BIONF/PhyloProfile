@@ -155,7 +155,7 @@ shinyUI(fluidPage(
              fileInput("mainInput",h5("Presence/absence file:")),
              fluidRow(
                column(5,
-                      textInput("var1_id", h5("First variable:"), value = "Variable 1", width="100%", placeholder="Name of first variable")
+                      uiOutput("var1_id.ui")
                ),
                column(5,
                       selectInput("var1_aggregateBy", label = h5("Aggregate by:"),
@@ -166,7 +166,7 @@ shinyUI(fluidPage(
              ),
              fluidRow(
                column(5,
-                      textInput("var2_id", h5("Second variable:"), value = "Variable 2", width="100%", placeholder="Name of second variable")
+                      uiOutput("var2_id.ui")
                ),
                column(5,
                       selectInput("var2_aggregateBy", label = h5("Aggregate by:"),

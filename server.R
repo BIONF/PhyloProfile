@@ -4,6 +4,7 @@ if (!require("ggplot2")) {install.packages("ggplot2")}
 if (!require("reshape2")) {install.packages("reshape2")}
 if (!require("plyr")) {install.packages("plyr")}
 if (!require("dplyr")) {install.packages("dplyr")}
+if (!require("tidyr")) {install.packages("tidyr")}
 if (!require("scales")) {install.packages("scales")}
 if (!require("grid")) {install.packages("grid")}
 if (!require("gridExtra")) {install.packages("gridExtra")}
@@ -19,6 +20,17 @@ if (!require("Biostrings")) {
 #############################################################
 ######################## FUNCTIONS ##########################
 #############################################################
+
+########## convert long to wide format ##############
+long2wide <- function(inputFile){
+  longDf <- as.data.frame(read.table(file=inputFile$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+  
+  # rename column names 
+  colnames(longDf) <- c("geneID","ncbiID","orthoID","var1","var2")
+  longDf$value <- paste0(longDf$orthoID,"#",longDf$var1,"#",longDf$var2)
+  longDfmod <- longDf[,c("geneID","ncbiID","value")]
+  wideDf <- spread(longDfmod, ncbiID, value)
+}
 
 ########## calculate percentage of present species ##########
 calcPresSpec <- function(taxaMdData, taxaCount){
@@ -146,7 +158,35 @@ shinyServer(function(input, output, session) {
   #############################################################
 
   ######## PARSING VARIABLE 1 AND 2
-  ######## get var1_id and var2_id
+  
+  ######## render textinput for variable 1 & 2
+  output$var1_id.ui <- renderUI({
+    filein <- input$mainInput
+    if(is.null(filein)){return(textInput("var1_id", h5("First variable:"), value = "Variable 1", width="100%", placeholder="Name of first variable"))}    # get var1/var2 names based on input (only if input file in long format table)
+    if(checkLongFormat() == TRUE){
+      headerIn <- readLines(filein$datapath, n = 1)
+      headerIn <- unlist(strsplit(headerIn,split = '\t'))
+
+      textInput("var1_id", h5("First variable:"), value = headerIn[4], width="100%", placeholder="Name of first variable")
+    } else {
+      textInput("var1_id", h5("First variable:"), value = "Variable 1", width="100%", placeholder="Name of first variable")
+    }
+  })
+  
+  output$var2_id.ui <- renderUI({
+    filein <- input$mainInput
+    if(is.null(filein)){return(textInput("var2_id", h5("Second variable:"), value = "Variable 2", width="100%", placeholder="Name of second variable"))}    # get var1/var2 names based on input (only if input file in long format table)
+    if(checkLongFormat() == TRUE){
+      headerIn <- readLines(filein$datapath, n = 1)
+      headerIn <- unlist(strsplit(headerIn,split = '\t'))
+      
+      textInput("var2_id", h5("Second variable:"), value = headerIn[5], width="100%", placeholder="Name of second variable")
+    } else {
+      textInput("var2_id", h5("Second variable:"), value = "Variable 2", width="100%", placeholder="Name of second variable")
+    }
+  })
+  
+  ######## get var1_id and var2_id values
   output$variableID <- reactive({
     ids <- as.list(c(input$var1_id,input$var2_id))
   })
@@ -199,29 +239,29 @@ shinyServer(function(input, output, session) {
   
   ########################################################
   
-  ######## check oneseq fasta file exists
-  output$oneSeq.existCheck <- renderUI({
-    #f <- toString(input$oneseq.file)
-    if(is.null(input$oneSeqFasta)){ return()}
-    else{
-      f <- input$oneSeqFasta$datapath
-      if(!file.exists(f)){
-        helpText("File not exists!!")
-      } else {
-        if(length(readLines(f, n=1)) == 0){
-          helpText("is not a fasta file!!")
-        } else {
-          firstLine <- readLines(f, n=1)
-          a <- substr(firstLine,1,1)
-          if(a == ">"){
-            HTML('<p><span style="color: #0000ff;"><strong>Please click CLOSE to comfirm!</strong></span></p>')
-          } else {
-            helpText("is not a fasta file!!")
-          }
-        }
-      }
-    }
-  })
+  # ######## check oneseq fasta file exists
+  # output$oneSeq.existCheck <- renderUI({
+  #   #f <- toString(input$oneseq.file)
+  #   if(is.null(input$oneSeqFasta)){ return()}
+  #   else{
+  #     f <- input$oneSeqFasta$datapath
+  #     if(!file.exists(f)){
+  #       helpText("File not exists!!")
+  #     } else {
+  #       if(length(readLines(f, n=1)) == 0){
+  #         helpText("is not a fasta file!!")
+  #       } else {
+  #         firstLine <- readLines(f, n=1)
+  #         a <- substr(firstLine,1,1)
+  #         if(a == ">"){
+  #           HTML('<p><span style="color: #0000ff;"><strong>Please click CLOSE to comfirm!</strong></span></p>')
+  #         } else {
+  #           helpText("is not a fasta file!!")
+  #         }
+  #       }
+  #     }
+  #   }
+  # })
 
   ######## reset all parameters of main plot
   observeEvent(input$resetMain, {
@@ -254,6 +294,19 @@ shinyServer(function(input, output, session) {
     shinyjs::reset("highColor_var1")
   })
   
+  ########################################################
+  
+  ######## check if main input file is in long format
+  checkLongFormat <- reactive({
+    filein <- input$mainInput
+    if(is.null(filein)){return()}
+    
+    inputDt <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+    if(is.na(pmatch("ncbi",colnames(inputDt)[3])) || is.na(pmatch("ncbi",colnames(inputDt)[4])) || is.na(pmatch("ncbi",colnames(inputDt)[5]))){
+      return(TRUE)
+    }
+  })
+  
   ######## check if there is any "unknown" taxon in input matrix
   unkTaxa <- reactive({
     filein <- input$mainInput
@@ -263,7 +316,13 @@ shinyServer(function(input, output, session) {
     allTaxa <- unlist(as.list(fread("data/taxonID.list.fullRankID",sep = "\t", select = "abbrName")))
 
     # get list of input taxa (from main input file)
-    inputTaxa <- readLines(filein$datapath, n = 1)
+    if(checkLongFormat() == TRUE){
+      inputMod <- long2wide(filein)
+      inputTaxa <- colnames(inputMod)
+    } else {
+      inputTaxa <- readLines(filein$datapath, n = 1)
+    }
+
     inputTaxa <- unlist(strsplit(inputTaxa,split = '\t'))
     inputTaxa <- inputTaxa[-1]   # remove "geneID" element from vector inputTaxa
 
@@ -314,13 +373,17 @@ shinyServer(function(input, output, session) {
     else{
       if(v1$parseInput == FALSE){return()}
       else{
-        titleline <- readLines(filein$datapath, n=1)
-
+        if(checkLongFormat() == TRUE){
+          inputMod <- long2wide(filein)
+          titleline <- colnames(inputMod)
+        } else {
+          titleline <- readLines(filein$datapath, n=1)
+        }
+        
         # Create 0-row data frame which will be used to store data
         dat <- data.frame(x = numeric(0), y = numeric(0))   ### use for progess bar
         withProgress(message = 'Parsing input file', value = 0, {
           cmd <- paste("perl ", getwd(),"/data/getTaxonomyInfo.pl",
-                       #                 " -i ", getwd(),"/data/",input$mainInput,
                        " -i \"", titleline,"\"",
                        " -n ", getwd(),"/data/taxonNamesFull.txt",
                        " -a ", getwd(),"/data/newTaxa.txt",
@@ -622,14 +685,26 @@ shinyServer(function(input, output, session) {
 
     # get rows need to be read
     nrHit <- input$stIndex + input$number - 1
-    data <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char="",nrows=nrHit))
+    
+    # convert input to wide format (if needed) & get nrHit rows
+    if(checkLongFormat() == TRUE){
+      inputMod <- long2wide(filein)
+      data <- head(inputMod,nrHit)
+    } else {
+      data <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char="",nrows=nrHit))
+    }
 
     # OR just list of gene from a separated input file
     listIn <- input$list
     if(input$geneList_selected == 'from file'){
       if(!is.null(listIn)){
         list <- as.data.frame(read.table(file=listIn$datapath, header=FALSE))
-        dataOrig <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+        
+        if(checkLongFormat() == TRUE){
+          dataOrig <- long2wide(filein)
+        } else {
+          dataOrig <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+        }
         data <- dataOrig[dataOrig$geneID %in% list$V1,]
       }
     }
