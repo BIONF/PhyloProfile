@@ -152,7 +152,7 @@ shinyUI(fluidPage(
                em(strong("RELOAD THIS TOOL TO UPLOAD A NEW INPUT FILE!!!",style = "color:red"))
              ),
              
-             fileInput("file1",h5("Presence/absence file:")),
+             fileInput("mainInput",h5("Presence/absence file:")),
              fluidRow(
                column(5,
                       textInput("var1_id", h5("First variable:"), value = "Variable 1", width="100%", placeholder="Name of first variable")

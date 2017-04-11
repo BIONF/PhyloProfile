@@ -31,7 +31,7 @@ calcPresSpec <- function(taxaMdData, taxaCount){
   taxaMdDataNoNA <- taxaMdData[taxaMdData$orthoID != "NA",]
 #  taxaMdDataNoNA <- taxaMdData[!is.na(taxaMdData$var1),]
 #  taxaMdDataNoNA <- taxaMdData[!is.na(taxaMdData$var2),]
-  
+
   # count present frequency of supertaxon for each gene
   geneSupertaxonCount <- plyr::count(taxaMdDataNoNA,c('geneID','supertaxon'))
   
@@ -256,7 +256,7 @@ shinyServer(function(input, output, session) {
   
   ######## check if there is any "unknown" taxon in input matrix
   unkTaxa <- reactive({
-    filein <- input$file1
+    filein <- input$mainInput
     if(is.null(filein)){return()}
 
     # get list of all available taxon (from taxonID.list.fullRankID)
@@ -290,7 +290,7 @@ shinyServer(function(input, output, session) {
   })
 
   ######## enable "add taxa", "parse" & "upload additional files" button after uploading main file
-  observeEvent(input$file1, ({
+  observeEvent(input$mainInput, ({
     updateButton(session, "parse", disabled = FALSE)
     updateButton(session, "AddFile", disabled = FALSE)
     updateButton(session, "geneList", disabled = FALSE)
@@ -309,7 +309,7 @@ shinyServer(function(input, output, session) {
 
   ######### create taxonID.list.fullRankID and taxonNamesReduced.txt from input file (if confirmed by BUTyes)
   observe({
-    filein <- input$file1
+    filein <- input$mainInput
     if(is.null(filein)){return()}
     else{
       if(v1$parseInput == FALSE){return()}
@@ -320,7 +320,7 @@ shinyServer(function(input, output, session) {
         dat <- data.frame(x = numeric(0), y = numeric(0))   ### use for progess bar
         withProgress(message = 'Parsing input file', value = 0, {
           cmd <- paste("perl ", getwd(),"/data/getTaxonomyInfo.pl",
-                       #                 " -i ", getwd(),"/data/",input$file1,
+                       #                 " -i ", getwd(),"/data/",input$mainInput,
                        " -i \"", titleline,"\"",
                        " -n ", getwd(),"/data/taxonNamesFull.txt",
                        " -a ", getwd(),"/data/newTaxa.txt",
@@ -343,7 +343,7 @@ shinyServer(function(input, output, session) {
   ####### GET list of all (super)taxa
   allTaxaList <- reactive({
     #  output$select = renderUI({
-    filein <- input$file1
+    filein <- input$mainInput
     if(is.null(filein)){return()}
 
     rankSelect = input$rankSelect
@@ -461,7 +461,7 @@ shinyServer(function(input, output, session) {
   observe({
     # use tabsetPanel 'id' argument to change tabs
     if (input$do > 0) {
-      toggleState("file1")
+      toggleState("mainInput")
       toggleState("geneList_selected")
       toggleState("sortGene")
       toggleState("newTaxaAsk")
@@ -503,7 +503,7 @@ shinyServer(function(input, output, session) {
     # 0 will be coerced to FALSE
     # 1+ will be coerced to TRUE
     v$doPlot <- input$do
-    filein <- input$file1
+    filein <- input$mainInput
     if(is.null(filein)){
       v$doPlot <- FALSE
       updateButton(session, "do", disabled = TRUE)
@@ -617,7 +617,7 @@ shinyServer(function(input, output, session) {
   
   preDataFiltered <- reactive({
     ### (1) LOADING INPUT MATRIX (1)
-    filein <- input$file1
+    filein <- input$mainInput
     if(is.null(filein)){return()}
 
     # get rows need to be read
@@ -647,6 +647,10 @@ shinyServer(function(input, output, session) {
     # convert into paired columns
     mdData <- melt(data,id="geneID")
 
+    # replace NA value with "NA#NA" (otherwise the corresponding orthoID will be empty)
+    mdData$value <- as.character(mdData$value)
+    mdData$value[is.na(mdData$value)] <- "NA#NA"
+    
     # split value column into orthoID and var1
     splitDt <- (str_split_fixed(mdData$value, '#', 3))
     # then join them back to mdData
@@ -678,11 +682,17 @@ shinyServer(function(input, output, session) {
 
     ### (6) calculate max/min/mean/median VAR2 for each super taxon (6) ###
     # remove NA rows from taxaMdData
-    taxaMdDataNoNA_trace <- taxaMdData[!is.na(taxaMdData$var2),]
+    taxaMdDataNoNA_var2 <- taxaMdData[!is.na(taxaMdData$var2),]
     # calculate max/min/mean/median VAR2
-    mVar2Dt <- aggregate(taxaMdDataNoNA_trace[,"var2"],list(taxaMdDataNoNA_trace$supertaxon,taxaMdDataNoNA_trace$geneID),FUN=input$var2_aggregateBy)
-    colnames(mVar2Dt) <- c("supertaxon","geneID","mVar2")
-
+    if(nrow(taxaMdDataNoNA_var2) > 0){
+      mVar2Dt <- aggregate(taxaMdDataNoNA_var2[,"var2"],list(taxaMdDataNoNA_var2$supertaxon,taxaMdDataNoNA_var2$geneID),FUN=input$var2_aggregateBy)
+      colnames(mVar2Dt) <- c("supertaxon","geneID","mVar2")
+    } else {
+      mVar2Dt <- taxaMdData[,c("supertaxon","geneID")]
+      mVar2Dt$mVar2 <- 0
+    }
+    
+    
     ### (5+6) & join mVar2 together with mVar1 scores into one df (5+6)
     scoreDf <- merge(mVar1Dt,mVar2Dt, by=c("supertaxon","geneID"), all = TRUE)
 
@@ -731,7 +741,7 @@ shinyServer(function(input, output, session) {
 
   ######## get list of all sequence IDs for selectize input
   output$geneIn = renderUI({
-    filein <- input$file1
+    filein <- input$mainInput
     fileCustom <- input$customFile
 
     if(is.null(filein) & is.null(fileCustom)){return(selectInput('inSeq','',"all"))}
@@ -755,7 +765,7 @@ shinyServer(function(input, output, session) {
 
   ######## get list of all taxa for selectize input
   output$taxaIn = renderUI({
-    filein <- input$file1
+    filein <- input$mainInput
     if(is.null(filein)){return(selectInput('inTaxa','Select (super)taxon/(super)taxa of interest:',"all"))}
     if(v$doPlot == FALSE){return(selectInput('inTaxa','Select (super)taxon/(super)taxa of interest:',"all"))}
     else{
@@ -781,7 +791,7 @@ shinyServer(function(input, output, session) {
     var2_cutoff_max <- input$var2[2]
 
     ### check input file
-    filein <- input$file1
+    filein <- input$mainInput
     if(is.null(filein)){return()}
     #      data <- read.table(file=filein$datapath, sep='\t',header=T)
     data <- dataSupertaxa()
@@ -1128,7 +1138,7 @@ shinyServer(function(input, output, session) {
     if (v$doPlot == FALSE) return()
     
     # open main input file
-    filein <- input$file1
+    filein <- input$mainInput
     dataOrig <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
     
     # convert into long format and remove line that contain NA (no ortholog)
@@ -1283,7 +1293,7 @@ shinyServer(function(input, output, session) {
   ## calculate % present species for input file
   presSpecAllDt <- reactive({
     # open main input file
-    filein <- input$file1
+    filein <- input$mainInput
     data <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
     
     # convert into paired columns
@@ -1409,7 +1419,7 @@ shinyServer(function(input, output, session) {
     # 0 will be coerced to FALSE
     # 1+ will be coerced to TRUE
     v2$doPlotCustom <- input$plotCustom
-    filein <- input$file1
+    filein <- input$mainInput
     if(is.null(filein)){v2$doPlotCustom <- FALSE}
   })
 
@@ -1820,7 +1830,7 @@ shinyServer(function(input, output, session) {
   v3 <- reactiveValues(doPlot3 = FALSE)
   observeEvent(input$do3, {
     v3$doPlot3 <- input$do3
-    filein <- input$file1
+    filein <- input$mainInput
     if(is.null(filein)){v3$doPlot3 <- FALSE}
   })
 
@@ -1901,7 +1911,7 @@ shinyServer(function(input, output, session) {
   ######## render domain architecture plot
   output$archiPlot.ui <- renderUI({
     if (v3$doPlot3 == FALSE) {
-      domainIN <- unlist(strsplit(toString(input$file1),","))
+      domainIN <- unlist(strsplit(toString(input$mainInput),","))
       fileName <- toString(domainIN[1])
       msg <- paste0(
         "<p><span style=\"color: #ff0000;\"><strong>No information about domain architecture! Please check:</strong></span></p>
@@ -2051,10 +2061,10 @@ shinyServer(function(input, output, session) {
   ############### USED FOR TESTING
   output$testOutput <- renderText({
     # ### print infile
-    # filein <- input$file1
+    # filein <- input$mainInput
     # print(toString(filein))
     # filePath <- toString(filein)
-    # fileName <- unlist(strsplit(toString(input$file1),","))
+    # fileName <- unlist(strsplit(toString(input$mainInput),","))
     # name <- toString(fileName[1])
     # fullPath <- paste0("data/",name,".mDomains")
     # print(fullPath)
