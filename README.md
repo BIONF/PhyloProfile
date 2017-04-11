@@ -9,16 +9,11 @@ The profile can be plotted with different taxonomy ranks (species, family, phylu
 Currently, the information represented on the profile are the *Feature Architecture Similarity (FAS) scores*, *percentage of species* that have orthologs with the reference sequences and the *traceability scores* (optional). The *percentage of species* is only available when you group initial taxa into higher taxonomy rank (for example, you need to analyse the profile in phylum level, while your input taxa are in species level). These information can be manually filtered from the plot by changing the corresponding cutoff. Besides, *protein domain architectures* can also be visualized if the necessary info are available (positions of domains. See `data/demo/test.traceability` for example).
 
 # Demo data
-In `data/demo/` you can find some test data including a main input file:
->test.main
-
-2 optional files for plotting protein domain architectures & traceability scores:
->test.architecture
-
->test.traceability
-
-and a gene list for customized profile plot:
->geneList.txt
+In `data/demo/` you can find some test data:
+- `test.main`: Use this as the *presence/absence file* on the main page after starting *PhyloProfile*
+- `test.architecture`: This contains the feature architecture data (e.g. Pfam domains) that you can optionally give under the *Feature architectures* upload on the main page after startup.
+- `test.traceability`: This contains the traceability data (i.e. likelihood to find a gene using orthology search if it would be present) that you can optionally give under the *Traceability matrix* upload on the main page after startup.
+- `geneList.txt`: After doing the initial plot with the files above you can use this file on the *Customized profile* tab to sub-select for only the genes present in this file.
 
 # Usage
 (1) Clone this git repository to your computer using this command:
