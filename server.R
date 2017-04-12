@@ -157,12 +157,103 @@ shinyServer(function(input, output, session) {
   ####################  PRE-PROCESSING  #######################
   #############################################################
 
-  ######## PARSING VARIABLE 1 AND 2
+  ################## getting ncbi taxa IDs ####################
+  ##### retrieve ID for list of taxa names
+  taxaID <- reactive({
+    if(input$idSearch > 0){
+      if (!require("taxize")) {install.packages("taxize")}
+      
+      taxain <- input$taxaList
+      if(is.null(taxain)){return()}
+      
+      taxaNameDf <- as.data.frame(read.table(file=taxain$datapath, sep='\t',header=F,check.names=FALSE,comment.char=""))
+      
+      idDf <- data.frame("name"=character(),"newName"=character(),"id"=character(),"type"=character(),stringsAsFactors=FALSE)
+
+      withProgress(message = 'Retrieving IDs...', value = 0,{
+        for(i in 1:nrow(taxaNameDf)){
+          id <- get_uid(sciname = taxaNameDf[i,])[1]
+          if(is.na(id)){
+            temp <- gnr_resolve(names = taxaNameDf[i,])
+            newID <- get_uid(sciname = temp[1,3])[1]
+            if(is.na(newID)){
+              idDf[i,] <- c(as.character(taxaNameDf[i,]),as.character(temp[1,3]),paste0("NA"),"notfound")
+            } else {
+              idDf[i,] <- c(as.character(taxaNameDf[i,]),as.character(temp[1,3]),paste0("ncbi",newID),"notfound")
+            }
+          } else {
+            idDf[i,] <- c(as.character(taxaNameDf[i,]),"NA",paste0("ncbi",id),"retrieved") 
+          }
+          
+          # Increment the progress bar, and update the detail text.
+          incProgress(1/nrow(taxaNameDf), detail = paste(i,"/",nrow(taxaNameDf)))
+          
+          # Pause for 0.1 seconds to simulate a long computation.
+#          Sys.sleep(0.1)
+        }        
+      })
+
+      ### return
+      idDf
+    }
+  })
   
+  ### output mismatched taxa
+  output$notfoundTaxa <- renderDataTable(option = list(searching = FALSE),{
+    if(input$idSearch > 0){
+      if(length(taxaID())>0){
+        tb <- as.data.frame(taxaID())
+        tbFiltered <- tb[tb$type == "notfound",]
+        notFoundDt <- tbFiltered[,c("name","newName","id")]
+        colnames(notFoundDt) <- c("Summitted name","Matched name","Matched ID")
+        notFoundDt
+      }
+    }
+  })
+  
+  output$downloadNotFoundTaxa <- downloadHandler(
+    filename = function(){c("mismatchedTaxa.txt")},
+    content = function(file){
+      tb <- as.data.frame(taxaID())
+      tbFiltered <- tb[tb$type == "notfound",]
+      notFoundDt <- tbFiltered[,c("name","newName","id")]
+      colnames(notFoundDt) <- c("Summitted name","Matched name","Matched ID")
+      
+      write.table(notFoundDt,file,sep="\t",row.names = FALSE,quote = FALSE)
+    }
+  )
+  
+  ### output retrieved taxa IDs
+  output$taxaID <- renderDataTable(option = list(searching = FALSE),{
+    if(input$idSearch > 0){
+      if(length(taxaID())>0){
+        tb <- as.data.frame(taxaID())
+        tbFiltered <- tb[tb$type == "retrieved",]
+        retrievedDt <- tbFiltered[,c("name","id")]
+        colnames(retrievedDt) <- c("Taxon_name","Taxon_ID")
+        retrievedDt
+      }
+    }
+  })
+  
+  output$downloadTaxaID <- downloadHandler(
+    filename = function(){c("retrievedTaxaID.txt")},
+    content = function(file){
+      tb <- as.data.frame(taxaID())
+      tbFiltered <- tb[tb$type == "retrieved",]
+      retrievedDt <- tbFiltered[,c("name","id")]
+      colnames(retrievedDt) <- c("Taxon name","Taxon ID")
+      
+      write.table(retrievedDt,file,sep="\t",row.names = FALSE,quote = FALSE)
+    }
+  )
+  
+  ################# PARSING VARIABLE 1 AND 2 ##################
   ######## render textinput for variable 1 & 2
   output$var1_id.ui <- renderUI({
     filein <- input$mainInput
     if(is.null(filein)){return(textInput("var1_id", h5("First variable:"), value = "Variable 1", width="100%", placeholder="Name of first variable"))}    # get var1/var2 names based on input (only if input file in long format table)
+    
     if(checkLongFormat() == TRUE){
       headerIn <- readLines(filein$datapath, n = 1)
       headerIn <- unlist(strsplit(headerIn,split = '\t'))
@@ -304,6 +395,8 @@ shinyServer(function(input, output, session) {
     inputDt <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
     if(is.na(pmatch("ncbi",colnames(inputDt)[3])) || is.na(pmatch("ncbi",colnames(inputDt)[4])) || is.na(pmatch("ncbi",colnames(inputDt)[5]))){
       return(TRUE)
+    } else {
+      return(FALSE)
     }
   })
   
@@ -2063,6 +2156,7 @@ shinyServer(function(input, output, session) {
   ######## data table ui tab
   output$dis <- renderDataTable({
     if(v$doPlot == FALSE){return()}
+    #data <- taxaID()
     #data <- allTaxaList()
     #data <- sortedTaxaList()
     #data <- preDataFiltered()
