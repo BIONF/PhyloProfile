@@ -70,9 +70,6 @@ shinyUI(fluidPage(
         column(2,
                uiOutput("var1_cutoff"),
                uiOutput("var2_cutoff")
-               # sliderInput("fas",
-               #             "FAS cutoff: ", min = 0, max = 1, step = 0.025, value = 0.0, width = 200),
-               # actionButton("resetMain","Reset")
         ),
         column(2,
                sliderInput("percent",

@@ -187,9 +187,6 @@ shinyServer(function(input, output, session) {
           
           # Increment the progress bar, and update the detail text.
           incProgress(1/nrow(taxaNameDf), detail = paste(i,"/",nrow(taxaNameDf)))
-          
-          # Pause for 0.1 seconds to simulate a long computation.
-#          Sys.sleep(0.1)
         }        
       })
 
