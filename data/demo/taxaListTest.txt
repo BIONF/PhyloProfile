@@ -12,7 +12,7 @@ Caenorhabditis japonica
 Danio rerio
 Drosophila pseudoobscura
 Eucalyptus grandis
-Felis catus
+Feles catus
 Fischerella muscicola SAG 1427-1 = PCC 73103
 Gloeobacter violaceus
 Candidatus Korarchaeum cryptofilum OPF8
