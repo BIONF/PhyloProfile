@@ -1304,16 +1304,21 @@ shinyServer(function(input, output, session) {
     
     # open main input file
     filein <- input$mainInput
-    dataOrig <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
-    
-    # convert into long format and remove line that contain NA (no ortholog)
-    mdData <- melt(dataOrig,id="geneID")
-    #    mdData <- mdData[!is.na(mdData$value),]
-    
-    # split "orthoID#var1#var2" into 3 columns
-    splitDt <- as.data.frame(str_split_fixed(mdData$value, '#', 3))
-    colnames(splitDt) <- c("orthoID","var1","var2")
-    splitDt <- splitDt[splitDt$var1 != "NA",]
+    if(checkLongFormat() == TRUE){
+      dataOrig <- long2wide(filein)
+      dataOrig <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+      colnames(dataOrig) <- c("geneID","ncbiID","orthoID","var1","var2")
+      splitDt <- dataOrig[,c("orthoID","var1","var2")]
+    } else {
+      dataOrig <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+      # convert into long format and remove line that contain NA (no ortholog)
+      mdData <- melt(dataOrig,id="geneID")
+      #    mdData <- mdData[!is.na(mdData$value),]
+      
+      # split "orthoID#var1#var2" into 3 columns
+      splitDt <- as.data.frame(str_split_fixed(mdData$value, '#', 3))
+      colnames(splitDt) <- c("orthoID","var1","var2")
+    }
     
     # convert factor into numeric for "var1" & "var2" column
     splitDt$var1<-as.numeric(as.character(splitDt$var1))
@@ -1325,7 +1330,6 @@ shinyServer(function(input, output, session) {
     splitDt <- splitDt[splitDt$var2 >= input$var2[1] & splitDt$var2 <= input$var2[2],]
     
     # return dt
-    splitDt$type <- "none"
     splitDt
   })
   
@@ -1334,21 +1338,21 @@ shinyServer(function(input, output, session) {
     if (v$doPlot == FALSE) return()
 
     splitDt <- distDf()
-    # calculate mean var1 score
-    cdat <- ddply(splitDt, "type", summarise, rating.mean=mean(var1))
+    splitDt <- splitDt[!is.na(splitDt$var1),]
+    splitDt$mean <- mean(splitDt$var1)
 
     # plot var1 score distribution
     p <- ggplot(splitDt, aes(x=var1)) +
       geom_histogram(binwidth=.01, alpha=.5, position="identity") +
-      geom_vline(data=cdat, aes(xintercept=rating.mean,  colour=type),
+      geom_vline(data=splitDt, aes(xintercept=splitDt$mean,colour="red"),
                  linetype="dashed", size=1) +
-      ggtitle(paste("Mean",input$var1_id,"=",round(mean(splitDt$var1),3))) +
+#      ggtitle(paste("Mean",input$var1_id,"=",round(mean(splitDt$var1),3))) +
       theme_minimal()
     p <- p + theme(legend.position = "none",
-                   plot.title = element_text(hjust = 0.5),
+#                   plot.title = element_text(hjust = 0.5),
                    axis.title.x = element_text(size=input$xSize),axis.text.x = element_text(size=input$xSize),
                    axis.title.y = element_text(size=input$ySize),axis.text.y = element_text(size=input$ySize)) +
-         labs(x = input$var1_id, y = "Frequency")
+         labs(x = paste0(input$var1_id," (mean = ",round(mean(splitDt$var1),3),")"), y = "Frequency")
     p
   }
 
@@ -1391,26 +1395,33 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  output$var1Download <- downloadHandler(
+    filename = function() {paste0(input$var1_id,"_plot.pdf")},
+    content = function(file) {
+      ggsave(file, plot = var1DistPlot(), dpi=300, device = "pdf", limitsize=FALSE)
+    }
+  )
+  
   ###### var2 score distribution plot
   var2DistPlot <- function(){
     if (v$doPlot == FALSE) return()
     
     splitDt <- distDf()
-    # calculate mean var1 score
-    cdat <- ddply(splitDt, "type", summarise, rating.mean=mean(var2))
-    
+    splitDt <- splitDt[!is.na(splitDt$var2),]
+    splitDt$mean <- mean(splitDt$var2)
+
     # plot var1 score distribution
     p <- ggplot(splitDt, aes(x=var2)) +
       geom_histogram(binwidth=.01, alpha=.5, position="identity") +
-      geom_vline(data=cdat, aes(xintercept=rating.mean,  colour=type),
+      geom_vline(data=splitDt, aes(xintercept=splitDt$mean,colour="red"),
                  linetype="dashed", size=1) +
-      ggtitle(paste("Mean",input$var2_id,"=",round(mean(splitDt$var2),3))) +
+#      ggtitle(paste("Mean",input$var2_id,"=",round(mean(splitDt$var2),3))) +
       theme_minimal()
     p <- p + theme(legend.position = "none",
-                   plot.title = element_text(hjust = 0.5),
+#                   plot.title = element_text(size=input$legendSize),#hjust = 0.5, 
                    axis.title.x = element_text(size=input$xSize),axis.text.x = element_text(size=input$xSize),
                    axis.title.y = element_text(size=input$ySize),axis.text.y = element_text(size=input$ySize)) +
-      labs(x = input$var2_id, y = "Frequency")
+      labs(x = paste0(input$var2_id," (mean = ",round(mean(splitDt$var2),3),")"), y = "Frequency")
     p
   }
   
@@ -1452,6 +1463,13 @@ shinyServer(function(input, output, session) {
       }
     }
   })
+  
+  output$var2Download <- downloadHandler(
+    filename = function() {paste0(input$var2_id,"_plot.pdf")},
+    content = function(file) {
+      ggsave(file, plot = var2DistPlot(), dpi=300, device = "pdf", limitsize=FALSE)
+    }
+  )
 
   ####### % present species distribution plot
   
@@ -1459,7 +1477,11 @@ shinyServer(function(input, output, session) {
   presSpecAllDt <- reactive({
     # open main input file
     filein <- input$mainInput
-    data <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+    if(checkLongFormat() == TRUE){
+      data <- long2wide(filein)
+    } else {
+      data <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+    }
     
     # convert into paired columns
     mdData <- melt(data,id="geneID")
@@ -1507,21 +1529,20 @@ shinyServer(function(input, output, session) {
     }
     
     # calculate mean presSpec score
-    dt$type <- "none"
-    cdat <- ddply(dt, "type", summarise, rating.mean=mean(presSpec))
+    dt$mean <- mean(dt$presSpec)
     
     # plot presSpec distribution
     p <- ggplot(dt, aes(x=presSpec)) +
       geom_histogram(binwidth=.01, alpha=.5, position="identity") +
-      geom_vline(data=cdat, aes(xintercept=rating.mean,  colour=type),
+      geom_vline(data=dt, aes(xintercept=dt$mean,colour="red"),
                  linetype="dashed", size=1) +
-      ggtitle(paste("Mean % present taxa = ",round(mean(dt$presSpec),3))) +
+#      ggtitle(paste("Mean % present taxa = ",round(mean(dt$presSpec),3))) +
       theme_minimal()
     p <- p + theme(legend.position = "none",
-                   plot.title = element_text(hjust = 0.5),
+#                   plot.title = element_text(hjust = 0.5),
                    axis.title.x = element_text(size=input$xSize),axis.text.x = element_text(size=input$xSize),
                    axis.title.y = element_text(size=input$ySize),axis.text.y = element_text(size=input$ySize)) +
-      labs(x = "% present taxa", y = "Frequency")
+      labs(x = paste0("% present taxa (mean = ",round(mean(dt$presSpec),3),")"), y = "Frequency")
     p
   }
 
@@ -1563,6 +1584,13 @@ shinyServer(function(input, output, session) {
       }
     }
   })
+  
+  output$presSpecDownload <- downloadHandler(
+    filename = function() {paste0("percentageTaxa_plot.pdf")},
+    content = function(file) {
+      ggsave(file, plot = presSpecPlot(), dpi=300, device = "pdf", limitsize=FALSE)
+    }
+  )
   
   #############################################################
   ################# PLOT SELECTED SEQUENCES ###################
@@ -2162,7 +2190,8 @@ shinyServer(function(input, output, session) {
     #data <- dataHeat()
     #data <- detailPlotDt()
     #data <- presSpecAllDt()
-    data <- downloadData()
+    data <- distDf()
+    #data <- downloadData()
     data
   })
 

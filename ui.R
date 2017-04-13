@@ -149,7 +149,7 @@ shinyUI(fluidPage(
                em(strong("RELOAD THIS TOOL TO UPLOAD A NEW INPUT FILE!!!",style = "color:red"))
              ),
              
-             fileInput("mainInput",h5("Presence/absence file:")),
+             fileInput("mainInput",h5("Upload input file:")),
              fluidRow(
                column(5,
                       uiOutput("var1_id.ui")
@@ -284,16 +284,19 @@ shinyUI(fluidPage(
                      uiOutput("selected.distribution"),
                      conditionalPanel(
                        condition = "input.selected_dist == input.var1_id",
+                       downloadButton("var1Download","Download"),
                        uiOutput("var1Dist.ui")
                      ),
                      
                      conditionalPanel(
                        condition = "input.selected_dist == input.var2_id",
+                       downloadButton("var2Download","Download"),
                        uiOutput("var2Dist.ui")
                      ),
                      
                      conditionalPanel(
                        condition = "input.selected_dist == '% present taxa'",
+                       downloadButton("presSpecDownload","Download"),
                        uiOutput("presSpec.ui")
                      )
             )
