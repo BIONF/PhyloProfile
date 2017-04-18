@@ -11,6 +11,8 @@ By utilizing the NCBI taxonomy, input taxa can be dynamically collapsed into hig
 
 Profiles can be filtered dynamically according to various criteria. For example, setting a minimal threshold for the fraction of species in a systematic group, or filtering collections of orthologs based on the pre-computed similarity of their domain architectures - if provided as an information layer.
 
+[Click here to watch demo](https://youtu.be/Udt316KoM6Y)
+
 # Demo data
 In `data/demo/` you can find some test data:
 - `test.main`: Use this as the **Main input** file on the *Input & settings* page after starting *PhyloProfile*. It contains 3 information: `Ortholog ID # Feature architecture similarity score # Traceability score`. 
