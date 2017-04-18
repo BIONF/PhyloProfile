@@ -11,7 +11,6 @@ By utilizing the NCBI taxonomy, input taxa can be dynamically collapsed into hig
 
 Profiles can be filtered dynamically according to various criteria. For example, setting a minimal threshold for the fraction of species in a systematic group, or filtering collections of orthologs based on the pre-computed similarity of their domain architectures - if provided as an information layer.
 
-[Click here to watch demo](https://youtu.be/Udt316KoM6Y)
 
 # Demo data
 In `data/demo/` you can find some test data:
@@ -23,6 +22,8 @@ In `data/demo/` you can find some test data:
 ![](www/pic_customized.png)
 - `test.geneList`: After doing the initial plot with the files above you can use this file on the *Customized profile* tab to sub-select for only the genes present in this file.
 ![](www/pic_taxaIDsearch.png)
+[Click here to watch demo](https://youtu.be/Udt316KoM6Y)
+
 
 # Usage
 (1) Clone this git repository to your computer using this command:
