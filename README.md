@@ -14,6 +14,7 @@ Profiles can be filtered dynamically according to various criteria. For example,
 
 # Demo data
 [Click here to watch demo video](https://youtu.be/Udt316KoM6Y)
+
 In `data/demo/` you can find some test data:
 - `test.main`: Use this as the **Main input** file on the *Input & settings* page after starting *PhyloProfile*. It contains 3 information: `Ortholog ID # Feature architecture similarity score # Traceability score`. 
 - `test.main.long`: This is the same as `test.main` but in long format.
