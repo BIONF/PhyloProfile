@@ -317,13 +317,6 @@ shinyServer(function(input, output, session) {
     updateSliderInput(session, "percent", value = newPercent,
                       min = 0, max = 1, step = 0.025)
   })
-
-  ######## list of available variables for distribution plot
-  output$selected.distribution = renderUI({
-    varList <- as.list(c(input$var1_id,input$var2_id,"% present taxa"))
-    selectInput('selected_dist',h5('Choose variable to plot:'),varList,varList[1])
-  })
-
   
   ########################################################
   
@@ -1297,7 +1290,13 @@ shinyServer(function(input, output, session) {
   ###################################################################
   #### PLOT var1/var2 SCORE & % OF PRESENT SPECIES DISTRIBUTION #####
   ###################################################################
-
+  
+  ######## list of available variables for distribution plot
+  output$selected.distribution = renderUI({
+    varList <- as.list(c(input$var1_id,input$var2_id,"% present taxa"))
+    selectInput('selected_dist',h5('Choose variable to plot:'),varList,varList[1])
+  })
+  
   ###### var1 / var2 distribution data
   distDf <- reactive({
     if (v$doPlot == FALSE) return()
@@ -1305,7 +1304,6 @@ shinyServer(function(input, output, session) {
     # open main input file
     filein <- input$mainInput
     if(checkLongFormat() == TRUE){
-      dataOrig <- long2wide(filein)
       dataOrig <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
       colnames(dataOrig) <- c("geneID","ncbiID","orthoID","var1","var2")
       splitDt <- dataOrig[,c("orthoID","var1","var2")]
@@ -1478,22 +1476,22 @@ shinyServer(function(input, output, session) {
     # open main input file
     filein <- input$mainInput
     if(checkLongFormat() == TRUE){
-      data <- long2wide(filein)
+      mdData <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+      colnames(mdData) <- c("geneID","ncbiID","orthoID","var1","var2")
     } else {
       data <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+      # convert into paired columns
+      mdData <- melt(data,id="geneID")
+      
+      # split value column into orthoID, var1 & var2
+      splitDt <- (str_split_fixed(mdData$value, '#', 3))
+      # then join them back to mdData
+      mdData <- cbind(mdData,splitDt)
+      # rename columns
+      colnames(mdData) <- c("geneID","ncbiID","value","orthoID","var1","var2")
+      mdData <- mdData[,c("geneID","ncbiID","orthoID","var1","var2")]
     }
     
-    # convert into paired columns
-    mdData <- melt(data,id="geneID")
-    
-    # split value column into orthoID, var1 & var2
-    splitDt <- (str_split_fixed(mdData$value, '#', 3))
-    # then join them back to mdData
-    mdData <- cbind(mdData,splitDt)
-    # rename columns
-    colnames(mdData) <- c("geneID","ncbiID","value","orthoID","var1","var2")
-    mdData <- mdData[,c("geneID","ncbiID","var1","orthoID","var2")]
-
     ### (3) GET SORTED TAXONOMY LIST (3) ###
     taxaList <- sortedTaxaList()
     
@@ -2190,8 +2188,8 @@ shinyServer(function(input, output, session) {
     #data <- dataHeat()
     #data <- detailPlotDt()
     #data <- presSpecAllDt()
-    data <- distDf()
-    #data <- downloadData()
+    #data <- distDf()
+    data <- downloadData()
     data
   })
 
