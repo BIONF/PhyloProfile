@@ -1,9 +1,9 @@
 
 # PhyloProfile Tool
 
-PhyloProfile is a Shiny(R)-based tool for integrating, visualizing and exploring multi- layered phylogenetic profiles
-
 ![](www/pic_main.png)
+
+PhyloProfile is a Shiny(R)-based tool for integrating, visualizing and exploring multi- layered phylogenetic profiles
 
 Alongside the presence/absence pattern of orthologs across large taxon collections, PhyloProfile allows the integration of any two additional information layers. These complementary data, e.g. sequence similarity between orthologs, similarities and differences of their domain architectures or their Gene Ontology-term-based semantic similarities, etc. will enable a more reliable functional inference among those orthologous sequences.
 
