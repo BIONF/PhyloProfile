@@ -1,9 +1,9 @@
-![](www/beschreibung.jpg)
-
 
 # PhyloProfile Tool
 
 PhyloProfile is a Shiny(R)-based tool for integrating, visualizing and exploring multi- layered phylogenetic profiles
+
+![](www/pic_main.png)
 
 Alongside the presence/absence pattern of orthologs across large taxon collections, PhyloProfile allows the integration of any two additional information layers. These complementary data, e.g. sequence similarity between orthologs, similarities and differences of their domain architectures or their Gene Ontology-term-based semantic similarities, etc. will enable a more reliable functional inference among those orthologous sequences.
 
@@ -16,8 +16,11 @@ In `data/demo/` you can find some test data:
 - `test.main`: Use this as the **Main input** file on the *Input & settings* page after starting *PhyloProfile*. It contains 3 information: `Ortholog ID # Feature architecture similarity score # Traceability score`. 
 - `test.main.long`: This is the same as `test.main` but in long format.
 - `test.architecture`: This contains the feature architecture data (e.g. Pfam domains) that you can optionally give under the **Additional annotation file** upload on the *Input & settings* page after startup.
+![](www/pic_input.png)
 - `test.taxaList`: This contains list of taxon names. Use this to test the function of fetching NCBI taxonomy IDs, which can be found in *More* tab.
+![](www/pic_customized.png)
 - `test.geneList`: After doing the initial plot with the files above you can use this file on the *Customized profile* tab to sub-select for only the genes present in this file.
+![](www/pic_taxaIDsearch.png)
 
 # Usage
 (1) Clone this git repository to your computer using this command:
