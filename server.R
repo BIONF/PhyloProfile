@@ -374,6 +374,7 @@ shinyServer(function(input, output, session) {
     shinyjs::reset("highColor_var1")
   })
   
+
   ########################################################
   
   ######## check if main input file is in long format

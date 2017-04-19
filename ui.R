@@ -176,7 +176,8 @@ shinyUI(fluidPage(
              hr(),
              strong(h4("Additional annotation file:")),
              fileInput("fileDomain",""),
-             hr()
+             hr(),
+             em(a("Click here to download demo data", href="https://github.com/trvinh/phyloprofile/tree/master/data/demo", target="_blank"))
       ),
       column(3,
              conditionalPanel(
