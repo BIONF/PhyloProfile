@@ -457,7 +457,7 @@ shinyServer(function(input, output, session) {
       else{
         if(checkLongFormat() == TRUE){
           inputMod <- long2wide(filein)
-          titleline <- colnames(inputMod)
+          titleline <- toString(paste(colnames(inputMod),collapse = "\t"))
         } else {
           titleline <- readLines(filein$datapath, n=1)
         }

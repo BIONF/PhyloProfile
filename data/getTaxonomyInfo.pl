@@ -10,7 +10,7 @@ use Cwd;
 ### and create a reduced list of species name
 ### 30.05.2016
 ### embedded into R script
-### 17.06.2016 
+### 17.06.2016
 ### including noranks
 ### 17.11.2016
 
@@ -64,11 +64,13 @@ close (NEW);
 if(scalar @nameNEW > 1){
 	foreach my $line(@nameNEW){
 		chomp($line);
-		my @tmp = split(/\t/,$line);	# id  name  rank  parentID
-		$id{$tmp[1]} = $tmp[0];
-		$name{$tmp[0]} = $tmp[1];
-		$rank{$tmp[0]} = $tmp[2];
-		$parent{$tmp[0]} = $tmp[3];
+    if(length $line > 2){
+      my @tmp = split(/\t/,$line);	# id  name  rank  parentID
+      $id{$tmp[1]} = $tmp[0];
+      $name{$tmp[0]} = $tmp[1];
+      $rank{$tmp[0]} = $tmp[2];
+      $parent{$tmp[0]} = $tmp[3];
+    }
 	}
 }
 
@@ -107,7 +109,7 @@ foreach my $taxon(@allTaxa){
  		$info{"$ncbiID"} = "$ncbiID#strain\t"."$ncbiID#$rank\t"."$parentID#$parentRank";
  		$reduceSpec{$ncbiID} = $ncbiID."\t".$name{$ncbiID}."\t".$rank."\t".$parentID;
  		$reduceSpec{$parentID} = $parentID."\t".$name{$parentID}."\t".$parentRank."\t".$parent{$parentID};
- 		
+
 		unless($parentID == 1){
 			do{
 				$parentID = $parent{$parentID};
@@ -116,7 +118,7 @@ foreach my $taxon(@allTaxa){
 				$info{"$ncbiID"} .= "\t"."$parentID#$parentRank";
 				$reduceSpec{$parentID} = $parentID."\t".$name{$parentID}."\t".$parentRank."\t".$parent{$parentID};
 			} until ($parentID == 1);
-		}		
+		}
 #		print "$info{$ncbiID}\n";
 #		print "NEXT...\n";		############ TESTING
 #		<>;						############ TESTING
@@ -129,7 +131,7 @@ print NAMELIST "ncbiID	fullName	rank	parentID\n";
 
 foreach(keys %reduceSpec){
 	print NAMELIST $reduceSpec{$_},"\n";
-}	
+}
 close (NAMELIST);
 
 ### create output matrix
@@ -179,7 +181,7 @@ for(my $t = 0; $t < scalar(@allTaxa); $t++){
 		$ncbiID =~ s/ncbi//;
 		my @rankInfo = split(/\t/,$info{$ncbiID});
 		print OUT $t+1,"\t",$allTaxa[$t],"\t",$ncbiID,"\t",$name{$ncbiID};
-		
+
 		for(my $i=0, my$j=0; $i < scalar(@allRefRank); $i++, $j++){
 #			print "i=$i; j=$j (max j = ",scalar(@rankInfo),")\n";
 			### rank name of refTaxon
@@ -187,11 +189,11 @@ for(my $t = 0; $t < scalar(@allTaxa); $t++){
 #			my $rankRefName = $rankRefTMP[1];
 			my $rankRefName = $allRefRank[$i];
 #			print "$rankRefName\n";	############ TESTING
-			
+
 			### rank name of current taxon
 			my @rankTMP = split(/#/,$rankInfo[$j]);
 			my $rankName = $rankTMP[1];
-			
+
 			### if rankName = rankRefName, print ID and go to next rank ($i++, $j++)
 			if($rankName eq $rankRefName){
 #				print "SAME: $rankInfo[$j]\n";	############ TESTING
