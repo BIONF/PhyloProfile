@@ -33,6 +33,48 @@ long2wide <- function(inputFile){
   wideDf <- spread(longDfmod, ncbiID, value)
 }
 
+########## cluster genes based on presence/absence pattern ##############
+clusterData <- function(data){
+  #### NOTE: input data for this function has to be in wide format
+  mdData <- melt(data,id="geneID")
+  
+  # replace NA value with "NA#NA" (otherwise the corresponding orthoID will be empty)
+  mdData$value <- as.character(mdData$value)
+  mdData$value[is.na(mdData$value)] <- "NA#NA"
+  
+  # split value column into orthoID, var1 & var2
+  splitDt <- (str_split_fixed(mdData$value, '#', 3))
+  # then join them back to mdData
+  mdData <- cbind(mdData,splitDt)
+  # rename columns
+  colnames(mdData) <- c("geneID","ncbiID","value","orthoID","var1","var2")
+  clusterMdData <- mdData[,c("geneID","ncbiID","orthoID")]
+  
+  # replace 1 & 0 for presence / absence genes
+  clusterMdData$group[clusterMdData$orthoID != "NA"] <-1
+  clusterMdData$group[clusterMdData$orthoID == "NA"] <-0
+  clusterMdData <- clusterMdData[,c("geneID","ncbiID","group")]
+  
+  # convert to wide format
+  wideMdData <- spread(clusterMdData, ncbiID, group)
+  
+  # do clustering
+  dat <- wideMdData[,2:ncol(wideMdData)]  # numerical columns
+  rownames(dat) <- wideMdData[,1]
+  row.order <- hclust(dist(dat))$order # clustering
+  col.order <- hclust(dist(t(dat)))$order
+  dat_new <- dat[row.order, col.order] # re-order dat accoring to clustering
+  
+  # get clustered gene IDs
+  clusteredGeneIDs <- as.factor(row.names(dat_new))
+  
+  # sort original data according to clusteredGeneIDs
+  data$geneID <- factor(data$geneID, levels = clusteredGeneIDs)
+  
+  # return clustered data
+  data
+}
+
 ########## calculate percentage of present species ##########
 calcPresSpec <- function(taxaMdData, taxaCount){
   ### taxaMdData = df("geneID","ncbiID","orthoID","var1","var2",....,"supertaxon")
@@ -554,7 +596,7 @@ shinyServer(function(input, output, session) {
 
   ######## Get list of genes for highlighting
   output$highlightGeneUI = renderUI({
-    geneList <- preDataFiltered()
+    geneList <- preData()
     geneList$geneID <- as.factor(geneList$geneID)
 
     out <- as.list(levels(geneList$geneID))
@@ -565,7 +607,7 @@ shinyServer(function(input, output, session) {
 
   #### update highlightGeneUI based on double clicked dot
   observe({
-    geneList <- preDataFiltered()
+    geneList <- preData()
     geneList$geneID <- as.factor(geneList$geneID)
 
     out <- as.list(levels(geneList$geneID))
@@ -603,7 +645,7 @@ shinyServer(function(input, output, session) {
     }
   })
 
-  ######## disable main input, genelist input and 3 initial questions
+  ######## disable main input, genelist input and initial questions
   observe({
     # use tabsetPanel 'id' argument to change tabs
     if (input$do > 0) {
@@ -615,7 +657,18 @@ shinyServer(function(input, output, session) {
       #updateTabsetPanel(session, "tabs", selected = "Main profile")
     }
   })
-
+  
+  #### change sortGene/clusterGene to "NO" if clusterGene/sortGene is "YES
+  observe({
+    if(input$clusterGene == "Yes"){
+      updateRadioButtons(session,'sortGene',"", c("Yes" = "Yes", "No" = "No"), inline=T, selected = "No")
+    }
+  })
+  observe({
+    if(input$sortGene == "Yes"){
+      updateRadioButtons(session,'clusterGene',"", c("Yes" = "Yes", "No" = "No"), inline=T, selected = "No")
+    }
+  })
 
   #############################################################
   ######################  ADD NEW TAXA  #######################
@@ -757,12 +810,11 @@ shinyServer(function(input, output, session) {
   })
 
   ############### PARSING DATA FROM INPUT MATRIX:
-  ############### get var2 scores for coressponding orthologs (if trace matrix is provided) (2)
   ############### get (super)taxa names (3)
   ############### calculate percentage of presence (4), max/min/mean/median VAR1 (5) and VAR2 (6) if group input taxa list into higher taxonomy rank
   
-  preDataFiltered <- reactive({
-    ### (1) LOADING INPUT MATRIX (1)
+  ### subset data
+  preData <- reactive({
     filein <- input$mainInput
     if(is.null(filein)){return()}
 
@@ -772,9 +824,20 @@ shinyServer(function(input, output, session) {
     # convert input to wide format (if needed) & get nrHit rows
     if(checkLongFormat() == TRUE){
       inputMod <- long2wide(filein)
+      if(input$clusterGene == "Yes"){
+        inputMod <- clusterData(inputMod)
+      }
       data <- head(inputMod,nrHit)
     } else {
-      data <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char="",nrows=nrHit))
+      if(input$clusterGene == "Yes"){
+        oridata <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+        clusteredOridata <- clusterData(oridata)
+        
+        subset <- levels(clusteredOridata$geneID)[1:nrHit]
+        data <- clusteredOridata[clusteredOridata$geneID %in% subset,]
+      } else {
+        data <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char="",nrows=nrHit))
+      }
     }
 
     # OR just list of gene from a separated input file
@@ -789,19 +852,24 @@ shinyServer(function(input, output, session) {
           dataOrig <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
         }
         data <- dataOrig[dataOrig$geneID %in% list$V1,]
+        
+        if(input$clusterGene == "Yes"){
+          data <- clusterData(data)
+        }
       }
     }
 
-    if(input$sortGene == "No"){
+    if(input$clusterGene == "No" & input$sortGene == "No"){
       data$geneID <- factor(data$geneID, levels = data$geneID)  ######### keep user defined geneID order
     }
 
-    ### return preDataFiltered
+    ### return preData
     data
   })
 
+  ### get all information for input data
   dataFiltered <- reactive({
-    data <- preDataFiltered()
+    data <- preData()
     # convert into paired columns
     mdData <- melt(data,id="geneID")
 
@@ -809,7 +877,7 @@ shinyServer(function(input, output, session) {
     mdData$value <- as.character(mdData$value)
     mdData$value[is.na(mdData$value)] <- "NA#NA"
     
-    # split value column into orthoID and var1
+    # split value column into orthoID, var1 & var2
     splitDt <- (str_split_fixed(mdData$value, '#', 3))
     # then join them back to mdData
     mdData <- cbind(mdData,splitDt)
@@ -849,7 +917,6 @@ shinyServer(function(input, output, session) {
       mVar2Dt <- taxaMdData[,c("supertaxon","geneID")]
       mVar2Dt$mVar2 <- 0
     }
-    
     
     ### (5+6) & join mVar2 together with mVar1 scores into one df (5+6)
     scoreDf <- merge(mVar1Dt,mVar2Dt, by=c("supertaxon","geneID"), all = TRUE)
@@ -1262,7 +1329,7 @@ shinyServer(function(input, output, session) {
       geneMatch <- dataHeat$geneID[dataHeat$orthoID == toString(orthoID)]
       geneMatch <- geneMatch[!is.na(geneMatch)]
       # list of all available geneID
-      geneList <- preDataFiltered()
+      geneList <- preData()
       geneList$geneID <- as.factor(geneList$geneID)
       allGenes <- as.list(levels(geneList$geneID))
       # get index of all matched genes (genes have the same ortholog)
@@ -2181,7 +2248,7 @@ shinyServer(function(input, output, session) {
     #data <- taxaID()
     #data <- allTaxaList()
     #data <- sortedTaxaList()
-    #data <- preDataFiltered()
+    #data <- preData()
     #data <- dataFiltered()
     #data <- dataSupertaxa()
     #data <- dataHeat()

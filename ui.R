@@ -197,8 +197,12 @@ shinyUI(fluidPage(
                ),
                hr(),
                
-               strong(h4("In your plot, do you want to auto-sort the gene IDs?")),
+               strong(h4("Auto-sort the sequence IDs?")),
                radioButtons("sortGene","", c("Yes" = "Yes", "No" = "No"), inline=T, selected = "Yes"),
+               hr(),
+               
+               strong(h4("Hierarchical cluster sequences?")),
+               radioButtons("clusterGene","", c("Yes" = "Yes", "No" = "No"), inline=T, selected = "No"),
                hr(),
                
                bsButton("getConfig","FASTA config"),
