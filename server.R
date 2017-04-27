@@ -827,14 +827,16 @@ shinyServer(function(input, output, session) {
       if(input$clusterGene == "Yes"){
         inputMod <- clusterData(inputMod)
       }
-      data <- head(inputMod,nrHit)
+#      data <- head(inputMod,nrHit)
+      subsetID <- levels(inputMod$geneID)[1:nrHit]
+      data <- inputMod[inputMod$geneID %in% subsetID,]
     } else {
       if(input$clusterGene == "Yes"){
         oridata <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
         clusteredOridata <- clusterData(oridata)
         
-        subset <- levels(clusteredOridata$geneID)[1:nrHit]
-        data <- clusteredOridata[clusteredOridata$geneID %in% subset,]
+        subsetID <- levels(clusteredOridata$geneID)[1:nrHit]
+        data <- clusteredOridata[clusteredOridata$geneID %in% subsetID,]
       } else {
         data <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char="",nrows=nrHit))
       }
