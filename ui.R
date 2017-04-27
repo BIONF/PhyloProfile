@@ -446,7 +446,10 @@ shinyUI(fluidPage(
                    numericInput("titleArchiSize","Title size(px)",min=8,max=99,step=1,value=11,width=150)
             ),
             column(2,
-                   numericInput("labelArchiSize","Label size(px)",min=8,max=99,step=1,value=11,width=150)
+                   numericInput("labelArchiSize","SeqID size(px)",min=8,max=99,step=1,value=11,width=150)
+            ),
+            column(2,
+                   numericInput("labelDescSize","Text size(px)",min=0,max=99,step=1,value=3,width=150)
             )
           ),
           uiOutput("archiPlot.ui"),
