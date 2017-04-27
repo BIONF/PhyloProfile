@@ -196,6 +196,16 @@ options(shiny.maxRequestSize=30*1024^2)  ## size limit for input 30mb
 shinyServer(function(input, output, session) {
 #  session$onSessionEnded(stopApp) ### Automatically stop a Shiny app when closing the browser tab
 
+  ########## uncomment these lines for oneseq version#########
+  # observeEvent(input$mainInput,({
+  #   updateSelectInput(session,"var2_aggregateBy",
+  #                     choices = list("Max"="max", "Min"="min","Mean"="mean","Median"="median"),
+  #                     selected = "mean")
+  #   updateTextInput(session,"var1_id", value = "FAS")
+  #   updateTextInput(session,"var2_id", value = "Traceability")
+  # }))
+  #############################################################
+  
   #############################################################
   ####################  PRE-PROCESSING  #######################
   #############################################################
@@ -361,29 +371,29 @@ shinyServer(function(input, output, session) {
   
   ########################################################
   
-  # ######## check oneseq fasta file exists
-  # output$oneSeq.existCheck <- renderUI({
-  #   #f <- toString(input$oneseq.file)
-  #   if(is.null(input$oneSeqFasta)){ return()}
-  #   else{
-  #     f <- input$oneSeqFasta$datapath
-  #     if(!file.exists(f)){
-  #       helpText("File not exists!!")
-  #     } else {
-  #       if(length(readLines(f, n=1)) == 0){
-  #         helpText("is not a fasta file!!")
-  #       } else {
-  #         firstLine <- readLines(f, n=1)
-  #         a <- substr(firstLine,1,1)
-  #         if(a == ">"){
-  #           HTML('<p><span style="color: #0000ff;"><strong>Please click CLOSE to comfirm!</strong></span></p>')
-  #         } else {
-  #           helpText("is not a fasta file!!")
-  #         }
-  #       }
-  #     }
-  #   }
-  # })
+  ######## check oneseq fasta file exists
+  output$oneSeq.existCheck <- renderUI({
+    #f <- toString(input$oneseq.file)
+    if(is.null(input$oneSeqFasta)){ return()}
+    else{
+      f <- input$oneSeqFasta$datapath
+      if(!file.exists(f)){
+        helpText("File not exists!!")
+      } else {
+        if(length(readLines(f, n=1)) == 0){
+          helpText("is not a fasta file!!")
+        } else {
+          firstLine <- readLines(f, n=1)
+          a <- substr(firstLine,1,1)
+          if(a == ">"){
+            HTML('<p><span style="color: #0000ff;"><strong>Please click CLOSE to comfirm!</strong></span></p>')
+          } else {
+            helpText("is not a fasta file!!")
+          }
+        }
+      }
+    }
+  })
 
   ######## reset all parameters of main plot
   observeEvent(input$resetMain, {
@@ -472,6 +482,28 @@ shinyServer(function(input, output, session) {
       tb
     }
   })
+  
+  ######## get input taxa (a subset of available taxa in taxonID.list.fullRankID)
+  subsetTaxa <- reactive({
+    filein <- input$mainInput
+    if(is.null(filein)){return()}
+    
+    if(length(unkTaxa()) == 0){
+      # get list of input taxa (from main input file)
+      if(checkLongFormat() == TRUE){
+        inputMod <- long2wide(filein)
+        inputTaxa <- colnames(inputMod)
+      } else {
+        inputTaxa <- readLines(filein$datapath, n = 1)
+      }
+      
+      inputTaxa <- unlist(strsplit(inputTaxa,split = '\t'))
+      inputTaxa <- inputTaxa[-1]   # remove "geneID" element from vector inputTaxa
+      
+      # return subset of taxonID.list.fullRankID
+      inputTaxa
+    }
+  })
 
   ######## enable "add taxa", "parse" & "upload additional files" button after uploading main file
   observeEvent(input$mainInput, ({
@@ -538,6 +570,7 @@ shinyServer(function(input, output, session) {
     if(rankSelect == ""){return()}
     ### load list of unsorted taxa
     Dt <- as.data.frame(read.table("data/taxonID.list.fullRankID", sep='\t',header=T))
+    Dt <- Dt[Dt$abbrName  %in% subsetTaxa(),]
 
     ### load list of taxon name
     nameList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T,fill = TRUE))
@@ -669,6 +702,19 @@ shinyServer(function(input, output, session) {
       updateRadioButtons(session,'clusterGene',"", c("Yes" = "Yes", "No" = "No"), inline=T, selected = "No")
     }
   })
+  
+  #### disable clusterGene if input has only 1 gene
+  observe({
+    filein <- input$mainInput
+    if(is.null(filein)){return()}
+    else{
+      dt <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+      
+      if(nrow(dt) < 2){
+        toggleState("clusterGene")
+      } 
+    }
+  })
 
   #############################################################
   ######################  ADD NEW TAXA  #######################
@@ -715,6 +761,7 @@ shinyServer(function(input, output, session) {
 
     ### load list of unsorted taxa
     Dt <- as.data.frame(read.table("data/taxonID.list.fullRankID", sep='\t',header=T))
+    Dt <- Dt[Dt$abbrName  %in% subsetTaxa(),]
 
     ### reduce the number of columns in the iriginal data frame by removing duplicate columns
     # transpose orig dataframe
