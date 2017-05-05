@@ -763,7 +763,7 @@ shinyServer(function(input, output, session) {
     Dt <- as.data.frame(read.table("data/taxonID.list.fullRankID", sep='\t',header=T))
     Dt <- Dt[Dt$abbrName  %in% subsetTaxa(),]
     
-    ### reduce the number of columns in the iriginal data frame by removing duplicate columns
+    ### reduce the number of columns in the original data frame by removing duplicate columns
     # transpose orig dataframe
     tDt <- as.data.frame(t(Dt))
     # get duplicate rows (columns in original matrix)
@@ -1707,7 +1707,7 @@ shinyServer(function(input, output, session) {
   )
   
   #############################################################
-  ################# PLOT SELECTED SEQUENCES ###################
+  ################# PLOT CUSTOMIZED PROFILE ###################
   #############################################################
   
   ######## change label of plotCustom button if autoUpdateSelected is unchecked
@@ -2248,6 +2248,7 @@ shinyServer(function(input, output, session) {
   ############### FILTERED DATA FOR DOWNLOADING ###############
   #############################################################
   
+  ################### FOR MAIN PROFILE ########################
   ######## filtered data for downloading
   downloadData <- reactive({
     ### check input
@@ -2297,7 +2298,7 @@ shinyServer(function(input, output, session) {
   )
   
   ######## data table ui tab
-  output$dis <- renderDataTable({
+  output$filteredMainData <- renderDataTable({
     if(v$doPlot == FALSE){return()}
     #data <- taxaID()
     #data <- allTaxaList()
@@ -2313,6 +2314,47 @@ shinyServer(function(input, output, session) {
     data
   })
   
+  ################### FOR CUSTOMIZED PROFILE ########################
+  ######## filtered data for downloading
+  downloadCustomData <- reactive({
+    ### check input
+    if (v$doPlot == FALSE) return()
+  
+    data <- as.data.frame(downloadData())
+    ### get subset of data according to selected genes/taxa
+    if(!is.null(input$inSeq) | !is.null(input$inTaxa)){
+      if(input$inSeq[1] != "all" & input$inTaxa[1] == "all"){
+        customData <- subset(data,geneID %in% input$inSeq) ##### <=== select data for selected sequences only
+      } else if(input$inSeq[1] == "all" & input$inTaxa[1] != "all"){
+        customData <- subset(data,supertaxonMod %in% input$inTaxa) ##### <=== select data for selected taxa only
+      } else if(input$inSeq[1] != "all" & input$inTaxa[1] != "all") {
+        customData <- subset(data,geneID %in% input$inSeq & supertaxonMod %in% input$inTaxa) ##### <=== select data for selected sequences and taxa
+      } else {
+        customData <- data
+      }
+    } else {
+      customData <- data
+    }
+    ### return data
+    customData <- as.matrix(customData)
+    customData
+  })
+  
+  ######## download data
+  output$downloadCustomData <- downloadHandler(
+    filename = function(){c("customDataFiltered.out")},
+    content = function(file){
+      dataOut <- downloadData()
+      write.table(dataOut,file,sep="\t",row.names = FALSE,quote = FALSE)
+    }
+  )
+  
+  ######## data table ui tab
+  output$filteredCustomData <- renderDataTable({
+    if(v$doPlot == FALSE){return()}
+    data <- downloadCustomData()
+    data
+  })
   
   #############################################################
   ############### HELP & TEXT OUTPUT for TESTING ##############

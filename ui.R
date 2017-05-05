@@ -335,8 +335,15 @@ shinyUI(fluidPage(
     ),
     
     ########## DATA TAB ###########
-    tabPanel("(Filtered) data",dataTableOutput("dis"),
-             downloadButton('downloadData', 'Download filtered data')
+    navbarMenu("Download filtered data",
+               tabPanel("Main data",
+                        dataTableOutput("filteredMainData"),
+                        downloadButton('downloadData', 'Download filtered data')
+               ),
+               tabPanel("Customized data",
+                        dataTableOutput("filteredCustomData"),
+                        downloadButton('downloadCustomData', 'Download customized data')
+               )
     ),
     
     ########## OTHERS TAB ###########
