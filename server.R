@@ -1104,8 +1104,6 @@ shinyServer(function(input, output, session) {
   mainPlot <- function(){
     if (v$doPlot == FALSE) return()
     dataHeat <- dataHeat()
-#    print(str(dataHeat))
-#    names(dataHeat)[names(dataHeat) == 'var1'] <- input$var1_id
     
     ### plot format
     if(input$xAxis == "genes"){
