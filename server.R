@@ -1104,6 +1104,8 @@ shinyServer(function(input, output, session) {
   mainPlot <- function(){
     if (v$doPlot == FALSE) return()
     dataHeat <- dataHeat()
+#    print(str(dataHeat))
+#    names(dataHeat)[names(dataHeat) == 'var1'] <- input$var1_id
     
     ### plot format
     if(input$xAxis == "genes"){
@@ -1118,6 +1120,7 @@ shinyServer(function(input, output, session) {
       scale_color_gradient(low = input$lowColor_var1,high = input$highColor_var1)#+       ## color of the corresponding aes (var1)
     scale_size(range = c(0,3))             ## to tune the size of circles
     #+ stat_binhex()
+    p = p + guides(fill=guide_colourbar(title = input$var2_id), color=guide_colourbar(title = input$var1_id))
     base_size <- 9
     
     if(input$xAxis == "genes"){
@@ -1757,6 +1760,7 @@ shinyServer(function(input, output, session) {
         geom_point(aes(colour = var1, size = presSpec))  +    ## geom_point for circle illusion (var1 and presence/absence)
         scale_color_gradient(low = input$lowColor_var1,high = input$highColor_var1)#+       ## color of the corresponding aes (var1)
       scale_size(range = c(0,3))             ## to tune the size of circles
+      p = p + guides(fill=guide_colourbar(title = input$var2_id), color=guide_colourbar(title = input$var1_id))
       base_size <- 9
       
       if(input$xAxis_selected == "taxa"){
