@@ -1118,7 +1118,7 @@ shinyServer(function(input, output, session) {
       scale_color_gradient(low = input$lowColor_var1,high = input$highColor_var1)#+       ## color of the corresponding aes (var1)
     scale_size(range = c(0,3))             ## to tune the size of circles
     #+ stat_binhex()
-    p = p + guides(fill=guide_colourbar(title = input$var2_id), color=guide_colourbar(title = input$var1_id))
+    p = p + guides(fill=guide_colourbar(title = input$var2_id), color=guide_colourbar(title = input$var1_id))   # thanks to Arpit Jain :-D
     base_size <- 9
     
     if(input$xAxis == "genes"){
@@ -2237,12 +2237,19 @@ shinyServer(function(input, output, session) {
   
   ######## download architecture plot ***** something strange with archiPlot()
   output$archiDownload <- downloadHandler(
-    filename = "domains.svg",
+    filename = function() {c("domains.pdf")},
     content = function(file) {
       g <- archiPlot()
       grid.draw(g)
-      ggsave(file, plot = g, width = input$archiWidth*0.056458333, height = input$archiHeight*0.056458333, units="cm", dpi=300)#, device = "svg")
+      ggsave(file, plot = g, width = input$selectedWidth*0.056458333, height = input$selectedHeight*0.056458333, units="cm", dpi=300, device = "pdf", limitsize=FALSE)
     }
+    
+    # filename = "domains.pdf",
+    # content = function(file) {
+    #   g <- archiPlot()
+    #   grid.draw(g)
+    #   ggsave(file, plot = g, width = input$archiWidth*0.056458333, height = input$archiHeight*0.056458333, units="cm", dpi=300)#, device = "svg")
+    # }
   )
   
   
