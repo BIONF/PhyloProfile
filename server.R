@@ -684,22 +684,8 @@ shinyServer(function(input, output, session) {
     if (input$do > 0) {
       toggleState("mainInput")
       toggleState("geneList_selected")
-      toggleState("sortGene")
       toggleState("newTaxaAsk")
       toggleState("parseAsk")
-      #updateTabsetPanel(session, "tabs", selected = "Main profile")
-    }
-  })
-  
-  #### change sortGene/clusterGene to "NO" if clusterGene/sortGene is "YES
-  observe({
-    if(input$clusterGene == "Yes"){
-      updateRadioButtons(session,'sortGene',"", c("Yes" = "Yes", "No" = "No"), inline=T, selected = "No")
-    }
-  })
-  observe({
-    if(input$sortGene == "Yes"){
-      updateRadioButtons(session,'clusterGene',"", c("Yes" = "Yes", "No" = "No"), inline=T, selected = "No")
     }
   })
   
@@ -708,10 +694,16 @@ shinyServer(function(input, output, session) {
     filein <- input$mainInput
     if(is.null(filein)){return()}
     else{
-      dt <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+      if(checkLongFormat() == TRUE){
+        dt <- long2wide(filein)
+      } else {
+        dt <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+      }
       
       if(nrow(dt) < 2){
-        toggleState("clusterGene")
+        updateRadioButtons(session,"ordering","",
+                           choices = c("alphabetical","none"), selected = "alphabetical",
+                           inline = F)
       } 
     }
   })
@@ -756,11 +748,13 @@ shinyServer(function(input, output, session) {
   })
   
   ######## sorting supertaxa list based on chosen reference taxon
-  sortedTaxaList <- reactive({
+  
+  nonDupTaxonDf <- reactive({
     if(v$doPlot == FALSE){return()}
     
     ### load list of unsorted taxa
     Dt <- as.data.frame(read.table("data/taxonID.list.fullRankID", sep='\t',header=T))
+    names(Dt)[ncol(Dt)] <- "root"
     Dt <- Dt[Dt$abbrName  %in% subsetTaxa(),]
     
     ### reduce the number of columns in the original data frame by removing duplicate columns
@@ -780,6 +774,13 @@ shinyServer(function(input, output, session) {
     drop <- colnames(tDupDt)
     # drop those columns from original Df
     Dt <- Dt[,!(names(Dt) %in% drop)]
+  })
+  
+  sortedTaxaList <- reactive({
+    if(v$doPlot == FALSE){return()}
+    
+    ### load list of unsorted taxa
+    Dt <- nonDupTaxonDf()
     
     ### load list of taxon name
     nameList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T,fill = TRUE))
@@ -871,14 +872,14 @@ shinyServer(function(input, output, session) {
     # convert input to wide format (if needed) & get nrHit rows
     if(checkLongFormat() == TRUE){
       inputMod <- long2wide(filein)
-      if(input$clusterGene == "Yes"){
+      if(input$ordering == "hierarchical cluster"){
         inputMod <- clusterData(inputMod)
       }
       #      data <- head(inputMod,nrHit)
       subsetID <- levels(inputMod$geneID)[1:nrHit]
       data <- inputMod[inputMod$geneID %in% subsetID,]
     } else {
-      if(input$clusterGene == "Yes"){
+      if(input$ordering == "hierarchical cluster"){
         oridata <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
         clusteredOridata <- clusterData(oridata)
         
@@ -902,13 +903,13 @@ shinyServer(function(input, output, session) {
         }
         data <- dataOrig[dataOrig$geneID %in% list$V1,]
         
-        if(input$clusterGene == "Yes"){
+        if(input$ordering == "hierarchical cluster"){
           data <- clusterData(data)
         }
       }
     }
     
-    if(input$clusterGene == "No" & input$sortGene == "No"){
+    if(input$ordering == "none"){
       data$geneID <- factor(data$geneID, levels = data$geneID)  ######### keep user defined geneID order
     }
     
@@ -1021,18 +1022,24 @@ shinyServer(function(input, output, session) {
     if(is.null(filein) & is.null(fileCustom)){return(selectInput('inSeq','',"all"))}
     if(v$doPlot == FALSE){return(selectInput('inSeq','',"all"))}
     else{
-      if(is.null(fileCustom)){
-        data <- as.data.frame(dataFiltered())
-        data$geneID <- as.character(data$geneID)
-        data$geneID <- as.factor(data$geneID)
-        out <- as.list(levels(data$geneID))
-        out <- append("all",out)
-        selectInput('inSeq','',out,selected=out[1],multiple=TRUE)
+      if (input$addCustomProfile == TRUE){
+        out <- selectedGeneAge()
+        selectInput('inSeq','',out,selected=as.list(out),multiple=TRUE)
       } else {
-        customList <- as.data.frame(read.table(file=fileCustom$datapath, header=FALSE))
-        customList$V1 <- as.factor(customList$V1)
-        out <- as.list(levels(customList$V1))
-        selectInput('inSeq','',out,selected=out,multiple=TRUE)
+        if(is.null(fileCustom)){
+          data <- as.data.frame(dataFiltered())
+          data$geneID <- as.character(data$geneID)
+          data$geneID <- as.factor(data$geneID)
+          out <- as.list(levels(data$geneID))
+          out <- append("all",out)
+          selectInput('inSeq','',out,selected=out[1],multiple=TRUE)
+        }
+        else {
+          customList <- as.data.frame(read.table(file=fileCustom$datapath, header=FALSE))
+          customList$V1 <- as.factor(customList$V1)
+          out <- as.list(levels(customList$V1))
+          selectInput('inSeq','',out,selected=out,multiple=TRUE)
+        }
       }
     }
   })
@@ -2252,6 +2259,193 @@ shinyServer(function(input, output, session) {
     # }
   )
   
+  #############################################################
+  ######################## GENE AGE ###########################
+  #############################################################
+  
+  ##### gene age estimation
+  geneAgeDf <- reactive({
+    if (v$doPlot == FALSE) return()
+    
+    rankList <- c("family","class","phylum","kingdom","superkingdom","root")
+    
+    ##### get selected (super)taxon ID
+    rankSelect <- input$rankSelect
+    rankName = substr(rankSelect,4,nchar(rankSelect))
+    
+    taxaList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T))
+    superID <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inSelect & taxaList$rank == rankName])
+
+    ### full non-duplicated taxonomy data
+    Dt <- nonDupTaxonDf()
+    ### subset of taxonomy data, containing only ranks from rankList
+    subDt <- Dt[,c("abbrName",rankList)]
+
+    ### get (super)taxa IDs for one of representative species
+    firstLine <- Dt[Dt[,rankName]==superID,][1,]  # get all taxon info for 1 representative
+    subFirstLine <- firstLine[,c("abbrName",rankList)]
+
+    ### compare each taxon ncbi IDs with selected taxon
+    ### and create a "category" data frame
+    catDf <- data.frame("ncbiID" = character(), "cat" = character(), stringsAsFactors=FALSE)
+    for(i in 1:nrow(subDt)){
+      cat <- subDt[i,] %in% subFirstLine
+      cat[cat == FALSE] <- 0
+      cat[cat == TRUE] <- 1
+      cat <- paste0(cat,collapse = "")
+      catDf[i,] <- c(as.character(subDt[i,]$abbrName),cat)
+    }
+
+    ### get main input data
+    filein <- input$mainInput
+    
+    if(checkLongFormat() == TRUE){
+      mdData <- as.data.frame(read.table(filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+      colnames(mdData) <- c("geneID","ncbiID","orthoID","var1","var2")
+    } else {
+      data <- as.data.frame(read.table(filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+      mdData <- melt(data,id="geneID",factorsAsStrings=F)
+      mdData$value <- as.character(mdData$value)
+      mdData$value[is.na(mdData$value)] <- "NA#NA"
+      
+      # split value column into orthoID and fas
+      splitDt <- (str_split_fixed(mdData$value, '#', 3))
+      # then join them back to mdData
+      mdData <- cbind(mdData,splitDt)
+      # rename columns
+      colnames(mdData) <- c("geneID","ncbiID","value","orthoID","var1","var2")
+    }
+    
+    ### add "category" into mdData
+    mdDataExtended <- merge(mdData,catDf,by="ncbiID",all.x = TRUE)
+    
+    ### remove cat for "NA" orthologs and also for orthologs that do not fit cutoffs
+    mdDataExtended[mdDataExtended$orthoID == "NA"| is.na(mdDataExtended$orthoID),]$cat <- NA
+    # filter by %specpres, var1, var2 ..
+    #mdDataExtended[mdDataExtended$var1 < input$var1[1],]$cat <- NA
+    #mdDataExtended[mdDataExtended$var1 > input$var1[2],]$cat <- NA
+    #mdDataExtended[mdDataExtended$var2 < input$var2[1],]$cat <- NA
+    #mdDataExtended[mdDataExtended$var2 > input$var2[2],]$cat <- NA
+    
+    mdDataExtended <- mdDataExtended[complete.cases(mdDataExtended),]
+    
+    ### get the furthest common taxon with selected taxon for each gene
+    geneAgeDf <- as.data.frame(tapply(mdDataExtended$cat, mdDataExtended$geneID, min))
+    setDT(geneAgeDf, keep.rownames = TRUE)[]
+    setnames(geneAgeDf, 1:2, c("geneID","cat"))  # rename columns
+    row.names(geneAgeDf) <- NULL   # remove row names
+    
+    ### convert cat into geneAge
+    geneAgeDf$age[geneAgeDf$cat == "0000001"] <- "07_LUCA"
+    geneAgeDf$age[geneAgeDf$cat == "0000011"] <- "06_superkingdom"#subFirstLine$superkingdom
+    geneAgeDf$age[geneAgeDf$cat == "0000111"] <- "05_kingdom"#subFirstLine$kingdom
+    geneAgeDf$age[geneAgeDf$cat == "0001111"] <- "04_phylum"#subFirstLine$phylum
+    geneAgeDf$age[geneAgeDf$cat == "0011111"] <- "03_class"#subFirstLine$class
+    geneAgeDf$age[geneAgeDf$cat == "0111111"] <- "02_family"#subFirstLine$family
+    geneAgeDf$age[geneAgeDf$cat == "1111111"] <- "01_species"#subFirstLine$species
+
+    ### return geneAge data frame
+    geneAgeDf <- geneAgeDf[,c("geneID","cat","age")]
+    geneAgeDf
+  })
+  
+  ##### plot gene ages
+  geneAgePlot <- function(){
+    if (v$doPlot == FALSE) return()
+    
+    geneAgeDf <- geneAgeDf()
+    
+    countDf <- plyr::count(geneAgeDf,c('age'))
+
+    p <- ggplot(data=countDf, aes(x=age, y=freq, fill=age)) +
+      geom_bar(stat="identity", fill="steelblue")+
+      geom_text(aes(label=freq), vjust=1.6, color="white", size=3.5) +
+      theme_minimal()
+    p <- p + theme(legend.position = "none",
+                   axis.title.x = element_blank(),axis.text.x = element_text(size=input$xSize, angle=60,hjust=1),
+                   axis.title.y = element_blank(),axis.text.y = element_text(size=input$ySize))
+    p
+  }
+  
+  output$geneAgePlot <- renderPlot(height = 300, width = 300, {
+    if(input$autoUpdate == FALSE){
+      # Add dependency on the update button (only update when button is clicked)
+      input$updateBtn
+      
+      # Add all the filters to the data based on the user inputs
+      # wrap in an isolate() so that the data won't update every time an input
+      # is changed
+      isolate({
+        geneAgePlot()
+      })
+    } else {
+      geneAgePlot()
+    }
+  })
+  
+  output$geneAge.ui <- renderUI({
+    if(v$doPlot == FALSE){
+      return()
+    } else{
+      ## if autoupdate is NOT selected, use updateBtn to trigger plot changing
+      if(input$autoUpdate == FALSE){
+        # Add dependency on the update button (only update when button is clicked)
+        input$updateBtn
+        
+        # Add all the filters to the data based on the user inputs
+        # wrap in an isolate() so that the data won't update every time an input
+        # is changed
+        isolate({
+          plotOutput("geneAgePlot",width=300,height = 300,
+                     click = "plot_click_geneAge")
+        })
+      }
+      ## if autoupdate is true
+      else {
+        plotOutput("geneAgePlot",width=300,height = 300,
+                   click = "plot_click_geneAge")
+      }
+    }
+  })
+  
+  ### download gene age plot
+  output$geneAgePlotDownload <- downloadHandler(
+    filename = function() {"geneAge_plot.pdf"},
+    content = function(file) {
+      ggsave(file, plot = geneAgePlot(), dpi=300, device = "pdf", limitsize=FALSE)
+    }
+  )
+  
+  ##### render genAge.table based on clicked point on geneAgePlot
+  selectedGeneAge <- reactive({
+    if(v$doPlot == FALSE){return()}
+    data <- geneAgeDf()
+    allAges <- as.list(levels(as.factor(data$age)))
+    
+    if (is.null(input$plot_click_geneAge$x)) {return()}
+    else{
+      corX = round(input$plot_click_geneAge$x)
+      data <- data[data$age == allAges[corX],]
+    }
+    
+    # return list of genes
+    geneList <- levels(as.factor(data$geneID))
+    geneList
+  })
+  
+  output$geneAge.table <- renderTable({
+    selectedGeneAge()
+  })
+  
+  ### download gene list from geneAgeTable
+  output$geneAgeTableDownload <- downloadHandler(
+    filename = function(){c("selectedGeneList.out")},
+    content = function(file){
+      dataOut <- selectedGeneAge()
+      write.table(dataOut,file,sep="\t",row.names = FALSE,quote = FALSE)
+    }
+  )
+    
   
   #############################################################
   ############### FILTERED DATA FOR DOWNLOADING ###############

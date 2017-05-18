@@ -197,12 +197,9 @@ shinyUI(fluidPage(
                ),
                hr(),
                
-               strong(h4("Auto-sort the sequence IDs?")),
-               radioButtons("sortGene","", c("Yes" = "Yes", "No" = "No"), inline=T, selected = "Yes"),
-               hr(),
-               
-               strong(h4("Hierarchical cluster sequences?")),
-               radioButtons("clusterGene","", c("Yes" = "Yes", "No" = "No"), inline=T, selected = "No"),
+               strong(h4("Ordering sequence IDs by:")),
+               radioButtons("ordering", "", choices = c("alphabetical","hierarchical cluster","none"), selected = "alphabetical",
+                            inline = F),
                hr(),
                
                bsButton("getConfig","FASTA config"),
@@ -216,7 +213,7 @@ shinyUI(fluidPage(
                condition = 'output.unkTaxaStatus',
                strong(h4("PLEASE CHECK:")),
                em("Does the taxa in your recently uploaded presence/absence file change? (Note: for 'first time users', please choose 'YES')"),
-               radioButtons("parseAsk","", c("Yes" = "Yes", "No" = "No"), inline=T, selected = "No"),
+               radioButtons("parseAsk","", c("Yes" = "Yes", "No" = "No"), inline=T, selected = "Yes"),
                conditionalPanel(condition="input.parseAsk == 'Yes'",
                                 bsButton("parse","Get info from input",disabled=TRUE)
                ),
@@ -254,7 +251,7 @@ shinyUI(fluidPage(
           column(4,numericInput("stIndex","1st index:",min=1,max=1600,value=1,width=200)),
           
           column(4,uiOutput("highlightGeneUI")),
-          bsPopover("highlightGeneUI","","OR double click on heatmap","right"),
+          #bsPopover("highlightGeneUI","","OR double click on heatmap","right"),
           
           uiOutput("highlightTaxonUI"),
           bsPopover("highlightTaxonUI","","OR double click on heatmap","right"),
@@ -304,6 +301,20 @@ shinyUI(fluidPage(
                        downloadButton("presSpecDownload","Download"),
                        uiOutput("presSpec.ui")
                      )
+            ),
+            
+            tabPanel("Gene age estimation",
+                     column(6,
+                            downloadButton("geneAgePlotDownload","Download plot"),
+                            uiOutput("geneAge.ui")
+                     ),
+                     column(4,
+                            downloadButton("geneAgeTableDownload","Download gene list"),
+                            tableOutput("geneAge.table"),
+                            hr(),
+                            checkboxInput("addCustomProfile",strong(em("Add to Customized profile")), value = FALSE, width = NULL)
+                     )
+                     
             )
           )
         )
