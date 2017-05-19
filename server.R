@@ -557,7 +557,7 @@ shinyServer(function(input, output, session) {
     selectInput("rankSelect", label = h5("Select taxonomy rank:"),
                 choices = list("Strain"="05_strain","Species" = "06_species","Genus" = "10_genus", "Family" = "14_family", "Order" = "19_order", "Class" = "23_class",
                                "Phylum" = "26_phylum", "Kingdom" = "28_kingdom", "Superkingdom" = "29_superkingdom","unselected"=""),
-                selected = "")
+                selected = "06_species")
   })
   
   ####### GET list of all (super)taxa
@@ -924,7 +924,7 @@ shinyServer(function(input, output, session) {
     mdData <- melt(data,id="geneID")
     
     # replace NA value with "NA#NA" (otherwise the corresponding orthoID will be empty)
-    mdData$value <- as.character(mdData$value)
+    mdData$value <- suppressWarnings(as.character(mdData$value))
     mdData$value[is.na(mdData$value)] <- "NA#NA"
     
     # split value column into orthoID, var1 & var2
@@ -943,8 +943,8 @@ shinyServer(function(input, output, session) {
     
     # merge mdData, mdDataTrace and taxaList to get taxonomy info
     taxaMdData <- merge(mdData,taxaList,by='ncbiID')
-    taxaMdData$var1 <- as.numeric(as.character(taxaMdData$var1))
-    taxaMdData$var2 <- as.numeric(as.character(taxaMdData$var2))
+    taxaMdData$var1 <- suppressWarnings(as.numeric(as.character(taxaMdData$var1)))
+    taxaMdData$var2 <- suppressWarnings(as.numeric(as.character(taxaMdData$var2)))
     
     # ### (4) calculate PERCENTAGE of PRESENT SPECIES (4) ###
     finalPresSpecDt <- calcPresSpec(taxaMdData, taxaCount)
@@ -1441,10 +1441,10 @@ shinyServer(function(input, output, session) {
       splitDt <- as.data.frame(str_split_fixed(mdData$value, '#', 3))
       colnames(splitDt) <- c("orthoID","var1","var2")
     }
-    
+
     # convert factor into numeric for "var1" & "var2" column
-    splitDt$var1<-as.numeric(as.character(splitDt$var1))
-    splitDt$var2<-as.numeric(as.character(splitDt$var2))
+    splitDt$var1 <- suppressWarnings(as.numeric(as.character(splitDt$var1)))
+    splitDt$var2 <- suppressWarnings(as.numeric(as.character(splitDt$var2)))
     
     # filter splitDt based on selected var1 cutoff
     splitDt <- splitDt[splitDt$var1 >= input$var1[1] & splitDt$var1 <= input$var1[2],]
@@ -1458,24 +1458,28 @@ shinyServer(function(input, output, session) {
   ###### var1 score distribution plot
   var1DistPlot <- function(){
     if (v$doPlot == FALSE) return()
-    
+
     splitDt <- distDf()
-    splitDt <- splitDt[!is.na(splitDt$var1),]
-    splitDt$mean <- mean(splitDt$var1)
-    
-    # plot var1 score distribution
-    p <- ggplot(splitDt, aes(x=var1)) +
-      geom_histogram(binwidth=.01, alpha=.5, position="identity") +
-      geom_vline(data=splitDt, aes(xintercept=splitDt$mean,colour="red"),
-                 linetype="dashed", size=1) +
-      #      ggtitle(paste("Mean",input$var1_id,"=",round(mean(splitDt$var1),3))) +
-      theme_minimal()
-    p <- p + theme(legend.position = "none",
-                   #                   plot.title = element_text(hjust = 0.5),
-                   axis.title.x = element_text(size=input$xSize),axis.text.x = element_text(size=input$xSize),
-                   axis.title.y = element_text(size=input$ySize),axis.text.y = element_text(size=input$ySize)) +
-      labs(x = paste0(input$var1_id," (mean = ",round(mean(splitDt$var1),3),")"), y = "Frequency")
-    p
+
+    if(is.null(levels(as.factor(splitDt$var1)))){return()}
+    else{
+      splitDt <- splitDt[!is.na(splitDt$var1),]
+      splitDt$mean <- mean(splitDt$var1)
+      
+      # plot var1 score distribution
+      p <- ggplot(splitDt, aes(x=var1)) +
+        geom_histogram(binwidth=.01, alpha=.5, position="identity") +
+        geom_vline(data=splitDt, aes(xintercept=splitDt$mean,colour="red"),
+                   linetype="dashed", size=1) +
+        #      ggtitle(paste("Mean",input$var1_id,"=",round(mean(splitDt$var1),3))) +
+        theme_minimal()
+      p <- p + theme(legend.position = "none",
+                     #                   plot.title = element_text(hjust = 0.5),
+                     axis.title.x = element_text(size=input$xSize),axis.text.x = element_text(size=input$xSize),
+                     axis.title.y = element_text(size=input$ySize),axis.text.y = element_text(size=input$ySize)) +
+        labs(x = paste0(input$var1_id," (mean = ",round(mean(splitDt$var1),3),")"), y = "Frequency")
+      p
+    }
   }
   
   output$var1DistPlot <- renderPlot(width = 512, height = 356,{
@@ -1529,22 +1533,25 @@ shinyServer(function(input, output, session) {
     if (v$doPlot == FALSE) return()
     
     splitDt <- distDf()
-    splitDt <- splitDt[!is.na(splitDt$var2),]
-    splitDt$mean <- mean(splitDt$var2)
-    
-    # plot var1 score distribution
-    p <- ggplot(splitDt, aes(x=var2)) +
-      geom_histogram(binwidth=.01, alpha=.5, position="identity") +
-      geom_vline(data=splitDt, aes(xintercept=splitDt$mean,colour="red"),
-                 linetype="dashed", size=1) +
-      #      ggtitle(paste("Mean",input$var2_id,"=",round(mean(splitDt$var2),3))) +
-      theme_minimal()
-    p <- p + theme(legend.position = "none",
-                   #                   plot.title = element_text(size=input$legendSize),#hjust = 0.5, 
-                   axis.title.x = element_text(size=input$xSize),axis.text.x = element_text(size=input$xSize),
-                   axis.title.y = element_text(size=input$ySize),axis.text.y = element_text(size=input$ySize)) +
-      labs(x = paste0(input$var2_id," (mean = ",round(mean(splitDt$var2),3),")"), y = "Frequency")
-    p
+    if(is.null(levels(as.factor(splitDt$var2)))){return()}
+    else{
+      splitDt <- splitDt[!is.na(splitDt$var2),]
+      splitDt$mean <- mean(splitDt$var2)
+      
+      # plot var1 score distribution
+      p <- ggplot(splitDt, aes(x=var2)) +
+        geom_histogram(binwidth=.01, alpha=.5, position="identity") +
+        geom_vline(data=splitDt, aes(xintercept=splitDt$mean,colour="red"),
+                   linetype="dashed", size=1) +
+        #      ggtitle(paste("Mean",input$var2_id,"=",round(mean(splitDt$var2),3))) +
+        theme_minimal()
+      p <- p + theme(legend.position = "none",
+                     #                   plot.title = element_text(size=input$legendSize),#hjust = 0.5, 
+                     axis.title.x = element_text(size=input$xSize),axis.text.x = element_text(size=input$xSize),
+                     axis.title.y = element_text(size=input$ySize),axis.text.y = element_text(size=input$ySize)) +
+        labs(x = paste0(input$var2_id," (mean = ",round(mean(splitDt$var2),3),")"), y = "Frequency")
+      p
+    }
   }
   
   output$var2DistPlot <- renderPlot(width = 512, height = 356,{
@@ -1624,8 +1631,8 @@ shinyServer(function(input, output, session) {
     
     # merge mdData, mdDataTrace and taxaList to get taxonomy info
     taxaMdData <- merge(mdData,taxaList,by='ncbiID')
-    taxaMdData$var1 <- as.numeric(as.character(taxaMdData$var1))
-    taxaMdData$var2 <- as.numeric(as.character(taxaMdData$var2))
+    taxaMdData$var1 <- suppressWarnings(as.numeric(as.character(taxaMdData$var1)))
+    taxaMdData$var2 <- suppressWarnings(as.numeric(as.character(taxaMdData$var2)))
     
     # calculate % present species
     finalPresSpecDt <- calcPresSpec(taxaMdData, taxaCount)
@@ -2297,35 +2304,42 @@ shinyServer(function(input, output, session) {
     }
 
     ### get main input data
-    filein <- input$mainInput
+    # filein <- input$mainInput
+    # 
+    # if(checkLongFormat() == TRUE){
+    #   mdData <- as.data.frame(read.table(filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+    #   colnames(mdData) <- c("geneID","ncbiID","orthoID","var1","var2")
+    # } else {
+    #   data <- as.data.frame(read.table(filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+    #   mdData <- melt(data,id="geneID",factorsAsStrings=F)
+    #   mdData$value <- as.character(mdData$value)
+    #   mdData$value[is.na(mdData$value)] <- "NA#NA"
+    #   
+    #   # split value column into orthoID and fas
+    #   splitDt <- (str_split_fixed(mdData$value, '#', 3))
+    #   # then join them back to mdData
+    #   mdData <- cbind(mdData,splitDt)
+    #   # rename columns
+    #   colnames(mdData) <- c("geneID","ncbiID","value","orthoID","var1","var2")
+    # }
     
-    if(checkLongFormat() == TRUE){
-      mdData <- as.data.frame(read.table(filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
-      colnames(mdData) <- c("geneID","ncbiID","orthoID","var1","var2")
-    } else {
-      data <- as.data.frame(read.table(filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
-      mdData <- melt(data,id="geneID",factorsAsStrings=F)
-      mdData$value <- as.character(mdData$value)
-      mdData$value[is.na(mdData$value)] <- "NA#NA"
-      
-      # split value column into orthoID and fas
-      splitDt <- (str_split_fixed(mdData$value, '#', 3))
-      # then join them back to mdData
-      mdData <- cbind(mdData,splitDt)
-      # rename columns
-      colnames(mdData) <- c("geneID","ncbiID","value","orthoID","var1","var2")
-    }
+    mdData <- dataFiltered()
+    mdData <- mdData[,c("geneID","ncbiID","orthoID","var1","var2","presSpec")]
     
     ### add "category" into mdData
     mdDataExtended <- merge(mdData,catDf,by="ncbiID",all.x = TRUE)
-    
+
     ### remove cat for "NA" orthologs and also for orthologs that do not fit cutoffs
     mdDataExtended[mdDataExtended$orthoID == "NA"| is.na(mdDataExtended$orthoID),]$cat <- NA
+    mdDataExtended <- mdDataExtended[complete.cases(mdDataExtended),]
+    
     # filter by %specpres, var1, var2 ..
-    #mdDataExtended[mdDataExtended$var1 < input$var1[1],]$cat <- NA
-    #mdDataExtended[mdDataExtended$var1 > input$var1[2],]$cat <- NA
-    #mdDataExtended[mdDataExtended$var2 < input$var2[1],]$cat <- NA
-    #mdDataExtended[mdDataExtended$var2 > input$var2[2],]$cat <- NA
+    mdDataExtended$cat[mdDataExtended$var1 < input$var1[1]] <- NA
+    mdDataExtended$cat[mdDataExtended$var1 > input$var1[2]] <- NA
+    mdDataExtended$cat[mdDataExtended$var2 < input$var2[1]] <- NA
+    mdDataExtended$cat[mdDataExtended$var2 > input$var2[2]] <- NA
+    mdDataExtended$cat[mdDataExtended$presSpec < input$percent[1]] <- NA
+    mdDataExtended$cat[mdDataExtended$presSpec > input$percent[2]] <- NA
     
     mdDataExtended <- mdDataExtended[complete.cases(mdDataExtended),]
     
@@ -2337,15 +2351,17 @@ shinyServer(function(input, output, session) {
     
     ### convert cat into geneAge
     geneAgeDf$age[geneAgeDf$cat == "0000001"] <- "07_LUCA"
-    geneAgeDf$age[geneAgeDf$cat == "0000011"] <- "06_superkingdom"#subFirstLine$superkingdom
-    geneAgeDf$age[geneAgeDf$cat == "0000111"] <- "05_kingdom"#subFirstLine$kingdom
-    geneAgeDf$age[geneAgeDf$cat == "0001111"] <- "04_phylum"#subFirstLine$phylum
-    geneAgeDf$age[geneAgeDf$cat == "0011111"] <- "03_class"#subFirstLine$class
-    geneAgeDf$age[geneAgeDf$cat == "0111111"] <- "02_family"#subFirstLine$family
-    geneAgeDf$age[geneAgeDf$cat == "1111111"] <- "01_species"#subFirstLine$species
+    geneAgeDf$age[geneAgeDf$cat == "0000011"] <- paste0("06_",as.character(taxaList$fullName[taxaList$ncbiID == subFirstLine$superkingdom & taxaList$rank == "superkingdom"]))
+    geneAgeDf$age[geneAgeDf$cat == "0000111"] <- paste0("05_",as.character(taxaList$fullName[taxaList$ncbiID == subFirstLine$kingdom & taxaList$rank == "kingdom"]))
+    geneAgeDf$age[geneAgeDf$cat == "0001111"] <- paste0("04_",as.character(taxaList$fullName[taxaList$ncbiID == subFirstLine$phylum & taxaList$rank == "phylum"]))
+    geneAgeDf$age[geneAgeDf$cat == "0011111"] <- paste0("03_",as.character(taxaList$fullName[taxaList$ncbiID == subFirstLine$class & taxaList$rank == "class"]))
+    geneAgeDf$age[geneAgeDf$cat == "0111111"] <- paste0("02_",as.character(taxaList$fullName[taxaList$ncbiID == subFirstLine$family & taxaList$rank == "family"]))
+    geneAgeDf$age[geneAgeDf$cat == "1111111"] <- paste0("01_",as.character(taxaList$fullName[taxaList$fullName == input$inSelect & taxaList$rank == rankName]))
 
     ### return geneAge data frame
     geneAgeDf <- geneAgeDf[,c("geneID","cat","age")]
+    
+    geneAgeDf$age[is.na(geneAgeDf$age)] <- "Undef"
     geneAgeDf
   })
   
@@ -2354,20 +2370,26 @@ shinyServer(function(input, output, session) {
     if (v$doPlot == FALSE) return()
     
     geneAgeDf <- geneAgeDf()
-    
-    countDf <- plyr::count(geneAgeDf,c('age'))
 
-    p <- ggplot(data=countDf, aes(x=age, y=freq, fill=age)) +
-      geom_bar(stat="identity", fill="steelblue")+
-      geom_text(aes(label=freq), vjust=1.6, color="white", size=3.5) +
-      theme_minimal()
-    p <- p + theme(legend.position = "none",
-                   axis.title.x = element_blank(),axis.text.x = element_text(size=input$xSize, angle=60,hjust=1),
-                   axis.title.y = element_blank(),axis.text.y = element_text(size=input$ySize))
+    countDf <- plyr::count(geneAgeDf,c('age'))
+    countDf$percentage <- round(countDf$freq/sum(countDf$freq)*100)
+    countDf$pos <- cumsum(countDf$percentage) - (0.5 * countDf$percentage)
+
+    p <- ggplot(countDf, aes(fill=age, y=percentage, x=1)) + 
+          geom_bar(stat="identity") +
+          scale_y_reverse() +
+          coord_flip() +
+          theme_minimal()
+    p <- p + geom_text(data=countDf, aes(x = 1, y = 100-pos, label = paste0(freq,"\n",percentage,"%")),size=4)
+    p <- p + theme(legend.position="bottom", legend.title = element_blank(), legend.text = element_text(size=12),
+                   axis.title = element_blank(), axis.text = element_blank()) +
+          scale_fill_brewer(palette="Spectral") +
+          guides(fill=guide_legend(nrow=3,byrow=TRUE))
+    
     p
   }
   
-  output$geneAgePlot <- renderPlot(height = 300, width = 300, {
+  output$geneAgePlot <- renderPlot(height = 150, width = 600, {
     if(input$autoUpdate == FALSE){
       # Add dependency on the update button (only update when button is clicked)
       input$updateBtn
@@ -2396,13 +2418,13 @@ shinyServer(function(input, output, session) {
         # wrap in an isolate() so that the data won't update every time an input
         # is changed
         isolate({
-          plotOutput("geneAgePlot",width=300,height = 300,
+          plotOutput("geneAgePlot",width=600,height = 150,
                      click = "plot_click_geneAge")
         })
       }
       ## if autoupdate is true
       else {
-        plotOutput("geneAgePlot",width=300,height = 300,
+        plotOutput("geneAgePlot",width=600,height = 150,
                    click = "plot_click_geneAge")
       }
     }
@@ -2420,21 +2442,42 @@ shinyServer(function(input, output, session) {
   selectedGeneAge <- reactive({
     if(v$doPlot == FALSE){return()}
     data <- geneAgeDf()
-    allAges <- as.list(levels(as.factor(data$age)))
+
+    # calculate the coordinate range for each age group
+    rangeDf <- plyr::count(data,c('age'))
     
+    rangeDf$percentage <- round(rangeDf$freq/sum(rangeDf$freq)*100)
+    rangeDf$rangeStart[1] <- 0
+    rangeDf$rangeEnd[1] <- rangeDf$percentage[1]
+    if(nrow(rangeDf) > 1){
+      for(i in 2:nrow(rangeDf)){
+        rangeDf$rangeStart[i] <- rangeDf$rangeEnd[i-1]+1
+        rangeDf$rangeEnd[i] <- rangeDf$percentage[i] + rangeDf$rangeEnd[i-1]
+      }     
+    }
+
+    # get list of selected age group
     if (is.null(input$plot_click_geneAge$x)) {return()}
     else{
-      corX = round(input$plot_click_geneAge$x)
-      data <- data[data$age == allAges[corX],]
+      corX = 100-round(-input$plot_click_geneAge$x)
+      selectAge <- as.character(rangeDf[rangeDf$rangeStart <= corX & rangeDf$rangeEnd >= corX,]$age)
+      subData <- subset(data, age == selectAge)
+      data <- data[data$age == selectAge,]
     }
-    
+
     # return list of genes
-    geneList <- levels(as.factor(data$geneID))
+    geneList <- levels(as.factor(subData$geneID))
     geneList
   })
   
   output$geneAge.table <- renderTable({
-    selectedGeneAge()
+    if (is.null(input$plot_click_geneAge$x)) {return()}
+
+    data <- as.data.frame(selectedGeneAge())
+    data$number <- rownames(data)
+    colnames(data) <- c("geneID","No.")
+    data <- data[,c("No.","geneID")]
+    data
   })
   
   ### download gene list from geneAgeTable
