@@ -304,25 +304,25 @@ shinyUI(fluidPage(
             ),
             
             tabPanel("Gene age estimation",
-                    downloadButton("geneAgePlotDownload","Download plot"),
-                    uiOutput("geneAge.ui"),
-                    conditionalPanel(
-                      condition = "input.do",
-                      em(h6("01_Species; 02_Family; 03_Class; 04_Phylum; 
-                            05_Kingdom; 06_Superkingdom; 07_Last universal common ancestor;
-                            Undef_Genes have been filtered out"))
-                    ),
-                    hr(),
-                    column(4,
-                           downloadButton("geneAgeTableDownload","Download gene list"),
-                           checkboxInput("addCustomProfile",strong(em("Add to Customized profile")), value = FALSE, width = NULL)
-                    ),
-                    tableOutput("geneAge.table"),
-                    hr()   
+                     downloadButton("geneAgePlotDownload","Download plot"),
+                     uiOutput("geneAge.ui"),
+                     conditionalPanel(
+                       condition = "input.do",
+                       em(h6("01_Species; 02_Family; 03_Class; 04_Phylum; 
+                             05_Kingdom; 06_Superkingdom; 07_Last universal common ancestor;
+                             Undef_Genes have been filtered out"))
+                       ),
+                     hr(),
+                     column(4,
+                            downloadButton("geneAgeTableDownload","Download gene list"),
+                            checkboxInput("addCustomProfile",strong(em("Add to Customized profile")), value = FALSE, width = NULL)
+                     ),
+                     tableOutput("geneAge.table"),
+                     hr()   
+                       )
             )
-          )
-        )
       )
+    )
     ),
     
     ########## CUSTOMIZED PROFILE TAB ###########
@@ -371,24 +371,24 @@ shinyUI(fluidPage(
                ),
                tabPanel("Search for NCBI taxonomy IDs",
                         column(3,
-                          fileInput("taxaList",h4("Upload taxa list")),
-                          bsButton("idSearch","Search")
+                               fileInput("taxaList",h4("Upload taxa list")),
+                               bsButton("idSearch","Search")
                         ),
                         column(9,
-                          h4("Mismatch(es):"),
-                          dataTableOutput("notfoundTaxa"),
-                          downloadButton("downloadNotFoundTaxa","Download"),
-                          
-                          hr(),
-                          h4("Retrieved taxonomy ID(s):"),
-                          dataTableOutput("taxaID"),
-                          downloadButton("downloadTaxaID","Download")
+                               h4("Mismatch(es):"),
+                               dataTableOutput("notfoundTaxa"),
+                               downloadButton("downloadNotFoundTaxa","Download"),
+                               
+                               hr(),
+                               h4("Retrieved taxonomy ID(s):"),
+                               dataTableOutput("taxaID"),
+                               downloadButton("downloadTaxaID","Download")
                         )
                ),
                tabPanel(a("About", href="https://trvinh.github.io/phyloprofile/", target="_blank")
                )
     )
-  ),
+    ),
   
   ################### LIST OF POP-UP WINDOWS ##########################
   
@@ -511,7 +511,7 @@ shinyUI(fluidPage(
   # )
   
   
-)
+  )
 )
 
 

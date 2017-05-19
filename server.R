@@ -924,7 +924,7 @@ shinyServer(function(input, output, session) {
     mdData <- melt(data,id="geneID")
     
     # replace NA value with "NA#NA" (otherwise the corresponding orthoID will be empty)
-    mdData$value <- suppressWarnings(as.character(mdData$value))
+    mdData$value <- as.character(mdData$value)
     mdData$value[is.na(mdData$value)] <- "NA#NA"
     
     # split value column into orthoID, var1 & var2
@@ -1433,13 +1433,25 @@ shinyServer(function(input, output, session) {
       splitDt <- dataOrig[,c("orthoID","var1","var2")]
     } else {
       dataOrig <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
-      # convert into long format and remove line that contain NA (no ortholog)
+      # convert into paired columns
       mdData <- melt(dataOrig,id="geneID")
-      #    mdData <- mdData[!is.na(mdData$value),]
       
+      # replace NA value with "NA#NA" (otherwise the corresponding orthoID will be empty)
+      mdData$value <- as.character(mdData$value)
+      mdData$value[is.na(mdData$value)] <- "NA#NA"
+    
       # split "orthoID#var1#var2" into 3 columns
       splitDt <- as.data.frame(str_split_fixed(mdData$value, '#', 3))
       colnames(splitDt) <- c("orthoID","var1","var2")
+    }
+
+    splitDt$orthoID[splitDt$orthoID == "NA" | is.na(splitDt$orthoID)] <- NA
+    splitDt <- splitDt[complete.cases(splitDt),]
+
+    if(length(levels(as.factor(splitDt$var2))) == 1){
+      if(levels(as.factor(splitDt$var2)) == ""){
+        splitDt$var2 <- 0
+      }
     }
 
     # convert factor into numeric for "var1" & "var2" column
@@ -1458,9 +1470,9 @@ shinyServer(function(input, output, session) {
   ###### var1 score distribution plot
   var1DistPlot <- function(){
     if (v$doPlot == FALSE) return()
-
+    
     splitDt <- distDf()
-
+    
     if(is.null(levels(as.factor(splitDt$var1)))){return()}
     else{
       splitDt <- splitDt[!is.na(splitDt$var1),]
@@ -1631,8 +1643,8 @@ shinyServer(function(input, output, session) {
     
     # merge mdData, mdDataTrace and taxaList to get taxonomy info
     taxaMdData <- merge(mdData,taxaList,by='ncbiID')
-    taxaMdData$var1 <- suppressWarnings(as.numeric(as.character(taxaMdData$var1)))
-    taxaMdData$var2 <- suppressWarnings(as.numeric(as.character(taxaMdData$var2)))
+    taxaMdData$var1 <- as.numeric(as.character(taxaMdData$var1))
+    taxaMdData$var2 <- as.numeric(as.character(taxaMdData$var2))
     
     # calculate % present species
     finalPresSpecDt <- calcPresSpec(taxaMdData, taxaCount)
@@ -2304,31 +2316,14 @@ shinyServer(function(input, output, session) {
     }
 
     ### get main input data
-    # filein <- input$mainInput
-    # 
-    # if(checkLongFormat() == TRUE){
-    #   mdData <- as.data.frame(read.table(filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
-    #   colnames(mdData) <- c("geneID","ncbiID","orthoID","var1","var2")
-    # } else {
-    #   data <- as.data.frame(read.table(filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
-    #   mdData <- melt(data,id="geneID",factorsAsStrings=F)
-    #   mdData$value <- as.character(mdData$value)
-    #   mdData$value[is.na(mdData$value)] <- "NA#NA"
-    #   
-    #   # split value column into orthoID and fas
-    #   splitDt <- (str_split_fixed(mdData$value, '#', 3))
-    #   # then join them back to mdData
-    #   mdData <- cbind(mdData,splitDt)
-    #   # rename columns
-    #   colnames(mdData) <- c("geneID","ncbiID","value","orthoID","var1","var2")
-    # }
-    
     mdData <- dataFiltered()
     mdData <- mdData[,c("geneID","ncbiID","orthoID","var1","var2","presSpec")]
-    
+
     ### add "category" into mdData
     mdDataExtended <- merge(mdData,catDf,by="ncbiID",all.x = TRUE)
-
+    mdDataExtended$var1[mdDataExtended$var1 == "NA" | is.na(mdDataExtended$var1)] <- 0
+    mdDataExtended$var2[mdDataExtended$var2 == "NA" | is.na(mdDataExtended$var2)] <- 0
+    
     ### remove cat for "NA" orthologs and also for orthologs that do not fit cutoffs
     mdDataExtended[mdDataExtended$orthoID == "NA"| is.na(mdDataExtended$orthoID),]$cat <- NA
     mdDataExtended <- mdDataExtended[complete.cases(mdDataExtended),]
@@ -2357,7 +2352,7 @@ shinyServer(function(input, output, session) {
     geneAgeDf$age[geneAgeDf$cat == "0011111"] <- paste0("03_",as.character(taxaList$fullName[taxaList$ncbiID == subFirstLine$class & taxaList$rank == "class"]))
     geneAgeDf$age[geneAgeDf$cat == "0111111"] <- paste0("02_",as.character(taxaList$fullName[taxaList$ncbiID == subFirstLine$family & taxaList$rank == "family"]))
     geneAgeDf$age[geneAgeDf$cat == "1111111"] <- paste0("01_",as.character(taxaList$fullName[taxaList$fullName == input$inSelect & taxaList$rank == rankName]))
-
+    
     ### return geneAge data frame
     geneAgeDf <- geneAgeDf[,c("geneID","cat","age")]
     
@@ -2365,26 +2360,25 @@ shinyServer(function(input, output, session) {
     geneAgeDf
   })
   
-  ##### plot gene ages
   geneAgePlot <- function(){
     if (v$doPlot == FALSE) return()
     
     geneAgeDf <- geneAgeDf()
-
+    
     countDf <- plyr::count(geneAgeDf,c('age'))
     countDf$percentage <- round(countDf$freq/sum(countDf$freq)*100)
     countDf$pos <- cumsum(countDf$percentage) - (0.5 * countDf$percentage)
-
+    
     p <- ggplot(countDf, aes(fill=age, y=percentage, x=1)) + 
-          geom_bar(stat="identity") +
-          scale_y_reverse() +
-          coord_flip() +
-          theme_minimal()
+      geom_bar(stat="identity") +
+      scale_y_reverse() +
+      coord_flip() +
+      theme_minimal()
     p <- p + geom_text(data=countDf, aes(x = 1, y = 100-pos, label = paste0(freq,"\n",percentage,"%")),size=4)
     p <- p + theme(legend.position="bottom", legend.title = element_blank(), legend.text = element_text(size=12),
                    axis.title = element_blank(), axis.text = element_blank()) +
-          scale_fill_brewer(palette="Spectral") +
-          guides(fill=guide_legend(nrow=3,byrow=TRUE))
+      scale_fill_brewer(palette="Spectral") +
+      guides(fill=guide_legend(nrow=3,byrow=TRUE))
     
     p
   }
@@ -2442,7 +2436,7 @@ shinyServer(function(input, output, session) {
   selectedGeneAge <- reactive({
     if(v$doPlot == FALSE){return()}
     data <- geneAgeDf()
-
+    
     # calculate the coordinate range for each age group
     rangeDf <- plyr::count(data,c('age'))
     
@@ -2455,7 +2449,7 @@ shinyServer(function(input, output, session) {
         rangeDf$rangeEnd[i] <- rangeDf$percentage[i] + rangeDf$rangeEnd[i-1]
       }     
     }
-
+    
     # get list of selected age group
     if (is.null(input$plot_click_geneAge$x)) {return()}
     else{
@@ -2464,7 +2458,7 @@ shinyServer(function(input, output, session) {
       subData <- subset(data, age == selectAge)
       data <- data[data$age == selectAge,]
     }
-
+    
     # return list of genes
     geneList <- levels(as.factor(subData$geneID))
     geneList
@@ -2472,7 +2466,7 @@ shinyServer(function(input, output, session) {
   
   output$geneAge.table <- renderTable({
     if (is.null(input$plot_click_geneAge$x)) {return()}
-
+    
     data <- as.data.frame(selectedGeneAge())
     data$number <- rownames(data)
     colnames(data) <- c("geneID","No.")
