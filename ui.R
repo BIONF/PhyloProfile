@@ -197,9 +197,7 @@ shinyUI(fluidPage(
                ),
                hr(),
                
-               strong(h4("Ordering sequence IDs by:")),
-               radioButtons("ordering", "", choices = c("alphabetical","hierarchical cluster","none"), selected = "alphabetical",
-                            inline = F),
+               checkboxInput('ordering','Ordering sequence IDs',value = TRUE),
                hr(),
                
                bsButton("getConfig","FASTA config"),
@@ -263,66 +261,23 @@ shinyUI(fluidPage(
         ),
         
         mainPanel(
-          tabsetPanel(
-            tabPanel("Main plot",
-                     uiOutput("plot.ui"),
-                     
-                     conditionalPanel(
-                       condition = "input.mainXAxisGuide == true | input.mainYAxisGuide == true",
-                       absolutePanel(
-                         id="absAxis",
-                         bottom = 0, left = 0,
-                         heigh = NULL, width = NULL,
-                         fixed = TRUE,
-                         draggable = TRUE,
-                         style = "opacity: 0.80",
-                         
-                         uiOutput("mainAxisRender")
-                       ) 
-                     )
-            ),
-            
-            tabPanel("Distribution plot",
-                     uiOutput("selected.distribution"),
-                     conditionalPanel(
-                       condition = "input.selected_dist == input.var1_id",
-                       downloadButton("var1Download","Download"),
-                       uiOutput("var1Dist.ui")
-                     ),
-                     
-                     conditionalPanel(
-                       condition = "input.selected_dist == input.var2_id",
-                       downloadButton("var2Download","Download"),
-                       uiOutput("var2Dist.ui")
-                     ),
-                     
-                     conditionalPanel(
-                       condition = "input.selected_dist == '% present taxa'",
-                       downloadButton("presSpecDownload","Download"),
-                       uiOutput("presSpec.ui")
-                     )
-            ),
-            
-            tabPanel("Gene age estimation",
-                     downloadButton("geneAgePlotDownload","Download plot"),
-                     uiOutput("geneAge.ui"),
-                     conditionalPanel(
-                       condition = "input.do",
-                       em(h6("01_Species; 02_Family; 03_Class; 04_Phylum; 
-                             05_Kingdom; 06_Superkingdom; 07_Last universal common ancestor;
-                             Undef_Genes have been filtered out"))
-                       ),
-                     hr(),
-                     column(4,
-                            downloadButton("geneAgeTableDownload","Download gene list"),
-                            checkboxInput("addCustomProfile",strong(em("Add to Customized profile")), value = FALSE, width = NULL)
-                     ),
-                     tableOutput("geneAge.table"),
-                     hr()   
-                       )
+          uiOutput("plot.ui"),
+          
+          conditionalPanel(
+            condition = "input.mainXAxisGuide == true | input.mainYAxisGuide == true",
+            absolutePanel(
+              id="absAxis",
+              bottom = 0, left = 0,
+              heigh = NULL, width = NULL,
+              fixed = TRUE,
+              draggable = TRUE,
+              style = "opacity: 0.80",
+              
+              uiOutput("mainAxisRender")
             )
+          )
+        )
       )
-    )
     ),
     
     ########## CUSTOMIZED PROFILE TAB ###########
@@ -346,6 +301,133 @@ shinyUI(fluidPage(
         mainPanel(
           uiOutput("selectedPlot.ui")
         )
+      )
+    ),
+    
+    ########## FUNCTION TAB ###########
+    navbarMenu(
+      "Function",
+      tabPanel(
+        "Profiles clustering",
+        h4(strong("Cluster profiles")),
+        
+        wellPanel(
+          fluidRow(
+            column(3,
+                   selectInput("distMethod", label = h5("Distance measure method:"),
+                               choices = list("euclidean" = "euclidean", "maximum" = "maximum", "manhattan" = "manhattan",
+                                              "canberra" = "canberra", "binary" = "binary"),
+                               selected = "euclidean")
+            ),
+            column(3,
+                   selectInput("clusterMethod", label = h5("Cluster method:"),
+                               choices = list("ward.D" = "wardd", "ward.D2" = "wardd2", "single" = "single", "complete" = "complete",
+                                              "average (UPGMA)" = "average", "mcquitty (WPGMA)" = "mcquitty", "median (WPGMC)" = "median","centroid (UPGMC)"="centroid"),
+                               selected = "complete")
+            ),
+            column(1,
+                   numericInput("clusterPlot.width",h5("Width (px)"),min=200,max=3200,step=50,value=600,width=100)
+            ),
+            column(1,
+                   numericInput("clusterPlot.height",h5("Height (px)"),min=200,max=3200,step=50,value=400,width=100)
+            ),
+            column(3,
+                   checkboxInput("applyCluster",em(strong("Apply clustering to heatmaps", style="color:red")),value = FALSE),
+                   uiOutput("applyClusterCheck.ui"),
+                   
+                   tags$head(
+                     tags$style(HTML('#downloadCluster{background-color:#A9E2F3}'))
+                   ),
+                   downloadButton('downloadCluster', 'Download plot')
+            )
+          )
+        ),
+        
+        column(8,
+               #tableOutput("dist.table"),
+               uiOutput("cluster.ui")
+        ),
+        column(4,
+               downloadButton('downloadClusterGenes', 'Download gene list'),
+               checkboxInput('addClusterCustomProfile',strong(em("Add to Customized profile")), value = FALSE, width = NULL),
+               uiOutput("addClusterCustomProfileCheck.ui"),
+               tableOutput("brushedCluster.table")
+        )
+      ),
+      
+      tabPanel(
+        "Distribution analyzing",
+        h4(strong("Distribution analysis")),
+
+        wellPanel(
+          fluidRow(
+            column(2,
+                   uiOutput("selected.distribution")
+            ),
+            column(2,
+                   uiOutput("var1_dist.ui")
+            ),
+            column(2,
+                   uiOutput("var2_dist.ui")
+            ),
+            column(2,
+                   uiOutput("percent_dist.ui")
+            ),
+            column(1,
+                   numericInput("dist_textSize","Label size",min=2,max=99,step=1,value=12,width=100)
+            ),
+            column(2,
+                   strong("Download"),
+                   tags$head(
+                     tags$style(HTML('#plotDownload_dist{background-color:#A9E2F3}'))
+                   ),
+                   downloadButton('plotDownload_dist','Download plot')
+            )
+          )
+        ),
+        
+        uiOutput("dist_plot.ui")
+      ),
+      
+      tabPanel(
+        "Gene age estimating",
+        h4(strong("Gene age estimation")),
+        
+        wellPanel(
+          fluidRow(
+            column(2,
+                   uiOutput("var1_age.ui")
+            ),
+            column(2,
+                   uiOutput("var2_age.ui")
+            ),
+            column(2,
+                   uiOutput("percent_age.ui")
+            ),
+            column(2,
+                   strong("Download"),
+                   tags$head(
+                     tags$style(HTML('#geneAgePlotDownload{background-color:#A9E2F3}'))
+                   ),
+                   downloadButton("geneAgePlotDownload","Download plot")
+            )
+          )
+        ),
+        
+        uiOutput("geneAge.ui"),
+        conditionalPanel(
+          condition = "input.do",
+          em(h6("01_Species; 02_Family; 03_Class; 04_Phylum; 
+                05_Kingdom; 06_Superkingdom; 07_Last universal common ancestor;
+                Undef_Genes have been filtered out"))
+        ),
+        hr(),
+        column(4,
+               downloadButton("geneAgeTableDownload","Download gene list"),
+               checkboxInput("addCustomProfile",strong(em("Add to Customized profile")), value = FALSE, width = NULL),
+               uiOutput('addCustomProfileCheck.ui')
+        ),
+        tableOutput("geneAge.table")
       )
     ),
     
@@ -388,7 +470,7 @@ shinyUI(fluidPage(
                tabPanel(a("About", href="https://trvinh.github.io/phyloprofile/", target="_blank")
                )
     )
-    ),
+  ),
   
   ################### LIST OF POP-UP WINDOWS ##########################
   

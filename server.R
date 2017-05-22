@@ -11,6 +11,9 @@ if (!require("gridExtra")) {install.packages("gridExtra")}
 if (!require("ape")) {install.packages("ape")}
 if (!require("stringr")) {install.packages("stringr")}
 if (!require("gtable")) {install.packages("gtable")}
+if (!require("dendextend")) {install.packages("dendextend")}
+if (!require("ggdendro")) {install.packages("ggdendro")}
+if (!require("gplots")) {install.packages("gplots")}
 if (!require("data.table")) {install.packages("data.table")}
 if (!require("Biostrings")) {
   source("https://bioconductor.org/biocLite.R")
@@ -33,47 +36,7 @@ long2wide <- function(inputFile){
   wideDf <- spread(longDfmod, ncbiID, value)
 }
 
-########## cluster genes based on presence/absence pattern ##############
-clusterData <- function(data){
-  #### NOTE: input data for this function has to be in wide format
-  mdData <- melt(data,id="geneID")
-  
-  # replace NA value with "NA#NA" (otherwise the corresponding orthoID will be empty)
-  mdData$value <- as.character(mdData$value)
-  mdData$value[is.na(mdData$value)] <- "NA#NA"
-  
-  # split value column into orthoID, var1 & var2
-  splitDt <- (str_split_fixed(mdData$value, '#', 3))
-  # then join them back to mdData
-  mdData <- cbind(mdData,splitDt)
-  # rename columns
-  colnames(mdData) <- c("geneID","ncbiID","value","orthoID","var1","var2")
-  clusterMdData <- mdData[,c("geneID","ncbiID","orthoID")]
-  
-  # replace 1 & 0 for presence / absence genes
-  clusterMdData$group[clusterMdData$orthoID != "NA"] <-1
-  clusterMdData$group[clusterMdData$orthoID == "NA"] <-0
-  clusterMdData <- clusterMdData[,c("geneID","ncbiID","group")]
-  
-  # convert to wide format
-  wideMdData <- spread(clusterMdData, ncbiID, group)
-  
-  # do clustering
-  dat <- wideMdData[,2:ncol(wideMdData)]  # numerical columns
-  rownames(dat) <- wideMdData[,1]
-  row.order <- hclust(dist(dat))$order # clustering
-  col.order <- hclust(dist(t(dat)))$order
-  dat_new <- dat[row.order, col.order] # re-order dat accoring to clustering
-  
-  # get clustered gene IDs
-  clusteredGeneIDs <- as.factor(row.names(dat_new))
-  
-  # sort original data according to clusteredGeneIDs
-  data$geneID <- factor(data$geneID, levels = clusteredGeneIDs)
-  
-  # return clustered data
-  data
-}
+
 
 ########## calculate percentage of present species ##########
 calcPresSpec <- function(taxaMdData, taxaCount){
@@ -352,7 +315,35 @@ shinyServer(function(input, output, session) {
                 "% of present taxa:", min = 0, max = 1, step = 0.025, value = input$percent, width = 200)
   })
   
-  ######## update value for "main" filter slidebars based on "Customized" slidebars
+  ######## render filter slidebars for Distribution plot
+  output$var1_dist.ui <- renderUI({
+    sliderInput("var1_dist",paste(input$var1_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(input$var1[1],input$var1[2]), width = 200)
+  })
+
+  output$var2_dist.ui <- renderUI({
+    sliderInput("var2_dist",paste(input$var2_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(input$var2[1],input$var2[2]), width = 200)
+  })
+
+  output$percent_dist.ui <- renderUI({
+    sliderInput("percent_dist",
+                "% of present taxa:", min = 0, max = 1, step = 0.025, value = input$percent, width = 200)
+  })
+  
+  ######## render filter slidebars for Gene age estimation plot
+  output$var1_age.ui <- renderUI({
+    sliderInput("var1_age",paste(input$var1_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(input$var1[1],input$var1[2]), width = 200)
+  })
+  
+  output$var2_age.ui <- renderUI({
+    sliderInput("var2_age",paste(input$var2_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(input$var2[1],input$var2[2]), width = 200)
+  })
+  
+  output$percent_age.ui <- renderUI({
+    sliderInput("percent_age",
+                "% of present taxa:", min = 0, max = 1, step = 0.025, value = input$percent, width = 200)
+  })
+  
+  ######## update value for "main" filter slidebars based on "Customized", "Distribution" and "Gene age estimation" slidebars
   observe({
     newVar1 <- input$var1cus
     updateSliderInput(session, "var1", value = newVar1,
@@ -365,6 +356,38 @@ shinyServer(function(input, output, session) {
   })
   observe({
     newPercent <- input$percent2
+    updateSliderInput(session, "percent", value = newPercent,
+                      min = 0, max = 1, step = 0.025)
+  })
+  
+  observe({
+    newVar1 <- input$var1_dist
+    updateSliderInput(session, "var1", value = newVar1,
+                      min = 0, max = 1, step = 0.025)
+  })
+  observe({
+    newVar2 <- input$var2_dist
+    updateSliderInput(session, "var2", value = newVar2,
+                      min = 0, max = 1, step = 0.025)
+  })
+  observe({
+    newPercent <- input$percent_dist
+    updateSliderInput(session, "percent", value = newPercent,
+                      min = 0, max = 1, step = 0.025)
+  })
+  
+  observe({
+    newVar1 <- input$var1_age
+    updateSliderInput(session, "var1", value = newVar1,
+                      min = 0, max = 1, step = 0.025)
+  })
+  observe({
+    newVar2 <- input$var2_age
+    updateSliderInput(session, "var2", value = newVar2,
+                      min = 0, max = 1, step = 0.025)
+  })
+  observe({
+    newPercent <- input$percent_age
     updateSliderInput(session, "percent", value = newPercent,
                       min = 0, max = 1, step = 0.025)
   })
@@ -748,7 +771,6 @@ shinyServer(function(input, output, session) {
   })
   
   ######## sorting supertaxa list based on chosen reference taxon
-  
   nonDupTaxonDf <- reactive({
     if(v$doPlot == FALSE){return()}
     
@@ -857,9 +879,77 @@ shinyServer(function(input, output, session) {
     sortedOut
   })
   
+  ############### FUNCTIONS FOR CLUSTERING PROFILES  ###############
+  matrixForDitsCalc <- function(data){
+    #### NOTE: input data for this function has to be in wide format
+    mdData <- melt(data,id="geneID")
+    
+    # replace NA value with "NA#NA" (otherwise the corresponding orthoID will be empty)
+    mdData$value <- as.character(mdData$value)
+    mdData$value[is.na(mdData$value)] <- "NA#NA"
+    
+    # split value column into orthoID, var1 & var2
+    splitDt <- (str_split_fixed(mdData$value, '#', 3))
+    # then join them back to mdData
+    mdData <- cbind(mdData,splitDt)
+    # rename columns
+    colnames(mdData) <- c("geneID","ncbiID","value","orthoID","var1","var2")
+    clusterMdData <- mdData[,c("geneID","ncbiID","orthoID")]
+    
+    # replace 1 & 0 for presence / absence genes
+    clusterMdData$group[clusterMdData$orthoID != "NA"] <-1
+    clusterMdData$group[clusterMdData$orthoID == "NA"] <-0
+    clusterMdData <- clusterMdData[,c("geneID","ncbiID","group")]
+    
+    # convert to wide format
+    wideMdData <- spread(clusterMdData, ncbiID, group)
+    
+    dat <- wideMdData[,2:ncol(wideMdData)]  # numerical columns
+    rownames(dat) <- wideMdData[,1]
+    
+    # return
+    dat
+  }
+  
+  clusterData <- function(data){
+    #### NOTE: input data for this function has to be in wide format
+    dat <- matrixForDitsCalc(data)  # convert into 0/1 matrix
+    
+    # do clustering
+    row.order <- hclust(dist(dat, method = input$distMethod), method = input$clusterMethod)$order # clustering
+    #    row.order <- hclust(dist(dat), method = input$clusterMethod)$order # clustering
+    col.order <- hclust(dist(t(dat), method = input$distMethod), method = input$clusterMethod)$order
+    #    col.order <- hclust(dist(t(dat)), method = input$clusterMethod)$order
+    dat_new <- dat[row.order, col.order] # re-order dat accoring to clustering
+    
+    # get clustered gene IDs
+    clusteredGeneIDs <- as.factor(row.names(dat_new))
+    
+    # sort original data according to clusteredGeneIDs
+    data$geneID <- factor(data$geneID, levels = clusteredGeneIDs)
+    
+    # return clustered data
+    data
+  }
+  
   ############### PARSING DATA FROM INPUT MATRIX:
   ############### get (super)taxa names (3)
   ############### calculate percentage of presence (4), max/min/mean/median VAR1 (5) and VAR2 (6) if group input taxa list into higher taxonomy rank
+ 
+  ### check if "no ordering gene IDs" has been checked
+  output$applyClusterCheck.ui <- renderUI({
+    if(input$ordering == FALSE){
+      HTML('<p><em>(Check "Ordering sequence IDs" check box in <strong>Input & settings tab</strong>&nbsp;to enable this function)</em></p>')
+    }
+  })
+  
+  observe({
+    if(input$ordering == FALSE){
+      shinyjs::disable('applyCluster')
+    } else {
+      shinyjs::enable('applyCluster')
+    }
+  })
   
   ### subset data
   preData <- reactive({
@@ -872,14 +962,14 @@ shinyServer(function(input, output, session) {
     # convert input to wide format (if needed) & get nrHit rows
     if(checkLongFormat() == TRUE){
       inputMod <- long2wide(filein)
-      if(input$ordering == "hierarchical cluster"){
+      if(input$applyCluster == TRUE){
         inputMod <- clusterData(inputMod)
       }
       #      data <- head(inputMod,nrHit)
       subsetID <- levels(inputMod$geneID)[1:nrHit]
       data <- inputMod[inputMod$geneID %in% subsetID,]
     } else {
-      if(input$ordering == "hierarchical cluster"){
+      if(input$applyCluster == TRUE){
         oridata <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
         clusteredOridata <- clusterData(oridata)
         
@@ -903,13 +993,13 @@ shinyServer(function(input, output, session) {
         }
         data <- dataOrig[dataOrig$geneID %in% list$V1,]
         
-        if(input$ordering == "hierarchical cluster"){
+        if(input$applyCluster == TRUE){
           data <- clusterData(data)
         }
       }
     }
     
-    if(input$ordering == "none"){
+    if(input$ordering == FALSE){
       data$geneID <- factor(data$geneID, levels = data$geneID)  ######### keep user defined geneID order
     }
     
@@ -1022,17 +1112,33 @@ shinyServer(function(input, output, session) {
     if(is.null(filein) & is.null(fileCustom)){return(selectInput('inSeq','',"all"))}
     if(v$doPlot == FALSE){return(selectInput('inSeq','',"all"))}
     else{
+      ### full list
+      data <- as.data.frame(dataFiltered())
+      data$geneID <- as.character(data$geneID)
+      data$geneID <- as.factor(data$geneID)
+      outAll <- as.list(levels(data$geneID))
+      outAll <- append("all",outAll)
+      #selectInput('inSeq','',out,selected=out[1],multiple=TRUE)
+      
       if (input$addCustomProfile == TRUE){
         out <- selectedGeneAge()
-        selectInput('inSeq','',out,selected=as.list(out),multiple=TRUE)
+        if(length(out)>0){
+          selectInput('inSeq','',out,selected=as.list(out),multiple=TRUE)
+        } 
+        else {
+          selectInput('inSeq','',outAll,selected=outAll[1],multiple=TRUE)
+        }
+      } else if(input$addClusterCustomProfile == TRUE){
+        out <- brushedClusterGene()
+        if(length(out)>0){
+          selectInput('inSeq','',out,selected=as.list(out),multiple=TRUE)
+        } 
+        else {
+          selectInput('inSeq','',outAll,selected=outAll[1],multiple=TRUE)
+        }
       } else {
         if(is.null(fileCustom)){
-          data <- as.data.frame(dataFiltered())
-          data$geneID <- as.character(data$geneID)
-          data$geneID <- as.factor(data$geneID)
-          out <- as.list(levels(data$geneID))
-          out <- append("all",out)
-          selectInput('inSeq','',out,selected=out[1],multiple=TRUE)
+          selectInput('inSeq','',outAll,selected=outAll[1],multiple=TRUE)
         }
         else {
           customList <- as.data.frame(read.table(file=fileCustom$datapath, header=FALSE))
@@ -1418,7 +1524,7 @@ shinyServer(function(input, output, session) {
   ######## list of available variables for distribution plot
   output$selected.distribution = renderUI({
     varList <- as.list(c(input$var1_id,input$var2_id,"% present taxa"))
-    selectInput('selected_dist',h5('Choose variable to plot:'),varList,varList[1])
+    selectInput('selected_dist','Choose variable to plot:',varList,varList[1])
   })
   
   ###### var1 / var2 distribution data
@@ -1487,8 +1593,7 @@ shinyServer(function(input, output, session) {
         theme_minimal()
       p <- p + theme(legend.position = "none",
                      #                   plot.title = element_text(hjust = 0.5),
-                     axis.title.x = element_text(size=input$xSize),axis.text.x = element_text(size=input$xSize),
-                     axis.title.y = element_text(size=input$ySize),axis.text.y = element_text(size=input$ySize)) +
+                     axis.title = element_text(size=input$dist_textSize),axis.text = element_text(size=input$dist_textSize)) +
         labs(x = paste0(input$var1_id," (mean = ",round(mean(splitDt$var1),3),")"), y = "Frequency")
       p
     }
@@ -1510,36 +1615,6 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  output$var1Dist.ui <- renderUI({
-    if(v$doPlot == FALSE){
-      return()
-    } else{
-      ## if autoupdate is NOT selected, use updateBtn to trigger plot changing
-      if(input$autoUpdate == FALSE){
-        # Add dependency on the update button (only update when button is clicked)
-        input$updateBtn
-        
-        # Add all the filters to the data based on the user inputs
-        # wrap in an isolate() so that the data won't update every time an input
-        # is changed
-        isolate({
-          plotOutput("var1DistPlot",width=input$width,height = input$height)
-        })
-      }
-      ## if autoupdate is true
-      else {
-        plotOutput("var1DistPlot",width=input$width,height = input$height)
-      }
-    }
-  })
-  
-  output$var1Download <- downloadHandler(
-    filename = function() {paste0(input$var1_id,"_plot.pdf")},
-    content = function(file) {
-      ggsave(file, plot = var1DistPlot(), dpi=300, device = "pdf", limitsize=FALSE)
-    }
-  )
-  
   ###### var2 score distribution plot
   var2DistPlot <- function(){
     if (v$doPlot == FALSE) return()
@@ -1559,8 +1634,7 @@ shinyServer(function(input, output, session) {
         theme_minimal()
       p <- p + theme(legend.position = "none",
                      #                   plot.title = element_text(size=input$legendSize),#hjust = 0.5, 
-                     axis.title.x = element_text(size=input$xSize),axis.text.x = element_text(size=input$xSize),
-                     axis.title.y = element_text(size=input$ySize),axis.text.y = element_text(size=input$ySize)) +
+                     axis.title = element_text(size=input$dist_textSize),axis.text = element_text(size=input$dist_textSize)) +
         labs(x = paste0(input$var2_id," (mean = ",round(mean(splitDt$var2),3),")"), y = "Frequency")
       p
     }
@@ -1581,36 +1655,6 @@ shinyServer(function(input, output, session) {
       var2DistPlot()
     }
   })
-  
-  output$var2Dist.ui <- renderUI({
-    if(v$doPlot == FALSE){
-      return()
-    } else{
-      ## if autoupdate is NOT selected, use updateBtn to trigger plot changing
-      if(input$autoUpdate == FALSE){
-        # Add dependency on the update button (only update when button is clicked)
-        input$updateBtn
-        
-        # Add all the filters to the data based on the user inputs
-        # wrap in an isolate() so that the data won't update every time an input
-        # is changed
-        isolate({
-          plotOutput("var2DistPlot",width=input$width,height = input$height)
-        })
-      }
-      ## if autoupdate is true
-      else {
-        plotOutput("var2DistPlot",width=input$width,height = input$height)
-      }
-    }
-  })
-  
-  output$var2Download <- downloadHandler(
-    filename = function() {paste0(input$var2_id,"_plot.pdf")},
-    content = function(file) {
-      ggsave(file, plot = var2DistPlot(), dpi=300, device = "pdf", limitsize=FALSE)
-    }
-  )
   
   ####### % present species distribution plot
   
@@ -1643,8 +1687,8 @@ shinyServer(function(input, output, session) {
     
     # merge mdData, mdDataTrace and taxaList to get taxonomy info
     taxaMdData <- merge(mdData,taxaList,by='ncbiID')
-    taxaMdData$var1 <- as.numeric(as.character(taxaMdData$var1))
-    taxaMdData$var2 <- as.numeric(as.character(taxaMdData$var2))
+    taxaMdData$var1 <- suppressWarnings(as.numeric(as.character(taxaMdData$var1)))
+    taxaMdData$var2 <- suppressWarnings(as.numeric(as.character(taxaMdData$var2)))
     
     # calculate % present species
     finalPresSpecDt <- calcPresSpec(taxaMdData, taxaCount)
@@ -1681,8 +1725,7 @@ shinyServer(function(input, output, session) {
       theme_minimal()
     p <- p + theme(legend.position = "none",
                    #                   plot.title = element_text(hjust = 0.5),
-                   axis.title.x = element_text(size=input$xSize),axis.text.x = element_text(size=input$xSize),
-                   axis.title.y = element_text(size=input$ySize),axis.text.y = element_text(size=input$ySize)) +
+                   axis.title.x = element_text(size=input$dist_textSize),axis.text.x = element_text(size=input$dist_textSize)) +
       labs(x = paste0("% present taxa (mean = ",round(mean(dt$presSpec),3),")"), y = "Frequency")
     p
   }
@@ -1703,33 +1746,36 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  output$presSpec.ui <- renderUI({
+  ######## render dist_plot.ui
+  output$dist_plot.ui <- renderUI({
     if(v$doPlot == FALSE){
       return()
     } else{
-      ## if autoupdate is NOT selected, use updateBtn to trigger plot changing
-      if(input$autoUpdate == FALSE){
-        # Add dependency on the update button (only update when button is clicked)
-        input$updateBtn
-        
-        # Add all the filters to the data based on the user inputs
-        # wrap in an isolate() so that the data won't update every time an input
-        # is changed
-        isolate({
-          plotOutput("presSpecPlot",width=input$width,height = input$height)
-        })
+      if(input$selected_dist == input$var1_id){
+        plotOutput("var1DistPlot",width=input$width,height = input$height)
       }
-      ## if autoupdate is true
-      else {
+      else if(input$selected_dist == input$var2_id){
+        plotOutput("var2DistPlot",width=input$width,height = input$height)
+      }
+      else if(input$selected_dist == "% present taxa"){
         plotOutput("presSpecPlot",width=input$width,height = input$height)
       }
     }
   })
   
-  output$presSpecDownload <- downloadHandler(
-    filename = function() {paste0("percentageTaxa_plot.pdf")},
+  ######## Download distribution plot
+  output$plotDownload_dist <- downloadHandler(
+    filename = function() {paste0("distributionPlot.pdf")},
     content = function(file) {
-      ggsave(file, plot = presSpecPlot(), dpi=300, device = "pdf", limitsize=FALSE)
+      if(input$selected_dist == input$var1_id){
+        ggsave(file, plot = var1DistPlot(), dpi=300, device = "pdf", limitsize=FALSE)
+      }
+      if(input$selected_dist == input$var2_id){
+        ggsave(file, plot = var2DistPlot(), dpi=300, device = "pdf", limitsize=FALSE)
+      }
+      if(input$selected_dist == "% present taxa"){
+        ggsave(file, plot = presSpecPlot(), dpi=300, device = "pdf", limitsize=FALSE)
+      }
     }
   )
   
@@ -2482,7 +2528,133 @@ shinyServer(function(input, output, session) {
       write.table(dataOut,file,sep="\t",row.names = FALSE,quote = FALSE)
     }
   )
+  
+  ### check if addClusterCustomProfile (profile clustering) are being clicked
+  observe({
+    if(input$addClusterCustomProfile == TRUE){
+      shinyjs::disable('addCustomProfile')
+    } else {
+      shinyjs::enable('addCustomProfile')
+    }
+  })
+  
+  output$addCustomProfileCheck.ui <- renderUI({
+    if(input$addClusterCustomProfile == TRUE){
+      HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Cluster profiles</strong>&nbsp;to enable this function)</em></p>')
+    }
+  })
+  
+  #############################################################
+  #################### CLUSTERING PROFILES ####################
+  #############################################################
+  
+  # output$dist.table <- renderTable({
+  #   data <- preData()
+  #   dat <- matrixForDitsCalc(data)
+  #   d <- dist(dat, method = input$distMethod)
+  #   df <- melt(as.matrix(d), varnames = c("row", "col"))
+  # })
+  
+  ### cluster data
+  clusterDataDend <- reactive({
+    if(v$doPlot == FALSE){return()}
+    data <- preData()
+    dat <- matrixForDitsCalc(data)
+    dd.col <- as.dendrogram(hclust(dist(dat, method = input$distMethod), method = input$clusterMethod))
+  })
+  
+  ### plot clustered profiles
+  dendrogram <- function(){
+    if(v$doPlot == FALSE){return()}
     
+    dd.col <- clusterDataDend()
+    
+    py <- as.ggdend(dd.col)
+    p <- ggplot(py, horiz = TRUE, theme=theme_minimal()) +
+      theme(axis.title = element_blank(), axis.text.y = element_blank())
+    p
+  }
+  
+  output$dendrogram <- renderPlot({
+    dendrogram()
+  })
+  
+  output$cluster.ui <- renderUI({
+    plotOutput("dendrogram",width=input$clusterPlot.width, height=input$clusterPlot.height,
+               brush = brushOpts(
+                 id = "plot_brush",
+                 delay = input$brush_delay,
+                 delayType = input$brush_policy,
+                 direction = input$brush_dir,
+                 resetOnNew = input$brush_reset)
+               )
+  })
+  
+  ### download clustered plot
+  output$downloadCluster <- downloadHandler(
+    filename = function() {"clustered_plot.pdf"},
+    content = function(file) {
+      ggsave(file, plot = dendrogram(), dpi=300, device = "pdf", limitsize=FALSE)
+    }
+  )
+  
+  #### render brushedCluster.table based on clicked point on dendrogram plot
+  brushedClusterGene <- reactive({
+    if(v$doPlot == FALSE){return()}
+    
+    dd.col <- clusterDataDend()
+    dt <- dendro_data(dd.col)
+    dt$labels$label <- levels(dt$labels$label)
+
+    # get list of selected gene(s)
+    if (is.null(input$plot_brush)) {return()}
+    else{
+      top = as.numeric(-round(input$plot_brush$ymin))
+      bottom = as.numeric(-round(input$plot_brush$ymax))
+      # a <- dt$labels$label[bottom]
+      # b <- dt$labels$label[top]
+      # values <- c(top,b,bottom,a)
+
+      df <- dt$labels[bottom:top,] 
+    }
+    
+    # return list of genes
+    df <- df[complete.cases(df),3]
+  })
+  
+  output$brushedCluster.table <- renderTable({
+    if (is.null(input$plot_brush$ymin)) {return()}
+    
+    data <- as.data.frame(brushedClusterGene())
+    data$number <- rownames(data)
+    colnames(data) <- c("geneID","No.")
+    data <- data[,c("No.","geneID")]
+    data
+  })
+  
+  ### download gene list from brushedCluster.table
+  output$downloadClusterGenes <- downloadHandler(
+    filename = function(){c("selectedClusteredGeneList.out")},
+    content = function(file){
+      dataOut <- brushedClusterGene()
+      write.table(dataOut,file,sep="\t",row.names = FALSE,quote = FALSE)
+    }
+  )
+  
+  ### check if addCustomProfile (gene age plot) are being clicked
+  observe({
+    if(input$addCustomProfile == TRUE){
+      shinyjs::disable('addClusterCustomProfile')
+    }else{
+      shinyjs::enable('addClusterCustomProfile')
+    }
+  })
+  
+  output$addClusterCustomProfileCheck.ui <- renderUI({
+    if(input$addCustomProfile == TRUE){
+      HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Gene age estimation</strong>&nbsp;to enable this function)</em></p>')
+    }
+  })
   
   #############################################################
   ############### FILTERED DATA FOR DOWNLOADING ###############
