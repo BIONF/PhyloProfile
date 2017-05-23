@@ -712,24 +712,24 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  #### disable clusterGene if input has only 1 gene
-  observe({
-    filein <- input$mainInput
-    if(is.null(filein)){return()}
-    else{
-      if(checkLongFormat() == TRUE){
-        dt <- long2wide(filein)
-      } else {
-        dt <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
-      }
-      
-      if(nrow(dt) < 2){
-        updateRadioButtons(session,"ordering","",
-                           choices = c("alphabetical","none"), selected = "alphabetical",
-                           inline = F)
-      } 
-    }
-  })
+  # #### disable clusterGene if input has only 1 gene
+  # observe({
+  #   filein <- input$mainInput
+  #   if(is.null(filein)){return()}
+  #   else{
+  #     if(checkLongFormat() == TRUE){
+  #       dt <- long2wide(filein)
+  #     } else {
+  #       dt <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+  #     }
+  #     
+  #     if(nrow(dt) < 2){
+  #       updateRadioButtons(session,"ordering","",
+  #                          choices = c("alphabetical","none"), selected = "alphabetical",
+  #                          inline = F)
+  #     } 
+  #   }
+  # })
   
   #############################################################
   ######################  ADD NEW TAXA  #######################
@@ -815,7 +815,11 @@ shinyServer(function(input, output, session) {
     
     # get selected supertaxon ID
     taxaList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T))
-    superID <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inSelect & taxaList$rank == rankName])
+    if(rankName == "strain"){
+      superID <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inSelect & taxaList$rank == "norank"])
+    } else {
+      superID <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inSelect & taxaList$rank == rankName])
+    }
     
     ### sort taxa list
     ### first move all species that have the same ID of selected rank (level) to a new data frame

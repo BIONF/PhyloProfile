@@ -328,7 +328,7 @@ shinyUI(fluidPage(
             column(1,
                    numericInput("clusterPlot.width",h5("Width (px)"),min=200,max=3200,step=50,value=600,width=100)
             ),
-            column(1,
+            column(2,
                    numericInput("clusterPlot.height",h5("Height (px)"),min=200,max=3200,step=50,value=400,width=100)
             ),
             column(3,
@@ -428,6 +428,23 @@ shinyUI(fluidPage(
                uiOutput('addCustomProfileCheck.ui')
         ),
         tableOutput("geneAge.table")
+      ),
+      
+      tabPanel("Search for NCBI taxonomy IDs",
+               column(3,
+                      fileInput("taxaList",h4("Upload taxa list")),
+                      bsButton("idSearch","Search")
+               ),
+               column(9,
+                      h4("Mismatch(es):"),
+                      dataTableOutput("notfoundTaxa"),
+                      downloadButton("downloadNotFoundTaxa","Download"),
+                      
+                      hr(),
+                      h4("Retrieved taxonomy ID(s):"),
+                      dataTableOutput("taxaID"),
+                      downloadButton("downloadTaxaID","Download")
+               )
       )
     ),
     
@@ -450,22 +467,6 @@ shinyUI(fluidPage(
                ),
                tabPanel("Q&A",
                         uiOutput("help.ui")
-               ),
-               tabPanel("Search for NCBI taxonomy IDs",
-                        column(3,
-                               fileInput("taxaList",h4("Upload taxa list")),
-                               bsButton("idSearch","Search")
-                        ),
-                        column(9,
-                               h4("Mismatch(es):"),
-                               dataTableOutput("notfoundTaxa"),
-                               downloadButton("downloadNotFoundTaxa","Download"),
-                               
-                               hr(),
-                               h4("Retrieved taxonomy ID(s):"),
-                               dataTableOutput("taxaID"),
-                               downloadButton("downloadTaxaID","Download")
-                        )
                ),
                tabPanel(a("About", href="https://trvinh.github.io/phyloprofile/", target="_blank")
                )
