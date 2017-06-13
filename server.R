@@ -1229,9 +1229,17 @@ shinyServer(function(input, output, session) {
       p = ggplot(dataHeat, aes(y = geneID, x = supertaxon))        ## global aes
     }
     
-    p = p + scale_fill_gradient(low = input$lowColor_var2, high = input$highColor_var2, na.value="gray95") +   ## fill color (var2)
-      geom_tile(aes(fill = var2)) +    ## filled rect (var2 score)
-      geom_point(aes(colour = var1, size = presSpec))  +    ## geom_point for circle illusion (var1 and presence/absence)
+        if(length(unique(na.omit(dataHeat$var1))) == 1){
+      mynewcolor_low <- input$highColor_var1
+    } else {
+      mynewcolor_low <- input$lowColor_var1
+    }
+
+    if(length(unique(na.omit(dataHeat$var2))) != 1){
+      p = p + scale_fill_gradient(low = input$lowColor_var2, high = input$highColor_var2, na.value="gray95") +   ## fill color (var2)
+        geom_tile(aes(fill = var2))    ## filled rect (var2 score)
+    }
+    p = p +  geom_point(aes(colour = var1, size = presSpec))  +    ## geom_point for circle illusion (var1 and presence/absence)
       scale_color_gradient(low = input$lowColor_var1,high = input$highColor_var1)#+       ## color of the corresponding aes (var1)
     scale_size(range = c(0,3))             ## to tune the size of circles
     #+ stat_binhex()
