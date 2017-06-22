@@ -73,8 +73,7 @@ if(scalar @nameNEW > 1){
     }
 	}
 }
-
-#print "Parsing taxonNamesFull.txt done!!\n";<>;
+print "Parsing taxonNamesFull.txt done!!\n";
 
 ### GET LIST OF ALL TAXA from input file
 
@@ -83,14 +82,20 @@ if(scalar @nameNEW > 1){
 #$idList = "geneID	ncbi4837";#	ncbi4932	ncbi3702	ncbi9606";
 #$idList = "geneID	ncbi436017";
 #$idList = "geneID	ncbi1096996	ncbi2000001	ncbi2000002	ncbi2000003	ncbi202950	ncbi62977";
+#$idList = "geneID	ncbi9606	ncbi9598	ncbi9544	ncbi10090	ncbi10116	ncbi9913	ncbi9612	ncbi9258	ncbi8364	ncbi31033	ncbi9031	ncbi7719	ncbi7739	ncbi6183	ncbi6239	ncbi7165	ncbi7227	ncbi6945	ncbi5270	ncbi5141	ncbi13616	ncbi7955	ncbi45351	ncbi5207";
 #=cut
 
 my @allTaxa = split(/\t/,$idList);
 shift(@allTaxa);	# remove "geneID" tag
 
 ### get all ranking IDs for each taxon
-my %info;	# $info{$ncbi}
+my %info;	# $info{$ncbi} = rankID#rankName...
 my %reduceSpec;		# $reducedSpec{specID} = ncbiID	fullName	rank	parentID
+my %norankCount; # $norankCount{$norankID} = 2
+my %rankCount; # count available IDs existing in each rank (except norank)
+
+my $c = 1;
+
 foreach my $taxon(@allTaxa){
 	my $ncbiID = $taxon;
 	$ncbiID =~ s/ncbi//;
@@ -103,27 +108,253 @@ foreach my $taxon(@allTaxa){
 		my $parentID = $parent{$ncbiID};
 		my $parentRank = $rank{$parentID};
 
-#		print "HERE: $ncbiID - $rank\n$parentID - $parentRank\n";	############ TESTING
- 		$info{"$ncbiID"} = "$ncbiID#strain\t"."$ncbiID#$rank\t"."$parentID#$parentRank";
- 		$reduceSpec{$ncbiID} = $ncbiID."\t".$name{$ncbiID}."\t".$rank."\t".$parentID;
- 		$reduceSpec{$parentID} = $parentID."\t".$name{$parentID}."\t".$parentRank."\t".$parent{$parentID};
+		$info{$ncbiID} = $name."#name";
+		$rankCount{$rank} += 1;
+		$rankCount{"name"} += 1;
+		$rankCount{"strain"} += 1;
 
-		unless($parentID == 1){
-			do{
-				$parentID = $parent{$parentID};
-				$parentRank = $rank{$parentID};
-#				print $parentID," - ",$parentRank," - ",$name{$parentID},"\n";	############ TESTING
-				$info{"$ncbiID"} .= "\t"."$parentID#$parentRank";
-				$reduceSpec{$parentID} = $parentID."\t".$name{$parentID}."\t".$parentRank."\t".$parent{$parentID};
-			} until ($parentID == 1);
+		unless($parentRank){
+			print "parentID $parentID (of $ncbiID) not found\n";
+		} else {
+	#		print "HERE:\n$ncbiID\t$rank\n$parentID\t$parentRank\n";<>;	############ TESTING
+			my @idArray = ($ncbiID,$parentID);
+	#		print $name,"\t",$ncbiID,"\t","$parentID";
+			$info{"$ncbiID"} .= "\t"."$ncbiID#strain\t"."$ncbiID#$rank\t"."$parentID#$parentRank";
+	 		$reduceSpec{$ncbiID} = $ncbiID."\t".$name{$ncbiID}."\t".$rank."\t".$parentID;
+	 		$reduceSpec{$parentID} = $parentID."\t".$name{$parentID}."\t".$parentRank."\t".$parent{$parentID};
+
+			if($parentRank eq "norank"){
+				unless($norankCount{$parentID}){
+					$norankCount{$parentID} = 1;
+				} else {
+					$norankCount{$parentID} ++;
+				}
+			} else {
+				unless($rankCount{$parentRank}){
+					$rankCount{$parentRank} = 1;
+				} else {
+					$rankCount{$parentRank} += 1;
+				}
+			}
+
+
+			unless($parentID == 1){
+				do{
+					$parentID = $parent{$parentID};
+					$parentRank = $rank{$parentID};
+	#				print $parentID,"\t",$parentRank,"\t",$name{$parentID},"\n";	############ TESTING
+					push(@idArray,$parentID);
+
+					$info{"$ncbiID"} .= "\t"."$parentID#$parentRank";
+
+					if($parentRank eq "norank"){
+						unless($norankCount{$parentID}){
+							$norankCount{$parentID} = 1;
+						} else {
+							$norankCount{$parentID} ++;
+						}
+					} else {
+						unless($rankCount{$parentRank}){
+							$rankCount{$parentRank} = 1;
+						} else {
+							$rankCount{$parentRank} += 1;
+						}
+					}
+
+					$reduceSpec{$parentID} = $parentID."\t".$name{$parentID}."\t".$parentRank."\t".$parent{$parentID};
+				} until ($parentID == 1);
+			}
+
+	#		print "$info{$ncbiID}\n";
+	#		print "NEXT...\n";		############ TESTING
+	#		<>;						############ TESTING
 		}
-#		print "$info{$ncbiID}\n";
-#		print "NEXT...\n";		############ TESTING
-#		<>;						############ TESTING
+	}
+#	print $c,"/",scalar(@allTaxa),"\n";
+	$c++;
+}
+
+### print rank info
+my %rankInfo;
+my $mostInfo = "";	# get species with have the most taxonomy info
+my %maxIndex; 	# used to save max index for each rank (and norank ID)
+my %maxIndex2Rank;
+my %allRankIndex = ("strain"=>1,"forma"=>2,"subspecies"=>3,"varietas"=>4,
+										"species"=>5,"speciessubgroup"=>6,"speciesgroup"=>7,
+										"subgenus"=>8,"genus"=>9,"subtribe"=>10,"tribe"=>11,
+										"subfamily"=>12,"family"=>13,"superfamily"=>14,
+										"parvorder"=>15,"infraorder"=>16,"suborder"=>17,"order"=>18,"superorder"=>19,
+										"infraclass"=>20,"subclass"=>21,"class"=>22,"superclass"=>23,
+										"subphylum"=>24,"phylum"=>25,"superphylum"=>26,
+										"subkingdom"=>27,"kingdom"=>28,"superkingdom"=>29);
+my %index2Rank = (1=>"strain",2=>"forma",3=>"subspecies",4=>"varietas",
+									5=>"species",6=>"speciessubgroup",7=>"speciesgroup",
+									8=>"subgenus",9=>"genus",10=>"subtribe",11=>"tribe",
+									12=>"subfamily",13=>"family",14=>"superfamily",
+									15=>"parvorder",16=>"infraorder",17=>"suborder",18=>"order",19=>"superorder",
+									20=>"infraclass",21=>"subclass",22=>"class",23=>"superclass",
+									24=>"subphylum",25=>"phylum",26=>"superphylum",
+									27=>"subkingdom",28=>"kingdom",29=>"superkingdom");
+#$c = 0;
+
+
+### initial index for first rank "name"
+$maxIndex{"name"} = 1;
+$maxIndex2Rank{1} = "name";
+
+my @allTaxaID = sort keys %info;
+
+foreach my $taxID (sort keys %info){
+	my @items = split(/\t/,$info{$taxID});
+	my $c = 0;
+
+	for(my $c = 1; $c < scalar(@items)+1; $c++){
+		my @itemTMP = split(/#/,$items[$c-1]);		# $items[$c] = $taxID#$rank
+
+		### check if this is a new rank or an existing rank in %maxIndex
+		my $newRank = 1;
+		if($itemTMP[1] eq "norank"){
+			if($maxIndex{$itemTMP[0]}){
+				$newRank = 0;
+			}
+		} else {
+			if($maxIndex{$itemTMP[1]}){
+				$newRank = 0;
+			}
+		}
+
+		### for a new rank
+		if($newRank == 1){
+			if($itemTMP[1] eq "norank"){
+				# check index of previous rank (of this species) to get index for this current norank ID
+				my $p = $c-1-1;
+				my $currentIndex = $c;
+				while($p > -1){
+					my @prevItemTMP = split(/#/,$items[$p]);
+					if($prevItemTMP[1] eq "norank"){
+						if($maxIndex{$prevItemTMP[0]}){
+							$currentIndex = $maxIndex{$prevItemTMP[0]} + 1;
+							last;
+						} else {
+							$p--;
+						}
+					} else {
+						if($maxIndex{$prevItemTMP[1]}){
+							$currentIndex = $maxIndex{$prevItemTMP[1]} + 1;
+							last;
+						} else {
+							$p--;
+						}
+					}
+				}
+
+				# last index currently
+				my $k = scalar(keys %maxIndex2Rank);
+				# increase the index of higher ranks
+				while($k >= $currentIndex){
+					if($maxIndex2Rank{$k}){
+						$maxIndex{$maxIndex2Rank{$k}} += 1;
+						$maxIndex2Rank{$k+1} = $maxIndex2Rank{$k};
+					}
+					$k--;
+				}
+				# increase the current rank
+				$maxIndex{$itemTMP[0]} = $currentIndex;
+				$maxIndex2Rank{$currentIndex} = $itemTMP[0];
+			} else {
+				# if this is not the first main rank (name)
+				if($itemTMP[1] ne "name"){
+					# check if $c is the highest index currently
+					my @sortedIndex = sort {$b<=>$a} keys %maxIndex2Rank;
+					if($c > $sortedIndex[0]){
+						$maxIndex{$itemTMP[1]} = $c;
+						$maxIndex2Rank{$c} = $itemTMP[1];
+					}
+					# else, further check other ranks
+					else {
+						# check index of previous main rank
+						my $j = $allRankIndex{$itemTMP[1]}-1;
+						while($j > -1){
+							# get index of previous rank if possible
+							if($maxIndex{$index2Rank{$j}}){
+								# last index currently
+								my $k = scalar(keys %maxIndex2Rank);
+								# increase the index of higher ranks
+								while($k >= ($maxIndex{$index2Rank{$j}}+1)){
+									if($maxIndex2Rank{$k}){
+										$maxIndex{$maxIndex2Rank{$k}} += 1;
+										$maxIndex2Rank{$k+1} = $maxIndex2Rank{$k};
+									}
+									$k--;
+								}
+
+								# then replace the next higher rank by the current rank
+								$maxIndex{$itemTMP[1]} = $maxIndex{$index2Rank{$j}}+1;
+								$maxIndex2Rank{$maxIndex{$index2Rank{$j}}+1} = $itemTMP[1];
+
+								# stop the while loop
+								last;
+							} else {
+								$j--;
+							}
+						}
+					}
+				}
+			}
+		}
+		### for an existing rank
+		else {
+			if($itemTMP[1] eq "norank"){
+				# if the old index smaller than $c (current position)
+				if($maxIndex{$itemTMP[0]} < $c){
+					# increase index for other higher ranks
+					my $k = scalar(keys %maxIndex2Rank);
+					while($k >= $c){
+						if($maxIndex2Rank{$k}){
+							$maxIndex{$maxIndex2Rank{$k}} += 1;
+							$maxIndex2Rank{$k+1} = $maxIndex2Rank{$k};
+						}
+						$k--;
+					}
+					# increase the current rank
+					$maxIndex{$itemTMP[0]} = $c;
+					$maxIndex2Rank{$c} = $itemTMP[0];
+				}
+			} else {
+				if($itemTMP[1] ne "name"){
+					# if the old index smaller than $c (current position)
+					if($maxIndex{$itemTMP[1]} < $c){
+						# increase index for other higher ranks
+						my $k = scalar(keys %maxIndex2Rank);
+						while($k >= $c){
+							if($maxIndex2Rank{$k}){
+								$maxIndex{$maxIndex2Rank{$k}} += 1;
+								$maxIndex2Rank{$k+1} = $maxIndex2Rank{$k};
+							}
+							$k--;
+						}
+						# increase the current rank
+						$maxIndex{$itemTMP[1]} = $c;
+						$maxIndex2Rank{$c} = $itemTMP[1];
+					}
+				}
+			}
+		}
 	}
 }
 
-##### create taxonNamesReduced.txt
+
+### print list of all sorted rank index
+my $rankIndex;
+foreach(sort {$a<=>$b} keys %maxIndex2Rank){
+	$rankIndex .= "$maxIndex2Rank{$_};";
+}
+$rankIndex =~ s/;$//;
+my @rankIndex = split(/;/,$rankIndex);
+
+
+
+########## create taxonNamesReduced.txt
 open(NAMELIST,">$outDir/taxonNamesReduced.txt");
 print NAMELIST "ncbiID	fullName	rank	parentID\n";
 
@@ -132,83 +363,53 @@ foreach(keys %reduceSpec){
 }
 close (NAMELIST);
 
-### create output matrix
+
+########## OUTPUT
 open(OUT,">$outDir/taxonID.list.fullRankID");
-print OUT "No.\tabbrName\tncbiID\tfullName";
+my $rankIndexPrint = join("\t",@rankIndex);
+$rankIndexPrint =~ s/\d+/norank/g;
+$rankIndexPrint =~ s/name/fullName/;
+print OUT "No.\tabbrName\tncbiID\t$rankIndexPrint\n";
 
-my @allRefRank =
-(
-"strain","norank","forma","subspecies","varietas","norank","norank","norank",
-"species","norank","norank","norank","norank","norank","norank","norank","norank","norank","norank",
-"speciessubgroup","norank","norank","norank","norank","norank","norank","norank","norank","norank","norank",
-"speciesgroup","norank","norank","norank","norank","norank","norank","norank","norank","norank","norank",
-"subgenus","norank","norank","norank","norank","norank","norank","norank","norank","norank","norank",
-"genus","norank","norank","norank","norank","norank","norank","norank","norank","norank","norank",
-"subtribe","norank","norank","norank","norank","norank","norank","norank","norank","norank","norank",
-"tribe","norank","norank","norank","norank","norank","norank","norank","norank","norank","norank",
-"subfamily","norank","norank","norank","norank","norank","norank","norank","norank","norank","norank",
-"family","norank","norank","norank","norank","norank","norank","norank","norank","norank","norank",
-"superfamily","norank","norank","norank","norank","norank","norank","norank","norank","norank","norank",
-"parvorder","norank","norank","norank","norank","norank","norank","norank","norank","norank","norank",
-"infraorder","norank","norank","norank","norank","norank","norank","norank","norank","norank","norank",
-"suborder","norank","norank","norank","norank","norank","norank","norank","norank","norank","norank",
-"order","norank","norank","norank","norank","norank","norank","norank","norank","norank","norank",
-"superorder","norank","norank","norank","norank","norank","norank","norank","norank","norank","norank",
-"infraclass","norank","norank","norank","norank","norank","norank","norank","norank","norank","norank",
-"subclass","norank","norank","norank","norank","norank","norank","norank","norank","norank","norank",
-"class","norank","norank","norank","norank","norank","norank","norank","norank","norank","norank",
-"superclass","norank","norank","norank","norank","norank","norank","norank","norank","norank","norank",
-"subphylum","norank","norank","norank","norank","norank","norank","norank","norank","norank","norank",
-"phylum","norank","norank","norank","norank","norank","norank","norank","norank","norank","norank",
-"superphylum","norank","norank","norank","norank","norank","norank","norank","norank","norank","norank",
-"subkingdom","norank","norank","norank","norank","norank","norank","norank","norank","norank","norank",
-"kingdom","norank","norank","norank","norank","norank","norank","norank","norank","norank","norank",
-"superkingdom","norank","norank"
-);
+$c = 1;
+foreach my $taxID (sort keys %info){
+	print OUT "$c\tncbi$taxID\t$taxID";
 
-### print all ranks of refTaxon into output
-#my @allRefRank = split(/\t/,$info{$refTaxon});	# all ranks of refTaxon
-foreach(@allRefRank){
-#	my @tmp = split(/#/,$_);
-	print OUT "\t",$_;
-}
-print OUT "\n";
+	my $items = "\t".$info{$taxID}."\t";
 
-for(my $t = 0; $t < scalar(@allTaxa); $t++){
-		my $ncbiID = $allTaxa[$t];
-		$ncbiID =~ s/ncbi//;
-		my @rankInfo = split(/\t/,$info{$ncbiID});
-		print OUT $t+1,"\t",$allTaxa[$t],"\t",$ncbiID,"\t",$name{$ncbiID};
-
-		for(my $i=0, my$j=0; $i < scalar(@allRefRank); $i++, $j++){
-#			print "i=$i; j=$j (max j = ",scalar(@rankInfo),")\n";
-			### rank name of refTaxon
-#			my @rankRefTMP = split(/#/,$allRefRank[$i]);
-#			my $rankRefName = $rankRefTMP[1];
-			my $rankRefName = $allRefRank[$i];
-#			print "$rankRefName\n";	############ TESTING
-
-			### rank name of current taxon
-			my @rankTMP = split(/#/,$rankInfo[$j]);
-			my $rankName = $rankTMP[1];
-
-			### if rankName = rankRefName, print ID and go to next rank ($i++, $j++)
-			if($rankName eq $rankRefName){
-#				print "SAME: $rankInfo[$j]\n";	############ TESTING
-				my @rankInfoJ = split(/#/,$rankInfo[$j]);
-				print OUT "\t$rankInfoJ[0]";
+	# get ID for each rank in @rankIndex
+	my $prevID = "";
+	for(my $i = 0; $i < scalar(@rankIndex); $i++){
+		my $id = "";
+		if($rankIndex[$i] eq "name"){
+			$items =~ /(.)+#name/;
+			$id = $&; $id =~ s/#name//;
+		} else{
+			if($items =~ /\t(\d)+#$rankIndex[$i]?\t/){
+				# get taxonomyID for this rank
+				$id = $&;
+				$id =~ s/#$rankIndex[$i]//;
+			} elsif($items =~ /\t$rankIndex[$i]#/){
+				# get taxonomyID for this "norank"
+				$id = $rankIndex[$i];
 			}
-			### else, increase $i, $j stays the same
-			else {
-#				print "noID: $rankInfo[$j] (previous: $rankInfo[$j-1])\n";	############ TESTING
-				my @rankInfoJp = split(/#/,$rankInfo[$j-1]);
-				print OUT "\t$rankInfoJp[0]";
-				$j--;
-			}
-#			<>;
 		}
-		print OUT "\n";
+
+		# print ID to output
+		$id =~ s/\t//g;
+		if(length($id)>0){
+			#print "$id";<>;
+			print OUT "\t$id";
+			$prevID = $id;
+		} else {
+			#print $prevID;<>;
+			print OUT "\t$prevID";
+		}
+	}
+	$c++;
+	print OUT "\n";
 }
 
 close (OUT);
+print "FINISHED\n";
 exit;

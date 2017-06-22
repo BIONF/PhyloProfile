@@ -1229,7 +1229,7 @@ shinyServer(function(input, output, session) {
       p = ggplot(dataHeat, aes(y = geneID, x = supertaxon))        ## global aes
     }
     
-        if(length(unique(na.omit(dataHeat$var1))) == 1){
+    if(length(unique(na.omit(dataHeat$var1))) == 1){
       mynewcolor_low <- input$highColor_var1
     } else {
       mynewcolor_low <- input$lowColor_var1
