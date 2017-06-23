@@ -591,6 +591,7 @@ shinyServer(function(input, output, session) {
     
     rankSelect = input$rankSelect
     if(rankSelect == ""){return()}
+    
     ### load list of unsorted taxa
     Dt <- as.data.frame(read.table("data/taxonID.list.fullRankID", sep='\t',header=T))
     Dt <- Dt[Dt$abbrName  %in% subsetTaxa(),]
@@ -1157,16 +1158,21 @@ shinyServer(function(input, output, session) {
   ######## get list of all taxa for selectize input
   output$taxaIn = renderUI({
     filein <- input$mainInput
-    if(is.null(filein)){return(selectInput('inTaxa','Select (super)taxon/(super)taxa of interest:',"all"))}
-    if(v$doPlot == FALSE){return(selectInput('inTaxa','Select (super)taxon/(super)taxa of interest:',"all"))}
+    if(is.null(filein)){return(selectInput('inTaxa','',"all"))}
+    if(v$doPlot == FALSE){return(selectInput('inTaxa','',"all"))}
     else{
       choice <- allTaxaList()
       choice$fullName <- as.factor(choice$fullName)
       
       out <- as.list(levels(choice$fullName))
       out <- append("all",out)
-      
-      selectInput('inTaxa','Select (super)taxon/(super)taxa of interest:',out,selected=out[1],multiple=TRUE)
+
+      if(input$applyCusTaxa == TRUE){
+        out <- cusTaxaName()
+        selectInput('inTaxa','',out,selected=out,multiple=TRUE)
+      } else {
+        selectInput('inTaxa','',out,selected=out[1],multiple=TRUE)
+      }
     }
   })
   
@@ -1814,6 +1820,74 @@ shinyServer(function(input, output, session) {
     filein <- input$mainInput
     if(is.null(filein)){v2$doPlotCustom <- FALSE}
   })
+  
+  ######## print list of available customized taxonomy ranks (the lowest rank is the same as the chosen main rank)
+  output$rankSelectCus = renderUI({
+    mainRank <- input$rankSelect
+    mainChoices = list("Strain"="05_strain","Species" = "06_species","Genus" = "10_genus", "Family" = "14_family", "Order" = "19_order", "Class" = "23_class",
+                       "Phylum" = "26_phylum", "Kingdom" = "28_kingdom", "Superkingdom" = "29_superkingdom","unselected"="")
+    cusChoices <- mainChoices[mainChoices >= mainRank]
+    
+    selectInput("rankSelectCus", label = h5("Select taxonomy rank:"),
+                choices = as.list(cusChoices),
+                selected = mainRank)
+  })
+  
+  ######## print list of available taxa for customized plot (based on rank from rankSelectCus)
+  taxaSelectCus <- reactive({
+    rankSelectCus = input$rankSelectCus
+    
+    if(length(rankSelectCus) == 0){return()}
+    else{
+      ### load list of unsorted taxa
+      Dt <- as.data.frame(read.table("data/taxonID.list.fullRankID", sep='\t',header=T))
+      Dt <- Dt[Dt$abbrName  %in% subsetTaxa(),]
+      
+      ### load list of taxon name
+      nameList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T,fill = TRUE))
+      nameList$fullName <- as.character(nameList$fullName)
+      
+      rankName = substr(rankSelectCus,4,nchar(rankSelectCus))   # get rank name from rankSelect
+      choice <- as.data.frame
+      choice <- rbind(Dt[rankName])
+      colnames(choice) <- "ncbiID"
+      choice <- merge(choice,nameList,by="ncbiID",all = FALSE)
+      return(choice)
+    }
+  })
+  
+  output$taxaSelectCus = renderUI({
+    choice <- taxaSelectCus()
+    choice$fullName <- as.factor(choice$fullName)
+    selectInput('taxaSelectCus',h5('Choose (super)taxon of interest:'),as.list(levels(choice$fullName)),levels(choice$fullName)[1])
+  })
+  
+  ######## get list of taxa based on selected taxaSelectCus
+  cusTaxaName <- reactive({
+    
+    taxaSelectCus = input$taxaSelectCus
+    rankName = substr(input$rankSelectCus,4,nchar(input$rankSelectCus))
+    
+    if(taxaSelectCus == ""){return()}
+    
+    ### load list of unsorted taxa
+    Dt <- as.data.frame(read.table("data/taxonID.list.fullRankID", sep='\t',header=T))
+    Dt <- Dt[Dt$abbrName  %in% subsetTaxa(),]
+    
+    ### get ID of customized (super)taxon
+    taxaList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T,fill = TRUE))
+    superID <- taxaList$ncbiID[taxaList$fullName == taxaSelectCus & taxaList$rank %in% c(rankName,"norank")]
+    
+    ### from that ID, get list of all taxa for main selected taxon
+    mainRankName = substr(input$rankSelect,4,nchar(input$rankSelect))
+    customizedTaxaID <- levels(as.factor(Dt[mainRankName][Dt[rankName] == superID,]))
+    
+    cusTaxaName <- taxaList$fullName[taxaList$rank %in% c(mainRankName,"norank") & taxaList$ncbiID %in% customizedTaxaID]
+    
+    return(cusTaxaName)
+  })
+  
+  ######## update 
   
   ######## create plot (same as main plot)
   selectedPlot <- function(){
@@ -2726,7 +2800,7 @@ shinyServer(function(input, output, session) {
     if(v$doPlot == FALSE){return()}
     #data <- taxaID()
     #data <- allTaxaList()
-    #data <- sortedTaxaList()
+    data <- sortedTaxaList()
     #data <- preData()
     #data <- dataFiltered()
     #data <- dataSupertaxa()
@@ -2734,7 +2808,7 @@ shinyServer(function(input, output, session) {
     #data <- detailPlotDt()
     #data <- presSpecAllDt()
     #data <- distDf()
-    data <- downloadData()
+    #data <- downloadData()
     data
   })
   

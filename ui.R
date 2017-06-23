@@ -285,15 +285,29 @@ shinyUI(fluidPage(
       "Customized profile",
       sidebarLayout(
         sidebarPanel(
-          strong("Select sequence(s) of interest:"),
+          column(12,
+                 style='padding:0px;',
+                 strong("Select sequence(s) of interest:")
+          ),
           column(6,
                  style='padding:0px;',
                  uiOutput("geneIn")
           ),
-          column(3,
+          column(4,
                  fileInput("customFile","",width='100%')
           ),
-          uiOutput("taxaIn"),
+          column(12,
+                 style='padding:0px;',
+                 strong("Select (super)taxon/(super)taxa of interest:")
+          ),
+          column(6,
+                 style='padding:0px;',
+                 uiOutput("taxaIn")
+          ),
+          column(4,
+                 h3(""),
+                 bsButton("cusTaxa","Browse...")
+          ),
           
           h5(""),
           uiOutput("plotCustomBtn")
@@ -525,6 +539,13 @@ shinyUI(fluidPage(
             ,selectInput("file_ext","File extension:",choices=list("fa"="fa","fasta"="fasta","fas"="fas","txt"="txt"),selected="fa")
             ,selectInput("id_format","ID format:",choices=list(">speciesID:seqID"=1,">seqID"=2),selected=2)
           )
+  ),
+  
+  ####### popup windows for select customized taxa
+  bsModal("modalBS", "Select taxon/taxa of interest", "cusTaxa", size = "small",
+          uiOutput("rankSelectCus"),
+          uiOutput("taxaSelectCus"),
+          checkboxInput("applyCusTaxa",strong("Apply to customized profile", style="color:red"),value = FALSE)
   ),
   
   ####### popup windows for detailed plot
