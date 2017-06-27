@@ -99,6 +99,12 @@ foreach my $scoreID (keys %scoreID){
 	}
 }
 
+my $c = scalar keys %scoreID;
+while($c < 2){
+	$c++;
+	$scoreID{"var$c"} = "var$c";
+}
+
 ### parse ortholog group and output the results
 print "geneID\tncbiID\torthoID";
 foreach my $scoreID (sort keys %scoreID){
