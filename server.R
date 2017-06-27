@@ -25,18 +25,39 @@ if (!require("taxize")) {install.packages("taxize")}
 ######################## FUNCTIONS ##########################
 #############################################################
 
+xmlParser <- function(inputFile){
+  # cmd <- paste("perl ", getwd(),"/data/orthoxmlParser.pl",
+  #              " -i \"", inputFile,
+  #              sep='')
+  cmd <- paste("perl ", getwd(),"/data/orthoxmlParser.pl",
+               " -i ", inputFile,
+               sep='')
+  dfIN <- as.data.frame(read.table(text = system(cmd,intern=TRUE)))
+  colnames(dfIN) = as.character(unlist(dfIN[1,])) # the first row will be the header
+  dfIN = dfIN[-1, ]
+  
+  dfIN
+}
+
 ########## convert long to wide format ##############
-long2wide <- function(inputFile){
-  longDf <- as.data.frame(read.table(file=inputFile$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+long2wide <- function(longDf){
+#  longDf <- as.data.frame(read.table(file=inputFile$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
   
   # rename column names 
   colnames(longDf) <- c("geneID","ncbiID","orthoID","var1","var2")
   longDf$value <- paste0(longDf$orthoID,"#",longDf$var1,"#",longDf$var2)
   longDfmod <- longDf[,c("geneID","ncbiID","value")]
+  
+  # count paralogs
+  longDfmod <- data.table(longDfmod)
+  longDfmod[ ,paralog := 1:.N, by=c("geneID","ncbiID")]
+  longDfmod <- data.frame(longDfmod)
+  
+  # return wide data frame
   wideDf <- spread(longDfmod, ncbiID, value)
+  wideDf <- subset(wideDf,paralog == 1)   # remove co-orthologs
+  wideDf <- subset(wideDf, select=-paralog)
 }
-
-
 
 ########## calculate percentage of present species ##########
 calcPresSpec <- function(taxaMdData, taxaCount){
@@ -265,7 +286,10 @@ shinyServer(function(input, output, session) {
     filein <- input$mainInput
     if(is.null(filein)){return(textInput("var1_id", h5("First variable:"), value = "Variable 1", width="100%", placeholder="Name of first variable"))}    # get var1/var2 names based on input (only if input file in long format table)
     
-    if(checkLongFormat() == TRUE){
+    if(checkXmlFormat() == TRUE){
+      longDf <- xmlParser(filein$datapath)
+      textInput("var1_id", h5("First variable:"), value = colnames(longDf)[4], width="100%", placeholder="Name of first variable")
+    } else if(checkLongFormat() == TRUE){
       headerIn <- readLines(filein$datapath, n = 1)
       headerIn <- unlist(strsplit(headerIn,split = '\t'))
       
@@ -278,7 +302,11 @@ shinyServer(function(input, output, session) {
   output$var2_id.ui <- renderUI({
     filein <- input$mainInput
     if(is.null(filein)){return(textInput("var2_id", h5("Second variable:"), value = "Variable 2", width="100%", placeholder="Name of second variable"))}    # get var1/var2 names based on input (only if input file in long format table)
-    if(checkLongFormat() == TRUE){
+    
+    if(checkXmlFormat() == TRUE){
+      longDf <- xmlParser(filein$datapath)
+      textInput("var2_id", h5("Second variable:"), value = colnames(longDf)[5], width="100%", placeholder="Name of first variable")
+    } else if(checkLongFormat() == TRUE){
       headerIn <- readLines(filein$datapath, n = 1)
       headerIn <- unlist(strsplit(headerIn,split = '\t'))
       
@@ -319,11 +347,11 @@ shinyServer(function(input, output, session) {
   output$var1_dist.ui <- renderUI({
     sliderInput("var1_dist",paste(input$var1_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(input$var1[1],input$var1[2]), width = 200)
   })
-
+  
   output$var2_dist.ui <- renderUI({
     sliderInput("var2_dist",paste(input$var2_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(input$var2[1],input$var2[2]), width = 200)
   })
-
+  
   output$percent_dist.ui <- renderUI({
     sliderInput("percent_dist",
                 "% of present taxa:", min = 0, max = 1, step = 0.025, value = input$percent, width = 200)
@@ -452,6 +480,19 @@ shinyServer(function(input, output, session) {
   
   ########################################################
   
+  ######## check if main input file is in XML format
+  checkXmlFormat <- reactive({
+    filein <- input$mainInput
+    if(is.null(filein)){return()}
+    
+    inputDt <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+    if(grepl("<?xml",colnames(inputDt)[1])){
+      return(TRUE)
+    } else {
+      return(FALSE)
+    }
+  })
+  
   ######## check if main input file is in long format
   checkLongFormat <- reactive({
     filein <- input$mainInput
@@ -470,12 +511,17 @@ shinyServer(function(input, output, session) {
     filein <- input$mainInput
     if(is.null(filein)){return()}
     
+    inputDf <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
     # get list of all available taxon (from taxonID.list.fullRankID)
     allTaxa <- unlist(as.list(fread("data/taxonID.list.fullRankID",sep = "\t", select = "abbrName")))
     
     # get list of input taxa (from main input file)
-    if(checkLongFormat() == TRUE){
-      inputMod <- long2wide(filein)
+    if(checkXmlFormat() == TRUE){
+      longDf <- xmlParser(filein$datapath)
+      inputMod <- long2wide(longDf)
+      inputTaxa <- colnames(inputMod)
+    } else if(checkLongFormat() == TRUE){
+      inputMod <- long2wide(inputDf)
       inputTaxa <- colnames(inputMod)
     } else {
       inputTaxa <- readLines(filein$datapath, n = 1)
@@ -511,10 +557,15 @@ shinyServer(function(input, output, session) {
     filein <- input$mainInput
     if(is.null(filein)){return()}
     
+    inputDf <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
     if(length(unkTaxa()) == 0){
       # get list of input taxa (from main input file)
-      if(checkLongFormat() == TRUE){
-        inputMod <- long2wide(filein)
+      if(checkXmlFormat() == TRUE){
+        longDf <- xmlParser(filein$datapath)
+        inputMod <- long2wide(longDf)
+        inputTaxa <- colnames(inputMod)
+      } else if(checkLongFormat() == TRUE){
+        inputMod <- long2wide(inputDf)
         inputTaxa <- colnames(inputMod)
       } else {
         inputTaxa <- readLines(filein$datapath, n = 1)
@@ -551,10 +602,16 @@ shinyServer(function(input, output, session) {
     filein <- input$mainInput
     if(is.null(filein)){return()}
     else{
+      inputDf <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+      
       if(v1$parseInput == FALSE){return()}
       else{
-        if(checkLongFormat() == TRUE){
-          inputMod <- long2wide(filein)
+        if(checkXmlFormat() == TRUE){
+          longDf <- xmlParser(filein$datapath)
+          inputMod <- long2wide(longDf)
+          titleline <- toString(paste(colnames(inputMod),collapse = "\t"))
+        } else if(checkLongFormat() == TRUE){
+          inputMod <- long2wide(inputDf)
           titleline <- toString(paste(colnames(inputMod),collapse = "\t"))
         } else {
           titleline <- readLines(filein$datapath, n=1)
@@ -940,7 +997,7 @@ shinyServer(function(input, output, session) {
   ############### PARSING DATA FROM INPUT MATRIX:
   ############### get (super)taxa names (3)
   ############### calculate percentage of presence (4), max/min/mean/median VAR1 (5) and VAR2 (6) if group input taxa list into higher taxonomy rank
- 
+  
   ### check if "no ordering gene IDs" has been checked
   output$applyClusterCheck.ui <- renderUI({
     if(input$ordering == FALSE){
@@ -961,12 +1018,21 @@ shinyServer(function(input, output, session) {
     filein <- input$mainInput
     if(is.null(filein)){return()}
     
+    inputDf <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
     # get rows need to be read
     nrHit <- input$stIndex + input$number - 1
     
     # convert input to wide format (if needed) & get nrHit rows
-    if(checkLongFormat() == TRUE){
-      inputMod <- long2wide(filein)
+    if(checkXmlFormat() == TRUE){
+      longDf <- xmlParser(filein$datapath)
+      inputMod <- long2wide(longDf)
+      if(input$applyCluster == TRUE){
+        inputMod <- clusterData(inputMod)
+      }
+      subsetID <- levels(inputMod$geneID)[1:nrHit]
+      data <- inputMod[inputMod$geneID %in% subsetID,]
+    } else if(checkLongFormat() == TRUE){
+      inputMod <- long2wide(inputDf)
       if(input$applyCluster == TRUE){
         inputMod <- clusterData(inputMod)
       }
@@ -975,13 +1041,15 @@ shinyServer(function(input, output, session) {
       data <- inputMod[inputMod$geneID %in% subsetID,]
     } else {
       if(input$applyCluster == TRUE){
-        oridata <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+        #oridata <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+        oridata <- inputDf
         clusteredOridata <- clusterData(oridata)
         
         subsetID <- levels(clusteredOridata$geneID)[1:nrHit]
         data <- clusteredOridata[clusteredOridata$geneID %in% subsetID,]
       } else {
-        data <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char="",nrows=nrHit))
+        #data <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char="",nrows=nrHit))
+        data <- inputDf
       }
     }
     
@@ -991,10 +1059,14 @@ shinyServer(function(input, output, session) {
       if(!is.null(listIn)){
         list <- as.data.frame(read.table(file=listIn$datapath, header=FALSE))
         
-        if(checkLongFormat() == TRUE){
-          dataOrig <- long2wide(filein)
+        if(checkXmlFormat() == TRUE){
+          longDf <- xmlParser(filein$datapath)
+          dataOrig <- long2wide(longDf)
+        } else if(checkLongFormat() == TRUE){
+          dataOrig <- long2wide(inputDf)
         } else {
-          dataOrig <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+          #dataOrig <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+          dataOrig <- inputDf
         }
         data <- dataOrig[dataOrig$geneID %in% list$V1,]
         
@@ -1166,7 +1238,7 @@ shinyServer(function(input, output, session) {
       
       out <- as.list(levels(choice$fullName))
       out <- append("all",out)
-
+      
       if(input$applyCusTaxa == TRUE){
         out <- cusTaxaName()
         selectInput('inTaxa','',out,selected=out,multiple=TRUE)
@@ -1240,7 +1312,7 @@ shinyServer(function(input, output, session) {
     } else {
       mynewcolor_low <- input$lowColor_var1
     }
-
+    
     if(length(unique(na.omit(dataHeat$var2))) != 1){
       p = p + scale_fill_gradient(low = input$lowColor_var2, high = input$highColor_var2, na.value="gray95") +   ## fill color (var2)
         geom_tile(aes(fill = var2))    ## filled rect (var2 score)
@@ -1551,7 +1623,12 @@ shinyServer(function(input, output, session) {
     
     # open main input file
     filein <- input$mainInput
-    if(checkLongFormat() == TRUE){
+    
+    if(checkXmlFormat() == TRUE){
+      dataOrig <- xmlParser(filein$datapath)
+      colnames(dataOrig) <- c("geneID","ncbiID","orthoID","var1","var2")
+      splitDt <- dataOrig[,c("orthoID","var1","var2")]
+    } else if(checkLongFormat() == TRUE){
       dataOrig <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
       colnames(dataOrig) <- c("geneID","ncbiID","orthoID","var1","var2")
       splitDt <- dataOrig[,c("orthoID","var1","var2")]
@@ -1563,21 +1640,21 @@ shinyServer(function(input, output, session) {
       # replace NA value with "NA#NA" (otherwise the corresponding orthoID will be empty)
       mdData$value <- as.character(mdData$value)
       mdData$value[is.na(mdData$value)] <- "NA#NA"
-    
+      
       # split "orthoID#var1#var2" into 3 columns
       splitDt <- as.data.frame(str_split_fixed(mdData$value, '#', 3))
       colnames(splitDt) <- c("orthoID","var1","var2")
     }
-
+    
     splitDt$orthoID[splitDt$orthoID == "NA" | is.na(splitDt$orthoID)] <- NA
     splitDt <- splitDt[complete.cases(splitDt),]
-
+    
     if(length(levels(as.factor(splitDt$var2))) == 1){
       if(levels(as.factor(splitDt$var2)) == ""){
         splitDt$var2 <- 0
       }
     }
-
+    
     # convert factor into numeric for "var1" & "var2" column
     splitDt$var1 <- suppressWarnings(as.numeric(as.character(splitDt$var1)))
     splitDt$var2 <- suppressWarnings(as.numeric(as.character(splitDt$var2)))
@@ -1680,7 +1757,11 @@ shinyServer(function(input, output, session) {
   presSpecAllDt <- reactive({
     # open main input file
     filein <- input$mainInput
-    if(checkLongFormat() == TRUE){
+    
+    if(checkXmlFormat() == TRUE){
+      mdData <- xmlParser(filein$datapath)
+      colnames(mdData) <- c("geneID","ncbiID","orthoID","var1","var2")
+    } else if(checkLongFormat() == TRUE){
       mdData <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
       colnames(mdData) <- c("geneID","ncbiID","orthoID","var1","var2")
     } else {
@@ -2426,16 +2507,16 @@ shinyServer(function(input, output, session) {
     
     taxaList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T))
     superID <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inSelect & taxaList$rank == rankName])
-
+    
     ### full non-duplicated taxonomy data
     Dt <- nonDupTaxonDf()
     ### subset of taxonomy data, containing only ranks from rankList
     subDt <- Dt[,c("abbrName",rankList)]
-
+    
     ### get (super)taxa IDs for one of representative species
     firstLine <- Dt[Dt[,rankName]==superID,][1,]  # get all taxon info for 1 representative
     subFirstLine <- firstLine[,c("abbrName",rankList)]
-
+    
     ### compare each taxon ncbi IDs with selected taxon
     ### and create a "category" data frame
     catDf <- data.frame("ncbiID" = character(), "cat" = character(), stringsAsFactors=FALSE)
@@ -2446,11 +2527,11 @@ shinyServer(function(input, output, session) {
       cat <- paste0(cat,collapse = "")
       catDf[i,] <- c(as.character(subDt[i,]$abbrName),cat)
     }
-
+    
     ### get main input data
     mdData <- dataFiltered()
     mdData <- mdData[,c("geneID","ncbiID","orthoID","var1","var2","presSpec")]
-
+    
     ### add "category" into mdData
     mdDataExtended <- merge(mdData,catDf,by="ncbiID",all.x = TRUE)
     mdDataExtended$var1[mdDataExtended$var1 == "NA" | is.na(mdDataExtended$var1)] <- 0
@@ -2673,7 +2754,7 @@ shinyServer(function(input, output, session) {
                  delayType = input$brush_policy,
                  direction = input$brush_dir,
                  resetOnNew = input$brush_reset)
-               )
+    )
   })
   
   ### download clustered plot
@@ -2691,7 +2772,7 @@ shinyServer(function(input, output, session) {
     dd.col <- clusterDataDend()
     dt <- dendro_data(dd.col)
     dt$labels$label <- levels(dt$labels$label)
-
+    
     # get list of selected gene(s)
     if (is.null(input$plot_brush)) {return()}
     else{
@@ -2700,7 +2781,7 @@ shinyServer(function(input, output, session) {
       # a <- dt$labels$label[bottom]
       # b <- dt$labels$label[top]
       # values <- c(top,b,bottom,a)
-
+      
       df <- dt$labels[bottom:top,] 
     }
     
@@ -2800,7 +2881,7 @@ shinyServer(function(input, output, session) {
     if(v$doPlot == FALSE){return()}
     #data <- taxaID()
     #data <- allTaxaList()
-    data <- sortedTaxaList()
+    #data <- sortedTaxaList()
     #data <- preData()
     #data <- dataFiltered()
     #data <- dataSupertaxa()
@@ -2808,7 +2889,7 @@ shinyServer(function(input, output, session) {
     #data <- detailPlotDt()
     #data <- presSpecAllDt()
     #data <- distDf()
-    #data <- downloadData()
+    data <- downloadData()
     data
   })
   
@@ -2817,7 +2898,7 @@ shinyServer(function(input, output, session) {
   downloadCustomData <- reactive({
     ### check input
     if (v$doPlot == FALSE) return()
-  
+    
     data <- as.data.frame(downloadData())
     ### get subset of data according to selected genes/taxa
     if(!is.null(input$inSeq) | !is.null(input$inTaxa)){

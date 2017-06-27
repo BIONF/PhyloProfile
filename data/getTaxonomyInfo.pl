@@ -38,16 +38,14 @@ my $outDir =  ($opt_o) ? $opt_o : usage("ERROR: No output dir given\n");
 #my @in = <IN>;
 #close (IN);
 
-open(NAME,"$nameIN") || die "Cannot open $nameIN!!\n";
-my @nameIn = <NAME>;
-close (NAME);
-
 #### get list of all species name and their NCBI taxon id
 my %id;		# $id{NAME} = ID
 my %name;	# $name{$id} = NAME
 my %rank;	# $rank{$id} = RANK
 my %parent;	# $parent{$id} = PARENT_ID
-foreach my $line(@nameIn){
+
+open(NAME,"$nameIN") || die "Cannot open $nameIN!!\n";
+foreach my $line(<NAME>){
 	chomp($line);
 	my @tmp = split(/\t/,$line);	# id  name  rank  parentID
 	$id{$tmp[1]} = $tmp[0];
@@ -55,6 +53,7 @@ foreach my $line(@nameIn){
 	$rank{$tmp[0]} = $tmp[2];
 	$parent{$tmp[0]} = $tmp[3];
 }
+close (NAME);
 
 #### get the info for newly added taxa (if necessary)
 open(NEW,"$nameNewIN") || die "Cannot open $nameNewIN!!\n";

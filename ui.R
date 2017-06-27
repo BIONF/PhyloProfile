@@ -542,7 +542,7 @@ shinyUI(fluidPage(
   ),
   
   ####### popup windows for select customized taxa
-  bsModal("modalBS", "Select taxon/taxa of interest", "cusTaxa", size = "small",
+  bsModal("cusTaxaBS", "Select taxon/taxa of interest", "cusTaxa", size = "small",
           uiOutput("rankSelectCus"),
           uiOutput("taxaSelectCus"),
           checkboxInput("applyCusTaxa",strong("Apply to customized profile", style="color:red"),value = FALSE)
