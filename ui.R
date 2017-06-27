@@ -149,7 +149,8 @@ shinyUI(fluidPage(
                em(strong("RELOAD THIS TOOL TO UPLOAD A NEW INPUT FILE!!!",style = "color:red"))
              ),
              
-             fileInput("mainInput",h5("Upload input file:")),
+             checkboxInput("demo",em(strong("Use demo files"),style = "color:darkblue")),
+             uiOutput("mainInputFile.ui"),
              fluidRow(
                column(5,
                       uiOutput("var1_id.ui")
@@ -175,7 +176,7 @@ shinyUI(fluidPage(
              
              hr(),
              strong(h4("Additional annotation file:")),
-             fileInput("fileDomain",""),
+             uiOutput("domainInputFile.ui"),
              hr(),
              em(a("Click here to download demo data", href="https://github.com/trvinh/phyloprofile/tree/master/data/demo", target="_blank"))
       ),
@@ -213,14 +214,14 @@ shinyUI(fluidPage(
                em("Does the taxa in your recently uploaded presence/absence file change? (Note: for 'first time users', please choose 'YES')"),
                radioButtons("parseAsk","", c("Yes" = "Yes", "No" = "No"), inline=T, selected = "Yes"),
                conditionalPanel(condition="input.parseAsk == 'Yes'",
-                                bsButton("parse","Get info from input",disabled=TRUE)
+                                bsButton("parse","Get info from input",disabled=FALSE)
                ),
                h5(""),
                
                em("Do you have any taxon, which doesn't exist in the NCBI taxonomy database?"),
                radioButtons("newTaxaAsk","", c("Yes" = "Yes", "No" = "No"), inline=T, selected = "No"),
                conditionalPanel(condition="input.newTaxaAsk == 'Yes'",
-                                bsButton("addTaxa","Add new taxa",disabled=TRUE)
+                                bsButton("addTaxa","Add new taxa",disabled=FALSE)
                ),
                hr(),
                
@@ -230,9 +231,13 @@ shinyUI(fluidPage(
              conditionalPanel(
                condition = 'output.unkTaxaStatus == 0',
                strong(h4("Seed (super)taxon:")),
+               br(),
+               strong(h5("Select taxonomy rank:")),
                uiOutput("rankSelect"),
+               br(),
+               strong(h5("Choose (super)taxon of interest:")),
                uiOutput("select"),
-               h5(""),
+               br(),
                bsButton("do", "PLOT",type="action",style="danger",size = "large",disabled = TRUE),
                h5("")
              )
