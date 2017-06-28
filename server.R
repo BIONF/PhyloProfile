@@ -20,7 +20,6 @@ if (!require("Biostrings")) {
   biocLite("Biostrings")
 }
 if (!require("taxize")) {install.packages("taxize")}
-if (!require("rdrop2")) {install.packages("rdrop2")}
 
 #############################################################
 ######################## FUNCTIONS ##########################
@@ -522,7 +521,7 @@ shinyServer(function(input, output, session) {
     
     # get list of input taxa (from main input file)
     if(input$demo == TRUE){
-      data <- as.data.frame(drop_read_csv("/phyloprofile/data/demo/test.main",stringsAsFactors = FALSE, sep='\t', comment.char=""))
+      data <- as.data.frame(read.csv("https://raw.githubusercontent.com/trvinh/phyloprofile/master/data/demo/test.main",stringsAsFactors = FALSE, sep='\t', comment.char=""))
       inputTaxa <- colnames(data)
     } else {
       filein <- input$mainInput
@@ -570,7 +569,7 @@ shinyServer(function(input, output, session) {
   ######## get input taxa (a subset of available taxa in taxonID.list.fullRankID)
   subsetTaxa <- reactive({
     if(input$demo == TRUE){
-      data <- as.data.frame(drop_read_csv("/phyloprofile/data/demo/test.main",stringsAsFactors = FALSE, sep='\t', comment.char=""))
+      data <- as.data.frame(read.csv("https://raw.githubusercontent.com/trvinh/phyloprofile/master/data/demo/test.main",stringsAsFactors = FALSE, sep='\t', comment.char=""))
       inputTaxa <- colnames(data)
     } else {
       filein <- input$mainInput
@@ -602,7 +601,7 @@ shinyServer(function(input, output, session) {
   ######## render input files
   output$mainInputFile.ui <- renderUI({
     if(input$demo == TRUE){
-      h4(a("demo/test.main", href="https://github.com/trvinh/phyloprofile/blob/master/data/demo/test.main", target="_blank"))
+      h4(a("demo/test.main", href="https://raw.githubusercontent.com/trvinh/phyloprofile/master/data/demo/test.main", target="_blank"))
     } else {
       fileInput("mainInput",h5("Upload input file:"))
     }
@@ -610,7 +609,7 @@ shinyServer(function(input, output, session) {
   
   output$domainInputFile.ui <- renderUI({
     if(input$demo == TRUE){
-      h4(a("demo/test.architecture", href="https://github.com/trvinh/phyloprofile/blob/master/data/demo/test.architecture", target="_blank"))
+      h4(a("demo/test.architecture", href="https://raw.githubusercontent.com/trvinh/phyloprofile/master/data/demo/test.architecture", target="_blank"))
     } else {
       fileInput("fileDomain","")
     }
@@ -1069,7 +1068,7 @@ shinyServer(function(input, output, session) {
     nrHit <- input$stIndex + input$number - 1
     
     if(input$demo == TRUE){
-      inputDf <- as.data.frame(drop_read_csv("/phyloprofile/data/demo/test.main",stringsAsFactors = FALSE, sep='\t',comment.char=""))
+      inputDf <- as.data.frame(read.csv("https://raw.githubusercontent.com/trvinh/phyloprofile/master/data/demo/test.main",stringsAsFactors = FALSE, sep='\t', comment.char=""))
       if(input$applyCluster == TRUE){
         oridata <- inputDf
         clusteredOridata <- clusterData(oridata)
@@ -1696,7 +1695,7 @@ shinyServer(function(input, output, session) {
     
     # open main input file
     if(input$demo == TRUE){
-      dataOrig <- as.data.frame(drop_read_csv("/phyloprofile/data/demo/test.main",stringsAsFactors = FALSE, sep='\t',comment.char=""))
+      dataOrig <- as.data.frame(read.csv("https://raw.githubusercontent.com/trvinh/phyloprofile/master/data/demo/test.main",stringsAsFactors = FALSE, sep='\t', comment.char=""))
       # convert into paired columns
       mdData <- melt(dataOrig,id="geneID")
       
@@ -1844,7 +1843,7 @@ shinyServer(function(input, output, session) {
   presSpecAllDt <- reactive({
     # open main input file
     if(input$demo == TRUE){
-      data <- as.data.frame(drop_read_csv("/phyloprofile/data/demo/test.main",stringsAsFactors = FALSE, sep='\t',comment.char=""))
+      data <- as.data.frame(read.csv("https://raw.githubusercontent.com/trvinh/phyloprofile/master/data/demo/test.main",stringsAsFactors = FALSE, sep='\t', comment.char=""))
       # convert into paired columns
       mdData <- melt(data,id="geneID")
       
@@ -2496,7 +2495,7 @@ shinyServer(function(input, output, session) {
     
     ### parse domain file
     if(input$demo == TRUE){
-      domainDf <- as.data.frame(drop_read_csv("/phyloprofile/data/demo/test.architecture",stringsAsFactors = FALSE, sep='\t',comment.char=""))
+      domainDf <- as.data.frame(read.csv("https://raw.githubusercontent.com/trvinh/phyloprofile/master/data/demo/test.architecture",stringsAsFactors = FALSE, sep='\t', comment.char=""))
     } else {
       filein3 <- input$fileDomain
       if(is.null(filein3)){
@@ -3096,7 +3095,7 @@ shinyServer(function(input, output, session) {
       <p>&nbsp;</p>
       <p>&copy; 2016 Vinh Tran</p>
       <p>contact:&nbsp;<a href="mailto:tran@bio.uni-frankfurt.de">tran@bio.uni-frankfurt.de</a></p>
-      <p>Please check the latest version at&nbsp;<a href="https://github.com/trvinh/phyloprofile">https://github.com/trvinh/phyloprofile</a></p>
+      <p>Please check the latest version at&nbsp;<a href="https://raw.githubusercontent.com/trvinh/phyloprofile">https://raw.githubusercontent.com/trvinh/phyloprofile</a></p>
       '
       )
   })
