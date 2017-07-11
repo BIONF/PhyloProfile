@@ -175,8 +175,17 @@ shinyUI(fluidPage(
              ),
              
              hr(),
-             strong(h4("Additional annotation file:")),
-             uiOutput("domainInputFile.ui"),
+             strong(h4("Additional annotation input:")),
+             radioButtons(inputId="annoChoose", label="", choices=list("from file","from folder"), selected="from file", inline=T),
+             conditionalPanel(
+               condition = "input.annoChoose == 'from file'",
+               uiOutput("domainInputFile.ui")
+             ),
+             conditionalPanel(
+               condition = "input.annoChoose == 'from folder'",
+               textInput("domainPath","","")
+             ),
+             
              hr(),
              em(a("Click here to download demo data", href="https://github.com/trvinh/phyloprofile/tree/master/data/demo", target="_blank"))
       ),
@@ -328,7 +337,7 @@ shinyUI(fluidPage(
       "Function",
       tabPanel(
         "Profiles clustering",
-        h4(strong("Cluster profiles")),
+        h4(strong("Profiles clustering")),
         
         wellPanel(
           fluidRow(
@@ -449,6 +458,36 @@ shinyUI(fluidPage(
         tableOutput("geneAge.table")
       ),
       
+      tabPanel(
+        "Consensus gene finding",
+        h4(strong("Consensus gene finding")),
+        
+        wellPanel(
+          fluidRow(
+            column(2,
+                   uiOutput("var1_cons.ui")
+            ),
+            column(2,
+                   uiOutput("var2_cons.ui")
+            ),
+            column(2,
+                   uiOutput("percent_cons.ui")
+            ),
+            column(3,
+                   uiOutput("taxaList_cons.ui"),
+                   bsButton("browseTaxaCons","Browse")
+            )
+          )
+        ),
+        hr(),
+        column(4,
+               downloadButton("consGeneTableDownload","Download gene list"),
+               checkboxInput("addConsGeneCustomProfile",strong(em("Add to Customized profile")), value = FALSE, width = NULL),
+               uiOutput('addConsGeneCustomProfileCheck.ui')
+        ),
+        dataTableOutput("consGene.table")
+      ),
+      
       tabPanel("Search for NCBI taxonomy IDs",
                column(3,
                       fileInput("taxaList",h4("Upload taxa list")),
@@ -546,11 +585,18 @@ shinyUI(fluidPage(
           )
   ),
   
-  ####### popup windows for select customized taxa
+  ####### popup windows for select taxa on Customized Profile
   bsModal("cusTaxaBS", "Select taxon/taxa of interest", "cusTaxa", size = "small",
           uiOutput("rankSelectCus"),
           uiOutput("taxaSelectCus"),
           checkboxInput("applyCusTaxa",strong("Apply to customized profile", style="color:red"),value = FALSE)
+  ),
+  
+  ####### popup windows for select taxa on Consensus gene finding
+  bsModal("browseTaxaConsBS", "Select taxon/taxa of interest", "browseTaxaCons", size = "small",
+          uiOutput("rankSelectCons"),
+          uiOutput("taxaSelectCons"),
+          checkboxInput("applyConsTaxa",strong("Apply", style="color:red"),value = FALSE)
   ),
   
   ####### popup windows for detailed plot
@@ -558,14 +604,15 @@ shinyUI(fluidPage(
           uiOutput("detailPlot.ui"),
           numericInput("detailedHeight","plot_height(px)",min=100,max=1600,step=50,value=100,width=100)
           ,verbatimTextOutput("detailClick")
-          ,actionButton("do3", "Show domain architecture")
+          ,bsButton("doDomainPlot", "Show domain architecture",disabled = TRUE)
+          ,uiOutput("checkDomainFiles")
           ,br()
           ,h4("Sequence:")
           ,verbatimTextOutput("fasta")
   ),
   
   ####### popup windows for domain architecture plot
-  bsModal("plotArchi","Domain architecture","do3", size = "large",
+  bsModal("plotArchi","Domain architecture","doDomainPlot", size = "large",
           fluidRow(
             column(2,
                    numericInput("archiHeight","plot_height(px)",min=100,max=1600,step=50,value=400,width=100)
@@ -618,9 +665,5 @@ shinyUI(fluidPage(
   #     style = "opacity: 0.80"
   #   )
   # )
-  
-  
   )
 )
-
-

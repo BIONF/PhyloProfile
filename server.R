@@ -379,7 +379,21 @@ shinyServer(function(input, output, session) {
                 "% of present taxa:", min = 0, max = 1, step = 0.025, value = input$percent, width = 200)
   })
   
-  ######## update value for "main" filter slidebars based on "Customized", "Distribution" and "Gene age estimation" slidebars
+  ######## render filter slidebars for Consensus gene finding function
+  output$var1_cons.ui <- renderUI({
+    sliderInput("var1_cons",paste(input$var1_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(input$var1[1],input$var1[2]), width = 200)
+  })
+  
+  output$var2_cons.ui <- renderUI({
+    sliderInput("var2_cons",paste(input$var2_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(input$var2[1],input$var2[2]), width = 200)
+  })
+  
+  output$percent_cons.ui <- renderUI({
+    sliderInput("percent_cons",
+                "% of present taxa:", min = 0, max = 1, step = 0.025, value = 0.5, width = 200)
+  })
+  
+  ######## update value for "main" filter slidebars based on "Customized", "Distribution", "Gene age estimation" slidebars
   observe({
     newVar1 <- input$var1cus
     updateSliderInput(session, "var1", value = newVar1,
@@ -588,6 +602,8 @@ shinyServer(function(input, output, session) {
         } else {
           inputTaxa <- readLines(filein$datapath, n = 1)
         }
+      } else {
+        inputTaxa <- readLines(filein$datapath, n = 1)
       }
     
       inputTaxa <- unlist(strsplit(inputTaxa,split = '\t'))
@@ -611,7 +627,7 @@ shinyServer(function(input, output, session) {
     if(input$demo == TRUE){
       h4(a("demo/test.architecture", href="https://raw.githubusercontent.com/trvinh/phyloprofile/master/data/demo/test.architecture", target="_blank"))
     } else {
-      fileInput("fileDomain","")
+      fileInput("fileDomainInput","")
     }
   })
   
@@ -1241,7 +1257,7 @@ shinyServer(function(input, output, session) {
   })
   
   
-  ######## get list of all sequence IDs for selectize input
+  ######## get list of all sequence IDs for selectize input (customized profile)
   output$geneIn = renderUI({
     filein <- input$mainInput
     fileCustom <- input$customFile
@@ -1274,6 +1290,15 @@ shinyServer(function(input, output, session) {
         if(length(out)>0){
           selectInput('inSeq','',out,selected=as.list(out),multiple=TRUE)
         } 
+        else {
+          selectInput('inSeq','',outAll,selected=outAll[1],multiple=TRUE)
+        }
+      }
+      else if(input$addConsGeneCustomProfile == TRUE){
+        out <- consGeneDf()
+        if(length(out)>0){
+          selectInput('inSeq','',out,selected=as.list(out),multiple=TRUE)
+        }
         else {
           selectInput('inSeq','',outAll,selected=outAll[1],multiple=TRUE)
         }
@@ -1925,7 +1950,7 @@ shinyServer(function(input, output, session) {
       theme_minimal()
     p <- p + theme(legend.position = "none",
                    #                   plot.title = element_text(hjust = 0.5),
-                   axis.title.x = element_text(size=input$dist_textSize),axis.text.x = element_text(size=input$dist_textSize)) +
+                   axis.title = element_text(size=input$dist_textSize),axis.text = element_text(size=input$dist_textSize)) +
       labs(x = paste0("% present taxa (mean = ",round(mean(dt$presSpec),3),")"), y = "Frequency")
     p
   }
@@ -2366,6 +2391,7 @@ shinyServer(function(input, output, session) {
       geom_bar(stat="identity", position=position_dodge()) +
       coord_flip() +
       labs(x="") +
+      labs(fill="") +
       theme_minimal()
     #geom_text(aes(label=var1), vjust=3)
     gp = gp+theme(axis.text.x = element_text(angle=90,hjust=1))
@@ -2409,10 +2435,11 @@ shinyServer(function(input, output, session) {
     seedID <- toString(selDf$geneID[1])
     orthoID <- toString(allOrthoID[corX])
     var1 <- toString(selDf$var1[selDf$orthoID==orthoID])
+    var2 <- toString(selDf$var2[selDf$orthoID==orthoID])
     
     ### return info
     if(orthoID != "NA"){
-      info <- c(seedID,orthoID,var1)
+      info <- c(seedID,orthoID,var1,var2)
     }
   })
   
@@ -2423,8 +2450,9 @@ shinyServer(function(input, output, session) {
     else{
       a <- paste0("seedID = ",info[1])
       b <- paste0("hitID = ",info[2])
-      c <- paste0("var1 = ",info[3])
-      paste(a,b,c,sep="\n")
+      c <- paste0(input$var1_id," = ",info[3])
+      d <- paste0(input$var2_id," = ",info[4])
+      paste(a,b,c,d,sep="\n")
     }
   })
   
@@ -2474,10 +2502,71 @@ shinyServer(function(input, output, session) {
   ################ FEATURE ARCHITECTURE PLOT ##################
   #############################################################
   
+  ######## get domain file/path
+  getDomainFile <- reactive({
+    if(input$annoChoose == "from file"){
+      fileDomain <- input$fileDomainInput
+      if(is.null(fileDomain)){
+        fileDomain <- "noFileInput"
+      } else {
+        updateButton(session, "doDomainPlot", disabled = FALSE)
+        fileDomain <- fileDomain$datapath
+      }
+    } else {
+      ### info
+      info <- pointInfoDetail() # info = seedID, orthoID, var1
+      group <- as.character(info[1])
+      ortho <- as.character(info[2])
+      var1 <- as.character(info[3])
+      
+      if(is.null(info)){
+        fileDomain <- "noSelectHit"
+        updateButton(session, "doDomainPlot", disabled = TRUE)
+      } else {
+        ### check file extension
+        allExtension <- c("txt","csv","list","domains","architecture")
+        flag <- 0
+        for(i in 1:length(allExtension)){
+          fileDomain <- paste0(input$domainPath,"/",group,".",allExtension[i])
+          if(file.exists(fileDomain) == TRUE){
+            updateButton(session, "doDomainPlot", disabled = FALSE)
+            flag <- 1
+            break()
+          }
+        }
+        
+        if(flag == 0){
+          fileDomain <- "noFileInFolder"
+          updateButton(session, "doDomainPlot", disabled = TRUE)
+        } 
+      }
+    }
+    return (fileDomain)
+  })
+  
+  ######## check domain file
+  output$checkDomainFiles <- renderUI({
+    fileDomain <- getDomainFile()
+    if(fileDomain == "noFileInput"){
+      em("Domain file not provided!!")
+    } else if(fileDomain == "noFileInFolder"){
+      msg <- paste0(
+        "<p><em>Domain file not found!! </em></p>
+        <p><em>Please make sure that file name has to be in this format: 
+        <strong>&lt;seedID&gt;.extension</strong>, where extension is limited to 
+        <strong>txt</strong>, <strong>csv</strong>, <strong>list</strong>, <strong>domains</strong> or <strong>architecture</strong>.
+        </em></p>"
+      )
+      HTML(msg)
+    } else if(fileDomain == "noSelectHit"){
+      em("Please select one ortholog sequence!!")
+    }
+  })
+  
   ######## check clicked
   v3 <- reactiveValues(doPlot3 = FALSE)
-  observeEvent(input$do3, {
-    v3$doPlot3 <- input$do3
+  observeEvent(input$doDomainPlot, {
+    v3$doPlot3 <- input$doDomainPlot
     filein <- input$mainInput
     if(input$demo == TRUE){ filein = 1 }
     if(is.null(filein)){v3$doPlot3 <- FALSE}
@@ -2494,15 +2583,13 @@ shinyServer(function(input, output, session) {
     var1 <- as.character(info[3])
     
     ### parse domain file
+    fileDomain <- getDomainFile()
+
     if(input$demo == TRUE){
       domainDf <- as.data.frame(read.csv("https://raw.githubusercontent.com/trvinh/phyloprofile/master/data/demo/test.architecture",stringsAsFactors = FALSE, sep='\t', comment.char=""))
     } else {
-      filein3 <- input$fileDomain
-      if(is.null(filein3)){
-        v3$doPlot3 = FALSE
-      }
-      else {
-        domainDf <- as.data.frame(read.table(file=filein3$datapath, sep='\t',header=FALSE,comment.char=""))
+      if(fileDomain != FALSE){
+        domainDf <- as.data.frame(read.table(fileDomain, sep='\t',header=FALSE,comment.char=""))
       }
     }
     
@@ -2638,12 +2725,12 @@ shinyServer(function(input, output, session) {
     ### get main input data
     mdData <- dataFiltered()
     mdData <- mdData[,c("geneID","ncbiID","orthoID","var1","var2","presSpec")]
-    
+
     ### add "category" into mdData
     mdDataExtended <- merge(mdData,catDf,by="ncbiID",all.x = TRUE)
     mdDataExtended$var1[mdDataExtended$var1 == "NA" | is.na(mdDataExtended$var1)] <- 0
     mdDataExtended$var2[mdDataExtended$var2 == "NA" | is.na(mdDataExtended$var2)] <- 0
-    
+   
     ### remove cat for "NA" orthologs and also for orthologs that do not fit cutoffs
     mdDataExtended[mdDataExtended$orthoID == "NA"| is.na(mdDataExtended$orthoID),]$cat <- NA
     mdDataExtended <- mdDataExtended[complete.cases(mdDataExtended),]
@@ -2657,25 +2744,25 @@ shinyServer(function(input, output, session) {
     mdDataExtended$cat[mdDataExtended$presSpec > input$percent[2]] <- NA
     
     mdDataExtended <- mdDataExtended[complete.cases(mdDataExtended),]
-    
+     
     ### get the furthest common taxon with selected taxon for each gene
     geneAgeDf <- as.data.frame(tapply(mdDataExtended$cat, mdDataExtended$geneID, min))
     setDT(geneAgeDf, keep.rownames = TRUE)[]
     setnames(geneAgeDf, 1:2, c("geneID","cat"))  # rename columns
     row.names(geneAgeDf) <- NULL   # remove row names
-    
+
     ### convert cat into geneAge
     geneAgeDf$age[geneAgeDf$cat == "0000001"] <- "07_LUCA"
-    geneAgeDf$age[geneAgeDf$cat == "0000011"] <- paste0("06_",as.character(taxaList$fullName[taxaList$ncbiID == subFirstLine$superkingdom & taxaList$rank == "superkingdom"]))
+    geneAgeDf$age[geneAgeDf$cat == "0000011" | geneAgeDf$cat == "0000010"] <- paste0("06_",as.character(taxaList$fullName[taxaList$ncbiID == subFirstLine$superkingdom & taxaList$rank == "superkingdom"]))
     geneAgeDf$age[geneAgeDf$cat == "0000111"] <- paste0("05_",as.character(taxaList$fullName[taxaList$ncbiID == subFirstLine$kingdom & taxaList$rank == "kingdom"]))
     geneAgeDf$age[geneAgeDf$cat == "0001111"] <- paste0("04_",as.character(taxaList$fullName[taxaList$ncbiID == subFirstLine$phylum & taxaList$rank == "phylum"]))
     geneAgeDf$age[geneAgeDf$cat == "0011111"] <- paste0("03_",as.character(taxaList$fullName[taxaList$ncbiID == subFirstLine$class & taxaList$rank == "class"]))
     geneAgeDf$age[geneAgeDf$cat == "0111111"] <- paste0("02_",as.character(taxaList$fullName[taxaList$ncbiID == subFirstLine$family & taxaList$rank == "family"]))
     geneAgeDf$age[geneAgeDf$cat == "1111111"] <- paste0("01_",as.character(taxaList$fullName[taxaList$fullName == input$inSelect & taxaList$rank == rankName]))
-    
+  
     ### return geneAge data frame
     geneAgeDf <- geneAgeDf[,c("geneID","cat","age")]
-    
+   
     geneAgeDf$age[is.na(geneAgeDf$age)] <- "Undef"
     geneAgeDf
   })
@@ -2805,7 +2892,7 @@ shinyServer(function(input, output, session) {
   
   ### check if addClusterCustomProfile (profile clustering) are being clicked
   observe({
-    if(input$addClusterCustomProfile == TRUE){
+    if(input$addClusterCustomProfile == TRUE | input$addConsGeneCustomProfile == TRUE){
       shinyjs::disable('addCustomProfile')
     } else {
       shinyjs::enable('addCustomProfile')
@@ -2813,10 +2900,172 @@ shinyServer(function(input, output, session) {
   })
   
   output$addCustomProfileCheck.ui <- renderUI({
-    if(input$addClusterCustomProfile == TRUE){
-      HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Cluster profiles</strong>&nbsp;to enable this function)</em></p>')
+    if(input$addClusterCustomProfile == TRUE  | input$addConsGeneCustomProfile == TRUE){
+      HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Profile clustering</strong> or <strong>Consensus genes finding</strong>&nbsp;to enable this function)</em></p>')
     }
   })
+
+  #############################################################
+  ##################### CONSENSUS GENES #######################
+  #############################################################
+  
+  ### render list of available taxa
+  output$taxaList_cons.ui = renderUI({
+    filein <- input$mainInput
+    if(input$demo == TRUE){
+      filein = 1
+    }
+    
+    if(is.null(filein)){return(selectInput('inTaxa','Select taxa of interest:',"none"))}
+    if(v$doPlot == FALSE){return(selectInput('inTaxa','Select taxa of interest:',"none"))}
+    else{
+      choice <- allTaxaList()
+      choice$fullName <- as.factor(choice$fullName)
+      
+      out <- as.list(levels(choice$fullName))
+      out <- append("none",out)
+      
+      if(input$applyConsTaxa == TRUE){
+        out <- consTaxaName()
+        selectInput('taxaCons','Select taxa of interest:',out,selected=out,multiple=TRUE)
+      } else {
+        selectInput('taxaCons','Select taxa of interest:',out,selected=out[1],multiple=TRUE)
+      }
+    }
+  })
+  
+  consGeneDf <- reactive({
+    if (v$doPlot == FALSE) return()
+    
+    rankName = substr(input$rankSelect,4,nchar(input$rankSelect))
+    
+    ### get ID list of chosen taxa
+    taxaList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T,fill = TRUE))
+
+    if("none" %in%input$taxaCons){superID = NA}
+    else{superID <- taxaList$ncbiID[taxaList$fullName %in% input$taxaCons & taxaList$rank %in% c(rankName,"norank")]}
+    
+    ### get main input data
+    mdData <- dataFiltered()
+    mdData <- mdData[,c("geneID","ncbiID","fullName","supertaxon","supertaxonID","rank","presSpec","mVar1","mVar2")]
+    
+    ### filter by selecting taxa
+    if(is.na(superID[1])){data <- NULL}
+    else{
+      data <- subset(mdData,supertaxonID %in% superID & presSpec >= input$percent_cons)
+      # get supertaxa present in each geneID
+      supertaxonCount <- as.data.frame(plyr::count(data,c('geneID','supertaxonID')))
+      # count number of supertaxa present in each geneID and get only gene that contains all chosen taxa
+      count <- as.data.frame(table(supertaxonCount$geneID))
+      consGene <- subset(count,Freq == length(superID))
+      consGene$Var1 <- factor(consGene$Var1)
+      
+      return(levels(consGene$Var1))
+    }
+  })
+  
+  output$consGene.table <- renderDataTable(colnames = "Gene ID",{
+    data <- consGeneDf()
+    if(is.null(data)){return()}
+    else {
+      data <- as.data.frame(data)
+      # data$number <- rownames(data)
+      # colnames(data) <- c("geneID","No.")
+      # data <- data[,c("No.","geneID")]
+      data
+    }
+  })
+  
+  ### download gene list from consGene.table
+  output$consGeneTableDownload <- downloadHandler(
+    filename = function(){c("consensusGeneList.out")},
+    content = function(file){
+      dataOut <- consGeneDf()
+      write.table(dataOut,file,sep="\t",row.names = FALSE,quote = FALSE)
+    }
+  )
+  
+  ### check if addClusterCustomProfile (profile clustering) or addCustomProfile (gene age plot) are being clicked
+  observe({
+    if(input$addClusterCustomProfile == TRUE | input$addCustomProfile == TRUE){
+      shinyjs::disable('addConsGeneCustomProfile')
+    } else {
+      shinyjs::enable('addConsGeneCustomProfile')
+    }
+  })
+  
+  output$addConsGeneCustomProfileCheck.ui <- renderUI({
+    if(input$addClusterCustomProfile == TRUE | input$addCustomProfile == TRUE){
+      HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Profiles clustering</strong> or <strong>Gene age estimating</strong>&nbsp;to enable this function)</em></p>')
+    }
+  })
+  
+  ######## print list of available taxonomy ranks (the lowest rank is the same as the chosen main rank)
+  output$rankSelectCons = renderUI({
+    mainRank <- input$rankSelect
+    mainChoices = list("Strain"="05_strain","Species" = "06_species","Genus" = "10_genus", "Family" = "14_family", "Order" = "19_order", "Class" = "23_class",
+                       "Phylum" = "26_phylum", "Kingdom" = "28_kingdom", "Superkingdom" = "29_superkingdom","unselected"="")
+    consChoices <- mainChoices[mainChoices >= mainRank]
+    
+    selectInput("rankSelectCons", label = h5("Select taxonomy rank:"),
+                choices = as.list(consChoices),
+                selected = mainRank)
+  })
+  
+  ######## print list of available taxa for customized plot (based on rank from rankSelectCus)
+  taxaSelectCons <- reactive({
+    rankSelectCons = input$rankSelectCons
+    
+    if(length(rankSelectCons) == 0){return()}
+    else{
+      ### load list of unsorted taxa
+      Dt <- as.data.frame(read.table("data/taxonID.list.fullRankID", sep='\t',header=T))
+      Dt <- Dt[Dt$abbrName  %in% subsetTaxa(),]
+      
+      ### load list of taxon name
+      nameList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T,fill = TRUE))
+      nameList$fullName <- as.character(nameList$fullName)
+      
+      rankName = substr(rankSelectCons,4,nchar(rankSelectCons))   # get rank name from rankSelect
+      choice <- as.data.frame
+      choice <- rbind(Dt[rankName])
+      colnames(choice) <- "ncbiID"
+      choice <- merge(choice,nameList,by="ncbiID",all = FALSE)
+      return(choice)
+    }
+  })
+  
+  output$taxaSelectCons = renderUI({
+    choice <- taxaSelectCons()
+    choice$fullName <- as.factor(choice$fullName)
+    selectInput('taxaSelectCons',h5('Choose (super)taxon of interest:'),as.list(levels(choice$fullName)),levels(choice$fullName)[1])
+  })
+  
+  ######## get list of taxa based on selected taxaSelectCus
+  consTaxaName <- reactive({
+    
+    taxaSelectCons = input$taxaSelectCons
+    rankName = substr(input$rankSelectCons,4,nchar(input$rankSelectCons))
+    
+    if(taxaSelectCons == ""){return()}
+    
+    ### load list of unsorted taxa
+    Dt <- as.data.frame(read.table("data/taxonID.list.fullRankID", sep='\t',header=T))
+    Dt <- Dt[Dt$abbrName  %in% subsetTaxa(),]
+    
+    ### get ID of customized (super)taxon
+    taxaList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T,fill = TRUE))
+    superID <- taxaList$ncbiID[taxaList$fullName == taxaSelectCons & taxaList$rank %in% c(rankName,"norank")]
+    
+    ### from that ID, get list of all taxa for main selected taxon
+    mainRankName = substr(input$rankSelect,4,nchar(input$rankSelect))
+    consTaxaID <- levels(as.factor(Dt[mainRankName][Dt[rankName] == superID,]))
+    
+    consTaxaName <- taxaList$fullName[taxaList$rank %in% c(mainRankName,"norank") & taxaList$ncbiID %in% consTaxaID]
+    
+    return(consTaxaName)
+  })
+  
   
   #############################################################
   #################### CLUSTERING PROFILES ####################
@@ -2917,7 +3166,7 @@ shinyServer(function(input, output, session) {
   
   ### check if addCustomProfile (gene age plot) are being clicked
   observe({
-    if(input$addCustomProfile == TRUE){
+    if(input$addCustomProfile == TRUE | input$addConsGeneCustomProfile == TRUE){
       shinyjs::disable('addClusterCustomProfile')
     }else{
       shinyjs::enable('addClusterCustomProfile')
@@ -2925,8 +3174,8 @@ shinyServer(function(input, output, session) {
   })
   
   output$addClusterCustomProfileCheck.ui <- renderUI({
-    if(input$addCustomProfile == TRUE){
-      HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Gene age estimation</strong>&nbsp;to enable this function)</em></p>')
+    if(input$addCustomProfile == TRUE | input$addConsGeneCustomProfile == TRUE){
+      HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Gene age estimation</strong> or <strong>Consensus genes finding</strong>&nbsp;to enable this function)</em></p>')
     }
   })
   
@@ -2996,6 +3245,7 @@ shinyServer(function(input, output, session) {
     #data <- detailPlotDt()
     #data <- presSpecAllDt()
     #data <- distDf()
+    #data <- geneAgeDf()
     data <- downloadData()
     data
   })
