@@ -2699,13 +2699,6 @@ shinyServer(function(input, output, session) {
       grid.draw(g)
       ggsave(file, plot = g, width = input$selectedWidth*0.056458333, height = input$selectedHeight*0.056458333, units="cm", dpi=300, device = "pdf", limitsize=FALSE)
     }
-    
-    # filename = "domains.pdf",
-    # content = function(file) {
-    #   g <- archiPlot()
-    #   grid.draw(g)
-    #   ggsave(file, plot = g, width = input$archiWidth*0.056458333, height = input$archiHeight*0.056458333, units="cm", dpi=300)#, device = "svg")
-    # }
   )
   
   #############################################################
@@ -3325,27 +3318,22 @@ shinyServer(function(input, output, session) {
     HTML(
       '
       <h1 style="color: #5e9ca0;">How the input file looks like?</h1>
-      <p>The main Input file is a matrix of "values" (e.g. FAS scores, normalized distances, etc.), where rows represent genes and columns represent taxa.</p>
-      <p>A gene may be present or absent in some taxa. A present "value" has to be in the range of 0 and 1. An absent "value" is written as NA. Gene ID and its value is concatenated via a "#" symbol.&nbsp;For example:</p>
-      <ul style="list-style-type: square;">
-      <li>gene0123#0.9837: gene0123 has a value of 0.9837</li>
-      <li>gene0999#NA: gene0999 is present but doesn\'t has any value</li>
-      <li>NA#NA: there is no ortholog has been found for this taxon</li>
-      </ul>
-      <p>The header of first column has to be "geneID". The header of each taxon must have this format "ncbi12345", in which 12345 is its NCBI taxon ID.</p>
-      <p><em>More detail? Pleas take a look at the example file in /data/demo/test.main :)</em></p>
+      <p>PhyloProfile accepts 3 kinds of input file:</p>
+      <p>(1) <a href="http://www.orthoxml.org">OrthoXML</a>&nbsp;format, which are used&nbsp;by many popullar ortholog predictors or databases like InParanoid, Hieranoid, OMA, OrthoMCL, Panther, Roundup.</p>
+      <p>*Note: I tested the tool with an&nbsp;example XML file downloaded from <a href="http://orthoxml.org/0.3/orthoxml_doc_v0.3.html">OrthoXML website</a>. If it does not work with your XML file, please let me know!</p>
+      <p>(2) Long format, which is a tab delimited file containing 5 columns:&nbsp;geneID, ncbiID (&lt;ncbi&gt;+taxonID. e.g. ncbi7029, ncbi3702),&nbsp;orthoID,&nbsp;var1, var2. Where var1 and var2 are variables for two additional information layers.</p>
+      <p>(3) Wide/matrix format, where rows represent genes and columns represent taxa. Each cell in the matrix contains &lt;orthoID&gt;#&lt;var1&gt;#var2. An unavailable value is written as NA, e.g.&nbsp;arath_2339_31:248814#NA#0.2, or&nbsp;homsa_8_41:119370#NA#NA or only NA (the same as NA#NA#NA).</p>
+      <p><em>*Note for matrix format: &nbsp;the header of first column has to be "geneID". The header of each taxon must have this format "ncbi12345", in which 12345 is its NCBI taxon ID.</em></p>
+      <p><em><strong>More detail?</strong></em> Pleas take a look at the example files <strong>test.main</strong>, <strong>test.main.long</strong> or <strong>test.main.xml</strong> in /data/demo/ :)</p>
       <p>&nbsp;</p>
-      <h1 style="color: #5e9ca0;">Additional files</h1>
-      <p>2 additional input files can be provided are traceability score matrix and feature domain position list.</p>
-      <p><strong>Traceability score matrix</strong> must have the same first row (beginning with "geneID" and followed by list of taxa) and first column (list of genes). <span style="color: #ff0000;"><strong>IMPORTANT</strong>: the <span style="text-decoration: underline;">amount</span> and <span style="text-decoration: underline;">order</span> of genes between 2 input matrixes have to be exactly the same!!</span>&nbsp;</p>
-      <p><strong>Feature domain position list</strong>&nbsp;has 6 columns separated by tab: (1) pairID = groupID#searchProt_ID#seedID, (2) searchProt_ID, (3) feature name (pfam domain, smart domain,etc.), (4) start position, (5) end position, (6) weight value (only available for seed protein)</p>
-      <p><em>Pleas take a look at the example files &nbsp;test.traceability and test.domains in data/demo/ folder for more details :)</em></p>
+      <h1 style="color: #5e9ca0;">Additional file</h1>
+      <p>An&nbsp;additional annotation&nbsp;file can be provided. Since the tool initially has been made to work with protein architecture annotations, the annotation file has to have 6 columns separated by tab: (1) pairID = groupID#orthologID#seedID, (2) orthologID, (3) feature name (pfam domain, smart domain,etc.), (4) start position, (5) end position, (6) weight value (only available for seed protein)</p>
+      <p><em>Pleas take a look at the example files in data/demo/domains folder for more details.</em></p>
       <p>&nbsp;</p>
       <h1 style="color: #5e9ca0;">Download function does not work</h1>
       <p>Problem: clicked on the "Download plot" (or Download filtered data) button, entered a file name on to "Download file" window and clicked Save, but the file...was not saved :(</p>
       <p>=&gt; Click on "Open im Browser" to open the app using internet browser. Now the download function should work.</p>
-      <p><em>I tested this function using Ubuntu 14.04 LTS and it worked with Firefox web browser.</em>&nbsp;</p>
-      <p><em>*** Download function for selected sequences plot does not work :(</em></p>
+      <p><em>I tested this function using Ubuntu 14.04 LTS and it worked with Firefox web browser. On a Mac machine, it always work ;)&nbsp;</em>&nbsp;</p>
       <p>&nbsp;</p>
       <h1 style="color: #5e9ca0;">Errors while plotting</h1>
       <p><span style="color: #ff0000;"><strong>Error</strong>: arguments imply differing number of rows: 0, 1</span></p>
@@ -3368,7 +3356,8 @@ shinyServer(function(input, output, session) {
       <p>&nbsp;</p>
       <p>&copy; 2016 Vinh Tran</p>
       <p>contact:&nbsp;<a href="mailto:tran@bio.uni-frankfurt.de">tran@bio.uni-frankfurt.de</a></p>
-      <p>Please check the latest version at&nbsp;<a href="https://raw.githubusercontent.com/trvinh/phyloprofile">https://raw.githubusercontent.com/trvinh/phyloprofile</a></p>
+      <p>Please check the latest version at&nbsp;<a href="https://github.com/trvinh/phyloprofile">https://github.com/trvinh/phyloprofile</a></p>
+      <p>Or try the online version at&nbsp;<a href="https://phyloprofile.shinyapps.io/phyloprofile/">https://phyloprofile.shinyapps.io/phyloprofile/</a></p>
       '
       )
   })
