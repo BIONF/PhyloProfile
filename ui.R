@@ -177,14 +177,7 @@ shinyUI(fluidPage(
              hr(),
              strong(h4("Additional annotation input:")),
              radioButtons(inputId="annoChoose", label="", choices=list("from file","from folder"), selected="from file", inline=T),
-             conditionalPanel(
-               condition = "input.annoChoose == 'from file'",
-               uiOutput("domainInputFile.ui")
-             ),
-             conditionalPanel(
-               condition = "input.annoChoose == 'from folder'",
-               textInput("domainPath","","")
-             ),
+             uiOutput("domainInputFile.ui"),
              
              hr(),
              em(a("Click here to download demo data", href="https://github.com/trvinh/phyloprofile/tree/master/data/demo", target="_blank"))

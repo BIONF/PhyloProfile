@@ -625,12 +625,16 @@ shinyServer(function(input, output, session) {
   
   output$domainInputFile.ui <- renderUI({
     if(input$demo == TRUE){
-      h4(a("demo/test.architecture", href="https://raw.githubusercontent.com/trvinh/phyloprofile/master/data/demo/test.architecture", target="_blank"))
+      h4(a("demo/domains", href="https://github.com/trvinh/phyloprofile/tree/master/data/demo/domains", target="_blank"))
     } else {
-      fileInput("fileDomainInput","")
+      if(input$annoChoose == "from file"){
+        fileInput("fileDomainInput","")
+      } else {
+        textInput("domainPath","","")
+      }
     }
   })
-  
+
   ######## check if data is loaded and "parse" button (get info from input) is clicked and confirmed
   v1 <- reactiveValues(parseInput = FALSE)
   observeEvent(input$BUTyes, {
@@ -2504,43 +2508,60 @@ shinyServer(function(input, output, session) {
   
   ######## get domain file/path
   getDomainFile <- reactive({
-    if(input$annoChoose == "from file"){
-      fileDomain <- input$fileDomainInput
-      if(is.null(fileDomain)){
-        fileDomain <- "noFileInput"
-      } else {
-        updateButton(session, "doDomainPlot", disabled = FALSE)
-        fileDomain <- fileDomain$datapath
-      }
-    } else {
-      ### info
-      info <- pointInfoDetail() # info = seedID, orthoID, var1
-      group <- as.character(info[1])
-      ortho <- as.character(info[2])
-      var1 <- as.character(info[3])
-      
+    ### click info
+    info <- pointInfoDetail() # info = seedID, orthoID, var1
+    group <- as.character(info[1])
+    ortho <- as.character(info[2])
+    var1 <- as.character(info[3])
+    
+    ### domain file
+    if(input$demo == TRUE){
       if(is.null(info)){
         fileDomain <- "noSelectHit"
         updateButton(session, "doDomainPlot", disabled = TRUE)
       } else {
-        ### check file extension
-        allExtension <- c("txt","csv","list","domains","architecture")
-        flag <- 0
-        for(i in 1:length(allExtension)){
-          fileDomain <- paste0(input$domainPath,"/",group,".",allExtension[i])
-          if(file.exists(fileDomain) == TRUE){
-            updateButton(session, "doDomainPlot", disabled = FALSE)
-            flag <- 1
-            break()
-          }
-        }
-        
-        if(flag == 0){
-          fileDomain <- "noFileInFolder"
+        if(group == "OG_1017" | group == "OG_1026" | group == "OG_1030"){
+          updateButton(session, "doDomainPlot", disabled = FALSE)
+          fileDomain <- paste0("https://raw.githubusercontent.com/trvinh/phyloprofile/master/data/demo/domains/",group,".txt")
+        } else {
+          fileDomain <- "noFileOnline"
           updateButton(session, "doDomainPlot", disabled = TRUE)
-        } 
+        }
+      }
+    } else {
+      if(input$annoChoose == "from file"){
+        fileDomain <- input$fileDomainInput
+        if(is.null(fileDomain)){
+          fileDomain <- "noFileInput"
+        } else {
+          updateButton(session, "doDomainPlot", disabled = FALSE)
+          fileDomain <- fileDomain$datapath
+        }
+      } else {
+        if(is.null(info)){
+          fileDomain <- "noSelectHit"
+          updateButton(session, "doDomainPlot", disabled = TRUE)
+        } else {
+          ### check file extension
+          allExtension <- c("txt","csv","list","domains","architecture")
+          flag <- 0
+          for(i in 1:length(allExtension)){
+            fileDomain <- paste0(input$domainPath,"/",group,".",allExtension[i])
+            if(file.exists(fileDomain) == TRUE){
+              updateButton(session, "doDomainPlot", disabled = FALSE)
+              flag <- 1
+              break()
+            }
+          }
+          
+          if(flag == 0){
+            fileDomain <- "noFileInFolder"
+            updateButton(session, "doDomainPlot", disabled = TRUE)
+          } 
+        }
       }
     }
+    
     return (fileDomain)
   })
   
@@ -2560,6 +2581,8 @@ shinyServer(function(input, output, session) {
       HTML(msg)
     } else if(fileDomain == "noSelectHit"){
       em("Please select one ortholog sequence!!")
+    } else if(fileDomain == "noFileOnline"){
+      em("Demo data only available for OG_1017, OG_1026 or OG_1030 !!")
     }
   })
   
@@ -2586,7 +2609,7 @@ shinyServer(function(input, output, session) {
     fileDomain <- getDomainFile()
 
     if(input$demo == TRUE){
-      domainDf <- as.data.frame(read.csv("https://raw.githubusercontent.com/trvinh/phyloprofile/master/data/demo/test.architecture",stringsAsFactors = FALSE, sep='\t', comment.char=""))
+      domainDf <- as.data.frame(read.csv(fileDomain,stringsAsFactors = FALSE, sep='\t', comment.char=""))
     } else {
       if(fileDomain != FALSE){
         domainDf <- as.data.frame(read.table(fileDomain, sep='\t',header=FALSE,comment.char=""))
