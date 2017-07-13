@@ -2534,8 +2534,13 @@ shinyServer(function(input, output, session) {
         if(is.null(fileDomain)){
           fileDomain <- "noFileInput"
         } else {
-          updateButton(session, "doDomainPlot", disabled = FALSE)
-          fileDomain <- fileDomain$datapath
+          if(is.null(info)){
+            fileDomain <- "noSelectHit"
+            updateButton(session, "doDomainPlot", disabled = TRUE)
+          } else {
+            updateButton(session, "doDomainPlot", disabled = FALSE)
+            fileDomain <- fileDomain$datapath
+          }
         }
       } else {
         if(is.null(info)){
@@ -2634,10 +2639,9 @@ shinyServer(function(input, output, session) {
     # }
     # if(nchar(orthoNew)>0){ortho <- orthoNew}
     ortho <- gsub("\\|",":",ortho)
-print(head(domainDf))    
     grepID = paste(group,"#",ortho,sep="")
     subDomainDf <- domainDf[grep(grepID,domainDf$seedID),]
-print(head(subDomainDf))
+    subDomainDf$feature <- as.character(subDomainDf$feature)
 
     if(nrow(subDomainDf) < 1){
       v3$doPlot3 = FALSE
@@ -2645,13 +2649,11 @@ print(head(subDomainDf))
     } else {
       ### ortho domains df
       orthoDf <- filter(subDomainDf,orthoID==ortho)
-      orthoDf$feature <- as.character(orthoDf$feature)
       
       ### seed domains df
       seedDf <- filter(subDomainDf,orthoID != ortho)
       if(nrow(seedDf) == 0){seedDf <- orthoDf}
       
-      seedDf$feature <- as.character(seedDf$feature)
       seed = as.character(seedDf$orthoID[1])
       
       ### change order of one dataframe's features based on order of other df's features
@@ -3333,7 +3335,7 @@ print(head(subDomainDf))
       <p><em><strong>More detail?</strong></em> Pleas take a look at the example files <strong>test.main</strong>, <strong>test.main.long</strong> or <strong>test.main.xml</strong> in /data/demo/ :)</p>
       <p>&nbsp;</p>
       <h1 style="color: #5e9ca0;">Additional file</h1>
-      <p>An&nbsp;additional annotation&nbsp;file can be provided. Since the tool initially has been made to work with protein architecture annotations, the annotation file has to have 6 columns separated by tab: (1) pairID = groupID#orthologID#seedID, (2) orthologID, (3) feature name (pfam domain, smart domain,etc.), (4) start position, (5) end position, (6) weight value (only available for seed protein)</p>
+      <p>An&nbsp;additional annotation&nbsp;file can be provided. Since the tool initially has been made to work with protein architecture annotations, the annotation file has to have 6 columns separated by tab: (1) pairID = groupID#orthologID#seedID, (2) orthologID/seedID, (3) feature name (pfam domain, smart domain,etc.), (4) start position, (5) end position, (6) weight value (only available for seed protein)</p>
       <p><em>Pleas take a look at the example files in data/demo/domains folder for more details.</em></p>
       <p>&nbsp;</p>
       <h1 style="color: #5e9ca0;">Download function does not work</h1>
