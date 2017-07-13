@@ -2634,38 +2634,44 @@ shinyServer(function(input, output, session) {
     # }
     # if(nchar(orthoNew)>0){ortho <- orthoNew}
     ortho <- gsub("\\|",":",ortho)
-    
+print(head(domainDf))    
     grepID = paste(group,"#",ortho,sep="")
     subDomainDf <- domainDf[grep(grepID,domainDf$seedID),]
-    
-    ### ortho domains df
-    orthoDf <- filter(subDomainDf,orthoID==ortho)
-    orthoDf$feature <- as.character(orthoDf$feature)
-    
-    ### seed domains df
-    seedDf <- filter(subDomainDf,orthoID != ortho)
-    if(nrow(seedDf) == 0){seedDf <- orthoDf}
-    
-    seedDf$feature <- as.character(seedDf$feature)
-    seed = as.character(seedDf$orthoID[1])
-    
-    ### change order of one dataframe's features based on order of other df's features
-    if(length(orthoDf$feature) < length(seedDf$feature)){
-      orderedOrthoDf <- orthoDf[order(orthoDf$feature), ]
-      orderedSeedDf <- sortDomains(orderedOrthoDf, seedDf)
+print(head(subDomainDf))
+
+    if(nrow(subDomainDf) < 1){
+      v3$doPlot3 = FALSE
+      return()
     } else {
-      orderedSeedDf <- seedDf[order(seedDf$feature), ]
-      orderedOrthoDf <- sortDomains(orderedSeedDf, orthoDf)
+      ### ortho domains df
+      orthoDf <- filter(subDomainDf,orthoID==ortho)
+      orthoDf$feature <- as.character(orthoDf$feature)
+      
+      ### seed domains df
+      seedDf <- filter(subDomainDf,orthoID != ortho)
+      if(nrow(seedDf) == 0){seedDf <- orthoDf}
+      
+      seedDf$feature <- as.character(seedDf$feature)
+      seed = as.character(seedDf$orthoID[1])
+      
+      ### change order of one dataframe's features based on order of other df's features
+      if(length(orthoDf$feature) < length(seedDf$feature)){
+        orderedOrthoDf <- orthoDf[order(orthoDf$feature), ]
+        orderedSeedDf <- sortDomains(orderedOrthoDf, seedDf)
+      } else {
+        orderedSeedDf <- seedDf[order(seedDf$feature), ]
+        orderedOrthoDf <- sortDomains(orderedSeedDf, orthoDf)
+      }
+      
+      ### plotting
+      sep = ":"
+      if(!is.null(input$oneSeqFasta)){sep="|"}
+      plot_ortho <- domain.plotting(orderedOrthoDf,ortho,var1,sep,input$labelArchiSize,input$titleArchiSize,input$labelDescSize,min(subDomainDf$start),max(subDomainDf$end))
+      plot_seed <- domain.plotting(orderedSeedDf,seed,var1,sep,input$labelArchiSize,input$titleArchiSize,input$labelDescSize,min(subDomainDf$start),max(subDomainDf$end))
+      
+      # grid.arrange(plot_seed,plot_ortho,ncol=1)
+      arrangeGrob(plot_seed,plot_ortho,ncol=1)
     }
-    
-    ### plotting
-    sep = ":"
-    if(!is.null(input$oneSeqFasta)){sep="|"}
-    plot_ortho <- domain.plotting(orderedOrthoDf,ortho,var1,sep,input$labelArchiSize,input$titleArchiSize,input$labelDescSize,min(subDomainDf$start),max(subDomainDf$end))
-    plot_seed <- domain.plotting(orderedSeedDf,seed,var1,sep,input$labelArchiSize,input$titleArchiSize,input$labelDescSize,min(subDomainDf$start),max(subDomainDf$end))
-    
-    # grid.arrange(plot_seed,plot_ortho,ncol=1)
-    arrangeGrob(plot_seed,plot_ortho,ncol=1)
   }
   
   output$archiPlot <- renderPlot({
@@ -2679,10 +2685,10 @@ shinyServer(function(input, output, session) {
       domainIN <- unlist(strsplit(toString(input$mainInput),","))
       fileName <- toString(domainIN[1])
       msg <- paste0(
-        "<p><span style=\"color: #ff0000;\"><strong>No information about domain architecture! Please check:</strong></span></p>
-        <ul style=\"list-style-type: square;\">
-        <li>if you selected any sequence in the Detailed plot?</li>
-        <li>if you uploaded the domain file using Upload additional file(s) option? (see input example in data/demo/test.domains)</li>
+        "<p><strong>No information about domain architecture! Please check:</strong></p>
+        <ul>
+        <li>if you uploaded the correct domain file/folder using <span style=\"color: #0000ff;\"><em>Upload additional input</em></span> option? (see input example in <span style=\"background-color: #999999; color: #ffffff;\">data/demo/domains/</span> folder); or</li>
+        <li>if&nbsp;the selected genes (seed &amp; ortholog) do exist in the uploaded file (please search for the corresponding&nbsp;<span style=\"text-decoration: underline;\"><em>seedID</em></span> and <span style=\"text-decoration: underline;\"><em>hitID</em></span>, which are&nbsp;shown in <span style=\"color: #ffffff; background-color: #999999;\">Detailed plot</span>)</li>
         </ul>"
       )
       HTML(msg)
