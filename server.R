@@ -21,6 +21,10 @@ if (!require("Biostrings")) {
 }
 if (!require("taxize")) {install.packages("taxize")}
 
+# if(!("pacman" %in% installed.packages())) install.packages("pacman")
+# library(pacman)
+# p_load(RJSONIO,igraph,httr,stringr,XML,RColorBrewer,devtools)
+
 #############################################################
 ######################## FUNCTIONS ##########################
 #############################################################
@@ -209,7 +213,7 @@ shinyServer(function(input, output, session) {
         for(i in 1:nrow(taxaNameDf)){
           id <- get_uid(sciname = taxaNameDf[i,])[1]
           if(is.na(id)){
-            temp <- gnr_resolve(names = taxaNameDf[i,])
+            temp <- gnr_resolve(names = as.character(taxaNameDf[i,]))
             newID <- get_uid(sciname = temp[1,3])[1]
             if(is.na(newID)){
               idDf[i,] <- c(as.character(taxaNameDf[i,]),as.character(temp[1,3]),paste0("NA"),"notfound")
@@ -219,7 +223,6 @@ shinyServer(function(input, output, session) {
           } else {
             idDf[i,] <- c(as.character(taxaNameDf[i,]),"NA",paste0("ncbi",id),"retrieved") 
           }
-          
           # Increment the progress bar, and update the detail text.
           incProgress(1/nrow(taxaNameDf), detail = paste(i,"/",nrow(taxaNameDf)))
         }        
@@ -3330,7 +3333,7 @@ shinyServer(function(input, output, session) {
       <p>(1) <a href="http://www.orthoxml.org">OrthoXML</a>&nbsp;format, which are used&nbsp;by many popullar ortholog predictors or databases like InParanoid, Hieranoid, OMA, OrthoMCL, Panther, Roundup.</p>
       <p>*Note: I tested the tool with an&nbsp;example XML file downloaded from <a href="http://orthoxml.org/0.3/orthoxml_doc_v0.3.html">OrthoXML website</a>. If it does not work with your XML file, please let me know!</p>
       <p>(2) Long format, which is a tab delimited file containing 5 columns:&nbsp;geneID, ncbiID (&lt;ncbi&gt;+taxonID. e.g. ncbi7029, ncbi3702),&nbsp;orthoID,&nbsp;var1, var2. Where var1 and var2 are variables for two additional information layers.</p>
-      <p>(3) Wide/matrix format, where rows represent genes and columns represent taxa. Each cell in the matrix contains &lt;orthoID&gt;#&lt;var1&gt;#var2. An unavailable value is written as NA, e.g.&nbsp;arath_2339_31:248814#NA#0.2, or&nbsp;homsa_8_41:119370#NA#NA or only NA (the same as NA#NA#NA).</p>
+      <p>(3) Wide/matrix format, where rows represent genes and columns represent taxa. Each cell in the matrix contains &lt;orthoID&gt;#&lt;var1&gt;#&lt;var2&gt;. An unavailable value is written as NA, e.g.&nbsp;arath_2339_31:248814#NA#0.2, or&nbsp;homsa_8_41:119370#NA#NA or only NA (the same as NA#NA#NA).</p>
       <p><em>*Note for matrix format: &nbsp;the header of first column has to be "geneID". The header of each taxon must have this format "ncbi12345", in which 12345 is its NCBI taxon ID.</em></p>
       <p><em><strong>More detail?</strong></em> Pleas take a look at the example files <strong>test.main</strong>, <strong>test.main.long</strong> or <strong>test.main.xml</strong> in /data/demo/ :)</p>
       <p>&nbsp;</p>

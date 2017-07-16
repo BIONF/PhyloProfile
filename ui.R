@@ -170,7 +170,7 @@ shinyUI(fluidPage(
                       selectInput("var2_aggregateBy", label = h5("Aggregate by:"),
                                   choices = list("Max"="max", "Min"="min","Mean"="mean","Median"="median"), 
                                   selected = "max",
-                                  width = 150)
+                                  width = 130)
                )
              ),
              
@@ -513,8 +513,10 @@ shinyUI(fluidPage(
     
     ########## OTHERS TAB ###########
     navbarMenu("More",
-               tabPanel("Description",
-                        HTML('<iframe width="560" height="315" src="https://www.youtube.com/embed/Udt316KoM6Y" frameborder="0" allowfullscreen></iframe>')
+               tabPanel("Help",
+                        HTML('<iframe src="https://player.vimeo.com/video/225373912" width="640" height="360" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>'),
+                        br(),
+                        h3(a("Click here for a detail manual", href="https://trvinh.github.io/phyloprofile_slides/", target="_blank"))
                ),
                tabPanel("Q&A",
                         uiOutput("help.ui")
