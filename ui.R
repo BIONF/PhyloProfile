@@ -452,8 +452,8 @@ shinyUI(fluidPage(
       ),
       
       tabPanel(
-        "Consensus gene finding",
-        h4(strong("Consensus gene finding")),
+        "Core gene finding",
+        h4(strong("Core gene finding")),
         
         wellPanel(
           fluidRow(

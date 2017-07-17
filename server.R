@@ -382,7 +382,7 @@ shinyServer(function(input, output, session) {
                 "% of present taxa:", min = 0, max = 1, step = 0.025, value = input$percent, width = 200)
   })
   
-  ######## render filter slidebars for Consensus gene finding function
+  ######## render filter slidebars for Core gene finding function
   output$var1_cons.ui <- renderUI({
     sliderInput("var1_cons",paste(input$var1_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(input$var1[1],input$var1[2]), width = 200)
   })
@@ -2928,12 +2928,12 @@ shinyServer(function(input, output, session) {
   
   output$addCustomProfileCheck.ui <- renderUI({
     if(input$addClusterCustomProfile == TRUE  | input$addConsGeneCustomProfile == TRUE){
-      HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Profile clustering</strong> or <strong>Consensus genes finding</strong>&nbsp;to enable this function)</em></p>')
+      HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Profile clustering</strong> or <strong>Core genes finding</strong>&nbsp;to enable this function)</em></p>')
     }
   })
 
   #############################################################
-  ##################### CONSENSUS GENES #######################
+  ##################### CORE GENES ############################
   #############################################################
   
   ### render list of available taxa
@@ -3202,7 +3202,7 @@ shinyServer(function(input, output, session) {
   
   output$addClusterCustomProfileCheck.ui <- renderUI({
     if(input$addCustomProfile == TRUE | input$addConsGeneCustomProfile == TRUE){
-      HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Gene age estimation</strong> or <strong>Consensus genes finding</strong>&nbsp;to enable this function)</em></p>')
+      HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Gene age estimation</strong> or <strong>Core genes finding</strong>&nbsp;to enable this function)</em></p>')
     }
   })
   
