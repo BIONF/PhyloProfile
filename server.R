@@ -206,7 +206,7 @@ shinyServer(function(input, output, session) {
       if(is.null(taxain)){return()}
       
       taxaNameDf <- as.data.frame(read.table(file=taxain$datapath, sep='\t',header=F,check.names=FALSE,comment.char=""))
-      
+    
       idDf <- data.frame("name"=character(),"newName"=character(),"id"=character(),"type"=character(),stringsAsFactors=FALSE)
       
       withProgress(message = 'Retrieving IDs...', value = 0,{
@@ -214,11 +214,15 @@ shinyServer(function(input, output, session) {
           id <- get_uid(sciname = taxaNameDf[i,])[1]
           if(is.na(id)){
             temp <- gnr_resolve(names = as.character(taxaNameDf[i,]))
-            newID <- get_uid(sciname = temp[1,3])[1]
-            if(is.na(newID)){
-              idDf[i,] <- c(as.character(taxaNameDf[i,]),as.character(temp[1,3]),paste0("NA"),"notfound")
+            if(nrow(temp) > 0){
+              newID <- get_uid(sciname = temp[1,3])[1]
+              if(is.na(newID)){
+                idDf[i,] <- c(as.character(taxaNameDf[i,]),as.character(temp[1,3]),paste0("NA"),"notfound")
+              } else {
+                idDf[i,] <- c(as.character(taxaNameDf[i,]),as.character(temp[1,3]),paste0("ncbi",newID),"notfound")
+              }
             } else {
-              idDf[i,] <- c(as.character(taxaNameDf[i,]),as.character(temp[1,3]),paste0("ncbi",newID),"notfound")
+              idDf[i,] <- c(as.character(taxaNameDf[i,]),paste0("no alternative"),paste0("NA"),"notfound")
             }
           } else {
             idDf[i,] <- c(as.character(taxaNameDf[i,]),"NA",paste0("ncbi",id),"retrieved") 
@@ -227,7 +231,7 @@ shinyServer(function(input, output, session) {
           incProgress(1/nrow(taxaNameDf), detail = paste(i,"/",nrow(taxaNameDf)))
         }        
       })
-      
+      print(idDf)
       ### return
       idDf
     }
@@ -238,9 +242,10 @@ shinyServer(function(input, output, session) {
     if(input$idSearch > 0){
       if(length(taxaID())>0){
         tb <- as.data.frame(taxaID())
+  print(head(tb))
         tbFiltered <- tb[tb$type == "notfound",]
         notFoundDt <- tbFiltered[,c("name","newName","id")]
-        colnames(notFoundDt) <- c("Summitted name","Matched name","Matched ID")
+        colnames(notFoundDt) <- c("Summitted name","Alternative name","Alternative ID")
         notFoundDt
       }
     }
@@ -252,7 +257,7 @@ shinyServer(function(input, output, session) {
       tb <- as.data.frame(taxaID())
       tbFiltered <- tb[tb$type == "notfound",]
       notFoundDt <- tbFiltered[,c("name","newName","id")]
-      colnames(notFoundDt) <- c("Summitted name","Matched name","Matched ID")
+      colnames(notFoundDt) <- c("Summitted name","Alternative name","Alternative ID")
       
       write.table(notFoundDt,file,sep="\t",row.names = FALSE,quote = FALSE)
     }
