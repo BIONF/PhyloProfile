@@ -5,7 +5,7 @@ use Getopt::Std;
 use IO::Handle;
 use Cwd;
 
-# convert orthoXML file into wide format
+# convert orthoXML file into long format
 # 27.06.2017
 
 sub usage {
@@ -52,7 +52,10 @@ while($input =~ /<species(.)+?\/species>/){
 		my $geneID = $&; $geneID =~ s/geneId=//; $geneID =~ s/\"//g;
 		$hitGene =~ /protId=\"(.)+?\"/;
 		my $protID = $&; $protID =~ s/protId=//; $protID =~ s/\"//g;
-
+		if($protID =~ /\|/){
+			my @protIDTMP = split(/\|/,$protID);
+			$protID = $protIDTMP[0];
+		}
 
 		if(length($protID) < 1){
 			$protID = $geneID;
@@ -84,7 +87,7 @@ $input =~ /<groups(.)+?\/groups>/;
 my $orthoGroupBlock = $&;
 my %flag; # $flag{$scoreID} = 0/1   ; 0 if not exist in geneRef blocks
 foreach my $scoreID (keys %scoreID){
-	$orthoGroupBlock =~ /geneRef(.)+?<\/geneRef/;
+	$orthoGroupBlock =~ /geneRef(.)+?<geneRef/;
 	my $hit = $&;
 
 	if($hit =~ /score id=\"$scoreID?\"/){
@@ -99,11 +102,11 @@ foreach my $scoreID (keys %scoreID){
 	}
 }
 
-my $c = scalar keys %scoreID;
-while($c < 2){
-	$c++;
-	$scoreID{"var$c"} = "var$c";
-}
+# my $c = scalar keys %scoreID;
+# while($c < 2){
+# 	$c++;
+# 	$scoreID{"var$c"} = "var$c";
+# }
 
 ### parse ortholog group and output the results
 print "geneID\tncbiID\torthoID";
@@ -113,22 +116,22 @@ foreach my $scoreID (sort keys %scoreID){
 print "\n";
 
 while($input =~ /<orthologGroup id=\"(.)+?\"(.)+?\/orthologGroup>/){
-	#	print $1,"\n",$hit;<>;
 	my $hit = $&;
+#	print $1,"\n",$hit;<>;
 	substr($input,index($input,$hit),length($hit),"");
 
 	$hit =~ /<orthologGroup id=\"(.)+?\"/;
 	my $groupID = $&; $groupID =~ s/<orthologGroup id=//; $groupID =~ s/"//g;
 	unless($groupID =~ /\D/){
-		$groupID = "OG".$groupID;
+		$groupID = "OG_".$groupID;
 	}
-
+#print $hit;<>;
 	# get all proteins for this group
-	while($hit =~ /<geneRef id=\"(.)+?\"(.)+?\/geneRef>/){
+	while($hit =~ /<geneRef id=\"(.)+?\"(.)+?geneRef/ || $hit =~ /<geneRef id=\"(.)+?\"(.)+?\/orthologGroup>/){
 
 		my $hitGene = $&;
-		substr($hit,index($hit,$hitGene),length($hitGene),"");
-
+		substr($hit,index($hit,$hitGene),length($hitGene),"<geneRef");
+#print $hit;<>;
 		$hitGene =~ /<geneRef id=\"(.)+?\"/;
 		my $orthoGeneID = $&; $orthoGeneID =~ s/<geneRef id=//; $orthoGeneID =~ s/"//g;
 

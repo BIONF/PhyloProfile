@@ -30,10 +30,7 @@ if (!require("taxize")) {install.packages("taxize")}
 #############################################################
 
 xmlParser <- function(inputFile){
-  # cmd <- paste("perl ", getwd(),"/data/orthoxmlParser.pl",
-  #              " -i \"", inputFile,
-  #              sep='')
-  cmd <- paste("perl ", getwd(),"/data/orthoxmlParser.pl",
+  cmd <- paste("python ", getwd(),"/data/orthoxmlParser.py",
                " -i ", inputFile,
                sep='')
   dfIN <- as.data.frame(read.table(text = system(cmd,intern=TRUE)))
@@ -47,6 +44,12 @@ xmlParser <- function(inputFile){
 long2wide <- function(longDf){
 #  longDf <- as.data.frame(read.table(file=inputFile$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
   
+  if(ncol(longDf) < 5){
+    for(i in 1:(5-ncol(longDf))){
+      longDf[paste0("var_",i)] <- 1
+    }
+  }
+
   # rename column names
   colnames(longDf) <- c("geneID","ncbiID","orthoID","var1","var2")
   longDf$value <- paste0(longDf$orthoID,"#",longDf$var1,"#",longDf$var2)
@@ -299,7 +302,11 @@ shinyServer(function(input, output, session) {
       
       if(checkXmlFormat() == TRUE){
         longDf <- xmlParser(filein$datapath)
-        textInput("var1_id", h5("First variable:"), value = colnames(longDf)[4], width="100%", placeholder="Name of first variable")
+        if(is.na(colnames(longDf)[4])){
+          textInput("var1_id", h5("First variable:"), value = "Variable 1", width="100%", placeholder="Name of first variable")
+        } else {
+          textInput("var1_id", h5("First variable:"), value = colnames(longDf)[4], width="100%", placeholder="Name of first variable")
+        }
       } else if(checkLongFormat() == TRUE){
         headerIn <- readLines(filein$datapath, n = 1)
         headerIn <- unlist(strsplit(headerIn,split = '\t'))
@@ -320,7 +327,11 @@ shinyServer(function(input, output, session) {
       
       if(checkXmlFormat() == TRUE){
         longDf <- xmlParser(filein$datapath)
-        textInput("var2_id", h5("Second variable:"), value = colnames(longDf)[5], width="100%", placeholder="Name of second variable")
+        if(is.na(colnames(longDf)[5])){
+          textInput("var2_id", h5("Second variable:"), value = "Variable 2", width="100%", placeholder="Name of second variable")
+        } else {
+          textInput("var2_id", h5("Second variable:"), value = colnames(longDf)[5], width="100%", placeholder="Name of second variable")
+        }
       } else if(checkLongFormat() == TRUE){
         headerIn <- readLines(filein$datapath, n = 1)
         headerIn <- unlist(strsplit(headerIn,split = '\t'))
@@ -712,7 +723,8 @@ shinyServer(function(input, output, session) {
     ### load list of taxon name
     nameList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T,fill = TRUE))
     nameList$fullName <- as.character(nameList$fullName)
-    
+    nameList$rank <- as.character(nameList$rank)
+   
     rankName = substr(rankSelect,4,nchar(rankSelect))   # get rank name from rankSelect
     #    rankNr = 0 + as.numeric(substr(rankSelect,1,2))     # get rank number (number of column in unsorted taxa list - dataframe Dt)
     choice <- as.data.frame
@@ -946,14 +958,16 @@ shinyServer(function(input, output, session) {
     ### input parameters
     rankSelect = input$rankSelect
     rankName = substr(rankSelect,4,nchar(rankSelect))   # get rank name from rankSelect
-    #rankNr = 0 + as.numeric(substr(rankSelect,1,2))     # get rank number (number of column in unsorted taxa list - dataframe Dt)
+    rankNr = 0 + as.numeric(substr(rankSelect,1,2))     # get rank number (number of column in unsorted taxa list - dataframe Dt)
     
     # get selected supertaxon ID
     taxaList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T))
+    allTaxa <- allTaxaList()
+    rankNameTMP <- allTaxa$rank[allTaxa$fullName == input$inSelect]
     if(rankName == "strain"){
       superID <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inSelect & taxaList$rank == "norank"])
     } else {
-      superID <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inSelect & taxaList$rank == rankName])
+      superID <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inSelect & taxaList$rank == rankNameTMP])
     }
     
     ### sort taxa list
@@ -1407,27 +1421,33 @@ shinyServer(function(input, output, session) {
   mainPlot <- function(){
     if (v$doPlot == FALSE) return()
     dataHeat <- dataHeat()
+    dataHeat$presSpec[dataHeat$presSpec == 0] <- NA
     
-    ### plot format
+    ### format plot
     if(input$xAxis == "genes"){
       p = ggplot(dataHeat, aes(x = geneID, y = supertaxon))        ## global aes
     } else{
       p = ggplot(dataHeat, aes(y = geneID, x = supertaxon))        ## global aes
     }
     
-    if(length(unique(na.omit(dataHeat$var1))) == 1){
-      mynewcolor_low <- input$highColor_var1
-    } else {
-      mynewcolor_low <- input$lowColor_var1
-    }
-    
     if(length(unique(na.omit(dataHeat$var2))) != 1){
       p = p + scale_fill_gradient(low = input$lowColor_var2, high = input$highColor_var2, na.value="gray95") +   ## fill color (var2)
         geom_tile(aes(fill = var2))    ## filled rect (var2 score)
     }
-    p = p +  geom_point(aes(colour = var1, size = presSpec))  +    ## geom_point for circle illusion (var1 and presence/absence)
-      scale_color_gradient(low = input$lowColor_var1,high = input$highColor_var1)#+       ## color of the corresponding aes (var1)
-    scale_size(range = c(0,3))             ## to tune the size of circles
+    
+    if(length(unique(na.omit(dataHeat$presSpec))) < 3){
+      if(length(unique(na.omit(dataHeat$var1))) == 1){
+        p = p + geom_point(aes(colour = var1),size = dataHeat$presSpec*5,show.legend=F)    ## geom_point for circle illusion (var1 and presence/absence)
+      } else {
+        p = p + geom_point(aes(colour = var1),size = dataHeat$presSpec*5)    ## geom_point for circle illusion (var1 and presence/absence)
+        p = p + scale_color_gradient(low = input$lowColor_var1,high = input$highColor_var1) ## color of the corresponding aes (var1)
+      }
+    } else {
+      p = p + geom_point(aes(colour = var1, size = presSpec))    ## geom_point for circle illusion (var1 and presence/absence)
+      p = p + scale_color_gradient(low = input$lowColor_var1,high = input$highColor_var1) ## color of the corresponding aes (var1)
+    }
+    
+    scale_size(range = c(0,5))             ## to tune the size of circles NOT WORKING??
     #+ stat_binhex()
     p = p + guides(fill=guide_colourbar(title = input$var2_id), color=guide_colourbar(title = input$var1_id))   # thanks to Arpit Jain :-D
     base_size <- 9
@@ -1441,8 +1461,8 @@ shinyServer(function(input, output, session) {
       p = p+geom_vline(xintercept=0.5,colour="dodgerblue4")
       p = p+geom_vline(xintercept=1.5,colour="dodgerblue4")
     }
-    
-    p = p+theme(axis.text.x = element_text(angle=60,hjust=1,size=input$xSize),axis.text.y = element_text(size=input$ySize),
+    p = p + theme_minimal()
+    p = p + theme(axis.text.x = element_text(angle=60,hjust=1,size=input$xSize),axis.text.y = element_text(size=input$ySize),
                 axis.title.x = element_text(size=input$xSize), axis.title.y = element_text(size=input$ySize),
                 legend.title=element_text(size=input$legendSize),legend.text=element_text(size=input$legendSize),legend.position = input$mainLegend)
     
@@ -2122,34 +2142,48 @@ shinyServer(function(input, output, session) {
         dataHeat <- subset(dataHeat,geneID %in% input$inSeq & supertaxonMod %in% input$inTaxa) ##### <=== select data from dataHeat for selected sequences and taxa
       }
       
-      ### plotting
-      if(input$xAxis_selected == "taxa"){
+      ### format plot
+      if(input$xAxis == "genes"){
+        p = ggplot(dataHeat, aes(x = geneID, y = supertaxon))        ## global aes
+      } else{
         p = ggplot(dataHeat, aes(y = geneID, x = supertaxon))        ## global aes
-      } else {
-        p = ggplot(dataHeat, aes(x = geneID, y = supertaxon))
       }
       
-      p = p + scale_fill_gradient(low = input$lowColor_var2, high = input$highColor_var2, na.value="gray95") +   ## fill color (var2)
-        geom_tile(aes(fill = var2)) +# + scale_fill_gradient(low="gray95", high="red")) +    ## filled rect (var2 score)
-        geom_point(aes(colour = var1, size = presSpec))  +    ## geom_point for circle illusion (var1 and presence/absence)
-        scale_color_gradient(low = input$lowColor_var1,high = input$highColor_var1)#+       ## color of the corresponding aes (var1)
-      scale_size(range = c(0,3))             ## to tune the size of circles
-      p = p + guides(fill=guide_colourbar(title = input$var2_id), color=guide_colourbar(title = input$var1_id))
+      if(length(unique(na.omit(dataHeat$var2))) != 1){
+        p = p + scale_fill_gradient(low = input$lowColor_var2, high = input$highColor_var2, na.value="gray95") +   ## fill color (var2)
+          geom_tile(aes(fill = var2))    ## filled rect (var2 score)
+      }
+      
+      if(length(unique(na.omit(dataHeat$presSpec))) < 3){
+        if(length(unique(na.omit(dataHeat$var1))) == 1){
+          p = p + geom_point(aes(colour = var1),size = dataHeat$presSpec*5,show.legend=F)    ## geom_point for circle illusion (var1 and presence/absence)
+        } else {
+          p = p + geom_point(aes(colour = var1),size = dataHeat$presSpec*5)    ## geom_point for circle illusion (var1 and presence/absence)
+          p = p + scale_color_gradient(low = input$lowColor_var1,high = input$highColor_var1) ## color of the corresponding aes (var1)
+        }
+      } else {
+        p = p + geom_point(aes(colour = var1, size = presSpec))    ## geom_point for circle illusion (var1 and presence/absence)
+        p = p + scale_color_gradient(low = input$lowColor_var1,high = input$highColor_var1) ## color of the corresponding aes (var1)
+      }
+      
+      scale_size(range = c(0,5))             ## to tune the size of circles NOT WORKING??
+      #+ stat_binhex()
+      p = p + guides(fill=guide_colourbar(title = input$var2_id), color=guide_colourbar(title = input$var1_id))   # thanks to Arpit Jain :-D
       base_size <- 9
       
-      if(input$xAxis_selected == "taxa"){
-        p = p + labs(x="Taxon")
-        p = p+geom_vline(xintercept=0.5,colour="dodgerblue4")
-        p = p+geom_vline(xintercept=1.5,colour="dodgerblue4")
-      } else {
+      if(input$xAxis == "genes"){
         p = p + labs(y="Taxon")
         p = p+geom_hline(yintercept=0.5,colour="dodgerblue4")
         p = p+geom_hline(yintercept=1.5,colour="dodgerblue4")
+      } else{
+        p = p + labs(x="Taxon")
+        p = p+geom_vline(xintercept=0.5,colour="dodgerblue4")
+        p = p+geom_vline(xintercept=1.5,colour="dodgerblue4")
       }
-      
-      p = p+theme(axis.text.x = element_text(angle=60,hjust=1,size=input$xSizeSelect),axis.text.y = element_text(size=input$ySizeSelect),
-                  axis.title.x = element_text(size=input$xSizeSelect), axis.title.y = element_text(size=input$ySizeSelect),
-                  legend.title=element_text(size=input$legendSizeSelect),legend.text=element_text(size=input$legendSizeSelect),legend.position=input$selectedLegend)
+      p = p + theme_minimal()
+      p = p + theme(axis.text.x = element_text(angle=60,hjust=1,size=input$xSize),axis.text.y = element_text(size=input$ySize),
+                    axis.title.x = element_text(size=input$xSize), axis.title.y = element_text(size=input$ySize),
+                    legend.title=element_text(size=input$legendSize),legend.text=element_text(size=input$legendSize),legend.position = input$mainLegend)
       
       ### do plotting
       if(input$autoUpdateSelected == FALSE){
@@ -3268,7 +3302,7 @@ shinyServer(function(input, output, session) {
   output$filteredMainData <- renderDataTable({
     if(v$doPlot == FALSE){return()}
     #data <- taxaID()
-    #data <- allTaxaList()
+    data <- allTaxaList()
     #data <- sortedTaxaList()
     #data <- preData()
     #data <- dataFiltered()
@@ -3278,7 +3312,7 @@ shinyServer(function(input, output, session) {
     #data <- presSpecAllDt()
     #data <- distDf()
     #data <- geneAgeDf()
-    data <- downloadData()
+    #data <- downloadData()
     data
   })
   
@@ -3340,7 +3374,11 @@ shinyServer(function(input, output, session) {
       <p>(2) Long format, which is a tab delimited file containing 5 columns:&nbsp;geneID, ncbiID (&lt;ncbi&gt;+taxonID. e.g. ncbi7029, ncbi3702),&nbsp;orthoID,&nbsp;var1, var2. Where var1 and var2 are variables for two additional information layers.</p>
       <p>(3) Wide/matrix format, where rows represent genes and columns represent taxa. Each cell in the matrix contains &lt;orthoID&gt;#&lt;var1&gt;#&lt;var2&gt;. An unavailable value is written as NA, e.g.&nbsp;arath_2339_31:248814#NA#0.2, or&nbsp;homsa_8_41:119370#NA#NA or only NA (the same as NA#NA#NA).</p>
       <p><em>*Note for matrix format: &nbsp;the header of first column has to be "geneID". The header of each taxon must have this format "ncbi12345", in which 12345 is its NCBI taxon ID.</em></p>
-      <p><em><strong>More detail?</strong></em> Pleas take a look at the example files <strong>test.main</strong>, <strong>test.main.long</strong> or <strong>test.main.xml</strong> in /data/demo/ :)</p>
+      <p><em><strong>More detail?</strong></em> Pleas take a look at the example files <strong>test.main</strong>, <strong>test.main.long</strong> or <strong>test.main.xml</strong> in <em>/data/demo/</em> :)</p>
+      <p>&nbsp;</p>
+      <h1 style="color: #5e9ca0;">Error while parsing orthoXML input file</h1>
+      <p>Currently I use a python script (<em>data/orthoxmlParser.py</em>) to parse orthoXML input file. This script needs 2 modules (libraries) called <strong>bs4</strong>&nbsp;and <strong>lxml</strong> for working. So please install these modules if necessary (sudo pip install bs4, sudo pip install lxml).</p>
+      <p>If it still not works, you can try to run either that python script (<span style="background-color: #999999; color: #ffffff;">python data/orthoxmlParser.py -i yourInput.orthoxml</span>) or its&nbsp;alternative perl script (<span style="color: #ffffff; background-color: #999999;">perl data/orthoxmlParser.pl -i yourInput.orthoxml</span>) in the terminal and save the result as a new input for PhyloProfile.</p>
       <p>&nbsp;</p>
       <h1 style="color: #5e9ca0;">Additional file</h1>
       <p>An&nbsp;additional annotation&nbsp;file can be provided. Since the tool initially has been made to work with protein architecture annotations, the annotation file has to have 6 columns separated by tab: (1) pairID = groupID#orthologID#seedID, (2) orthologID/seedID, (3) feature name (pfam domain, smart domain,etc.), (4) start position, (5) end position, (6) weight value (only available for seed protein)</p>
@@ -3356,6 +3394,8 @@ shinyServer(function(input, output, session) {
       <p>=&gt; does your input matrix contain only 1 line???</p>
       <p><span style="color: #ff0000;"><strong>Error</strong>: id variables not found in data: geneID</span></p>
       <p>=&gt; &nbsp;the header of gene column has to be "geneID".</p>
+      <p><span style="color: #ff0000;"><strong>Error</strong>: no rows to aggregate</span></p>
+      <p>=&gt; are the first value "NA" everywhere??? If yes, please replace them by 0 or 1 or whatever but not NA! If not, you\'ve found a new bug. Please contact me ;)</p>
       <p><span style="color: #ff0000;"><strong>Error</strong>: second argument must be a list</span></p>
       <p>=&gt; please check if any of input genes is absent in all taxa, i.e. the complete row is filled with NA. The tool, unfortunately, does not accept these genes.</p>
       <p>&nbsp;</p>
