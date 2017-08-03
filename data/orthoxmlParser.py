@@ -29,7 +29,7 @@ def main(argv):
 			inFile = arg
 
 	##### read file into beatifulsoup object
-	xmlIn = BeautifulSoup(open(inFile),"lxml")
+	xmlIn = BeautifulSoup(open(inFile),"xml")
 
 	##### PARSING XML FILE
 	### get list of species together with NCBI taxon IDs and their corresponding genes
@@ -37,10 +37,10 @@ def main(argv):
 	protID = {}	# protID{(geneID:protID)}
 
 	for spec in xmlIn.findAll("species"):
-		taxID = spec.get("ncbitaxid")	# taxon ID
+		taxID = spec.get("NCBITaxId")	# taxon ID
 		for gene in spec.findAll("gene"):		# <gene id="1" protid="NP_050056.1|ATP synthase F0 subunit 8"></gene>
 			geneID = gene.get("id")
-			orthoID = gene.get("protid").split('|')[0]		# protid="NP_050057.1|NADH dehydrogenase subunit 5"
+			orthoID = gene.get("protId").split('|')[0]		# protid="NP_050057.1|NADH dehydrogenase subunit 5"
 
 			taxonID[orthoID] = taxID
 			protID[geneID] = orthoID
@@ -48,18 +48,18 @@ def main(argv):
 	### get score IDs and theis descriptions
 	scoreDesc = {}	# scoreDesc{scoreID:scoreDesc}
 	header = "geneID\tncbiID\torthoID"
-	for score in xmlIn.findAll("scoredef"):		# <scoredef desc="Distance between edge seed ortholog" id="inparalog"></scoredef>
+	for score in xmlIn.findAll("scoreDef"):		# <scoredef desc="Distance between edge seed ortholog" id="inparalog"></scoredef>
 		scoreDesc[score.get("id")] = score.get("desc")
 		header = header+"\t"+score.get("id")
 	print(header)
 
 	### get ortholog info for each group (groupID ncbiID orthoID scores)
-	for orthogroup in xmlIn.findAll("orthologgroup"):
+	for orthogroup in xmlIn.findAll("orthologGroup"):
 		groupID = orthogroup.get("id")
 		if groupID.isdigit():
 			groupID = "OG_"+groupID
 
-		for ortho in orthogroup.findAll("generef"):
+		for ortho in orthogroup.findAll("geneRef"):
 			orthoID = protID[ortho.get("id")]
 			result = [groupID,"ncbi"+taxonID[orthoID],orthoID]
 

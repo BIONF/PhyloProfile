@@ -29,6 +29,8 @@ if (!require("taxize")) {install.packages("taxize")}
 ######################## FUNCTIONS ##########################
 #############################################################
 
+
+########## parse orthoXML file ##############
 xmlParser <- function(inputFile){
   cmd <- paste("python ", getwd(),"/data/orthoxmlParser.py",
                " -i ", inputFile,
@@ -75,8 +77,6 @@ calcPresSpec <- function(taxaMdData, taxaCount){
   
   # remove NA rows from taxaMdData
   taxaMdDataNoNA <- taxaMdData[taxaMdData$orthoID != "NA",]
-  #  taxaMdDataNoNA <- taxaMdData[!is.na(taxaMdData$var1),]
-  #  taxaMdDataNoNA <- taxaMdData[!is.na(taxaMdData$var2),]
   
   # count present frequency of supertaxon for each gene
   geneSupertaxonCount <- plyr::count(taxaMdDataNoNA,c('geneID','supertaxon'))
@@ -95,7 +95,7 @@ calcPresSpec <- function(taxaMdData, taxaCount){
   finalPresSpecDt
 }
 
-######## function for sorting one domain dataframe (ortho) based on the other domain Df (seed) ########
+######## sort one domain dataframe (ortho) based on the other domain Df (seed) ########
 sortDomains <- function(seedDf, orthoDf){
   # get list of features in seedDf
   featureList <- as.data.frame(levels(as.factor(seedDf$feature)))
@@ -119,7 +119,7 @@ sortDomains <- function(seedDf, orthoDf){
   orderedOrthoDf
 }
 
-######## function for plotting domain architecture ########
+######## plot domain architecture ########
 domain.plotting <- function(df,geneID,var1,sep,labelSize,titleSize,descSize,minStart,maxEnd){
   gg <- ggplot(df, aes(y=feature, x=end, color = feature)) +
     geom_segment(data=df, aes(y=feature, yend=feature, x=minStart, xend=maxEnd), color="#b2b2b2", size=0.15)
@@ -152,7 +152,69 @@ domain.plotting <- function(df,geneID,var1,sep,labelSize,titleSize,descSize,minS
   return(gg)
 }
 
-######## show FASTA sequence in popup windows of selected plot
+######## plot profile heatmap ########
+heatmap.plotting <- function(dataHeat,xAxis,var1_id,var2_id,lowColor_var1,highColor_var1,lowColor_var2,highColor_var2,xSize,ySize,legendSize,mainLegend,guideline){
+  
+  ### format plot
+  if(xAxis == "genes"){
+    p = ggplot(dataHeat, aes(x = geneID, y = supertaxon))        ## global aes
+  } else{
+    p = ggplot(dataHeat, aes(y = geneID, x = supertaxon))        ## global aes
+  }
+  
+  if(length(unique(na.omit(dataHeat$var2))) != 1){
+    p = p + scale_fill_gradient(low = lowColor_var2, high = highColor_var2, na.value="gray95", limits=c(0,1)) +   ## fill color (var2)
+      geom_tile(aes(fill = var2))    ## filled rect (var2 score)
+  }
+  
+  if(length(unique(na.omit(dataHeat$presSpec))) < 3){
+    if(length(unique(na.omit(dataHeat$var1))) == 1){
+      p = p + geom_point(aes(colour = var1),size = dataHeat$presSpec*5,show.legend=F)    ## geom_point for circle illusion (var1 and presence/absence)
+    } else {
+      p = p + geom_point(aes(colour = var1),size = dataHeat$presSpec*5)    ## geom_point for circle illusion (var1 and presence/absence)
+      p = p + scale_color_gradient(low = lowColor_var1,high = highColor_var1, limits=c(0,1)) ## color of the corresponding aes (var1)
+    }
+  } else {
+    if(length(unique(na.omit(dataHeat$var1))) == 1){
+      p = p + geom_point(aes(size = presSpec),color = "#336a98")    ## geom_point for circle illusion (var1 and presence/absence)
+    } else {
+      p = p + geom_point(aes(colour = var1, size = presSpec))    ## geom_point for circle illusion (var1 and presence/absence)
+      p = p + scale_color_gradient(low = lowColor_var1,high = highColor_var1, limits=c(0,1)) ## color of the corresponding aes (var1)
+    }
+  }
+  
+  # remain the scale of point while filtering
+  presentVl <- dataHeat$presSpec[!is.na(dataHeat$presSpec)]
+  p <- p + scale_size_continuous(range = c(floor(min(presentVl)*10)/10*5,floor(max(presentVl)*10)/10*5))  ## to tune the size of circles; "floor(value*10)/10" is used to round "down" the value with one decimal number
+  
+  #
+  p = p + guides(fill=guide_colourbar(title = var2_id), color=guide_colourbar(title = var1_id))   # thanks to Arpit Jain :-D
+  base_size <- 9
+  
+  ### guideline for separating ref species
+  if(guideline == 1){
+    if(xAxis == "genes"){
+      p = p + labs(y="Taxon")
+      p = p+geom_hline(yintercept=0.5,colour="dodgerblue4")
+      p = p+geom_hline(yintercept=1.5,colour="dodgerblue4")
+    } else{
+      p = p + labs(x="Taxon")
+      p = p+geom_vline(xintercept=0.5,colour="dodgerblue4")
+      p = p+geom_vline(xintercept=1.5,colour="dodgerblue4")
+    }
+  }
+  
+  ### format theme
+  p = p + theme_minimal()
+  p = p + theme(axis.text.x = element_text(angle=60,hjust=1,size=xSize),axis.text.y = element_text(size=ySize),
+                axis.title.x = element_text(size=xSize), axis.title.y = element_text(size=ySize),
+                legend.title=element_text(size=legendSize),legend.text=element_text(size=legendSize),legend.position = mainLegend)
+  
+  ### return plot
+  return(p)
+}
+
+######## show FASTA sequence in popup windows of selected plot  ########
 getFasta <- function(file,seqID){
   fasta <- ""
   ### read file and get sequence
@@ -176,7 +238,7 @@ getFasta <- function(file,seqID){
   return(fasta)
 }
 
-######## get last n characters from string x
+######## get last n characters from string x  ########
 substrRight <- function(x, n){
   substr(x, nchar(x)-n+1, nchar(x))
 }
@@ -245,7 +307,6 @@ shinyServer(function(input, output, session) {
     if(input$idSearch > 0){
       if(length(taxaID())>0){
         tb <- as.data.frame(taxaID())
-  print(head(tb))
         tbFiltered <- tb[tb$type == "notfound",]
         notFoundDt <- tbFiltered[,c("name","newName","id")]
         colnames(notFoundDt) <- c("Summitted name","Alternative name","Alternative ID")
@@ -1107,7 +1168,11 @@ shinyServer(function(input, output, session) {
   ### subset data
   preData <- reactive({
     # get rows need to be read
-    nrHit <- input$stIndex + input$number - 1
+    if(is.na(input$number)){
+      nrHit <- input$stIndex + 30 - 1
+    } else {
+      nrHit <- input$stIndex + input$number - 1
+    }
     
     if(input$demo == TRUE){
       inputDf <- as.data.frame(read.csv("https://raw.githubusercontent.com/trvinh/phyloprofile/master/data/demo/test.main",stringsAsFactors = FALSE, sep='\t', comment.char=""))
@@ -1393,7 +1458,11 @@ shinyServer(function(input, output, session) {
     
     ### get sub set of data
     setID <- plyr::count(data,"geneID")
-    nrHit <- input$stIndex + input$number - 1
+    if(is.na(input$number)){
+      nrHit <- input$stIndex + 30 - 1
+    } else {
+      nrHit <- input$stIndex + input$number - 1
+    }
     if(nrHit > nlevels(data$geneID)){nrHit <- nlevels(as.factor(data$geneID))}
 
     subsetID <- setID[input$stIndex:nrHit,]
@@ -1423,49 +1492,8 @@ shinyServer(function(input, output, session) {
     dataHeat <- dataHeat()
     dataHeat$presSpec[dataHeat$presSpec == 0] <- NA
     
-    ### format plot
-    if(input$xAxis == "genes"){
-      p = ggplot(dataHeat, aes(x = geneID, y = supertaxon))        ## global aes
-    } else{
-      p = ggplot(dataHeat, aes(y = geneID, x = supertaxon))        ## global aes
-    }
-    
-    if(length(unique(na.omit(dataHeat$var2))) != 1){
-      p = p + scale_fill_gradient(low = input$lowColor_var2, high = input$highColor_var2, na.value="gray95") +   ## fill color (var2)
-        geom_tile(aes(fill = var2))    ## filled rect (var2 score)
-    }
-    
-    if(length(unique(na.omit(dataHeat$presSpec))) < 3){
-      if(length(unique(na.omit(dataHeat$var1))) == 1){
-        p = p + geom_point(aes(colour = var1),size = dataHeat$presSpec*5,show.legend=F)    ## geom_point for circle illusion (var1 and presence/absence)
-      } else {
-        p = p + geom_point(aes(colour = var1),size = dataHeat$presSpec*5)    ## geom_point for circle illusion (var1 and presence/absence)
-        p = p + scale_color_gradient(low = input$lowColor_var1,high = input$highColor_var1) ## color of the corresponding aes (var1)
-      }
-    } else {
-      p = p + geom_point(aes(colour = var1, size = presSpec))    ## geom_point for circle illusion (var1 and presence/absence)
-      p = p + scale_color_gradient(low = input$lowColor_var1,high = input$highColor_var1) ## color of the corresponding aes (var1)
-    }
-    
-    scale_size(range = c(0,5))             ## to tune the size of circles NOT WORKING??
-    #+ stat_binhex()
-    p = p + guides(fill=guide_colourbar(title = input$var2_id), color=guide_colourbar(title = input$var1_id))   # thanks to Arpit Jain :-D
-    base_size <- 9
-    
-    if(input$xAxis == "genes"){
-      p = p + labs(y="Taxon")
-      p = p+geom_hline(yintercept=0.5,colour="dodgerblue4")
-      p = p+geom_hline(yintercept=1.5,colour="dodgerblue4")
-    } else{
-      p = p + labs(x="Taxon")
-      p = p+geom_vline(xintercept=0.5,colour="dodgerblue4")
-      p = p+geom_vline(xintercept=1.5,colour="dodgerblue4")
-    }
-    p = p + theme_minimal()
-    p = p + theme(axis.text.x = element_text(angle=60,hjust=1,size=input$xSize),axis.text.y = element_text(size=input$ySize),
-                axis.title.x = element_text(size=input$xSize), axis.title.y = element_text(size=input$ySize),
-                legend.title=element_text(size=input$legendSize),legend.text=element_text(size=input$legendSize),legend.position = input$mainLegend)
-    
+    p <- heatmap.plotting(dataHeat,input$xAxis,input$var1_id,input$var2_id,input$lowColor_var1,input$highColor_var1,input$lowColor_var2,input$highColor_var2,input$xSize,input$ySize,input$legendSize,input$mainLegend,1)
+
     ### highlight taxon
     if(input$taxonHighlight != "none"){
       ## get selected highlight taxon ID
@@ -1476,40 +1504,41 @@ shinyServer(function(input, output, session) {
       if(length(taxonHighlight) == 0L){
         taxonHighlight <- taxaList$ncbiID[taxaList$fullName == input$taxonHighlight]
       }
-      
+
       ## get taxonID together with it sorted index
       highlightTaxon <- toString(dataHeat[dataHeat$supertaxonID == taxonHighlight,2][1])
       ## get index
       selectedIndex = as.numeric(as.character(substr(highlightTaxon,2,4)))
+      
       ## draw a rect to highlight this taxon's column
       if(input$xAxis == "taxa"){
         rect <- data.frame(xmin=selectedIndex-0.5, xmax=selectedIndex+0.5, ymin=-Inf, ymax=Inf)
       } else {
         rect <- data.frame(ymin=selectedIndex-0.5, ymax=selectedIndex+0.5, xmin=-Inf, xmax=Inf)
       }
-      
+
       p = p + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax),
                         color="yellow",
                         alpha=0.3,
                         inherit.aes = FALSE)
     }
-    
+
     ### highlight gene
     if(input$geneHighlight != "none"){
       ## get selected highlight gene ID
       geneHighlight <- input$geneHighlight
-      
+
       ## get index
       allGenes <- levels(dataHeat$geneID)
       selectedIndex = match(geneHighlight,allGenes)
-      
+
       ## draw a rect to highlight this taxon's column
       if(input$xAxis == "taxa"){
         rect <- data.frame(ymin=selectedIndex-0.5, ymax=selectedIndex+0.5, xmin=-Inf, xmax=Inf)
       } else {
         rect <- data.frame(xmin=selectedIndex-0.5, xmax=selectedIndex+0.5, ymin=-Inf, ymax=Inf)
       }
-      
+
       p = p + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax),
                         color="yellow",
                         alpha=0.3,
@@ -2132,6 +2161,7 @@ shinyServer(function(input, output, session) {
     if (v2$doPlotCustom == FALSE) return()
     if(input$inSeq[1] == "all" & input$inTaxa[1] == "all") {return()}
     else{
+      ### process data
       dataHeat <- dataHeat()
       dataHeat$supertaxonMod <- substr(dataHeat$supertaxon,6,nchar(as.character(dataHeat$supertaxon)))
       if(input$inTaxa[1] == "all" & input$inSeq[1] != "all"){
@@ -2142,49 +2172,9 @@ shinyServer(function(input, output, session) {
         dataHeat <- subset(dataHeat,geneID %in% input$inSeq & supertaxonMod %in% input$inTaxa) ##### <=== select data from dataHeat for selected sequences and taxa
       }
       
-      ### format plot
-      if(input$xAxis == "genes"){
-        p = ggplot(dataHeat, aes(x = geneID, y = supertaxon))        ## global aes
-      } else{
-        p = ggplot(dataHeat, aes(y = geneID, x = supertaxon))        ## global aes
-      }
-      
-      if(length(unique(na.omit(dataHeat$var2))) != 1){
-        p = p + scale_fill_gradient(low = input$lowColor_var2, high = input$highColor_var2, na.value="gray95") +   ## fill color (var2)
-          geom_tile(aes(fill = var2))    ## filled rect (var2 score)
-      }
-      
-      if(length(unique(na.omit(dataHeat$presSpec))) < 3){
-        if(length(unique(na.omit(dataHeat$var1))) == 1){
-          p = p + geom_point(aes(colour = var1),size = dataHeat$presSpec*5,show.legend=F)    ## geom_point for circle illusion (var1 and presence/absence)
-        } else {
-          p = p + geom_point(aes(colour = var1),size = dataHeat$presSpec*5)    ## geom_point for circle illusion (var1 and presence/absence)
-          p = p + scale_color_gradient(low = input$lowColor_var1,high = input$highColor_var1) ## color of the corresponding aes (var1)
-        }
-      } else {
-        p = p + geom_point(aes(colour = var1, size = presSpec))    ## geom_point for circle illusion (var1 and presence/absence)
-        p = p + scale_color_gradient(low = input$lowColor_var1,high = input$highColor_var1) ## color of the corresponding aes (var1)
-      }
-      
-      scale_size(range = c(0,5))             ## to tune the size of circles NOT WORKING??
-      #+ stat_binhex()
-      p = p + guides(fill=guide_colourbar(title = input$var2_id), color=guide_colourbar(title = input$var1_id))   # thanks to Arpit Jain :-D
-      base_size <- 9
-      
-      if(input$xAxis == "genes"){
-        p = p + labs(y="Taxon")
-        p = p+geom_hline(yintercept=0.5,colour="dodgerblue4")
-        p = p+geom_hline(yintercept=1.5,colour="dodgerblue4")
-      } else{
-        p = p + labs(x="Taxon")
-        p = p+geom_vline(xintercept=0.5,colour="dodgerblue4")
-        p = p+geom_vline(xintercept=1.5,colour="dodgerblue4")
-      }
-      p = p + theme_minimal()
-      p = p + theme(axis.text.x = element_text(angle=60,hjust=1,size=input$xSize),axis.text.y = element_text(size=input$ySize),
-                    axis.title.x = element_text(size=input$xSize), axis.title.y = element_text(size=input$ySize),
-                    legend.title=element_text(size=input$legendSize),legend.text=element_text(size=input$legendSize),legend.position = input$mainLegend)
-      
+      ### create plot
+      p <- heatmap.plotting(dataHeat,input$xAxis_selected,input$var1_id,input$var2_id,input$lowColor_var1,input$highColor_var1,input$lowColor_var2,input$highColor_var2,input$xSizeSelect,input$ySizeSelect,input$legendSizeSelect,input$selectedLegend,0)
+  
       ### do plotting
       if(input$autoUpdateSelected == FALSE){
         # Add dependency on the update button (only update when button is clicked)
