@@ -1,10 +1,14 @@
 data/taxonID.list.fullRankID
 data/taxonNamesReduced.txt
 data/demo/test.main
+data/demo/test.main.long2
 data/demo/geneList.txt
 data/demo/test.architecture
 data/demo/test.traceability
+data/demo/full_domain_files/
 data/newTaxa.txt
+
+rsconnect/
 
 # History files
 .Rhistory
