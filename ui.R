@@ -1,8 +1,12 @@
-if (!require("shiny")) {install.packages("shiny")}
-if (!require("shinyBS")) {install.packages("shinyBS")}
-if (!require("DT")) {install.packages("DT")}
-if (!require("colourpicker")) {install.packages("colourpicker")}
-if (!require("shinyjs")) {install.packages("shinyjs")}
+# if (!require("shiny")) {install.packages("shiny")}
+# if (!require("shinyBS")) {install.packages("shinyBS")}
+# if (!require("DT")) {install.packages("DT")}
+# if (!require("colourpicker")) {install.packages("colourpicker")}
+# if (!require("shinyjs")) {install.packages("shinyjs")}
+
+if(!("pacman" %in% installed.packages())) install.packages("pacman")
+library(pacman)
+p_load(shiny,shinyBS,shinyjs,DT,colourpicker,install=T)
 
 ### showing waiting spinner while plotting
 mycss <- "
@@ -529,7 +533,7 @@ shinyUI(fluidPage(
   
   ####### popup to confirm parsing data from input file
   bsModal("parseConfirm", "Get info from input", "parse", size = "medium",
-          HTML("Parsing taxonomy information from input file<br>and"),
+          HTML("Parse taxonomy information from input file<br>and"),
           actionButton("BUTparseAppend","append to existing taxonomy file"),
           HTML(", or"),
           actionButton("BUTparseNew", "create new taxonomy file"),

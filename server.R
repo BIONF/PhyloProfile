@@ -1,29 +1,30 @@
-if (!require("shiny")) {install.packages("shiny")}
-if (!require("shinyBS")) {install.packages("shinyBS")}
-if (!require("ggplot2")) {install.packages("ggplot2")}
-if (!require("reshape2")) {install.packages("reshape2")}
-if (!require("plyr")) {install.packages("plyr")}
-if (!require("dplyr")) {install.packages("dplyr")}
-if (!require("tidyr")) {install.packages("tidyr")}
-if (!require("scales")) {install.packages("scales")}
-if (!require("grid")) {install.packages("grid")}
-if (!require("gridExtra")) {install.packages("gridExtra")}
-if (!require("ape")) {install.packages("ape")}
-if (!require("stringr")) {install.packages("stringr")}
-if (!require("gtable")) {install.packages("gtable")}
-if (!require("dendextend")) {install.packages("dendextend")}
-if (!require("ggdendro")) {install.packages("ggdendro")}
-if (!require("gplots")) {install.packages("gplots")}
-if (!require("data.table")) {install.packages("data.table")}
+if(!("pacman" %in% installed.packages())) install.packages("pacman")
+library(pacman)
+p_load(shiny,shinyBS,ggplot2,reshape2,plyr,dplyr,tidyr,scales,grid,gridExtra,ape,stringr,gtable,dendextend,ggdendro,gplots,data.table,taxize,install=T)
+
+# if (!require("shiny")) {install.packages("shiny")}
+# if (!require("shinyBS")) {install.packages("shinyBS")}
+# if (!require("ggplot2")) {install.packages("ggplot2")}
+# if (!require("reshape2")) {install.packages("reshape2")}
+# if (!require("plyr")) {install.packages("plyr")}
+# if (!require("dplyr")) {install.packages("dplyr")}
+# if (!require("tidyr")) {install.packages("tidyr")}
+# if (!require("scales")) {install.packages("scales")}
+# if (!require("grid")) {install.packages("grid")}
+# if (!require("gridExtra")) {install.packages("gridExtra")}
+# if (!require("ape")) {install.packages("ape")}
+# if (!require("stringr")) {install.packages("stringr")}
+# if (!require("gtable")) {install.packages("gtable")}
+# if (!require("dendextend")) {install.packages("dendextend")}
+# if (!require("ggdendro")) {install.packages("ggdendro")}
+# if (!require("gplots")) {install.packages("gplots")}
+# if (!require("data.table")) {install.packages("data.table")}
+# if (!require("taxize")) {install.packages("taxize")}
+
 if (!require("Biostrings")) {
   source("https://bioconductor.org/biocLite.R")
   biocLite("Biostrings")
 }
-if (!require("taxize")) {install.packages("taxize")}
-
-# if(!("pacman" %in% installed.packages())) install.packages("pacman")
-# library(pacman)
-# p_load(RJSONIO,igraph,httr,stringr,XML,RColorBrewer,devtools)
 
 #############################################################
 ######################## FUNCTIONS ##########################
