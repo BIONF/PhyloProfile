@@ -36,9 +36,10 @@ xmlParser <- function(inputFile){
                " -i ", inputFile,
                sep='')
   dfIN <- as.data.frame(read.table(text = system(cmd,intern=TRUE)))
-  colnames(dfIN) = as.character(unlist(dfIN[1,])) # the first row will be the header
-  dfIN = dfIN[-1, ]
   
+  colnames(dfIN) = as.character(unlist(dfIN[1,])) # the first row will be the header
+  dfIN <- subset(dfIN[dfIN$geneID != "geneID",])
+  dfIN <- droplevels(dfIN)
   dfIN
 }
 
@@ -153,7 +154,7 @@ domain.plotting <- function(df,geneID,var1,sep,labelSize,titleSize,descSize,minS
 }
 
 ######## plot profile heatmap ########
-heatmap.plotting <- function(dataHeat,xAxis,var1_id,var2_id,lowColor_var1,highColor_var1,lowColor_var2,highColor_var2,xSize,ySize,legendSize,mainLegend,guideline){
+heatmap.plotting <- function(dataHeat,xAxis,var1_id,var2_id,lowColor_var1,highColor_var1,lowColor_var2,highColor_var2,xSize,ySize,legendSize,mainLegend,dotZoom,guideline){
   
   ### format plot
   if(xAxis == "genes"){
@@ -185,10 +186,10 @@ heatmap.plotting <- function(dataHeat,xAxis,var1_id,var2_id,lowColor_var1,highCo
   
   # remain the scale of point while filtering
   presentVl <- dataHeat$presSpec[!is.na(dataHeat$presSpec)]
-  p <- p + scale_size_continuous(range = c(floor(min(presentVl)*10)/10*5,floor(max(presentVl)*10)/10*5))  ## to tune the size of circles; "floor(value*10)/10" is used to round "down" the value with one decimal number
-  
+  p <- p + scale_size_continuous(range = c((floor(min(presentVl)*10)/10*5)*(1+dotZoom),(floor(max(presentVl)*10)/10*5)*(1+dotZoom)))  ## to tune the size of circles; "floor(value*10)/10" is used to round "down" the value with one decimal number
+
   #
-  p = p + guides(fill=guide_colourbar(title = var2_id), color=guide_colourbar(title = var1_id))   # thanks to Arpit Jain :-D
+  p = p + guides(fill=guide_colourbar(title = var2_id), color=guide_colourbar(title = var1_id))
   base_size <- 9
   
   ### guideline for separating ref species
@@ -351,6 +352,13 @@ shinyServer(function(input, output, session) {
       write.table(retrievedDt,file,sep="\t",row.names = FALSE,quote = FALSE)
     }
   )
+  
+  ######## render message for not changing rank and ref spec when using demo data
+  output$msgDemo <- renderUI({
+    if(input$demo == TRUE){
+      em(strong("Taxonomy rank cannot be changed while using online demo files"), style="color:#ff8080")
+    }
+  })
   
   ################# PARSING VARIABLE 1 AND 2 ##################
   ######## render textinput for variable 1 & 2
@@ -548,24 +556,44 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  ######## reset all parameters of main plot
+  ######## reset cutoffs of main plot
   observeEvent(input$resetMain, {
-    shinyjs::reset("xSize")
-    shinyjs::reset("ySize")
-    shinyjs::reset("legendSize")
     shinyjs::reset("var1")
     shinyjs::reset("var2")
     shinyjs::reset("percent")
   })
   
-  ######## reset all parameters of Customized plot
+  ######## reset config of main plot
+  observeEvent(input$resetMainConfig, {
+      shinyjs::reset("xSize")
+      shinyjs::reset("ySize")
+      shinyjs::reset("legendSize")
+      shinyjs::reset("dotZoom")
+  })
+  
+  ######## close main config
+  observeEvent(input$applyMainConfig, {
+    toggleModal(session, "mainPlotConfigBs", toggle = "close")
+  })
+  
+  ######## reset cutoffs of Customized plot
   observeEvent(input$resetSelected, {
-    shinyjs::reset("xSizeSelect")
-    shinyjs::reset("ySizeSelect")
-    shinyjs::reset("legendSizeSelect")
     shinyjs::reset("var1")
     shinyjs::reset("var2")
     shinyjs::reset("percent")
+  })
+  
+  ######## reset config of customized plot
+  observeEvent(input$resetSelectedConfig, {
+    shinyjs::reset("xSizeSelect")
+    shinyjs::reset("ySizeSelect")
+    shinyjs::reset("legendSizeSelect")
+    shinyjs::reset("dotZoomSelect")
+  })  
+  
+  ######## close customized config
+  observeEvent(input$applySelectedConfig, {
+    toggleModal(session, "selectedPlotConfigBs", toggle = "close")
   })
   
   ######## reset colors
@@ -716,14 +744,21 @@ shinyServer(function(input, output, session) {
   })
 
   ######## check if data is loaded and "parse" button (get info from input) is clicked and confirmed
-  v1 <- reactiveValues(parseInput = FALSE)
-  observeEvent(input$BUTyes, {
+  v1 <- reactiveValues(parseNew = FALSE)
+  observeEvent(input$BUTparseNew, {
     toggleModal(session, "parseConfirm", toggle = "close")
-    v1$parseInput <- input$BUTyes
+    v1$parseNew <- input$BUTparseNew
   })
-  observeEvent(input$BUTno, {
+  
+  v2 <- reactiveValues(parseAppend = FALSE)
+  observeEvent(input$BUTparseAppend, {
     toggleModal(session, "parseConfirm", toggle = "close")
+    v2$parseAppend <- input$BUTparseAppend
   })
+  
+  # observeEvent(input$BUTno, {
+  #   toggleModal(session, "parseConfirm", toggle = "close")
+  # })
   
   ######### create taxonID.list.fullRankID and taxonNamesReduced.txt from input file (if confirmed by BUTyes)
   observe({
@@ -732,17 +767,31 @@ shinyServer(function(input, output, session) {
     else{
       inputDf <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
       
-      if(v1$parseInput == FALSE){return()}
+      if(v1$parseNew == F & v2$parseAppend == F){return()}
       else{
-        if(checkXmlFormat() == TRUE){
-          longDf <- xmlParser(filein$datapath)
-          inputMod <- long2wide(longDf)
-          titleline <- toString(paste(colnames(inputMod),collapse = "\t"))
-        } else if(checkLongFormat() == TRUE){
-          inputMod <- long2wide(inputDf)
-          titleline <- toString(paste(colnames(inputMod),collapse = "\t"))
-        } else {
-          titleline <- readLines(filein$datapath, n=1)
+        ## get list of taxa from input
+        if(v1$parseNew == T){
+          if(checkXmlFormat() == TRUE){
+            longDf <- xmlParser(filein$datapath)
+            inputMod <- long2wide(longDf)
+            titleline <- toString(paste(colnames(inputMod),collapse = "\t"))
+          } else if(checkLongFormat() == TRUE){
+            inputMod <- long2wide(inputDf)
+            titleline <- toString(paste(colnames(inputMod),collapse = "\t"))
+          } else {
+            titleline <- readLines(filein$datapath, n=1)
+          }
+        }
+       
+        ## get existing taxa list from current taxonID.list.fullRankID
+        ## and append unkTaxa into that list
+        if(v2$parseAppend == T){
+          pipeCmd <- paste0("cut -f 2 ",getwd(),"/data/taxonID.list.fullRankID")
+          currentTaxaList <- as.list(read.table(pipe(pipeCmd)))
+          
+          unkTaxa <- unkTaxa()
+          fullListTaxa <- c(as.character(currentTaxaList$V1),unkTaxa)
+          titleline <- paste(fullListTaxa, collapse='\t' )
         }
         
         # Create 0-row data frame which will be used to store data
@@ -1028,7 +1077,7 @@ shinyServer(function(input, output, session) {
     if(rankName == "strain"){
       superID <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inSelect & taxaList$rank == "norank"])
     } else {
-      superID <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inSelect & taxaList$rank == rankNameTMP])
+      superID <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inSelect & taxaList$rank == rankNameTMP[1]])
     }
     
     ### sort taxa list
@@ -1179,7 +1228,6 @@ shinyServer(function(input, output, session) {
       if(input$applyCluster == TRUE){
         oridata <- inputDf
         clusteredOridata <- clusterData(oridata)
-        
         subsetID <- levels(clusteredOridata$geneID)[1:nrHit]
         data <- clusteredOridata[clusteredOridata$geneID %in% subsetID,]
       } else {
@@ -1254,6 +1302,7 @@ shinyServer(function(input, output, session) {
   ### get all information for input data
   dataFiltered <- reactive({
     data <- preData()
+
     # convert into paired columns
     mdData <- melt(data,id="geneID")
     
@@ -1326,7 +1375,7 @@ shinyServer(function(input, output, session) {
   ######## this data set contain only supertaxa and their value (%present, mVar1 & mVar2) for each gene
   dataSupertaxa <- reactive({
     fullMdData <- dataFiltered()
-    
+
     ### get representative orthoID that has m VAR1 for each supertaxon
     mOrthoID <- fullMdData[,c('geneID','supertaxon','var1','mVar1','orthoID')]
     mOrthoID <- subset(mOrthoID,mOrthoID$var1 == mOrthoID$mVar1)
@@ -1451,20 +1500,20 @@ shinyServer(function(input, output, session) {
     if(is.null(filein)){return()}
 
     data <- dataSupertaxa()
-
     # get selected supertaxon name
     split <- strsplit(as.character(input$inSelect),"_")
     inSelect <- as.character(split[[1]][1])
     
     ### get sub set of data
     setID <- plyr::count(data,"geneID")
+
     if(is.na(input$number)){
       nrHit <- input$stIndex + 30 - 1
     } else {
       nrHit <- input$stIndex + input$number - 1
     }
-    if(nrHit > nlevels(data$geneID)){nrHit <- nlevels(as.factor(data$geneID))}
-
+    if(nrHit > nlevels(as.factor(data$geneID))){nrHit <- nlevels(as.factor(data$geneID))}
+    
     subsetID <- setID[input$stIndex:nrHit,]
     dataHeat <- merge(data,subsetID,by="geneID")
     
@@ -1486,14 +1535,28 @@ shinyServer(function(input, output, session) {
     dataHeat
   })
   
+  ########### render dot size to dotSizeInfo
+  output$dotSizeInfo <- renderUI({
+    if (v$doPlot == FALSE) return()
+    
+    dataHeat <- dataHeat()
+    dataHeat$presSpec[dataHeat$presSpec == 0] <- NA
+    presentVl <- dataHeat$presSpec[!is.na(dataHeat$presSpec)]
+    
+    minDot <- (floor(min(presentVl)*10)/10*5)*(1+input$dotZoom)
+    maxDot <- (floor(max(presentVl)*10)/10*5)*(1+input$dotZoom)
+    
+    em(paste0("current point's size: ",minDot," - ",maxDot))
+  })
+  
   ########### create profile heatmap
   mainPlot <- function(){
     if (v$doPlot == FALSE) return()
     dataHeat <- dataHeat()
     dataHeat$presSpec[dataHeat$presSpec == 0] <- NA
     
-    p <- heatmap.plotting(dataHeat,input$xAxis,input$var1_id,input$var2_id,input$lowColor_var1,input$highColor_var1,input$lowColor_var2,input$highColor_var2,input$xSize,input$ySize,input$legendSize,input$mainLegend,1)
-
+    p <- heatmap.plotting(dataHeat,input$xAxis,input$var1_id,input$var2_id,input$lowColor_var1,input$highColor_var1,input$lowColor_var2,input$highColor_var2,input$xSize,input$ySize,input$legendSize,input$mainLegend,input$dotZoom,1)
+    
     ### highlight taxon
     if(input$taxonHighlight != "none"){
       ## get selected highlight taxon ID
@@ -2080,14 +2143,14 @@ shinyServer(function(input, output, session) {
   
   
   ######## check if button is clicked
-  v2 <- reactiveValues(doPlotCustom = FALSE)
+  vCt <- reactiveValues(doPlotCustom = FALSE)
   observeEvent(input$plotCustom, {
     # 0 will be coerced to FALSE
     # 1+ will be coerced to TRUE
-    v2$doPlotCustom <- input$plotCustom
+    vCt$doPlotCustom <- input$plotCustom
     filein <- input$mainInput
     if(input$demo == TRUE){ filein = 1 }
-    if(is.null(filein)){v2$doPlotCustom <- FALSE}
+    if(is.null(filein)){vCt$doPlotCustom <- FALSE}
   })
   
   ######## print list of available customized taxonomy ranks (the lowest rank is the same as the chosen main rank)
@@ -2158,7 +2221,7 @@ shinyServer(function(input, output, session) {
   
   ######## create plot (same as main plot)
   selectedPlot <- function(){
-    if (v2$doPlotCustom == FALSE) return()
+    if (vCt$doPlotCustom == FALSE) return()
     if(input$inSeq[1] == "all" & input$inTaxa[1] == "all") {return()}
     else{
       ### process data
@@ -2173,8 +2236,8 @@ shinyServer(function(input, output, session) {
       }
       
       ### create plot
-      p <- heatmap.plotting(dataHeat,input$xAxis_selected,input$var1_id,input$var2_id,input$lowColor_var1,input$highColor_var1,input$lowColor_var2,input$highColor_var2,input$xSizeSelect,input$ySizeSelect,input$legendSizeSelect,input$selectedLegend,0)
-  
+      p <- heatmap.plotting(dataHeat,input$xAxis_selected,input$var1_id,input$var2_id,input$lowColor_var1,input$highColor_var1,input$lowColor_var2,input$highColor_var2,input$xSizeSelect,input$ySizeSelect,input$legendSizeSelect,input$selectedLegend,input$dotZoomSelect,0)
+      
       ### do plotting
       if(input$autoUpdateSelected == FALSE){
         # Add dependency on the update button (only update when button is clicked)
@@ -2281,7 +2344,7 @@ shinyServer(function(input, output, session) {
   ######## get info of a clicked point on selected plot (also the same as get info from main plot)
   selectedPointInfo <- reactive({
     ### check input
-    if (v2$doPlotCustom == FALSE) return()
+    if (vCt$doPlotCustom == FALSE) return()
     
     # get selected supertaxon name
     taxaList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T))

@@ -54,10 +54,12 @@ def main(argv):
 	print(header)
 
 	### get ortholog info for each group (groupID ncbiID orthoID scores)
+	index = 10000
 	for orthogroup in xmlIn.findAll("orthologGroup"):
 		groupID = orthogroup.get("id")
 		if groupID.isdigit():
-			groupID = "OG_"+groupID
+			groupIndex = index + int(groupID)
+			groupID = "OG_"+str(groupIndex)
 
 		for ortho in orthogroup.findAll("geneRef"):
 			orthoID = protID[ortho.get("id")]
