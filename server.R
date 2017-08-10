@@ -1,30 +1,13 @@
 if(!("pacman" %in% installed.packages())) install.packages("pacman")
 library(pacman)
-p_load(shiny,shinyBS,ggplot2,reshape2,plyr,dplyr,tidyr,scales,grid,gridExtra,ape,stringr,gtable,dendextend,ggdendro,gplots,data.table,taxize,install=T)
-
-# if (!require("shiny")) {install.packages("shiny")}
-# if (!require("shinyBS")) {install.packages("shinyBS")}
-# if (!require("ggplot2")) {install.packages("ggplot2")}
-# if (!require("reshape2")) {install.packages("reshape2")}
-# if (!require("plyr")) {install.packages("plyr")}
-# if (!require("dplyr")) {install.packages("dplyr")}
-# if (!require("tidyr")) {install.packages("tidyr")}
-# if (!require("scales")) {install.packages("scales")}
-# if (!require("grid")) {install.packages("grid")}
-# if (!require("gridExtra")) {install.packages("gridExtra")}
-# if (!require("ape")) {install.packages("ape")}
-# if (!require("stringr")) {install.packages("stringr")}
-# if (!require("gtable")) {install.packages("gtable")}
-# if (!require("dendextend")) {install.packages("dendextend")}
-# if (!require("ggdendro")) {install.packages("ggdendro")}
-# if (!require("gplots")) {install.packages("gplots")}
-# if (!require("data.table")) {install.packages("data.table")}
-# if (!require("taxize")) {install.packages("taxize")}
+p_load(shiny,shinyBS,ggplot2,reshape2,plyr,dplyr,tidyr,scales,grid,gridExtra,ape,stringr,gtable,dendextend,ggdendro,gplots,data.table,taxize,rdrop2,install=T)
 
 if (!require("Biostrings")) {
   source("https://bioconductor.org/biocLite.R")
   biocLite("Biostrings")
 }
+
+token <- readRDS("droptoken.rds")
 
 #############################################################
 ######################## FUNCTIONS ##########################
@@ -2586,13 +2569,14 @@ shinyServer(function(input, output, session) {
         fileDomain <- "noSelectHit"
         updateButton(session, "doDomainPlot", disabled = TRUE)
       } else {
-        if(group == "OG_1017" | group == "OG_1026" | group == "OG_1030"){
+        # if(group == "OG_1017" | group == "OG_1026" | group == "OG_1030"){
           updateButton(session, "doDomainPlot", disabled = FALSE)
-          fileDomain <- paste0("https://raw.githubusercontent.com/trvinh/phyloprofile/master/data/demo/domains/",group,".txt")
-        } else {
-          fileDomain <- "noFileOnline"
-          updateButton(session, "doDomainPlot", disabled = TRUE)
-        }
+          #fileDomain <- paste0("https://raw.githubusercontent.com/trvinh/phyloprofile/master/data/demo/domains/",group,".txt")
+          fileDomain <- suppressWarnings(paste0("phyloprofile/data/domains/",group,".domains"))
+        # } else {
+        #   fileDomain <- "noFileOnline"
+        #   updateButton(session, "doDomainPlot", disabled = TRUE)
+        # }
       }
     } else {
       if(input$annoChoose == "from file"){
@@ -2680,7 +2664,8 @@ shinyServer(function(input, output, session) {
     fileDomain <- getDomainFile()
 
     if(input$demo == TRUE){
-      domainDf <- as.data.frame(read.csv(fileDomain,stringsAsFactors = FALSE, sep='\t', comment.char=""))
+      #domainDf <- as.data.frame(read.csv(fileDomain,stringsAsFactors = FALSE, sep='\t', comment.char=""))
+      domainDf <- drop_read_csv(fileDomain,stringsAsFactors = FALSE, sep='\t', comment.char="",header = FALSE)
     } else {
       if(fileDomain != FALSE){
         domainDf <- as.data.frame(read.table(fileDomain, sep='\t',header=FALSE,comment.char=""))
