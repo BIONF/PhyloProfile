@@ -13,7 +13,6 @@ token <- readRDS("droptoken.rds")
 ######################## FUNCTIONS ##########################
 #############################################################
 
-
 ########## parse orthoXML file ##############
 xmlParser <- function(inputFile){
   cmd <- paste("python ", getwd(),"/data/orthoxmlParser.py",
@@ -154,7 +153,7 @@ heatmap.plotting <- function(dataHeat,xAxis,var1_id,var2_id,lowColor_var1,highCo
   
   if(length(unique(na.omit(dataHeat$presSpec))) < 3){
     if(length(unique(na.omit(dataHeat$var1))) == 1){
-      p = p + geom_point(aes(colour = var1),size = dataHeat$presSpec*5,show.legend=F)    ## geom_point for circle illusion (var1 and presence/absence)
+      p = p + geom_point(aes(colour = var1),size = dataHeat$presSpec*5*(1+dotZoom),show.legend=F)    ## geom_point for circle illusion (var1 and presence/absence)
     } else {
       p = p + geom_point(aes(colour = var1),size = dataHeat$presSpec*5)    ## geom_point for circle illusion (var1 and presence/absence)
       p = p + scale_color_gradient(low = lowColor_var1,high = highColor_var1, limits=c(0,1)) ## color of the corresponding aes (var1)
@@ -2520,33 +2519,48 @@ shinyServer(function(input, output, session) {
       paste(seqID)
       
       ### fasta path and format
-      if(input$input_type == 'oneSeq.extended.fa'){
-        #        f <- toString(input$oneseq.file)
-        fasIn <- input$oneSeqFasta
-        f <- toString(fasIn$datapath)
-      } else {
-        path = input$path
-        dir_format = input$dir_format
-        file_ext = input$file_ext
-        id_format = input$id_format
-        
-        ### get species ID and seqID
+      fastaOut <- "HERE"
+      if(input$demo == TRUE){
+        ### get species ID
         specTMP <- unlist(strsplit(seqID,":"))
         specID = specTMP[1]
-        if(id_format == 2){
-          seqID = specTMP[2]
+        
+        faFile <- drop_read_csv(paste0("/phyloprofile/data/fasta/",specID,".fa"),stringsAsFactors = FALSE, sep='\t', comment.char="",header = FALSE)
+        faDf <- data.frame("seqID" = faFile$V1[grepl(">",faFile$V1)], "seq" = faFile$V1[!grepl(">",faFile$V1)], stringsAsFactors=FALSE)
+
+        seq <- as.character(faDf$seq[faDf$seqID == paste0(">",seqID)])
+        fastaOut <- paste(paste0(">",seqID),seq,sep="\n")
+      } else {
+        if(input$input_type == 'oneSeq.extended.fa'){
+          #        f <- toString(input$oneseq.file)
+          fasIn <- input$oneSeqFasta
+          f <- toString(fasIn$datapath)
+        } else {
+          path = input$path
+          dir_format = input$dir_format
+          file_ext = input$file_ext
+          id_format = input$id_format
+          
+          ### get species ID and seqID
+          specTMP <- unlist(strsplit(seqID,":"))
+          specID = specTMP[1]
+          if(id_format == 2){
+            seqID = specTMP[2]
+          }
+          
+          ### full path fasta file
+          f <- paste0(path,"/",specID,".",file_ext)
+          if(dir_format == 2){
+            f <- paste0(path,"/",specID,"/",specID,".",file_ext)
+          }
         }
         
-        ### full path fasta file
-        f <- paste0(path,"/",specID,".",file_ext)
-        if(dir_format == 2){
-          f <- paste0(path,"/",specID,"/",specID,".",file_ext)
-        }
+        ### read file and get sequence
+        ### get fasta
+        fastaOut <- paste(getFasta(f,seqID))
       }
       
-      ### read file and get sequence
-      ### get fasta
-      paste(getFasta(f,seqID))
+      return(fastaOut)
     }
   })
   
@@ -2569,14 +2583,8 @@ shinyServer(function(input, output, session) {
         fileDomain <- "noSelectHit"
         updateButton(session, "doDomainPlot", disabled = TRUE)
       } else {
-        # if(group == "OG_1017" | group == "OG_1026" | group == "OG_1030"){
-          updateButton(session, "doDomainPlot", disabled = FALSE)
-          #fileDomain <- paste0("https://raw.githubusercontent.com/trvinh/phyloprofile/master/data/demo/domains/",group,".txt")
-          fileDomain <- suppressWarnings(paste0("phyloprofile/data/domains/",group,".domains"))
-        # } else {
-        #   fileDomain <- "noFileOnline"
-        #   updateButton(session, "doDomainPlot", disabled = TRUE)
-        # }
+        updateButton(session, "doDomainPlot", disabled = FALSE)
+        fileDomain <- suppressWarnings(paste0("phyloprofile/data/domains/",group,".domains"))
       }
     } else {
       if(input$annoChoose == "from file"){
@@ -2636,8 +2644,6 @@ shinyServer(function(input, output, session) {
       HTML(msg)
     } else if(fileDomain == "noSelectHit"){
       em("Please select one ortholog sequence!!")
-    } else if(fileDomain == "noFileOnline"){
-      em("Demo data only available for OG_1017, OG_1026 or OG_1030 !!")
     }
   })
   
@@ -2664,7 +2670,6 @@ shinyServer(function(input, output, session) {
     fileDomain <- getDomainFile()
 
     if(input$demo == TRUE){
-      #domainDf <- as.data.frame(read.csv(fileDomain,stringsAsFactors = FALSE, sep='\t', comment.char=""))
       domainDf <- drop_read_csv(fileDomain,stringsAsFactors = FALSE, sep='\t', comment.char="",header = FALSE)
     } else {
       if(fileDomain != FALSE){
@@ -3204,9 +3209,6 @@ shinyServer(function(input, output, session) {
     else{
       top = as.numeric(-round(input$plot_brush$ymin))
       bottom = as.numeric(-round(input$plot_brush$ymax))
-      # a <- dt$labels$label[bottom]
-      # b <- dt$labels$label[top]
-      # values <- c(top,b,bottom,a)
       
       df <- dt$labels[bottom:top,] 
     }
