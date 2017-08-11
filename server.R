@@ -1,6 +1,28 @@
-if(!("pacman" %in% installed.packages())) install.packages("pacman")
-library(pacman)
-p_load(shiny,shinyBS,ggplot2,reshape2,plyr,dplyr,tidyr,scales,grid,gridExtra,ape,stringr,gtable,dendextend,ggdendro,gplots,data.table,taxize,rdrop2,install=T)
+######## pacman NOT YET WORK WITH shinyapp.io #########
+# if(!("pacman" %in% installed.packages())) install.packages("pacman")
+# library(pacman)
+# p_load(shiny,shinyBS,ggplot2,reshape2,plyr,dplyr,tidyr,scales,grid,gridExtra,ape,stringr,gtable,dendextend,ggdendro,gplots,data.table,taxize,rdrop2,install=T)
+#######################################################
+
+if (!require("shiny")) {install.packages("shiny")}
+if (!require("shinyBS")) {install.packages("shinyBS")}
+if (!require("ggplot2")) {install.packages("ggplot2")}
+if (!require("reshape2")) {install.packages("reshape2")}
+if (!require("plyr")) {install.packages("plyr")}
+if (!require("dplyr")) {install.packages("dplyr")}
+if (!require("tidyr")) {install.packages("tidyr")}
+if (!require("scales")) {install.packages("scales")}
+if (!require("grid")) {install.packages("grid")}
+if (!require("gridExtra")) {install.packages("gridExtra")}
+if (!require("ape")) {install.packages("ape")}
+if (!require("stringr")) {install.packages("stringr")}
+if (!require("gtable")) {install.packages("gtable")}
+if (!require("dendextend")) {install.packages("dendextend")}
+if (!require("ggdendro")) {install.packages("ggdendro")}
+if (!require("gplots")) {install.packages("gplots")}
+if (!require("data.table")) {install.packages("data.table")}
+if (!require("taxize")) {install.packages("taxize")}
+if (!require("rdrop2")) {install.packages("rdrop2")}
 
 if (!require("Biostrings")) {
   source("https://bioconductor.org/biocLite.R")
@@ -137,7 +159,10 @@ domain.plotting <- function(df,geneID,var1,sep,labelSize,titleSize,descSize,minS
 }
 
 ######## plot profile heatmap ########
-heatmap.plotting <- function(dataHeat,xAxis,var1_id,var2_id,lowColor_var1,highColor_var1,lowColor_var2,highColor_var2,xSize,ySize,legendSize,mainLegend,dotZoom,guideline){
+heatmap.plotting <- function(data,xAxis,var1_id,var2_id,lowColor_var1,highColor_var1,lowColor_var2,highColor_var2,xSize,ySize,legendSize,mainLegend,dotZoom,guideline){
+  
+  dataHeat <- data
+  dataHeat$supertaxon <- mapvalues(warn_missing=F,dataHeat$supertaxon,from=as.character(dataHeat$supertaxon),to=substr(as.character(dataHeat$supertaxon),6,nchar(as.character(dataHeat$supertaxon))))
   
   ### format plot
   if(xAxis == "genes"){
@@ -1643,7 +1668,7 @@ shinyServer(function(input, output, session) {
               tags$img(src = "spinner.gif",
                        id = "loading-spinner"),
               #uiOutput("plot.ui")
-              plotOutput("mainPlot",width=input$width,height = input$height,
+              plotOutput("mainPlot",#width=input$width,height = input$height,
                          click = "plot_click",
                          dblclick = "plot_dblclick",
                          hover = hoverOpts(
@@ -1662,7 +1687,7 @@ shinyServer(function(input, output, session) {
             tags$img(src = "spinner.gif",
                      id = "loading-spinner"),
             #uiOutput("plot.ui")
-            plotOutput("mainPlot",width=input$width,height = input$height,
+            plotOutput("mainPlot",#width=input$width,height = input$height,
                        click = "plot_click",
                        dblclick = "plot_dblclick",
                        hover = hoverOpts(
