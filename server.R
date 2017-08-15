@@ -4,6 +4,7 @@
 # p_load(shiny,shinyBS,ggplot2,reshape2,plyr,dplyr,tidyr,scales,grid,gridExtra,ape,stringr,gtable,dendextend,ggdendro,gplots,data.table,taxize,rdrop2,install=T)
 #######################################################
 
+##### check ggplot2 version #####
 version_above <- function(pkg, than) {
   compareVersion(as.character(packageVersion(pkg)), than)
 }
@@ -22,7 +23,6 @@ if ("ggplot2" %in% rownames(installed.packages())) {
 
 if (!require("shiny")) {install.packages("shiny")}
 if (!require("shinyBS")) {install.packages("shinyBS")}
-if (!require("ggplot2")) {install.packages("ggplot2")}
 if (!require("reshape2")) {install.packages("reshape2")}
 if (!require("plyr")) {install.packages("plyr")}
 if (!require("dplyr")) {install.packages("dplyr")}
@@ -1328,7 +1328,7 @@ shinyServer(function(input, output, session) {
 
     # convert into paired columns
     mdData <- melt(data,id="geneID")
-    
+  
     # replace NA value with "NA#NA" (otherwise the corresponding orthoID will be empty)
     mdData$value <- as.character(mdData$value)
     mdData$value[is.na(mdData$value)] <- "NA#NA"
@@ -1351,7 +1351,7 @@ shinyServer(function(input, output, session) {
     taxaMdData <- merge(mdData,taxaList,by='ncbiID')
     taxaMdData$var1 <- suppressWarnings(as.numeric(as.character(taxaMdData$var1)))
     taxaMdData$var2 <- suppressWarnings(as.numeric(as.character(taxaMdData$var2)))
-    
+
     # ### (4) calculate PERCENTAGE of PRESENT SPECIES (4) ###
     finalPresSpecDt <- calcPresSpec(taxaMdData, taxaCount)
     
@@ -1381,14 +1381,12 @@ shinyServer(function(input, output, session) {
     presMdData <- merge(taxaMdData,finalPresSpecDt,by=c('geneID','supertaxon'),all.x = TRUE)
     fullMdData <- merge(presMdData,scoreDf,by=c('geneID','supertaxon'), all.x = TRUE)
     fullMdData <- merge(fullMdData,taxaCount,by=('supertaxon'), all.x = TRUE)
-    
     # rename "freq" into "numberSpec"
     names(fullMdData)[names(fullMdData)=="freq"] <- "numberSpec"
     
     fullMdData$fullName <- as.vector(fullMdData$fullName)
     names(fullMdData)[names(fullMdData)=="orthoID.x"] <- "orthoID"
-    fullMdData ### parsed input data frame !!!
-    
+    fullMdData <- fullMdData[!duplicated(fullMdData), ] ### parsed input data frame !!!
     return(fullMdData)
   })
   
@@ -2464,7 +2462,6 @@ shinyServer(function(input, output, session) {
     else{
       plotTaxon = info[3]
       plotGeneID = info[1]
-      
       fullDf <- dataFiltered()
       selDf <- as.data.frame(fullDf[fullDf$geneID == plotGeneID & fullDf$supertaxon == plotTaxon,])
       selDf
@@ -2517,20 +2514,19 @@ shinyServer(function(input, output, session) {
   pointInfoDetail <- reactive({
     selDf <- detailPlotDt()
     allOrthoID <- sort(selDf$orthoID)
-    
+   
     ### get coordinates of plot_click_detail
     if (is.null(input$plot_click_detail$x)) return()
     else{
       corX = round(input$plot_click_detail$y)
       corY = round(input$plot_click_detail$x)
     }
-    
+
     ### get pair of sequence IDs & var1
     seedID <- toString(selDf$geneID[1])
     orthoID <- toString(allOrthoID[corX])
-    var1 <- toString(selDf$var1[selDf$orthoID==orthoID])
-    var2 <- toString(selDf$var2[selDf$orthoID==orthoID])
-    
+    var1 <- toString(selDf$var1[selDf$orthoID==orthoID][1])
+    var2 <- toString(selDf$var2[selDf$orthoID==orthoID][1])
     ### return info
     if(orthoID != "NA"){
       info <- c(seedID,orthoID,var1,var2)
