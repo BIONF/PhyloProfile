@@ -4,6 +4,22 @@
 # p_load(shiny,shinyBS,ggplot2,reshape2,plyr,dplyr,tidyr,scales,grid,gridExtra,ape,stringr,gtable,dendextend,ggdendro,gplots,data.table,taxize,rdrop2,install=T)
 #######################################################
 
+version_above <- function(pkg, than) {
+  compareVersion(as.character(packageVersion(pkg)), than)
+}
+
+if ("ggplot2" %in% rownames(installed.packages())) {
+  if (version_above("ggplot2","2.2.0") == -1) {
+    source("https://bioconductor.org/biocLite.R")
+    biocLite("ggplot2")
+    require("ggplot2")
+  }
+} else {
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("ggplot2")
+  require("ggplot2")
+}
+
 if (!require("shiny")) {install.packages("shiny")}
 if (!require("shinyBS")) {install.packages("shinyBS")}
 if (!require("ggplot2")) {install.packages("ggplot2")}
