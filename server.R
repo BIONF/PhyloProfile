@@ -161,6 +161,7 @@ domain.plotting <- function(df,geneID,var1,sep,labelSize,titleSize,descSize,minS
 ######## plot profile heatmap ########
 heatmap.plotting <- function(data,xAxis,var1_id,var2_id,lowColor_var1,highColor_var1,lowColor_var2,highColor_var2,xSize,ySize,legendSize,mainLegend,dotZoom,guideline){
   
+  ### remove prefix number of taxa names but keep the order
   dataHeat <- data
   dataHeat$supertaxon <- mapvalues(warn_missing=F,dataHeat$supertaxon,from=as.character(dataHeat$supertaxon),to=substr(as.character(dataHeat$supertaxon),6,nchar(as.character(dataHeat$supertaxon))))
   
@@ -1081,9 +1082,9 @@ shinyServer(function(input, output, session) {
     allTaxa <- allTaxaList()
     rankNameTMP <- allTaxa$rank[allTaxa$fullName == input$inSelect]
     if(rankName == "strain"){
-      superID <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inSelect & taxaList$rank == "norank"])
+      superID <- as.numeric(taxaList$ncbiID[taxaList$fullName == input$inSelect & taxaList$rank == "norank"])
     } else {
-      superID <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inSelect & taxaList$rank == rankNameTMP[1]])
+      superID <- as.numeric(taxaList$ncbiID[taxaList$fullName == input$inSelect & taxaList$rank == rankNameTMP[1]])
     }
     
     ### sort taxa list
@@ -1139,7 +1140,7 @@ shinyServer(function(input, output, session) {
     sortedOut <- sortedOut[,c("No.","abbrName","taxonID","fullName.x","species","ncbiID","sortedSupertaxon","rank","category")]
     colnames(sortedOut) <- c("No.","abbrName","taxonID","fullName","ncbiID","supertaxonID","supertaxon","rank","category")
     
-    sortedOut$taxonID <- as.integer(sortedOut$taxonID)
+    sortedOut$taxonID <- as.numeric(sortedOut$taxonID)
     sortedOut$ncbiID <- as.factor(sortedOut$ncbiID)
     sortedOut$supertaxon <- as.factor(sortedOut$supertaxon)
     sortedOut$category <- as.factor(sortedOut$category)
@@ -1668,7 +1669,7 @@ shinyServer(function(input, output, session) {
               tags$img(src = "spinner.gif",
                        id = "loading-spinner"),
               #uiOutput("plot.ui")
-              plotOutput("mainPlot",#width=input$width,height = input$height,
+              plotOutput("mainPlot",width=input$width,height = input$height,
                          click = "plot_click",
                          dblclick = "plot_dblclick",
                          hover = hoverOpts(
@@ -1687,7 +1688,7 @@ shinyServer(function(input, output, session) {
             tags$img(src = "spinner.gif",
                      id = "loading-spinner"),
             #uiOutput("plot.ui")
-            plotOutput("mainPlot",#width=input$width,height = input$height,
+            plotOutput("mainPlot",width=input$width,height = input$height,
                        click = "plot_click",
                        dblclick = "plot_dblclick",
                        hover = hoverOpts(
@@ -2805,7 +2806,7 @@ shinyServer(function(input, output, session) {
     rankName = substr(rankSelect,4,nchar(rankSelect))
     
     taxaList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T))
-    superID <- as.integer(taxaList$ncbiID[taxaList$fullName == input$inSelect & taxaList$rank == rankName])
+    superID <- as.numeric(taxaList$ncbiID[taxaList$fullName == input$inSelect & taxaList$rank == rankName])
     
     ### full non-duplicated taxonomy data
     Dt <- nonDupTaxonDf()
@@ -3309,7 +3310,7 @@ shinyServer(function(input, output, session) {
     dataOut$supertaxon <- substr(dataOut$supertaxon,6,nchar(as.character(dataOut$supertaxon)))
     dataOut$var1 <- as.character(dataOut$var1)
     dataOut$var2 <- as.character(dataOut$var2)
-    dataOut$numberSpec <- as.integer(dataOut$numberSpec)
+    dataOut$numberSpec <- as.numeric(dataOut$numberSpec)
     dataOut$presSpec <- as.numeric(dataOut$presSpec)
     
     names(dataOut)[names(dataOut)=="presSpec"] <- "%Spec"

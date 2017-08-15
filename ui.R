@@ -286,28 +286,38 @@ shinyUI(fluidPage(
       "Customized profile",
       sidebarLayout(
         sidebarPanel(
+          width=4,
           column(12,
                  style='padding:0px;',
                  strong("Select sequence(s) of interest:")
           ),
-          column(6,
-                 style='padding:0px;',
-                 uiOutput("geneIn")
-          ),
-          column(4,
-                 fileInput("customFile","",width='100%')
+          
+          column(12,
+                 fluidRow(
+                   column(8,
+                          style='padding:0px;',
+                          uiOutput("geneIn")
+                   ),
+                   column(4,
+                          fileInput("customFile","",width='100%')
+                   )
+                 )
           ),
           column(12,
                  style='padding:0px;',
                  strong("Select (super)taxon/(super)taxa of interest:")
           ),
-          column(6,
-                 style='padding:0px;',
-                 uiOutput("taxaIn")
-          ),
-          column(4,
-                 h3(""),
-                 bsButton("cusTaxa","Browse...")
+          column(12,
+                 fluidRow(
+                   column(8,
+                          style='padding:0px;',
+                          uiOutput("taxaIn")
+                   ),
+                   column(4,
+                          h3(""),
+                          bsButton("cusTaxa","Browse...")
+                   )
+                 )
           ),
           
           h5(""),
@@ -336,7 +346,7 @@ shinyUI(fluidPage(
             ),
             column(3,
                    selectInput("clusterMethod", label = h5("Cluster method:"),
-                               choices = list("ward.D" = "wardd", "ward.D2" = "wardd2", "single" = "single", "complete" = "complete",
+                               choices = list("single" = "single", "complete" = "complete",
                                               "average (UPGMA)" = "average", "mcquitty (WPGMA)" = "mcquitty", "median (WPGMC)" = "median","centroid (UPGMC)"="centroid"),
                                selected = "complete")
             ),
