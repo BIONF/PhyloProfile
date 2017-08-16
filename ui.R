@@ -62,9 +62,9 @@ shinyUI(fluidPage(
                numericInput("height","Height (px)",min=600,max=1600,step=50,value=600,width=100)
         ),
         column(2,
-               uiOutput("var1_cutoff")
+               uiOutput("var1_cutoff.ui")
         ),column(2,
-               uiOutput("var2_cutoff")
+               uiOutput("var2_cutoff.ui")
         ),
         column(2,
                sliderInput("percent",
@@ -369,7 +369,6 @@ shinyUI(fluidPage(
         ),
         
         column(8,
-               #tableOutput("dist.table"),
                uiOutput("cluster.ui")
         ),
         column(4,

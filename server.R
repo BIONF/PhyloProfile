@@ -43,6 +43,7 @@ if (!require("rdrop2")) {install.packages("rdrop2")}
 if (!require("Biostrings")) {
   source("https://bioconductor.org/biocLite.R")
   biocLite("Biostrings")
+  require("Biostrings")
 }
 
 token <- readRDS("droptoken.rds")
@@ -64,30 +65,36 @@ xmlParser <- function(inputFile){
   dfIN
 }
 
-########## convert long to wide format ##############
-long2wide <- function(longDf){
-#  longDf <- as.data.frame(read.table(file=inputFile$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
-  
-  if(ncol(longDf) < 5){
-    for(i in 1:(5-ncol(longDf))){
-      longDf[paste0("var_",i)] <- 1
-    }
-  }
+# ########## convert long to wide format ##############
+# long2wide <- function(longDf){
+#   # rename column names
+#   colnames(longDf) <- c("geneID","ncbiID","orthoID","var1","var2")
+#   longDf$value <- paste0(longDf$orthoID,"#",longDf$var1,"#",longDf$var2)
+#   longDfmod <- longDf[,c("geneID","ncbiID","value")]
+#   
+#   # count paralogs
+#   longDfmod <- data.table(longDfmod)
+#   longDfmod[ ,paralog := 1:.N, by=c("geneID","ncbiID")]
+#   longDfmod <- data.frame(longDfmod)
+#   
+#   # return wide data frame
+#   wideDf <- spread(longDfmod, ncbiID, value)
+#   wideDf <- subset(wideDf,paralog == 1)   # remove co-orthologs
+#   wideDf <- subset(wideDf, select=-paralog)
+# }
 
-  # rename column names
-  colnames(longDf) <- c("geneID","ncbiID","orthoID","var1","var2")
-  longDf$value <- paste0(longDf$orthoID,"#",longDf$var1,"#",longDf$var2)
-  longDfmod <- longDf[,c("geneID","ncbiID","value")]
+############### FUNCTION FOR CLUSTERING PROFILES  ###############
+clusteredGeneList <- function(data){
+  # do clustering
+  row.order <- hclust(dist(data, method = input$distMethod), method = input$clusterMethod)$order
+  col.order <- hclust(dist(t(data), method = input$distMethod), method = input$clusterMethod)$order
   
-  # count paralogs
-  longDfmod <- data.table(longDfmod)
-  longDfmod[ ,paralog := 1:.N, by=c("geneID","ncbiID")]
-  longDfmod <- data.frame(longDfmod)
+  # re-order data accoring to clustering
+  dat_new <- data[row.order, col.order] 
   
-  # return wide data frame
-  wideDf <- spread(longDfmod, ncbiID, value)
-  wideDf <- subset(wideDf,paralog == 1)   # remove co-orthologs
-  wideDf <- subset(wideDf, select=-paralog)
+  # return clustered gene ID list
+  clusteredGeneIDs <- as.factor(row.names(dat_new))
+  clusteredGeneIDs
 }
 
 ########## calculate percentage of present species ##########
@@ -427,59 +434,26 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  ######## get var1_id and var2_id values
-  output$variableID <- reactive({
-    ids <- as.list(c(input$var1_id,input$var2_id))
-  })
-  
   ######## variable 1 & 2 cutoff slidebar (main plot)
-  output$var1_cutoff <- renderUI({
-    if(v$doPlot == FALSE){
-      sliderInput("var1","Variable 1 cutoff:", min = 0, max = 1, step = 0.025, value = c(0.0,1.0), width = 200)
-    } else {
-      if(nchar(input$var1_id) == 0){
-        em(strong("1. variable not available"))
-      } else {
-        sliderInput("var1",paste(input$var1_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(0.0,1.0), width = 200)
-      }
-    }
+  output$var1_dist.ui <- renderUI({
+    sliderInput("var1_dist",paste(input$var1_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(input$var1[1],input$var1[2]), width = 200)
   })
   
-  output$var2_cutoff <- renderUI({
-    if(v$doPlot == FALSE){
-      sliderInput("var2","Variable 1 cutoff:", min = 0, max = 1, step = 0.025, value = c(0.0,1.0), width = 200)
-    } else {
-      if(nchar(input$var2_id) == 0){
-        em(strong("2. variable not available"))
-      } else {
-        sliderInput("var2",paste(input$var2_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(0.0,1.0), width = 200)
-      }
-    }
+  output$var1_cutoff.ui <- renderUI({
+    sliderInput("var1",paste(input$var1_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(0.0,1.0), width = 200)
+  })
+  
+  output$var2_cutoff.ui <- renderUI({
+    sliderInput("var2",paste(input$var2_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(0.0,1.0), width = 200)
   })
   
   ######## render filter slidebars for Customized plot
   output$var1Filter.ui <- renderUI({
-    if(v$doPlot == FALSE){
-      sliderInput("var1","Variable 1 cutoff:", min = 0, max = 1, step = 0.025, value = c(0.0,1.0), width = 200)
-    } else {
-      if(nchar(input$var1_id) == 0){
-        em(strong("1. variable not available"))
-      } else {
-        sliderInput("var1cus",paste(input$var1_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(input$var1[1],input$var1[2]), width = 200)
-      }
-    }
+    sliderInput("var1cus",paste(input$var1_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(input$var1[1],input$var1[2]), width = 200)
   })
   
   output$var2Filter.ui <- renderUI({
-    if(v$doPlot == FALSE){
-      sliderInput("var2","Variable 1 cutoff:", min = 0, max = 1, step = 0.025, value = c(0.0,1.0), width = 200)
-    } else {
-      if(nchar(input$var2_id) == 0){
-        em(strong("2. variable not available"))
-      } else {
-        sliderInput("var2cus",paste(input$var2_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(input$var2[1],input$var2[2]), width = 200)
-      }
-    }
+    sliderInput("var2cus",paste(input$var2_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(input$var2[1],input$var2[2]), width = 200)
   })
   
   output$percentFilter.ui <- renderUI({
@@ -701,18 +675,18 @@ shinyServer(function(input, output, session) {
       
       if(checkXmlFormat() == TRUE){
         longDf <- xmlParser(filein$datapath)
-        inputMod <- long2wide(longDf)
-        inputTaxa <- colnames(inputMod)
+        inputTaxa <- levels(longDf$ncbiID)
       } else if(checkLongFormat() == TRUE){
-        inputMod <- long2wide(inputDf)
-        inputTaxa <- colnames(inputMod)
+        inputTaxa <- levels(inputDf$ncbiID)
       } else {
         inputTaxa <- readLines(filein$datapath, n = 1)
       }
     }
     
     inputTaxa <- unlist(strsplit(inputTaxa,split = '\t'))
-    inputTaxa <- inputTaxa[-1]   # remove "geneID" element from vector inputTaxa
+    if(inputTaxa[1] == "geneID"){
+      inputTaxa <- inputTaxa[-1]   # remove "geneID" element from vector inputTaxa
+    }
     
     # list of unknown taxa
     unkTaxa <- inputTaxa[!(inputTaxa %in% allTaxa)]
@@ -750,11 +724,9 @@ shinyServer(function(input, output, session) {
         # get list of input taxa (from main input file)
         if(checkXmlFormat() == TRUE){
           longDf <- xmlParser(filein$datapath)
-          inputMod <- long2wide(longDf)
-          inputTaxa <- colnames(inputMod)
+          inputTaxa <- levels(longDf$ncbiID)
         } else if(checkLongFormat() == TRUE){
-          inputMod <- long2wide(inputDf)
-          inputTaxa <- colnames(inputMod)
+          inputTaxa <- levels(inputDf$ncbiID)
         } else {
           inputTaxa <- readLines(filein$datapath, n = 1)
         }
@@ -763,7 +735,9 @@ shinyServer(function(input, output, session) {
       }
     
       inputTaxa <- unlist(strsplit(inputTaxa,split = '\t'))
-      inputTaxa <- inputTaxa[-1]   # remove "geneID" element from vector inputTaxa
+      if(inputTaxa[1] == "geneID"){
+        inputTaxa <- inputTaxa[-1]   # remove "geneID" element from vector inputTaxa
+      }
       
       # return subset of taxonID.list.fullRankID
       inputTaxa
@@ -817,11 +791,9 @@ shinyServer(function(input, output, session) {
         if(v1$parseNew == T){
           if(checkXmlFormat() == TRUE){
             longDf <- xmlParser(filein$datapath)
-            inputMod <- long2wide(longDf)
-            titleline <- toString(paste(colnames(inputMod),collapse = "\t"))
+            titleline <- toString(paste(levels(longDf$ncbiID),collapse = "\t"))
           } else if(checkLongFormat() == TRUE){
-            inputMod <- long2wide(inputDf)
-            titleline <- toString(paste(colnames(inputMod),collapse = "\t"))
+            titleline <- toString(paste(levels(inputDf$ncbiID),collapse = "\t"))
           } else {
             titleline <- readLines(filein$datapath, n=1)
           }
@@ -1165,59 +1137,6 @@ shinyServer(function(input, output, session) {
     sortedOut
   })
   
-  ############### FUNCTIONS FOR CLUSTERING PROFILES  ###############
-  matrixForDitsCalc <- function(data){
-    #### NOTE: input data for this function has to be in wide format
-    mdData <- melt(data,id="geneID")
-    
-    # replace NA value with "NA#NA" (otherwise the corresponding orthoID will be empty)
-    mdData$value <- as.character(mdData$value)
-    mdData$value[is.na(mdData$value)] <- "NA#NA"
-    
-    # split value column into orthoID, var1 & var2
-    splitDt <- (str_split_fixed(mdData$value, '#', 3))
-    # then join them back to mdData
-    mdData <- cbind(mdData,splitDt)
-    # rename columns
-    colnames(mdData) <- c("geneID","ncbiID","value","orthoID","var1","var2")
-    clusterMdData <- mdData[,c("geneID","ncbiID","orthoID")]
-    
-    # replace 1 & 0 for presence / absence genes
-    clusterMdData$group[clusterMdData$orthoID != "NA"] <-1
-    clusterMdData$group[clusterMdData$orthoID == "NA"] <-0
-    clusterMdData <- clusterMdData[,c("geneID","ncbiID","group")]
-    
-    # convert to wide format
-    wideMdData <- spread(clusterMdData, ncbiID, group)
-    
-    dat <- wideMdData[,2:ncol(wideMdData)]  # numerical columns
-    rownames(dat) <- wideMdData[,1]
-    
-    # return
-    dat
-  }
-  
-  clusterData <- function(data){
-    #### NOTE: input data for this function has to be in wide format
-    dat <- matrixForDitsCalc(data)  # convert into 0/1 matrix
-    
-    # do clustering
-    row.order <- hclust(dist(dat, method = input$distMethod), method = input$clusterMethod)$order # clustering
-    #    row.order <- hclust(dist(dat), method = input$clusterMethod)$order # clustering
-    col.order <- hclust(dist(t(dat), method = input$distMethod), method = input$clusterMethod)$order
-    #    col.order <- hclust(dist(t(dat)), method = input$clusterMethod)$order
-    dat_new <- dat[row.order, col.order] # re-order dat accoring to clustering
-    
-    # get clustered gene IDs
-    clusteredGeneIDs <- as.factor(row.names(dat_new))
-    
-    # sort original data according to clusteredGeneIDs
-    data$geneID <- factor(data$geneID, levels = clusteredGeneIDs)
-    
-    # return clustered data
-    data
-  }
-  
   ############### PARSING DATA FROM INPUT MATRIX:
   ############### get (super)taxa names (3)
   ############### calculate percentage of presence (4), max/min/mean/median VAR1 (5) and VAR2 (6) if group input taxa list into higher taxonomy rank
@@ -1247,15 +1166,17 @@ shinyServer(function(input, output, session) {
     }
     
     if(input$demo == TRUE){
-      inputDf <- as.data.frame(read.csv("https://raw.githubusercontent.com/trvinh/phyloprofile/master/data/demo/test.main",stringsAsFactors = FALSE, sep='\t', comment.char=""))
-      if(input$applyCluster == TRUE){
-        oridata <- inputDf
-        clusteredOridata <- clusterData(oridata)
-        subsetID <- levels(clusteredOridata$geneID)[1:nrHit]
-        data <- clusteredOridata[clusteredOridata$geneID %in% subsetID,]
-      } else {
-        data <- inputDf
+      inputDf <- as.data.frame(read.csv("https://raw.githubusercontent.com/trvinh/phyloprofile/master/data/demo/test.main.long",stringsAsFactors = FALSE, sep='\t', comment.char=""))
+
+      subsetID <- levels(as.factor(inputDf$geneID))[1:nrHit]
+      data <- inputDf[inputDf$geneID %in% subsetID,]
+
+      if(ncol(data) < 5){
+        for(i in 1:(5-ncol(data))){
+          data[paste0("newVar",i)] <- 1
+        }
       }
+      colnames(data) <- c("geneID","ncbiID","orthoID","var1","var2")
     } else {
       filein <- input$mainInput
       if(is.null(filein)){return()}
@@ -1265,29 +1186,37 @@ shinyServer(function(input, output, session) {
       # convert input to wide format (if needed) & get nrHit rows
       if(checkXmlFormat() == TRUE){
         longDf <- xmlParser(filein$datapath)
-        inputMod <- long2wide(longDf)
-        if(input$applyCluster == TRUE){
-          inputMod <- clusterData(inputMod)
+        subsetID <- levels(longDf$geneID)[1:nrHit]
+        data <- longDf[longDf$geneID %in% subsetID,]
+        
+        if(ncol(data) < 5){
+          for(i in 1:(5-ncol(data))){
+            data[paste0("newVar",i)] <- 1
+          }
         }
-        subsetID <- levels(inputMod$geneID)[1:nrHit]
-        data <- inputMod[inputMod$geneID %in% subsetID,]
+        colnames(data) <- c("geneID","ncbiID","orthoID","var1","var2")
+
       } else if(checkLongFormat() == TRUE){
-        inputMod <- long2wide(inputDf)
-        if(input$applyCluster == TRUE){
-          inputMod <- clusterData(inputMod)
+        subsetID <- levels(inputDf$geneID)[1:nrHit]
+        data <- inputDf[inputDf$geneID %in% subsetID,]
+        
+        if(ncol(data) < 5){
+          for(i in 1:(5-ncol(data))){
+            data[paste0("newVar",i)] <- 1
+          }
         }
-        subsetID <- levels(inputMod$geneID)[1:nrHit]
-        data <- inputMod[inputMod$geneID %in% subsetID,]
+        colnames(data) <- c("geneID","ncbiID","orthoID","var1","var2")
       } else {
-        if(input$applyCluster == TRUE){
-          oridata <- inputDf
-          clusteredOridata <- clusterData(oridata)
-          
-          subsetID <- levels(clusteredOridata$geneID)[1:nrHit]
-          data <- clusteredOridata[clusteredOridata$geneID %in% subsetID,]
-        } else {
-          data <- inputDf
+        mdData <- melt(inputDf,id="geneID")
+        splitCol <- data.frame(do.call('rbind', strsplit(as.character(mdData$value), '#', fixed=TRUE)))
+        data <- cbind(mdData[,c('geneID','variable')],splitCol)
+
+        if(ncol(data) < 5){
+          for(i in 1:(5-ncol(data))){
+            data[paste0("newVar",i)] <- 1
+          }
         }
+        colnames(data) <- c("geneID","ncbiID","orthoID","var1","var2")
       }
     }
     
@@ -1298,24 +1227,28 @@ shinyServer(function(input, output, session) {
         list <- as.data.frame(read.table(file=listIn$datapath, header=FALSE))
         
         if(checkXmlFormat() == TRUE){
-          longDf <- xmlParser(filein$datapath)
-          dataOrig <- long2wide(longDf)
+          dataOrig <- xmlParser(filein$datapath)
         } else if(checkLongFormat() == TRUE){
-          dataOrig <- long2wide(inputDf)
-        } else {
-          #dataOrig <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
           dataOrig <- inputDf
+        } else {
+          mdData <- melt(inputDf,id="geneID")
+          splitCol <- data.frame(do.call('rbind', strsplit(as.character(mdData$value), '#', fixed=TRUE)))
+          dataOrig <- cbind(mdData[,c('geneID','variable')],splitCol)
         }
         data <- dataOrig[dataOrig$geneID %in% list$V1,]
         
-        if(input$applyCluster == TRUE){
-          data <- clusterData(data)
+        if(ncol(data) < 5){
+          for(i in 1:(5-ncol(data))){
+            data[paste0("newVar",i)] <- 1
+          }
         }
+        colnames(data) <- c("geneID","ncbiID","orthoID","var1","var2")
       }
     }
     
+    data$geneID <- as.factor(data$geneID)
     if(input$ordering == FALSE){
-      data$geneID <- factor(data$geneID, levels = data$geneID)  ######### keep user defined geneID order
+      data$geneID <- factor(data$geneID, levels = unique(data$geneID))  ######### keep user defined geneID order
     }
     
     ### return preData
@@ -1324,22 +1257,7 @@ shinyServer(function(input, output, session) {
   
   ### get all information for input data
   dataFiltered <- reactive({
-    data <- preData()
-
-    # convert into paired columns
-    mdData <- melt(data,id="geneID")
-  
-    # replace NA value with "NA#NA" (otherwise the corresponding orthoID will be empty)
-    mdData$value <- as.character(mdData$value)
-    mdData$value[is.na(mdData$value)] <- "NA#NA"
-    
-    # split value column into orthoID, var1 & var2
-    splitDt <- (str_split_fixed(mdData$value, '#', 3))
-    # then join them back to mdData
-    mdData <- cbind(mdData,splitDt)
-    # rename columns
-    colnames(mdData) <- c("geneID","ncbiID","value","orthoID","var1","var2")
-    mdData <- mdData[,c("geneID","ncbiID","var1","orthoID","var2")]
+    mdData <- preData()
     
     ### (3) GET SORTED TAXONOMY LIST (3) ###
     taxaList <- sortedTaxaList()
@@ -1526,7 +1444,7 @@ shinyServer(function(input, output, session) {
     # get selected supertaxon name
     split <- strsplit(as.character(input$inSelect),"_")
     inSelect <- as.character(split[[1]][1])
-    
+   
     ### get sub set of data
     setID <- plyr::count(data,"geneID")
 
@@ -1555,7 +1473,22 @@ shinyServer(function(input, output, session) {
     
     dataHeat <- droplevels(dataHeat)  ### delete unused levels
     dataHeat$geneID <- as.factor(dataHeat$geneID)
-    dataHeat
+    
+    ### cluster dataHeat (if selected)
+    if(input$applyCluster == TRUE){
+      # dataframe for calculate distance matrix
+      subDataHeat <- dataHeat[,c('geneID','supertaxon','presSpec')]
+      wideData <- spread(subDataHeat, supertaxon, presSpec)
+      dat <- wideData[,2:ncol(wideData)]  # numerical columns
+      rownames(dat) <- wideData[,1]
+      
+      # get clustered gene ids
+      clusteredGeneIDs <- clusteredGeneList(dat)
+      # sort original data according to clusteredGeneIDs
+      dataHeat$geneID <- factor(data$geneID, levels = clusteredGeneIDs)
+    }
+    
+    return(dataHeat)
   })
   
   ########### render dot size to dotSizeInfo
@@ -3194,27 +3127,32 @@ shinyServer(function(input, output, session) {
   ### cluster data
   clusterDataDend <- reactive({
     if(v$doPlot == FALSE){return()}
-    data <- preData()
-    dat <- matrixForDitsCalc(data)
+    # dataframe for calculate distance matrix
+    dataHeat <- dataHeat()
+    subDataHeat <- dataHeat[,c('geneID','supertaxon','presSpec')]
+    wideData <- spread(subDataHeat, supertaxon, presSpec)
+    dat <- wideData[,2:ncol(wideData)]  # numerical columns
+    rownames(dat) <- wideData[,1]
+
     dd.col <- as.dendrogram(hclust(dist(dat, method = input$distMethod), method = input$clusterMethod))
   })
-  
+
   ### plot clustered profiles
   dendrogram <- function(){
     if(v$doPlot == FALSE){return()}
-    
+
     dd.col <- clusterDataDend()
-    
+
     py <- as.ggdend(dd.col)
     p <- ggplot(py, horiz = TRUE, theme=theme_minimal()) +
       theme(axis.title = element_blank(), axis.text.y = element_blank())
     p
   }
-  
+
   output$dendrogram <- renderPlot({
     dendrogram()
   })
-  
+
   output$cluster.ui <- renderUI({
     plotOutput("dendrogram",width=input$clusterPlot.width, height=input$clusterPlot.height,
                brush = brushOpts(
@@ -3225,7 +3163,7 @@ shinyServer(function(input, output, session) {
                  resetOnNew = input$brush_reset)
     )
   })
-  
+
   ### download clustered plot
   output$downloadCluster <- downloadHandler(
     filename = function() {"clustered_plot.pdf"},
@@ -3233,38 +3171,38 @@ shinyServer(function(input, output, session) {
       ggsave(file, plot = dendrogram(), dpi=300, device = "pdf", limitsize=FALSE)
     }
   )
-  
+
   #### render brushedCluster.table based on clicked point on dendrogram plot
   brushedClusterGene <- reactive({
     if(v$doPlot == FALSE){return()}
-    
+
     dd.col <- clusterDataDend()
     dt <- dendro_data(dd.col)
     dt$labels$label <- levels(dt$labels$label)
-    
+
     # get list of selected gene(s)
     if (is.null(input$plot_brush)) {return()}
     else{
       top = as.numeric(-round(input$plot_brush$ymin))
       bottom = as.numeric(-round(input$plot_brush$ymax))
-      
-      df <- dt$labels[bottom:top,] 
+
+      df <- dt$labels[bottom:top,]
     }
-    
+
     # return list of genes
     df <- df[complete.cases(df),3]
   })
-  
+
   output$brushedCluster.table <- renderTable({
     if (is.null(input$plot_brush$ymin)) {return()}
-    
+
     data <- as.data.frame(brushedClusterGene())
     data$number <- rownames(data)
     colnames(data) <- c("geneID","No.")
     data <- data[,c("No.","geneID")]
     data
   })
-  
+
   ### download gene list from brushedCluster.table
   output$downloadClusterGenes <- downloadHandler(
     filename = function(){c("selectedClusteredGeneList.out")},
@@ -3273,7 +3211,7 @@ shinyServer(function(input, output, session) {
       write.table(dataOut,file,sep="\t",row.names = FALSE,quote = FALSE)
     }
   )
-  
+
   ### check if addCustomProfile (gene age plot) are being clicked
   observe({
     if(input$addCustomProfile == TRUE | input$addConsGeneCustomProfile == TRUE){
@@ -3282,7 +3220,7 @@ shinyServer(function(input, output, session) {
       shinyjs::enable('addClusterCustomProfile')
     }
   })
-  
+
   output$addClusterCustomProfileCheck.ui <- renderUI({
     if(input$addCustomProfile == TRUE | input$addConsGeneCustomProfile == TRUE){
       HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Gene age estimation</strong> or <strong>Core genes finding</strong>&nbsp;to enable this function)</em></p>')

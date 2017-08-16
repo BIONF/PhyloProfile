@@ -85,7 +85,12 @@ print "Parsing taxonNamesFull.txt done!!\n";
 #=cut
 
 my @allTaxa = split(/\t/,$idList);
-shift(@allTaxa);	# remove "geneID" tag
+if($allTaxa[1] eq "geneID"){
+	shift(@allTaxa);	# remove "geneID" tag
+	if($allTaxa[1] eq "abbrName"){
+		shift(@allTaxa);	# remove "abbrName" tag
+	}
+}
 
 ### get all ranking IDs for each taxon
 my %info;	# $info{$ncbi} = rankID#rankName...
