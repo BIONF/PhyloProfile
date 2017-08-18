@@ -505,13 +505,35 @@ shinyUI(fluidPage(
       ########## DATA TAB ###########
       navbarMenu("Download filtered data",
                  tabPanel("Main data",
-                          dataTableOutput("filteredMainData"),
-                          downloadButton('downloadData', 'Download filtered data')
+                          column(4,
+                                 checkboxInput("getRepresentativeMain",strong(em("Download representative sequences")), value = FALSE, width = NULL)
+                          ),
+                          column(3,
+                                 conditionalPanel(
+                                   condition = "input.getRepresentativeMain == true",
+                                   uiOutput("refVarMain.ui")
+                                 )
+                          ),
+                          column(3,
+                                 conditionalPanel(
+                                   condition = "input.getRepresentativeMain == true",
+                                   radioButtons(inputId="refTypeMain", label="Select representative by", choices=list("max","min"), selected="max", inline=T)
+                                 )
+                          ),
+                          column(12,
+                                 dataTableOutput("filteredMainData"),
+                                 downloadButton('downloadData', 'Download filtered data')
+                          )
                  ),
                  tabPanel("Customized data",
+                          conditionalPanel(
+                            condition = "input.getRepresentativeMain == true",
+                            uiOutput("representativeInfo.ui")
+                          ),
+                          hr(),
                           dataTableOutput("filteredCustomData"),
                           downloadButton('downloadCustomData', 'Download customized data')
-                 )
+                  )
       ),
       
       ########## OTHERS TAB ###########
