@@ -20,6 +20,7 @@ if ("ggplot2" %in% rownames(installed.packages())) {
   biocLite("ggplot2")
   require("ggplot2")
 }
+require("ggplot2")
 
 if (!require("shiny")) {install.packages("shiny")}
 if (!require("shinyBS")) {install.packages("shinyBS")}
@@ -84,11 +85,12 @@ xmlParser <- function(inputFile){
 # }
 
 ############### FUNCTION FOR CLUSTERING PROFILES  ###############
-clusteredGeneList <- function(data){
-  # do clustering
-  row.order <- hclust(dist(data, method = input$distMethod), method = input$clusterMethod)$order
-  col.order <- hclust(dist(t(data), method = input$distMethod), method = input$clusterMethod)$order
+clusteredGeneList <- function(data,distMethod,clusterMethod){
   
+  # do clustering
+  row.order <- hclust(dist(data, method = distMethod), method = clusterMethod)$order
+  col.order <- hclust(dist(t(data), method = distMethod), method = clusterMethod)$order
+
   # re-order data accoring to clustering
   dat_new <- data[row.order, col.order] 
   
@@ -99,29 +101,36 @@ clusteredGeneList <- function(data){
 
 ########## calculate percentage of present species ##########
 calcPresSpec <- function(taxaMdData, taxaCount){
-  ### taxaMdData = df("geneID","ncbiID","orthoID","var1","var2",....,"supertaxon")
+  ### taxaMdData = df("geneID","ncbiID","orthoID","var1","var2","paralog",....,"supertaxon")
+  taxaMdData <- taxaMdData[taxaMdData$orthoID != "NA",]
+  
   # get geneID and supertaxon
-  geneIDsupertaxon <- subset(taxaMdData,select=c('geneID','supertaxon'))
-  geneIDsupertaxon <- geneIDsupertaxon[!duplicated(geneIDsupertaxon), ] # remove duplicated rows
+  geneIDsupertaxon <- subset(taxaMdData,select=c('geneID','supertaxon','paralog'))
+  geneIDsupertaxon <- geneIDsupertaxon[!duplicated(geneIDsupertaxon),] # remove duplicated rows
   
   # remove NA rows from taxaMdData
   taxaMdDataNoNA <- taxaMdData[taxaMdData$orthoID != "NA",]
-  
+
   # count present frequency of supertaxon for each gene
   geneSupertaxonCount <- plyr::count(taxaMdDataNoNA,c('geneID','supertaxon'))
-  
+
   # merge with taxaCount to get total number of species of each supertaxon and calculate presSpec
   presSpecDt <- merge(geneSupertaxonCount,taxaCount,by='supertaxon')
-  presSpecDt$presSpec <- presSpecDt$freq.x/presSpecDt$freq.y
+  presSpecDt <- merge(presSpecDt,geneIDsupertaxon,by=c('geneID','supertaxon'))
+  presSpecDt$presSpec <- ((presSpecDt$freq.x-presSpecDt$paralog)+1)/presSpecDt$freq.y
+  
+  presSpecDt <- presSpecDt[presSpecDt$presSpec <= 1,]
   presSpecDt <- presSpecDt[order(presSpecDt$geneID),]
   presSpecDt <- presSpecDt[,c("geneID","supertaxon","presSpec")]
   
   # add absent supertaxon into presSpecDt
+  geneIDsupertaxon <- subset(geneIDsupertaxon, select = -c(paralog))
   finalPresSpecDt <- merge(presSpecDt,geneIDsupertaxon,by=c('geneID','supertaxon'),all.y = TRUE)
   finalPresSpecDt$presSpec[is.na(finalPresSpecDt$presSpec)] <- 0
   
   # return finalPresSpecDt
-  finalPresSpecDt
+  finalPresSpecDt <- finalPresSpecDt[!duplicated(finalPresSpecDt),] # remove duplicated rows
+  return(finalPresSpecDt)
 }
 
 ######## sort one domain dataframe (ortho) based on the other domain Df (seed) ########
@@ -182,10 +191,17 @@ domain.plotting <- function(df,geneID,var1,sep,labelSize,titleSize,descSize,minS
 }
 
 ######## plot profile heatmap ########
-heatmap.plotting <- function(data,xAxis,var1_id,var2_id,lowColor_var1,highColor_var1,lowColor_var2,highColor_var2,xSize,ySize,legendSize,mainLegend,dotZoom,guideline){
-  
-  ### remove prefix number of taxa names but keep the order
+heatmap.plotting <- function(data,xAxis,var1_id,var2_id,lowColor_var1,highColor_var1,lowColor_var2,highColor_var2,paraColor,xSize,ySize,legendSize,mainLegend,dotZoom,guideline){
   dataHeat <- data
+  
+  ### rescale numbers of paralogs
+  dataHeat$paralog <- as.numeric(dataHeat$paralog)
+  if(length(unique(na.omit(dataHeat$paralog))) > 0){
+    maxParalog <- max(na.omit(dataHeat$paralog))
+    dataHeat$paralogSize <- (dataHeat$paralog/maxParalog)*3
+  }
+  
+  ### remove prefix number of taxa names but keep the order  
   dataHeat$supertaxon <- mapvalues(warn_missing=F,dataHeat$supertaxon,from=as.character(dataHeat$supertaxon),to=substr(as.character(dataHeat$supertaxon),6,nchar(as.character(dataHeat$supertaxon))))
   
   ### format plot
@@ -202,24 +218,31 @@ heatmap.plotting <- function(data,xAxis,var1_id,var2_id,lowColor_var1,highColor_
   
   if(length(unique(na.omit(dataHeat$presSpec))) < 3){
     if(length(unique(na.omit(dataHeat$var1))) == 1){
-      p = p + geom_point(aes(colour = var1),size = dataHeat$presSpec*5*(1+dotZoom),show.legend=F)    ## geom_point for circle illusion (var1 and presence/absence)
+      p = p + geom_point(aes(colour = var1),size = dataHeat$presSpec*5*(1+dotZoom),na.rm = TRUE,show.legend=F)    ## geom_point for circle illusion (var1 and presence/absence)
     } else {
-      p = p + geom_point(aes(colour = var1),size = dataHeat$presSpec*5)    ## geom_point for circle illusion (var1 and presence/absence)
+      p = p + geom_point(aes(colour = var1),size = dataHeat$presSpec*5*(1+dotZoom),na.rm = TRUE)    ## geom_point for circle illusion (var1 and presence/absence)
       p = p + scale_color_gradient(low = lowColor_var1,high = highColor_var1, limits=c(0,1)) ## color of the corresponding aes (var1)
     }
   } else {
     if(length(unique(na.omit(dataHeat$var1))) == 1){
       p = p + geom_point(aes(size = presSpec),color = "#336a98")    ## geom_point for circle illusion (var1 and presence/absence)
     } else {
-      p = p + geom_point(aes(colour = var1, size = presSpec))    ## geom_point for circle illusion (var1 and presence/absence)
+      p = p + geom_point(aes(colour = var1, size = presSpec),na.rm = TRUE)    ## geom_point for circle illusion (var1 and presence/absence)
       p = p + scale_color_gradient(low = lowColor_var1,high = highColor_var1, limits=c(0,1)) ## color of the corresponding aes (var1)
     }
   }
   
-  # remain the scale of point while filtering
-  presentVl <- dataHeat$presSpec[!is.na(dataHeat$presSpec)]
-  p <- p + scale_size_continuous(range = c((floor(min(presentVl)*10)/10*5)*(1+dotZoom),(floor(max(presentVl)*10)/10*5)*(1+dotZoom)))  ## to tune the size of circles; "floor(value*10)/10" is used to round "down" the value with one decimal number
-
+  # plot inparalogs (if available)
+  if(length(unique(na.omit(dataHeat$paralog))) > 0){
+    p <- p + geom_point(data = dataHeat, aes(size = paralog), color = paraColor, na.rm = TRUE, show.legend = TRUE)
+    p <- p + guides(size=guide_legend(title = "# inparalogs"))
+    p <- p + scale_size_continuous(range = c(min(na.omit((dataHeat$paralogSize)))*(1+dotZoom),max(na.omit((dataHeat$paralogSize))))*(1+dotZoom))  ## to tune the size of circles; "floor(value*10)/10" is used to round "down" the value with one decimal number
+  } else {
+    # remain the scale of point while filtering
+    presentVl <- dataHeat$presSpec[!is.na(dataHeat$presSpec)]
+    p <- p + scale_size_continuous(range = c((floor(min(presentVl)*10)/10*5)*(1+dotZoom),(floor(max(presentVl)*10)/10*5)*(1+dotZoom)))  ## to tune the size of circles; "floor(value*10)/10" is used to round "down" the value with one decimal number
+  }
+  
   #
   p = p + guides(fill=guide_colourbar(title = var2_id), color=guide_colourbar(title = var1_id))
   base_size <- 9
@@ -627,6 +650,10 @@ shinyServer(function(input, output, session) {
   observeEvent(input$defaultColorVar1, {
     shinyjs::reset("lowColor_var1")
     shinyjs::reset("highColor_var1")
+  })
+  
+  observeEvent(input$defaultColorPara, {
+    shinyjs::reset("paraColor")
   })
   
   
@@ -1250,7 +1277,7 @@ shinyServer(function(input, output, session) {
     if(input$ordering == FALSE){
       data$geneID <- factor(data$geneID, levels = unique(data$geneID))  ######### keep user defined geneID order
     }
-    
+
     ### return preData
     data
   })
@@ -1258,6 +1285,11 @@ shinyServer(function(input, output, session) {
   ### get all information for input data
   dataFiltered <- reactive({
     mdData <- preData()
+    
+    ### count number of inparalogs
+    paralogCount <- plyr::count(mdData,c('geneID','ncbiID'))
+    mdData <- merge(mdData,paralogCount,by=c('geneID','ncbiID'))
+    colnames(mdData)[ncol(mdData)] <- "paralog"
     
     ### (3) GET SORTED TAXONOMY LIST (3) ###
     taxaList <- sortedTaxaList()
@@ -1272,7 +1304,7 @@ shinyServer(function(input, output, session) {
 
     # ### (4) calculate PERCENTAGE of PRESENT SPECIES (4) ###
     finalPresSpecDt <- calcPresSpec(taxaMdData, taxaCount)
-    
+
     ### (5) calculate max/min/mean/median VAR1 for every supertaxon of each gene (5) ###
     # remove NA rows from taxaMdData
     taxaMdDataNoNA <- taxaMdData[!is.na(taxaMdData$var1),]
@@ -1305,6 +1337,7 @@ shinyServer(function(input, output, session) {
     fullMdData$fullName <- as.vector(fullMdData$fullName)
     names(fullMdData)[names(fullMdData)=="orthoID.x"] <- "orthoID"
     fullMdData <- fullMdData[!duplicated(fullMdData), ] ### parsed input data frame !!!
+   
     return(fullMdData)
   })
   
@@ -1317,24 +1350,37 @@ shinyServer(function(input, output, session) {
   dataSupertaxa <- reactive({
     fullMdData <- dataFiltered()
 
-    ### get representative orthoID that has m VAR1 for each supertaxon
-    mOrthoID <- fullMdData[,c('geneID','supertaxon','var1','mVar1','orthoID')]
-    mOrthoID <- subset(mOrthoID,mOrthoID$var1 == mOrthoID$mVar1)
-    colnames(mOrthoID) <- c('geneID','supertaxon','var1','mVar1','orthoID')
-    mOrthoID <- mOrthoID[!is.na(mOrthoID$orthoID),]
-    mOrthoID <- mOrthoID[,c('geneID','supertaxon','orthoID')]
-    mOrthoID <- mOrthoID[!duplicated(mOrthoID[,1:2]), ]
-    
-    ### get data set for phyloprofile plotting (contains only supertaxa info)
-    superDf <- subset(fullMdData,select=c('geneID','supertaxon','supertaxonID','mVar1','presSpec','category','mVar2'))
-    superDf <- superDf[!duplicated(superDf), ]
-    superDfExt <- merge(superDf,mOrthoID, by=c('geneID','supertaxon'),all.x=TRUE)
-    superDfExt <- superDfExt[,c("geneID","supertaxon","supertaxonID","mVar1","presSpec","category","orthoID","mVar2")]
-    
-    ### output
-    names(superDfExt)[names(superDfExt)=="mVar1"] <- "var1"
-    names(superDfExt)[names(superDfExt)=="mVar2"] <- "var2"
-    superDfExt
+    flag <- 1 # to check if working with the lowest taxonomy rank; 1 for NO; 0 for YES
+    if(length(unique(levels(as.factor(fullMdData$numberSpec)))) == 1){
+      if(unique(levels(as.factor(fullMdData$numberSpec))) == 1){
+        superDfExt <- fullMdData[,c("geneID","supertaxon","supertaxonID","var1","presSpec","category","orthoID","var2","paralog")]
+        flag <- 0
+      }
+    }
+      
+    if(flag == 1){
+      ### get representative orthoID that has m VAR1 for each supertaxon
+      mOrthoID <- fullMdData[,c('geneID','supertaxon','var1','mVar1','orthoID')]
+      mOrthoID <- subset(mOrthoID,mOrthoID$var1 == mOrthoID$mVar1)
+      colnames(mOrthoID) <- c('geneID','supertaxon','var1','mVar1','orthoID')
+      mOrthoID <- mOrthoID[!is.na(mOrthoID$orthoID),]
+      mOrthoID <- mOrthoID[,c('geneID','supertaxon','orthoID')]
+      mOrthoID <- mOrthoID[!duplicated(mOrthoID[,1:2]), ]
+      
+      ### get data set for phyloprofile plotting (contains only supertaxa info)
+      superDf <- subset(fullMdData,select=c('geneID','supertaxon','supertaxonID','mVar1','presSpec','category','mVar2','paralog'))
+      superDf$paralog <- 1
+      superDf <- superDf[!duplicated(superDf), ]
+
+      superDfExt <- merge(superDf,mOrthoID, by=c('geneID','supertaxon'),all.x=TRUE)
+      superDfExt <- superDfExt[,c("geneID","supertaxon","supertaxonID","mVar1","presSpec","category","orthoID","mVar2",'paralog')]
+      
+      ### rename mVar to var
+      names(superDfExt)[names(superDfExt)=="mVar1"] <- "var1"
+      names(superDfExt)[names(superDfExt)=="mVar2"] <- "var2"
+    }
+
+    return(superDfExt)
   })
   
   
@@ -1441,6 +1487,7 @@ shinyServer(function(input, output, session) {
     if(is.null(filein)){return()}
 
     data <- dataSupertaxa()
+
     # get selected supertaxon name
     split <- strsplit(as.character(input$inSelect),"_")
     inSelect <- as.character(split[[1]][1])
@@ -1465,7 +1512,7 @@ shinyServer(function(input, output, session) {
     dataHeat$presSpec[dataHeat$supertaxon != inSelect & dataHeat$var1 > var1_cutoff_max] <- 0
     dataHeat$presSpec[dataHeat$supertaxon != inSelect & dataHeat$var2 < var2_cutoff_min] <- 0
     dataHeat$presSpec[dataHeat$supertaxon != inSelect & dataHeat$var2 > var2_cutoff_max] <- 0
-    
+  
     dataHeat$var1[dataHeat$supertaxon != inSelect & dataHeat$var1 < var1_cutoff_min] <- NA
     dataHeat$var1[dataHeat$supertaxon != inSelect & dataHeat$var1 > var1_cutoff_max] <- NA
     dataHeat$var2[dataHeat$supertaxon != inSelect & dataHeat$var2 < var2_cutoff_min] <- NA
@@ -1474,19 +1521,29 @@ shinyServer(function(input, output, session) {
     dataHeat <- droplevels(dataHeat)  ### delete unused levels
     dataHeat$geneID <- as.factor(dataHeat$geneID)
     
-    ### cluster dataHeat (if selected)
-    if(input$applyCluster == TRUE){
-      # dataframe for calculate distance matrix
-      subDataHeat <- dataHeat[,c('geneID','supertaxon','presSpec')]
-      wideData <- spread(subDataHeat, supertaxon, presSpec)
-      dat <- wideData[,2:ncol(wideData)]  # numerical columns
-      rownames(dat) <- wideData[,1]
-      
-      # get clustered gene ids
-      clusteredGeneIDs <- clusteredGeneList(dat)
-      # sort original data according to clusteredGeneIDs
-      dataHeat$geneID <- factor(data$geneID, levels = clusteredGeneIDs)
-    }
+    return(dataHeat)
+  })
+  
+  ########### cluster heatmap data
+  clusteredDataHeat <- reactive({
+    dataHeat <- dataHeat()
+    if(nrow(dataHeat) < 1){return()}
+
+    # dataframe for calculate distance matrix
+    subDataHeat <- subset(dataHeat,dataHeat$presSpec > 0)
+    subDataHeat <- subDataHeat[,c('geneID','supertaxon','presSpec')]
+    subDataHeat <- subDataHeat[!duplicated(subDataHeat),]
+
+    wideData <- spread(subDataHeat, supertaxon, presSpec)
+    dat <- wideData[,2:ncol(wideData)]  # numerical columns
+    rownames(dat) <- wideData[,1]
+    dat[is.na(dat)] <- 0
+    
+    # get clustered gene ids
+    clusteredGeneIDs <- clusteredGeneList(dat,input$distMethod,input$clusterMethod)
+    
+    # sort original data according to clusteredGeneIDs
+    dataHeat$geneID <- factor(dataHeat$geneID, levels = clusteredGeneIDs)
     
     return(dataHeat)
   })
@@ -1509,9 +1566,27 @@ shinyServer(function(input, output, session) {
   mainPlot <- function(){
     if (v$doPlot == FALSE) return()
     dataHeat <- dataHeat()
-    dataHeat$presSpec[dataHeat$presSpec == 0] <- NA
     
-    p <- heatmap.plotting(dataHeat,input$xAxis,input$var1_id,input$var2_id,input$lowColor_var1,input$highColor_var1,input$lowColor_var2,input$highColor_var2,input$xSize,input$ySize,input$legendSize,input$mainLegend,input$dotZoom,1)
+    ### cluster dataHeat (if selected)
+    if(input$applyCluster == TRUE){
+      dataHeat <- clusteredDataHeat()
+    }
+
+    ### reduce number of inparalogs based on filtered dataHeat
+    dataHeatTB <- data.table(na.omit(dataHeat))
+    dataHeatTB[ ,paralogNew := .N, by=c("geneID","supertaxon")]
+    dataHeatTB <- data.frame(dataHeatTB[,c("geneID","supertaxon","paralogNew")])
+    
+    dataHeat <- merge(dataHeat,dataHeatTB,by=c('geneID','supertaxon'), all.x=TRUE)
+    dataHeat$paralog <- dataHeat$paralogNew
+    dataHeat <- dataHeat[!duplicated(dataHeat),]
+
+    ### remove unneeded dots
+    dataHeat$presSpec[dataHeat$presSpec == 0] <- NA
+    dataHeat$paralog[dataHeat$presSpec < 1] <- NA
+    dataHeat$paralog[dataHeat$paralog == 1] <- NA
+
+    p <- heatmap.plotting(dataHeat,input$xAxis,input$var1_id,input$var2_id,input$lowColor_var1,input$highColor_var1,input$lowColor_var2,input$highColor_var2,input$paraColor,input$xSize,input$ySize,input$legendSize,input$mainLegend,input$dotZoom,1)
     
     ### highlight taxon
     if(input$taxonHighlight != "none"){
@@ -1670,6 +1745,9 @@ shinyServer(function(input, output, session) {
     inSelect <- as.numeric(taxaList$ncbiID[taxaList$fullName == input$inSelect])
     
     dataHeat <- dataHeat()
+    if(input$applyCluster == TRUE){
+      dataHeat <- clusteredDataHeat()
+    }
  
     ### get values
     if (is.null(input$plot_click$x)) {return()}
@@ -1691,41 +1769,46 @@ shinyServer(function(input, output, session) {
       # get supertaxon (spec)
       supertaxa <- levels(dataHeat$supertaxon)
       spec <- toString(supertaxa[corX])
+
       # get var1, percentage of present species and var2 score
-      var1 <- dataHeat$var1[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
-      Percent <- dataHeat$presSpec[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
-      Trace <- dataHeat$var2[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
+      var1 <- dataHeat$var1[dataHeat$geneID == geneID & dataHeat$supertaxon == spec][1]
+      Percent <- dataHeat$presSpec[dataHeat$geneID == geneID & dataHeat$supertaxon == spec][1]
+      Trace <- dataHeat$var2[dataHeat$geneID == geneID & dataHeat$supertaxon == spec][1]
       # get ortholog ID
       orthoID <- dataHeat$orthoID[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
-      
-      ### get list of all geneID that have the same ortholog
-      geneMatch <- dataHeat$geneID[dataHeat$orthoID == toString(orthoID)]
-      geneMatch <- geneMatch[!is.na(geneMatch)]
-      # list of all available geneID
-      geneList <- preData()
-      geneList$geneID <- as.factor(geneList$geneID)
-      allGenes <- as.list(levels(geneList$geneID))
-      # get index of all matched genes (genes have the same ortholog)
-      pos <- which(allGenes %in% geneMatch)
-      pos <- paste(pos, collapse=',')
+      if(length(orthoID) > 1){
+        orthoID = paste0(orthoID[1],",...")
+      }
+      # ### get list of all geneID that have the same ortholog
+      # geneMatch <- dataHeat$geneID[dataHeat$orthoID == toString(orthoID)]
+      # geneMatch <- geneMatch[!is.na(geneMatch)]
+      # # list of all available geneID
+      # geneList <- preData()
+      # geneList$geneID <- as.factor(geneList$geneID)
+      # allGenes <- as.list(levels(geneList$geneID))
+      # # get index of all matched genes (genes have the same ortholog)
+      # pos <- which(allGenes %in% geneMatch)
+      # pos <- paste(pos, collapse=',')
       
       ### return info of clicked point
       if(is.na(as.numeric(Percent))){return()}
       else{
-        info <- c(geneID,as.character(orthoID),as.character(spec),round(as.numeric(var1),2),round(as.numeric(Percent),2),round(as.numeric(Trace),2),pos)
+        # info <- c(geneID,as.character(orthoID),as.character(spec),round(as.numeric(var1),2),round(as.numeric(Percent),2),round(as.numeric(Trace),2),pos)
+        info <- c(geneID,as.character(orthoID),as.character(spec),round(as.numeric(var1),2),round(as.numeric(Percent),2),round(as.numeric(Trace),2))
+        return(info)
       }
     }
   })
   
-  ######## get list of same orthologs (hit_IDs) of a selected point
-  sameOrthoIndex <- reactive({
-    ### check input
-    if (v$doPlot == FALSE) return()
-    
-    ### info
-    info <- mainPointInfo()
-    pos <- info[7]
-  })
+  # ######## get list of same orthologs (hit_IDs) of a selected point
+  # sameOrthoIndex <- reactive({
+  #   ### check input
+  #   if (v$doPlot == FALSE) return()
+  #   
+  #   ### info
+  #   info <- mainPointInfo()
+  #   pos <- info[7]
+  # })
   
   ###################################################################
   #### PLOT var1/var2 SCORE & % OF PRESENT SPECIES DISTRIBUTION #####
@@ -1966,7 +2049,11 @@ shinyServer(function(input, output, session) {
       }
     }
     
-
+    ### count number of inparalogs
+    paralogCount <- plyr::count(mdData,c('geneID','ncbiID'))
+    mdData <- merge(mdData,paralogCount,by=c('geneID','ncbiID'))
+    colnames(mdData)[ncol(mdData)] <- "paralog"
+    
     ### (3) GET SORTED TAXONOMY LIST (3) ###
     taxaList <- sortedTaxaList()
     
@@ -2173,6 +2260,7 @@ shinyServer(function(input, output, session) {
     else{
       ### process data
       dataHeat <- dataHeat()
+      
       dataHeat$supertaxonMod <- substr(dataHeat$supertaxon,6,nchar(as.character(dataHeat$supertaxon)))
       if(input$inTaxa[1] == "all" & input$inSeq[1] != "all"){
         dataHeat <- subset(dataHeat,geneID %in% input$inSeq) ##### <=== select data from dataHeat for selected sequences only
@@ -2182,8 +2270,13 @@ shinyServer(function(input, output, session) {
         dataHeat <- subset(dataHeat,geneID %in% input$inSeq & supertaxonMod %in% input$inTaxa) ##### <=== select data from dataHeat for selected sequences and taxa
       }
       
+      ### remove unneeded dots
+      dataHeat$presSpec[dataHeat$presSpec == 0] <- NA
+      dataHeat$paralog[dataHeat$presSpec < 1] <- NA
+      dataHeat$paralog[dataHeat$paralog == 1] <- NA
+      
       ### create plot
-      p <- heatmap.plotting(dataHeat,input$xAxis_selected,input$var1_id,input$var2_id,input$lowColor_var1,input$highColor_var1,input$lowColor_var2,input$highColor_var2,input$xSizeSelect,input$ySizeSelect,input$legendSizeSelect,input$selectedLegend,input$dotZoomSelect,0)
+      p <- heatmap.plotting(dataHeat,input$xAxis_selected,input$var1_id,input$var2_id,input$lowColor_var1,input$highColor_var1,input$lowColor_var2,input$highColor_var2,input$paraColor,input$xSizeSelect,input$ySizeSelect,input$legendSizeSelect,input$selectedLegend,input$dotZoomSelect,0)
       
       ### do plotting
       if(input$autoUpdateSelected == FALSE){
@@ -2323,11 +2416,14 @@ shinyServer(function(input, output, session) {
       supertaxa <- levels(dataHeat$supertaxon)
       spec <- toString(supertaxa[corX])
       # get var1, percentage of present species and var2 score
-      var1 <- dataHeat$var1[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
-      Percent <- dataHeat$presSpec[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
-      Trace <- dataHeat$var2[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
+      var1 <- dataHeat$var1[dataHeat$geneID == geneID & dataHeat$supertaxon == spec][1]
+      Percent <- dataHeat$presSpec[dataHeat$geneID == geneID & dataHeat$supertaxon == spec][1]
+      Trace <- dataHeat$var2[dataHeat$geneID == geneID & dataHeat$supertaxon == spec][1]
       # get ortholog ID
       orthoID <- dataHeat$orthoID[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
+      if(length(orthoID) > 1){
+        orthoID = paste0(orthoID[1],",...")
+      }
       
       if(is.na(as.numeric(Percent))){return()}
       else{
@@ -2758,11 +2854,11 @@ shinyServer(function(input, output, session) {
 
     ### subset of taxonomy data, containing only ranks from rankList
     subDt <- Dt[,c("abbrName",rankList)]
-    
+
     ### get (super)taxa IDs for one of representative species
     firstLine <- Dt[Dt[,rankName]==superID,][1,]  # get all taxon info for 1 representative
     subFirstLine <- firstLine[,c("abbrName",rankList)]
-    
+
     ### compare each taxon ncbi IDs with selected taxon
     ### and create a "category" data frame
     catDf <- data.frame("ncbiID" = character(), "cat" = character(), stringsAsFactors=FALSE)
@@ -2783,11 +2879,14 @@ shinyServer(function(input, output, session) {
 
     mdDataExtended$var1[mdDataExtended$var1 == "NA" | is.na(mdDataExtended$var1)] <- 0
     mdDataExtended$var2[mdDataExtended$var2 == "NA" | is.na(mdDataExtended$var2)] <- 0
-   
+
     ### remove cat for "NA" orthologs and also for orthologs that do not fit cutoffs
-    mdDataExtended[mdDataExtended$orthoID == "NA"| is.na(mdDataExtended$orthoID),]$cat <- NA
+    if(nrow(mdDataExtended[mdDataExtended$orthoID == "NA"| is.na(mdDataExtended$orthoID),]) > 0){
+      mdDataExtended[mdDataExtended$orthoID == "NA"| is.na(mdDataExtended$orthoID),]$cat <- NA
+    }
+
     mdDataExtended <- mdDataExtended[complete.cases(mdDataExtended),]
-    
+
     # filter by %specpres, var1, var2 ..
     mdDataExtended$cat[mdDataExtended$var1 < input$var1[1]] <- NA
     mdDataExtended$cat[mdDataExtended$var1 > input$var1[2]] <- NA
@@ -2797,9 +2896,10 @@ shinyServer(function(input, output, session) {
     mdDataExtended$cat[mdDataExtended$presSpec > input$percent[2]] <- NA
     
     mdDataExtended <- mdDataExtended[complete.cases(mdDataExtended),]
-     
+
     ### get the furthest common taxon with selected taxon for each gene
     geneAgeDf <- as.data.frame(tapply(mdDataExtended$cat, mdDataExtended$geneID, min))
+    
     setDT(geneAgeDf, keep.rownames = TRUE)[]
     setnames(geneAgeDf, 1:2, c("geneID","cat"))  # rename columns
     row.names(geneAgeDf) <- NULL   # remove row names
@@ -3129,10 +3229,15 @@ shinyServer(function(input, output, session) {
     if(v$doPlot == FALSE){return()}
     # dataframe for calculate distance matrix
     dataHeat <- dataHeat()
-    subDataHeat <- dataHeat[,c('geneID','supertaxon','presSpec')]
+
+    subDataHeat <- subset(dataHeat,dataHeat$presSpec > 0)
+    subDataHeat <- subDataHeat[,c('geneID','supertaxon','presSpec')]
+    subDataHeat <- subDataHeat[!duplicated(subDataHeat),]
+
     wideData <- spread(subDataHeat, supertaxon, presSpec)
     dat <- wideData[,2:ncol(wideData)]  # numerical columns
     rownames(dat) <- wideData[,1]
+    dat[is.na(dat)] <- 0
 
     dd.col <- as.dendrogram(hclust(dist(dat, method = input$distMethod), method = input$clusterMethod))
   })

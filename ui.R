@@ -556,13 +556,16 @@ shinyUI(fluidPage(
     
     ####### popup windows for setting plot colors
     bsModal("color", "Set colors for profile", "setColor", size = "small",
-            colourpicker::colourInput("lowColor_var1", paste("Low variable 1"), value = "darkorange"),
+            colourpicker::colourInput("lowColor_var1", "Low variable 1", value = "darkorange"),
             colourpicker::colourInput("highColor_var1", "High variable 1", value = "steelblue"),
             actionButton("defaultColorVar1","Default",style='padding:4px; font-size:100%'),
             hr(),
             colourpicker::colourInput("lowColor_var2", "Low variable 2", value = "grey95"),
             colourpicker::colourInput("highColor_var2", "High variable 2", value = "khaki"),
-            actionButton("defaultColorTrace","Default",style='padding:4px; font-size:100%')
+            actionButton("defaultColorTrace","Default",style='padding:4px; font-size:100%'),
+            hr(),
+            colourpicker::colourInput("paraColor", "Color for inparalogs", value = "#07d000"),
+            actionButton("defaultColorPara","Default",style='padding:4px; font-size:100%')
     ),
     
     ####### popup windows for FASTA configurations
