@@ -642,7 +642,7 @@ shinyServer(function(input, output, session) {
   })
   
   ######## reset colors
-  observeEvent(input$defaultColorTrace, {
+  observeEvent(input$defaultColorVar2, {
     shinyjs::reset("lowColor_var2")
     shinyjs::reset("highColor_var2")
   })
@@ -1297,7 +1297,7 @@ shinyServer(function(input, output, session) {
     # calculate frequency of all supertaxa
     taxaCount <- plyr::count(taxaList,'supertaxon')
     
-    # merge mdData, mdDataTrace and taxaList to get taxonomy info
+    # merge mdData, mdDataVar2 and taxaList to get taxonomy info
     taxaMdData <- merge(mdData,taxaList,by='ncbiID')
     taxaMdData$var1 <- suppressWarnings(as.numeric(as.character(taxaMdData$var1)))
     taxaMdData$var2 <- suppressWarnings(as.numeric(as.character(taxaMdData$var2)))
@@ -1771,9 +1771,9 @@ shinyServer(function(input, output, session) {
       spec <- toString(supertaxa[corX])
 
       # get var1, percentage of present species and var2 score
-      var1 <- dataHeat$var1[dataHeat$geneID == geneID & dataHeat$supertaxon == spec][1]
-      Percent <- dataHeat$presSpec[dataHeat$geneID == geneID & dataHeat$supertaxon == spec][1]
-      Trace <- dataHeat$var2[dataHeat$geneID == geneID & dataHeat$supertaxon == spec][1]
+      var1 <- max(na.omit(dataHeat$var1[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]))
+      Percent <- max(na.omit(dataHeat$presSpec[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]))
+      var2 <- max(na.omit(dataHeat$var2[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]))
       # get ortholog ID
       orthoID <- dataHeat$orthoID[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
       if(length(orthoID) > 1){
@@ -1793,8 +1793,8 @@ shinyServer(function(input, output, session) {
       ### return info of clicked point
       if(is.na(as.numeric(Percent))){return()}
       else{
-        # info <- c(geneID,as.character(orthoID),as.character(spec),round(as.numeric(var1),2),round(as.numeric(Percent),2),round(as.numeric(Trace),2),pos)
-        info <- c(geneID,as.character(orthoID),as.character(spec),round(as.numeric(var1),2),round(as.numeric(Percent),2),round(as.numeric(Trace),2))
+        # info <- c(geneID,as.character(orthoID),as.character(spec),round(as.numeric(var1),2),round(as.numeric(Percent),2),round(as.numeric(var2),2),pos)
+        info <- c(geneID,as.character(orthoID),as.character(spec),round(as.numeric(var1),2),round(as.numeric(Percent),2),round(as.numeric(var2),2))
         return(info)
       }
     }
@@ -2060,7 +2060,7 @@ shinyServer(function(input, output, session) {
     # calculate frequency of all supertaxa
     taxaCount <- plyr::count(taxaList,'supertaxon')
     
-    # merge mdData, mdDataTrace and taxaList to get taxonomy info
+    # merge mdData, mdDatavar2 and taxaList to get taxonomy info
     taxaMdData <- merge(mdData,taxaList,by='ncbiID')
     if("var1" %in% colnames(taxaMdData)){
       taxaMdData$var1 <- suppressWarnings(as.numeric(as.character(taxaMdData$var1)))
@@ -2416,9 +2416,9 @@ shinyServer(function(input, output, session) {
       supertaxa <- levels(dataHeat$supertaxon)
       spec <- toString(supertaxa[corX])
       # get var1, percentage of present species and var2 score
-      var1 <- dataHeat$var1[dataHeat$geneID == geneID & dataHeat$supertaxon == spec][1]
-      Percent <- dataHeat$presSpec[dataHeat$geneID == geneID & dataHeat$supertaxon == spec][1]
-      Trace <- dataHeat$var2[dataHeat$geneID == geneID & dataHeat$supertaxon == spec][1]
+      var1 <- max(na.omit(dataHeat$var1[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]))
+      Percent <- max(na.omit(dataHeat$presSpec[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]))
+      var2 <- max(na.omit(dataHeat$var2[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]))
       # get ortholog ID
       orthoID <- dataHeat$orthoID[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
       if(length(orthoID) > 1){
@@ -2427,7 +2427,7 @@ shinyServer(function(input, output, session) {
       
       if(is.na(as.numeric(Percent))){return()}
       else{
-        info <- c(geneID,as.character(orthoID),as.character(spec),round(as.numeric(var1),2),round(as.numeric(Percent),2),round(as.numeric(Trace),2))
+        info <- c(geneID,as.character(orthoID),as.character(spec),round(as.numeric(var1),2),round(as.numeric(Percent),2),round(as.numeric(var2),2))
       }
     }
   })
@@ -2441,7 +2441,7 @@ shinyServer(function(input, output, session) {
   output$pointInfo <- renderText({
     ##### GET INFO BASED ON CURRENT TAB
     if(input$tabs == 'Main profile'){
-      info <- mainPointInfo()  # info = groupID,orthoID,supertaxon,mVar1,%spec,trace
+      info <- mainPointInfo()  # info = groupID,orthoID,supertaxon,mVar1,%spec,var2
     } else if(input$tabs=='Customized profile'){
       info <- selectedPointInfo()
     } else {
@@ -2482,7 +2482,7 @@ shinyServer(function(input, output, session) {
     
     ##### GET INFO BASED ON CURRENT TAB
     if(input$tabs == 'Main profile'){
-      info <- mainPointInfo()  # info = groupID,orthoID,supertaxon,mVar1,%spec,trace
+      info <- mainPointInfo()  # info = groupID,orthoID,supertaxon,mVar1,%spec,var2
     } else if(input$tabs=='Customized profile'){
       info <- selectedPointInfo()
     }
