@@ -176,7 +176,10 @@ shinyUI(fluidPage(
              uiOutput("domainInputFile.ui"),
              
              hr(),
-             em(a("Click here to download demo data", href="https://github.com/trvinh/phyloprofile/tree/master/data/demo", target="_blank"))
+             em("Click here to download demo files:"),
+             em(a("(1) Main inputs,", href="https://github.com/trvinh/phyloprofile/tree/master/data/demo", target="_blank")),
+             em(a("(2) Domain annotations (optional),", href="https://www.dropbox.com/sh/i3rcrgmy3113gu9/AABQl9BKNFOIZjWY-_xhmu57a?dl=0", target="_blank")),
+             em(a("(3) FASTA sequence files (optional)", href="https://www.dropbox.com/sh/zu8tihto192woay/AADQcJVVm06XSmIAhNJTVsora?dl=0", target="_blank"))
       ),
       column(3,
              conditionalPanel(

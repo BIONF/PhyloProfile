@@ -320,16 +320,14 @@ shinyServer(function(input, output, session) {
   #############################################################
   
   ####### check for the existence of taxonomy info file #######
-  observeEvent(input$mainInput,{
+  observe({
     if(!file.exists(isolate({"data/taxonID.list.fullRankID"}))){
       drop_get("/phyloprofile/data/taxonID.list.fullRankID", local_file = 'data/taxonID.list.fullRankID')
-      output$taxaInfoCheck.ui <- renderUI({
-        strong(
-          "Taxonomy file has been downloaded and saved in DATA folder. PLEASE RELOAD THIS TOOL!!!",
-          style = "color:red"
-        )
-      })
-      shinyjs::disable("do")
+    }
+  })
+  observe({
+    if(!file.exists(isolate({"data/taxonNamesReduced.txt"}))){
+      drop_get("/phyloprofile/data/taxonNamesReduced.txt", local_file = 'data/taxonNamesReduced.txt')
     }
   })
 
@@ -791,7 +789,7 @@ shinyServer(function(input, output, session) {
   ######## render input files
   output$mainInputFile.ui <- renderUI({
     if(input$demo == TRUE){
-      h4(a("demo/test.main", href="https://raw.githubusercontent.com/trvinh/phyloprofile/master/data/demo/test.main.long", target="_blank"))
+      h4(a("demo/test.main.long", href="https://raw.githubusercontent.com/trvinh/phyloprofile/master/data/demo/test.main.long", target="_blank"))
     } else {
       fileInput("mainInput",h5("Upload input file:"))
     }
@@ -799,7 +797,7 @@ shinyServer(function(input, output, session) {
   
   output$domainInputFile.ui <- renderUI({
     if(input$demo == TRUE){
-      h4(a("demo/domains", href="https://github.com/trvinh/phyloprofile/tree/master/data/demo/domains", target="_blank"))
+      h4(a("demo/domains", href="https://www.dropbox.com/sh/i3rcrgmy3113gu9/AABQl9BKNFOIZjWY-_xhmu57a?dl=0", target="_blank"))
     } else {
       if(input$annoChoose == "from file"){
         fileInput("fileDomainInput","")
@@ -2671,7 +2669,7 @@ shinyServer(function(input, output, session) {
         updateButton(session, "doDomainPlot", disabled = TRUE)
       } else {
         updateButton(session, "doDomainPlot", disabled = FALSE)
-        fileDomain <- suppressWarnings(paste0("phyloprofile/data/domains/",group,".domains"))
+        fileDomain <- suppressWarnings(paste0("phyloprofile/data/demo/domains/",group,".domains"))
       }
     } else {
       if(input$annoChoose == "from file"){
