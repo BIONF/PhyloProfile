@@ -146,6 +146,7 @@ shinyUI(fluidPage(
              
              checkboxInput("demo",em(strong("Use demo files"),style = "color:darkblue")),
              uiOutput("mainInputFile.ui"),
+             uiOutput("taxaInfoCheck.ui"),
              fluidRow(
                column(5,
                       uiOutput("var1_id.ui")

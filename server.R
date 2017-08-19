@@ -319,7 +319,21 @@ shinyServer(function(input, output, session) {
   ####################  PRE-PROCESSING  #######################
   #############################################################
   
-  ################## getting ncbi taxa IDs ####################
+  ####### check for the existence of taxonomy info file #######
+  observeEvent(input$mainInput,{
+    if(!file.exists(isolate({"data/taxonID.list.fullRankID"}))){
+      drop_get("/phyloprofile/data/taxonID.list.fullRankID", local_file = 'data/taxonID.list.fullRankID')
+      output$taxaInfoCheck.ui <- renderUI({
+        strong(
+          "Taxonomy file has been downloaded and saved in DATA folder. PLEASE RELOAD THIS TOOL!!!",
+          style = "color:red"
+        )
+      })
+      shinyjs::disable("do")
+    }
+  })
+
+  ################## get ncbi taxa IDs ####################
   ##### retrieve ID for list of taxa names
   taxaID <- reactive({
     if(input$idSearch > 0){
@@ -687,38 +701,41 @@ shinyServer(function(input, output, session) {
   
   ######## check if there is any "unknown" taxon in input matrix
   unkTaxa <- reactive({
-    # get list of all available taxon (from taxonID.list.fullRankID)
-    allTaxa <- unlist(as.list(fread("data/taxonID.list.fullRankID",sep = "\t", select = "abbrName")))
-    
-    # get list of input taxa (from main input file)
-    if(input$demo == TRUE){
-      data <- as.data.frame(read.csv("https://raw.githubusercontent.com/trvinh/phyloprofile/master/data/demo/test.main",stringsAsFactors = FALSE, sep='\t', comment.char=""))
-      inputTaxa <- colnames(data)
-    } else {
-      filein <- input$mainInput
-      if(is.null(filein)){return()}
+    if(!file.exists(isolate({"data/taxonID.list.fullRankID"}))){return()}
+    else{
+      # get list of all available taxon (from taxonID.list.fullRankID)
+      allTaxa <- unlist(as.list(fread("data/taxonID.list.fullRankID",sep = "\t", select = "abbrName")))
       
-      inputDf <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
-      
-      if(checkXmlFormat() == TRUE){
-        longDf <- xmlParser(filein$datapath)
-        inputTaxa <- levels(longDf$ncbiID)
-      } else if(checkLongFormat() == TRUE){
-        inputTaxa <- levels(inputDf$ncbiID)
+      # get list of input taxa (from main input file)
+      if(input$demo == TRUE){
+        data <- as.data.frame(read.csv("https://raw.githubusercontent.com/trvinh/phyloprofile/master/data/demo/test.main",stringsAsFactors = FALSE, sep='\t', comment.char=""))
+        inputTaxa <- colnames(data)
       } else {
-        inputTaxa <- readLines(filein$datapath, n = 1)
+        filein <- input$mainInput
+        if(is.null(filein)){return()}
+        
+        inputDf <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+        
+        if(checkXmlFormat() == TRUE){
+          longDf <- xmlParser(filein$datapath)
+          inputTaxa <- levels(longDf$ncbiID)
+        } else if(checkLongFormat() == TRUE){
+          inputTaxa <- levels(inputDf$ncbiID)
+        } else {
+          inputTaxa <- readLines(filein$datapath, n = 1)
+        }
       }
+      
+      inputTaxa <- unlist(strsplit(inputTaxa,split = '\t'))
+      if(inputTaxa[1] == "geneID"){
+        inputTaxa <- inputTaxa[-1]   # remove "geneID" element from vector inputTaxa
+      }
+      
+      # list of unknown taxa
+      unkTaxa <- inputTaxa[!(inputTaxa %in% allTaxa)]
+      # return list of unkTaxa
+      unkTaxa
     }
-    
-    inputTaxa <- unlist(strsplit(inputTaxa,split = '\t'))
-    if(inputTaxa[1] == "geneID"){
-      inputTaxa <- inputTaxa[-1]   # remove "geneID" element from vector inputTaxa
-    }
-    
-    # list of unknown taxa
-    unkTaxa <- inputTaxa[!(inputTaxa %in% allTaxa)]
-    # return list of unkTaxa
-    unkTaxa
   })
   
   ### get status of unkTaxa for conditional panel
@@ -774,7 +791,7 @@ shinyServer(function(input, output, session) {
   ######## render input files
   output$mainInputFile.ui <- renderUI({
     if(input$demo == TRUE){
-      h4(a("demo/test.main", href="https://raw.githubusercontent.com/trvinh/phyloprofile/master/data/demo/test.main", target="_blank"))
+      h4(a("demo/test.main", href="https://raw.githubusercontent.com/trvinh/phyloprofile/master/data/demo/test.main.long", target="_blank"))
     } else {
       fileInput("mainInput",h5("Upload input file:"))
     }
@@ -810,44 +827,47 @@ shinyServer(function(input, output, session) {
     filein <- input$mainInput
     if(is.null(filein)){return()}
     else{
-      inputDf <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
-      
-      if(v1$parseNew == F & v2$parseAppend == F){return()}
+      if(!file.exists(isolate({"data/taxonID.list.fullRankID"}))){return()}
       else{
-        ## get list of taxa from input
-        if(v1$parseNew == T){
-          if(checkXmlFormat() == TRUE){
-            longDf <- xmlParser(filein$datapath)
-            titleline <- toString(paste(levels(longDf$ncbiID),collapse = "\t"))
-          } else if(checkLongFormat() == TRUE){
-            titleline <- toString(paste(levels(inputDf$ncbiID),collapse = "\t"))
-          } else {
-            titleline <- readLines(filein$datapath, n=1)
-          }
-        }
-       
-        ## get existing taxa list from current taxonID.list.fullRankID
-        ## and append unkTaxa into that list
-        if(v2$parseAppend == T){
-          pipeCmd <- paste0("cut -f 2 ",getwd(),"/data/taxonID.list.fullRankID")
-          currentTaxaList <- as.list(read.table(pipe(pipeCmd)))
-          
-          unkTaxa <- unkTaxa()
-          fullListTaxa <- c(as.character(currentTaxaList$V1),unkTaxa)
-          titleline <- paste(fullListTaxa, collapse='\t' )
-        }
+        inputDf <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
         
-        # Create 0-row data frame which will be used to store data
-        dat <- data.frame(x = numeric(0), y = numeric(0))   ### use for progess bar
-        withProgress(message = 'Parsing input file', value = 0, {
-          cmd <- paste("perl ", getwd(),"/data/getTaxonomyInfo.pl",
-                       " -i \"", titleline,"\"",
-                       " -n ", getwd(),"/data/taxonNamesFull.txt",
-                       " -a ", getwd(),"/data/newTaxa.txt",
-                       " -o ", getwd(),"/data",
-                       sep='')
-          system(cmd)
-        })
+        if(v1$parseNew == F & v2$parseAppend == F){return()}
+        else{
+          ## get list of taxa from input
+          if(v1$parseNew == T){
+            if(checkXmlFormat() == TRUE){
+              longDf <- xmlParser(filein$datapath)
+              titleline <- toString(paste(levels(longDf$ncbiID),collapse = "\t"))
+            } else if(checkLongFormat() == TRUE){
+              titleline <- toString(paste(levels(inputDf$ncbiID),collapse = "\t"))
+            } else {
+              titleline <- readLines(filein$datapath, n=1)
+            }
+          }
+          
+          ## get existing taxa list from current taxonID.list.fullRankID
+          ## and append unkTaxa into that list
+          if(v2$parseAppend == T){
+            pipeCmd <- paste0("cut -f 2 ",getwd(),"/data/taxonID.list.fullRankID")
+            currentTaxaList <- as.list(read.table(pipe(pipeCmd)))
+            
+            unkTaxa <- unkTaxa()
+            fullListTaxa <- c(as.character(currentTaxaList$V1),unkTaxa)
+            titleline <- paste(fullListTaxa, collapse='\t' )
+          }
+          
+          # Create 0-row data frame which will be used to store data
+          dat <- data.frame(x = numeric(0), y = numeric(0))   ### use for progess bar
+          withProgress(message = 'Parsing input file', value = 0, {
+            cmd <- paste("perl ", getwd(),"/data/getTaxonomyInfo.pl",
+                         " -i \"", titleline,"\"",
+                         " -n ", getwd(),"/data/taxonNamesFull.txt",
+                         " -a ", getwd(),"/data/newTaxa.txt",
+                         " -o ", getwd(),"/data",
+                         sep='')
+            system(cmd)
+          })
+        }
       }
     }
   })
