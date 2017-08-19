@@ -1,16 +1,17 @@
-libs=c("shiny","shinyBS","ggplot2","reshape","plyr","dplyr","scales‌​","grid","gridExtra","ape","colourpicker","shinyjs","stringr","data.table2","DT","miniUI","gdtools","taxize","tidyr","dendextend","ggdendro")
-type=getOption("pkgType")
+# ipak function: install and load multiple R packages.
+# check to see if packages are installed. Install them if they are not, then load them into the R session.
+# downloaded from https://gist.github.com/stevenworthington/3178163
 
-    CheckInstallPackage <- function(packages, repos="http://cran.r-project.org",
-       depend="Depends", ...) {
-         installed=as.data.frame(installed.packages())
-    for(p in packages) {
-        if(is.na(charmatch(p, installed[,1]))) {
-          install.packages(p, repos=repos, dependencies=depend, ...)
-        }
-      }
-    }
-    CheckInstallPackage(packages=libs)
+ipak <- function(pkg){
+    new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+    if (length(new.pkg))
+        install.packages(new.pkg, dependencies = TRUE)
+    sapply(pkg, require, character.only = TRUE)
+}
+
+# usage
+packages <- c("shiny","shinyBS","shinyjs","colourpicker","ggplot2","reshape2","DT","plyr","dplyr","tidyr","scales","grid","gridExtra","ape","stringr","gtable","dendextend","ggdendro","gplots","data.table","taxize","rdrop2")
+ipak(packages)
 
 source("https://bioconductor.org/biocLite.R")
 biocLite("Biostrings")
