@@ -2507,11 +2507,28 @@ shinyServer(function(input, output, session) {
     
     if(is.null(info)){return()}
     else{
+      ### get info for present taxa in selected supertaxon (1)
       plotTaxon = info[3]
       plotGeneID = info[1]
       fullDf <- dataFiltered()
       selDf <- as.data.frame(fullDf[fullDf$geneID == plotGeneID & fullDf$supertaxon == plotTaxon,])
-      selDf
+      
+      ### get all taxa of this supertaxon (2)
+      allTaxaDf <- sortedTaxaList()
+      allTaxaDf <- allTaxaDf[allTaxaDf$supertaxon == plotTaxon,]
+      allTaxaDf <- subset(allTaxaDf, select = c("abbrName","fullName"))
+      
+      ### merge (1) and (2) together
+      joinedDf <- merge(selDf,allTaxaDf, by= c("abbrName"), all.y=TRUE)
+      joinedDf <- subset(joinedDf, select = c("abbrName","fullName.y","geneID","orthoID","var1","var2"))
+      names(joinedDf)[names(joinedDf) == 'fullName.y'] <- 'fullName'
+      
+      # replace var1/var2 as NA for all "NA orthologs"
+      joinedDf$var1[is.na(joinedDf$orthoID)] <- NA
+      joinedDf$var2[is.na(joinedDf$orthoID)] <- NA
+      
+      ### return data for detailed plot
+      return(joinedDf)
     }
   })
   
@@ -2521,20 +2538,29 @@ shinyServer(function(input, output, session) {
     
     selDf <- detailPlotDt()
     selDf$x_label <- paste(selDf$orthoID,"@",selDf$fullName,sep = "")
-    
+
     ### create joined DF for plotting var1 next to var2
     var1Df <- subset(selDf, select = c("x_label","var1"))
     var1Df$type <- input$var1_id
     colnames(var1Df) <- c("id","score","var")
+    
     var2Df <- subset(selDf, select = c("x_label","var2"))
     var2Df$type <- input$var2_id
     colnames(var2Df) <- c("id","score","var")
     
     detailedDf <- rbind(var1Df,var2Df)
     
+    # remove ONE missing variable
+    if(nlevels(as.factor(detailedDf$var)) > 1){
+      detailedDf <- detailedDf[nchar(detailedDf$var)>0,]
+    }
+    
+    ### keep order of ID (x_label)
+    detailedDf$id <- factor(detailedDf$id, levels = unique(detailedDf$id))
+
     ### create plot
     gp = ggplot(detailedDf, aes(y=score,x=id,fill=var)) +
-      geom_bar(stat="identity", position=position_dodge()) +
+      geom_bar(stat="identity", position=position_dodge(),na.rm = TRUE) +
       coord_flip() +
       labs(x="") +
       labs(fill="") +
@@ -2560,8 +2586,10 @@ shinyServer(function(input, output, session) {
   ######## GET info when clicking on detailed plot
   pointInfoDetail <- reactive({
     selDf <- detailPlotDt()
-    allOrthoID <- sort(selDf$orthoID)
-   
+    # selDf <- selDf[complete.cases(selDf),]
+    selDf$orthoID <- as.character(selDf$orthoID)
+    # allOrthoID <- sort(selDf$orthoID)
+
     ### get coordinates of plot_click_detail
     if (is.null(input$plot_click_detail$x)) return()
     else{
@@ -2570,20 +2598,28 @@ shinyServer(function(input, output, session) {
     }
 
     ### get pair of sequence IDs & var1
-    seedID <- toString(selDf$geneID[1])
-    orthoID <- toString(allOrthoID[corX])
-    var1 <- toString(selDf$var1[selDf$orthoID==orthoID][1])
-    var2 <- toString(selDf$var2[selDf$orthoID==orthoID][1])
+    seedID <- as.character(selDf$geneID[1])
+    orthoID <- as.character(selDf$orthoID[corX])
+
+    var1 <- as.list(selDf$var1[selDf$orthoID==orthoID])
+    var1 <- as.character(var1[!is.na(var1)])
+    var2 <- as.list(selDf$var2[selDf$orthoID==orthoID])
+    var2 <- as.character(var2[!is.na(var2)])
     ### return info
-    if(orthoID != "NA"){
-      info <- c(seedID,orthoID,var1,var2)
+    if(is.na(orthoID)){
+      return(NULL)
+    } else {
+      if(orthoID != "NA"){
+        info <- c(seedID,orthoID,var1,var2)
+      }
     }
   })
   
   ### SHOW info when clicking on detailed plot
   output$detailClick <- renderText({
     info <- pointInfoDetail() # info = seedID, orthoID, var1
-    if(is.null(info)){return()}
+
+    if(is.null(info)){paste("No ortholog found!!!")}
     else{
       a <- paste0("seedID = ",info[1])
       b <- paste0("hitID = ",info[2])
