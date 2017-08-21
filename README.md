@@ -36,18 +36,12 @@ OR
 
 Manually download all the files to your computer and keep the original folder structure.
 
-(2) Install dependent R packages:
+(2) Install dependent R packages and run PhyloProfile:
 
->Rscript installPackages.R
-
-(3) Run PhyloProfile tool:
-
->R -e 'shiny::runApp(,launch.browser=TRUE)'
-
-(or open and run server.R / ui.R using RStudio)
+>Rscript phyloprofile.R
 
 NOTE: R and Rscript has to be installed on your machine.
-NOTE2: please check if all packages are successfully installed, otherwise some features maybe unavailable or the tool cannot work correctly.
+NOTE 2: please check if all packages are successfully installed, otherwise some features maybe unavailable or the tool cannot work correctly.
 
 # Bugs
 Any bug reports or comments, suggestions are highly appreciated.

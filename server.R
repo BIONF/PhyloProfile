@@ -4,48 +4,8 @@
 # p_load(shiny,shinyBS,ggplot2,reshape2,plyr,dplyr,tidyr,scales,grid,gridExtra,ape,stringr,gtable,dendextend,ggdendro,gplots,data.table,taxize,rdrop2,install=T)
 #######################################################
 
-##### check ggplot2 version #####
-version_above <- function(pkg, than) {
-  compareVersion(as.character(packageVersion(pkg)), than)
-}
-
-if ("ggplot2" %in% rownames(installed.packages())) {
-  if (version_above("ggplot2","2.2.0") == -1) {
-    source("https://bioconductor.org/biocLite.R")
-    biocLite("ggplot2")
-    require("ggplot2")
-  }
-} else {
-  source("https://bioconductor.org/biocLite.R")
-  biocLite("ggplot2")
-  require("ggplot2")
-}
-require("ggplot2")
-
-if (!require("shiny")) {install.packages("shiny")}
-if (!require("shinyBS")) {install.packages("shinyBS")}
-if (!require("reshape2")) {install.packages("reshape2")}
-if (!require("plyr")) {install.packages("plyr")}
-if (!require("dplyr")) {install.packages("dplyr")}
-if (!require("tidyr")) {install.packages("tidyr")}
-if (!require("scales")) {install.packages("scales")}
-if (!require("grid")) {install.packages("grid")}
-if (!require("gridExtra")) {install.packages("gridExtra")}
-if (!require("ape")) {install.packages("ape")}
-if (!require("stringr")) {install.packages("stringr")}
-if (!require("gtable")) {install.packages("gtable")}
-if (!require("dendextend")) {install.packages("dendextend")}
-if (!require("ggdendro")) {install.packages("ggdendro")}
-if (!require("gplots")) {install.packages("gplots")}
-if (!require("data.table")) {install.packages("data.table")}
-if (!require("taxize")) {install.packages("taxize")}
-if (!require("rdrop2")) {install.packages("rdrop2")}
-
-if (!require("Biostrings")) {
-  source("https://bioconductor.org/biocLite.R")
-  biocLite("Biostrings")
-  require("Biostrings")
-}
+packages <- c("shiny","shinyBS","ggplot2","reshape2","plyr","dplyr","tidyr","scales","grid","gridExtra","ape","stringr","gtable","dendextend","ggdendro","gplots","data.table","taxize","rdrop2","Biostrings")
+sapply(packages, require, character.only = TRUE)
 
 token <- readRDS("droptoken.rds")
 
@@ -706,7 +666,7 @@ shinyServer(function(input, output, session) {
 
       # get list of input taxa (from main input file)
       if(input$demo == TRUE){
-        data <- as.data.frame(read.csv("https://raw.githubusercontent.com/trvinh/phyloprofile/master/data/demo/test.main",stringsAsFactors = FALSE, sep='\t', comment.char=""))
+        data <- drop_read_csv("/phyloprofile/data/demo/test.main", stringsAsFactors = FALSE, sep='\t', comment.char="",header = TRUE)
         inputTaxa <- colnames(data)
       } else {
         filein <- input$mainInput
@@ -755,7 +715,7 @@ shinyServer(function(input, output, session) {
   ######## get input taxa (a subset of available taxa in taxonID.list.fullRankID)
   subsetTaxa <- reactive({
     if(input$demo == TRUE){
-      data <- as.data.frame(read.csv("https://raw.githubusercontent.com/trvinh/phyloprofile/master/data/demo/test.main",stringsAsFactors = FALSE, sep='\t', comment.char=""))
+      data <- drop_read_csv("/phyloprofile/data/demo/test.main", stringsAsFactors = FALSE, sep='\t', comment.char="",header = TRUE)
       inputTaxa <- colnames(data)
     } else {
       filein <- input$mainInput
@@ -789,7 +749,7 @@ shinyServer(function(input, output, session) {
   ######## render input files
   output$mainInputFile.ui <- renderUI({
     if(input$demo == TRUE){
-      h4(a("demo/test.main.long", href="https://raw.githubusercontent.com/trvinh/phyloprofile/master/data/demo/test.main.long", target="_blank"))
+      h4(a("demo/test.main.long", href="https://www.dropbox.com/s/blk7a9pquivdpbb/test.main.long?dl=0", target="_blank"))
     } else {
       fileInput("mainInput",h5("Upload input file:"))
     }
@@ -1211,7 +1171,7 @@ shinyServer(function(input, output, session) {
     }
 
     if(input$demo == TRUE){
-      inputDf <- as.data.frame(read.csv("https://raw.githubusercontent.com/trvinh/phyloprofile/master/data/demo/test.main.long",stringsAsFactors = FALSE, sep='\t', comment.char=""))
+      inputDf <- drop_read_csv("/phyloprofile/data/demo/test.main.long", stringsAsFactors = FALSE, sep='\t', comment.char="",header = TRUE)
 
       subsetID <- levels(as.factor(inputDf$geneID))[1:nrHit]
       data <- inputDf[inputDf$geneID %in% subsetID,]
@@ -1853,7 +1813,8 @@ shinyServer(function(input, output, session) {
 
     # open main input file
     if(input$demo == TRUE){
-      dataOrig <- as.data.frame(read.csv("https://raw.githubusercontent.com/trvinh/phyloprofile/master/data/demo/test.main",stringsAsFactors = FALSE, sep='\t', comment.char=""))
+      dataOrig <- drop_read_csv("/phyloprofile/data/demo/test.main", stringsAsFactors = FALSE, sep='\t', comment.char="",header = TRUE)
+      
       # convert into paired columns
       mdData <- melt(dataOrig,id="geneID")
 
@@ -2020,7 +1981,8 @@ shinyServer(function(input, output, session) {
   presSpecAllDt <- reactive({
     # open main input file
     if(input$demo == TRUE){
-      data <- as.data.frame(read.csv("https://raw.githubusercontent.com/trvinh/phyloprofile/master/data/demo/test.main",stringsAsFactors = FALSE, sep='\t', comment.char=""))
+      data <- drop_read_csv("/phyloprofile/data/demo/test.main", stringsAsFactors = FALSE, sep='\t', comment.char="", header = TRUE)
+      
       # convert into paired columns
       mdData <- melt(data,id="geneID")
 

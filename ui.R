@@ -4,13 +4,10 @@
 # p_load(shiny,shinyBS,shinyjs,DT,colourpicker,install=T)
 #######################################################
 
-if (!require("shiny")) {install.packages("shiny")}
-if (!require("shinyBS")) {install.packages("shinyBS")}
-if (!require("DT")) {install.packages("DT")}
-if (!require("colourpicker")) {install.packages("colourpicker")}
-if (!require("shinyjs")) {install.packages("shinyjs")}
+packages <- c("shiny","shinyBS","shinyjs","DT","colourpicker")
+sapply(packages, require, character.only = TRUE)
 
-### showing waiting spinner while plotting
+### showing spinner while waiting for the profile plot
 mycss <- "
 #plot-container {
 position: relative;
