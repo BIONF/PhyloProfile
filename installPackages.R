@@ -13,5 +13,29 @@ ipak <- function(pkg){
 packages <- c("shiny","shinyBS","shinyjs","colourpicker","ggplot2","reshape2","DT","plyr","dplyr","tidyr","scales","grid","gridExtra","ape","stringr","gtable","dendextend","ggdendro","gplots","data.table","taxize","rdrop2")
 ipak(packages)
 
-source("https://bioconductor.org/biocLite.R")
-biocLite("Biostrings")
+### install biostrings from bioconductor
+if ("ggplot2" %in% rownames(installed.packages())) {
+	source("https://bioconductor.org/biocLite.R")
+	biocLite("Biostrings")
+}
+
+### check version and install ggplot2
+version_above <- function(pkg, than) {
+  compareVersion(as.character(packageVersion(pkg)), than)
+}
+
+if ("ggplot2" %in% rownames(installed.packages())) {
+  if (version_above("ggplot2","2.2.0") == -1) {
+    source("https://bioconductor.org/biocLite.R")
+    biocLite("ggplot2")
+  }
+} else {
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("ggplot2")
+}
+
+### load require packages
+lapply(packages, require, character.only = TRUE)
+
+### run phyloprofile shiny app
+shiny::runApp()
