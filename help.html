@@ -1,0 +1,47 @@
+<h1 style="color: #5e9ca0;">How the input file looks like?</h1>
+<p>PhyloProfile accepts 3 kinds of input file:</p>
+<p>(1) <a href="http://www.orthoxml.org">OrthoXML</a>&nbsp;format, which are used&nbsp;by many popullar ortholog predictors or databases like InParanoid, Hieranoid, OMA, OrthoMCL, Panther, Roundup.</p>
+<p>*Note: I tested the tool with an&nbsp;example XML file downloaded from <a href="http://orthoxml.org/0.3/orthoxml_doc_v0.3.html">OrthoXML website</a>. If it does not work with your XML file, please let me know!</p>
+<p>(2) Long format, which is a tab delimited file containing 5 columns:&nbsp;geneID, ncbiID (&lt;ncbi&gt;+taxonID. e.g. ncbi7029, ncbi3702),&nbsp;orthoID,&nbsp;var1, var2. Where var1 and var2 are variables for two additional information layers.</p>
+<p>(3) Wide/matrix format, where rows represent genes and columns represent taxa. Each cell in the matrix contains &lt;orthoID&gt;#&lt;var1&gt;#&lt;var2&gt;. An unavailable value is written as NA, e.g.&nbsp;arath_2339_31:248814#NA#0.2, or&nbsp;homsa_8_41:119370#NA#NA or only NA (the same as NA#NA#NA).</p>
+<p><em>*Note for matrix format: &nbsp;the header of first column has to be "geneID". The header of each taxon must have this format "ncbi12345", in which 12345 is its NCBI taxon ID.</em></p>
+<p><em><strong>More detail?</strong></em> Pleas take a look at the example files <strong>test.main</strong>, <strong>test.main.long</strong> or <strong>test.main.xml</strong> in <em>/data/demo/</em> :)</p>
+<p>&nbsp;</p>
+<h1 style="color: #5e9ca0;">Error while parsing orthoXML input file</h1>
+<p>Currently I use a python script (<em>data/orthoxmlParser.py</em>) to parse orthoXML input file. This script needs 2 modules (libraries) called <strong>bs4</strong>&nbsp;and <strong>lxml</strong> for working. So please install these modules if necessary (sudo pip install bs4, sudo pip install lxml).</p>
+<p>If it still not works, you can try to run either that python script (<span style="background-color: #999999; color: #ffffff;">python data/orthoxmlParser.py -i yourInput.orthoxml</span>) or its&nbsp;alternative perl script (<span style="color: #ffffff; background-color: #999999;">perl data/orthoxmlParser.pl -i yourInput.orthoxml</span>) in the terminal and save the result as a new input for PhyloProfile.</p>
+<p>&nbsp;</p>
+<h1 style="color: #5e9ca0;">Additional file</h1>
+<p>An&nbsp;additional annotation&nbsp;file can be provided. Since the tool initially has been made to work with protein architecture annotations, the annotation file has to have 6 columns separated by tab: (1) pairID = groupID#orthologID#seedID, (2) orthologID/seedID, (3) feature name (pfam domain, smart domain,etc.), (4) start position, (5) end position, (6) weight value (only available for seed protein)</p>
+<p><em>Pleas take a look at the example files in data/demo/domains folder for more details.</em></p>
+<p>&nbsp;</p>
+<h1 style="color: #5e9ca0;">Download function does not work</h1>
+<p>Problem: clicked on the "Download plot" (or Download filtered data) button, entered a file name on to "Download file" window and clicked Save, but the file...was not saved :(</p>
+<p>=&gt; Click on "Open im Browser" to open the app using internet browser. Now the download function should work.</p>
+<p><em>I tested this function using Ubuntu 14.04 LTS and it worked with Firefox web browser. On a Mac machine, it always work ;)&nbsp;</em>&nbsp;</p>
+<p>&nbsp;</p>
+<h1 style="color: #5e9ca0;">Errors while plotting</h1>
+<p><span style="color: #ff0000;"><strong>Error</strong>: arguments imply differing number of rows: 0, 1</span></p>
+<p>=&gt; does your input matrix contain only 1 line???</p>
+<p><span style="color: #ff0000;"><strong>Error</strong>: id variables not found in data: geneID</span></p>
+<p>=&gt; &nbsp;the header of gene column has to be "geneID".</p>
+<p><span style="color: #ff0000;"><strong>Error</strong>: no rows to aggregate</span></p>
+<p>=&gt; are the first value "NA" everywhere??? If yes, please replace them by 0 or 1 or whatever but not NA! If not, you\'ve found a new bug. Please contact me ;)</p>
+<p><span style="color: #ff0000;"><strong>Error</strong>: second argument must be a list</span></p>
+<p>=&gt; please check if any of input genes is absent in all taxa, i.e. the complete row is filled with NA. The tool, unfortunately, does not accept these genes.</p>
+<p>&nbsp;</p>
+<h1 style="color: #5e9ca0;">Errors by&nbsp;showing Point\'s info</h1>
+<p><span style="color: #ff0000;">Error:&nbsp;argument&nbsp;is of length zero</span></p>
+<p>=&gt;&nbsp;re-select (super)taxon to highlight, it will work again :)</p>
+<p>&nbsp;</p>
+<h1 style="color: #5e9ca0;">Errors by plotting&nbsp;domain architecture</h1>
+<p><span style="color: #ff0000;">Error:&nbsp;Aesthetics must be either length 1 or the same as the data (1): x, y, yend, xend</span></p>
+<p>=&gt; please check if the ID of selected sequence, which is shown as orthoID in Detailed plot, is present in domain input file. This error is certainly caused by the missing ID in domain input file.</p>
+<p>&nbsp;</p>
+<h1 style="color: #5e9ca0;">Bug reporting</h1>
+<p>Any bug reports or comments, suggestions are highly appreciated ;-)</p>
+<p>&nbsp;</p>
+<p>&copy; 2016 Vinh Tran</p>
+<p>contact:&nbsp;<a href="mailto:tran@bio.uni-frankfurt.de">tran@bio.uni-frankfurt.de</a></p>
+<p>Please check the latest version at&nbsp;<a href="https://github.com/trvinh/phyloprofile">https://github.com/trvinh/phyloprofile</a></p>
+<p>Or try the online version at&nbsp;<a href="https://phyloprofile.shinyapps.io/phyloprofile/">https://phyloprofile.shinyapps.io/phyloprofile/</a></p>
