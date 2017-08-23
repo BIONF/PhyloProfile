@@ -196,7 +196,7 @@ heatmap.plotting <- function(data,xAxis,var1_id,var2_id,lowColor_var1,highColor_
   if(length(unique(na.omit(dataHeat$paralog))) > 0){
     p <- p + geom_point(data = dataHeat, aes(size = paralog), color = paraColor, na.rm = TRUE, show.legend = TRUE)
     p <- p + guides(size=guide_legend(title = "# inparalogs"))
-    p <- p + scale_size_continuous(range = c(min(na.omit((dataHeat$paralogSize)))*(1+dotZoom),max(na.omit((dataHeat$paralogSize))))*(1+dotZoom))  ## to tune the size of circles; "floor(value*10)/10" is used to round "down" the value with one decimal number
+    p <- p + scale_size_continuous(range = c(min(na.omit(dataHeat$paralogSize))*(1+dotZoom),max(na.omit(dataHeat$paralogSize))*(1+dotZoom)))  ## to tune the size of circles; "floor(value*10)/10" is used to round "down" the value with one decimal number
   } else {
     # remain the scale of point while filtering
     presentVl <- dataHeat$presSpec[!is.na(dataHeat$presSpec)]
