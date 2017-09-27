@@ -4,14 +4,60 @@
 # p_load(shiny,shinyBS,ggplot2,reshape2,plyr,dplyr,tidyr,scales,grid,gridExtra,ape,stringr,gtable,dendextend,ggdendro,gplots,data.table,taxize,rdrop2,install=T)
 #######################################################
 
-packages <- c("shiny","shinyBS","ggplot2","reshape2","plyr","dplyr","tidyr","scales","grid","gridExtra","ape","stringr","gtable","dendextend","ggdendro","gplots","data.table","taxize","rdrop2","Biostrings")
+packages <- c("shiny","shinyBS","ggplot2","reshape2","plyr","dplyr","tidyr","scales","grid","gridExtra","ape","stringr","gtable","dendextend","ggdendro","gplots","data.table","taxize","rdrop2","Biostrings","zoo")
 sapply(packages, require, character.only = TRUE)
 
 token <- readRDS("droptoken.rds")
+source("data/taxonomyProcessing.R")
 
 #############################################################
 ######################## FUNCTIONS ##########################
 #############################################################
+
+########## taxa2dist function from taxize ##############
+taxa2dist <- function(x, varstep = FALSE, check = TRUE, labels) {
+  rich <- apply(x, 2, function(taxa) length(unique(taxa)))
+  S <- nrow(x)
+  if (check) {
+    keep <- rich < S & rich > 1
+    rich <- rich[keep]
+    x <- x[, keep]
+  }
+  i <- rev(order(rich))
+  x <- x[, i]
+  rich <- rich[i]
+  if (varstep) {
+    add <- -diff(c(nrow(x), rich, 1))
+    add <- add/c(S, rich)
+    add <- add/sum(add) * 100
+  }
+  else {
+    add <- rep(100/(ncol(x) + check), ncol(x) + check)
+  }
+  if (!is.null(names(add)))
+    names(add) <- c("Base", names(add)[-length(add)])
+  if (!check)
+    add <- c(0, add)
+  out <- matrix(add[1], nrow(x), nrow(x))
+  for (i in 1:ncol(x)) {
+    out <- out + add[i + 1] * outer(x[, i], x[, i], "!=")
+  }
+  out <- as.dist(out)
+  attr(out, "method") <- "taxa2dist"
+  attr(out, "steps") <- add
+  if (missing(labels)) {
+    attr(out, "Labels") <- rownames(x)
+  }
+  else {
+    if (length(labels) != nrow(x))
+      warning("Labels are wrong: needed ", nrow(x), " got ",
+              length(labels))
+    attr(out, "Labels") <- as.character(labels)
+  }
+  if (!check && any(out <= 0))
+    warning("you used 'check=FALSE' and some distances are zero -- was this intended?")
+  out
+}
 
 ########## parse orthoXML file ##############
 xmlParser <- function(inputFile){
@@ -260,7 +306,7 @@ substrRight <- function(x, n){
 }
 
 ############################ MAIN ############################
-options(shiny.maxRequestSize=30*1024^2)  ## size limit for input 30mb
+options(shiny.maxRequestSize=50*1024^2)  ## size limit for input 50mb
 
 shinyServer(function(input, output, session) {
   #  session$onSessionEnded(stopApp) ### Automatically stop a Shiny app when closing the browser tab
@@ -281,8 +327,9 @@ shinyServer(function(input, output, session) {
 
   ####### check for the existence of taxonomy info file #######
   observe({
-    if(!file.exists(isolate({"data/taxonID.list.fullRankID"}))){
-      drop_get("/phyloprofile/data/taxonID.list.fullRankID", local_file = 'data/taxonID.list.fullRankID')
+    if(!file.exists(isolate({"data/rankList.txt"}))){
+      # drop_get("/phyloprofile/data/taxonID.list.fullRankID", local_file = 'data/taxonID.list.fullRankID')
+      file.create("data/rankList.txt")
     }
   })
   observe({
@@ -656,43 +703,85 @@ shinyServer(function(input, output, session) {
       return(FALSE)
     }
   })
-
-  ######## check if there is any "unknown" taxon in input matrix
-  unkTaxa <- reactive({
-    if(!file.exists(isolate({"data/taxonID.list.fullRankID"}))){return()}
-    else{
-      # get list of all available taxon (from taxonID.list.fullRankID)
-      allTaxa <- unlist(as.list(fread("data/taxonID.list.fullRankID",sep = "\t", select = "abbrName")))
-
-      # get list of input taxa (from main input file)
-      if(input$demo == TRUE){
-        data <- drop_read_csv("/phyloprofile/data/demo/test.main", stringsAsFactors = FALSE, sep='\t', comment.char="",header = TRUE)
-        inputTaxa <- colnames(data)
-      } else {
-        filein <- input$mainInput
-        if(is.null(filein)){return()}
-
+  
+  ######## get input taxa
+  subsetTaxa <- reactive({
+    if(input$demo == TRUE){
+      data <- drop_read_csv("/phyloprofile/data/demo/test.main", stringsAsFactors = FALSE, sep='\t', comment.char="",header = TRUE)
+      inputTaxa <- colnames(data)
+    } else {
+      filein <- input$mainInput
+      if(is.null(filein)){return()}
+      else{
         inputDf <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
-
-        if(checkXmlFormat() == TRUE){
-          longDf <- xmlParser(filein$datapath)
-          inputTaxa <- levels(longDf$ncbiID)
-        } else if(checkLongFormat() == TRUE){
-          inputTaxa <- levels(inputDf$ncbiID)
+        if(length(unkTaxa()) == 0){
+          # get list of input taxa (from main input file)
+          if(checkXmlFormat() == TRUE){
+            longDf <- xmlParser(filein$datapath)
+            inputTaxa <- levels(longDf$ncbiID)
+          } else if(checkLongFormat() == TRUE){
+            inputTaxa <- levels(inputDf$ncbiID)
+          } else {
+            inputTaxa <- readLines(filein$datapath, n = 1)
+          }
         } else {
           inputTaxa <- readLines(filein$datapath, n = 1)
         }
+        
+        inputTaxa <- unlist(strsplit(inputTaxa,split = '\t'))
+        if(inputTaxa[1] == "geneID"){
+          inputTaxa <- inputTaxa[-1]   # remove "geneID" element from vector inputTaxa
+        }
+        
+        # return input taxa
+        return(inputTaxa)
       }
+    }
+  })
 
-      inputTaxa <- unlist(strsplit(inputTaxa,split = '\t'))
-      if(inputTaxa[1] == "geneID"){
-        inputTaxa <- inputTaxa[-1]   # remove "geneID" element from vector inputTaxa
+  ######## check if there is any "unknown" taxon in input matrix
+  unkTaxa <- reactive({
+    # get list of input taxa (from main input file)
+    if(input$demo == TRUE){
+      data <- drop_read_csv("/phyloprofile/data/demo/test.main", stringsAsFactors = FALSE, sep='\t', comment.char="",header = TRUE)
+      inputTaxa <- colnames(data)
+    } else {
+      filein <- input$mainInput
+      if(is.null(filein)){return()}
+
+      inputDf <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+
+      if(checkXmlFormat() == TRUE){
+        longDf <- xmlParser(filein$datapath)
+        inputTaxa <- levels(longDf$ncbiID)
+      } else if(checkLongFormat() == TRUE){
+        inputTaxa <- levels(inputDf$ncbiID)
+      } else {
+        inputTaxa <- readLines(filein$datapath, n = 1)
       }
+    }
 
-      # list of unknown taxa
-      unkTaxa <- inputTaxa[!(inputTaxa %in% allTaxa)]
-      # return list of unkTaxa
-      unkTaxa
+    inputTaxa <- unlist(strsplit(inputTaxa,split = '\t'))
+    if(inputTaxa[1] == "geneID"){
+      inputTaxa <- inputTaxa[-1]   # remove "geneID" element from vector inputTaxa
+    }
+
+    if(!file.exists(isolate({"data/rankList.txt"}))){
+      return(inputTaxa)
+    } else {
+      info = file.info("data/rankList.txt")
+      if(info$size == 0){
+        return(inputTaxa)
+      } else {
+        # get list of all available taxon (from /data/rankList.txt)
+        pipeCmd <- paste0("cut -f 1 ",getwd(),"/data/rankList.txt")
+        allTaxa <- unlist((read.table(pipe(pipeCmd))))
+        
+        # list of unknown taxa
+        unkTaxa <- inputTaxa[!(inputTaxa %in% allTaxa)]
+        # return list of unkTaxa
+        return(unkTaxa)
+      }
     }
   })
 
@@ -709,40 +798,6 @@ shinyServer(function(input, output, session) {
       tb <- as.data.frame(unkTaxa())
       names(tb)[1] <- "New taxon"
       tb
-    }
-  })
-
-  ######## get input taxa (a subset of available taxa in taxonID.list.fullRankID)
-  subsetTaxa <- reactive({
-    if(input$demo == TRUE){
-      data <- drop_read_csv("/phyloprofile/data/demo/test.main", stringsAsFactors = FALSE, sep='\t', comment.char="",header = TRUE)
-      inputTaxa <- colnames(data)
-    } else {
-      filein <- input$mainInput
-      if(is.null(filein)){return()}
-
-      inputDf <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
-      if(length(unkTaxa()) == 0){
-        # get list of input taxa (from main input file)
-        if(checkXmlFormat() == TRUE){
-          longDf <- xmlParser(filein$datapath)
-          inputTaxa <- levels(longDf$ncbiID)
-        } else if(checkLongFormat() == TRUE){
-          inputTaxa <- levels(inputDf$ncbiID)
-        } else {
-          inputTaxa <- readLines(filein$datapath, n = 1)
-        }
-      } else {
-        inputTaxa <- readLines(filein$datapath, n = 1)
-      }
-
-      inputTaxa <- unlist(strsplit(inputTaxa,split = '\t'))
-      if(inputTaxa[1] == "geneID"){
-        inputTaxa <- inputTaxa[-1]   # remove "geneID" element from vector inputTaxa
-      }
-
-      # return subset of taxonID.list.fullRankID
-      inputTaxa
     }
   })
 
@@ -768,64 +823,109 @@ shinyServer(function(input, output, session) {
   })
 
   ######## check if data is loaded and "parse" button (get info from input) is clicked and confirmed
-  v1 <- reactiveValues(parseNew = FALSE)
-  observeEvent(input$BUTparseNew, {
+  v1 <- reactiveValues(parse = FALSE)
+  observeEvent(input$BUTparse, {
     toggleModal(session, "parseConfirm", toggle = "close")
-    v1$parseNew <- input$BUTparseNew
+    v1$parse <- input$BUTparse
   })
 
-  v2 <- reactiveValues(parseAppend = FALSE)
-  observeEvent(input$BUTparseAppend, {
-    toggleModal(session, "parseConfirm", toggle = "close")
-    v2$parseAppend <- input$BUTparseAppend
-  })
-
-  ######### create taxonID.list.fullRankID and taxonNamesReduced.txt from input file (if confirmed by BUTyes)
+  ######### create rankList.txt, idList.txt, taxonNamesReduced.txt from input file (if confirmed by BUTyes). 
+  ######### and also create a full taxonomy matrix for sorting taxa (taxonomyMatrix.txt)
   observe({
     filein <- input$mainInput
     if(is.null(filein)){return()}
     else{
-      if(!file.exists(isolate({"data/taxonID.list.fullRankID"}))){return()}
+      inputDf <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+      
+      if(v1$parse == F){return()}
       else{
-        inputDf <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
-
-        if(v1$parseNew == F & v2$parseAppend == F){return()}
-        else{
-          ## get list of taxa from input
-          if(v1$parseNew == T){
-            if(checkXmlFormat() == TRUE){
-              longDf <- xmlParser(filein$datapath)
-              titleline <- toString(paste(levels(longDf$ncbiID),collapse = "\t"))
-            } else if(checkLongFormat() == TRUE){
-              titleline <- toString(paste(levels(inputDf$ncbiID),collapse = "\t"))
-            } else {
-              titleline <- readLines(filein$datapath, n=1)
-            }
-          }
-
-          ## get existing taxa list from current taxonID.list.fullRankID
-          ## and append unkTaxa into that list
-          if(v2$parseAppend == T){
-            pipeCmd <- paste0("cut -f 2 ",getwd(),"/data/taxonID.list.fullRankID")
-            currentTaxaList <- as.list(read.table(pipe(pipeCmd)))
-
-            unkTaxa <- unkTaxa()
-            fullListTaxa <- c(as.character(currentTaxaList$V1),unkTaxa)
-            titleline <- paste(fullListTaxa, collapse='\t' )
-          }
-
-          # Create 0-row data frame which will be used to store data
-          dat <- data.frame(x = numeric(0), y = numeric(0))   ### use for progess bar
-          withProgress(message = 'Parsing input file', value = 0, {
-            cmd <- paste("perl ", getwd(),"/data/getTaxonomyInfo.pl",
-                         " -i \"", titleline,"\"",
-                         " -n ", getwd(),"/data/taxonNamesFull.txt",
-                         " -a ", getwd(),"/data/newTaxa.txt",
-                         " -o ", getwd(),"/data",
-                         sep='')
-            system(cmd)
-          })
+        ## get list of taxa need to be parsed (the one mising taxonomy information)
+        if(v1$parse == T){
+          unkTaxa <- unkTaxa()
+          titleline <- c("geneID",unkTaxa)
         }
+        
+        # Create 0-row data frame which will be used to store data
+        withProgress(message = 'Parsing input file', value = 0, {
+          allTaxonInfo<-fread("data/taxonNamesFull.txt")
+          newTaxaFromFile <- fread("data/newTaxa.txt")
+          
+          allTaxonInfo <- rbind(newTaxaFromFile,allTaxonInfo)
+          
+          rankList <- data.frame()
+          idList <- data.frame()
+          
+          reducedInfoList <- data.frame()
+          
+          for(i in 2:length(titleline)){
+            ## taxon ID  
+            refID <- gsub("ncbi","",titleline[i])
+            
+            ## get info for this taxon
+            refEntry <- allTaxonInfo[allTaxonInfo$ncbiID == refID,]
+            
+            if(nrow(reducedInfoList[reducedInfoList$X1 == refEntry$ncbiID,]) == 0){
+              refInfoList <- data.frame(matrix(c(refEntry$ncbiID,refEntry$fullName,refEntry$rank,refEntry$parentID), nrow=1, byrow=T),stringsAsFactors=FALSE)
+              reducedInfoList <- rbind(reducedInfoList,refInfoList)
+              cat(paste(c(refEntry$ncbiID,refEntry$fullName,refEntry$rank,refEntry$parentID),collapse = "\t"), file="data/taxonNamesReduced.txt", append=TRUE, sep = "\n")
+            }
+            
+            ## parentID (used to check if hitting last rank, i.e. norank_1)
+            lastID <- refEntry$parentID
+            
+            ## create list of rank for this taxon
+            rank <- c(paste0("ncbi",refID),refEntry$fullName)
+            if(refEntry$rank == "norank"){
+              rank <- c(rank,paste0("strain"))
+            } else {
+              rank <- c(rank,refEntry$rank)
+            }
+            
+            ## create list of IDs for this taxon
+            ids <- list(paste0(refEntry$fullName,"#name"))
+            if(refEntry$rank == "norank"){
+              ids <- c(ids,paste0(refEntry$ncbiID,"#","strain","_",refEntry$ncbiID))
+            } else {
+              ids <- c(ids,paste0(refEntry$ncbiID,"#",refEntry$rank))
+            }
+            
+            ## append info into rank and ids
+            while(lastID != 1){
+              nextEntry <- allTaxonInfo[allTaxonInfo$ncbiID == lastID,]
+              
+              if(nrow(reducedInfoList[reducedInfoList$X1 == nextEntry$ncbiID,]) == 0){
+                nextEntryList <- data.frame(matrix(c(nextEntry$ncbiID,nextEntry$fullName,nextEntry$rank,nextEntry$parentID), nrow=1, byrow=T),stringsAsFactors=FALSE)
+                reducedInfoList <- rbind(reducedInfoList,nextEntryList)
+                cat(paste(c(nextEntry$ncbiID,nextEntry$fullName,nextEntry$rank,nextEntry$parentID),collapse = "\t"), file="data/taxonNamesReduced.txt", append=TRUE, sep = "\n")
+              }
+              
+              lastID <- nextEntry$parentID
+              
+              if("norank" %in% nextEntry$rank){
+                rank <- c(rank,paste0(nextEntry$rank,"_",nextEntry$ncbiID))
+                ids <- c(ids,paste0(nextEntry$ncbiID,"#",nextEntry$rank,"_",nextEntry$ncbiID))
+              } else {
+                rank <- c(rank,nextEntry$rank)
+                ids <- c(ids,paste0(nextEntry$ncbiID,"#",nextEntry$rank))
+              }
+            }
+            
+            ## last rank and id
+            rank <- c(rank,"norank_1")
+            ids <- c(ids,"1#norank_1")
+            
+            ## append into rankList and idList files
+            cat(paste(unlist(rank),collapse = "\t"), file="data/rankList.txt", append=TRUE, sep = "\n")
+            cat(paste(unlist(ids),collapse = "\t"), file="data/idList.txt", append=TRUE, sep = "\n")
+            
+            # Increment the progress bar, and update the detail text.
+            incProgress(1/(length(titleline)-1), detail = paste((i-1),"/",length(titleline)-1))
+          }
+        })
+        
+        ### create taxonomy matrix
+        taxMatrix <- taxonomyTableCreator("data/idList.txt","data/rankList.txt")
+        write.table(taxMatrix,"data/taxonomyMatrix.txt",sep="\t",eol="\n",row.names=FALSE,quote = FALSE)
       }
     }
   })
@@ -847,10 +947,12 @@ shinyServer(function(input, output, session) {
     rankSelect = input$rankSelect
     if(rankSelect == ""){return()}
 
-    ### load list of unsorted taxa
-    Dt <- as.data.frame(read.table("data/taxonID.list.fullRankID", sep='\t',header=T))
-    Dt <- Dt[Dt$abbrName  %in% subsetTaxa(),]
+    if(length(unkTaxa()) > 0){return()}
 
+    ### load list of unsorted taxa
+    Dt <- as.data.frame(read.table("data/taxonomyMatrix.txt", sep='\t', header=T, stringsAsFactors=T))
+    Dt <- Dt[Dt$abbrName  %in% subsetTaxa(),]
+    
     ### load list of taxon name
     nameList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T,fill = TRUE))
     nameList$fullName <- as.character(nameList$fullName)
@@ -1027,40 +1129,38 @@ shinyServer(function(input, output, session) {
     }
   })
 
-  ######## sorting supertaxa list based on chosen reference taxon
-  nonDupTaxonDf <- reactive({
-    if(v$doPlot == FALSE){return()}
+  ######## create rooted tree from a matrix
+  createRootedTree <- function(df,rootTaxon){
+    ### calculate distance matrix
+    taxdis <- tryCatch(taxa2dist(df), error = function(e) e)
+    
+    ### root tree 
+    tree <- as.phylo(hclust(taxdis))
+    tree <- root(tree, outgroup = rootTaxon, resolve.root = TRUE)
 
-    ### load list of unsorted taxa
-    Dt <- as.data.frame(read.table("data/taxonID.list.fullRankID", sep='\t',header=T))
-    names(Dt)[ncol(Dt)] <- "root"
-    Dt <- Dt[Dt$abbrName  %in% subsetTaxa(),]
-
-    ### reduce the number of columns in the original data frame by removing duplicate columns
-    # transpose orig dataframe
-    tDt <- as.data.frame(t(Dt))
-    # get duplicate rows (columns in original matrix)
-    dupDt <- tDt[duplicated(tDt), ]
-    # exclude "main" ranks from dupDt
-    dupDt_mod <- dupDt[row.names(dupDt) != "strain" & row.names(dupDt) != "species"
-                       & row.names(dupDt) != "genus" & row.names(dupDt) != "family"
-                       & row.names(dupDt) != "order" & row.names(dupDt) != "class"
-                       & row.names(dupDt) != "phylum" & row.names(dupDt) != "kingdom"
-                       & row.names(dupDt) != "superkingdom" & row.names(dupDt) != "root",]
-    # transpose again
-    tDupDt <- as.data.frame(t(dupDt_mod))
-    # list of columns need to be dropped
-    drop <- colnames(tDupDt)
-    # drop those columns from original Df
-    Dt <- Dt[,!(names(Dt) %in% drop)]
-  })
-
+    ### return
+    return(tree)
+  }
+  
+  ######## sort supertaxa list based on chosen reference taxon
+  sortTaxaFromTree <- function(tree){
+    ### and get ordered taxon list
+    is_tip <- tree$edge[,2] <= length(tree$tip.label)
+    ordered_tips <- tree$edge[is_tip, 2]
+    taxonList <- rev(tree$tip.label[ordered_tips])
+    
+    ### return
+    return(taxonList)
+  }
+    
   sortedTaxaList <- reactive({
     if(v$doPlot == FALSE){return()}
 
+    ####### Get representative taxon ####### 
+    
     ### load list of unsorted taxa
-    Dt <- nonDupTaxonDf()
-
+    Dt <- as.data.frame(read.table("data/taxonomyMatrix.txt", sep='\t', header=T, stringsAsFactors=T))
+    
     ### load list of taxon name
     nameList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T,fill = TRUE))
     nameList$fullName <- as.character(nameList$fullName)
@@ -1070,7 +1170,7 @@ shinyServer(function(input, output, session) {
     rankName = substr(rankSelect,4,nchar(rankSelect))   # get rank name from rankSelect
     rankNr = 0 + as.numeric(substr(rankSelect,1,2))     # get rank number (number of column in unsorted taxa list - dataframe Dt)
 
-    # get selected supertaxon ID
+    ### get selected supertaxon ID
     taxaList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T))
     allTaxa <- allTaxaList()
     rankNameTMP <- allTaxa$rank[allTaxa$fullName == input$inSelect]
@@ -1079,37 +1179,34 @@ shinyServer(function(input, output, session) {
     } else {
       superID <- as.numeric(taxaList$ncbiID[taxaList$fullName == input$inSelect & taxaList$rank == rankNameTMP[1]])
     }
-
-    ### sort taxa list
-    ### first move all species that have the same ID of selected rank (level) to a new data frame
-    ### and sort the rest of the data frame based on that rank.
-    ### then move species that have different ID of selected rank (level), but have the same ID of the higher level
-    ### repeat until reach to last column
-    sortedDt <- data.frame()
-
-    firstLine <- Dt[Dt[,rankName]==superID,][1,]  # get all taxon info for 1 representative
-    sortedDt <- rbind(sortedDt,firstLine) # add to sortedDt
-    Dt <- anti_join(Dt, firstLine, by="ncbiID") # & then remove that line from Dt
-
-    for(i in 5:ncol(Dt)){
-      Dt <- Dt[order(Dt[,i]),]
-      matchID <- sortedDt[,i][1]
-      subDt <- Dt[Dt[,i]==matchID,]
-      if(nrow(subDt) > 0){
-        sortedDt <- rbind(sortedDt,subDt)
-        Dt <- anti_join(Dt, subDt, by="ncbiID")   # delete already selected lines from Dt dataframe
-      }
+    
+    ### representative taxon
+    repTaxon <- Dt[Dt[,rankName]==superID,][1,]
+    
+    ####### Sort taxon list based on hclust tree #######
+    
+    ### prepare Df for calculating distance matrix
+    distDf <- subset(Dt, select = -c(ncbiID,fullName))
+    row.names(distDf) <- distDf$abbrName
+    distDf <- distDf[,-1]
+    
+    ### get sorted taxon IDs & sort full taxonomy info dataframe
+    treeIn <- input$inputTree
+    if(is.null(treeIn)){
+      taxaTree <- createRootedTree(distDf,as.character(repTaxon$abbrName))
+    } else {
+      taxaTree <- read.tree(file=treeIn$datapath)
     }
-
-    ### join sortedDt and the rest of Dt list (species of other superkingdom than the one of selected supertaxon)
-    sortedDt <- rbind(sortedDt,Dt)
-
+    taxonList <- sortTaxaFromTree(taxaTree)
+    sortedDt <- Dt[match(taxonList, Dt$abbrName),]
+    
     ### get only taxonIDs list of selected rank and rename columns
-    sortedOut <- subset(sortedDt,select=c("No.","abbrName","ncbiID","fullName",as.character(rankName)))
-    colnames(sortedOut) <- c("No.","abbrName","species","fullName","ncbiID")
+    sortedOut <- subset(sortedDt,select=c("abbrName","ncbiID","fullName",as.character(rankName)))
+    colnames(sortedOut) <- c("abbrName","species","fullName","ncbiID")
 
     ### add name of supertaxa into sortedOut list
     sortedOut <- merge(sortedOut,nameList,by="ncbiID",all.x = TRUE,sort = FALSE)
+    sortedOut$species <- as.character(sortedOut$species)
 
     ### add order_prefix to supertaxon name
     ### and add prefix "ncbi" to taxon_ncbiID (column "species")
@@ -1130,8 +1227,8 @@ shinyServer(function(input, output, session) {
     ### final sorted supertaxa list
     sortedOut$taxonID <- 0
     sortedOut$category <- "cat"
-    sortedOut <- sortedOut[,c("No.","abbrName","taxonID","fullName.x","species","ncbiID","sortedSupertaxon","rank","category")]
-    colnames(sortedOut) <- c("No.","abbrName","taxonID","fullName","ncbiID","supertaxonID","supertaxon","rank","category")
+    sortedOut <- sortedOut[,c("abbrName","taxonID","fullName.x","species","ncbiID","sortedSupertaxon","rank","category")]
+    colnames(sortedOut) <- c("abbrName","taxonID","fullName","ncbiID","supertaxonID","supertaxon","rank","category")
 
     sortedOut$taxonID <- as.numeric(sortedOut$taxonID)
     sortedOut$ncbiID <- as.factor(sortedOut$ncbiID)
@@ -1139,7 +1236,7 @@ shinyServer(function(input, output, session) {
     sortedOut$category <- as.factor(sortedOut$category)
 
     ### return data frame
-    sortedOut
+    return(sortedOut)
   })
 
   ############### PARSING DATA FROM INPUT MATRIX:
@@ -2155,7 +2252,6 @@ shinyServer(function(input, output, session) {
     }
   })
 
-
   ######## check if button is clicked
   vCt <- reactiveValues(doPlotCustom = FALSE)
   observeEvent(input$plotCustom, {
@@ -2186,7 +2282,7 @@ shinyServer(function(input, output, session) {
     if(length(rankSelectCus) == 0){return()}
     else{
       ### load list of unsorted taxa
-      Dt <- as.data.frame(read.table("data/taxonID.list.fullRankID", sep='\t',header=T))
+      Dt <- as.data.frame(read.table("data/taxonomyMatrix.txt", sep='\t', header=T, stringsAsFactors=T))
       Dt <- Dt[Dt$abbrName  %in% subsetTaxa(),]
 
       ### load list of taxon name
@@ -2217,7 +2313,7 @@ shinyServer(function(input, output, session) {
     if(taxaSelectCus == ""){return()}
 
     ### load list of unsorted taxa
-    Dt <- as.data.frame(read.table("data/taxonID.list.fullRankID", sep='\t',header=T))
+    Dt <- as.data.frame(read.table("data/taxonomyMatrix.txt", sep='\t', header=T, stringsAsFactors=T))
     Dt <- Dt[Dt$abbrName  %in% subsetTaxa(),]
 
     ### get ID of customized (super)taxon
@@ -2238,9 +2334,14 @@ shinyServer(function(input, output, session) {
     if (vCt$doPlotCustom == FALSE) return()
     if(input$inSeq[1] == "all" & input$inTaxa[1] == "all") {return()}
     else{
-      ### process data
       dataHeat <- dataHeat()
-
+      
+      ### cluster dataHeat (if selected)
+      if(input$applyCluster == TRUE){
+        dataHeat <- clusteredDataHeat()
+      }
+      
+      ### process data
       dataHeat$supertaxonMod <- substr(dataHeat$supertaxon,6,nchar(as.character(dataHeat$supertaxon)))
       if(input$inTaxa[1] == "all" & input$inSeq[1] != "all"){
         dataHeat <- subset(dataHeat,geneID %in% input$inSeq) ##### <=== select data from dataHeat for selected sequences only
@@ -2866,8 +2967,8 @@ shinyServer(function(input, output, session) {
     superID <- as.numeric(taxaList$ncbiID[taxaList$fullName == input$inSelect & taxaList$rank == rankName])
 
     ### full non-duplicated taxonomy data
-    Dt <- nonDupTaxonDf()
-
+    Dt <- as.data.frame(read.table("data/taxonomyMatrix.txt", sep='\t', header=T, stringsAsFactors=T))
+    
     ### subset of taxonomy data, containing only ranks from rankList
     subDt <- Dt[,c("abbrName",rankList)]
 
@@ -3188,7 +3289,7 @@ shinyServer(function(input, output, session) {
     if(length(rankSelectCons) == 0){return()}
     else{
       ### load list of unsorted taxa
-      Dt <- as.data.frame(read.table("data/taxonID.list.fullRankID", sep='\t',header=T))
+      Dt <- as.data.frame(read.table("data/taxonomyMatrix.txt", sep='\t', header=T, stringsAsFactors=T))
       Dt <- Dt[Dt$abbrName  %in% subsetTaxa(),]
 
       ### load list of taxon name
@@ -3219,7 +3320,7 @@ shinyServer(function(input, output, session) {
     if(taxaSelectCons == ""){return()}
 
     ### load list of unsorted taxa
-    Dt <- as.data.frame(read.table("data/taxonID.list.fullRankID", sep='\t',header=T))
+    Dt <- as.data.frame(read.table("data/taxonomyMatrix.txt", sep='\t', header=T, stringsAsFactors=T))
     Dt <- Dt[Dt$abbrName  %in% subsetTaxa(),]
 
     ### get ID of customized (super)taxon

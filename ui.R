@@ -196,7 +196,15 @@ shinyUI(fluidPage(
                ),
                hr(),
                
-               checkboxInput('ordering','Ordering sequence IDs',value = TRUE),
+               checkboxInput('ordering',strong('Order sequence IDs'),value = TRUE),
+               hr(),
+               
+               HTML("<b>Order taxa</b>"),
+               radioButtons(inputId="order_taxa", label="", choices=list("automatically","by user defined tree"), selected="automatically", inline=T),
+               conditionalPanel(
+                 condition = "input.order_taxa == 'by user defined tree'",
+                 fileInput("inputTree","")
+               ),
                hr(),
                
                bsButton("getConfig","FASTA config"),
@@ -216,7 +224,8 @@ shinyUI(fluidPage(
                                 bsButton("addTaxa","Add info for new taxa",disabled=FALSE,style="warning")
                ),
                conditionalPanel(condition="input.newTaxaAsk == 'No'",
-                                bsButton("parse","Get taxonomy info from input",disabled=FALSE,style="warning")
+                                bsButton("BUTparse","Get taxonomy info from NCBI *",disabled=FALSE,style="warning"),
+                                helpText(em("(*) Taxonomy information for a given taxa list contains all taxonomy ranks and their correspoding NCBI IDs"))
                ),
                hr(),
                
@@ -358,7 +367,7 @@ shinyUI(fluidPage(
                    numericInput("clusterPlot.height",h5("Height (px)"),min=200,max=3200,step=50,value=400,width=100)
             ),
             column(3,
-                   checkboxInput("applyCluster",em(strong("Apply clustering to heatmaps", style="color:red")),value = FALSE),
+                   checkboxInput("applyCluster",em(strong("Apply clustering to profile plot", style="color:red")),value = FALSE),
                    uiOutput("applyClusterCheck.ui"),
                    
                    tags$head(
@@ -547,7 +556,7 @@ shinyUI(fluidPage(
                  tabPanel("Q&A",
                           uiOutput("help.ui")
                  ),
-                 tabPanel(a("About", href="https://trvinh.github.io/phyloprofile/", target="_blank")
+                 tabPanel(a("About", href="https://trvinh.github.io/PhyloProfile/", target="_blank")
                  )
       )
     ),
@@ -566,15 +575,9 @@ shinyUI(fluidPage(
     ),
     
     ####### popup to confirm parsing data from input file
-    bsModal("parseConfirm", "Get info from input", "parse", size = "medium",
-            HTML("Parse taxonomy information from input file<br>and"),
-            actionButton("BUTparseAppend","append to existing taxonomy file"),
-            HTML(", or"),
-            actionButton("BUTparseNew", "create new taxonomy file"),
-            HTML(".<br><br>"),
-            strong("PLEASE RELOAD THIS TOOL WHEN FINISHED!!!",style = "color:red"),
-            # actionButton("BUTno", "Cancel"),
-            helpText(em("***Taxonomy file is a file used to store all taxonomy ranks and their correspoding IDs for a given taxa list***"))
+    bsModal("parseConfirm", "Get info from input", "BUTparse", size = "small",
+            HTML("Processing...<br><br>"),
+            strong("PLEASE RELOAD THIS TOOL WHEN FINISHED!!!",style = "color:red")
     ),
     
     ####### popup windows for setting plot colors
