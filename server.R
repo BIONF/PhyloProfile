@@ -72,24 +72,6 @@ xmlParser <- function(inputFile){
   dfIN
 }
 
-# ########## convert long to wide format ##############
-# long2wide <- function(longDf){
-#   # rename column names
-#   colnames(longDf) <- c("geneID","ncbiID","orthoID","var1","var2")
-#   longDf$value <- paste0(longDf$orthoID,"#",longDf$var1,"#",longDf$var2)
-#   longDfmod <- longDf[,c("geneID","ncbiID","value")]
-#
-#   # count paralogs
-#   longDfmod <- data.table(longDfmod)
-#   longDfmod[ ,paralog := 1:.N, by=c("geneID","ncbiID")]
-#   longDfmod <- data.frame(longDfmod)
-#
-#   # return wide data frame
-#   wideDf <- spread(longDfmod, ncbiID, value)
-#   wideDf <- subset(wideDf,paralog == 1)   # remove co-orthologs
-#   wideDf <- subset(wideDf, select=-paralog)
-# }
-
 ############### FUNCTION FOR CLUSTERING PROFILES  ###############
 clusteredGeneList <- function(data,distMethod,clusterMethod){
 
