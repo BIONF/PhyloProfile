@@ -30,10 +30,10 @@ z-index: -2;
 shinyUI(fluidPage(
   tags$style(type="text/css", "body {padding-top: 80px;}"),
   tags$head(tags$style(HTML(mycss))),
-  
+
   # Application title
   titlePanel(""),
-  
+
   useShinyjs(),
   ################### TOP wellpanel for plot configuration ##########################
   conditionalPanel(
@@ -78,7 +78,7 @@ shinyUI(fluidPage(
       )
     )
   ),
-  
+
   conditionalPanel(
     condition = "input.tabs=='Customized profile'",
     wellPanel(
@@ -121,7 +121,7 @@ shinyUI(fluidPage(
       )
     )
   ),
-  
+
   ################### main narvarpage tabs ##########################
   navbarPage(
     em(strong("PhyloProfile Tool")),
@@ -130,7 +130,7 @@ shinyUI(fluidPage(
     inverse = TRUE,
     fluid = TRUE,
     position = "fixed-top",
-    
+
     ########## INPUT TAB ###########
     tabPanel(
       "Input & settings",
@@ -140,7 +140,7 @@ shinyUI(fluidPage(
                condition = "input.do",
                em(strong("RELOAD THIS TOOL TO UPLOAD A NEW INPUT FILE!!!",style = "color:red"))
              ),
-             
+
              checkboxInput("demo",em(strong("Use demo files"),style = "color:darkblue")),
              uiOutput("mainInputFile.ui"),
              uiOutput("taxaInfoCheck.ui"),
@@ -150,7 +150,7 @@ shinyUI(fluidPage(
                ),
                column(5,
                       selectInput("var1_aggregateBy", label = h5("Aggregate by:"),
-                                  choices = list("Max"="max", "Min"="min","Mean"="mean","Median"="median"), 
+                                  choices = list("Max"="max", "Min"="min","Mean"="mean","Median"="median"),
                                   selected = "max",
                                   width = 130)
                )
@@ -161,20 +161,20 @@ shinyUI(fluidPage(
                ),
                column(5,
                       selectInput("var2_aggregateBy", label = h5("Aggregate by:"),
-                                  choices = list("Max"="max", "Min"="min","Mean"="mean","Median"="median"), 
+                                  choices = list("Max"="max", "Min"="min","Mean"="mean","Median"="median"),
                                   selected = "max",
                                   width = 130)
                )
              ),
-             
+
              hr(),
              strong(h4("Additional annotation input:")),
              radioButtons(inputId="annoChoose", label="", choices=list("from file","from folder"), selected="from file", inline=T),
              uiOutput("domainInputFile.ui"),
-             
+
              hr(),
              em("Click here to download demo files:"),
-             em(a("(1) Main inputs,", href="https://github.com/trvinh/phyloprofile/tree/master/data/demo", target="_blank")),
+             em(a("(1) Main inputs,", href="https://github.com/BIONF/phyloprofile/tree/master/data/demo", target="_blank")),
              em(a("(2) Domain annotations (optional),", href="https://www.dropbox.com/sh/i3rcrgmy3113gu9/AABQl9BKNFOIZjWY-_xhmu57a?dl=0", target="_blank")),
              em(a("(3) FASTA sequence files (optional)", href="https://www.dropbox.com/sh/zu8tihto192woay/AADQcJVVm06XSmIAhNJTVsora?dl=0", target="_blank"))
       ),
@@ -184,10 +184,10 @@ shinyUI(fluidPage(
                strong(h4("New taxa were found:")),
                dataTableOutput("unkTaxaFull")
              ),
-             
+
              conditionalPanel(
                condition = 'output.unkTaxaStatus == 0',
-               
+
                strong(h4("Choose genes of interest:")),
                radioButtons(inputId="geneList_selected", label="", choices=list("all","from file"), selected="all", inline=T),
                conditionalPanel(
@@ -195,10 +195,10 @@ shinyUI(fluidPage(
                  fileInput("list","")
                ),
                hr(),
-               
+
                checkboxInput('ordering',strong('Order sequence IDs'),value = TRUE),
                hr(),
-               
+
                HTML("<b>Order taxa</b>"),
                radioButtons(inputId="order_taxa", label="", choices=list("automatically","by user defined tree"), selected="automatically", inline=T),
                conditionalPanel(
@@ -206,7 +206,7 @@ shinyUI(fluidPage(
                  fileInput("inputTree","")
                ),
                hr(),
-               
+
                bsButton("getConfig","FASTA config"),
                h5(""),
                actionButton("setColor","COLORS config",style='padding:4px; font-size:100%'),
@@ -217,7 +217,7 @@ shinyUI(fluidPage(
              conditionalPanel(
                condition = 'output.unkTaxaStatus',
                strong(h4("PLEASE CHECK:")),
-               
+
                em("Do you have any taxon, which doesn't exist in the NCBI taxonomy database?"),
                radioButtons("newTaxaAsk","", c("Yes" = "Yes", "No" = "No"), inline=T, selected = "No"),
                conditionalPanel(condition="input.newTaxaAsk == 'Yes'",
@@ -228,15 +228,15 @@ shinyUI(fluidPage(
                                 helpText(em("(*) Taxonomy information for a given taxa list contains all taxonomy ranks and their correspoding NCBI IDs"))
                ),
                hr(),
-               
+
                strong(h4("PLEASE RELOAD THIS TOOL AFTER ADDING NEW TAXA!!!"),style = "color:red")
              ),
-             
+
              conditionalPanel(
                condition = 'output.unkTaxaStatus == 0',
                strong(h4("Seed (super)taxon:")),
                br(),
-    
+
                strong(h5("Select taxonomy rank:")),
                uiOutput("rankSelect"),
                uiOutput("msgDemo"),
@@ -249,7 +249,7 @@ shinyUI(fluidPage(
              )
       )
     ),
-    
+
     ########## MAIN PROFILE TAB ###########
     tabPanel(
       "Main profile",
@@ -258,22 +258,22 @@ shinyUI(fluidPage(
           textOutput("testOutput"),    ### use for testing output ###
           column(4,offset = 0,numericInput("number","# of genes:",min=1,max=1600,step=10,value=30,width=150),style='padding:0px;'),
           column(4,numericInput("stIndex","1st index:",min=1,max=1600,value=1,width=200)),
-          
+
           column(4,uiOutput("highlightGeneUI")),
           #bsPopover("highlightGeneUI","","OR double click on heatmap","right"),
-          
+
           uiOutput("highlightTaxonUI"),
           bsPopover("highlightTaxonUI","","OR double click on heatmap","right"),
-          
+
           conditionalPanel(
             condition = "input.autoUpdate == false",
             bsButton("updateBtn","Update plot",style="warning")
           )
         ),
-        
+
         mainPanel(
           uiOutput("plot.ui"),
-          
+
           conditionalPanel(
             condition = "input.mainXAxisGuide == true | input.mainYAxisGuide == true",
             absolutePanel(
@@ -283,14 +283,14 @@ shinyUI(fluidPage(
               fixed = TRUE,
               draggable = TRUE,
               style = "opacity: 0.80",
-              
+
               uiOutput("mainAxisRender")
             )
           )
         )
       )
     ),
-    
+
     ########## CUSTOMIZED PROFILE TAB ###########
     tabPanel(
       "Customized profile",
@@ -301,7 +301,7 @@ shinyUI(fluidPage(
                  style='padding:0px;',
                  strong("Select sequence(s) of interest:")
           ),
-          
+
           column(12,
                  fluidRow(
                    column(8,
@@ -329,7 +329,7 @@ shinyUI(fluidPage(
                    )
                  )
           ),
-          
+
           h5(""),
           uiOutput("plotCustomBtn")
         ),
@@ -338,14 +338,14 @@ shinyUI(fluidPage(
         )
       )
     ),
-    
+
     ########## FUNCTION TAB ###########
     navbarMenu(
       "Function",
       tabPanel(
         "Profiles clustering",
         h4(strong("Profiles clustering")),
-        
+
         wellPanel(
           fluidRow(
             column(3,
@@ -369,7 +369,7 @@ shinyUI(fluidPage(
             column(3,
                    checkboxInput("applyCluster",em(strong("Apply clustering to profile plot", style="color:red")),value = FALSE),
                    uiOutput("applyClusterCheck.ui"),
-                   
+
                    tags$head(
                      tags$style(HTML('#downloadCluster{background-color:#A9E2F3}'))
                    ),
@@ -377,7 +377,7 @@ shinyUI(fluidPage(
             )
           )
         ),
-        
+
         column(8,
                uiOutput("cluster.ui")
         ),
@@ -388,7 +388,7 @@ shinyUI(fluidPage(
                tableOutput("brushedCluster.table")
         )
       ),
-      
+
       tabPanel(
         "Distribution analyzing",
         h4(strong("Distribution analysis")),
@@ -419,14 +419,14 @@ shinyUI(fluidPage(
             )
           )
         ),
-        
+
         uiOutput("dist_plot.ui")
       ),
-      
+
       tabPanel(
         "Gene age estimating",
         h4(strong("Gene age estimation")),
-        
+
         wellPanel(
           fluidRow(
             column(2,
@@ -447,11 +447,11 @@ shinyUI(fluidPage(
             )
           )
         ),
-        
+
         uiOutput("geneAge.ui"),
         conditionalPanel(
           condition = "input.do",
-          em(h6("01_Species; 02_Family; 03_Class; 04_Phylum; 
+          em(h6("01_Species; 02_Family; 03_Class; 04_Phylum;
                 05_Kingdom; 06_Superkingdom; 07_Last universal common ancestor;
                 Undef_Genes have been filtered out"))
         ),
@@ -463,11 +463,11 @@ shinyUI(fluidPage(
         ),
         tableOutput("geneAge.table")
       ),
-      
+
       tabPanel(
         "Core gene finding",
         h4(strong("Core gene finding")),
-        
+
         wellPanel(
           fluidRow(
             column(2,
@@ -493,7 +493,7 @@ shinyUI(fluidPage(
         ),
         dataTableOutput("consGene.table")
       ),
-      
+
       tabPanel("Search for NCBI taxonomy IDs",
                column(3,
                       fileInput("taxaList",h4("Upload taxa list")),
@@ -503,7 +503,7 @@ shinyUI(fluidPage(
                       h4("Mismatch(es):"),
                       dataTableOutput("notfoundTaxa"),
                       downloadButton("downloadNotFoundTaxa","Download"),
-                      
+
                       hr(),
                       h4("Retrieved taxonomy ID(s):"),
                       dataTableOutput("taxaID"),
@@ -511,7 +511,7 @@ shinyUI(fluidPage(
                )
         )
       ),
-      
+
       ########## DATA TAB ###########
       navbarMenu("Download filtered data",
                  tabPanel("Main data",
@@ -545,7 +545,7 @@ shinyUI(fluidPage(
                           downloadButton('downloadCustomData', 'Download customized data')
                   )
       ),
-      
+
       ########## OTHERS TAB ###########
       navbarMenu("More",
                  tabPanel("Help",
@@ -560,9 +560,9 @@ shinyUI(fluidPage(
                  )
       )
     ),
-    
+
     ################### LIST OF POP-UP WINDOWS ##########################
-    
+
     ####### popup to confirm parsing data from input file
     bsModal("addTaxaWindows", "Add new taxa", "addTaxa", size = "medium",
             helpText(em("Use this form to add taxon that does not exist in NCBI taxonomy database")),
@@ -573,13 +573,13 @@ shinyUI(fluidPage(
             actionButton("newAdd","Add"),
             actionButton("newDone","Done")
     ),
-    
+
     ####### popup to confirm parsing data from input file
     bsModal("parseConfirm", "Get info from input", "BUTparse", size = "small",
             HTML("Processing...<br><br>"),
             strong("PLEASE RELOAD THIS TOOL WHEN FINISHED!!!",style = "color:red")
     ),
-    
+
     ####### popup windows for setting plot colors
     bsModal("color", "Set colors for profile", "setColor", size = "small",
             colourpicker::colourInput("lowColor_var1", "Low variable 1", value = "darkorange"),
@@ -593,7 +593,7 @@ shinyUI(fluidPage(
             colourpicker::colourInput("paraColor", "Color for inparalogs", value = "#07d000"),
             actionButton("defaultColorPara","Default",style='padding:4px; font-size:100%')
     ),
-    
+
     ####### popup windows for FASTA configurations
     bsModal("config", "FASTA config", "getConfig", size = "small",
             selectInput("input_type", "Choose location for:",
@@ -605,7 +605,7 @@ shinyUI(fluidPage(
               #            textInput("oneseq.file","Path:",""),
               fileInput("oneSeqFasta",""),
               uiOutput("oneSeq.existCheck")
-              
+
             ),
             conditionalPanel(
               condition = "input.input_type == 'Fasta folder'",
@@ -615,27 +615,27 @@ shinyUI(fluidPage(
               ,selectInput("id_format","ID format:",choices=list(">speciesID:seqID"=1,">seqID"=2),selected=2)
             )
     ),
-    
+
     ####### popup windows for setting main plot configurations
     bsModal("mainPlotConfigBs", "Plot properties configuration", "mainPlotConfig", size = "small",
             column(6,
                    numericInput("xSize","X-axis label size (px)",min=8,max=99,step=1,value=8,width=100)
             ),
             column(6,
-                   
+
                    numericInput("ySize","Y-axis label size (px)",min=8,max=99,step=1,value=8,width=100)
             ),
-            
+
             column(6,
                    numericInput("legendSize","Legend label size (px)",min=8,max=99,step=1,value=8,width=150)
             ),
             column(6,
                    selectInput("mainLegend", label = "Legend position:",
-                               choices = list("Right"="right", "Left"="left","Top"="top","Bottom"="bottom", "Hide"="none"), 
+                               choices = list("Right"="right", "Left"="left","Top"="top","Bottom"="bottom", "Hide"="none"),
                                selected = "right",
                                width = 150)
             ),
-            
+
             column(12,
                    HTML("<strong>Zooming factor (α) for dots on profile</strong>:<br>"),
                    sliderInput("dotZoom","", min = -1, max = 3, step = 0.1, value = 0, width = 250),
@@ -643,33 +643,33 @@ shinyUI(fluidPage(
                    uiOutput("dotSizeInfo"),
                    br()
             ),
-            
+
             br(),
             hr(),
             bsButton("resetMainConfig","Reset",style="danger"),
             bsButton("applyMainConfig","Done",style="warning")
     ),
-    
+
     ####### popup windows for setting main plot configurations
     bsModal("selectedPlotConfigBs", "Plot properties configuration", "selectedPlotConfig", size = "small",
             column(6,
                    numericInput("xSizeSelect","X-axis label size(px)",min=8,max=99,step=1,value=8,width=150)
             ),
             column(6,
-                   
+
                    numericInput("ySizeSelect","Y-axis label size (px)",min=8,max=99,step=1,value=8,width=100)
             ),
-            
+
             column(6,
                    numericInput("legendSizeSelect","Legend label size (px)",min=8,max=99,step=1,value=8,width=150)
             ),
             column(6,
                    selectInput("selectedLegend", label = "Legend position:",
-                               choices = list("Right"="right", "Left"="left","Top"="top","Bottom"="bottom", "Hide"="none"), 
+                               choices = list("Right"="right", "Left"="left","Top"="top","Bottom"="bottom", "Hide"="none"),
                                selected = "right",
                                width = 150)
             ),
-            
+
             column(12,
                    HTML("<strong>Zooming factor (α) for dots on profile</strong>:<br>"),
                    sliderInput("dotZoomSelect","", min = -1, max = 3, step = 0.1, value = 0, width = 250),
@@ -677,27 +677,27 @@ shinyUI(fluidPage(
                    uiOutput("dotSizeInfoSelect"),
                    br()
             ),
-            
+
             br(),
             hr(),
             bsButton("resetSelectedConfig","Reset",style="danger"),
             bsButton("applySelectedConfig","Done",style="warning")
     ),
-    
+
     ####### popup windows for select taxa on Customized Profile
     bsModal("cusTaxaBS", "Select taxon/taxa of interest", "cusTaxa", size = "small",
             uiOutput("rankSelectCus"),
             uiOutput("taxaSelectCus"),
             checkboxInput("applyCusTaxa",strong("Apply to customized profile", style="color:red"),value = FALSE)
     ),
-    
+
     ####### popup windows for select taxa on Consensus gene finding
     bsModal("browseTaxaConsBS", "Select taxon/taxa of interest", "browseTaxaCons", size = "small",
             uiOutput("rankSelectCons"),
             uiOutput("taxaSelectCons"),
             checkboxInput("applyConsTaxa",strong("Apply", style="color:red"),value = FALSE)
     ),
-    
+
     ####### popup windows for detailed plot
     bsModal("modalBS", "Detailed plot", "go", size = "large",
             uiOutput("detailPlot.ui"),
@@ -709,7 +709,7 @@ shinyUI(fluidPage(
             ,h4("Sequence:")
             ,verbatimTextOutput("fasta")
     ),
-    
+
     ####### popup windows for domain architecture plot
     bsModal("plotArchi","Domain architecture","doDomainPlot", size = "large",
             fluidRow(
@@ -732,7 +732,7 @@ shinyUI(fluidPage(
             uiOutput("archiPlot.ui"),
             downloadButton("archiDownload","Download plot")
     ),
-    
+
     ################### POINT INFO BOX ##########################
     conditionalPanel(
       condition = "input.tabs=='Main profile' || input.tabs=='Customized profile'",
