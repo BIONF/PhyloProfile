@@ -612,7 +612,7 @@ shinyUI(fluidPage(
               textInput("path","Main path:","")
               ,selectInput("dir_format","Directory format:",choices=list("path/speciesID.fa*"=1,"path/speciesID/speciesID.fa*"=2),selected="Path/speciesID.fasta")
               ,selectInput("file_ext","File extension:",choices=list("fa"="fa","fasta"="fasta","fas"="fas","txt"="txt"),selected="fa")
-              ,selectInput("id_format","ID format:",choices=list(">speciesID:seqID"=1,">seqID"=2),selected=2)
+              ,selectInput("id_format","ID format:",choices=list(">seqID"=1,">speciesID:seqID"=2,">speciesID@seqID"=3,">speciesID|seqID"=4),selected=2)
             )
     ),
 

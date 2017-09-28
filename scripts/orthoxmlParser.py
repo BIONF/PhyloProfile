@@ -57,23 +57,24 @@ def main(argv):
 	index = 10000
 	for orthogroup in xmlIn.findAll("orthologGroup"):
 		groupID = orthogroup.get("id")
-		if groupID.isdigit():
-			groupIndex = index + int(groupID)
-			groupID = "OG_"+str(groupIndex)
+		if groupID:
+			if groupID.isdigit():
+				groupIndex = index + int(groupID)
+				groupID = "OG_"+str(groupIndex)
 
-		for ortho in orthogroup.findAll("geneRef"):
-			orthoID = protID[ortho.get("id")]
-			result = [groupID,"ncbi"+taxonID[orthoID],orthoID]
+			for ortho in orthogroup.findAll("geneRef"):
+				orthoID = protID[ortho.get("id")]
+				result = [groupID,"ncbi"+taxonID[orthoID],orthoID]
 
-			for scoreID in scoreDesc.keys():
-				if(ortho.findAll("score", id = scoreID)):
-					score = ortho.find("score", id = scoreID)
-					result.append(score.get("value"))
-				else:
-					result.append("NA")
+				for scoreID in scoreDesc.keys():
+					if(ortho.findAll("score", id = scoreID)):
+						score = ortho.find("score", id = scoreID)
+						result.append(score.get("value"))
+					else:
+						result.append("NA")
 
-			### PRINT OUTPUT
-			print('\t'.join(result))
+				### PRINT OUTPUT
+				print('\t'.join(result))
 
 if __name__ == "__main__":
 	if len(sys.argv[1:])==0:

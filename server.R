@@ -7,8 +7,8 @@
 packages <- c("shiny","shinyBS","ggplot2","reshape2","plyr","dplyr","tidyr","scales","grid","gridExtra","ape","stringr","gtable","dendextend","ggdendro","gplots","data.table","taxize","Biostrings","zoo")
 sapply(packages, require, character.only = TRUE)
 
-source("bin/taxonomyProcessing.R")
-source("bin/functions.R")
+source("scripts/taxonomyProcessing.R")
+source("scripts/functions.R")
 
 ############################ MAIN ############################
 options(shiny.maxRequestSize=50*1024^2)  ## size limit for input 50mb
@@ -2431,11 +2431,22 @@ shinyServer(function(input, output, session) {
           id_format = input$id_format
 
           ### get species ID and seqID
-          specTMP <- unlist(strsplit(seqID,":"))
-          specID = specTMP[1]
+          # specTMP <- unlist(strsplit(seqID,":"))
+          # specID = specTMP[1]
           if(id_format == 2){
-            seqID = specTMP[2]
+            specTMP <- unlist(strsplit(seqID,":"))
+            # seqID = specTMP[length(specTMP)]
+            specID = paste(specTMP[-length(specTMP)],collapse = ":")
+          } else if(id_format == 3){
+            specTMP <- unlist(strsplit(seqID,"@"))
+            # seqID = specTMP[length(specTMP)]
+            specID = paste(specTMP[-length(specTMP)],collapse = "@")
+          } else if(id_format == 4){
+            specTMP <- unlist(strsplit(seqID,"|"))
+            # seqID = specTMP[length(specTMP)]
+            specID = paste(specTMP[-length(specTMP)],collapse = "|")
           }
+          
 
           ### full path fasta file
           f <- paste0(path,"/",specID,".",file_ext)
@@ -2448,7 +2459,7 @@ shinyServer(function(input, output, session) {
         ### get fasta
         fastaOut <- paste(getFasta(f,seqID))
       }
-
+      # return(c(seqID,specID))
       return(fastaOut)
     }
   })

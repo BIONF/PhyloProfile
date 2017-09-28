@@ -4,7 +4,7 @@
 
 ########## parse orthoXML file ##############
 xmlParser <- function(inputFile){
-  cmd <- paste("python ", getwd(),"/bin/orthoxmlParser.py",
+  cmd <- paste("python ", getwd(),"/scripts/orthoxmlParser.py",
                " -i ", inputFile,
                sep='')
   dfIN <- as.data.frame(read.table(text = system(cmd,intern=TRUE)))
