@@ -13,6 +13,10 @@ parser.add_argument('-i','--ids', nargs='+',
 args = parser.parse_args()
 
 def read_xml(ID):
+    '''
+    Get the XML-formatted HOG file from OMA.
+    Parse as XML-tree for downstream merging if needed
+    '''
     try:
         oma_url = urllib.urlopen("http://omabrowser.org/oma/hogs/%s/orthoxml/" % ID)
         oma_xml = oma_url.read()
@@ -27,8 +31,14 @@ def read_xml(ID):
 
 
 def merge_xml(oma1,oma2):
+    '''
+    Merge two OMA OrthoXML files by adding
+    a) missing species with the corresponding genes
+    b) the HOG definitions that are not in <groups> yet
+    '''
     oma1_root = oma1.getroot()
     oma2_root = oma2.getroot()
+    # get the namespace for the XML
     ns = "{"+oma1_root.nsmap[None]+"}"
     # iterate over all species in file #2
     for species in oma2.iter(ns+"species"):
@@ -45,21 +55,20 @@ def merge_xml(oma1,oma2):
         # meh, have to add the whole species to it.
         else:
             oma1_root.findall(ns+"species")[-1].addnext(species)
-
+    # now add the orthologous group definition to the corresponding block
     for group in oma2.find(ns+"groups").getchildren():
         oma1.find(ns+"groups").getchildren()[-1].addnext(group)
     return oma1
 
-
-#oma1 = read_xml("RATNO03709")
-#oma2 = read_xml("RATNO03710")
-
+# get first file in list and read it
 merged_id = args.ids[0]
 merged_xml = read_xml(merged_id)
 
+# now read all other files and merge
 other_ids = args.ids[1:]
 for single_id in other_ids:
     xml_to_append = read_xml(single_id)
     merged_xml = merge_xml(merged_xml,xml_to_append)
 
-print etree.tostring(merged_xml)
+# and print our new XML
+print(etree.tostring(merged_xml))
