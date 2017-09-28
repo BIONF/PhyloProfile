@@ -145,9 +145,9 @@ taxonomyTableCreator <- function(idListFile,rankListFile){
   return(fullRankIDdf)
 }
 
-########################################################################
-#################### taxa2dist function from taxize ####################
-########################################################################
+###########################################################################
+#################### TAXA2DIST (from taxize library) ######################
+###########################################################################
 taxa2dist <- function(x, varstep = FALSE, check = TRUE, labels) {
   rich <- apply(x, 2, function(taxa) length(unique(taxa)))
   S <- nrow(x)
