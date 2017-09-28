@@ -30,7 +30,7 @@ In `data/demo/` you can find some test data:
 # Usage
 (1) Clone this git repository to your computer using this command:
 
->git clone https://github.com/trvinh/phyloprofile
+>git clone https://github.com/BIONF/PhyloProfile
 
 OR
 
