@@ -65,6 +65,15 @@ To convert the *OrthoXML* of *OMA Standalone* to a PhyloProfile compatible *Orth
 
 `./scripts/convert_oma_standalone_orthoxml.py -x data/demo/oma_example.orthoxml -m data/demo/taxon_mapping_oma_orthoxml.csv > data/demo/oma_example_phyloprofile_compatible.orthoxml`
 
+### OMA Browser
+If you prefer to use precalculated *Hierarchical Orthologous Groups* (HOGs) from the [*OMA Browser*](http://omabrowser.org/oma/home/) you can download your HOGs of interest right away from the commandline. To this end we provide `scripts/get_oma_hogs.py`. The input for this script is a list of *OMA* protein IDs (e.g. `RATNO03710`) or *Uniprot* IDs (e.g. `P53_HUMAN`). The types of IDs can be mixed.
+
+Running
+
+`scripts/get_oma_hogs.py -i ./scripts/get_oma_hogs.py -i RATNO03709 RATNO03710 RATNO03711 P53_HUMAN`
+
+will yield a single, merged *OrthoXML* files that contains the four *HOGs* for the corresponding proteins. 
+
 ### Your tool is missing?
 Please get in touch! we are trying to support more orthology prediction tools right out of the box.
 
