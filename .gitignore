@@ -1,11 +1,9 @@
-data/taxonID.list.fullRankID
+data/rankList.txt
+data/idList.txt
+data/taxonomyMatrix.txt
 data/taxonNamesReduced.txt
-data/demo/test.main
-data/demo/test.main.long2
-data/demo/geneList.txt
-data/demo/test.architecture
-data/demo/test.traceability
-data/demo/full_domain_files/
+data/demo/*
+data/demo/full_domain_files/*
 data/newTaxa.txt
 
 rsconnect/
@@ -28,7 +26,7 @@ vignettes/*.html
 vignettes/*.pdf
 
 # OAuth2 token, see https://github.com/hadley/httr/releases/tag/v0.3
-#.httr-oauth
+.httr-oauth
 
 # DS_Store
 **/.DS_Store
