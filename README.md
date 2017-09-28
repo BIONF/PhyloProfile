@@ -1,49 +1,48 @@
 
-# PhyloProfile Tool
+# PhyloProfile
 
 ![](www/pic_main.png)
 
-PhyloProfile is a Shiny(R)-based tool for integrating, visualizing and exploring multi- layered phylogenetic profiles
+*PhyloProfile* is a *Shiny*-based tool for integrating, visualizing and exploring multi-layered phylogenetic profiles.
 
-Alongside the presence/absence pattern of orthologs across large taxon collections, PhyloProfile allows the integration of any two additional information layers. These complementary data, e.g. sequence similarity between orthologs, similarities and differences of their domain architectures or their Gene Ontology-term-based semantic similarities, etc. will enable a more reliable functional inference among those orthologous sequences.
+Alongside the presence/absence patterns of orthologs across large taxon collections, *PhyloProfile* allows the integration of any two additional information layers. These complementary data, like sequence similarity between orthologs, similarities in their domain architecture, or differences in functional annotations enable a more informed interpretation of phylogenetic profiles.
 
-By utilizing the NCBI taxonomy, input taxa can be dynamically collapsed into higher order systematic groups. By that you can rapidly change the resolution from the comparative analyses of proteins in individual species to that of entire kingdoms or even domains without the need of input data modification.
+By utilizing the NCBI taxonomy, *PhyloProfile* can dynamically collapse taxa into higher systematic groups. This enables rapidly changing the resolution from the comparative analyses of proteins in individual species to that of entire kingdoms or even domains without changes to the input data.
 
-Profiles can be filtered dynamically according to various criteria. For example, setting a minimal threshold for the fraction of species in a systematic group, or filtering collections of orthologs based on the pre-computed similarity of their domain architectures - if provided as an information layer.
+*PhyloProfile* furthermore allows for a dynamic filtering of profiles – taking the taxonomic distribution and the additional information layers into account. This, along with functions to estimate the age of genes and core gene sets facilitates the exploration and analysis of large phylogenetic profiles.
 
+[Explore the installation-free online version](https://phyloprofile.shinyapps.io/phyloprofile/) or [watch the demo video](https://vimeo.com/225373912) to learn more.
 
-# Demo data
-[Click here to watch demo video](https://vimeo.com/225373912)
+# Table of Contents
+- [Installation & Usage](#installation--usage)
+- [Input Data](#input-data)
+  * [OrthoXML](#orthoxml)
+    + [OMA Standalone](#oma-standalone)
+    + [OMA Browser](#oma-browser)
+  * [Your tool is missing?](#your-tool-is-missing)
+  * [Demo data](#demo-data)
+- [Bugs](#bugs)
+- [Acknowledgements](#acknowledgements)
+- [Contact](#contact)
 
-In `data/demo/` you can find some test data:
-- `test.main`: Use this as the **Main input** file on the *Input & settings* page after starting *PhyloProfile*. It contains 3 information: `Ortholog ID # Feature architecture similarity score[1] # Traceability score[2]`.
-- `test.main.long`: This is the same as `test.main` but in long format.
-- `test.main.xml`: This is the same input file in OrthoXML format.
-- `domains/*.txt`: This folder contains the feature architecture data (e.g. Pfam domains) that you can optionally give under the **Additional annotation input** upload on the *Input & settings* page after startup.
-![](www/pic_input.png)
-- `test.geneList`: After doing the initial plot with the files above you can use this file on the *Customized profile* tab to sub-select for only the genes present in this file.
-![](www/pic_customized.png)
-- `test.taxaList`: This contains list of taxon names. Use this to test the function of fetching NCBI taxonomy IDs, which can be found in *Function* tab.
-![](www/pic_taxaIDsearch.png)
+# Installation & Usage
+*PhyloProfile* is based on the *R*-package *Shiny*, as such a recent version of *R* is needed. Once that is out of the way you can just clone this repository to get a copy of *PhyloProfile*.
 
+`git clone https://github.com/BIONF/phyloprofile`
 
-# Usage
-(1) Clone this git repository to your computer using this command:
+To start PhyloProfile simply move into the PhyloProfile directory and run the main script
 
->git clone https://github.com/trvinh/phyloprofile
+```
+cd PhyloProfile
+Rscript phyloprofile.R
+```
 
-OR
+The initial start can take a while, as `phyloprofile.R` will try do download and install all necessary dependencies automatically. *(Note: Depending on your system this sometimes fails, please check the console log for error messages concerning the dependency installation)*
 
-Manually download all the files to your computer and keep the original folder structure.
-
-(2) Install dependent R packages and run PhyloProfile:
-
->Rscript phyloprofile.R
-
-NOTE: R and Rscript has to be installed on your machine.
-NOTE 2: please check if all packages are successfully installed, otherwise some features maybe unavailable or the tool cannot work correctly.
+Once all packages are downloaded and installed your web browser will open a new tab and display the main *PhyloProfile* menu.
 
 # Input Data
+*PhyloProfile* can read a number of different input files, including regular tab-separated files and *OrthoXML*. The additional information layers can be embedded in the OrthoXML or be provided separately.
 
 ## OrthoXML
 *PhyloProfile* is capable of reading in files in the [*standardized OrthoXML format*](http://www.orthoxml.org/xml/Main.html), as e.g. generated by *Inparanoid* or [*OMA Standalone*](http://omabrowser.org/standalone/). *PhyloProfile* expects [the *NCBI taxonomy IDs*](https://www.ncbi.nlm.nih.gov/taxonomy) to be present in the `species` tag in the XML as `NCBITaxId` like this:
@@ -72,13 +71,27 @@ Running
 
 `scripts/get_oma_hogs.py -i ./scripts/get_oma_hogs.py -i RATNO03709 RATNO03710 RATNO03711 P53_HUMAN`
 
-will yield a single, merged *OrthoXML* files that contains the four *HOGs* for the corresponding proteins. 
+will yield a single, merged *OrthoXML* files that contains the four *HOGs* for the corresponding proteins.
 
-### Your tool is missing?
+## Your tool is missing?
 Please get in touch! we are trying to support more orthology prediction tools right out of the box.
 
+## Demo data
+
+In `data/demo/` you can find some test data to see how the files should look like:
+- `test.main`: Use this as the **Main input** file on the *Input & settings* page after starting *PhyloProfile*. It contains 3 information: `Ortholog ID # Feature architecture similarity score # Traceability score`.
+- `test.main.long`: This is the same as `test.main` but in long format.
+- `test.main.xml`: This is the same input file in OrthoXML format.
+- `domains/*.txt`: This folder contains the feature architecture data (e.g. Pfam domains) that you can optionally give under the **Additional annotation input** upload on the *Input & settings* page after startup.
+![](www/pic_input.png)
+- `test.geneList`: After doing the initial plot with the files above you can use this file on the *Customized profile* tab to sub-select for only the genes present in this file.
+![](www/pic_customized.png)
+- `test.taxaList`: This contains list of taxon names. Use this to test the function of fetching NCBI taxonomy IDs, which can be found in *Function* tab.
+![](www/pic_taxaIDsearch.png)
+
+
 # Bugs
-Any bug reports or comments, suggestions are highly appreciated.
+Any bug reports or comments, suggestions are highly appreciated. Please open an issue on GitHub or be in touch via email.
 
 # Acknowledgements
 I would like to thank
