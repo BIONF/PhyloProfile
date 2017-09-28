@@ -36,7 +36,7 @@ def convert_orthoxml(xml_file,name_to_ncbi):
                 print("Please fix the mapping file and try again")
                 exit()
         else:
-            print line.rstrip()
+            print(line.rstrip())
 
 
 name_to_ncbi = read_mapping(args.mapping)
