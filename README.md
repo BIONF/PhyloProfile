@@ -69,7 +69,7 @@ If you prefer to use precalculated *Hierarchical Orthologous Groups* (HOGs) from
 
 Running
 
-`scripts/get_oma_hogs.py -i ./scripts/get_oma_hogs.py -i RATNO03709 RATNO03710 RATNO03711 P53_HUMAN`
+`./scripts/get_oma_hogs.py -i RATNO03709 RATNO03710 RATNO03711 P53_HUMAN`
 
 will yield a single, merged *OrthoXML* files that contains the four *HOGs* for the corresponding proteins.
 
