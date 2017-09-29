@@ -1,10 +1,7 @@
-<?xml version="1.0" encoding="utf-8"?>
-<orthoXML xmlns="http://orthoXML.org/2011/" version="0.3" origin="phyloprofile"
-  originVersion="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://orthoXML.org/2011/ http://www.orthoxml.org/0.3/orthoxml.xsd">
-
+<?xml version="1.0" encoding="UTF-8"?>
+<orthoXML xmlns="http://orthoXML.org/2011/" version="0.3" origin="OMA standalone" originVersion="2.1.1">
   <notes>
-    OrthoXML file converted from PhyloProfile App.
+    MinScore=181; LengthTol=0.61; StablePairTol=1.81; VerifiedPairTol=1.53; MinSeqLen=50
   </notes>
 
   <species name="Mus musculus" NCBITaxId="-1">
