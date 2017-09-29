@@ -2387,7 +2387,7 @@ shinyServer(function(input, output, session) {
   output$detailClick <- renderText({
     info <- pointInfoDetail() # info = seedID, orthoID, var1
 
-    if(is.null(info)){paste("No ortholog found!!!")}
+    if(is.null(info)){paste("select ortholog")}
     else{
       a <- paste0("seedID = ",info[1])
       b <- paste0("hitID = ",info[2])
