@@ -59,7 +59,7 @@ shinyUI(fluidPage(
         ),
         column(1,
                numericInput("width","Width (px)",min=600,max=3200,step=50,value=600,width=100),
-               actionButton("mainPlotConfig","Other properties config")
+               actionButton("mainPlotConfig","Appearance")
         ),
         column(1,
                numericInput("height","Height (px)",min=600,max=1600,step=50,value=600,width=100)
@@ -396,7 +396,7 @@ shinyUI(fluidPage(
       ),
 
       tabPanel(
-        "Distribution analyzing",
+        "Distribution analysis",
         h4(strong("Distribution analysis")),
 
         wellPanel(
@@ -430,7 +430,7 @@ shinyUI(fluidPage(
       ),
 
       tabPanel(
-        "Gene age estimating",
+        "Gene age estimation",
         h4(strong("Gene age estimation")),
 
         wellPanel(
@@ -471,8 +471,8 @@ shinyUI(fluidPage(
       ),
 
       tabPanel(
-        "Core gene finding",
-        h4(strong("Core gene finding")),
+        "Core gene identification",
+        h4(strong("Core gene identification")),
 
         wellPanel(
           fluidRow(
@@ -562,7 +562,7 @@ shinyUI(fluidPage(
                  tabPanel("Q&A",
                           uiOutput("help.ui")
                  ),
-                 tabPanel(a("About", href="https://BIONF.github.io/PhyloProfile/", target="_blank")
+                 tabPanel(a("Readme", href="https://BIONF.github.io/PhyloProfile/", target="_blank")
                  )
       )
     ),
