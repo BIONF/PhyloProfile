@@ -53,7 +53,7 @@ shinyUI(fluidPage(
         ),
         column(1,
                numericInput("width","Width (px)",min=600,max=3200,step=50,value=600,width=100),
-               actionButton("mainPlotConfig","Other properties config")
+               actionButton("mainPlotConfig","Appearance")
         ),
         column(1,
                numericInput("height","Height (px)",min=600,max=1600,step=50,value=600,width=100)
@@ -96,7 +96,7 @@ shinyUI(fluidPage(
         ),
         column(1,
                numericInput("selectedWidth","Width (px)",min=100,max=1000,step=50,value=600,width=100),
-               actionButton("selectedPlotConfig","Other properties config")
+               actionButton("selectedPlotConfig","Appearance")
         ),
         column(1,
                numericInput("selectedHeight","Height (px)",min=100,max=1600,step=50,value=600,width=100)
