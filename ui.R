@@ -562,7 +562,7 @@ shinyUI(fluidPage(
                  tabPanel("Q&A",
                           uiOutput("help.ui")
                  ),
-                 tabPanel(a("Readme", href="https://BIONF.github.io/PhyloProfile/", target="_blank")
+                 tabPanel(a("Readme", href="https://trvinh.github.io/PhyloProfile/", target="_blank")
                  )
       )
     ),
