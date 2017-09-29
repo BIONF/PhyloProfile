@@ -1,11 +1,36 @@
-######## pacman NOT YET WORK WITH shinyapp.io #########
+############### NOT WORK WITH shinyapp.io #############
 # if(!("pacman" %in% installed.packages())) install.packages("pacman")
 # library(pacman)
-# p_load(shiny,shinyBS,ggplot2,reshape2,plyr,dplyr,tidyr,scales,grid,gridExtra,ape,stringr,gtable,dendextend,ggdendro,gplots,data.table,taxize,rdrop2,install=T)
+# p_load(shiny,shinyBS,ggplot2,reshape2,plyr,dplyr,tidyr,scales,grid,gridExtra,ape,stringr,gtable,dendextend,ggdendro,gplots,data.table,taxize,install=T)
+#######################################################
+# packages <- c("shiny","shinyBS","ggplot2","reshape2","plyr","dplyr","tidyr","scales","grid","gridExtra","ape","stringr","gtable","dendextend","ggdendro","gplots","data.table","taxize","Biostrings","zoo","RCurl")
+# sapply(packages, require, character.only = TRUE)
 #######################################################
 
-packages <- c("shiny","shinyBS","ggplot2","reshape2","plyr","dplyr","tidyr","scales","grid","gridExtra","ape","stringr","gtable","dendextend","ggdendro","gplots","data.table","taxize","Biostrings","zoo")
-sapply(packages, require, character.only = TRUE)
+if (!require("shiny")) {install.packages("shiny")}
+if (!require("shinyBS")) {install.packages("shinyBS")}
+if (!require("ggplot2")) {install.packages("ggplot2")}
+if (!require("reshape2")) {install.packages("reshape2")}
+if (!require("plyr")) {install.packages("plyr")}
+if (!require("dplyr")) {install.packages("dplyr")}
+if (!require("tidyr")) {install.packages("tidyr")}
+if (!require("scales")) {install.packages("scales")}
+if (!require("grid")) {install.packages("grid")}
+if (!require("gridExtra")) {install.packages("gridExtra")}
+if (!require("ape")) {install.packages("ape")}
+if (!require("stringr")) {install.packages("stringr")}
+if (!require("gtable")) {install.packages("gtable")}
+if (!require("dendextend")) {install.packages("dendextend")}
+if (!require("ggdendro")) {install.packages("ggdendro")}
+if (!require("gplots")) {install.packages("gplots")}
+if (!require("data.table")) {install.packages("data.table")}
+if (!require("Biostrings")) {
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("Biostrings")
+}
+if (!require("taxize")) {install.packages("taxize")}
+if (!require("zoo")) {install.packages("zoo")}
+if (!require("RCurl")) {install.packages("RCurl")}
 
 source("scripts/taxonomyProcessing.R")
 source("scripts/functions.R")
@@ -16,16 +41,6 @@ options(shiny.maxRequestSize=50*1024^2)  ## size limit for input 50mb
 shinyServer(function(input, output, session) {
   #  session$onSessionEnded(stopApp) ### Automatically stop a Shiny app when closing the browser tab
 
-  ########## uncomment these lines for oneseq version#########
-  # observeEvent(input$mainInput,({
-  #   updateSelectInput(session,"var2_aggregateBy",
-  #                     choices = list("Max"="max", "Min"="min","Mean"="mean","Median"="median"),
-  #                     selected = "mean")
-  #   updateTextInput(session,"var1_id", value = "FAS")
-  #   updateTextInput(session,"var2_id", value = "Traceability")
-  # }))
-  #############################################################
-
   #############################################################
   ####################  PRE-PROCESSING  #######################
   #############################################################
@@ -33,13 +48,47 @@ shinyServer(function(input, output, session) {
   ####### check for the existence of taxonomy info file #######
   observe({
     if(!file.exists(isolate({"data/rankList.txt"}))){
-      # drop_get("/phyloprofile/data/taxonID.list.fullRankID", local_file = 'data/taxonID.list.fullRankID')
-      file.create("data/rankList.txt")
+      if(hasInternet() == TRUE){
+        ncol <- max(count.fields("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/rankList.txt", sep = '\t'))
+        df <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/rankList.txt", sep="\t", quote='', header=F, fill=T, na.strings=c("","NA"), col.names=paste0('V', seq_len(ncol)))
+        write.table(df, file ="data/rankList.txt", col.names = F, row.names = F, quote = F, sep="\t")
+      } else {
+        file.create("data/rankList.txt")
+      }
     }
   })
+  
+  observe({
+    if(!file.exists(isolate({"data/idList.txt"}))){
+      if(hasInternet() == TRUE){
+        ncol <- max(count.fields("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/idList.txt", sep = '\t'))
+        df <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/idList.txt", sep="\t", quote='', header=F, fill=T, na.strings=c("","NA"), col.names=paste0('V', seq_len(ncol)))
+        write.table(df, file ="data/idList.txt", col.names = F, row.names = F, quote = F, sep="\t")
+      } else {
+        file.create("data/idList.txt")
+      }
+    }
+  })
+  
   observe({
     if(!file.exists(isolate({"data/taxonNamesReduced.txt"}))){
-      drop_get("/phyloprofile/data/taxonNamesReduced.txt", local_file = 'data/taxonNamesReduced.txt')
+      if(hasInternet() == TRUE){
+        ncol <- max(count.fields("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/taxonNamesReduced.txt", sep = '\t'))
+        df <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/taxonNamesReduced.txt", sep="\t", quote='', header=F, fill=T, na.strings=c("","NA"), col.names=paste0('V', seq_len(ncol)))
+        write.table(df, file ="data/taxonNamesReduced.txt", col.names = F, row.names = F, quote = F, sep="\t")
+      } else {
+        system("cp data/newTaxa.txt data/taxonNamesReduced.txt")
+      }
+    }
+  })
+  
+  observe({
+    if(!file.exists(isolate({"data/taxonomyMatrix.txt"}))){
+      if(hasInternet() == TRUE){
+        ncol <- max(count.fields("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/taxonomyMatrix.txt", sep = '\t'))
+        df <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/taxonomyMatrix.txt", sep="\t", quote='', header=F, fill=T, na.strings=c("","NA"), col.names=paste0('V', seq_len(ncol)))
+        write.table(df, file ="data/taxonomyMatrix.txt", col.names = F, row.names = F, quote = F, sep="\t")
+      }
     }
   })
 
@@ -412,7 +461,8 @@ shinyServer(function(input, output, session) {
   ######## get input taxa
   subsetTaxa <- reactive({
     if(input$demo == TRUE){
-      data <- drop_read_csv("/phyloprofile/data/demo/test.main", stringsAsFactors = FALSE, sep='\t', comment.char="",header = TRUE)
+      # data <- drop_read_csv("/phyloprofile/data/demo/test.main", stringsAsFactors = FALSE, sep='\t', comment.char="",header = TRUE)
+      data <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/demo/test.main.wide", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
       inputTaxa <- colnames(data)
     } else {
       filein <- input$mainInput
@@ -448,7 +498,8 @@ shinyServer(function(input, output, session) {
   unkTaxa <- reactive({
     # get list of input taxa (from main input file)
     if(input$demo == TRUE){
-      data <- drop_read_csv("/phyloprofile/data/demo/test.main", stringsAsFactors = FALSE, sep='\t', comment.char="",header = TRUE)
+      # data <- drop_read_csv("/phyloprofile/data/demo/test.main", stringsAsFactors = FALSE, sep='\t', comment.char="",header = TRUE)
+      data <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/demo/test.main.wide", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
       inputTaxa <- colnames(data)
     } else {
       filein <- input$mainInput
@@ -509,7 +560,7 @@ shinyServer(function(input, output, session) {
   ######## render input files
   output$mainInputFile.ui <- renderUI({
     if(input$demo == TRUE){
-      h4(a("demo/test.main.long", href="https://www.dropbox.com/s/blk7a9pquivdpbb/test.main.long?dl=0", target="_blank"))
+      h4(a("demo/test.main.long", href="https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/demo/test.main.long", target="_blank"))
     } else {
       fileInput("mainInput",h5("Upload input file:"))
     }
@@ -517,7 +568,7 @@ shinyServer(function(input, output, session) {
 
   output$domainInputFile.ui <- renderUI({
     if(input$demo == TRUE){
-      h4(a("demo/domains", href="https://www.dropbox.com/sh/i3rcrgmy3113gu9/AABQl9BKNFOIZjWY-_xhmu57a?dl=0", target="_blank"))
+      h4(a("demo/domains", href="https://github.com/BIONF/phyloprofile-data/tree/data/demo/domain_files", target="_blank"))
     } else {
       if(input$annoChoose == "from file"){
         fileInput("fileDomainInput","")
@@ -973,8 +1024,9 @@ shinyServer(function(input, output, session) {
     }
 
     if(input$demo == TRUE){
-      inputDf <- drop_read_csv("/phyloprofile/data/demo/test.main.long", stringsAsFactors = FALSE, sep='\t', comment.char="",header = TRUE)
-
+      # inputDf <- drop_read_csv("/phyloprofile/data/demo/test.main.long", stringsAsFactors = FALSE, sep='\t', comment.char="",header = TRUE)
+      inputDf <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/demo/test.main.long", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
+      
       subsetID <- levels(as.factor(inputDf$geneID))[1:nrHit]
       data <- inputDf[inputDf$geneID %in% subsetID,]
 
@@ -1615,7 +1667,8 @@ shinyServer(function(input, output, session) {
 
     # open main input file
     if(input$demo == TRUE){
-      dataOrig <- drop_read_csv("/phyloprofile/data/demo/test.main", stringsAsFactors = FALSE, sep='\t', comment.char="",header = TRUE)
+      # dataOrig <- drop_read_csv("/phyloprofile/data/demo/test.main", stringsAsFactors = FALSE, sep='\t', comment.char="",header = TRUE)
+      dataOrig <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/demo/test.main.wide", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
       
       # convert into paired columns
       mdData <- melt(dataOrig,id="geneID")
@@ -1783,7 +1836,8 @@ shinyServer(function(input, output, session) {
   presSpecAllDt <- reactive({
     # open main input file
     if(input$demo == TRUE){
-      data <- drop_read_csv("/phyloprofile/data/demo/test.main", stringsAsFactors = FALSE, sep='\t', comment.char="", header = TRUE)
+      # data <- drop_read_csv("/phyloprofile/data/demo/test.main", stringsAsFactors = FALSE, sep='\t', comment.char="", header = TRUE)
+      data <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/demo/test.main.wide", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
       
       # convert into paired columns
       mdData <- melt(data,id="geneID")
@@ -1951,9 +2005,9 @@ shinyServer(function(input, output, session) {
   ######## change label of plotCustom button if autoUpdateSelected is unchecked
   output$plotCustomBtn <- renderUI({
     if(input$autoUpdateSelected == FALSE){
-      bsButton("plotCustom", "Plot/Update selected sequence(s)/taxa",style="warning")
+      shinyBS::bsButton("plotCustom", "Plot/Update selected sequence(s)/taxa",style="warning")
     } else {
-      bsButton("plotCustom", "Plot selected sequence(s)/taxa",style="warning")
+      shinyBS::bsButton("plotCustom", "Plot selected sequence(s)/taxa",style="warning")
     }
   })
 
@@ -2408,17 +2462,23 @@ shinyServer(function(input, output, session) {
       paste(seqID)
 
       ### fasta path and format
-      fastaOut <- "HERE"
       if(input$demo == TRUE){
         ### get species ID
-        specTMP <- unlist(strsplit(seqID,":"))
-        specID = specTMP[1]
-
-        faFile <- drop_read_csv(paste0("/phyloprofile/data/fasta/",specID,".fa"),stringsAsFactors = FALSE, sep='\t', comment.char="",header = FALSE)
-        faDf <- data.frame("seqID" = faFile$V1[grepl(">",faFile$V1)], "seq" = faFile$V1[!grepl(">",faFile$V1)], stringsAsFactors=FALSE)
-
-        seq <- as.character(faDf$seq[faDf$seqID == paste0(">",seqID)])
-        fastaOut <- paste(paste0(">",seqID),seq,sep="\n")
+        specTMP <- unlist(strsplit(seqID,"@"))
+        specID = paste0(specTMP[1],"%40",specTMP[2])
+        
+        fastaUrl <- paste0("https://github.com/BIONF/phyloprofile-data/blob/data/demo/microsporidia_fasta/",specID,".fa?raw=true")
+        if(url.exists(fastaUrl)){
+          # faFile <- drop_read_csv(paste0("/phyloprofile/data/fasta/",specID,".fa"),stringsAsFactors = FALSE, sep='\t', comment.char="",header = FALSE)
+          faFile <- as.data.frame(read.table(fastaUrl, sep="\t", header=F, fill=T, stringsAsFactors = FALSE, quote = ""))
+          
+          faDf <- data.frame("seqID" = faFile$V1[grepl(">",faFile$V1)], "seq" = faFile$V1[!grepl(">",faFile$V1)], stringsAsFactors=FALSE)
+          
+          seq <- as.character(faDf$seq[faDf$seqID == paste0(">",seqID)])
+          fastaOut <- paste(paste0(">",seqID),seq,sep="\n")
+        } else {
+          fastaOut <- paste0(fastaUrl," not found!!! Please note that demo data contains only FASTA sequences for Microsporidia species!")
+        }
       } else {
         if(input$input_type == 'oneSeq.extended.fa'){
           #        f <- toString(input$oneseq.file)
@@ -2484,7 +2544,7 @@ shinyServer(function(input, output, session) {
         updateButton(session, "doDomainPlot", disabled = TRUE)
       } else {
         updateButton(session, "doDomainPlot", disabled = FALSE)
-        fileDomain <- suppressWarnings(paste0("phyloprofile/data/demo/domains/",group,".domains"))
+        fileDomain <- suppressWarnings(paste0("https://github.com/BIONF/phyloprofile-data/blob/data/demo/domain_files/",group,".domains?raw=true"))
       }
     } else {
       if(input$annoChoose == "from file"){
@@ -2570,7 +2630,8 @@ shinyServer(function(input, output, session) {
     fileDomain <- getDomainFile()
 
     if(input$demo == TRUE){
-      domainDf <- drop_read_csv(fileDomain,stringsAsFactors = FALSE, sep='\t', comment.char="",header = FALSE)
+      # domainDf <- drop_read_csv(fileDomain,stringsAsFactors = FALSE, sep='\t', comment.char="",header = FALSE)
+      domainDf <- as.data.frame(read.csv(fileDomain, sep="\t", header=F, comment.char = "", stringsAsFactors = FALSE, quote = ""))
     } else {
       if(fileDomain != FALSE){
         domainDf <- as.data.frame(read.table(fileDomain, sep='\t',header=FALSE,comment.char=""))
@@ -2584,16 +2645,7 @@ shinyServer(function(input, output, session) {
       domainDf$orthoID <- gsub("\\|",":",domainDf$orthoID)
     }
 
-    ### get sub dataframe based on selected groupID and orthoID <<<<<============ HOLGER's NEW VERSION OF ONESEQ (14.03.17)
-    # orthoNew <- ""
-    # if(input$input_type == 'oneSeq.extended.fa'){
-    #   last2char <- substrRight(ortho,2)
-    #   if(last2char == '|0' | last2char == '|1'){
-    #     orthoNew <- substr(ortho, 1, nchar(ortho)-2)
-    #     orthoNew <- gsub("\\|",":",orthoNew)
-    #   }
-    # }
-    # if(nchar(orthoNew)>0){ortho <- orthoNew}
+    ### get sub dataframe based on selected groupID and orthoID
     ortho <- gsub("\\|",":",ortho)
     grepID = paste(group,"#",ortho,sep="")
     subDomainDf <- domainDf[grep(grepID,domainDf$seedID),]
@@ -2950,7 +3002,7 @@ shinyServer(function(input, output, session) {
     }
   })
 
-  output$consGene.table <- renderDataTable(colnames = "Gene ID",{
+  output$consGene.table <- renderDataTable({
     data <- consGeneDf()
     if(is.null(data)){return()}
     else {
