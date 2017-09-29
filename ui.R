@@ -390,7 +390,7 @@ shinyUI(fluidPage(
       ),
 
       tabPanel(
-        "Distribution analyzing",
+        "Distribution analysis",
         h4(strong("Distribution analysis")),
 
         wellPanel(
@@ -424,7 +424,7 @@ shinyUI(fluidPage(
       ),
 
       tabPanel(
-        "Gene age estimating",
+        "Gene age estimation",
         h4(strong("Gene age estimation")),
 
         wellPanel(
@@ -465,8 +465,8 @@ shinyUI(fluidPage(
       ),
 
       tabPanel(
-        "Core gene finding",
-        h4(strong("Core gene finding")),
+        "Core gene identification",
+        h4(strong("Core gene identification")),
 
         wellPanel(
           fluidRow(
@@ -556,7 +556,7 @@ shinyUI(fluidPage(
                  tabPanel("Q&A",
                           uiOutput("help.ui")
                  ),
-                 tabPanel(a("About", href="https://trvinh.github.io/PhyloProfile/", target="_blank")
+                 tabPanel(a("Readme", href="https://trvinh.github.io/PhyloProfile/", target="_blank")
                  )
       )
     ),
