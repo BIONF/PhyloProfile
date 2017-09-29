@@ -2,8 +2,6 @@ data/rankList.txt
 data/idList.txt
 data/taxonomyMatrix.txt
 data/taxonNamesReduced.txt
-data/demo/*
-data/demo/full_domain_files/*
 data/newTaxa.txt
 
 rsconnect/

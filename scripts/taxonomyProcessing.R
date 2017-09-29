@@ -73,10 +73,14 @@ rankIndexing <- function(rankListFile){
 taxonomyTableCreator <- function(idListFile,rankListFile){
   ### get indexed rank list
   index2RankDf <- rankIndexing(rankListFile)
-  
+  # index2RankDf <- rankIndexing("rankList.txt")
   ### load idList file
   ncol <- max(count.fields(rankListFile, sep = '\t'))
   idList <- as.data.frame(read.table(idListFile, sep='\t', header=F, check.names=FALSE, comment.char="", fill = T, stringsAsFactors=T, na.strings=c("","NA"), col.names=paste0('V', seq_len(ncol))))
+  
+  # ncol <- max(count.fields("rankList.txt", sep = '\t'))
+  # idList <- as.data.frame(read.table("idList.txt", sep='\t', header=F, check.names=FALSE, comment.char="", fill = T, stringsAsFactors=T, na.strings=c("","NA"), col.names=paste0('V', seq_len(ncol))))
+  
   colnames(idList)[1] <- "tip"
 
   ### get ordered rank list
@@ -92,7 +96,7 @@ taxonomyTableCreator <- function(idListFile,rankListFile){
     taxonName <- unlist(strsplit(as.character(idList[i,]$tip), "#", fixed = TRUE))
     ### convert into long format
     mTaxonDf <- suppressWarnings(melt(taxonDf,id = "tip"))
-    taxonDf
+
     ### get rank names and corresponding IDs
     splitCol <- data.frame(do.call('rbind', strsplit(as.character(mTaxonDf$value), '#', fixed=TRUE)))
     mTaxonDf <- cbind(mTaxonDf,splitCol)
@@ -116,7 +120,7 @@ taxonomyTableCreator <- function(idListFile,rankListFile){
     fullRankIDdf <- fullRankIDdf[order(fullRankIDdf$index),]
     
     ### replace NA id by id of previous rank
-    fullRankIDdf <- na.locf(fullRankIDdf)
+    fullRankIDdf <- zoo::na.locf(fullRankIDdf)
   }
   
   ### remove index column
@@ -124,10 +128,28 @@ taxonomyTableCreator <- function(idListFile,rankListFile){
   
   ### transpose into wide format
   t_fullRankIDdf <- transpose(fullRankIDdf)
-  
+
   ### set first row to column names
   colnames(t_fullRankIDdf) = as.character(unlist(t_fullRankIDdf[1,]))
   t_fullRankIDdf <- t_fullRankIDdf[-1,]
+
+  ### replace NA values in the dataframe t_fullRankIDdf
+  if(nrow(t_fullRankIDdf[is.na(t_fullRankIDdf),]) > 0){
+    t_fullRankIDdfTMP <- t_fullRankIDdf[complete.cases(t_fullRankIDdf),]
+    t_fullRankIDdfEdit <- t_fullRankIDdf[is.na(t_fullRankIDdf),]
+
+    for(i in 1:nrow(t_fullRankIDdfEdit)){
+      for(j in 1:(ncol(t_fullRankIDdf)-1)){
+        if(is.na(t_fullRankIDdfEdit[i,j])){
+          t_fullRankIDdfEdit[i,j] <- t_fullRankIDdfEdit[i,j+1]
+        }
+      }
+      if(is.na(t_fullRankIDdfEdit[i,ncol(t_fullRankIDdf)])){
+        t_fullRankIDdfEdit[i,ncol(t_fullRankIDdf)] <- t_fullRankIDdfEdit[i,ncol(t_fullRankIDdf)-1]
+      }
+    }
+    t_fullRankIDdf <- rbind(t_fullRankIDdfEdit,t_fullRankIDdfTMP)
+  }
   
   ### add "abbrName	ncbiID  fullName" columns
   abbrName <- paste0("ncbi",t_fullRankIDdf[,1])

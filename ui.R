@@ -3,9 +3,15 @@
 # library(pacman)
 # p_load(shiny,shinyBS,shinyjs,DT,colourpicker,install=T)
 #######################################################
+# packages <- c("shiny","shinyBS","shinyjs","DT","colourpicker")
+# sapply(packages, require, character.only = TRUE)
+#######################################################
 
-packages <- c("shiny","shinyBS","shinyjs","DT","colourpicker")
-sapply(packages, require, character.only = TRUE)
+if (!require("shiny")) {install.packages("shiny")}
+if (!require("shinyBS")) {install.packages("shinyBS")}
+if (!require("DT")) {install.packages("DT")}
+if (!require("colourpicker")) {install.packages("colourpicker")}
+if (!require("shinyjs")) {install.packages("shinyjs")}
 
 ### showing spinner while waiting for the profile plot
 mycss <- "
@@ -53,7 +59,7 @@ shinyUI(fluidPage(
         ),
         column(1,
                numericInput("width","Width (px)",min=600,max=3200,step=50,value=600,width=100),
-               actionButton("mainPlotConfig","Other properties config")
+               actionButton("mainPlotConfig","Appearance")
         ),
         column(1,
                numericInput("height","Height (px)",min=600,max=1600,step=50,value=600,width=100)
@@ -68,7 +74,7 @@ shinyUI(fluidPage(
                            "% of present taxa:", min = 0, max = 1, step = 0.025, value = c(0.0,1.0), width = 200)
         ),
         column(2,
-               bsButton("resetMain","Reset cutoffs",style="danger"),
+               shinyBS::bsButton("resetMain","Reset cutoffs",style="danger"),
                hr(),
                downloadButton('plotDownload','Download profile'),
                tags$head(
@@ -111,7 +117,7 @@ shinyUI(fluidPage(
                uiOutput("percentFilter.ui")
         ),
         column(2,
-               bsButton("resetSelected","Reset cutoffs",style="danger"),
+               shinyBS::bsButton("resetSelected","Reset cutoffs",style="danger"),
                hr(),
                downloadButton('selectedDownload', 'Download profile'),
                tags$head(
@@ -174,9 +180,9 @@ shinyUI(fluidPage(
 
              hr(),
              em("Click here to download demo files:"),
-             em(a("(1) Main inputs,", href="https://github.com/BIONF/phyloprofile/tree/master/data/demo", target="_blank")),
-             em(a("(2) Domain annotations (optional),", href="https://www.dropbox.com/sh/i3rcrgmy3113gu9/AABQl9BKNFOIZjWY-_xhmu57a?dl=0", target="_blank")),
-             em(a("(3) FASTA sequence files (optional)", href="https://www.dropbox.com/sh/zu8tihto192woay/AADQcJVVm06XSmIAhNJTVsora?dl=0", target="_blank"))
+             em(a("(1) Main inputs,", href="https://github.com/BIONF/phyloprofile-data/tree/data/demo", target="_blank")),
+             em(a("(2) Domain annotations (optional),", href="https://github.com/BIONF/phyloprofile-data/tree/data/demo/domain_files", target="_blank")),
+             em(a("(3) FASTA sequence files (optional)", href="https://github.com/BIONF/phyloprofile-data/tree/data/demo/microsporidia_fasta", target="_blank"))
       ),
       column(3,
              conditionalPanel(
@@ -207,7 +213,7 @@ shinyUI(fluidPage(
                ),
                hr(),
 
-               bsButton("getConfig","FASTA config"),
+               shinyBS::bsButton("getConfig","FASTA config"),
                h5(""),
                actionButton("setColor","COLORS config",style='padding:4px; font-size:100%'),
                hr()
@@ -221,10 +227,10 @@ shinyUI(fluidPage(
                em("Do you have any taxon, which doesn't exist in the NCBI taxonomy database?"),
                radioButtons("newTaxaAsk","", c("Yes" = "Yes", "No" = "No"), inline=T, selected = "No"),
                conditionalPanel(condition="input.newTaxaAsk == 'Yes'",
-                                bsButton("addTaxa","Add info for new taxa",disabled=FALSE,style="warning")
+                                shinyBS::bsButton("addTaxa","Add info for new taxa",disabled=FALSE,style="warning")
                ),
                conditionalPanel(condition="input.newTaxaAsk == 'No'",
-                                bsButton("BUTparse","Get taxonomy info from NCBI *",disabled=FALSE,style="warning"),
+                                shinyBS::bsButton("BUTparse","Get taxonomy info from NCBI *",disabled=FALSE,style="warning"),
                                 helpText(em("(*) Taxonomy information for a given taxa list contains all taxonomy ranks and their correspoding NCBI IDs"))
                ),
                hr(),
@@ -244,7 +250,7 @@ shinyUI(fluidPage(
                strong(h5("Choose (super)taxon of interest:")),
                uiOutput("select"),
                br(),
-               bsButton("do", "PLOT",type="action",style="danger",size = "large",disabled = TRUE),
+               shinyBS::bsButton("do", "PLOT",type="action",style="danger",size = "large",disabled = TRUE),
                h5("")
              )
       )
@@ -267,7 +273,7 @@ shinyUI(fluidPage(
 
           conditionalPanel(
             condition = "input.autoUpdate == false",
-            bsButton("updateBtn","Update plot",style="warning")
+            shinyBS::bsButton("updateBtn","Update plot",style="warning")
           )
         ),
 
@@ -325,7 +331,7 @@ shinyUI(fluidPage(
                    ),
                    column(4,
                           h3(""),
-                          bsButton("cusTaxa","Browse...")
+                          shinyBS::bsButton("cusTaxa","Browse...")
                    )
                  )
           ),
@@ -390,7 +396,7 @@ shinyUI(fluidPage(
       ),
 
       tabPanel(
-        "Distribution analyzing",
+        "Distribution analysis",
         h4(strong("Distribution analysis")),
 
         wellPanel(
@@ -424,7 +430,7 @@ shinyUI(fluidPage(
       ),
 
       tabPanel(
-        "Gene age estimating",
+        "Gene age estimation",
         h4(strong("Gene age estimation")),
 
         wellPanel(
@@ -465,8 +471,8 @@ shinyUI(fluidPage(
       ),
 
       tabPanel(
-        "Core gene finding",
-        h4(strong("Core gene finding")),
+        "Core gene identification",
+        h4(strong("Core gene identification")),
 
         wellPanel(
           fluidRow(
@@ -481,7 +487,7 @@ shinyUI(fluidPage(
             ),
             column(6,
                    uiOutput("taxaList_cons.ui"),
-                   bsButton("browseTaxaCons","Browse")
+                   shinyBS::bsButton("browseTaxaCons","Browse")
             )
           )
         ),
@@ -497,7 +503,7 @@ shinyUI(fluidPage(
       tabPanel("Search for NCBI taxonomy IDs",
                column(3,
                       fileInput("taxaList",h4("Upload taxa list")),
-                      bsButton("idSearch","Search")
+                      shinyBS::bsButton("idSearch","Search")
                ),
                column(9,
                       h4("Mismatch(es):"),
@@ -556,7 +562,7 @@ shinyUI(fluidPage(
                  tabPanel("Q&A",
                           uiOutput("help.ui")
                  ),
-                 tabPanel(a("About", href="https://trvinh.github.io/PhyloProfile/", target="_blank")
+                 tabPanel(a("Readme", href="https://trvinh.github.io/PhyloProfile/", target="_blank")
                  )
       )
     ),
@@ -597,7 +603,7 @@ shinyUI(fluidPage(
     ####### popup windows for FASTA configurations
     bsModal("config", "FASTA config", "getConfig", size = "small",
             selectInput("input_type", "Choose location for:",
-                        c("oneSeq.extended.fa", "Fasta folder")
+                        c("Fasta folder","oneSeq.extended.fa")
             ),
             hr(),
             conditionalPanel(
@@ -646,8 +652,8 @@ shinyUI(fluidPage(
 
             br(),
             hr(),
-            bsButton("resetMainConfig","Reset",style="danger"),
-            bsButton("applyMainConfig","Done",style="warning")
+            shinyBS::bsButton("resetMainConfig","Reset",style="danger"),
+            shinyBS::bsButton("applyMainConfig","Done",style="warning")
     ),
 
     ####### popup windows for setting main plot configurations
@@ -680,8 +686,8 @@ shinyUI(fluidPage(
 
             br(),
             hr(),
-            bsButton("resetSelectedConfig","Reset",style="danger"),
-            bsButton("applySelectedConfig","Done",style="warning")
+            shinyBS::bsButton("resetSelectedConfig","Reset",style="danger"),
+            shinyBS::bsButton("applySelectedConfig","Done",style="warning")
     ),
 
     ####### popup windows for select taxa on Customized Profile
@@ -703,7 +709,7 @@ shinyUI(fluidPage(
             uiOutput("detailPlot.ui"),
             numericInput("detailedHeight","plot_height(px)",min=100,max=1600,step=50,value=100,width=100)
             ,verbatimTextOutput("detailClick")
-            ,bsButton("doDomainPlot", "Show domain architecture",disabled = TRUE)
+            ,shinyBS::bsButton("doDomainPlot", "Show domain architecture",disabled = TRUE)
             ,uiOutput("checkDomainFiles")
             ,br()
             ,h4("Sequence:")
@@ -743,7 +749,7 @@ shinyUI(fluidPage(
         draggable = TRUE,
         h5("Point's info:"),
         verbatimTextOutput("pointInfo"),
-        bsButton("go", "Detailed plot", style="success", disabled = FALSE),
+        shinyBS::bsButton("go", "Detailed plot", style="success", disabled = FALSE),
         style = "opacity: 0.80"
       )
     )

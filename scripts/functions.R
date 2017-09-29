@@ -247,3 +247,8 @@ getFasta <- function(file,seqID){
 substrRight <- function(x, n){
   substr(x, nchar(x)-n+1, nchar(x))
 }
+
+######## check internet connection  ########
+hasInternet <- function(){
+  !is.null(curl::nslookup("r-project.org", error = FALSE))
+}
