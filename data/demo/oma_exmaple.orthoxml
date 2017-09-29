@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="utf-8"?>
+<orthoXML xmlns="http://orthoXML.org/2011/" version="0.3" origin="phyloprofile"
+  originVersion="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://orthoXML.org/2011/ http://www.orthoxml.org/0.3/orthoxml.xsd">
+
+  <notes>
+    OrthoXML file converted from PhyloProfile App.
+  </notes>
+
+  <species name="Mus musculus" NCBITaxId="-1">
+    <database name="undef" version="undef">
+      <genes>
+        <gene id="M.musculus@10090@112934" protId="M.musculus@10090@112934" />
+        <gene id="M.musculus@10090@72026" protId="M.musculus@10090@72026" />
+        <gene id="M.musculus@10090@97389" protId="M.musculus@10090@97389" />
+        <gene id="M.musculus@10090@68883" protId="M.musculus@10090@68883" />
+        <gene id="M.musculus@10090@60168" protId="M.musculus@10090@60168" />
+        <gene id="M.musculus@10090@63952" protId="M.musculus@10090@63952" />
+      </genes>
+    </database>
+  </species>
+
+  <species name="Agrobacterium fabrum str. C58" NCBITaxId="-1">
+    <database name="undef" version="undef">
+      <genes>
+        <gene id="A.fabrum@176299@1582" protId="A.fabrum@176299@1582" />
+      </genes>
+    </database>
+  </species>
+
+  <species name="Aeropyrum pernix K1" NCBITaxId="-1">
+    <database name="undef" version="undef">
+      <genes>
+        <gene id="A.pernix@272557@1942" protId="A.pernix@272557@1942" />
+        <gene id="A.pernix@272557@1694" protId="A.pernix@272557@1694" />
+      </genes>
+    </database>
+  </species>
+
+  <species name="Arabidopsis thaliana" NCBITaxId="-1">
+    <database name="undef" version="undef">
+      <genes>
+        <gene id="A.thaliana@3702@252561" protId="A.thaliana@3702@252561" />
+        <gene id="A.thaliana@3702@247509" protId="A.thaliana@3702@247509" />
+        <gene id="A.thaliana@3702@243417" protId="A.thaliana@3702@243417" />
+        <gene id="A.thaliana@3702@253525" protId="A.thaliana@3702@253525" />
+        <gene id="A.thaliana@3702@244319" protId="A.thaliana@3702@244319" />
+        <gene id="A.thaliana@3702@241736" protId="A.thaliana@3702@241736" />
+      </genes>
+    </database>
+  </species>
+
+  <species name="Solanum lycopersicum" NCBITaxId="-1">
+    <database name="undef" version="undef">
+      <genes>
+        <gene id="S.lycopersicum@4081@15365" protId="S.lycopersicum@4081@15365" />
+        <gene id="S.lycopersicum@4081@24239" protId="S.lycopersicum@4081@24239" />
+        <gene id="S.lycopersicum@4081@33226" protId="S.lycopersicum@4081@33226" />
+        <gene id="S.lycopersicum@4081@29736" protId="S.lycopersicum@4081@29736" />
+        <gene id="S.lycopersicum@4081@24115" protId="S.lycopersicum@4081@24115" />
+        <gene id="S.lycopersicum@4081@3882" protId="S.lycopersicum@4081@3882" />
+      </genes>
+    </database>
+  </species>
+
+  <species name="Phycomyces blakesleeanus" NCBITaxId="-1">
+    <database name="undef" version="undef">
+      <genes>
+        <gene id="P.blakesleeanus@4837@2023" protId="P.blakesleeanus@4837@2023" />
+        <gene id="P.blakesleeanus@4837@12159" protId="P.blakesleeanus@4837@12159" />
+        <gene id="P.blakesleeanus@4837@1117" protId="P.blakesleeanus@4837@1117" />
+        <gene id="P.blakesleeanus@4837@63" protId="P.blakesleeanus@4837@63" />
+        <gene id="P.blakesleeanus@4837@12214" protId="P.blakesleeanus@4837@12214" />
+      </genes>
+    </database>
+  </species>
+
+  <species name="Nematocida parisii" NCBITaxId="-1">
+    <database name="undef" version="undef">
+      <genes>
+        <gene id="N.parisii@586133@NEPG_02124" protId="N.parisii@586133@NEPG_02124" />
+        <gene id="N.parisii@586133@NEPG_02025" protId="N.parisii@586133@NEPG_02025" />
+        <gene id="N.parisii@586133@NEPG_00242" protId="N.parisii@586133@NEPG_00242" />
+        <gene id="N.parisii@586133@NEPG_02149" protId="N.parisii@586133@NEPG_02149" />
+        <gene id="N.parisii@586133@NEPG_02355" protId="N.parisii@586133@NEPG_02355" />
+        <gene id="N.parisii@586133@NEPG_00559" protId="N.parisii@586133@NEPG_00559" />
+        <gene id="N.parisii@586133@NEPG_01709" protId="N.parisii@586133@NEPG_01709" />
+        <gene id="N.parisii@586133@NEPG_01051" protId="N.parisii@586133@NEPG_01051" />
+      </genes>
+    </database>
+  </species>
+
+  <species name="Strongylocentrotus purpuratus" NCBITaxId="-1">
+    <database name="undef" version="undef">
+      <genes>
+        <gene id="S.purpuratus@7668@161" protId="S.purpuratus@7668@161" />
+        <gene id="S.purpuratus@7668@8192" protId="S.purpuratus@7668@8192" />
+        <gene id="S.purpuratus@7668@2476" protId="S.purpuratus@7668@2476" />
+      </genes>
+    </database>
+  </species>
+
+  <species name="Encephalitozoon intestinalis ATCC 50506" NCBITaxId="-1">
+    <database name="undef" version="undef">
+      <genes>
+        <gene id="E.intestinalis@876142@Eint_050240" protId="E.intestinalis@876142@Eint_050240" />
+        <gene id="E.intestinalis@876142@Eint_111470" protId="E.intestinalis@876142@Eint_111470" />
+        <gene id="E.intestinalis@876142@Eint_051570" protId="E.intestinalis@876142@Eint_051570" />
+        <gene id="E.intestinalis@876142@Eint_061440" protId="E.intestinalis@876142@Eint_061440" />
+        <gene id="E.intestinalis@876142@Eint_061350" protId="E.intestinalis@876142@Eint_061350" />
+        <gene id="E.intestinalis@876142@Eint_091090" protId="E.intestinalis@876142@Eint_091090" />
+        <gene id="E.intestinalis@876142@Eint_030020" protId="E.intestinalis@876142@Eint_030020" />
+        <gene id="E.intestinalis@876142@Eint_080670" protId="E.intestinalis@876142@Eint_080670" />
+      </genes>
+    </database>
+  </species>
+
+  <species name="Homo sapiens" NCBITaxId="-1">
+    <database name="undef" version="undef">
+      <genes>
+        <gene id="H.sapiens@9606@149340" protId="H.sapiens@9606@149340" />
+        <gene id="H.sapiens@9606@131231" protId="H.sapiens@9606@131231" />
+        <gene id="H.sapiens@9606@106204" protId="H.sapiens@9606@106204" />
+        <gene id="H.sapiens@9606@109429" protId="H.sapiens@9606@109429" />
+        <gene id="H.sapiens@9606@149706" protId="H.sapiens@9606@149706" />
+        <gene id="H.sapiens@9606@154094" protId="H.sapiens@9606@154094" />
+      </genes>
+    </database>
+  </species>
+
+  <scores>
+    <scoreDef id="FAS" desc="FAS" />
+    <scoreDef id="Traceability" desc="Traceability" />
+  </scores>
+
+  <groups>
+    <orthologGroup id="OG_1017">
+      <geneRef id="A.fabrum@176299@1582">
+				<score id="FAS" value="0.99904467475" />
+				<score id="Traceability" value="0.962110129973" />
+			</geneRef>
+      <geneRef id="A.thaliana@3702@252561">
+				<score id="FAS" value="0.99420505647" />
+				<score id="Traceability" value="0.970055633243" />
+			</geneRef>
+      <geneRef id="E.intestinalis@876142@Eint_050240">
+				<score id="FAS" value="1.0" />
+				<score id="Traceability" value="0.217721321958503" />
+			</geneRef>
+      <geneRef id="H.sapiens@9606@149340">
+				<score id="FAS" value="0.9991125988" />
+				<score id="Traceability" value="0.97056087274" />
+			</geneRef>
+      <geneRef id="M.musculus@10090@112934">
+				<score id="FAS" value="0.9992383882" />
+				<score id="Traceability" value="0.970475008934" />
+			</geneRef>
+      <geneRef id="N.parisii@586133@NEPG_02124">
+				<score id="FAS" value="0.999537811" />
+				<score id="Traceability" value="0.865887168304603" />
+			</geneRef>
+    </orthologGroup>
+    <orthologGroup id="OG_1019">
+      <geneRef id="A.pernix@272557@1942">
+				<score id="FAS" value="0.99968773663" />
+				<score id="Traceability" value="1" />
+			</geneRef>
+      <geneRef id="A.thaliana@3702@247509">
+				<score id="FAS" value="0.99942067306" />
+				<score id="Traceability" value="1" />
+			</geneRef>
+      <geneRef id="E.intestinalis@876142@Eint_111470">
+				<score id="FAS" value="0.99984830527" />
+				<score id="Traceability" value="0.351918260358449" />
+			</geneRef>
+      <geneRef id="H.sapiens@9606@131231">
+				<score id="FAS" value="0.99941631235" />
+				<score id="Traceability" value="1" />
+			</geneRef>
+      <geneRef id="M.musculus@10090@72026">
+				<score id="FAS" value="0.99942634894" />
+				<score id="Traceability" value="1" />
+			</geneRef>
+      <geneRef id="N.parisii@586133@NEPG_02025">
+				<score id="FAS" value="0.99929028115" />
+				<score id="Traceability" value="0.576080895539263" />
+			</geneRef>
+      <geneRef id="P.blakesleeanus@4837@2023">
+				<score id="FAS" value="0.99942142624" />
+				<score id="Traceability" value="1" />
+			</geneRef>
+      <geneRef id="S.lycopersicum@4081@15365">
+				<score id="FAS" value="0.9997286185" />
+				<score id="Traceability" value="1" />
+			</geneRef>
+      <geneRef id="S.purpuratus@7668@161">
+				<score id="FAS" value="0.999799012" />
+				<score id="Traceability" value="1" />
+			</geneRef>
+    </orthologGroup>
+    <orthologGroup id="OG_1020">
+      <geneRef id="A.thaliana@3702@243417">
+				<score id="FAS" value="0.999920242" />
+				<score id="Traceability" value="1" />
+			</geneRef>
+      <geneRef id="E.intestinalis@876142@Eint_051570">
+				<score id="FAS" value="1.0" />
+				<score id="Traceability" value="0.209834190564059" />
+			</geneRef>
+      <geneRef id="H.sapiens@9606@106204">
+				<score id="FAS" value="0.999839662" />
+				<score id="Traceability" value="1" />
+			</geneRef>
+      <geneRef id="M.musculus@10090@97389">
+				<score id="FAS" value="0.999314626" />
+				<score id="Traceability" value="1" />
+			</geneRef>
+      <geneRef id="N.parisii@586133@NEPG_00242">
+				<score id="FAS" value="0.999879679" />
+				<score id="Traceability" value="0.574228258376227" />
+			</geneRef>
+      <geneRef id="P.blakesleeanus@4837@12159">
+				<score id="FAS" value="0.999973516" />
+				<score id="Traceability" value="1" />
+			</geneRef>
+      <geneRef id="S.lycopersicum@4081@24239">
+				<score id="FAS" value="0.999776104" />
+				<score id="Traceability" value="1" />
+			</geneRef>
+    </orthologGroup>
+    <orthologGroup id="OG_1023">
+      <geneRef id="E.intestinalis@876142@Eint_061440">
+				<score id="FAS" value="1.0" />
+				<score id="Traceability" value="0.271616002558503" />
+			</geneRef>
+      <geneRef id="H.sapiens@9606@109429">
+				<score id="FAS" value="0.995954221" />
+				<score id="Traceability" value="0.895076764175" />
+			</geneRef>
+      <geneRef id="M.musculus@10090@68883">
+				<score id="FAS" value="0.997224544" />
+				<score id="Traceability" value="0.894784552862" />
+			</geneRef>
+      <geneRef id="N.parisii@586133@NEPG_02149">
+				<score id="FAS" value="0.999997996" />
+				<score id="Traceability" value="0.83226924426614" />
+			</geneRef>
+      <geneRef id="P.blakesleeanus@4837@1117">
+				<score id="FAS" value="0.99875561095" />
+				<score id="Traceability" value="0.892958043873" />
+			</geneRef>
+      <geneRef id="S.purpuratus@7668@8192">
+				<score id="FAS" value="0.99922606933" />
+				<score id="Traceability" value="0.897926570173" />
+			</geneRef>
+    </orthologGroup>
+    <orthologGroup id="OG_1024">
+      <geneRef id="A.pernix@272557@1694">
+				<score id="FAS" value="0.98373085665" />
+				<score id="Traceability" value="0.957890571002" />
+			</geneRef>
+      <geneRef id="A.thaliana@3702@253525">
+				<score id="FAS" value="0.98362698628" />
+				<score id="Traceability" value="0.964951063327" />
+			</geneRef>
+      <geneRef id="E.intestinalis@876142@Eint_061350">
+				<score id="FAS" value="0.99968588504" />
+				<score id="Traceability" value="0.923773511804587" />
+			</geneRef>
+      <geneRef id="H.sapiens@9606@149706">
+				<score id="FAS" value="0.98325730005" />
+				<score id="Traceability" value="0.965512227736" />
+			</geneRef>
+      <geneRef id="M.musculus@10090@60168">
+				<score id="FAS" value="0.9839481254" />
+				<score id="Traceability" value="0.965416822528" />
+			</geneRef>
+      <geneRef id="N.parisii@586133@NEPG_02355">
+				<score id="FAS" value="0.99625187461" />
+				<score id="Traceability" value="0.222323679187767" />
+			</geneRef>
+      <geneRef id="P.blakesleeanus@4837@63">
+				<score id="FAS" value="0.99872664087" />
+				<score id="Traceability" value="0.964820022573" />
+			</geneRef>
+      <geneRef id="S.lycopersicum@4081@33226">
+				<score id="FAS" value="0.974997601" />
+				<score id="Traceability" value="0.965886415483" />
+			</geneRef>
+      <geneRef id="S.purpuratus@7668@2476">
+				<score id="FAS" value="0.24833160903" />
+				<score id="Traceability" value="0.966441639812" />
+			</geneRef>
+    </orthologGroup>
+    <orthologGroup id="OG_1026">
+      <geneRef id="A.thaliana@3702@244319">
+				<score id="FAS" value="0.9887925262" />
+				<score id="Traceability" value="0.97670071111" />
+			</geneRef>
+      <geneRef id="H.sapiens@9606@154094">
+				<score id="FAS" value="0.99766845809" />
+				<score id="Traceability" value="0.977724851917" />
+			</geneRef>
+      <geneRef id="M.musculus@10090@63952">
+				<score id="FAS" value="0.99652874905" />
+				<score id="Traceability" value="0.977552780447" />
+			</geneRef>
+      <geneRef id="N.parisii@586133@NEPG_00559">
+				<score id="FAS" value="0.99844326946" />
+				<score id="Traceability" value="0.699567888653764" />
+			</geneRef>
+      <geneRef id="P.blakesleeanus@4837@12214">
+				<score id="FAS" value="0.9980442995" />
+				<score id="Traceability" value="0.976457367166" />
+			</geneRef>
+      <geneRef id="S.lycopersicum@4081@29736">
+				<score id="FAS" value="0.98704476211" />
+				<score id="Traceability" value="0.97839168805" />
+			</geneRef>
+    </orthologGroup>
+    <orthologGroup id="OG_1027">
+      <geneRef id="E.intestinalis@876142@Eint_091090">
+				<score id="FAS" value="0.99801663438" />
+				<score id="Traceability" value="0.417643133255051" />
+			</geneRef>
+      <geneRef id="S.lycopersicum@4081@24115">
+				<score id="FAS" value="0.01158081325" />
+				<score id="Traceability" value="0.761472328372" />
+			</geneRef>
+    </orthologGroup>
+    <orthologGroup id="OG_1029">
+      <geneRef id="E.intestinalis@876142@Eint_030020">
+				<score id="FAS" value="0.9765980718" />
+				<score id="Traceability" value="0.0662137763559194" />
+			</geneRef>
+    </orthologGroup>
+    <orthologGroup id="OG_1030">
+      <geneRef id="E.intestinalis@876142@Eint_080670">
+				<score id="FAS" value="0.99938011731" />
+				<score id="Traceability" value="0.716856005125951" />
+			</geneRef>
+      <geneRef id="N.parisii@586133@NEPG_01709">
+				<score id="FAS" value="0.9996232539" />
+				<score id="Traceability" value="0.575317900492223" />
+			</geneRef>
+    </orthologGroup>
+    <orthologGroup id="OG_1009">
+      <geneRef id="A.thaliana@3702@241736">
+				<score id="FAS" value="0.93656908069" />
+				<score id="Traceability" value="0.232687931122229" />
+			</geneRef>
+      <geneRef id="N.parisii@586133@NEPG_01051">
+				<score id="FAS" value="0.999788194" />
+				<score id="Traceability" value="0.127901285371642" />
+			</geneRef>
+      <geneRef id="S.lycopersicum@4081@3882">
+				<score id="FAS" value="0.83989245592" />
+				<score id="Traceability" value="0.152601857491238" />
+			</geneRef>
+    </orthologGroup>
+  </groups>
+
+</orthoXML>
