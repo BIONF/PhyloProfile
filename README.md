@@ -77,18 +77,7 @@ will yield a single, merged *OrthoXML* files that contains the four *HOGs* for t
 Please get in touch! we are trying to support more orthology prediction tools right out of the box.
 
 ## Demo data
-
-In `data/demo/` you can find some test data to see how the files should look like:
-- `test.main`: Use this as the **Main input** file on the *Input & settings* page after starting *PhyloProfile*. It contains 3 information: `Ortholog ID # Feature architecture similarity score # Traceability score`.
-- `test.main.long`: This is the same as `test.main` but in long format.
-- `test.main.xml`: This is the same input file in OrthoXML format.
-- `domains/*.txt`: This folder contains the feature architecture data (e.g. Pfam domains) that you can optionally give under the **Additional annotation input** upload on the *Input & settings* page after startup.
-![](www/pic_input.png)
-- `test.geneList`: After doing the initial plot with the files above you can use this file on the *Customized profile* tab to sub-select for only the genes present in this file.
-![](www/pic_customized.png)
-- `test.taxaList`: This contains list of taxon names. Use this to test the function of fetching NCBI taxonomy IDs, which can be found in *Function* tab.
-![](www/pic_taxaIDsearch.png)
-
+In `data/demo/` you can find some test data to see how the files should look like. In our [Wiki you can find a walkthrough through the different files](https://github.com/BIONF/PhyloProfile/wiki/Walkthrough) and how they relate to the different functions of *PhyloProfile*.
 
 # Bugs
 Any bug reports or comments, suggestions are highly appreciated. Please open an issue on GitHub or be in touch via email.
