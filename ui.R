@@ -245,7 +245,6 @@ shinyUI(fluidPage(
 
                strong(h5("Select taxonomy rank:")),
                uiOutput("rankSelect"),
-               uiOutput("msgDemo"),
                br(),
                strong(h5("Choose (super)taxon of interest:")),
                uiOutput("select"),

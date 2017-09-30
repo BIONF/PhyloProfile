@@ -61,9 +61,9 @@ shinyServer(function(input, output, session) {
   observe({
     if(!file.exists(isolate({"data/idList.txt"}))){
       if(hasInternet() == TRUE){
-        ncol <- max(count.fields("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/idList.txt", sep = '\t'))
-        df <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/idList.txt", sep="\t", quote='', header=F, fill=T, na.strings=c("","NA"), col.names=paste0('V', seq_len(ncol)))
-        write.table(df, file ="data/idList.txt", col.names = F, row.names = F, quote = F, sep="\t")
+        ncol <- max(count.fields("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/idList.txt", comment.char="", sep = '\t'))
+        df <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/idList.txt", sep="\t", header=F, fill=T,comment.char="", na.strings=c("","NA"), col.names=paste0('V', seq_len(ncol)))
+        write.table(df, file ="data/idList.txt", na = "", col.names = F, row.names = F, quote = F, sep="\t")
       } else {
         file.create("data/idList.txt")
       }
@@ -180,13 +180,6 @@ shinyServer(function(input, output, session) {
       write.table(retrievedDt,file,sep="\t",row.names = FALSE,quote = FALSE)
     }
   )
-
-  ######## render message for not changing rank and ref spec when using demo data
-  output$msgDemo <- renderUI({
-    if(input$demo == TRUE){
-      em(strong("Taxonomy rank cannot be changed while using online demo files"), style="color:#ff8080")
-    }
-  })
 
   ################# PARSING VARIABLE 1 AND 2 ##################
   ######## render textinput for variable 1 & 2
@@ -461,7 +454,6 @@ shinyServer(function(input, output, session) {
   ######## get input taxa
   subsetTaxa <- reactive({
     if(input$demo == TRUE){
-      # data <- drop_read_csv("/phyloprofile/data/demo/test.main", stringsAsFactors = FALSE, sep='\t', comment.char="",header = TRUE)
       data <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/demo/test.main.wide", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
       inputTaxa <- colnames(data)
     } else {
@@ -498,7 +490,6 @@ shinyServer(function(input, output, session) {
   unkTaxa <- reactive({
     # get list of input taxa (from main input file)
     if(input$demo == TRUE){
-      # data <- drop_read_csv("/phyloprofile/data/demo/test.main", stringsAsFactors = FALSE, sep='\t', comment.char="",header = TRUE)
       data <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/demo/test.main.wide", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
       inputTaxa <- colnames(data)
     } else {
@@ -679,6 +670,14 @@ shinyServer(function(input, output, session) {
           }
         })
         
+        ### remove duplicate lines
+        system("sort data/idList.txt | uniq > data/idList.txt2")
+        system("mv data/idList.txt2 data/idList.txt")
+        system("sort data/rankList.txt | uniq > data/rankList.txt2")
+        system("mv data/rankList.txt2 data/rankList.txt")
+        system("sort data/taxonNamesReduced.txt | uniq > data/taxonNamesReduced.txt2")
+        system("mv data/taxonNamesReduced.txt2 data/taxonNamesReduced.txt")
+        
         ### create taxonomy matrix
         taxMatrix <- taxonomyTableCreator("data/idList.txt","data/rankList.txt")
         write.table(taxMatrix,"data/taxonomyMatrix.txt",sep="\t",eol="\n",row.names=FALSE,quote = FALSE)
@@ -688,10 +687,17 @@ shinyServer(function(input, output, session) {
 
   ######## list of taxonomy ranks for plotting
   output$rankSelect = renderUI({
-    selectInput("rankSelect", label = "",
-                choices = list("Strain"="05_strain","Species" = "06_species","Genus" = "10_genus", "Family" = "14_family", "Order" = "19_order", "Class" = "23_class",
-                               "Phylum" = "26_phylum", "Kingdom" = "28_kingdom", "Superkingdom" = "29_superkingdom","unselected"=""),
-                selected = "06_species")
+    if(input$demo == TRUE){
+      selectInput("rankSelect", label = "",
+                  choices = list("Strain"="05_strain","Species" = "06_species","Genus" = "10_genus", "Family" = "14_family", "Order" = "19_order", "Class" = "23_class",
+                                 "Phylum" = "26_phylum", "Kingdom" = "28_kingdom", "Superkingdom" = "29_superkingdom","unselected"=""),
+                  selected = "26_phylum")
+    } else {
+      selectInput("rankSelect", label = "",
+                  choices = list("Strain"="05_strain","Species" = "06_species","Genus" = "10_genus", "Family" = "14_family", "Order" = "19_order", "Class" = "23_class",
+                                 "Phylum" = "26_phylum", "Kingdom" = "28_kingdom", "Superkingdom" = "29_superkingdom","unselected"=""),
+                  selected = "06_species")
+    }
   })
 
   ####### GET list of all (super)taxa
@@ -726,7 +732,17 @@ shinyServer(function(input, output, session) {
   output$select = renderUI({
     choice <- allTaxaList()
     choice$fullName <- as.factor(choice$fullName)
-    selectInput('inSelect',"",as.list(levels(choice$fullName)),levels(choice$fullName)[1])
+
+    if(input$demo == TRUE){
+      hellemDf <- data.frame("name" = c("Encephalitozoon hellem","Encephalitozoon hellem","Encephalitozoon","Unikaryonidae","Apansporoblastina","Apansporoblastina","Microsporidia","Fungi","Eukaryota"),
+                             "rank" = c("strain","species","genus","family","order","class","phylum","kingdom","superkingdom"))
+      rankSelect = input$rankSelect
+      rankName = substr(rankSelect,4,nchar(rankSelect))
+      
+      selectInput('inSelect',"",as.list(levels(choice$fullName)),hellemDf$name[hellemDf$rank == rankName])
+    } else {
+      selectInput('inSelect',"",as.list(levels(choice$fullName)),levels(choice$fullName)[1])
+    }
   })
 
   output$highlightTaxonUI = renderUI({
@@ -825,7 +841,7 @@ shinyServer(function(input, output, session) {
     }
   })
 
-  ######## disable demo checkbox, update var2_aggregateBy to mean, change default for rankSelect and inSelect if using demo data
+  ######## disable demo checkbox and update var2_aggregateBy to mean if using demo data
   observe({
     if (input$demo == TRUE) {
       ### disable demo checkbox
@@ -834,15 +850,6 @@ shinyServer(function(input, output, session) {
       updateSelectInput(session,"var2_aggregateBy",
                         choices = list("Max"="max", "Min"="min","Mean"="mean","Median"="median"),
                         selected = "mean")
-      ### change rankSelect to phylum
-      updateSelectInput(session,"rankSelect", label = "",
-                        choices = list("Strain"="05_strain","Species" = "06_species","Genus" = "10_genus", "Family" = "14_family", "Order" = "19_order", "Class" = "23_class",
-                                       "Phylum" = "26_phylum", "Kingdom" = "28_kingdom", "Superkingdom" = "29_superkingdom","unselected"=""),
-                        selected = "26_phylum")
-      ### change inSelect to microsporidia
-      choice <- allTaxaList()
-      choice$fullName <- as.factor(choice$fullName)
-      updateSelectInput(session,'inSelect',"",as.list(levels(choice$fullName)),"Microsporidia")
     }
   })
 
@@ -1024,7 +1031,6 @@ shinyServer(function(input, output, session) {
     }
 
     if(input$demo == TRUE){
-      # inputDf <- drop_read_csv("/phyloprofile/data/demo/test.main.long", stringsAsFactors = FALSE, sep='\t', comment.char="",header = TRUE)
       inputDf <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/demo/test.main.long", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
       
       subsetID <- levels(as.factor(inputDf$geneID))[1:nrHit]
@@ -1677,19 +1683,10 @@ shinyServer(function(input, output, session) {
 
     # open main input file
     if(input$demo == TRUE){
-      # dataOrig <- drop_read_csv("/phyloprofile/data/demo/test.main", stringsAsFactors = FALSE, sep='\t', comment.char="",header = TRUE)
-      dataOrig <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/demo/test.main.wide", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
+      dataOrig <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/demo/test.main.long", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
       
-      # convert into paired columns
-      mdData <- melt(dataOrig,id="geneID")
-
-      # replace NA value with "NA#NA" (otherwise the corresponding orthoID will be empty)
-      mdData$value <- as.character(mdData$value)
-      mdData$value[is.na(mdData$value)] <- "NA#NA"
-
-      # split "orthoID#var1#var2" into 3 columns
-      splitDt <- as.data.frame(str_split_fixed(mdData$value, '#', 3))
-      colnames(splitDt) <- c("orthoID","var1","var2")
+      colnames(dataOrig) <- c("geneID","ncbiID","orthoID","var1","var2")
+      splitDt <- dataOrig[,c("orthoID","var1","var2")]
     } else {
       filein <- input$mainInput
 
@@ -1846,19 +1843,8 @@ shinyServer(function(input, output, session) {
   presSpecAllDt <- reactive({
     # open main input file
     if(input$demo == TRUE){
-      # data <- drop_read_csv("/phyloprofile/data/demo/test.main", stringsAsFactors = FALSE, sep='\t', comment.char="", header = TRUE)
-      data <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/demo/test.main.wide", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
-      
-      # convert into paired columns
-      mdData <- melt(data,id="geneID")
-
-      # split value column into orthoID, var1 & var2
-      splitDt <- (str_split_fixed(mdData$value, '#', 3))
-      # then join them back to mdData
-      mdData <- cbind(mdData,splitDt)
-      # rename columns
-      colnames(mdData) <- c("geneID","ncbiID","value","orthoID","var1","var2")
-      mdData <- mdData[,c("geneID","ncbiID","orthoID","var1","var2")]
+      mdData <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/demo/test.main.long", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
+      colnames(mdData) <- c("geneID","ncbiID","orthoID","var1","var2")
     } else {
       filein <- input$mainInput
 
@@ -1894,7 +1880,7 @@ shinyServer(function(input, output, session) {
         mdData <- mdData[,c("geneID","ncbiID","orthoID","var1","var2")]
       }
     }
-
+    
     ### count number of inparalogs
     paralogCount <- plyr::count(mdData,c('geneID','ncbiID'))
     mdData <- merge(mdData,paralogCount,by=c('geneID','ncbiID'))
@@ -2490,7 +2476,6 @@ shinyServer(function(input, output, session) {
         
         fastaUrl <- paste0("https://github.com/BIONF/phyloprofile-data/blob/data/demo/fasta_files/",specID,".fa?raw=true")
         if(url.exists(fastaUrl)){
-          # faFile <- drop_read_csv(paste0("/phyloprofile/data/fasta/",specID,".fa"),stringsAsFactors = FALSE, sep='\t', comment.char="",header = FALSE)
           faFile <- as.data.frame(read.table(fastaUrl, sep="\t", header=F, fill=T, stringsAsFactors = FALSE, quote = ""))
           
           faDf <- data.frame("seqID" = faFile$V1[grepl(">",faFile$V1)], "seq" = faFile$V1[!grepl(">",faFile$V1)], stringsAsFactors=FALSE)
@@ -2644,7 +2629,6 @@ shinyServer(function(input, output, session) {
     fileDomain <- getDomainFile()
 
     if(input$demo == TRUE){
-      # domainDf <- drop_read_csv(fileDomain,stringsAsFactors = FALSE, sep='\t', comment.char="",header = FALSE)
       domainDf <- as.data.frame(read.csv(fileDomain, sep="\t", header=F, comment.char = "", stringsAsFactors = FALSE, quote = ""))
     } else {
       if(fileDomain != FALSE){
@@ -3373,7 +3357,6 @@ shinyServer(function(input, output, session) {
           
           fastaUrl <- paste0("https://github.com/BIONF/phyloprofile-data/blob/data/demo/fasta_files/",specID,".fa?raw=true")
           if(url.exists(fastaUrl)){
-            # faFile <- drop_read_csv(paste0("/phyloprofile/data/fasta/",specID,".fa"),stringsAsFactors = FALSE, sep='\t', comment.char="",header = FALSE)
             faFile <- as.data.frame(read.table(fastaUrl, sep="\t", header=F, fill=T, stringsAsFactors = FALSE, quote = ""))
             
             faDf <- data.frame("seqID" = faFile$V1[grepl(">",faFile$V1)], "seq" = faFile$V1[!grepl(">",faFile$V1)], stringsAsFactors=FALSE)
@@ -3493,7 +3476,6 @@ shinyServer(function(input, output, session) {
           
           fastaUrl <- paste0("https://github.com/BIONF/phyloprofile-data/blob/data/demo/fasta_files/",specID,".fa?raw=true")
           if(url.exists(fastaUrl)){
-            # faFile <- drop_read_csv(paste0("/phyloprofile/data/fasta/",specID,".fa"),stringsAsFactors = FALSE, sep='\t', comment.char="",header = FALSE)
             faFile <- as.data.frame(read.table(fastaUrl, sep="\t", header=F, fill=T, stringsAsFactors = FALSE, quote = ""))
             
             faDf <- data.frame("seqID" = faFile$V1[grepl(">",faFile$V1)], "seq" = faFile$V1[!grepl(">",faFile$V1)], stringsAsFactors=FALSE)
