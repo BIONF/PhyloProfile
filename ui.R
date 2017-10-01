@@ -193,7 +193,6 @@ shinyUI(fluidPage(
 
              conditionalPanel(
                condition = 'output.unkTaxaStatus == 0',
-
                strong(h4("Choose genes of interest:")),
                radioButtons(inputId="geneList_selected", label="", choices=list("all","from file"), selected="all", inline=T),
                conditionalPanel(
@@ -233,9 +232,16 @@ shinyUI(fluidPage(
                                 shinyBS::bsButton("BUTparse","Get taxonomy info from NCBI *",disabled=FALSE,style="warning"),
                                 helpText(em("(*) Taxonomy information for a given taxa list contains all taxonomy ranks and their correspoding NCBI IDs"))
                ),
+               # conditionalPanel(
+               #   condition = 'output.invalidIDstatus == 1',
+               #   strong(h4("Invalid taxa were found:")),
+               #   
+               # ),
+               
                hr(),
-
-               strong(h4("PLEASE RELOAD THIS TOOL AFTER ADDING NEW TAXA!!!"),style = "color:red")
+               uiOutput("endParsingMsg"),
+               tableOutput("invalidID.output")
+               # strong(h4("PLEASE RELOAD THIS TOOL AFTER ADDING NEW TAXA!!!"),style = "color:red")
              ),
 
              conditionalPanel(
@@ -599,7 +605,12 @@ shinyUI(fluidPage(
     ####### popup to confirm parsing data from input file
     bsModal("parseConfirm", "Get info from input", "BUTparse", size = "small",
             HTML("Processing...<br><br>"),
-            strong("PLEASE RELOAD THIS TOOL WHEN FINISHED!!!",style = "color:red")
+            strong("PLEASE RELOAD THIS TOOL WHEN FINISHED!!!",style = "color:red"),
+            # conditionalPanel(
+              # condition = 'output.taxonomyParseStatus == 1',
+              # strong(h4("Invalid NCBI IDs:")),
+              dataTableOutput("invalidIDout")
+            # )
     ),
 
     ####### popup windows for setting plot colors
