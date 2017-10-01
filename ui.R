@@ -148,6 +148,8 @@ shinyUI(fluidPage(
              ),
 
              checkboxInput("demo",em(strong("Use demo files"),style = "color:darkblue")),
+             uiOutput("noInternetMsg"),
+             
              uiOutput("mainInputFile.ui"),
              uiOutput("taxaInfoCheck.ui"),
              fluidRow(

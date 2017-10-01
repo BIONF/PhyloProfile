@@ -44,6 +44,20 @@ shinyServer(function(input, output, session) {
   #############################################################
   ####################  PRE-PROCESSING  #######################
   #############################################################
+  
+  ####### check for internet connection  ####### 
+  observe({
+    if(hasInternet() == FALSE){
+      toggleState("demo")
+    }
+  })
+  output$noInternetMsg <- renderUI({
+    if(hasInternet() == FALSE){
+      strong(em("Internet connection is required for using demo data!"),style = "color:red")
+    } else {
+      return()
+    }
+  })
 
   ####### check for the existence of taxonomy info file #######
   observe({
@@ -180,7 +194,7 @@ shinyServer(function(input, output, session) {
       write.table(retrievedDt,file,sep="\t",row.names = FALSE,quote = FALSE)
     }
   )
-
+  
   ################# PARSING VARIABLE 1 AND 2 ##################
   ######## render textinput for variable 1 & 2
   output$var1_id.ui <- renderUI({
