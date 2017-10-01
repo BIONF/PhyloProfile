@@ -51,7 +51,7 @@ shinyServer(function(input, output, session) {
       if(hasInternet() == TRUE){
         ncol <- max(count.fields("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/rankList.txt", sep = '\t'))
         df <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/rankList.txt", sep="\t", quote='', header=F, fill=T, na.strings=c("","NA"), col.names=paste0('V', seq_len(ncol)))
-        write.table(df, file ="data/rankList.txt", na = "", col.names = F, row.names = F, quote = F, sep="\t")
+        write.table(df, file ="data/rankList.txt", col.names = F, row.names = F, quote = F, sep="\t")#na = "",
       } else {
         file.create("data/rankList.txt")
       }
@@ -63,7 +63,7 @@ shinyServer(function(input, output, session) {
       if(hasInternet() == TRUE){
         ncol <- max(count.fields("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/idList.txt", comment.char="", sep = '\t'))
         df <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/idList.txt", sep="\t", header=F, fill=T,comment.char="", na.strings=c("","NA"), col.names=paste0('V', seq_len(ncol)))
-        write.table(df, file ="data/idList.txt", na = "", col.names = F, row.names = F, quote = F, sep="\t")
+        write.table(df, file ="data/idList.txt", col.names = F, row.names = F, quote = F, sep="\t")#na = "",
       } else {
         file.create("data/idList.txt")
       }
@@ -576,11 +576,12 @@ shinyServer(function(input, output, session) {
     v1$parse <- input$BUTparse
     updateButton(session, "BUTparse", disabled = TRUE)
     toggleState("newTaxaAsk")
+    toggleState("mainInput")
   })
 
   ######### create rankList.txt, idList.txt, taxonNamesReduced.txt from input file (if confirmed by BUTyes). 
   ######### and also create a full taxonomy matrix for sorting taxa (taxonomyMatrix.txt)
-  invalidID <- reactiveValues(df=NULL)
+  invalidID <- reactiveValues(df=data.frame("Invalid NCBI ID(s)" = as.character(), stringsAsFactors = F))
   observe({
     filein <- input$mainInput
     if(is.null(filein)){return()}
@@ -605,8 +606,8 @@ shinyServer(function(input, output, session) {
           
           rankList <- data.frame()
           idList <- data.frame()
-          
           reducedInfoList <- data.frame()
+          
           for(i in 2:length(titleline)){
             ## taxon ID  
             refID <- gsub("ncbi","",titleline[i])
@@ -620,7 +621,6 @@ shinyServer(function(input, output, session) {
               if(nrow(reducedInfoList[reducedInfoList$X1 == refEntry$ncbiID,]) == 0){
                 refInfoList <- data.frame(matrix(c(refEntry$ncbiID,refEntry$fullName,refEntry$rank,refEntry$parentID), nrow=1, byrow=T),stringsAsFactors=FALSE)
                 reducedInfoList <- rbind(reducedInfoList,refInfoList)
-                cat(paste(c(refEntry$ncbiID,refEntry$fullName,refEntry$rank,refEntry$parentID),collapse = "\t"), file="data/taxonNamesReduced.txt", append=TRUE, sep = "\n")
               }
               
               ## parentID (used to check if hitting last rank, i.e. norank_1)
@@ -649,7 +649,6 @@ shinyServer(function(input, output, session) {
                 if(nrow(reducedInfoList[reducedInfoList$X1 == nextEntry$ncbiID,]) == 0){
                   nextEntryList <- data.frame(matrix(c(nextEntry$ncbiID,nextEntry$fullName,nextEntry$rank,nextEntry$parentID), nrow=1, byrow=T),stringsAsFactors=FALSE)
                   reducedInfoList <- rbind(reducedInfoList,nextEntryList)
-                  cat(paste(c(nextEntry$ncbiID,nextEntry$fullName,nextEntry$rank,nextEntry$parentID),collapse = "\t"), file="data/taxonNamesReduced.txt", append=TRUE, sep = "\n")
                 }
                 
                 lastID <- nextEntry$parentID
@@ -666,31 +665,50 @@ shinyServer(function(input, output, session) {
               ## last rank and id
               rank <- c(rank,"norank_1")
               ids <- c(ids,"1#norank_1")
-              
+
               ## append into rankList and idList files
-              cat(paste(unlist(rank),collapse = "\t"), file="data/rankList.txt", append=TRUE, sep = "\n")
-              cat(paste(unlist(ids),collapse = "\t"), file="data/idList.txt", append=TRUE, sep = "\n")
+              rankListTMP <- data.frame(matrix(unlist(rank), nrow=1, byrow=T),stringsAsFactors=FALSE)
+              rankList <- rbind.fill(rankList,rankListTMP)
+              idListTMP <- data.frame(matrix(unlist(ids), nrow=1, byrow=T),stringsAsFactors=FALSE)
+              idList <- rbind.fill(idList,idListTMP)
             }
           
             # Increment the progress bar, and update the detail text.
             incProgress(1/(length(titleline)-1), detail = paste((i-1),"/",length(titleline)-1))
           }
         })
-        
         ### save invalid IDs to invalidID$df
         invalidID$df <- as.data.frame(unlist(invalidIDtmp))
-        # if(nrow(invalidID$df) < 1){
+
+        if(nrow(invalidID$df) < 1){
+          ### open existing files (idList.txt, rankList.txt and taxonNamesReduced.txt)
+          ncol <- max(count.fields("data/rankList.txt", sep = '\t'))
+          # print(ncol)
+          oldIDList <- as.data.frame(read.table("data/idList.txt", sep='\t', header=F, check.names=FALSE, comment.char="", fill = T, stringsAsFactors=T, na.strings=c("","NA"), col.names=paste0('X', seq_len(ncol))))
+          oldRankList <- as.data.frame(read.table("data/rankList.txt", sep='\t', header=F, check.names=FALSE, comment.char="", fill = T, stringsAsFactors=T, na.strings=c("","NA"), col.names=paste0('X', seq_len(ncol))))
+          oldNameList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t', header=T, check.names=FALSE, comment.char="", fill = T, stringsAsFactors=T))
+
+          ### and append new info into those files
+          newIDList <- rbind.fill(oldIDList,idList)
+          newRankList <- rbind.fill(oldRankList,rankList)
+          colnames(reducedInfoList) <- c("ncbiID","fullName","rank","parentID")
+          newNameList <- rbind.fill(oldNameList,reducedInfoList)
+
+          write.table(newIDList[!duplicated(newIDList),], file ="data/idList.txt", col.names = F, row.names = F, quote = F, sep="\t")
+          write.table(newRankList[!duplicated(newRankList),], file ="data/rankList.txt", col.names = F, row.names = F, quote = F, sep="\t")
+          write.table(newNameList[!duplicated(newNameList),], file ="data/taxonNamesReduced.txt", col.names = T, row.names = F, quote = F, sep="\t")
+
           ### create taxonomy matrix
           taxMatrix <- taxonomyTableCreator("data/idList.txt","data/rankList.txt")
           write.table(taxMatrix,"data/taxonomyMatrix.txt",sep="\t",eol="\n",row.names=FALSE,quote = FALSE)
-        # }
+        }
       }
     }
   })
   
   ######## output invalid NCBI ID
   output$invalidID.output <- renderTable({
-    if(is.null(invalidID$df)) {return()}
+    if(nrow(invalidID$df) < 1) {return()}
     else{
       outDf <- invalidID$df
       colnames(outDf) <- c("Invalid NCBI ID(s)")
@@ -699,7 +717,7 @@ shinyServer(function(input, output, session) {
   })
   
   output$endParsingMsg <- renderUI({
-    if(is.null(invalidID$df)) {
+    if(nrow(invalidID$df) < 1) {
       strong(h4("PLEASE RELOAD THIS TOOL AFTER ADDING NEW TAXA!!!"),style = "color:red")
     }else{
       HTML('<p><strong><span style="color: #e12525;">SOME INVALID TAXON IDs HAVE BEEN FOUND!!</span><br>Please check the validity of the following IDs in 
