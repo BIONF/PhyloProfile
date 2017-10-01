@@ -1,7 +1,7 @@
 
 # PhyloProfile
 
-![](www/pic_main.png)
+![](www/posterSub.png)
 
 *PhyloProfile* is a *Shiny*-based tool for integrating, visualizing and exploring multi-layered phylogenetic profiles.
 
