@@ -51,7 +51,7 @@ shinyServer(function(input, output, session) {
       if(hasInternet() == TRUE){
         ncol <- max(count.fields("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/rankList.txt", sep = '\t'))
         df <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/rankList.txt", sep="\t", quote='', header=F, fill=T, na.strings=c("","NA"), col.names=paste0('V', seq_len(ncol)))
-        write.table(df, file ="data/rankList.txt", col.names = F, row.names = F, quote = F, sep="\t")
+        write.table(df, file ="data/rankList.txt", na = "", col.names = F, row.names = F, quote = F, sep="\t")
       } else {
         file.create("data/rankList.txt")
       }
@@ -677,20 +677,13 @@ shinyServer(function(input, output, session) {
           }
         })
         
-        ### remove duplicate lines
-        system("sort data/idList.txt | uniq > data/idList.txt2")
-        system("mv data/idList.txt2 data/idList.txt")
-        system("sort data/rankList.txt | uniq > data/rankList.txt2")
-        system("mv data/rankList.txt2 data/rankList.txt")
-        system("sort data/taxonNamesReduced.txt | uniq > data/taxonNamesReduced.txt2")
-        system("mv data/taxonNamesReduced.txt2 data/taxonNamesReduced.txt")
-        
-        ### create taxonomy matrix
-        taxMatrix <- taxonomyTableCreator("data/idList.txt","data/rankList.txt")
-        write.table(taxMatrix,"data/taxonomyMatrix.txt",sep="\t",eol="\n",row.names=FALSE,quote = FALSE)
-
         ### save invalid IDs to invalidID$df
         invalidID$df <- as.data.frame(unlist(invalidIDtmp))
+        # if(nrow(invalidID$df) < 1){
+          ### create taxonomy matrix
+          taxMatrix <- taxonomyTableCreator("data/idList.txt","data/rankList.txt")
+          write.table(taxMatrix,"data/taxonomyMatrix.txt",sep="\t",eol="\n",row.names=FALSE,quote = FALSE)
+        # }
       }
     }
   })
@@ -736,14 +729,15 @@ shinyServer(function(input, output, session) {
     if(is.null(filein) & input$demo == FALSE){return()}
 
     rankSelect = input$rankSelect
+
     if(rankSelect == ""){return()}
 
     if(length(unkTaxa()) > 0){return()}
-
+    
     ### load list of unsorted taxa
     Dt <- as.data.frame(read.table("data/taxonomyMatrix.txt", sep='\t', header=T, stringsAsFactors=T))
     Dt <- Dt[Dt$abbrName  %in% subsetTaxa(),]
-    
+
     ### load list of taxon name
     nameList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T,fill = TRUE))
     nameList$fullName <- as.character(nameList$fullName)

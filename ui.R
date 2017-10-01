@@ -232,11 +232,6 @@ shinyUI(fluidPage(
                                 shinyBS::bsButton("BUTparse","Get taxonomy info from NCBI *",disabled=FALSE,style="warning"),
                                 helpText(em("(*) Taxonomy information for a given taxa list contains all taxonomy ranks and their correspoding NCBI IDs"))
                ),
-               # conditionalPanel(
-               #   condition = 'output.invalidIDstatus == 1',
-               #   strong(h4("Invalid taxa were found:")),
-               #   
-               # ),
                
                hr(),
                uiOutput("endParsingMsg"),
