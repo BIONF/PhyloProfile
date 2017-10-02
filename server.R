@@ -39,11 +39,25 @@ source("scripts/functions.R")
 options(shiny.maxRequestSize=50*1024^2)  ## size limit for input 50mb
 
 shinyServer(function(input, output, session) {
-  #  session$onSessionEnded(stopApp) ### Automatically stop a Shiny app when closing the browser tab
-
+  # session$onSessionEnded(stopApp) ### Automatically stop a Shiny app when closing the browser tab
+  session$allowReconnect(TRUE)
   #############################################################
   ####################  PRE-PROCESSING  #######################
   #############################################################
+  
+  ####### check for internet connection  ####### 
+  observe({
+    if(hasInternet() == FALSE){
+      toggleState("demo")
+    }
+  })
+  output$noInternetMsg <- renderUI({
+    if(hasInternet() == FALSE){
+      strong(em("Internet connection is required for using demo data!"),style = "color:red")
+    } else {
+      return()
+    }
+  })
 
   ####### check for the existence of taxonomy info file #######
   observe({
@@ -51,7 +65,7 @@ shinyServer(function(input, output, session) {
       if(hasInternet() == TRUE){
         ncol <- max(count.fields("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/rankList.txt", sep = '\t'))
         df <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/rankList.txt", sep="\t", quote='', header=F, fill=T, na.strings=c("","NA"), col.names=paste0('V', seq_len(ncol)))
-        write.table(df, file ="data/rankList.txt", col.names = F, row.names = F, quote = F, sep="\t")
+        write.table(df, file ="data/rankList.txt", col.names = F, row.names = F, quote = F, sep="\t")#na = "",
       } else {
         file.create("data/rankList.txt")
       }
@@ -61,9 +75,9 @@ shinyServer(function(input, output, session) {
   observe({
     if(!file.exists(isolate({"data/idList.txt"}))){
       if(hasInternet() == TRUE){
-        ncol <- max(count.fields("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/idList.txt", sep = '\t'))
-        df <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/idList.txt", sep="\t", quote='', header=F, fill=T, na.strings=c("","NA"), col.names=paste0('V', seq_len(ncol)))
-        write.table(df, file ="data/idList.txt", col.names = F, row.names = F, quote = F, sep="\t")
+        ncol <- max(count.fields("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/idList.txt", comment.char="", sep = '\t'))
+        df <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/idList.txt", sep="\t", header=F, fill=T,comment.char="", na.strings=c("","NA"), col.names=paste0('V', seq_len(ncol)))
+        write.table(df, file ="data/idList.txt", col.names = F, row.names = F, quote = F, sep="\t")#na = "",
       } else {
         file.create("data/idList.txt")
       }
@@ -180,14 +194,7 @@ shinyServer(function(input, output, session) {
       write.table(retrievedDt,file,sep="\t",row.names = FALSE,quote = FALSE)
     }
   )
-
-  ######## render message for not changing rank and ref spec when using demo data
-  output$msgDemo <- renderUI({
-    if(input$demo == TRUE){
-      em(strong("Taxonomy rank cannot be changed while using online demo files"), style="color:#ff8080")
-    }
-  })
-
+  
   ################# PARSING VARIABLE 1 AND 2 ##################
   ######## render textinput for variable 1 & 2
   output$var1_id.ui <- renderUI({
@@ -461,7 +468,6 @@ shinyServer(function(input, output, session) {
   ######## get input taxa
   subsetTaxa <- reactive({
     if(input$demo == TRUE){
-      # data <- drop_read_csv("/phyloprofile/data/demo/test.main", stringsAsFactors = FALSE, sep='\t', comment.char="",header = TRUE)
       data <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/demo/test.main.wide", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
       inputTaxa <- colnames(data)
     } else {
@@ -498,7 +504,6 @@ shinyServer(function(input, output, session) {
   unkTaxa <- reactive({
     # get list of input taxa (from main input file)
     if(input$demo == TRUE){
-      # data <- drop_read_csv("/phyloprofile/data/demo/test.main", stringsAsFactors = FALSE, sep='\t', comment.char="",header = TRUE)
       data <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/demo/test.main.wide", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
       inputTaxa <- colnames(data)
     } else {
@@ -549,7 +554,7 @@ shinyServer(function(input, output, session) {
   outputOptions(output, "unkTaxaStatus", suspendWhenHidden = FALSE)
 
   ### show full list of unkTaxa
-  output$unkTaxaFull <- renderDataTable(option = list(searching = FALSE),{
+  output$unkTaxaFull <- renderDataTable(option = list(searching = FALSE,pageLength = 10),{
     if(length(unkTaxa())>0){
       tb <- as.data.frame(unkTaxa())
       names(tb)[1] <- "New taxon"
@@ -583,10 +588,14 @@ shinyServer(function(input, output, session) {
   observeEvent(input$BUTparse, {
     toggleModal(session, "parseConfirm", toggle = "close")
     v1$parse <- input$BUTparse
+    updateButton(session, "BUTparse", disabled = TRUE)
+    toggleState("newTaxaAsk")
+    toggleState("mainInput")
   })
 
   ######### create rankList.txt, idList.txt, taxonNamesReduced.txt from input file (if confirmed by BUTyes). 
   ######### and also create a full taxonomy matrix for sorting taxa (taxonomyMatrix.txt)
+  invalidID <- reactiveValues(df=data.frame("Invalid NCBI ID(s)" = as.character(), stringsAsFactors = F))
   observe({
     filein <- input$mainInput
     if(is.null(filein)){return()}
@@ -601,6 +610,7 @@ shinyServer(function(input, output, session) {
           titleline <- c("geneID",unkTaxa)
         }
         
+        invalidIDtmp <- list()
         # Create 0-row data frame which will be used to store data
         withProgress(message = 'Parsing input file', value = 0, {
           allTaxonInfo<-fread("data/taxonNamesFull.txt")
@@ -610,7 +620,6 @@ shinyServer(function(input, output, session) {
           
           rankList <- data.frame()
           idList <- data.frame()
-          
           reducedInfoList <- data.frame()
           
           for(i in 2:length(titleline)){
@@ -620,78 +629,129 @@ shinyServer(function(input, output, session) {
             ## get info for this taxon
             refEntry <- allTaxonInfo[allTaxonInfo$ncbiID == refID,]
             
-            if(nrow(reducedInfoList[reducedInfoList$X1 == refEntry$ncbiID,]) == 0){
-              refInfoList <- data.frame(matrix(c(refEntry$ncbiID,refEntry$fullName,refEntry$rank,refEntry$parentID), nrow=1, byrow=T),stringsAsFactors=FALSE)
-              reducedInfoList <- rbind(reducedInfoList,refInfoList)
-              cat(paste(c(refEntry$ncbiID,refEntry$fullName,refEntry$rank,refEntry$parentID),collapse = "\t"), file="data/taxonNamesReduced.txt", append=TRUE, sep = "\n")
-            }
-            
-            ## parentID (used to check if hitting last rank, i.e. norank_1)
-            lastID <- refEntry$parentID
-            
-            ## create list of rank for this taxon
-            rank <- c(paste0("ncbi",refID),refEntry$fullName)
-            if(refEntry$rank == "norank"){
-              rank <- c(rank,paste0("strain"))
+            if(nrow(refEntry) < 1){
+              invalidIDtmp <- c(invalidIDtmp,refID)
             } else {
-              rank <- c(rank,refEntry$rank)
-            }
-            
-            ## create list of IDs for this taxon
-            ids <- list(paste0(refEntry$fullName,"#name"))
-            if(refEntry$rank == "norank"){
-              ids <- c(ids,paste0(refEntry$ncbiID,"#","strain","_",refEntry$ncbiID))
-            } else {
-              ids <- c(ids,paste0(refEntry$ncbiID,"#",refEntry$rank))
-            }
-            
-            ## append info into rank and ids
-            while(lastID != 1){
-              nextEntry <- allTaxonInfo[allTaxonInfo$ncbiID == lastID,]
-              
-              if(nrow(reducedInfoList[reducedInfoList$X1 == nextEntry$ncbiID,]) == 0){
-                nextEntryList <- data.frame(matrix(c(nextEntry$ncbiID,nextEntry$fullName,nextEntry$rank,nextEntry$parentID), nrow=1, byrow=T),stringsAsFactors=FALSE)
-                reducedInfoList <- rbind(reducedInfoList,nextEntryList)
-                cat(paste(c(nextEntry$ncbiID,nextEntry$fullName,nextEntry$rank,nextEntry$parentID),collapse = "\t"), file="data/taxonNamesReduced.txt", append=TRUE, sep = "\n")
+              if(nrow(reducedInfoList[reducedInfoList$X1 == refEntry$ncbiID,]) == 0){
+                refInfoList <- data.frame(matrix(c(refEntry$ncbiID,refEntry$fullName,refEntry$rank,refEntry$parentID), nrow=1, byrow=T),stringsAsFactors=FALSE)
+                reducedInfoList <- rbind(reducedInfoList,refInfoList)
               }
               
-              lastID <- nextEntry$parentID
+              ## parentID (used to check if hitting last rank, i.e. norank_1)
+              lastID <- refEntry$parentID
               
-              if("norank" %in% nextEntry$rank){
-                rank <- c(rank,paste0(nextEntry$rank,"_",nextEntry$ncbiID))
-                ids <- c(ids,paste0(nextEntry$ncbiID,"#",nextEntry$rank,"_",nextEntry$ncbiID))
+              ## create list of rank for this taxon
+              rank <- c(paste0("ncbi",refID),refEntry$fullName)
+              if(refEntry$rank == "norank"){
+                rank <- c(rank,paste0("strain"))
               } else {
-                rank <- c(rank,nextEntry$rank)
-                ids <- c(ids,paste0(nextEntry$ncbiID,"#",nextEntry$rank))
+                rank <- c(rank,refEntry$rank)
               }
+              
+              ## create list of IDs for this taxon
+              ids <- list(paste0(refEntry$fullName,"#name"))
+              if(refEntry$rank == "norank"){
+                ids <- c(ids,paste0(refEntry$ncbiID,"#","strain","_",refEntry$ncbiID))
+              } else {
+                ids <- c(ids,paste0(refEntry$ncbiID,"#",refEntry$rank))
+              }
+              
+              ## append info into rank and ids
+              while(lastID != 1){
+                nextEntry <- allTaxonInfo[allTaxonInfo$ncbiID == lastID,]
+                
+                if(nrow(reducedInfoList[reducedInfoList$X1 == nextEntry$ncbiID,]) == 0){
+                  nextEntryList <- data.frame(matrix(c(nextEntry$ncbiID,nextEntry$fullName,nextEntry$rank,nextEntry$parentID), nrow=1, byrow=T),stringsAsFactors=FALSE)
+                  reducedInfoList <- rbind(reducedInfoList,nextEntryList)
+                }
+                
+                lastID <- nextEntry$parentID
+                
+                if("norank" %in% nextEntry$rank){
+                  rank <- c(rank,paste0(nextEntry$rank,"_",nextEntry$ncbiID))
+                  ids <- c(ids,paste0(nextEntry$ncbiID,"#",nextEntry$rank,"_",nextEntry$ncbiID))
+                } else {
+                  rank <- c(rank,nextEntry$rank)
+                  ids <- c(ids,paste0(nextEntry$ncbiID,"#",nextEntry$rank))
+                }
+              }
+              
+              ## last rank and id
+              rank <- c(rank,"norank_1")
+              ids <- c(ids,"1#norank_1")
+
+              ## append into rankList and idList files
+              rankListTMP <- data.frame(matrix(unlist(rank), nrow=1, byrow=T),stringsAsFactors=FALSE)
+              rankList <- rbind.fill(rankList,rankListTMP)
+              idListTMP <- data.frame(matrix(unlist(ids), nrow=1, byrow=T),stringsAsFactors=FALSE)
+              idList <- rbind.fill(idList,idListTMP)
             }
-            
-            ## last rank and id
-            rank <- c(rank,"norank_1")
-            ids <- c(ids,"1#norank_1")
-            
-            ## append into rankList and idList files
-            cat(paste(unlist(rank),collapse = "\t"), file="data/rankList.txt", append=TRUE, sep = "\n")
-            cat(paste(unlist(ids),collapse = "\t"), file="data/idList.txt", append=TRUE, sep = "\n")
-            
+          
             # Increment the progress bar, and update the detail text.
             incProgress(1/(length(titleline)-1), detail = paste((i-1),"/",length(titleline)-1))
           }
         })
-        
-        ### create taxonomy matrix
-        taxMatrix <- taxonomyTableCreator("data/idList.txt","data/rankList.txt")
-        write.table(taxMatrix,"data/taxonomyMatrix.txt",sep="\t",eol="\n",row.names=FALSE,quote = FALSE)
+        ### save invalid IDs to invalidID$df
+        invalidID$df <- as.data.frame(unlist(invalidIDtmp))
+
+        if(nrow(invalidID$df) < 1){
+          ### open existing files (idList.txt, rankList.txt and taxonNamesReduced.txt)
+          ncol <- max(count.fields("data/rankList.txt", sep = '\t'))
+          # print(ncol)
+          oldIDList <- as.data.frame(read.table("data/idList.txt", sep='\t', header=F, check.names=FALSE, comment.char="", fill = T, stringsAsFactors=T, na.strings=c("","NA"), col.names=paste0('X', seq_len(ncol))))
+          oldRankList <- as.data.frame(read.table("data/rankList.txt", sep='\t', header=F, check.names=FALSE, comment.char="", fill = T, stringsAsFactors=T, na.strings=c("","NA"), col.names=paste0('X', seq_len(ncol))))
+          oldNameList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t', header=T, check.names=FALSE, comment.char="", fill = T, stringsAsFactors=T))
+
+          ### and append new info into those files
+          newIDList <- rbind.fill(oldIDList,idList)
+          newRankList <- rbind.fill(oldRankList,rankList)
+          colnames(reducedInfoList) <- c("ncbiID","fullName","rank","parentID")
+          newNameList <- rbind.fill(oldNameList,reducedInfoList)
+
+          write.table(newIDList[!duplicated(newIDList),], file ="data/idList.txt", col.names = F, row.names = F, quote = F, sep="\t")
+          write.table(newRankList[!duplicated(newRankList),], file ="data/rankList.txt", col.names = F, row.names = F, quote = F, sep="\t")
+          write.table(newNameList[!duplicated(newNameList),], file ="data/taxonNamesReduced.txt", col.names = T, row.names = F, quote = F, sep="\t")
+
+          ### create taxonomy matrix
+          taxMatrix <- taxonomyTableCreator("data/idList.txt","data/rankList.txt")
+          write.table(taxMatrix,"data/taxonomyMatrix.txt",sep="\t",eol="\n",row.names=FALSE,quote = FALSE)
+        }
       }
+    }
+  })
+  
+  ######## output invalid NCBI ID
+  output$invalidID.output <- renderTable({
+    if(nrow(invalidID$df) < 1) {return()}
+    else{
+      outDf <- invalidID$df
+      colnames(outDf) <- c("Invalid NCBI ID(s)")
+      return(outDf)
+    }
+  })
+  
+  output$endParsingMsg <- renderUI({
+    if(nrow(invalidID$df) < 1) {
+      strong(h4("PLEASE RELOAD THIS TOOL AFTER ADDING NEW TAXA!!!"),style = "color:red")
+    }else{
+      HTML('<p><strong><span style="color: #e12525;">SOME INVALID TAXON IDs HAVE BEEN FOUND!!</span><br>Please check the validity of the following IDs in 
+           <a target="_blank" href="https://www.ncbi.nlm.nih.gov/taxonomy">NCBI taxonomy database</a>!</strong></p>')
     }
   })
 
   ######## list of taxonomy ranks for plotting
   output$rankSelect = renderUI({
-    selectInput("rankSelect", label = "",
-                choices = list("Strain"="05_strain","Species" = "06_species","Genus" = "10_genus", "Family" = "14_family", "Order" = "19_order", "Class" = "23_class",
-                               "Phylum" = "26_phylum", "Kingdom" = "28_kingdom", "Superkingdom" = "29_superkingdom","unselected"=""),
-                selected = "06_species")
+    if(input$demo == TRUE){
+      selectInput("rankSelect", label = "",
+                  choices = list("Strain"="05_strain","Species" = "06_species","Genus" = "10_genus", "Family" = "14_family", "Order" = "19_order", "Class" = "23_class",
+                                 "Phylum" = "26_phylum", "Kingdom" = "28_kingdom", "Superkingdom" = "29_superkingdom","unselected"=""),
+                  selected = "26_phylum")
+    } else {
+      selectInput("rankSelect", label = "",
+                  choices = list("Strain"="05_strain","Species" = "06_species","Genus" = "10_genus", "Family" = "14_family", "Order" = "19_order", "Class" = "23_class",
+                                 "Phylum" = "26_phylum", "Kingdom" = "28_kingdom", "Superkingdom" = "29_superkingdom","unselected"=""),
+                  selected = "06_species")
+    }
   })
 
   ####### GET list of all (super)taxa
@@ -701,14 +761,15 @@ shinyServer(function(input, output, session) {
     if(is.null(filein) & input$demo == FALSE){return()}
 
     rankSelect = input$rankSelect
+
     if(rankSelect == ""){return()}
 
     if(length(unkTaxa()) > 0){return()}
-
+    
     ### load list of unsorted taxa
     Dt <- as.data.frame(read.table("data/taxonomyMatrix.txt", sep='\t', header=T, stringsAsFactors=T))
     Dt <- Dt[Dt$abbrName  %in% subsetTaxa(),]
-    
+
     ### load list of taxon name
     nameList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T,fill = TRUE))
     nameList$fullName <- as.character(nameList$fullName)
@@ -726,7 +787,17 @@ shinyServer(function(input, output, session) {
   output$select = renderUI({
     choice <- allTaxaList()
     choice$fullName <- as.factor(choice$fullName)
-    selectInput('inSelect',"",as.list(levels(choice$fullName)),levels(choice$fullName)[1])
+
+    if(input$demo == TRUE){
+      hellemDf <- data.frame("name" = c("Encephalitozoon hellem","Encephalitozoon hellem","Encephalitozoon","Unikaryonidae","Apansporoblastina","Apansporoblastina","Microsporidia","Fungi","Eukaryota"),
+                             "rank" = c("strain","species","genus","family","order","class","phylum","kingdom","superkingdom"))
+      rankSelect = input$rankSelect
+      rankName = substr(rankSelect,4,nchar(rankSelect))
+      
+      selectInput('inSelect',"",as.list(levels(choice$fullName)),hellemDf$name[hellemDf$rank == rankName])
+    } else {
+      selectInput('inSelect',"",as.list(levels(choice$fullName)),levels(choice$fullName)[1])
+    }
   })
 
   output$highlightTaxonUI = renderUI({
@@ -825,7 +896,7 @@ shinyServer(function(input, output, session) {
     }
   })
 
-  ######## disable demo checkbox, update var2_aggregateBy to mean, change default for rankSelect and inSelect if using demo data
+  ######## disable demo checkbox and update var2_aggregateBy to mean if using demo data
   observe({
     if (input$demo == TRUE) {
       ### disable demo checkbox
@@ -834,15 +905,6 @@ shinyServer(function(input, output, session) {
       updateSelectInput(session,"var2_aggregateBy",
                         choices = list("Max"="max", "Min"="min","Mean"="mean","Median"="median"),
                         selected = "mean")
-      ### change rankSelect to phylum
-      updateSelectInput(session,"rankSelect", label = "",
-                        choices = list("Strain"="05_strain","Species" = "06_species","Genus" = "10_genus", "Family" = "14_family", "Order" = "19_order", "Class" = "23_class",
-                                       "Phylum" = "26_phylum", "Kingdom" = "28_kingdom", "Superkingdom" = "29_superkingdom","unselected"=""),
-                        selected = "26_phylum")
-      ### change inSelect to microsporidia
-      choice <- allTaxaList()
-      choice$fullName <- as.factor(choice$fullName)
-      updateSelectInput(session,'inSelect',"",as.list(levels(choice$fullName)),"Microsporidia")
     }
   })
 
@@ -1024,7 +1086,6 @@ shinyServer(function(input, output, session) {
     }
 
     if(input$demo == TRUE){
-      # inputDf <- drop_read_csv("/phyloprofile/data/demo/test.main.long", stringsAsFactors = FALSE, sep='\t', comment.char="",header = TRUE)
       inputDf <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/demo/test.main.long", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
       
       subsetID <- levels(as.factor(inputDf$geneID))[1:nrHit]
@@ -1603,9 +1664,19 @@ shinyServer(function(input, output, session) {
       spec <- toString(supertaxa[corX])
 
       # get var1, percentage of present species and var2 score
-      var1 <- max(na.omit(dataHeat$var1[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]))
-      Percent <- max(na.omit(dataHeat$presSpec[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]))
-      var2 <- max(na.omit(dataHeat$var2[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]))
+      var1 <- NA
+      if(!is.na(dataHeat$var1[dataHeat$geneID == geneID & dataHeat$supertaxon == spec][1])){
+        var1 <- max(na.omit(dataHeat$var1[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]))
+      }
+      Percent <- NA
+      if(!is.na(dataHeat$presSpec[dataHeat$geneID == geneID & dataHeat$supertaxon == spec][1])){
+        Percent <- max(na.omit(dataHeat$presSpec[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]))
+      }
+      var2 <- NA
+      if(!is.na(dataHeat$var2[dataHeat$geneID == geneID & dataHeat$supertaxon == spec][1])){
+        var2 <- max(na.omit(dataHeat$var2[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]))
+      }
+      
       # get ortholog ID
       orthoID <- dataHeat$orthoID[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
       if(length(orthoID) > 1){
@@ -1667,19 +1738,10 @@ shinyServer(function(input, output, session) {
 
     # open main input file
     if(input$demo == TRUE){
-      # dataOrig <- drop_read_csv("/phyloprofile/data/demo/test.main", stringsAsFactors = FALSE, sep='\t', comment.char="",header = TRUE)
-      dataOrig <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/demo/test.main.wide", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
+      dataOrig <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/demo/test.main.long", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
       
-      # convert into paired columns
-      mdData <- melt(dataOrig,id="geneID")
-
-      # replace NA value with "NA#NA" (otherwise the corresponding orthoID will be empty)
-      mdData$value <- as.character(mdData$value)
-      mdData$value[is.na(mdData$value)] <- "NA#NA"
-
-      # split "orthoID#var1#var2" into 3 columns
-      splitDt <- as.data.frame(str_split_fixed(mdData$value, '#', 3))
-      colnames(splitDt) <- c("orthoID","var1","var2")
+      colnames(dataOrig) <- c("geneID","ncbiID","orthoID","var1","var2")
+      splitDt <- dataOrig[,c("orthoID","var1","var2")]
     } else {
       filein <- input$mainInput
 
@@ -1836,19 +1898,8 @@ shinyServer(function(input, output, session) {
   presSpecAllDt <- reactive({
     # open main input file
     if(input$demo == TRUE){
-      # data <- drop_read_csv("/phyloprofile/data/demo/test.main", stringsAsFactors = FALSE, sep='\t', comment.char="", header = TRUE)
-      data <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/demo/test.main.wide", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
-      
-      # convert into paired columns
-      mdData <- melt(data,id="geneID")
-
-      # split value column into orthoID, var1 & var2
-      splitDt <- (str_split_fixed(mdData$value, '#', 3))
-      # then join them back to mdData
-      mdData <- cbind(mdData,splitDt)
-      # rename columns
-      colnames(mdData) <- c("geneID","ncbiID","value","orthoID","var1","var2")
-      mdData <- mdData[,c("geneID","ncbiID","orthoID","var1","var2")]
+      mdData <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/demo/test.main.long", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
+      colnames(mdData) <- c("geneID","ncbiID","orthoID","var1","var2")
     } else {
       filein <- input$mainInput
 
@@ -1884,7 +1935,7 @@ shinyServer(function(input, output, session) {
         mdData <- mdData[,c("geneID","ncbiID","orthoID","var1","var2")]
       }
     }
-
+    
     ### count number of inparalogs
     paralogCount <- plyr::count(mdData,c('geneID','ncbiID'))
     mdData <- merge(mdData,paralogCount,by=c('geneID','ncbiID'))
@@ -2256,9 +2307,19 @@ shinyServer(function(input, output, session) {
       supertaxa <- levels(dataHeat$supertaxon)
       spec <- toString(supertaxa[corX])
       # get var1, percentage of present species and var2 score
-      var1 <- max(na.omit(dataHeat$var1[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]))
-      Percent <- max(na.omit(dataHeat$presSpec[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]))
-      var2 <- max(na.omit(dataHeat$var2[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]))
+      var1 <- NA
+      if(!is.na(dataHeat$var1[dataHeat$geneID == geneID & dataHeat$supertaxon == spec][1])){
+        var1 <- max(na.omit(dataHeat$var1[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]))
+      }
+      Percent <- NA
+      if(!is.na(dataHeat$presSpec[dataHeat$geneID == geneID & dataHeat$supertaxon == spec][1])){
+        Percent <- max(na.omit(dataHeat$presSpec[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]))
+      }
+      var2 <- NA
+      if(!is.na(dataHeat$var2[dataHeat$geneID == geneID & dataHeat$supertaxon == spec][1])){
+        var2 <- max(na.omit(dataHeat$var2[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]))
+      }
+      
       # get ortholog ID
       orthoID <- dataHeat$orthoID[dataHeat$geneID == geneID & dataHeat$supertaxon == spec]
       if(length(orthoID) > 1){
@@ -2297,17 +2358,18 @@ shinyServer(function(input, output, session) {
         #orthoID = toString(paste0(orthoIDTmp[2],":",orthoIDTmp[3]))
         orthoID = toString(orthoIDTmp[3])
       }
-      if(orthoID=="NA"){orthoID <- info[2]}
-
-      ## print output
-      #a <- toString(paste(info[1],orthoID, sep = " ; "))
-      a <- toString(paste("Seed-ID:",info[1]))
-      #b <- toString(paste(substr(info[3],6,nchar(info[3]))))
-      b <- toString(paste0("Hit-ID: ",orthoID," (",substr(info[3],6,nchar(info[3])),")"))
-      c <- toString(paste(input$var1_aggregateBy,input$var1_id,":",info[4]))
-      d <- toString(paste(input$var2_aggregateBy,input$var2_id,":",info[6]))
-      e <- toString(paste("% present taxa:",info[5]))
-      paste(a,b,c,d,e,sep="\n")
+      if(is.na(orthoID)){return()}
+      else{
+        # if(orthoID=="NA"){orthoID <- info[2]}
+        
+        ## print output
+        a <- toString(paste("Seed-ID:",info[1]))
+        b <- toString(paste0("Hit-ID: ",orthoID," (",substr(info[3],6,nchar(info[3])),")"))
+        c <- toString(paste(input$var1_aggregateBy,input$var1_id,":",info[4]))
+        d <- toString(paste(input$var2_aggregateBy,input$var2_id,":",info[6]))
+        e <- toString(paste("% present taxa:",info[5]))
+        paste(a,b,c,d,e,sep="\n")
+      }
     }
   })
 
@@ -2467,9 +2529,8 @@ shinyServer(function(input, output, session) {
         specTMP <- unlist(strsplit(seqID,"@"))
         specID = paste0(specTMP[1],"%40",specTMP[2])
         
-        fastaUrl <- paste0("https://github.com/BIONF/phyloprofile-data/blob/data/demo/microsporidia_fasta/",specID,".fa?raw=true")
+        fastaUrl <- paste0("https://github.com/BIONF/phyloprofile-data/blob/data/demo/fasta_files/",specID,".fa?raw=true")
         if(url.exists(fastaUrl)){
-          # faFile <- drop_read_csv(paste0("/phyloprofile/data/fasta/",specID,".fa"),stringsAsFactors = FALSE, sep='\t', comment.char="",header = FALSE)
           faFile <- as.data.frame(read.table(fastaUrl, sep="\t", header=F, fill=T, stringsAsFactors = FALSE, quote = ""))
           
           faDf <- data.frame("seqID" = faFile$V1[grepl(">",faFile$V1)], "seq" = faFile$V1[!grepl(">",faFile$V1)], stringsAsFactors=FALSE)
@@ -2477,11 +2538,11 @@ shinyServer(function(input, output, session) {
           seq <- as.character(faDf$seq[faDf$seqID == paste0(">",seqID)])
           fastaOut <- paste(paste0(">",seqID),seq,sep="\n")
         } else {
-          fastaOut <- paste0(fastaUrl," not found!!! Please note that demo data contains only FASTA sequences for Microsporidia species!")
+          fastaOut <- paste0(fastaUrl," not found!!!")
         }
       } else {
         if(input$input_type == 'oneSeq.extended.fa'){
-          #        f <- toString(input$oneseq.file)
+          # f <- toString(input$oneseq.file)
           fasIn <- input$oneSeqFasta
           f <- toString(fasIn$datapath)
         } else {
@@ -2491,22 +2552,16 @@ shinyServer(function(input, output, session) {
           id_format = input$id_format
 
           ### get species ID and seqID
-          # specTMP <- unlist(strsplit(seqID,":"))
-          # specID = specTMP[1]
-          if(id_format == 2){
+          if(id_format == 1){
             specTMP <- unlist(strsplit(seqID,":"))
-            # seqID = specTMP[length(specTMP)]
             specID = paste(specTMP[-length(specTMP)],collapse = ":")
-          } else if(id_format == 3){
+          } else if(id_format == 2){
             specTMP <- unlist(strsplit(seqID,"@"))
-            # seqID = specTMP[length(specTMP)]
             specID = paste(specTMP[-length(specTMP)],collapse = "@")
-          } else if(id_format == 4){
+          } else if(id_format == 3){
             specTMP <- unlist(strsplit(seqID,"|"))
-            # seqID = specTMP[length(specTMP)]
             specID = paste(specTMP[-length(specTMP)],collapse = "|")
           }
-          
 
           ### full path fasta file
           f <- paste0(path,"/",specID,".",file_ext)
@@ -2516,7 +2571,6 @@ shinyServer(function(input, output, session) {
         }
 
         ### read file and get sequence
-        ### get fasta
         fastaOut <- paste(getFasta(f,seqID))
       }
       # return(c(seqID,specID))
@@ -2630,7 +2684,6 @@ shinyServer(function(input, output, session) {
     fileDomain <- getDomainFile()
 
     if(input$demo == TRUE){
-      # domainDf <- drop_read_csv(fileDomain,stringsAsFactors = FALSE, sep='\t', comment.char="",header = FALSE)
       domainDf <- as.data.frame(read.csv(fileDomain, sep="\t", header=F, comment.char = "", stringsAsFactors = FALSE, quote = ""))
     } else {
       if(fileDomain != FALSE){
@@ -3316,7 +3369,7 @@ shinyServer(function(input, output, session) {
 
   ######## download data
   output$downloadData <- downloadHandler(
-    filename = function(){c("dataFiltered.out")},
+    filename = function(){c("filteredData.out")},
     content = function(file){
       dataOut <- downloadData()
       write.table(dataOut,file,sep="\t",row.names = FALSE,quote = FALSE)
@@ -3340,6 +3393,75 @@ shinyServer(function(input, output, session) {
     data <- downloadData()
     data
   })
+  
+  ######## download FASTA
+  output$downloadFasta <- downloadHandler(
+    filename = function(){c("filteredSeq.fa")},
+    content = function(file){
+      dataOut <- as.data.frame(downloadData())
+      
+      fastaOutDf <- data.frame()
+      for(i in 1:nrow(dataOut)){
+        seqID <- as.character(dataOut$orthoID[i])
+        
+        ### fasta path and format
+        if(input$demo == TRUE){
+          ### get species ID
+          specTMP <- unlist(strsplit(seqID,"@"))
+          specID = paste0(specTMP[1],"%40",specTMP[2])
+          
+          fastaUrl <- paste0("https://github.com/BIONF/phyloprofile-data/blob/data/demo/fasta_files/",specID,".fa?raw=true")
+          if(url.exists(fastaUrl)){
+            faFile <- as.data.frame(read.table(fastaUrl, sep="\t", header=F, fill=T, stringsAsFactors = FALSE, quote = ""))
+            
+            faDf <- data.frame("seqID" = faFile$V1[grepl(">",faFile$V1)], "seq" = faFile$V1[!grepl(">",faFile$V1)], stringsAsFactors=FALSE)
+            
+            seq <- as.character(faDf$seq[faDf$seqID == paste0(">",seqID)])
+            fastaOut <- paste(paste0(">",seqID),seq,sep="\n")
+            fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
+          } else {
+            fastaOut <- paste0(fastaUrl," not found!!!")
+            fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
+          }
+        } else {
+          if(input$input_type == 'oneSeq.extended.fa'){
+            # f <- toString(input$oneseq.file)
+            fasIn <- input$oneSeqFasta
+            f <- toString(fasIn$datapath)
+          } else {
+            path = input$path
+            dir_format = input$dir_format
+            file_ext = input$file_ext
+            id_format = input$id_format
+            
+            ### get species ID and seqID
+            if(id_format == 1){
+              specTMP <- unlist(strsplit(seqID,":"))
+              specID = paste(specTMP[-length(specTMP)],collapse = ":")
+            } else if(id_format == 2){
+              specTMP <- unlist(strsplit(seqID,"@"))
+              specID = paste(specTMP[-length(specTMP)],collapse = "@")
+            } else if(id_format == 3){
+              specTMP <- unlist(strsplit(seqID,"|"))
+              specID = paste(specTMP[-length(specTMP)],collapse = "|")
+            }
+            
+            ### full path fasta file
+            f <- paste0(path,"/",specID,".",file_ext)
+            if(dir_format == 2){
+              f <- paste0(path,"/",specID,"/",specID,".",file_ext)
+            }
+          }
+          
+          ### read file and get sequence
+          fastaOut <- paste(getFasta(f,seqID))
+          fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
+        }
+      }
+      
+      write.table(fastaOutDf,file,sep="\t",col.names = FALSE,row.names = FALSE,quote = FALSE)
+    }
+  )
 
   ################### FOR CUSTOMIZED PROFILE ########################
 
@@ -3377,9 +3499,9 @@ shinyServer(function(input, output, session) {
 
   ######## download data
   output$downloadCustomData <- downloadHandler(
-    filename = function(){c("customDataFiltered.out")},
+    filename = function(){c("customFilteredData.out")},
     content = function(file){
-      dataOut <- downloadData()
+      dataOut <- downloadCustomData()
       write.table(dataOut,file,sep="\t",row.names = FALSE,quote = FALSE)
     }
   )
@@ -3390,6 +3512,75 @@ shinyServer(function(input, output, session) {
     data <- downloadCustomData()
     data
   })
+  
+  ######## download FASTA
+  output$downloadCustomFasta <- downloadHandler(
+    filename = function(){c("customFilteredSeq.fa")},
+    content = function(file){
+      dataOut <- as.data.frame(downloadCustomData())
+      
+      fastaOutDf <- data.frame()
+      for(i in 1:nrow(dataOut)){
+        seqID <- as.character(dataOut$orthoID[i])
+        
+        ### fasta path and format
+        if(input$demo == TRUE){
+          ### get species ID
+          specTMP <- unlist(strsplit(seqID,"@"))
+          specID = paste0(specTMP[1],"%40",specTMP[2])
+          
+          fastaUrl <- paste0("https://github.com/BIONF/phyloprofile-data/blob/data/demo/fasta_files/",specID,".fa?raw=true")
+          if(url.exists(fastaUrl)){
+            faFile <- as.data.frame(read.table(fastaUrl, sep="\t", header=F, fill=T, stringsAsFactors = FALSE, quote = ""))
+            
+            faDf <- data.frame("seqID" = faFile$V1[grepl(">",faFile$V1)], "seq" = faFile$V1[!grepl(">",faFile$V1)], stringsAsFactors=FALSE)
+            
+            seq <- as.character(faDf$seq[faDf$seqID == paste0(">",seqID)])
+            fastaOut <- paste(paste0(">",seqID),seq,sep="\n")
+            fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
+          } else {
+            fastaOut <- paste0(fastaUrl," not found!!!")
+            fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
+          }
+        } else {
+          if(input$input_type == 'oneSeq.extended.fa'){
+            # f <- toString(input$oneseq.file)
+            fasIn <- input$oneSeqFasta
+            f <- toString(fasIn$datapath)
+          } else {
+            path = input$path
+            dir_format = input$dir_format
+            file_ext = input$file_ext
+            id_format = input$id_format
+            
+            ### get species ID and seqID
+            if(id_format == 1){
+              specTMP <- unlist(strsplit(seqID,":"))
+              specID = paste(specTMP[-length(specTMP)],collapse = ":")
+            } else if(id_format == 2){
+              specTMP <- unlist(strsplit(seqID,"@"))
+              specID = paste(specTMP[-length(specTMP)],collapse = "@")
+            } else if(id_format == 3){
+              specTMP <- unlist(strsplit(seqID,"|"))
+              specID = paste(specTMP[-length(specTMP)],collapse = "|")
+            }
+            
+            ### full path fasta file
+            f <- paste0(path,"/",specID,".",file_ext)
+            if(dir_format == 2){
+              f <- paste0(path,"/",specID,"/",specID,".",file_ext)
+            }
+          }
+          
+          ### read file and get sequence
+          fastaOut <- paste(getFasta(f,seqID))
+          fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
+        }
+      }
+      
+      write.table(fastaOutDf,file,sep="\t",col.names = FALSE,row.names = FALSE,quote = FALSE)
+    }
+  )
 
   #############################################################
   ############### HELP & TEXT OUTPUT for TESTING ##############

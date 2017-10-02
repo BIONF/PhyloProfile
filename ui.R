@@ -148,6 +148,8 @@ shinyUI(fluidPage(
              ),
 
              checkboxInput("demo",em(strong("Use demo files"),style = "color:darkblue")),
+             uiOutput("noInternetMsg"),
+             
              uiOutput("mainInputFile.ui"),
              uiOutput("taxaInfoCheck.ui"),
              fluidRow(
@@ -193,7 +195,6 @@ shinyUI(fluidPage(
 
              conditionalPanel(
                condition = 'output.unkTaxaStatus == 0',
-
                strong(h4("Choose genes of interest:")),
                radioButtons(inputId="geneList_selected", label="", choices=list("all","from file"), selected="all", inline=T),
                conditionalPanel(
@@ -233,9 +234,11 @@ shinyUI(fluidPage(
                                 shinyBS::bsButton("BUTparse","Get taxonomy info from NCBI *",disabled=FALSE,style="warning"),
                                 helpText(em("(*) Taxonomy information for a given taxa list contains all taxonomy ranks and their correspoding NCBI IDs"))
                ),
+               
                hr(),
-
-               strong(h4("PLEASE RELOAD THIS TOOL AFTER ADDING NEW TAXA!!!"),style = "color:red")
+               uiOutput("endParsingMsg"),
+               tableOutput("invalidID.output")
+               # strong(h4("PLEASE RELOAD THIS TOOL AFTER ADDING NEW TAXA!!!"),style = "color:red")
              ),
 
              conditionalPanel(
@@ -245,7 +248,6 @@ shinyUI(fluidPage(
 
                strong(h5("Select taxonomy rank:")),
                uiOutput("rankSelect"),
-               uiOutput("msgDemo"),
                br(),
                strong(h5("Choose (super)taxon of interest:")),
                uiOutput("select"),
@@ -524,31 +526,48 @@ shinyUI(fluidPage(
                           column(4,
                                  checkboxInput("getRepresentativeMain",strong(em("Download representative sequences")), value = FALSE, width = NULL)
                           ),
-                          column(3,
+                          column(4,
                                  conditionalPanel(
                                    condition = "input.getRepresentativeMain == true",
                                    uiOutput("refVarMain.ui")
                                  )
                           ),
-                          column(3,
+                          column(4,
                                  conditionalPanel(
                                    condition = "input.getRepresentativeMain == true",
                                    radioButtons(inputId="refTypeMain", label="Select representative by", choices=list("max","min"), selected="max", inline=T)
                                  )
                           ),
                           column(12,
-                                 dataTableOutput("filteredMainData"),
+                                 dataTableOutput("filteredMainData")
+                          ),
+                          column(3,
                                  downloadButton('downloadData', 'Download filtered data')
+                          ),
+                          column(3,
+                                 downloadButton('downloadFasta', 'Download FASTA sequences')
                           )
                  ),
                  tabPanel("Customized data",
-                          conditionalPanel(
-                            condition = "input.getRepresentativeMain == true",
-                            uiOutput("representativeInfo.ui")
+                          column(12,
+                                 conditionalPanel(
+                                   condition = "input.getRepresentativeMain == true",
+                                   uiOutput("representativeInfo.ui")
+                                 )
                           ),
-                          hr(),
-                          dataTableOutput("filteredCustomData"),
-                          downloadButton('downloadCustomData', 'Download customized data')
+                          # hr(),
+                          # dataTableOutput("filteredCustomData"),
+                          # downloadButton('downloadCustomData', 'Download customized data')
+                          
+                          column(12,
+                                 dataTableOutput("filteredCustomData")
+                          ),
+                          column(3,
+                                 downloadButton('downloadCustomData', 'Download customized data')
+                          ),
+                          column(3,
+                                 downloadButton('downloadCustomFasta', 'Download FASTA sequences')
+                          )
                   )
       ),
 
@@ -562,7 +581,7 @@ shinyUI(fluidPage(
                  tabPanel("Q&A",
                           uiOutput("help.ui")
                  ),
-                 tabPanel(a("Readme", href="https://trvinh.github.io/PhyloProfile/", target="_blank")
+                 tabPanel(a("Readme", href="https://BIONF.github.io/PhyloProfile/", target="_blank")
                  )
       )
     ),
@@ -583,7 +602,12 @@ shinyUI(fluidPage(
     ####### popup to confirm parsing data from input file
     bsModal("parseConfirm", "Get info from input", "BUTparse", size = "small",
             HTML("Processing...<br><br>"),
-            strong("PLEASE RELOAD THIS TOOL WHEN FINISHED!!!",style = "color:red")
+            strong("PLEASE RELOAD THIS TOOL WHEN FINISHED!!!",style = "color:red"),
+            # conditionalPanel(
+              # condition = 'output.taxonomyParseStatus == 1',
+              # strong(h4("Invalid NCBI IDs:")),
+              dataTableOutput("invalidIDout")
+            # )
     ),
 
     ####### popup windows for setting plot colors
@@ -618,7 +642,7 @@ shinyUI(fluidPage(
               textInput("path","Main path:","")
               ,selectInput("dir_format","Directory format:",choices=list("path/speciesID.fa*"=1,"path/speciesID/speciesID.fa*"=2),selected="Path/speciesID.fasta")
               ,selectInput("file_ext","File extension:",choices=list("fa"="fa","fasta"="fasta","fas"="fas","txt"="txt"),selected="fa")
-              ,selectInput("id_format","ID format:",choices=list(">seqID"=1,">speciesID:seqID"=2,">speciesID@seqID"=3,">speciesID|seqID"=4),selected=2)
+              ,selectInput("id_format","ID format:",choices=list(">speciesID:seqID"=1,">speciesID@seqID"=2,">speciesID|seqID"=3),selected=1)
             )
     ),
 

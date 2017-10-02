@@ -1,6 +1,5 @@
 
 # PhyloProfile
-
 [![](www/poster.png)](https://f1000research.com/posters/6-1782)
 [Click for the full PDF version of the poster](https://f1000research.com/posters/6-1782)
 

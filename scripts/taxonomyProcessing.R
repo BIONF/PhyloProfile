@@ -76,10 +76,10 @@ taxonomyTableCreator <- function(idListFile,rankListFile){
   # index2RankDf <- rankIndexing("rankList.txt")
   ### load idList file
   ncol <- max(count.fields(rankListFile, sep = '\t'))
-  idList <- as.data.frame(read.table(idListFile, sep='\t', header=F, check.names=FALSE, comment.char="", fill = T, stringsAsFactors=T, na.strings=c("","NA"), col.names=paste0('V', seq_len(ncol))))
+  idList <- as.data.frame(read.table(idListFile, sep='\t', header=F, check.names=FALSE, comment.char="", fill = T, stringsAsFactors=T, na.strings=c("","NA"), col.names=paste0('X', seq_len(ncol))))
   
   # ncol <- max(count.fields("rankList.txt", sep = '\t'))
-  # idList <- as.data.frame(read.table("idList.txt", sep='\t', header=F, check.names=FALSE, comment.char="", fill = T, stringsAsFactors=T, na.strings=c("","NA"), col.names=paste0('V', seq_len(ncol))))
+  # idList <- as.data.frame(read.table("idList.txt", sep='\t', header=F, check.names=FALSE, comment.char="", fill = T, stringsAsFactors=T, na.strings=c("","NA"), col.names=paste0('X', seq_len(ncol))))
   
   colnames(idList)[1] <- "tip"
 
