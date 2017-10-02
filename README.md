@@ -1,7 +1,8 @@
 
 # PhyloProfile
 
-![](www/pic_main.png)
+[![](www/poster.png)](https://f1000research.com/posters/6-1782)
+[Click for the full PDF version of the poster](https://f1000research.com/posters/6-1782)
 
 *PhyloProfile* is a *Shiny*-based tool for integrating, visualizing and exploring multi-layered phylogenetic profiles.
 
