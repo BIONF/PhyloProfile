@@ -573,15 +573,9 @@ shinyUI(fluidPage(
 
       ########## OTHERS TAB ###########
       navbarMenu("More",
-                 tabPanel("Help",
-                          HTML('<iframe src="https://player.vimeo.com/video/225373912" width="640" height="360" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>'),
-                          br(),
-                          h3(a("Click here for a detail manual", href="https://trvinh.github.io/phyloprofile_slides/", target="_blank"))
+                 tabPanel(a("Help", href="https://github.com/BIONF/PhyloProfile/wiki", target="_blank")
                  ),
-                 tabPanel("Q&A",
-                          uiOutput("help.ui")
-                 ),
-                 tabPanel(a("Readme", href="https://BIONF.github.io/PhyloProfile/", target="_blank")
+                 tabPanel(a("About", href="https://BIONF.github.io/PhyloProfile/", target="_blank")
                  )
       )
     ),

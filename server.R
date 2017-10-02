@@ -3582,16 +3582,9 @@ shinyServer(function(input, output, session) {
     }
   )
 
-  #############################################################
-  ############### HELP & TEXT OUTPUT for TESTING ##############
-  #############################################################
-
-  ######## show help
-  output$help.ui <- renderUI({
-    includeHTML("help.html") 
-  })
-
-  ############### USED FOR TESTING
+  ######################################################
+  ############### TEXT OUTPUT for TESTING ##############
+  ######################################################
   output$testOutput <- renderText({
     # ### print infile
     # filein <- input$mainInput
