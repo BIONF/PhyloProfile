@@ -641,7 +641,7 @@ shinyUI(fluidPage(
     ),
 
     ####### popup windows for setting main plot configurations
-    bsModal("mainPlotConfigBs", "Plot properties configuration", "mainPlotConfig", size = "small",
+    bsModal("mainPlotConfigBs", "Plot appearance configuration", "mainPlotConfig", size = "small",
             column(6,
                    numericInput("xSize","X-axis label size (px)",min=8,max=99,step=1,value=8,width=100)
             ),
