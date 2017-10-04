@@ -149,7 +149,7 @@ shinyUI(fluidPage(
 
              checkboxInput("demo",em(strong("Use demo files"),style = "color:darkblue")),
              uiOutput("noInternetMsg"),
-             
+
              uiOutput("mainInputFile.ui"),
              uiOutput("taxaInfoCheck.ui"),
              fluidRow(
@@ -234,7 +234,7 @@ shinyUI(fluidPage(
                                 shinyBS::bsButton("BUTparse","Get taxonomy info from NCBI *",disabled=FALSE,style="warning"),
                                 helpText(em("(*) Taxonomy information for a given taxa list contains all taxonomy ranks and their correspoding NCBI IDs"))
                ),
-               
+
                hr(),
                uiOutput("endParsingMsg"),
                tableOutput("invalidID.output")
@@ -558,7 +558,7 @@ shinyUI(fluidPage(
                           # hr(),
                           # dataTableOutput("filteredCustomData"),
                           # downloadButton('downloadCustomData', 'Download customized data')
-                          
+
                           column(12,
                                  dataTableOutput("filteredCustomData")
                           ),
@@ -573,7 +573,7 @@ shinyUI(fluidPage(
 
       ########## OTHERS TAB ###########
       navbarMenu("More",
-                 tabPanel(a("Help", href="https://github.com/BIONF/PhyloProfile/wiki", target="_blank")
+                 tabPanel("Help", includeMarkdown("help.md")
                  ),
                  tabPanel(a("About", href="https://BIONF.github.io/PhyloProfile/", target="_blank")
                  )
