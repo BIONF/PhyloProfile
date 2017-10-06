@@ -31,6 +31,7 @@ if (!require("Biostrings")) {
 if (!require("taxize")) {install.packages("taxize")}
 if (!require("zoo")) {install.packages("zoo")}
 if (!require("RCurl")) {install.packages("RCurl")}
+if (!require("markdown")) {install.packages("markdown")}
 
 source("scripts/taxonomyProcessing.R")
 source("scripts/functions.R")

@@ -208,6 +208,8 @@ shinyUI(fluidPage(
 
                HTML("<b>Order taxa</b>"),
                radioButtons(inputId="order_taxa", label="", choices=list("automatically","by user defined tree"), selected="automatically", inline=T),
+               bsPopover("order_taxa","","in newick format","bottom"),
+               
                conditionalPanel(
                  condition = "input.order_taxa == 'by user defined tree'",
                  fileInput("inputTree","")
@@ -268,7 +270,6 @@ shinyUI(fluidPage(
           column(4,numericInput("stIndex","1st index:",min=1,max=1600,value=1,width=200)),
 
           column(4,uiOutput("highlightGeneUI")),
-          #bsPopover("highlightGeneUI","","OR double click on heatmap","right"),
 
           uiOutput("highlightTaxonUI"),
           bsPopover("highlightTaxonUI","","OR double click on heatmap","right"),
