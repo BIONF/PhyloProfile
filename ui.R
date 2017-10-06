@@ -151,7 +151,7 @@ shinyUI(fluidPage(
              uiOutput("noInternetMsg"),
 
              uiOutput("mainInputFile.ui"),
-             uiOutput("taxaInfoCheck.ui"),
+             uiOutput("inputCheck.ui"),
              fluidRow(
                column(5,
                       uiOutput("var1_id.ui")
