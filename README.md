@@ -87,6 +87,9 @@ We would like to thank
 1) [Bastian](https://github.com/gedankenstuecke) for the great initial idea and his kind support,
 2) Members of [Ebersberger group](http://www.bio.uni-frankfurt.de/43045195/ak-ebersberger) for many valuable suggestions and ...bug reports :)
 
+# Code of Conduct & Lisence
+This tool is released with a [Contributor Code of Conduct](https://github.com/BIONF/PhyloProfile/blob/master/CODE_OF_CONDUCT.md) & under [MIT lisence](https://github.com/BIONF/PhyloProfile/blob/master/LICENSE).
+
 # Contact
 Vinh Tran
 tran@bio.uni-frankfurt.de
