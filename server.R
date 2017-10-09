@@ -1061,6 +1061,10 @@ shinyServer(function(input, output, session) {
     taxonList <- sortTaxaFromTree(taxaTree)
     sortedDt <- Dt[match(taxonList, Dt$abbrName),]
     
+    ### subset to get list of input taxa only
+    inputTaxa <- subsetTaxa()
+    sortedDt <- subset(sortedDt, abbrName %in% inputTaxa)
+    
     ### get only taxonIDs list of selected rank and rename columns
     sortedOut <- subset(sortedDt,select=c("abbrName","ncbiID","fullName",as.character(rankName)))
     colnames(sortedOut) <- c("abbrName","species","fullName","ncbiID")
@@ -1540,6 +1544,7 @@ shinyServer(function(input, output, session) {
 
       ## get taxonID together with it sorted index
       highlightTaxon <- toString(dataHeat[dataHeat$supertaxonID == taxonHighlight,2][1])
+
       ## get index
       selectedIndex = as.numeric(as.character(substr(highlightTaxon,2,4)))
 
