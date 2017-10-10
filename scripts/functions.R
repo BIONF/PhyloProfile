@@ -112,10 +112,12 @@ domain.plotting <- function(df,geneID,var1,sep,labelSize,titleSize,descSize,minS
     geom_segment(data=df, aes(y=feature, yend=feature, x=minStart, xend=maxEnd), color="#b2b2b2", size=0.15)
   
   ### draw line and points
-  gg <- gg + geom_segment(data=df, aes(x=start, xend=end, y=feature, yend=feature),#, fill=feature),
-                          size=1.2)
-  gg <- gg + geom_point(data=df, aes(y=feature, x=start), color="#b2b2b2", size=3)
-  gg <- gg + geom_point(data=df, aes(y=feature, x=end), color="#edae52", size=3)
+  gg <- gg + geom_segment(data=df, aes(x=start, xend=end, y=feature, yend=feature),size=1)
+  gg <- gg + geom_point(data=df, aes(y=feature, x=start), color="#b2b2b2", size=3, shape=3)
+  gg <- gg + geom_point(data=df, aes(y=feature, x=end), color="#edae52", size=3, shape=5)
+  
+  ### draw dashed line for domain path
+  gg <- gg + geom_segment(data=df[df$path=="Y",], aes(x=start, xend=end, y=feature, yend=feature),size=3,linetype="dashed")
   
   ### add text above
   gg <- gg + geom_text(data=df,

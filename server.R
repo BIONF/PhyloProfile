@@ -2744,12 +2744,14 @@ shinyServer(function(input, output, session) {
       }
     }
 
-    colnames(domainDf) <- c("seedID","orthoID","feature","start","end","weight")
-
-    if(input$input_type == 'oneSeq.extended.fa'){
-      domainDf$seedID <- gsub("\\|",":",domainDf$seedID)
-      domainDf$orthoID <- gsub("\\|",":",domainDf$orthoID)
+    if(ncol(domainDf) == 6){
+      colnames(domainDf) <- c("seedID","orthoID","feature","start","end","weight")
+    } else {
+      colnames(domainDf) <- c("seedID","orthoID","feature","start","end","weight","path")
     }
+
+    domainDf$seedID <- gsub("\\|",":",domainDf$seedID)
+    domainDf$orthoID <- gsub("\\|",":",domainDf$orthoID)
 
     ### get sub dataframe based on selected groupID and orthoID
     ortho <- gsub("\\|",":",ortho)
@@ -2778,7 +2780,7 @@ shinyServer(function(input, output, session) {
         orderedSeedDf <- seedDf[order(seedDf$feature), ]
         orderedOrthoDf <- sortDomains(orderedSeedDf, orthoDf)
       }
-
+      
       ### plotting
       sep = ":"
       if(!is.null(input$oneSeqFasta)){sep="|"}
@@ -3634,20 +3636,4 @@ shinyServer(function(input, output, session) {
       write.table(fastaOutDf,file,sep="\t",col.names = FALSE,row.names = FALSE,quote = FALSE)
     }
   )
-
-  ######################################################
-  ############### TEXT OUTPUT for TESTING ##############
-  ######################################################
-  output$testOutput <- renderText({
-    # ### print infile
-    # filein <- input$mainInput
-    # print(toString(filein))
-    # filePath <- toString(filein)
-    # fileName <- unlist(strsplit(toString(input$mainInput),","))
-    # name <- toString(fileName[1])
-    # fullPath <- paste0("data/",name,".mDomains")
-    # print(fullPath)
-    # print(input$plot_dblclick$x)
-    # paste(input$var1[1],input$var1[2])
-  })
 })

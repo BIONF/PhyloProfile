@@ -265,7 +265,6 @@ shinyUI(fluidPage(
       "Main profile",
       sidebarLayout(
         sidebarPanel(
-          textOutput("testOutput"),    ### use for testing output ###
           column(4,offset = 0,numericInput("number","# of genes:",min=1,max=1600,step=10,value=30,width=150),style='padding:0px;'),
           column(4,numericInput("stIndex","1st index:",min=1,max=1600,value=1,width=200)),
 
