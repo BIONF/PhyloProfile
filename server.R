@@ -2913,11 +2913,7 @@ shinyServer(function(input, output, session) {
     geneAgeDf
   })
 
-  geneAgePlot <- function(){
-    if (v$doPlot == FALSE) return()
-
-    geneAgeDf <- geneAgeDf()
-
+  geneAgePlot <- function(geneAgeDf){
     countDf <- plyr::count(geneAgeDf,c('age'))
     countDf$percentage <- round(countDf$freq/sum(countDf$freq)*100)
     countDf$pos <- cumsum(countDf$percentage) - (0.5 * countDf$percentage)
@@ -2945,10 +2941,10 @@ shinyServer(function(input, output, session) {
       # wrap in an isolate() so that the data won't update every time an input
       # is changed
       isolate({
-        geneAgePlot()
+        geneAgePlot(geneAgeDf())
       })
     } else {
-      geneAgePlot()
+      geneAgePlot(geneAgeDf())
     }
   })
 
@@ -3236,11 +3232,7 @@ shinyServer(function(input, output, session) {
   })
 
   ### plot clustered profiles
-  dendrogram <- function(){
-    if(v$doPlot == FALSE){return()}
-
-    dd.col <- clusterDataDend()
-
+  dendrogram <- function(dd.col){
     py <- as.ggdend(dd.col)
     p <- ggplot(py, horiz = TRUE, theme=theme_minimal()) +
       theme(axis.title = element_blank(), axis.text.y = element_blank())
@@ -3248,7 +3240,8 @@ shinyServer(function(input, output, session) {
   }
 
   output$dendrogram <- renderPlot({
-    dendrogram()
+    if(v$doPlot == FALSE){return()}
+    dendrogram(clusterDataDend())
   })
 
   output$cluster.ui <- renderUI({
