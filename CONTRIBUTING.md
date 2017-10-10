@@ -1,6 +1,6 @@
 ## How-To Contribute
 
-![](https://i.giphy.com/media/3oz8xIsloV7zOmt81G/giphy.webp)
+![](http://www.sharegif.com/wp-content/uploads/2014/03/giphy41.gif)
 
 Thank you so much for your interest in contributing to *PhyloProfile*! 🎉👍🍾
 
