@@ -2390,7 +2390,20 @@ shinyServer(function(input, output, session) {
   #############################################################
   ################### SHOW CLICKED POINT INFO #################
   #############################################################
-
+  
+  ### get value of pointInfo for activating Detailed Plot button
+  output$pointInfoStatus <- reactive({
+    if(input$tabs == 'Main profile'){
+      info <- mainPointInfo()  # info = groupID,orthoID,supertaxon,mVar1,%spec,var2
+    } else if(input$tabs=='Customized profile'){
+      info <- selectedPointInfo()
+    } else {
+      info <- NULL
+    }
+    is.null(info)
+  })
+  outputOptions(output, "pointInfoStatus", suspendWhenHidden = FALSE)
+  
   ######## show info into "point's info" box
   output$pointInfo <- renderText({
     ##### GET INFO BASED ON CURRENT TAB
@@ -2425,7 +2438,6 @@ shinyServer(function(input, output, session) {
       }
     }
   })
-
 
   #############################################################
   ##################### DETAILED PLOT #########################

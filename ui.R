@@ -723,7 +723,7 @@ shinyUI(fluidPage(
     ),
 
     ####### popup windows for detailed plot
-    bsModal("modalBS", "Detailed plot", "go", size = "large",
+    bsModal("modalBS", "Detailed plot", "detailedBtn", size = "large",
             uiOutput("detailPlot.ui"),
             numericInput("detailedHeight","plot_height(px)",min=100,max=1600,step=50,value=100,width=100)
             ,verbatimTextOutput("detailClick")
@@ -767,7 +767,10 @@ shinyUI(fluidPage(
         draggable = TRUE,
         h5("Point's info:"),
         verbatimTextOutput("pointInfo"),
-        shinyBS::bsButton("go", "Detailed plot", style="success", disabled = FALSE),
+        conditionalPanel(
+          condition = "output.pointInfoStatus == 0",
+          shinyBS::bsButton("detailedBtn", "Detailed plot", style="success", disabled = FALSE)
+        ),
         style = "opacity: 0.80"
       )
     )
