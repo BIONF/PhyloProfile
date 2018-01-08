@@ -1122,34 +1122,43 @@ shinyServer(function(input, output, session) {
       shinyjs::enable('applyCluster')
     }
   })
+  
+  ### unsorting function to keep user defined geneID order
+  unsortID <- function(data,order){
+    data$geneID <- as.factor(data$geneID)
+    if(order == FALSE){
+      data$geneID <- factor(data$geneID, levels = unique(data$geneID))  ######### keep user defined geneID order
+    }
+    return(data)
+  }
 
   ### subset data
   preData <- reactive({
-    # get rows need to be read
-    if(is.na(input$number)){
-      nrHit <- input$stIndex + 30 - 1
-    } else {
-      nrHit <- input$stIndex + input$number - 1
-    }
-    
     # get list of gene of interest (from a separated file)
     listGene <- list()
     if(input$geneList_selected == 'from file'){
       listIn <- input$list
       if(!is.null(listIn)){
         list <- as.data.frame(read.table(file=listIn$datapath, header=FALSE))
-        listGene <- list$V1
+        listGeneOri <- list$V1
+        if(input$stIndex <= length(listGeneOri)){
+          listGene <- listGeneOri[listGeneOri[input$stIndex:input$endIndex]]
+        } else {
+          listGene <- listGeneOri
+        }
       }
     }
-    
+
     if(input$demo == TRUE){
       inputDf <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/demo/test.main.long", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
+      inputDf <- unsortID(inputDf,input$ordering)
       
-      if(length(listGene) > 1){
-        inputDf <- inputDf[inputDf$geneID %in% listGene,]
+      if(length(listGene) >= 1){
+        data <- inputDf[inputDf$geneID %in% listGene,]
+      } else {
+        subsetID <- levels(as.factor(inputDf$geneID))[input$stIndex:input$endIndex]
+        data <- inputDf[inputDf$geneID %in% subsetID,]
       }
-      subsetID <- levels(as.factor(inputDf$geneID))[1:nrHit]
-      data <- inputDf[inputDf$geneID %in% subsetID,]
 
       if(ncol(data) < 5){
         for(i in 1:(5-ncol(data))){
@@ -1164,12 +1173,14 @@ shinyServer(function(input, output, session) {
       inputType <- checkInputVadility(filein)
       if(inputType == "xml"){
         longDf <- xmlParser(filein$datapath)
-        
-        if(length(listGene) > 1){
-          longDf <- longDf[longDf$geneID %in% listGene,]
+        longDf <- unsortID(longDf,input$ordering)
+
+        if(length(listGene) >= 1){
+          data <- longDf[longDf$geneID %in% listGene,]
+        } else {
+          subsetID <- levels(longDf$geneID)[input$stIndex:input$endIndex]
+          data <- longDf[longDf$geneID %in% subsetID,]
         }
-        subsetID <- levels(longDf$geneID)[1:nrHit]
-        data <- longDf[longDf$geneID %in% subsetID,]
         
         if(ncol(data) < 5){
           for(i in 1:(5-ncol(data))){
@@ -1179,12 +1190,14 @@ shinyServer(function(input, output, session) {
         colnames(data) <- c("geneID","ncbiID","orthoID","var1","var2")
       } else if(inputType == "long"){
         inputDf <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+        inputDf <- unsortID(inputDf,input$ordering)
         
-        if(length(listGene) > 1){
-          inputDf <- inputDf[inputDf$geneID %in% listGene,]
+        if(length(listGene) >= 1){
+          data <- inputDf[inputDf$geneID %in% listGene,]
+        } else {
+          subsetID <- levels(inputDf$geneID)[input$stIndex:input$endIndex]
+          data <- inputDf[inputDf$geneID %in% subsetID,]
         }
-        subsetID <- levels(inputDf$geneID)[1:nrHit]
-        data <- inputDf[inputDf$geneID %in% subsetID,]
         
         if(ncol(data) < 5){
           for(i in 1:(5-ncol(data))){
@@ -1195,12 +1208,14 @@ shinyServer(function(input, output, session) {
       } else if (inputType == "wide"){
         inputDf <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
         mdData <- melt(inputDf,id="geneID")
-
-        if(length(listGene) > 1){
+        mdData <- unsortID(mdData,input$ordering)
+        
+        if(length(listGene) >= 1){
           mdData <- mdData[mdData$geneID %in% listGene,]
+        } else {
+          subsetID <- levels(mdData$geneID)[input$stIndex:input$endIndex]
+          mdData <- mdData[mdData$geneID %in% subsetID,]
         }
-        subsetID <- levels(mdData$geneID)[1:nrHit]
-        mdData <- mdData[mdData$geneID %in% subsetID,]
         
         splitCol <- data.frame(do.call('rbind', strsplit(as.character(mdData$value), '#', fixed=TRUE)))
         data <- cbind(mdData[,c('geneID','variable')],splitCol)
@@ -1214,11 +1229,6 @@ shinyServer(function(input, output, session) {
       } else {
         data <- data.frame("geneID" = character(),"ncbiID" = character(),"orthoID" = character(),"var1" = character(),"var2" = character(), stringsAsFactors = F)
       }
-    }
-
-    data$geneID <- as.factor(data$geneID)
-    if(input$ordering == FALSE){
-      data$geneID <- factor(data$geneID, levels = unique(data$geneID))  ######### keep user defined geneID order
     }
 
     ### return preData
@@ -1429,24 +1439,11 @@ shinyServer(function(input, output, session) {
     }
     if(is.null(filein)){return()}
 
-    data <- dataSupertaxa()
+    dataHeat <- dataSupertaxa()
 
     # get selected supertaxon name
     split <- strsplit(as.character(input$inSelect),"_")
     inSelect <- as.character(split[[1]][1])
-
-    ### get sub set of data
-    setID <- plyr::count(data,"geneID")
-
-    if(is.na(input$number)){
-      nrHit <- input$stIndex + 30 - 1
-    } else {
-      nrHit <- input$stIndex + input$number - 1
-    }
-    if(nrHit > nlevels(as.factor(data$geneID))){nrHit <- nlevels(as.factor(data$geneID))}
-
-    subsetID <- setID[input$stIndex:nrHit,]
-    dataHeat <- merge(data,subsetID,by="geneID")
 
     ### replace insufficient values according to the thresholds by NA or 0; and replace var1 0.0 by NA
     dataHeat$presSpec[dataHeat$supertaxon != inSelect & dataHeat$presSpec < percent_cutoff_min] <- 0
