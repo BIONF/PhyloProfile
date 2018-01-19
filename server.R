@@ -37,7 +37,7 @@ source("scripts/taxonomyProcessing.R")
 source("scripts/functions.R")
 
 ############################ MAIN ############################
-options(shiny.maxRequestSize=50*1024^2)  ## size limit for input 50mb
+options(shiny.maxRequestSize=99*1024^2)  ## size limit for input 50mb
 
 shinyServer(function(input, output, session) {
   # session$onSessionEnded(stopApp) ### Automatically stop a Shiny app when closing the browser tab
