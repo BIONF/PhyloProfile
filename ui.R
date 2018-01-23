@@ -266,8 +266,8 @@ shinyUI(fluidPage(
       sidebarLayout(
         sidebarPanel(
           # column(4,offset = 0,numericInput("number","# of genes:",min=1,max=1600,step=10,value=30,width=150),style='padding:0px;'),
-          column(4,numericInput("stIndex","Start index:",min=1,max=1600,value=1,width=100),style='padding:0px;'),
-          column(4,numericInput("endIndex","End index:",min=1,max=1600,value=30,width=100),style='padding:0px;'),
+          column(4,numericInput("stIndex","Gene from:",min=1,max=1600,value=1,width=100),style='padding:0px;'),
+          column(4,numericInput("endIndex","... to:",min=1,max=1600,value=30,width=100),style='padding:0px;'),
           bsPopover("stIndex","","Set start index for sequence range","bottom"),
           bsPopover("endIndex","","Set end index for sequence range","bottom"),
 
