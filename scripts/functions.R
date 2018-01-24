@@ -15,6 +15,19 @@ xmlParser <- function(inputFile){
   dfIN
 }
 
+########## parse fasta input file ##############
+fastaParser <- function(inputFile){
+  cmd <- paste("python ", getwd(),"/scripts/fastaParser.py",
+               " -i ", inputFile,
+               sep='')
+  dfIN <- as.data.frame(read.table(text = system(cmd,intern=TRUE)))
+  
+  colnames(dfIN) = as.character(unlist(dfIN[1,])) # the first row will be the header
+  dfIN <- subset(dfIN[dfIN$geneID != "geneID",])
+  dfIN <- droplevels(dfIN)
+  dfIN
+}
+
 # ########## convert long to wide format ##############
 # long2wide <- function(longDf){
 #   # rename column names
@@ -232,7 +245,7 @@ getFasta <- function(file,seqID){
     sequence = paste(fastaFile)
     fa <- data.frame(seq_name, sequence)
     
-    seq <- fa$sequence[fa$seq_name == seqID]
+    seq <- fa$sequence[pmatch(seqID,fa$seq_name)]
     if(length(seq) < 1){
       fasta <- paste0(seqID," not found in ",file,"! Please check id_format in FASTA config again!")
     } else{

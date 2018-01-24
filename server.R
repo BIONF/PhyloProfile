@@ -210,6 +210,9 @@ shinyServer(function(input, output, session) {
       if(inputType == "xml"){
         longDf <- xmlParser(filein$datapath)
         textInput("var1_id", h5("First variable:"), value = colnames(longDf)[4], width="100%", placeholder="Name of first variable")
+      } else if(inputType == "fasta"){
+        longDf <- fastaParser(filein$datapath)
+        textInput("var1_id", h5("First variable:"), value = colnames(longDf)[4], width="100%", placeholder="Name of first variable")
       } else if(inputType == "long"){
         headerIn <- readLines(filein$datapath, n = 1)
         headerIn <- unlist(strsplit(headerIn,split = '\t'))
@@ -231,6 +234,9 @@ shinyServer(function(input, output, session) {
       
       if(inputType == "xml"){
         longDf <- xmlParser(filein$datapath)
+        textInput("var2_id", h5("Second variable:"), value = colnames(longDf)[5], width="100%", placeholder="Name of second variable")
+      } else if(inputType == "fata"){
+        longDf <- fastaParser(filein$datapath)
         textInput("var2_id", h5("Second variable:"), value = colnames(longDf)[5], width="100%", placeholder="Name of second variable")
       } else if(inputType == "long"){
         headerIn <- readLines(filein$datapath, n = 1)
@@ -452,8 +458,11 @@ shinyServer(function(input, output, session) {
       return("moreCol")
     } else {
       names(inputDt) <- as.character(unlist(inputDt[1,]))
+      
       if(grepl("<?xml",colnames(inputDt)[1])){
         return("xml")
+      } else if(grepl(">",colnames(inputDt)[1]) == TRUE){
+        return("fasta")
       } else {
         if(grepl("geneID",colnames(inputDt)[1])){
           if(is.na(pmatch("ncbi",colnames(inputDt)[3])) || is.na(pmatch("ncbi",colnames(inputDt)[4])) || is.na(pmatch("ncbi",colnames(inputDt)[5]))){
@@ -511,6 +520,9 @@ shinyServer(function(input, output, session) {
           if(inputType == "xml"){
             longDf <- xmlParser(filein$datapath)
             inputTaxa <- levels(longDf$ncbiID)
+          } else if(inputType == "fasta"){
+            longDf <- fastaParser(filein$datapath)
+            inputTaxa <- levels(longDf$ncbiID)
           } else if(inputType == "long"){
             inputDf <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
             inputTaxa <- levels(inputDf$ncbiID)
@@ -547,6 +559,9 @@ shinyServer(function(input, output, session) {
       inputType <- checkInputVadility(filein)
       if(inputType == "xml"){
         longDf <- xmlParser(filein$datapath)
+        inputTaxa <- levels(longDf$ncbiID)
+      } else if(inputType == "fasta"){
+        longDf <- fastaParser(filein$datapath)
         inputTaxa <- levels(longDf$ncbiID)
       } else if(inputType == "long"){
         inputDf <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
@@ -1188,6 +1203,23 @@ shinyServer(function(input, output, session) {
           }
         }
         colnames(data) <- c("geneID","ncbiID","orthoID","var1","var2")
+      } else if(inputType == "fasta"){
+        longDf <- fastaParser(filein$datapath)
+        longDf <- unsortID(longDf,input$ordering)
+        
+        if(length(listGene) >= 1){
+          data <- longDf[longDf$geneID %in% listGene,]
+        } else {
+          subsetID <- levels(longDf$geneID)[input$stIndex:input$endIndex]
+          data <- longDf[longDf$geneID %in% subsetID,]
+        }
+        
+        if(ncol(data) < 5){
+          for(i in 1:(5-ncol(data))){
+            data[paste0("newVar",i)] <- 1
+          }
+        }
+        colnames(data) <- c("geneID","ncbiID","orthoID","var1","var2")
       } else if(inputType == "long"){
         inputDf <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
         inputDf <- unsortID(inputDf,input$ordering)
@@ -1806,6 +1838,18 @@ shinyServer(function(input, output, session) {
           colnames(dataOrig) <- c("geneID","ncbiID","orthoID","var1","var2")
           splitDt <- dataOrig[,c("orthoID","var1","var2")]
         }
+      } else if(inputType == "fasta"){
+        dataOrig <- fastaParser(filein$datapath)
+        if(ncol(dataOrig) < 4){
+          colnames(dataOrig) <- c("geneID","ncbiID","orthoID")
+          splitDt <- dataOrig[,c("orthoID")]
+        } else if(ncol(dataOrig) < 5){
+          colnames(dataOrig) <- c("geneID","ncbiID","orthoID","var1")
+          splitDt <- dataOrig[,c("orthoID","var1")]
+        } else {
+          colnames(dataOrig) <- c("geneID","ncbiID","orthoID","var1","var2")
+          splitDt <- dataOrig[,c("orthoID","var1","var2")]
+        }
       } else if(inputType == "long"){
         dataOrig <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
         if(ncol(dataOrig) < 4){
@@ -1962,7 +2006,16 @@ shinyServer(function(input, output, session) {
         } else {
           colnames(mdData) <- c("geneID","ncbiID","orthoID","var1","var2")
         }
-      } else if(inputType == "long"){
+      } else if(inputType == "fasta"){
+        mdData <- fastaParser(filein$datapath)
+        if(ncol(mdData) < 4){
+          colnames(mdData) <- c("geneID","ncbiID","orthoID")
+        } else if(ncol(mdData) < 5){
+          colnames(mdData) <- c("geneID","ncbiID","orthoID","var1")
+        } else {
+          colnames(mdData) <- c("geneID","ncbiID","orthoID","var1","var2")
+        }
+      }else if(inputType == "long"){
         mdData <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
         if(ncol(mdData) < 4){
           colnames(mdData) <- c("geneID","ncbiID","orthoID")
@@ -2603,37 +2656,47 @@ shinyServer(function(input, output, session) {
           fastaOut <- paste0(fastaUrl," not found!!!")
         }
       } else {
-        if(input$input_type == 'oneSeq.extended.fa'){
-          # f <- toString(input$oneseq.file)
-          fasIn <- input$oneSeqFasta
-          f <- toString(fasIn$datapath)
+        filein <- input$mainInput
+        inputType <- checkInputVadility(filein)
+        if(inputType == "fasta"){
+          data <- dataFiltered()
+          mainInfo <- mainPointInfo()
+          ncbiID <- data[data$supertaxon == mainInfo[3],]$ncbiID
+          seqID <- paste0(info[1],"|",ncbiID,"|",info[2],"|",info[3])
+          fastaOut <- paste(getFasta(filein$datapath,seqID))
         } else {
-          path = input$path
-          dir_format = input$dir_format
-          file_ext = input$file_ext
-          id_format = input$id_format
-
-          ### get species ID and seqID
-          if(id_format == 1){
-            specTMP <- unlist(strsplit(seqID,":"))
-            specID = paste(specTMP[-length(specTMP)],collapse = ":")
-          } else if(id_format == 2){
-            specTMP <- unlist(strsplit(seqID,"@"))
-            specID = paste(specTMP[-length(specTMP)],collapse = "@")
-          } else if(id_format == 3){
-            specTMP <- unlist(strsplit(seqID,"|"))
-            specID = paste(specTMP[-length(specTMP)],collapse = "|")
+          if(input$input_type == 'oneSeq.extended.fa'){
+            # f <- toString(input$oneseq.file)
+            fasIn <- input$oneSeqFasta
+            f <- toString(fasIn$datapath)
+          } else {
+            path = input$path
+            dir_format = input$dir_format
+            file_ext = input$file_ext
+            id_format = input$id_format
+            
+            ### get species ID and seqID
+            if(id_format == 1){
+              specTMP <- unlist(strsplit(seqID,":"))
+              specID = paste(specTMP[-length(specTMP)],collapse = ":")
+            } else if(id_format == 2){
+              specTMP <- unlist(strsplit(seqID,"@"))
+              specID = paste(specTMP[-length(specTMP)],collapse = "@")
+            } else if(id_format == 3){
+              specTMP <- unlist(strsplit(seqID,"|"))
+              specID = paste(specTMP[-length(specTMP)],collapse = "|")
+            }
+            
+            ### full path fasta file
+            f <- paste0(path,"/",specID,".",file_ext)
+            if(dir_format == 2){
+              f <- paste0(path,"/",specID,"/",specID,".",file_ext)
+            }
           }
-
-          ### full path fasta file
-          f <- paste0(path,"/",specID,".",file_ext)
-          if(dir_format == 2){
-            f <- paste0(path,"/",specID,"/",specID,".",file_ext)
-          }
+          
+          ### read file and get sequence
+          fastaOut <- paste(getFasta(f,seqID))
         }
-
-        ### read file and get sequence
-        fastaOut <- paste(getFasta(f,seqID))
       }
       # return(c(seqID,specID))
       return(fastaOut)
@@ -3481,38 +3544,47 @@ shinyServer(function(input, output, session) {
             fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
           }
         } else {
-          if(input$input_type == 'oneSeq.extended.fa'){
-            # f <- toString(input$oneseq.file)
-            fasIn <- input$oneSeqFasta
-            f <- toString(fasIn$datapath)
+          filein <- input$mainInput
+          inputType <- checkInputVadility(filein)
+          if(inputType == "fasta"){
+            seqID <- paste0(as.character(dataOut$geneID[i]),"|ncbi",as.character(dataOut$ncbiID[i]),"|",as.character(dataOut$orthoID[i]))
+            fastaOut <- paste(getFasta(filein$datapath,seqID))
+            fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
           } else {
-            path = input$path
-            dir_format = input$dir_format
-            file_ext = input$file_ext
-            id_format = input$id_format
-            
-            ### get species ID and seqID
-            if(id_format == 1){
-              specTMP <- unlist(strsplit(seqID,":"))
-              specID = paste(specTMP[-length(specTMP)],collapse = ":")
-            } else if(id_format == 2){
-              specTMP <- unlist(strsplit(seqID,"@"))
-              specID = paste(specTMP[-length(specTMP)],collapse = "@")
-            } else if(id_format == 3){
-              specTMP <- unlist(strsplit(seqID,"|"))
-              specID = paste(specTMP[-length(specTMP)],collapse = "|")
+            if(input$input_type == 'oneSeq.extended.fa'){
+              # f <- toString(input$oneseq.file)
+              fasIn <- input$oneSeqFasta
+              f <- toString(fasIn$datapath)
+            } else {
+              path = input$path
+              dir_format = input$dir_format
+              file_ext = input$file_ext
+              id_format = input$id_format
+              
+              ### get species ID and seqID
+              if(id_format == 1){
+                specTMP <- unlist(strsplit(seqID,":"))
+                specID = paste(specTMP[-length(specTMP)],collapse = ":")
+              } else if(id_format == 2){
+                specTMP <- unlist(strsplit(seqID,"@"))
+                specID = paste(specTMP[-length(specTMP)],collapse = "@")
+              } else if(id_format == 3){
+                specTMP <- unlist(strsplit(seqID,"|"))
+                specID = paste(specTMP[-length(specTMP)],collapse = "|")
+              }
+              
+              ### full path fasta file
+              f <- paste0(path,"/",specID,".",file_ext)
+              if(dir_format == 2){
+                f <- paste0(path,"/",specID,"/",specID,".",file_ext)
+              }
             }
             
-            ### full path fasta file
-            f <- paste0(path,"/",specID,".",file_ext)
-            if(dir_format == 2){
-              f <- paste0(path,"/",specID,"/",specID,".",file_ext)
-            }
+            ### read file and get sequence
+            fastaOut <- paste(getFasta(f,seqID))
+            fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
           }
           
-          ### read file and get sequence
-          fastaOut <- paste(getFasta(f,seqID))
-          fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
         }
       }
       
@@ -3600,38 +3672,46 @@ shinyServer(function(input, output, session) {
             fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
           }
         } else {
-          if(input$input_type == 'oneSeq.extended.fa'){
-            # f <- toString(input$oneseq.file)
-            fasIn <- input$oneSeqFasta
-            f <- toString(fasIn$datapath)
+          filein <- input$mainInput
+          inputType <- checkInputVadility(filein)
+          if(inputType == "fasta"){
+            seqID <- paste0(as.character(dataOut$geneID[i]),"|ncbi",as.character(dataOut$ncbiID[i]),"|",as.character(dataOut$orthoID[i]))
+            fastaOut <- paste(getFasta(filein$datapath,seqID))
+            fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
           } else {
-            path = input$path
-            dir_format = input$dir_format
-            file_ext = input$file_ext
-            id_format = input$id_format
-            
-            ### get species ID and seqID
-            if(id_format == 1){
-              specTMP <- unlist(strsplit(seqID,":"))
-              specID = paste(specTMP[-length(specTMP)],collapse = ":")
-            } else if(id_format == 2){
-              specTMP <- unlist(strsplit(seqID,"@"))
-              specID = paste(specTMP[-length(specTMP)],collapse = "@")
-            } else if(id_format == 3){
-              specTMP <- unlist(strsplit(seqID,"|"))
-              specID = paste(specTMP[-length(specTMP)],collapse = "|")
+            if(input$input_type == 'oneSeq.extended.fa'){
+              # f <- toString(input$oneseq.file)
+              fasIn <- input$oneSeqFasta
+              f <- toString(fasIn$datapath)
+            } else {
+              path = input$path
+              dir_format = input$dir_format
+              file_ext = input$file_ext
+              id_format = input$id_format
+              
+              ### get species ID and seqID
+              if(id_format == 1){
+                specTMP <- unlist(strsplit(seqID,":"))
+                specID = paste(specTMP[-length(specTMP)],collapse = ":")
+              } else if(id_format == 2){
+                specTMP <- unlist(strsplit(seqID,"@"))
+                specID = paste(specTMP[-length(specTMP)],collapse = "@")
+              } else if(id_format == 3){
+                specTMP <- unlist(strsplit(seqID,"|"))
+                specID = paste(specTMP[-length(specTMP)],collapse = "|")
+              }
+              
+              ### full path fasta file
+              f <- paste0(path,"/",specID,".",file_ext)
+              if(dir_format == 2){
+                f <- paste0(path,"/",specID,"/",specID,".",file_ext)
+              }
             }
             
-            ### full path fasta file
-            f <- paste0(path,"/",specID,".",file_ext)
-            if(dir_format == 2){
-              f <- paste0(path,"/",specID,"/",specID,".",file_ext)
-            }
+            ### read file and get sequence
+            fastaOut <- paste(getFasta(f,seqID))
+            fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
           }
-          
-          ### read file and get sequence
-          fastaOut <- paste(getFasta(f,seqID))
-          fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
         }
       }
       
