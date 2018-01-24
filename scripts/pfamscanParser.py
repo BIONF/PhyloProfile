@@ -18,32 +18,28 @@ def main(argv):
 	try:
 		opts, args = getopt.getopt(argv,"i:h",["inFile","help"])
 	except getopt.GetoptError:
-		print('fastaParser.py -i input.fasta')
+		print('pfamscanParser.py -i pfamscanOutput.txt')
 		sys.exit(2)
 
 	for opt,arg in opts:
 		if opt in ('-h','--help'):
-			print('fastaParser.py -i <fasta file>')
+			print('pfamscanParser.py -i <pfamscan output file>')
 			sys.exit()
 		elif opt in ('-i','--inFile'):
 			inFile = arg
 
-	print ("geneID\tncbiID\torthoID\tvar1\tvar2")
 	with open(inFile) as fp:
    		for line in fp:
-			if re.match(">", line) is not None:
-				hit = line.rstrip().replace(">","").split('|')
-				strOut = '\t'.join(hit).strip()
-				# hit = hit.replace('|', "\t")
-				if len(hit) < 5:
-					for i in range(len(hit),5):
-						strOut = strOut +"\t"+"NA"
-
-				print(strOut)
+			if not re.match("^#", line) is not None and len(line) > 1:
+				hit = line.strip("\n").split()
+				geneID = hit[0]
+				print(geneID.split('|')[0]+"#"+geneID.split('|')[2]+"\t"+geneID.split('|')[2]+"\t"+"pfam_"+hit[6]+"\t"+hit[3]+"\t"+hit[4]+"\tNA"+"\tN")
+				# print(geneID+"\t"+"pfam_"+hit[0]+"\t"+hit[19]+"\t"+hit[20]+"\tNA"+"\tN")
+				# time.sleep(1)
 
 if __name__ == "__main__":
 	if len(sys.argv[1:])==0:
-		print('fastaParser.py -i input.fasta')
+		print('pfamscanParser.py -i pfamscanOutput.txt')
 		sys.exit(2)
 	else:
 		main(sys.argv[1:])
