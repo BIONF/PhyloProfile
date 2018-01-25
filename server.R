@@ -235,7 +235,7 @@ shinyServer(function(input, output, session) {
       if(inputType == "xml"){
         longDf <- xmlParser(filein$datapath)
         textInput("var2_id", h5("Second variable:"), value = colnames(longDf)[5], width="100%", placeholder="Name of second variable")
-      } else if(inputType == "fata"){
+      } else if(inputType == "fasta"){
         longDf <- fastaParser(filein$datapath)
         textInput("var2_id", h5("Second variable:"), value = colnames(longDf)[5], width="100%", placeholder="Name of second variable")
       } else if(inputType == "long"){
@@ -2661,7 +2661,7 @@ shinyServer(function(input, output, session) {
         if(inputType == "fasta"){
           data <- dataFiltered()
           mainInfo <- mainPointInfo()
-          ncbiID <- data[data$supertaxon == mainInfo[3],]$ncbiID
+          ncbiID <- data[data$supertaxon == mainInfo[3],]$ncbiID[1]
           seqID <- paste0(info[1],"|",ncbiID,"|",info[2],"|",info[3])
           fastaOut <- paste(getFasta(filein$datapath,seqID))
         } else {
@@ -2860,7 +2860,11 @@ shinyServer(function(input, output, session) {
       plot_seed <- domain.plotting(orderedSeedDf,seed,var1,sep,input$labelArchiSize,input$titleArchiSize,input$labelDescSize,min(subDomainDf$start),max(subDomainDf$end))
 
       # grid.arrange(plot_seed,plot_ortho,ncol=1)
-      arrangeGrob(plot_seed,plot_ortho,ncol=1)
+      if(ortho == seed){
+        arrangeGrob(plot_seed,ncol=1)
+      } else {
+        arrangeGrob(plot_seed,plot_ortho,ncol=1)
+      }
     }
   }
 

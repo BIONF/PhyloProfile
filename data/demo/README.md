@@ -6,6 +6,7 @@ Detail about input files are expained in [Phyloprofile Wiki Page](https://github
 ## Main input files:
 - `test.main.wide`: Input file wide (matrix) format. Use this as the **Main input** file on the *Input & settings* page after starting *PhyloProfile*. Each cell in the matrix contains 3 information: `Ortholog ID # Feature architecture similarity score[1] # Traceability score[2]`.
 - `test.main.long`: This is the same as `test.main` but in long format.
+- `test.main.fasta`: This is the same as `test.main` but in fasta format.
 - `test.main.xml`: This is the same input file in OrthoXML format.
 
 ## Optional input files:

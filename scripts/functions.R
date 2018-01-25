@@ -244,12 +244,12 @@ getFasta <- function(file,seqID){
     seq_name = names(fastaFile)
     sequence = paste(fastaFile)
     fa <- data.frame(seq_name, sequence)
-    
     seq <- fa$sequence[pmatch(seqID,fa$seq_name)]
-    if(length(seq) < 1){
+    
+    if(length(seq[1]) < 1){
       fasta <- paste0(seqID," not found in ",file,"! Please check id_format in FASTA config again!")
     } else{
-      fasta <- paste(paste0(">",seqID),seq,sep="\n")
+      fasta <- paste(paste0(">",seqID),seq[1],sep="\n")
     }
   } else {
     fasta <- paste0(file," not found! Please check the path and dir_format in FASTA config again!")
