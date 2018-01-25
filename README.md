@@ -81,7 +81,7 @@ will yield a single, merged *OrthoXML* files that contains the four *HOGs* for t
 Please get in touch! we are trying to support more orthology prediction tools right out of the box.
 
 ## Demo data
-In `data/demo/` you can find some test data to see how the files should look like. In our [Wiki you can find a walkthrough through the different files](https://github.com/BIONF/PhyloProfile/wiki/Walkthrough) and how they relate to the different functions of *PhyloProfile*.
+In `data/demo/` you can find some test data to see how the files should look like. In our [Wiki you can find a walkthrough through the different files](https://github.com/BIONF/PhyloProfile/wiki/Input-Data) and how they relate to the different functions of *PhyloProfile*.
 
 # Bugs
 Any bug reports or comments, suggestions are highly appreciated. Please open an issue on GitHub or be in touch via email.
