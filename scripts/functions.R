@@ -15,6 +15,19 @@ xmlParser <- function(inputFile){
   dfIN
 }
 
+########## parse fasta input file ##############
+fastaParser <- function(inputFile){
+  cmd <- paste("python ", getwd(),"/scripts/fastaParser.py",
+               " -i ", inputFile,
+               sep='')
+  dfIN <- as.data.frame(read.table(text = system(cmd,intern=TRUE)))
+  
+  colnames(dfIN) = as.character(unlist(dfIN[1,])) # the first row will be the header
+  dfIN <- subset(dfIN[dfIN$geneID != "geneID",])
+  dfIN <- droplevels(dfIN)
+  dfIN
+}
+
 # ########## convert long to wide format ##############
 # long2wide <- function(longDf){
 #   # rename column names
@@ -112,10 +125,12 @@ domain.plotting <- function(df,geneID,var1,sep,labelSize,titleSize,descSize,minS
     geom_segment(data=df, aes(y=feature, yend=feature, x=minStart, xend=maxEnd), color="#b2b2b2", size=0.15)
   
   ### draw line and points
-  gg <- gg + geom_segment(data=df, aes(x=start, xend=end, y=feature, yend=feature),#, fill=feature),
-                          size=1.2)
-  gg <- gg + geom_point(data=df, aes(y=feature, x=start), color="#b2b2b2", size=3)
-  gg <- gg + geom_point(data=df, aes(y=feature, x=end), color="#edae52", size=3)
+  gg <- gg + geom_segment(data=df, aes(x=start, xend=end, y=feature, yend=feature),size=1)
+  gg <- gg + geom_point(data=df, aes(y=feature, x=start), color="#b2b2b2", size=3, shape=3)
+  gg <- gg + geom_point(data=df, aes(y=feature, x=end), color="#edae52", size=3, shape=5)
+  
+  ### draw dashed line for domain path
+  gg <- gg + geom_segment(data=df[df$path=="Y",], aes(x=start, xend=end, y=feature, yend=feature),size=3,linetype="dashed")
   
   ### add text above
   gg <- gg + geom_text(data=df,
@@ -229,12 +244,12 @@ getFasta <- function(file,seqID){
     seq_name = names(fastaFile)
     sequence = paste(fastaFile)
     fa <- data.frame(seq_name, sequence)
+    seq <- fa$sequence[pmatch(seqID,fa$seq_name)]
     
-    seq <- fa$sequence[fa$seq_name == seqID]
-    if(length(seq) < 1){
+    if(length(seq[1]) < 1){
       fasta <- paste0(seqID," not found in ",file,"! Please check id_format in FASTA config again!")
     } else{
-      fasta <- paste(paste0(">",seqID),seq,sep="\n")
+      fasta <- paste(paste0(">",seqID),seq[1],sep="\n")
     }
   } else {
     fasta <- paste0(file," not found! Please check the path and dir_format in FASTA config again!")
@@ -251,4 +266,134 @@ substrRight <- function(x, n){
 ######## check internet connection  ########
 hasInternet <- function(){
   !is.null(curl::nslookup("r-project.org", error = FALSE))
+}
+
+######## used to replace read.tree function of APE package when input tree has singletons ####### 
+# function to read a Newick string with node labels & (possible) singles
+# written by Liam J. Revell 2013
+
+read.newick<-function(file="",text){
+  # check to see if reading from file
+  if(file!="") text<-scan(file,sep="\n",what="character")
+  if(length(text)>1){
+    tree<-lapply(text,newick)
+    class(tree)<-"multiPhylo"
+  } else tree<-newick(text)
+  return(tree)
+}
+
+# main Newick string function
+# written by Liam J. Revell 2013
+newick<-function(text){
+  text<-unlist(strsplit(text, NULL))
+  tip.label<-vector(mode="character")
+  node.label<-vector(mode="character") 
+  edge<-matrix(c(1,NA),1,2) 
+  edge.length<-vector()
+  currnode<-1
+  Nnode<-currnode
+  i<-j<-k<-1
+  while(text[i]!=";"){
+    if(text[i]=="("){
+      if(j>nrow(edge)) edge<-rbind(edge,c(NA,NA))
+      edge[j,1]<-currnode
+      i<-i+1
+      # is the next element a label?
+      if(is.na(match(text[i],c("(",")",",",":",";")))){
+        temp<-getLabel(text,i)
+        tip.label[k]<-temp$label
+        i<-temp$end
+        edge[j,2]<--k
+        k<-k+1
+        # is there a branch length?
+        if(text[i]==":"){
+          temp<-getEdgeLength(text,i)
+          edge.length[j]<-temp$edge.length
+          i<-temp$end
+        }	
+      } else if(text[i]=="("){
+        Nnode<-Nnode+1 # creating a new internal node
+        currnode<-Nnode
+        edge[j,2]<-currnode # move to new internal node
+      }
+      j<-j+1
+    } else if(text[i]==")"){
+      i<-i+1
+      # is the next element a label?
+      if(is.na(match(text[i],c("(",")",",",":",";")))){
+        temp<-getLabel(text,i)
+        node.label[currnode]<-temp$label
+        i<-temp$end
+      }
+      # is there a branch length?
+      if(text[i]==":"){
+        temp<-getEdgeLength(text,i)
+        if(currnode>1){ 
+          ii<-match(currnode,edge[,2])
+          edge.length[ii]<-temp$edge.length
+        } else root.edge<-temp$edge.length
+        i<-temp$end
+      }	
+      if(currnode>1) currnode<-edge[match(currnode,edge[,2]),1] # move down the tree
+    } else if(text[i]==","){
+      if(j>nrow(edge)) edge<-rbind(edge,c(NA,NA))
+      edge[j,1]<-currnode
+      i<-i+1
+      # is the next element a label?
+      if(is.na(match(text[i],c("(",")",",",":",";")))){
+        temp<-getLabel(text,i)
+        tip.label[k]<-temp$label
+        i<-temp$end
+        edge[j,2]<--k
+        k<-k+1
+        # is there a branch length?
+        if(text[i]==":"){
+          temp<-getEdgeLength(text,i)
+          edge.length[j]<-temp$edge.length
+          i<-temp$end
+        }
+      } else if(text[i]=="("){
+        Nnode<-Nnode+1 # creating a new internal node
+        currnode<-Nnode
+        edge[j,2]<-currnode # move to internal node
+      }
+      j<-j+1
+    }
+  }
+  Ntip<-k-1
+  edge[edge>0]<-edge[edge>0]+Ntip
+  edge[edge<0]<--edge[edge<0]
+  edge.length[is.na(edge.length)]<-0
+  if(length(edge.length)==0) edge.length<-NULL
+  node.label[is.na(node.label)]<-""
+  if(length(node.label)==0) node.label<-NULL
+  # assemble into "phylo" object
+  tree<-list(edge=edge,Nnode=as.integer(Nnode),tip.label=tip.label,edge.length=edge.length,node.label=node.label)
+  class(tree)<-"phylo"
+  return(tree)
+}
+
+# function gets label
+# written by Liam J. Revell 2011-2013
+getLabel<-function(text,start,stop.char=c(",",":",")")){
+  i<-0
+  label<-vector()
+  while(is.na(match(text[i+start],stop.char))){
+    label[i+1]<-text[i+start]
+    i<-i+1
+  }
+  return(list(label=paste(label,collapse=""),end=i+start))
+}
+
+# function gets branch length
+# written by Liam J. Revell 2011-2013
+getEdgeLength<-function(text,start){
+  i<-start+1; m<-1
+  temp<-vector()
+  while(is.na(match(text[i],c(",",")",";")))){
+    temp[m]<-text[i]
+    i<-i+1
+    m<-m+1
+  }
+  return(list(edge.length=as.numeric(paste(temp,collapse="")),end=i))
 }

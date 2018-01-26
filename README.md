@@ -1,5 +1,9 @@
-
 # PhyloProfile
+[![language: R](https://img.shields.io/badge/language-R-blue.svg?style=flat)](https://www.r-project.org/)
+[![presented at: BOSC2017](https://img.shields.io/badge/presented%20at-BOSC2017-green.svg?style=flat)](https://f1000research.com/posters/6-1782)
+[![GitHub release](https://img.shields.io/badge/stable%20release-v0.1.0-orange.svg)](https://github.com/BIONF/PhyloProfile/releases/tag/v0.1.0)
+[![license: MIT](https://img.shields.io/badge/license-MIT-lightgrey.svg)](https://opensource.org/licenses/MIT)
+
 [![](www/posterSub.png)](https://f1000research.com/posters/6-1782)
 [Click for the full PDF version of the poster](https://f1000research.com/posters/6-1782)
 
@@ -77,7 +81,7 @@ will yield a single, merged *OrthoXML* files that contains the four *HOGs* for t
 Please get in touch! we are trying to support more orthology prediction tools right out of the box.
 
 ## Demo data
-In `data/demo/` you can find some test data to see how the files should look like. In our [Wiki you can find a walkthrough through the different files](https://github.com/BIONF/PhyloProfile/wiki/Walkthrough) and how they relate to the different functions of *PhyloProfile*.
+In `data/demo/` you can find some test data to see how the files should look like. In our [Wiki you can find a walkthrough through the different files](https://github.com/BIONF/PhyloProfile/wiki/Input-Data) and how they relate to the different functions of *PhyloProfile*.
 
 # Bugs
 Any bug reports or comments, suggestions are highly appreciated. Please open an issue on GitHub or be in touch via email.

@@ -265,9 +265,11 @@ shinyUI(fluidPage(
       "Main profile",
       sidebarLayout(
         sidebarPanel(
-          textOutput("testOutput"),    ### use for testing output ###
-          column(4,offset = 0,numericInput("number","# of genes:",min=1,max=1600,step=10,value=30,width=150),style='padding:0px;'),
-          column(4,numericInput("stIndex","1st index:",min=1,max=1600,value=1,width=200)),
+          # column(4,offset = 0,numericInput("number","# of genes:",min=1,max=1600,step=10,value=30,width=150),style='padding:0px;'),
+          column(4,numericInput("stIndex","Gene from:",min=1,max=1600,value=1,width=100),style='padding:0px;'),
+          column(4,numericInput("endIndex","... to:",min=1,max=1600,value=30,width=100),style='padding:0px;'),
+          bsPopover("stIndex","","Set start index for sequence range","bottom"),
+          bsPopover("endIndex","","Set end index for sequence range","bottom"),
 
           column(4,uiOutput("highlightGeneUI")),
 
@@ -724,7 +726,7 @@ shinyUI(fluidPage(
     ),
 
     ####### popup windows for detailed plot
-    bsModal("modalBS", "Detailed plot", "go", size = "large",
+    bsModal("modalBS", "Detailed plot", "detailedBtn", size = "large",
             uiOutput("detailPlot.ui"),
             numericInput("detailedHeight","plot_height(px)",min=100,max=1600,step=50,value=100,width=100)
             ,verbatimTextOutput("detailClick")
@@ -768,7 +770,10 @@ shinyUI(fluidPage(
         draggable = TRUE,
         h5("Point's info:"),
         verbatimTextOutput("pointInfo"),
-        shinyBS::bsButton("go", "Detailed plot", style="success", disabled = FALSE),
+        conditionalPanel(
+          condition = "output.pointInfoStatus == 0",
+          shinyBS::bsButton("detailedBtn", "Detailed plot", style="success", disabled = FALSE)
+        ),
         style = "opacity: 0.80"
       )
     )

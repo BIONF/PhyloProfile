@@ -37,7 +37,7 @@ source("scripts/taxonomyProcessing.R")
 source("scripts/functions.R")
 
 ############################ MAIN ############################
-options(shiny.maxRequestSize=50*1024^2)  ## size limit for input 50mb
+options(shiny.maxRequestSize=99*1024^2)  ## size limit for input 99mb
 
 shinyServer(function(input, output, session) {
   # session$onSessionEnded(stopApp) ### Automatically stop a Shiny app when closing the browser tab
@@ -210,6 +210,9 @@ shinyServer(function(input, output, session) {
       if(inputType == "xml"){
         longDf <- xmlParser(filein$datapath)
         textInput("var1_id", h5("First variable:"), value = colnames(longDf)[4], width="100%", placeholder="Name of first variable")
+      } else if(inputType == "fasta"){
+        longDf <- fastaParser(filein$datapath)
+        textInput("var1_id", h5("First variable:"), value = colnames(longDf)[4], width="100%", placeholder="Name of first variable")
       } else if(inputType == "long"){
         headerIn <- readLines(filein$datapath, n = 1)
         headerIn <- unlist(strsplit(headerIn,split = '\t'))
@@ -231,6 +234,9 @@ shinyServer(function(input, output, session) {
       
       if(inputType == "xml"){
         longDf <- xmlParser(filein$datapath)
+        textInput("var2_id", h5("Second variable:"), value = colnames(longDf)[5], width="100%", placeholder="Name of second variable")
+      } else if(inputType == "fasta"){
+        longDf <- fastaParser(filein$datapath)
         textInput("var2_id", h5("Second variable:"), value = colnames(longDf)[5], width="100%", placeholder="Name of second variable")
       } else if(inputType == "long"){
         headerIn <- readLines(filein$datapath, n = 1)
@@ -452,8 +458,11 @@ shinyServer(function(input, output, session) {
       return("moreCol")
     } else {
       names(inputDt) <- as.character(unlist(inputDt[1,]))
+      
       if(grepl("<?xml",colnames(inputDt)[1])){
         return("xml")
+      } else if(grepl(">",colnames(inputDt)[1]) == TRUE){
+        return("fasta")
       } else {
         if(grepl("geneID",colnames(inputDt)[1])){
           if(is.na(pmatch("ncbi",colnames(inputDt)[3])) || is.na(pmatch("ncbi",colnames(inputDt)[4])) || is.na(pmatch("ncbi",colnames(inputDt)[5]))){
@@ -511,6 +520,9 @@ shinyServer(function(input, output, session) {
           if(inputType == "xml"){
             longDf <- xmlParser(filein$datapath)
             inputTaxa <- levels(longDf$ncbiID)
+          } else if(inputType == "fasta"){
+            longDf <- fastaParser(filein$datapath)
+            inputTaxa <- levels(longDf$ncbiID)
           } else if(inputType == "long"){
             inputDf <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
             inputTaxa <- levels(inputDf$ncbiID)
@@ -547,6 +559,9 @@ shinyServer(function(input, output, session) {
       inputType <- checkInputVadility(filein)
       if(inputType == "xml"){
         longDf <- xmlParser(filein$datapath)
+        inputTaxa <- levels(longDf$ncbiID)
+      } else if(inputType == "fasta"){
+        longDf <- fastaParser(filein$datapath)
         inputTaxa <- levels(longDf$ncbiID)
       } else if(inputType == "long"){
         inputDf <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
@@ -1122,34 +1137,43 @@ shinyServer(function(input, output, session) {
       shinyjs::enable('applyCluster')
     }
   })
+  
+  ### unsorting function to keep user defined geneID order
+  unsortID <- function(data,order){
+    data$geneID <- as.factor(data$geneID)
+    if(order == FALSE){
+      data$geneID <- factor(data$geneID, levels = unique(data$geneID))  ######### keep user defined geneID order
+    }
+    return(data)
+  }
 
   ### subset data
   preData <- reactive({
-    # get rows need to be read
-    if(is.na(input$number)){
-      nrHit <- input$stIndex + 30 - 1
-    } else {
-      nrHit <- input$stIndex + input$number - 1
-    }
-    
     # get list of gene of interest (from a separated file)
     listGene <- list()
     if(input$geneList_selected == 'from file'){
       listIn <- input$list
       if(!is.null(listIn)){
         list <- as.data.frame(read.table(file=listIn$datapath, header=FALSE))
-        listGene <- list$V1
+        listGeneOri <- list$V1
+        if(input$stIndex <= length(listGeneOri)){
+          listGene <- listGeneOri[listGeneOri[input$stIndex:input$endIndex]]
+        } else {
+          listGene <- listGeneOri
+        }
       }
     }
-    
+
     if(input$demo == TRUE){
       inputDf <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/demo/test.main.long", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
+      inputDf <- unsortID(inputDf,input$ordering)
       
-      if(length(listGene) > 1){
-        inputDf <- inputDf[inputDf$geneID %in% listGene,]
+      if(length(listGene) >= 1){
+        data <- inputDf[inputDf$geneID %in% listGene,]
+      } else {
+        subsetID <- levels(as.factor(inputDf$geneID))[input$stIndex:input$endIndex]
+        data <- inputDf[inputDf$geneID %in% subsetID,]
       }
-      subsetID <- levels(as.factor(inputDf$geneID))[1:nrHit]
-      data <- inputDf[inputDf$geneID %in% subsetID,]
 
       if(ncol(data) < 5){
         for(i in 1:(5-ncol(data))){
@@ -1164,12 +1188,31 @@ shinyServer(function(input, output, session) {
       inputType <- checkInputVadility(filein)
       if(inputType == "xml"){
         longDf <- xmlParser(filein$datapath)
-        
-        if(length(listGene) > 1){
-          longDf <- longDf[longDf$geneID %in% listGene,]
+        longDf <- unsortID(longDf,input$ordering)
+
+        if(length(listGene) >= 1){
+          data <- longDf[longDf$geneID %in% listGene,]
+        } else {
+          subsetID <- levels(longDf$geneID)[input$stIndex:input$endIndex]
+          data <- longDf[longDf$geneID %in% subsetID,]
         }
-        subsetID <- levels(longDf$geneID)[1:nrHit]
-        data <- longDf[longDf$geneID %in% subsetID,]
+        
+        if(ncol(data) < 5){
+          for(i in 1:(5-ncol(data))){
+            data[paste0("newVar",i)] <- 1
+          }
+        }
+        colnames(data) <- c("geneID","ncbiID","orthoID","var1","var2")
+      } else if(inputType == "fasta"){
+        longDf <- fastaParser(filein$datapath)
+        longDf <- unsortID(longDf,input$ordering)
+        
+        if(length(listGene) >= 1){
+          data <- longDf[longDf$geneID %in% listGene,]
+        } else {
+          subsetID <- levels(longDf$geneID)[input$stIndex:input$endIndex]
+          data <- longDf[longDf$geneID %in% subsetID,]
+        }
         
         if(ncol(data) < 5){
           for(i in 1:(5-ncol(data))){
@@ -1179,12 +1222,14 @@ shinyServer(function(input, output, session) {
         colnames(data) <- c("geneID","ncbiID","orthoID","var1","var2")
       } else if(inputType == "long"){
         inputDf <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+        inputDf <- unsortID(inputDf,input$ordering)
         
-        if(length(listGene) > 1){
-          inputDf <- inputDf[inputDf$geneID %in% listGene,]
+        if(length(listGene) >= 1){
+          data <- inputDf[inputDf$geneID %in% listGene,]
+        } else {
+          subsetID <- levels(inputDf$geneID)[input$stIndex:input$endIndex]
+          data <- inputDf[inputDf$geneID %in% subsetID,]
         }
-        subsetID <- levels(inputDf$geneID)[1:nrHit]
-        data <- inputDf[inputDf$geneID %in% subsetID,]
         
         if(ncol(data) < 5){
           for(i in 1:(5-ncol(data))){
@@ -1195,12 +1240,14 @@ shinyServer(function(input, output, session) {
       } else if (inputType == "wide"){
         inputDf <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
         mdData <- melt(inputDf,id="geneID")
-
-        if(length(listGene) > 1){
+        mdData <- unsortID(mdData,input$ordering)
+        
+        if(length(listGene) >= 1){
           mdData <- mdData[mdData$geneID %in% listGene,]
+        } else {
+          subsetID <- levels(mdData$geneID)[input$stIndex:input$endIndex]
+          mdData <- mdData[mdData$geneID %in% subsetID,]
         }
-        subsetID <- levels(mdData$geneID)[1:nrHit]
-        mdData <- mdData[mdData$geneID %in% subsetID,]
         
         splitCol <- data.frame(do.call('rbind', strsplit(as.character(mdData$value), '#', fixed=TRUE)))
         data <- cbind(mdData[,c('geneID','variable')],splitCol)
@@ -1214,11 +1261,6 @@ shinyServer(function(input, output, session) {
       } else {
         data <- data.frame("geneID" = character(),"ncbiID" = character(),"orthoID" = character(),"var1" = character(),"var2" = character(), stringsAsFactors = F)
       }
-    }
-
-    data$geneID <- as.factor(data$geneID)
-    if(input$ordering == FALSE){
-      data$geneID <- factor(data$geneID, levels = unique(data$geneID))  ######### keep user defined geneID order
     }
 
     ### return preData
@@ -1429,24 +1471,11 @@ shinyServer(function(input, output, session) {
     }
     if(is.null(filein)){return()}
 
-    data <- dataSupertaxa()
+    dataHeat <- dataSupertaxa()
 
     # get selected supertaxon name
     split <- strsplit(as.character(input$inSelect),"_")
     inSelect <- as.character(split[[1]][1])
-
-    ### get sub set of data
-    setID <- plyr::count(data,"geneID")
-
-    if(is.na(input$number)){
-      nrHit <- input$stIndex + 30 - 1
-    } else {
-      nrHit <- input$stIndex + input$number - 1
-    }
-    if(nrHit > nlevels(as.factor(data$geneID))){nrHit <- nlevels(as.factor(data$geneID))}
-
-    subsetID <- setID[input$stIndex:nrHit,]
-    dataHeat <- merge(data,subsetID,by="geneID")
 
     ### replace insufficient values according to the thresholds by NA or 0; and replace var1 0.0 by NA
     dataHeat$presSpec[dataHeat$supertaxon != inSelect & dataHeat$presSpec < percent_cutoff_min] <- 0
@@ -1809,6 +1838,18 @@ shinyServer(function(input, output, session) {
           colnames(dataOrig) <- c("geneID","ncbiID","orthoID","var1","var2")
           splitDt <- dataOrig[,c("orthoID","var1","var2")]
         }
+      } else if(inputType == "fasta"){
+        dataOrig <- fastaParser(filein$datapath)
+        if(ncol(dataOrig) < 4){
+          colnames(dataOrig) <- c("geneID","ncbiID","orthoID")
+          splitDt <- dataOrig[,c("orthoID")]
+        } else if(ncol(dataOrig) < 5){
+          colnames(dataOrig) <- c("geneID","ncbiID","orthoID","var1")
+          splitDt <- dataOrig[,c("orthoID","var1")]
+        } else {
+          colnames(dataOrig) <- c("geneID","ncbiID","orthoID","var1","var2")
+          splitDt <- dataOrig[,c("orthoID","var1","var2")]
+        }
       } else if(inputType == "long"){
         dataOrig <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
         if(ncol(dataOrig) < 4){
@@ -1965,7 +2006,16 @@ shinyServer(function(input, output, session) {
         } else {
           colnames(mdData) <- c("geneID","ncbiID","orthoID","var1","var2")
         }
-      } else if(inputType == "long"){
+      } else if(inputType == "fasta"){
+        mdData <- fastaParser(filein$datapath)
+        if(ncol(mdData) < 4){
+          colnames(mdData) <- c("geneID","ncbiID","orthoID")
+        } else if(ncol(mdData) < 5){
+          colnames(mdData) <- c("geneID","ncbiID","orthoID","var1")
+        } else {
+          colnames(mdData) <- c("geneID","ncbiID","orthoID","var1","var2")
+        }
+      }else if(inputType == "long"){
         mdData <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
         if(ncol(mdData) < 4){
           colnames(mdData) <- c("geneID","ncbiID","orthoID")
@@ -2390,7 +2440,20 @@ shinyServer(function(input, output, session) {
   #############################################################
   ################### SHOW CLICKED POINT INFO #################
   #############################################################
-
+  
+  ### get value of pointInfo for activating Detailed Plot button
+  output$pointInfoStatus <- reactive({
+    if(input$tabs == 'Main profile'){
+      info <- mainPointInfo()  # info = groupID,orthoID,supertaxon,mVar1,%spec,var2
+    } else if(input$tabs=='Customized profile'){
+      info <- selectedPointInfo()
+    } else {
+      info <- NULL
+    }
+    is.null(info)
+  })
+  outputOptions(output, "pointInfoStatus", suspendWhenHidden = FALSE)
+  
   ######## show info into "point's info" box
   output$pointInfo <- renderText({
     ##### GET INFO BASED ON CURRENT TAB
@@ -2425,7 +2488,6 @@ shinyServer(function(input, output, session) {
       }
     }
   })
-
 
   #############################################################
   ##################### DETAILED PLOT #########################
@@ -2594,37 +2656,47 @@ shinyServer(function(input, output, session) {
           fastaOut <- paste0(fastaUrl," not found!!!")
         }
       } else {
-        if(input$input_type == 'oneSeq.extended.fa'){
-          # f <- toString(input$oneseq.file)
-          fasIn <- input$oneSeqFasta
-          f <- toString(fasIn$datapath)
+        filein <- input$mainInput
+        inputType <- checkInputVadility(filein)
+        if(inputType == "fasta"){
+          data <- dataFiltered()
+          mainInfo <- mainPointInfo()
+          ncbiID <- data[data$supertaxon == mainInfo[3],]$ncbiID[1]
+          seqID <- paste0(info[1],"|",ncbiID,"|",info[2],"|",info[3])
+          fastaOut <- paste(getFasta(filein$datapath,seqID))
         } else {
-          path = input$path
-          dir_format = input$dir_format
-          file_ext = input$file_ext
-          id_format = input$id_format
-
-          ### get species ID and seqID
-          if(id_format == 1){
-            specTMP <- unlist(strsplit(seqID,":"))
-            specID = paste(specTMP[-length(specTMP)],collapse = ":")
-          } else if(id_format == 2){
-            specTMP <- unlist(strsplit(seqID,"@"))
-            specID = paste(specTMP[-length(specTMP)],collapse = "@")
-          } else if(id_format == 3){
-            specTMP <- unlist(strsplit(seqID,"|"))
-            specID = paste(specTMP[-length(specTMP)],collapse = "|")
+          if(input$input_type == 'oneSeq.extended.fa'){
+            # f <- toString(input$oneseq.file)
+            fasIn <- input$oneSeqFasta
+            f <- toString(fasIn$datapath)
+          } else {
+            path = input$path
+            dir_format = input$dir_format
+            file_ext = input$file_ext
+            id_format = input$id_format
+            
+            ### get species ID and seqID
+            if(id_format == 1){
+              specTMP <- unlist(strsplit(seqID,":"))
+              specID = paste(specTMP[-length(specTMP)],collapse = ":")
+            } else if(id_format == 2){
+              specTMP <- unlist(strsplit(seqID,"@"))
+              specID = paste(specTMP[-length(specTMP)],collapse = "@")
+            } else if(id_format == 3){
+              specTMP <- unlist(strsplit(seqID,"|"))
+              specID = paste(specTMP[-length(specTMP)],collapse = "|")
+            }
+            
+            ### full path fasta file
+            f <- paste0(path,"/",specID,".",file_ext)
+            if(dir_format == 2){
+              f <- paste0(path,"/",specID,"/",specID,".",file_ext)
+            }
           }
-
-          ### full path fasta file
-          f <- paste0(path,"/",specID,".",file_ext)
-          if(dir_format == 2){
-            f <- paste0(path,"/",specID,"/",specID,".",file_ext)
-          }
+          
+          ### read file and get sequence
+          fastaOut <- paste(getFasta(f,seqID))
         }
-
-        ### read file and get sequence
-        fastaOut <- paste(getFasta(f,seqID))
       }
       # return(c(seqID,specID))
       return(fastaOut)
@@ -2744,12 +2816,14 @@ shinyServer(function(input, output, session) {
       }
     }
 
-    colnames(domainDf) <- c("seedID","orthoID","feature","start","end","weight")
-
-    if(input$input_type == 'oneSeq.extended.fa'){
-      domainDf$seedID <- gsub("\\|",":",domainDf$seedID)
-      domainDf$orthoID <- gsub("\\|",":",domainDf$orthoID)
+    if(ncol(domainDf) == 6){
+      colnames(domainDf) <- c("seedID","orthoID","feature","start","end","weight")
+    } else {
+      colnames(domainDf) <- c("seedID","orthoID","feature","start","end","weight","path")
     }
+
+    domainDf$seedID <- gsub("\\|",":",domainDf$seedID)
+    domainDf$orthoID <- gsub("\\|",":",domainDf$orthoID)
 
     ### get sub dataframe based on selected groupID and orthoID
     ortho <- gsub("\\|",":",ortho)
@@ -2778,7 +2852,7 @@ shinyServer(function(input, output, session) {
         orderedSeedDf <- seedDf[order(seedDf$feature), ]
         orderedOrthoDf <- sortDomains(orderedSeedDf, orthoDf)
       }
-
+      
       ### plotting
       sep = ":"
       if(!is.null(input$oneSeqFasta)){sep="|"}
@@ -2786,7 +2860,11 @@ shinyServer(function(input, output, session) {
       plot_seed <- domain.plotting(orderedSeedDf,seed,var1,sep,input$labelArchiSize,input$titleArchiSize,input$labelDescSize,min(subDomainDf$start),max(subDomainDf$end))
 
       # grid.arrange(plot_seed,plot_ortho,ncol=1)
-      arrangeGrob(plot_seed,plot_ortho,ncol=1)
+      if(ortho == seed){
+        arrangeGrob(plot_seed,ncol=1)
+      } else {
+        arrangeGrob(plot_seed,plot_ortho,ncol=1)
+      }
     }
   }
 
@@ -2911,11 +2989,7 @@ shinyServer(function(input, output, session) {
     geneAgeDf
   })
 
-  geneAgePlot <- function(){
-    if (v$doPlot == FALSE) return()
-
-    geneAgeDf <- geneAgeDf()
-
+  geneAgePlot <- function(geneAgeDf){
     countDf <- plyr::count(geneAgeDf,c('age'))
     countDf$percentage <- round(countDf$freq/sum(countDf$freq)*100)
     countDf$pos <- cumsum(countDf$percentage) - (0.5 * countDf$percentage)
@@ -2943,10 +3017,10 @@ shinyServer(function(input, output, session) {
       # wrap in an isolate() so that the data won't update every time an input
       # is changed
       isolate({
-        geneAgePlot()
+        geneAgePlot(geneAgeDf())
       })
     } else {
-      geneAgePlot()
+      geneAgePlot(geneAgeDf())
     }
   })
 
@@ -3234,11 +3308,7 @@ shinyServer(function(input, output, session) {
   })
 
   ### plot clustered profiles
-  dendrogram <- function(){
-    if(v$doPlot == FALSE){return()}
-
-    dd.col <- clusterDataDend()
-
+  dendrogram <- function(dd.col){
     py <- as.ggdend(dd.col)
     p <- ggplot(py, horiz = TRUE, theme=theme_minimal()) +
       theme(axis.title = element_blank(), axis.text.y = element_blank())
@@ -3246,7 +3316,8 @@ shinyServer(function(input, output, session) {
   }
 
   output$dendrogram <- renderPlot({
-    dendrogram()
+    if(v$doPlot == FALSE){return()}
+    dendrogram(clusterDataDend())
   })
 
   output$cluster.ui <- renderUI({
@@ -3477,38 +3548,47 @@ shinyServer(function(input, output, session) {
             fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
           }
         } else {
-          if(input$input_type == 'oneSeq.extended.fa'){
-            # f <- toString(input$oneseq.file)
-            fasIn <- input$oneSeqFasta
-            f <- toString(fasIn$datapath)
+          filein <- input$mainInput
+          inputType <- checkInputVadility(filein)
+          if(inputType == "fasta"){
+            seqID <- paste0(as.character(dataOut$geneID[i]),"|ncbi",as.character(dataOut$ncbiID[i]),"|",as.character(dataOut$orthoID[i]))
+            fastaOut <- paste(getFasta(filein$datapath,seqID))
+            fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
           } else {
-            path = input$path
-            dir_format = input$dir_format
-            file_ext = input$file_ext
-            id_format = input$id_format
-            
-            ### get species ID and seqID
-            if(id_format == 1){
-              specTMP <- unlist(strsplit(seqID,":"))
-              specID = paste(specTMP[-length(specTMP)],collapse = ":")
-            } else if(id_format == 2){
-              specTMP <- unlist(strsplit(seqID,"@"))
-              specID = paste(specTMP[-length(specTMP)],collapse = "@")
-            } else if(id_format == 3){
-              specTMP <- unlist(strsplit(seqID,"|"))
-              specID = paste(specTMP[-length(specTMP)],collapse = "|")
+            if(input$input_type == 'oneSeq.extended.fa'){
+              # f <- toString(input$oneseq.file)
+              fasIn <- input$oneSeqFasta
+              f <- toString(fasIn$datapath)
+            } else {
+              path = input$path
+              dir_format = input$dir_format
+              file_ext = input$file_ext
+              id_format = input$id_format
+              
+              ### get species ID and seqID
+              if(id_format == 1){
+                specTMP <- unlist(strsplit(seqID,":"))
+                specID = paste(specTMP[-length(specTMP)],collapse = ":")
+              } else if(id_format == 2){
+                specTMP <- unlist(strsplit(seqID,"@"))
+                specID = paste(specTMP[-length(specTMP)],collapse = "@")
+              } else if(id_format == 3){
+                specTMP <- unlist(strsplit(seqID,"|"))
+                specID = paste(specTMP[-length(specTMP)],collapse = "|")
+              }
+              
+              ### full path fasta file
+              f <- paste0(path,"/",specID,".",file_ext)
+              if(dir_format == 2){
+                f <- paste0(path,"/",specID,"/",specID,".",file_ext)
+              }
             }
             
-            ### full path fasta file
-            f <- paste0(path,"/",specID,".",file_ext)
-            if(dir_format == 2){
-              f <- paste0(path,"/",specID,"/",specID,".",file_ext)
-            }
+            ### read file and get sequence
+            fastaOut <- paste(getFasta(f,seqID))
+            fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
           }
           
-          ### read file and get sequence
-          fastaOut <- paste(getFasta(f,seqID))
-          fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
         }
       }
       
@@ -3596,58 +3676,50 @@ shinyServer(function(input, output, session) {
             fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
           }
         } else {
-          if(input$input_type == 'oneSeq.extended.fa'){
-            # f <- toString(input$oneseq.file)
-            fasIn <- input$oneSeqFasta
-            f <- toString(fasIn$datapath)
+          filein <- input$mainInput
+          inputType <- checkInputVadility(filein)
+          if(inputType == "fasta"){
+            seqID <- paste0(as.character(dataOut$geneID[i]),"|ncbi",as.character(dataOut$ncbiID[i]),"|",as.character(dataOut$orthoID[i]))
+            fastaOut <- paste(getFasta(filein$datapath,seqID))
+            fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
           } else {
-            path = input$path
-            dir_format = input$dir_format
-            file_ext = input$file_ext
-            id_format = input$id_format
-            
-            ### get species ID and seqID
-            if(id_format == 1){
-              specTMP <- unlist(strsplit(seqID,":"))
-              specID = paste(specTMP[-length(specTMP)],collapse = ":")
-            } else if(id_format == 2){
-              specTMP <- unlist(strsplit(seqID,"@"))
-              specID = paste(specTMP[-length(specTMP)],collapse = "@")
-            } else if(id_format == 3){
-              specTMP <- unlist(strsplit(seqID,"|"))
-              specID = paste(specTMP[-length(specTMP)],collapse = "|")
+            if(input$input_type == 'oneSeq.extended.fa'){
+              # f <- toString(input$oneseq.file)
+              fasIn <- input$oneSeqFasta
+              f <- toString(fasIn$datapath)
+            } else {
+              path = input$path
+              dir_format = input$dir_format
+              file_ext = input$file_ext
+              id_format = input$id_format
+              
+              ### get species ID and seqID
+              if(id_format == 1){
+                specTMP <- unlist(strsplit(seqID,":"))
+                specID = paste(specTMP[-length(specTMP)],collapse = ":")
+              } else if(id_format == 2){
+                specTMP <- unlist(strsplit(seqID,"@"))
+                specID = paste(specTMP[-length(specTMP)],collapse = "@")
+              } else if(id_format == 3){
+                specTMP <- unlist(strsplit(seqID,"|"))
+                specID = paste(specTMP[-length(specTMP)],collapse = "|")
+              }
+              
+              ### full path fasta file
+              f <- paste0(path,"/",specID,".",file_ext)
+              if(dir_format == 2){
+                f <- paste0(path,"/",specID,"/",specID,".",file_ext)
+              }
             }
             
-            ### full path fasta file
-            f <- paste0(path,"/",specID,".",file_ext)
-            if(dir_format == 2){
-              f <- paste0(path,"/",specID,"/",specID,".",file_ext)
-            }
+            ### read file and get sequence
+            fastaOut <- paste(getFasta(f,seqID))
+            fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
           }
-          
-          ### read file and get sequence
-          fastaOut <- paste(getFasta(f,seqID))
-          fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
         }
       }
       
       write.table(fastaOutDf,file,sep="\t",col.names = FALSE,row.names = FALSE,quote = FALSE)
     }
   )
-
-  ######################################################
-  ############### TEXT OUTPUT for TESTING ##############
-  ######################################################
-  output$testOutput <- renderText({
-    # ### print infile
-    # filein <- input$mainInput
-    # print(toString(filein))
-    # filePath <- toString(filein)
-    # fileName <- unlist(strsplit(toString(input$mainInput),","))
-    # name <- toString(fileName[1])
-    # fullPath <- paste0("data/",name,".mDomains")
-    # print(fullPath)
-    # print(input$plot_dblclick$x)
-    # paste(input$var1[1],input$var1[2])
-  })
 })
