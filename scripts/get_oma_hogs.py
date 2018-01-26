@@ -6,9 +6,9 @@ from lxml import etree
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-i','--ids', nargs='+',
-                    help='one or more OMA protein-IDs that will be downloaded.\
-                    Multiple IDs are separated by spaces.\
+parser.add_argument('-i','--input', nargs='+',
+                    help='list of one or more OMA protein-IDs that will be downloaded.\
+                    Multiple IDs are separated by newline.\
                     (required)',required=True)
 args = parser.parse_args()
 
@@ -61,11 +61,14 @@ def merge_xml(oma1,oma2):
     return oma1
 
 # get first file in list and read it
-merged_id = args.ids[0]
+with open(args.input[0]) as f:
+    ids = f.read().splitlines()
+
+merged_id = ids[0]
 merged_xml = read_xml(merged_id)
 
 # now read all other files and merge
-other_ids = args.ids[1:]
+other_ids = ids[1:]
 for single_id in other_ids:
     xml_to_append = read_xml(single_id)
     merged_xml = merge_xml(merged_xml,xml_to_append)
