@@ -148,6 +148,8 @@ shinyUI(fluidPage(
              ),
 
              checkboxInput("demo",em(strong("Use demo files"),style = "color:darkblue")),
+             bsPopover("demo","","automatically upload demo files to try all features of PhyloProfile (internet connection is required)","bottom"),
+             
              uiOutput("noInternetMsg"),
 
              uiOutput("mainInputFile.ui"),
