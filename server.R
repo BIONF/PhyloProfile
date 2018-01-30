@@ -69,8 +69,8 @@ shinyServer(function(input, output, session) {
   observe({
     if(!file.exists(isolate({"data/rankList.txt"}))){
       if(hasInternet() == TRUE){
-        ncol <- max(count.fields("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/rankList.txt", sep = '\t'))
-        df <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/rankList.txt", sep="\t", quote='', header=F, fill=T, na.strings=c("","NA"), col.names=paste0('V', seq_len(ncol)))
+        ncol <- max(count.fields("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/rankList.txt", sep = '\t'))
+        df <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/rankList.txt", sep="\t", quote='', header=F, fill=T, na.strings=c("","NA"), col.names=paste0('V', seq_len(ncol)))
         write.table(df, file ="data/rankList.txt", col.names = F, row.names = F, quote = F, sep="\t")#na = "",
       } else {
         file.create("data/rankList.txt")
@@ -81,8 +81,8 @@ shinyServer(function(input, output, session) {
   observe({
     if(!file.exists(isolate({"data/idList.txt"}))){
       if(hasInternet() == TRUE){
-        ncol <- max(count.fields("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/idList.txt", comment.char="", sep = '\t'))
-        df <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/idList.txt", sep="\t", header=F, fill=T,comment.char="", na.strings=c("","NA"), col.names=paste0('V', seq_len(ncol)))
+        ncol <- max(count.fields("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/idList.txt", comment.char="", sep = '\t'))
+        df <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/idList.txt", sep="\t", header=F, fill=T,comment.char="", na.strings=c("","NA"), col.names=paste0('V', seq_len(ncol)))
         write.table(df, file ="data/idList.txt", col.names = F, row.names = F, quote = F, sep="\t")#na = "",
       } else {
         file.create("data/idList.txt")
@@ -93,8 +93,8 @@ shinyServer(function(input, output, session) {
   observe({
     if(!file.exists(isolate({"data/taxonNamesReduced.txt"}))){
       if(hasInternet() == TRUE){
-        ncol <- max(count.fields("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/taxonNamesReduced.txt", sep = '\t'))
-        df <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/taxonNamesReduced.txt", sep="\t", quote='', header=F, fill=T, na.strings=c("","NA"), col.names=paste0('V', seq_len(ncol)))
+        ncol <- max(count.fields("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/taxonNamesReduced.txt", sep = '\t'))
+        df <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/taxonNamesReduced.txt", sep="\t", quote='', header=F, fill=T, na.strings=c("","NA"), col.names=paste0('V', seq_len(ncol)))
         write.table(df, file ="data/taxonNamesReduced.txt", col.names = F, row.names = F, quote = F, sep="\t")
       } else {
         system("cp data/newTaxa.txt data/taxonNamesReduced.txt")
@@ -105,8 +105,8 @@ shinyServer(function(input, output, session) {
   observe({
     if(!file.exists(isolate({"data/taxonomyMatrix.txt"}))){
       if(hasInternet() == TRUE){
-        ncol <- max(count.fields("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/taxonomyMatrix.txt", sep = '\t'))
-        df <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/taxonomyMatrix.txt", sep="\t", quote='', header=F, fill=T, na.strings=c("","NA"), col.names=paste0('V', seq_len(ncol)))
+        ncol <- max(count.fields("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/taxonomyMatrix.txt", sep = '\t'))
+        df <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/taxonomyMatrix.txt", sep="\t", quote='', header=F, fill=T, na.strings=c("","NA"), col.names=paste0('V', seq_len(ncol)))
         write.table(df, file ="data/taxonomyMatrix.txt", col.names = F, row.names = F, quote = F, sep="\t")
       }
     }
@@ -512,7 +512,7 @@ shinyServer(function(input, output, session) {
   ######## get input taxa
   subsetTaxa <- reactive({
     if(input$demo == TRUE){
-      data <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/demo/test.main.wide", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
+      data <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/test.main.wide", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
       inputTaxa <- colnames(data)
     } else {
       filein <- input$mainInput
@@ -555,7 +555,7 @@ shinyServer(function(input, output, session) {
   unkTaxa <- reactive({
     # get list of input taxa (from main input file)
     if(input$demo == TRUE){
-      data <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/demo/test.main.wide", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
+      data <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/test.main.wide", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
       inputTaxa <- colnames(data)
     } else {
       filein <- input$mainInput
@@ -625,7 +625,7 @@ shinyServer(function(input, output, session) {
   ######## render input files
   output$mainInputFile.ui <- renderUI({
     if(input$demo == TRUE){
-      h4(a("demo/test.main.long", href="https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/demo/test.main.long", target="_blank"))
+      h4(a("demo/test.main.long", href="https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/test.main.long", target="_blank"))
     } else {
       fileInput("mainInput",h5("Upload input file:"))
     }
@@ -633,7 +633,7 @@ shinyServer(function(input, output, session) {
 
   output$domainInputFile.ui <- renderUI({
     if(input$demo == TRUE){
-      h4(a("demo/domains", href="https://github.com/BIONF/phyloprofile-data/tree/data/demo/domain_files", target="_blank"))
+      h4(a("demo/domains", href="https://github.com/BIONF/phyloprofile-data/tree/master/demo/domain_files", target="_blank"))
     } else {
       if(input$annoChoose == "from file"){
         fileInput("fileDomainInput","")
@@ -1173,7 +1173,7 @@ shinyServer(function(input, output, session) {
     }
 
     if(input$demo == TRUE){
-      inputDf <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/demo/test.main.long", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
+      inputDf <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/test.main.long", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
       inputDf <- unsortID(inputDf,input$ordering)
       
       if(length(listGene) >= 1){
@@ -1819,7 +1819,7 @@ shinyServer(function(input, output, session) {
 
     # open main input file
     if(input$demo == TRUE){
-      dataOrig <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/demo/test.main.long", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
+      dataOrig <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/test.main.long", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
       
       colnames(dataOrig) <- c("geneID","ncbiID","orthoID","var1","var2")
       splitDt <- dataOrig[,c("orthoID","var1","var2")]
@@ -1992,7 +1992,7 @@ shinyServer(function(input, output, session) {
   presSpecAllDt <- reactive({
     # open main input file
     if(input$demo == TRUE){
-      mdData <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/data/demo/test.main.long", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
+      mdData <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/test.main.long", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
       colnames(mdData) <- c("geneID","ncbiID","orthoID","var1","var2")
     } else {
       filein <- input$mainInput
@@ -2639,7 +2639,7 @@ shinyServer(function(input, output, session) {
         specTMP <- unlist(strsplit(seqID,"@"))
         specID = paste0(specTMP[1],"%40",specTMP[2])
         
-        fastaUrl <- paste0("https://github.com/BIONF/phyloprofile-data/blob/data/demo/fasta_files/",specID,".fa?raw=true")
+        fastaUrl <- paste0("https://github.com/BIONF/phyloprofile-data/blob/master/demo/fasta_files/",specID,".fa?raw=true")
         if(url.exists(fastaUrl)){
           faFile <- as.data.frame(read.table(fastaUrl, sep="\t", header=F, fill=T, stringsAsFactors = FALSE, quote = ""))
           
@@ -2718,7 +2718,7 @@ shinyServer(function(input, output, session) {
         updateButton(session, "doDomainPlot", disabled = TRUE)
       } else {
         updateButton(session, "doDomainPlot", disabled = FALSE)
-        fileDomain <- suppressWarnings(paste0("https://github.com/BIONF/phyloprofile-data/blob/data/demo/domain_files/",group,".domains?raw=true"))
+        fileDomain <- suppressWarnings(paste0("https://github.com/BIONF/phyloprofile-data/blob/master/demo/domain_files/",group,".domains?raw=true"))
       }
     } else {
       if(input$annoChoose == "from file"){
@@ -3535,7 +3535,7 @@ shinyServer(function(input, output, session) {
           specTMP <- unlist(strsplit(seqID,"@"))
           specID = paste0(specTMP[1],"%40",specTMP[2])
           
-          fastaUrl <- paste0("https://github.com/BIONF/phyloprofile-data/blob/data/demo/fasta_files/",specID,".fa?raw=true")
+          fastaUrl <- paste0("https://github.com/BIONF/phyloprofile-data/blob/master/demo/fasta_files/",specID,".fa?raw=true")
           if(url.exists(fastaUrl)){
             faFile <- as.data.frame(read.table(fastaUrl, sep="\t", header=F, fill=T, stringsAsFactors = FALSE, quote = ""))
             
@@ -3663,7 +3663,7 @@ shinyServer(function(input, output, session) {
           specTMP <- unlist(strsplit(seqID,"@"))
           specID = paste0(specTMP[1],"%40",specTMP[2])
           
-          fastaUrl <- paste0("https://github.com/BIONF/phyloprofile-data/blob/data/demo/fasta_files/",specID,".fa?raw=true")
+          fastaUrl <- paste0("https://github.com/BIONF/phyloprofile-data/blob/master/demo/fasta_files/",specID,".fa?raw=true")
           if(url.exists(fastaUrl)){
             faFile <- as.data.frame(read.table(fastaUrl, sep="\t", header=F, fill=T, stringsAsFactors = FALSE, quote = ""))
             

@@ -135,7 +135,7 @@ shinyUI(fluidPage(
              ),
 
              checkboxInput("demo",em(strong("Use demo files"),style = "color:darkblue")),
-             bsPopover("demo","","automatically upload demo files to try all features of PhyloProfile (internet connection is required)","bottom"),
+             bsPopover("demo","","automatically upload demo files to try all features of PhyloProfile","right"),
              
              uiOutput("noInternetMsg"),
 
@@ -171,9 +171,9 @@ shinyUI(fluidPage(
 
              hr(),
              em("Click here to download demo files:"),
-             em(a("(1) Main inputs,", href="https://github.com/BIONF/phyloprofile-data/tree/data/demo", target="_blank")),
-             em(a("(2) Domain annotations (optional),", href="https://github.com/BIONF/phyloprofile-data/tree/data/demo/domain_files", target="_blank")),
-             em(a("(3) FASTA sequence files (optional)", href="https://github.com/BIONF/phyloprofile-data/tree/data/demo/microsporidia_fasta", target="_blank"))
+             em(a("(1) Main inputs,", href="https://github.com/BIONF/phyloprofile-data/tree/master/demo", target="_blank")),
+             em(a("(2) Domain annotations (optional),", href="https://github.com/BIONF/phyloprofile-data/tree/master/demo/domain_files", target="_blank")),
+             em(a("(3) FASTA sequence files (optional)", href="https://github.com/BIONF/phyloprofile-data/tree/master/demo/fasta_files", target="_blank"))
       ),
       column(3,
              conditionalPanel(
