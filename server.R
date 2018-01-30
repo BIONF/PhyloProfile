@@ -31,6 +31,12 @@ if (!require("Biostrings")) {
 if (!require("taxize")) {install.packages("taxize")}
 if (!require("zoo")) {install.packages("zoo")}
 if (!require("RCurl")) {install.packages("RCurl")}
+if (!require("shinycssloaders")) {
+  if("devtools" %in% installed.packages() == FALSE){
+    install.packages("devtools")
+  }
+  devtools::install_github('andrewsali/shinycssloaders')
+}
 
 source("scripts/taxonomyProcessing.R")
 source("scripts/functions.R")
@@ -1150,13 +1156,16 @@ shinyServer(function(input, output, session) {
   preData <- reactive({
     # get list of gene of interest (from a separated file)
     listGene <- list()
+    endIndex <- input$endIndex
+    if(is.na(input$endIndex)){endIndex <- 30}
+    
     if(input$geneList_selected == 'from file'){
       listIn <- input$list
       if(!is.null(listIn)){
         list <- as.data.frame(read.table(file=listIn$datapath, header=FALSE))
         listGeneOri <- list$V1
         if(input$stIndex <= length(listGeneOri)){
-          listGene <- listGeneOri[listGeneOri[input$stIndex:input$endIndex]]
+          listGene <- listGeneOri[listGeneOri[input$stIndex:endIndex]]
         } else {
           listGene <- listGeneOri
         }
@@ -1170,7 +1179,7 @@ shinyServer(function(input, output, session) {
       if(length(listGene) >= 1){
         data <- inputDf[inputDf$geneID %in% listGene,]
       } else {
-        subsetID <- levels(as.factor(inputDf$geneID))[input$stIndex:input$endIndex]
+        subsetID <- levels(as.factor(inputDf$geneID))[input$stIndex:endIndex]
         data <- inputDf[inputDf$geneID %in% subsetID,]
       }
 
@@ -1192,7 +1201,7 @@ shinyServer(function(input, output, session) {
         if(length(listGene) >= 1){
           data <- longDf[longDf$geneID %in% listGene,]
         } else {
-          subsetID <- levels(longDf$geneID)[input$stIndex:input$endIndex]
+          subsetID <- levels(longDf$geneID)[input$stIndex:endIndex]
           data <- longDf[longDf$geneID %in% subsetID,]
         }
         
@@ -1209,7 +1218,7 @@ shinyServer(function(input, output, session) {
         if(length(listGene) >= 1){
           data <- longDf[longDf$geneID %in% listGene,]
         } else {
-          subsetID <- levels(longDf$geneID)[input$stIndex:input$endIndex]
+          subsetID <- levels(longDf$geneID)[input$stIndex:endIndex]
           data <- longDf[longDf$geneID %in% subsetID,]
         }
         
@@ -1226,7 +1235,7 @@ shinyServer(function(input, output, session) {
         if(length(listGene) >= 1){
           data <- inputDf[inputDf$geneID %in% listGene,]
         } else {
-          subsetID <- levels(inputDf$geneID)[input$stIndex:input$endIndex]
+          subsetID <- levels(inputDf$geneID)[input$stIndex:endIndex]
           data <- inputDf[inputDf$geneID %in% subsetID,]
         }
         
@@ -1244,7 +1253,7 @@ shinyServer(function(input, output, session) {
         if(length(listGene) >= 1){
           mdData <- mdData[mdData$geneID %in% listGene,]
         } else {
-          subsetID <- levels(mdData$geneID)[input$stIndex:input$endIndex]
+          subsetID <- levels(mdData$geneID)[input$stIndex:endIndex]
           mdData <- mdData[mdData$geneID %in% subsetID,]
         }
         
@@ -1658,12 +1667,8 @@ shinyServer(function(input, output, session) {
         # wrap in an isolate() so that the data won't update every time an input
         # is changed
         isolate({
-          # else, plot profile
-          div(id = "plot-container",
-              tags$img(src = "spinner.gif",
-                       id = "loading-spinner"),
-              #uiOutput("plot.ui")
-              plotOutput("mainPlot",width=input$width,height = input$height,
+          withSpinner(
+            plotOutput("mainPlot",width=input$width,height = input$height,
                          click = "plot_click",
                          dblclick = "plot_dblclick",
                          hover = hoverOpts(
@@ -1678,11 +1683,8 @@ shinyServer(function(input, output, session) {
       }
       ## if autoupdate is true
       else {
-        div(id = "plot-container",
-            tags$img(src = "spinner.gif",
-                     id = "loading-spinner"),
-            #uiOutput("plot.ui")
-            plotOutput("mainPlot",width=input$width,height = input$height,
+        withSpinner(
+          plotOutput("mainPlot",width=input$width,height = input$height,
                        click = "plot_click",
                        dblclick = "plot_dblclick",
                        hover = hoverOpts(
@@ -2123,12 +2125,12 @@ shinyServer(function(input, output, session) {
         return()
       } else {
         if(input$selected_dist == "% present taxa"){
-          plotOutput("presSpecPlot",width=input$width,height = input$height)
+          withSpinner(plotOutput("presSpecPlot",width=input$width,height = input$height))
         } else{
           if(input$selected_dist == input$var1_id){
-            plotOutput("var1DistPlot",width=input$width,height = input$height)
+            withSpinner(plotOutput("var1DistPlot",width=input$width,height = input$height))
           } else if(input$selected_dist == input$var2_id){
-            plotOutput("var2DistPlot",width=input$width,height = input$height)
+            withSpinner(plotOutput("var2DistPlot",width=input$width,height = input$height))
           }
         }
       }
@@ -2317,12 +2319,8 @@ shinyServer(function(input, output, session) {
         # wrap in an isolate() so that the data won't update every time an input
         # is changed
         isolate({
-          div(id = "plot-container",
-              tags$img(src = "spinner.gif",
-                       id = "loading-spinner"
-              ),
-
-              plotOutput("selectedPlot",width=input$selectedWidth,height = input$selectedHeight,
+          withSpinner(
+            plotOutput("selectedPlot",width=input$selectedWidth,height = input$selectedHeight,
                          click = "plot_click_selected",
                          hover = hoverOpts(
                            id = "plot_hover_selected",
@@ -2334,12 +2332,8 @@ shinyServer(function(input, output, session) {
           )
         })
       } else {
-        div(id = "plot-container",
-            tags$img(src = "spinner.gif",
-                     id = "loading-spinner"
-            ),
-
-            plotOutput("selectedPlot",width=input$selectedWidth,height = input$selectedHeight,
+        withSpinner(
+          plotOutput("selectedPlot",width=input$selectedWidth,height = input$selectedHeight,
                        click = "plot_click_selected",
                        hover = hoverOpts(
                          id = "plot_hover_selected",
@@ -2570,7 +2564,8 @@ shinyServer(function(input, output, session) {
 
   ######## plot detailed bar chart
   output$detailPlot.ui <- renderUI({
-    plotOutput("detailPlot",width=800,height = input$detailedHeight,
+    withSpinner(
+      plotOutput("detailPlot",width=800,height = input$detailedHeight,
                click = "plot_click_detail",
                hover = hoverOpts(
                  id = "plot_hover_2",
@@ -2578,6 +2573,7 @@ shinyServer(function(input, output, session) {
                  delayType = input$hover_policy,
                  nullOutside = input$hover_null_outside
                )
+      )
     )
   })
 
@@ -2886,7 +2882,7 @@ shinyServer(function(input, output, session) {
       )
       HTML(msg)
     } else {
-      plotOutput("archiPlot",height = input$archiHeight, width = input$archiWidth)
+      withSpinner(plotOutput("archiPlot",height = input$archiHeight, width = input$archiWidth))
     }
   })
 
@@ -3036,14 +3032,18 @@ shinyServer(function(input, output, session) {
         # wrap in an isolate() so that the data won't update every time an input
         # is changed
         isolate({
-          plotOutput("geneAgePlot",width=600,height = 150,
+          withSpinner(
+            plotOutput("geneAgePlot",width=600,height = 150,
                      click = "plot_click_geneAge")
+          )
         })
       }
       ## if autoupdate is true
       else {
-        plotOutput("geneAgePlot",width=600,height = 150,
+        withSpinner(
+          plotOutput("geneAgePlot",width=600,height = 150,
                    click = "plot_click_geneAge")
+        )
       }
     }
   })
@@ -3320,13 +3320,15 @@ shinyServer(function(input, output, session) {
   })
 
   output$cluster.ui <- renderUI({
-    plotOutput("dendrogram",width=input$clusterPlot.width, height=input$clusterPlot.height,
+    withSpinner(
+      plotOutput("dendrogram",width=input$clusterPlot.width, height=input$clusterPlot.height,
                brush = brushOpts(
                  id = "plot_brush",
                  delay = input$brush_delay,
                  delayType = input$brush_policy,
                  direction = input$brush_dir,
                  resetOnNew = input$brush_reset)
+      )
     )
   })
 

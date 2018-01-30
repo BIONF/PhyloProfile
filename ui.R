@@ -12,33 +12,20 @@ if (!require("shinyBS")) {install.packages("shinyBS")}
 if (!require("DT")) {install.packages("DT")}
 if (!require("colourpicker")) {install.packages("colourpicker")}
 if (!require("shinyjs")) {install.packages("shinyjs")}
-
-### showing spinner while waiting for the profile plot
-mycss <- "
-#plot-container {
-position: relative;
+if (!require("shinycssloaders")) {
+  if("devtools" %in% installed.packages() == FALSE){
+    install.packages("devtools")
+  }
+  devtools::install_github('andrewsali/shinycssloaders')
 }
-#loading-spinner {
-position: absolute;
-left: 10%;
-top: 10%;
-z-index: -1;
-margin-top: -33px;  /* half of the spinner's height */
-margin-left: -33px; /* half of the spinner's width */
-}
-#plot.recalculating {
-z-index: -2;
-}
-"
 
 ############## MAIN UI #####################
 
 shinyUI(fluidPage(
   tags$style(type="text/css", "body {padding-top: 80px;}"),
-  tags$head(tags$style(HTML(mycss))),
 
   # Application title
-  titlePanel(""),
+  # titlePanel(""),
 
   useShinyjs(),
   ################### TOP wellpanel for plot configuration ##########################
@@ -251,10 +238,10 @@ shinyUI(fluidPage(
                br(),
 
                strong(h5("Select taxonomy rank:")),
-               uiOutput("rankSelect"),
+               withSpinner(uiOutput("rankSelect"), proxy.height="50px", type=7, size = 0.5),
                br(),
                strong(h5("Choose (super)taxon of interest:")),
-               uiOutput("select"),
+               withSpinner(uiOutput("select"),proxy.height="50px", type=7, size = 0.5),
                br(),
                shinyBS::bsButton("do", "PLOT",type="action",style="danger",size = "large",disabled = TRUE),
                h5("")
@@ -733,12 +720,12 @@ shinyUI(fluidPage(
     bsModal("modalBS", "Detailed plot", "detailedBtn", size = "large",
             uiOutput("detailPlot.ui"),
             numericInput("detailedHeight","plot_height(px)",min=100,max=1600,step=50,value=100,width=100)
-            ,verbatimTextOutput("detailClick")
+            ,withSpinner(verbatimTextOutput("detailClick"), proxy.height="50px", type=7, size=0.5)
             ,shinyBS::bsButton("doDomainPlot", "Show domain architecture",disabled = TRUE)
             ,uiOutput("checkDomainFiles")
             ,br()
             ,h4("Sequence:")
-            ,verbatimTextOutput("fasta")
+            ,withSpinner(verbatimTextOutput("fasta"), proxy.height="50px", type=7, size=0.5)
     ),
 
     ####### popup windows for domain architecture plot

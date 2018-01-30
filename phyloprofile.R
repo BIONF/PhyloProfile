@@ -4,7 +4,7 @@
 #####################################
 
 ### list of dependent packages
-packages <- c("shiny","shinyBS","shinyjs","colourpicker","ggplot2","reshape2","DT","plyr","dplyr","tidyr","scales","grid","gridExtra","ape","stringr","gtable","dendextend","ggdendro","gplots","data.table","taxize","zoo","RCurl")
+packages <- c("shiny","shinyBS","shinyjs","colourpicker","ggplot2","reshape2","DT","plyr","dplyr","tidyr","scales","grid","gridExtra","ape","stringr","gtable","dendextend","ggdendro","gplots","data.table","taxize","zoo","RCurl","devtools")
 
 ### find missing packages and install them
 missingPkg <- packages[!packages %in% rownames(installed.packages())]
@@ -31,6 +31,11 @@ if ("ggplot2" %in% rownames(installed.packages())) {
 if (!("Biostrings" %in% rownames(installed.packages()))) {
 	source("https://bioconductor.org/biocLite.R")
 	biocLite("Biostrings")
+}
+
+### install shinycssloaders using devtools
+if (!("shinycssloaders" %in% rownames(installed.packages()))) {
+	devtools::install_github('andrewsali/shinycssloaders')
 }
 
 ### load require packages
