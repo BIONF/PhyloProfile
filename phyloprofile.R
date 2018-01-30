@@ -4,7 +4,7 @@
 #####################################
 
 ### list of dependent packages
-packages <- c("shiny","shinyBS","shinyjs","colourpicker","ggplot2","reshape2","DT","plyr","dplyr","tidyr","scales","grid","gridExtra","ape","stringr","gtable","dendextend","ggdendro","gplots","data.table","taxize","zoo","RCurl","markdown")
+packages <- c("shiny","shinyBS","shinyjs","colourpicker","ggplot2","reshape2","DT","plyr","dplyr","tidyr","scales","grid","gridExtra","ape","stringr","gtable","dendextend","ggdendro","gplots","data.table","taxize","zoo","RCurl")
 
 ### find missing packages and install them
 missingPkg <- packages[!packages %in% rownames(installed.packages())]

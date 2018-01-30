@@ -576,7 +576,9 @@ shinyUI(fluidPage(
 
       ########## OTHERS TAB ###########
       navbarMenu("More",
-                 tabPanel("Help", includeMarkdown("help.md")
+                 # tabPanel("Help", includeMarkdown("help.md")
+                 tabPanel("Help", includeHTML("help.html")
+                 # tabPanel("Help", includeText("help.html")
                  ),
                  tabPanel(a("About", href="https://BIONF.github.io/PhyloProfile/", target="_blank")
                  )
