@@ -25,7 +25,7 @@ shinyUI(fluidPage(
   tags$style(type="text/css", "body {padding-top: 80px;}"),
 
   # Application title
-  # titlePanel(""),
+  titlePanel("",windowTitle = "PhyloProfile"),
 
   useShinyjs(),
   ################### TOP wellpanel for plot configuration ##########################
