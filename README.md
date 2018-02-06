@@ -34,7 +34,6 @@ By utilizing the NCBI taxonomy, *PhyloProfile* can dynamically collapse taxa int
 To start PhyloProfile simply move into the PhyloProfile directory and run the main script
 
 ```
-cd PhyloProfile
 Rscript phyloprofile.R
 ```
 
