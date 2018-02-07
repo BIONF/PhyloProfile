@@ -1262,7 +1262,7 @@ shinyServer(function(input, output, session) {
         
         if(ncol(data) < 5){
           for(i in 1:(5-ncol(data))){
-            data[paste0("newVar",i)] <- 1
+            data[paste0("newVar",i)] <- 0
           }
         }
         colnames(data) <- c("geneID","ncbiID","orthoID","var1","var2")
