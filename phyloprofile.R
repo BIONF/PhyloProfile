@@ -35,7 +35,7 @@ if (!("Biostrings" %in% rownames(installed.packages()))) {
 
 ### install shinycssloaders using devtools
 if (!("shinycssloaders" %in% rownames(installed.packages()))) {
-	devtools::install_github('andrewsali/shinycssloaders')
+	devtools::install_github('andrewsali/shinycssloaders', force = TRUE)
 }
 
 ### load require packages

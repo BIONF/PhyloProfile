@@ -35,7 +35,7 @@ if (!require("shinycssloaders")) {
   if("devtools" %in% installed.packages() == FALSE){
     install.packages("devtools")
   }
-  devtools::install_github('andrewsali/shinycssloaders')
+  devtools::install_github('andrewsali/shinycssloaders', force = TRUE)
 }
 
 source("scripts/taxonomyProcessing.R")
