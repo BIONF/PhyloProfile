@@ -254,13 +254,14 @@ shinyUI(fluidPage(
       "Main profile",
       sidebarLayout(
         sidebarPanel(
-          # column(4,offset = 0,numericInput("number","# of genes:",min=1,max=1600,step=10,value=30,width=150),style='padding:0px;'),
           column(4,numericInput("stIndex","Gene from:",min=1,max=1600,value=1,width=100),style='padding:0px;'),
-          column(4,numericInput("endIndex","... to:",min=1,max=1600,value=30,width=100),style='padding:0px;'),
+          column(4,numericInput("endIndex","...to:",min=1,max=1600,value=30,width=100),style='padding:0px;'),
+          column(4,uiOutput("highlightGeneUI")),
           bsPopover("stIndex","","Set start index for sequence range","bottom"),
           bsPopover("endIndex","","Set end index for sequence range","bottom"),
-
-          column(4,uiOutput("highlightGeneUI")),
+            
+          uiOutput("titleEndIndex"),
+          br(),
 
           uiOutput("highlightTaxonUI"),
           bsPopover("highlightTaxonUI","","OR double click on heatmap","right"),
@@ -334,6 +335,10 @@ shinyUI(fluidPage(
           uiOutput("plotCustomBtn")
         ),
         mainPanel(
+          conditionalPanel(
+            condition = "output.sameProfile == true",
+            h4("Please select subset of genes and/or taxa for customized profile!")
+          ),
           uiOutput("selectedPlot.ui")
         )
       )
@@ -536,8 +541,9 @@ shinyUI(fluidPage(
                           column(3,
                                  downloadButton('downloadData', 'Download filtered data')
                           ),
-                          column(3,
-                                 downloadButton('downloadFasta', 'Download FASTA sequences')
+                          column(4,
+                                 uiOutput("downloadFasta.ui")
+                                 # downloadButton('downloadFasta', 'Download FASTA sequences')
                           )
                  ),
                  tabPanel("Customized data",
@@ -558,7 +564,8 @@ shinyUI(fluidPage(
                                  downloadButton('downloadCustomData', 'Download customized data')
                           ),
                           column(3,
-                                 downloadButton('downloadCustomFasta', 'Download FASTA sequences')
+                                 uiOutput("downloadCustomFasta.ui")
+                                 # downloadButton('downloadCustomFasta', 'Download FASTA sequences')
                           )
                   )
       ),
@@ -653,7 +660,12 @@ shinyUI(fluidPage(
                                selected = "right",
                                width = 150)
             ),
-
+            column(12,
+                   HTML("<strong>Angle for x-axis label</strong>:<br>"),
+                   sliderInput("xAngle","", min = 0, max = 90, step = 10, value = 60, width = 250),
+                   br()
+            ),
+            
             column(12,
                    HTML("<strong>Zooming factor (α) for dots on profile</strong>:<br>"),
                    sliderInput("dotZoom","", min = -1, max = 3, step = 0.1, value = 0, width = 250),
@@ -687,7 +699,12 @@ shinyUI(fluidPage(
                                selected = "right",
                                width = 150)
             ),
-
+            column(12,
+                   HTML("<strong>Angle for x-axis label</strong>:<br>"),
+                   sliderInput("xAngleSelect","", min = 0, max = 90, step = 10, value = 60, width = 250),
+                   br()
+            ),
+            
             column(12,
                    HTML("<strong>Zooming factor (α) for dots on profile</strong>:<br>"),
                    sliderInput("dotZoomSelect","", min = -1, max = 3, step = 0.1, value = 0, width = 250),
@@ -719,13 +736,31 @@ shinyUI(fluidPage(
     ####### popup windows for detailed plot
     bsModal("modalBS", "Detailed plot", "detailedBtn", size = "large",
             uiOutput("detailPlot.ui"),
-            numericInput("detailedHeight","plot_height(px)",min=100,max=1600,step=50,value=100,width=100)
-            ,withSpinner(verbatimTextOutput("detailClick"), proxy.height="50px", type=7, size=0.5)
+            fluidRow(
+              column(
+                3,
+                numericInput("detailedHeight","Plot height (px)",min=100,max=1600,step=50,value=100,width=150)
+              ),
+              column(
+                3,
+                numericInput("detailedText","Text size (px)",min=3,max=30,step=1,value=12,width=150)
+              ),
+              column(
+                3,
+                strong("Download"),
+                tags$head(
+                  tags$style(HTML('#plotDownload_dist{background-color:#A9E2F3}'))
+                ),
+                downloadButton('downloadDetailed', 'Download plot')
+              )
+            )
+            ,hr()
+            ,verbatimTextOutput("detailClick")
             ,shinyBS::bsButton("doDomainPlot", "Show domain architecture",disabled = TRUE)
             ,uiOutput("checkDomainFiles")
             ,br()
             ,h4("Sequence:")
-            ,withSpinner(verbatimTextOutput("fasta"), proxy.height="50px", type=7, size=0.5)
+            ,verbatimTextOutput("fasta")
     ),
 
     ####### popup windows for domain architecture plot
@@ -742,9 +777,6 @@ shinyUI(fluidPage(
               ),
               column(2,
                      numericInput("labelArchiSize","SeqID size(px)",min=8,max=99,step=1,value=11,width=150)
-              ),
-              column(2,
-                     numericInput("labelDescSize","Text size(px)",min=0,max=99,step=1,value=3,width=150)
               )
             ),
             uiOutput("archiPlot.ui"),

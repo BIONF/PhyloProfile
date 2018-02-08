@@ -120,7 +120,7 @@ sortDomains <- function(seedDf, orthoDf){
 }
 
 ######## plot domain architecture ########
-domain.plotting <- function(df,geneID,sep,labelSize,titleSize,descSize,minStart,maxEnd){
+domain.plotting <- function(df,geneID,sep,labelSize,titleSize,minStart,maxEnd){
   gg <- ggplot(df, aes(y=feature, x=end, color = feature)) +
     geom_segment(data=df, aes(y=feature, yend=feature, x=minStart, xend=maxEnd), color="#b2b2b2", size=0.15)
   
@@ -132,15 +132,15 @@ domain.plotting <- function(df,geneID,sep,labelSize,titleSize,descSize,minStart,
   ### draw dashed line for domain path
   gg <- gg + geom_segment(data=df[df$path=="Y",], aes(x=start, xend=end, y=feature, yend=feature),size=3,linetype="dashed")
   
-  ### add text above
-  gg <- gg + geom_text(data=df,
-                       aes(x=(start+end)/2, y=feature, label=round(weight,2)),
-                       color="#9fb059", size=descSize, vjust=-0.75, fontface="bold", family="serif")
+  # ### add text above
+  # gg <- gg + geom_text(data=df,
+  #                      aes(x=(start+end)/2, y=feature, label=round(weight,2)),
+  #                      color="#9fb059", size=descSize, vjust=-0.75, fontface="bold", family="serif")
   
   ### theme format
   titleMod <- gsub(":",sep,geneID)
   gg <- gg + scale_y_discrete(expand=c(0.075,0))
-  gg <- gg + labs(title=paste0(titleMod))
+  gg <- gg + labs(title=paste0(titleMod), y="Feature (weight)")
   gg <- gg + theme_minimal()
   gg <- gg + theme(panel.border=element_blank())
   gg <- gg + theme(axis.ticks=element_blank())
@@ -155,7 +155,7 @@ domain.plotting <- function(df,geneID,sep,labelSize,titleSize,descSize,minStart,
 }
 
 ######## plot profile heatmap ########
-heatmap.plotting <- function(data,xAxis,var1_id,var2_id,lowColor_var1,highColor_var1,lowColor_var2,highColor_var2,paraColor,xSize,ySize,legendSize,mainLegend,dotZoom,guideline){
+heatmap.plotting <- function(data,xAxis,var1_id,var2_id,lowColor_var1,highColor_var1,lowColor_var2,highColor_var2,paraColor,xSize,ySize,legendSize,mainLegend,dotZoom,xAngle,guideline){
   dataHeat <- data
   
   ### rescale numbers of paralogs
@@ -226,7 +226,7 @@ heatmap.plotting <- function(data,xAxis,var1_id,var2_id,lowColor_var1,highColor_
   
   ### format theme
   p = p + theme_minimal()
-  p = p + theme(axis.text.x = element_text(angle=60,hjust=1,size=xSize),axis.text.y = element_text(size=ySize),
+  p = p + theme(axis.text.x = element_text(angle=xAngle,hjust=1,size=xSize),axis.text.y = element_text(size=ySize),
                 axis.title.x = element_text(size=xSize), axis.title.y = element_text(size=ySize),
                 legend.title=element_text(size=legendSize),legend.text=element_text(size=legendSize),legend.position = mainLegend)
   
@@ -235,7 +235,7 @@ heatmap.plotting <- function(data,xAxis,var1_id,var2_id,lowColor_var1,highColor_
 }
 
 ######## show FASTA sequence in popup windows of selected plot  ########
-getFasta <- function(file,seqID){
+getFasta <- function(file,seqID,groupID,faInput){
   fasta <- ""
   ### read file and get sequence
   if(file.exists(file)){
@@ -249,12 +249,18 @@ getFasta <- function(file,seqID){
     if(length(seq[1]) < 1){
       fasta <- paste0(seqID," not found in ",file,"! Please check id_format in FASTA config again!")
     } else{
-      fasta <- paste(paste0(">",seqID),seq[1],sep="\n")
+      if(faInput == 1){
+        fasta <- paste(paste0(">",seqID),seq[1],sep="\n")
+      } else {
+        fasta <- paste(paste0(">",groupID,"|",seqID),seq[1],sep="\n")
+      }
+      
     }
   } else {
     fasta <- paste0(file," not found! Please check the path and dir_format in FASTA config again!")
   }
   ### return
+  print(paste0(groupID,"|",seqID))
   return(fasta)
 }
 

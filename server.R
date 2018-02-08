@@ -205,7 +205,7 @@ shinyServer(function(input, output, session) {
   ######## render textinput for variable 1 & 2
   output$var1_id.ui <- renderUI({
     if(input$demo == TRUE){
-      textInput("var1_id", h5("First variable:"), value = "FAS", width="100%", placeholder="Name of first variable")
+      textInput("var1_id", h5("First variable:"), value = "Domain similarity", width="100%", placeholder="Name of first variable")
     } else {
       filein <- input$mainInput
       if(is.null(filein)){return(textInput("var1_id", h5("First variable:"), value = "Variable 1", width="100%", placeholder="Name of first variable"))}    # get var1/var2 names based on input (only if input file in long format table)
@@ -409,6 +409,7 @@ shinyServer(function(input, output, session) {
       shinyjs::reset("xSize")
       shinyjs::reset("ySize")
       shinyjs::reset("legendSize")
+      shinyjs::reset("xAngle")
       shinyjs::reset("dotZoom")
   })
 
@@ -429,6 +430,7 @@ shinyServer(function(input, output, session) {
     shinyjs::reset("xSizeSelect")
     shinyjs::reset("ySizeSelect")
     shinyjs::reset("legendSizeSelect")
+    shinyjs::reset("xAngleSelect")
     shinyjs::reset("dotZoomSelect")
   })
 
@@ -927,6 +929,16 @@ shinyServer(function(input, output, session) {
         corY = round(input$plot_dblclick$y)
       }
       updateSelectInput(session,'geneHighlight',label = 'Highlight:',choices=out,selected=out[corY+1])
+    }
+  })
+  
+  ######## print total number of genes
+  output$titleEndIndex <- renderUI({
+    geneList <- preData()
+    geneList$geneID <- as.factor(geneList$geneID)
+    out <- as.list(levels(geneList$geneID))
+    if(length(out) > 0){
+      em(paste0("Total number of genes:  ",length(out)))
     }
   })
 
@@ -1566,7 +1578,7 @@ shinyServer(function(input, output, session) {
     dataHeat$paralog[dataHeat$presSpec < 1] <- NA
     dataHeat$paralog[dataHeat$paralog == 1] <- NA
 
-    p <- heatmap.plotting(dataHeat,input$xAxis,input$var1_id,input$var2_id,input$lowColor_var1,input$highColor_var1,input$lowColor_var2,input$highColor_var2,input$paraColor,input$xSize,input$ySize,input$legendSize,input$mainLegend,input$dotZoom,1)
+    p <- heatmap.plotting(dataHeat,input$xAxis,input$var1_id,input$var2_id,input$lowColor_var1,input$highColor_var1,input$lowColor_var2,input$highColor_var2,input$paraColor,input$xSize,input$ySize,input$legendSize,input$mainLegend,input$dotZoom,input$xAngle,1)
 
     ### highlight taxon
     if(input$taxonHighlight != "none"){
@@ -2157,6 +2169,16 @@ shinyServer(function(input, output, session) {
   ################# PLOT CUSTOMIZED PROFILE ###################
   #############################################################
 
+  ####### check if all genes and all species are selected
+  output$sameProfile <- reactive({
+    if (v$doPlot == FALSE) return(FALSE)
+    if(length(input$inSeq[1]) == 0){ return(FALSE)}
+    else{
+      if(input$inSeq[1] == "all" & input$inTaxa[1] == "all"){return(TRUE)}
+    }
+  })
+  outputOptions(output, 'sameProfile', suspendWhenHidden=FALSE)
+  
   ######## change label of plotCustom button if autoUpdateSelected is unchecked
   output$plotCustomBtn <- renderUI({
     if(input$autoUpdateSelected == FALSE){
@@ -2271,7 +2293,7 @@ shinyServer(function(input, output, session) {
       dataHeat$paralog[dataHeat$paralog == 1] <- NA
 
       ### create plot
-      p <- heatmap.plotting(dataHeat,input$xAxis_selected,input$var1_id,input$var2_id,input$lowColor_var1,input$highColor_var1,input$lowColor_var2,input$highColor_var2,input$paraColor,input$xSizeSelect,input$ySizeSelect,input$legendSizeSelect,input$selectedLegend,input$dotZoomSelect,0)
+      p <- heatmap.plotting(dataHeat,input$xAxis_selected,input$var1_id,input$var2_id,input$lowColor_var1,input$highColor_var1,input$lowColor_var2,input$highColor_var2,input$paraColor,input$xSizeSelect,input$ySizeSelect,input$legendSizeSelect,input$selectedLegend,input$dotZoomSelect,input$xAngleSelect,0)
 
       ### do plotting
       if(input$autoUpdateSelected == FALSE){
@@ -2525,7 +2547,7 @@ shinyServer(function(input, output, session) {
   })
 
   ######## render detailed plot
-  output$detailPlot <- renderPlot({
+  detailPlot <- function(){
     if (v$doPlot == FALSE) return()
 
     selDf <- detailPlotDt()
@@ -2558,8 +2580,17 @@ shinyServer(function(input, output, session) {
       labs(fill="") +
       theme_minimal()
     #geom_text(aes(label=var1), vjust=3)
-    gp = gp+theme(axis.text.x = element_text(angle=90,hjust=1))
+    gp = gp+theme(axis.text.x = element_text(angle=90,hjust=1),
+                  axis.text = element_text(size = input$detailedText),
+                  axis.title = element_text(size = input$detailedText),
+                  legend.text = element_text(size = input$detailedText)
+                  )
     gp
+  }
+  
+  output$detailPlot <- renderPlot({
+    p <- detailPlot()
+    p
   })
 
   ######## plot detailed bar chart
@@ -2576,6 +2607,15 @@ shinyServer(function(input, output, session) {
       )
     )
   })
+  
+  ######## download detailed plot
+  output$downloadDetailed <- downloadHandler(
+    filename = function() {c("detailedPlot.pdf")},
+    content = function(file) {
+      g <- detailPlot()
+      ggsave(file, plot = g, width = 800*0.056458333, height = input$detailedHeight*0.056458333, units="cm", dpi=300, device = "pdf", limitsize=FALSE)
+    }
+  )
 
   ######## GET info when clicking on detailed plot
   pointInfoDetail <- reactive({
@@ -2631,6 +2671,7 @@ shinyServer(function(input, output, session) {
     if(is.null(info)){return()}
     else{
       seqID <- toString(info[2])
+      groupID <- toString(info[1])
       paste(seqID)
 
       ### fasta path and format
@@ -2658,7 +2699,7 @@ shinyServer(function(input, output, session) {
           mainInfo <- mainPointInfo()
           ncbiID <- data[data$supertaxon == mainInfo[3],]$ncbiID[1]
           seqID <- paste0(info[1],"|",ncbiID,"|",info[2],"|",info[3])
-          fastaOut <- paste(getFasta(filein$datapath,seqID))
+          fastaOut <- paste(getFasta(filein$datapath,seqID,groupID,1))
         } else {
           if(input$input_type == 'oneSeq.extended.fa'){
             # f <- toString(input$oneseq.file)
@@ -2690,7 +2731,8 @@ shinyServer(function(input, output, session) {
           }
           
           ### read file and get sequence
-          fastaOut <- paste(getFasta(f,seqID))
+          if(input$input_type == 'oneSeq.extended.fa'){fastaOut <- paste(getFasta(f,seqID,groupID,1))}
+          else {fastaOut <- paste(getFasta(f,seqID,groupID,0))}
         }
       }
       # return(c(seqID,specID))
@@ -2848,17 +2890,27 @@ shinyServer(function(input, output, session) {
         orderedOrthoDf <- sortDomains(orderedSeedDf, orthoDf)
       }
       
+      ### join weight values and feature names
+      orderedOrthoDf$yLabel <- paste0(orderedOrthoDf$feature," (",round(orderedOrthoDf$weight,2),")")
+      orderedOrthoDf$feature <- orderedOrthoDf$yLabel
+      orderedSeedDf$yLabel <- paste0(orderedSeedDf$feature," (",round(orderedSeedDf$weight,2),")")
+      orderedSeedDf$feature <- orderedSeedDf$yLabel
+      
       ### plotting
       sep = ":"
       if(!is.null(input$oneSeqFasta)){sep="|"}
-      plot_ortho <- domain.plotting(orderedOrthoDf,ortho,sep,input$labelArchiSize,input$titleArchiSize,input$labelDescSize,min(subDomainDf$start),max(subDomainDf$end))
-      plot_seed <- domain.plotting(orderedSeedDf,seed,sep,input$labelArchiSize,input$titleArchiSize,input$labelDescSize,min(subDomainDf$start),max(subDomainDf$end))
+      
+      plot_ortho <- domain.plotting(orderedOrthoDf,ortho,sep,input$labelArchiSize,input$titleArchiSize,min(subDomainDf$start),max(subDomainDf$end))
+      plot_seed <- domain.plotting(orderedSeedDf,seed,sep,input$labelArchiSize,input$titleArchiSize,min(subDomainDf$start),max(subDomainDf$end))
 
       # grid.arrange(plot_seed,plot_ortho,ncol=1)
       if(ortho == seed){
         arrangeGrob(plot_seed,ncol=1)
       } else {
-        arrangeGrob(plot_seed,plot_ortho,ncol=1)
+        seedHeight = length(levels(as.factor(orderedSeedDf$feature)))
+        orthoHeight = length(levels(as.factor(orderedOrthoDf$feature)))
+        
+        arrangeGrob(plot_seed,plot_ortho,ncol=1, heights = c(seedHeight,orthoHeight))
       }
     }
   }
@@ -3502,7 +3554,7 @@ shinyServer(function(input, output, session) {
   )
 
   ######## data table ui tab
-  output$filteredMainData <- renderDataTable({
+  output$filteredMainData <- renderDataTable(rownames = FALSE,{
     if(v$doPlot == FALSE){return()}
     #data <- taxaID()
     #data <- allTaxaList()
@@ -3516,18 +3568,31 @@ shinyServer(function(input, output, session) {
     #data <- distDf()
     #data <- geneAgeDf()
     data <- downloadData()
+    
     data
   })
   
   ######## download FASTA
+
+  output$downloadFasta.ui <- renderUI({
+    dataOut <- as.data.frame(downloadData())
+    if(input$demo == TRUE & nrow(dataOut) > 5){
+      # downloadButton('downloadFasta', 'Download FASTA sequences', disabled = TRUE)
+      HTML("<p><span style=\"background-color: #999999;\"><code>\"Download FASTA sequences\"</code></span> <em>function for more than 5 genes is disabled when using online demo data!</em></p>")
+    } else {
+      downloadButton('downloadFasta', 'Download FASTA sequences')
+    }
+  })
+  
   output$downloadFasta <- downloadHandler(
     filename = function(){c("filteredSeq.fa")},
     content = function(file){
       dataOut <- as.data.frame(downloadData())
-      
       fastaOutDf <- data.frame()
+      
       for(i in 1:nrow(dataOut)){
         seqID <- as.character(dataOut$orthoID[i])
+        groupID <- as.character(dataOut$geneID[i])
         
         ### fasta path and format
         if(input$demo == TRUE){
@@ -3542,7 +3607,7 @@ shinyServer(function(input, output, session) {
             faDf <- data.frame("seqID" = faFile$V1[grepl(">",faFile$V1)], "seq" = faFile$V1[!grepl(">",faFile$V1)], stringsAsFactors=FALSE)
             
             seq <- as.character(faDf$seq[faDf$seqID == paste0(">",seqID)])
-            fastaOut <- paste(paste0(">",seqID),seq,sep="\n")
+            fastaOut <- paste(paste0(">",groupID,"|",seqID),seq,sep="\n")
             fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
           } else {
             fastaOut <- paste0(fastaUrl," not found!!!")
@@ -3553,7 +3618,7 @@ shinyServer(function(input, output, session) {
           inputType <- checkInputVadility(filein)
           if(inputType == "fasta"){
             seqID <- paste0(as.character(dataOut$geneID[i]),"|ncbi",as.character(dataOut$ncbiID[i]),"|",as.character(dataOut$orthoID[i]))
-            fastaOut <- paste(getFasta(filein$datapath,seqID))
+            fastaOut <- paste(getFasta(filein$datapath,seqID,groupID,1))
             fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
           } else {
             if(input$input_type == 'oneSeq.extended.fa'){
@@ -3586,7 +3651,9 @@ shinyServer(function(input, output, session) {
             }
             
             ### read file and get sequence
-            fastaOut <- paste(getFasta(f,seqID))
+            if(input$input_type == 'oneSeq.extended.fa'){fastaOut <- paste(getFasta(f,seqID,groupID,1))}
+            else{fastaOut <- paste(getFasta(f,seqID,groupID,0))}
+            
             fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
           }
           
@@ -3641,13 +3708,23 @@ shinyServer(function(input, output, session) {
   )
 
   ######## data table ui tab
-  output$filteredCustomData <- renderDataTable({
+  output$filteredCustomData <- renderDataTable(rownames = FALSE,{
     if(v$doPlot == FALSE){return()}
     data <- downloadCustomData()
     data
   })
   
   ######## download FASTA
+  output$downloadCustomFasta.ui <- renderUI({
+    dataOut <- as.data.frame(downloadCustomData())
+    if(input$demo == TRUE & nrow(dataOut) > 5){
+      # downloadButton('downloadCustomFasta', 'Download FASTA sequences', disabled = TRUE)
+      HTML("<p><span style=\"background-color: #999999;\"><code>\"Download FASTA sequences\"</code></span> <em>function for more than 5 genes is disabled when using online demo data!</em></p>")
+    } else {
+      downloadButton('downloadCustomFasta', 'Download FASTA sequences')
+    }
+  })
+  
   output$downloadCustomFasta <- downloadHandler(
     filename = function(){c("customFilteredSeq.fa")},
     content = function(file){
@@ -3656,6 +3733,7 @@ shinyServer(function(input, output, session) {
       fastaOutDf <- data.frame()
       for(i in 1:nrow(dataOut)){
         seqID <- as.character(dataOut$orthoID[i])
+        groupID <- as.character(dataOut$geneID[i])
         
         ### fasta path and format
         if(input$demo == TRUE){
@@ -3670,7 +3748,7 @@ shinyServer(function(input, output, session) {
             faDf <- data.frame("seqID" = faFile$V1[grepl(">",faFile$V1)], "seq" = faFile$V1[!grepl(">",faFile$V1)], stringsAsFactors=FALSE)
             
             seq <- as.character(faDf$seq[faDf$seqID == paste0(">",seqID)])
-            fastaOut <- paste(paste0(">",seqID),seq,sep="\n")
+            fastaOut <- paste(paste0(">",groupID,"|",seqID),seq,sep="\n")
             fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
           } else {
             fastaOut <- paste0(fastaUrl," not found!!!")
@@ -3681,7 +3759,7 @@ shinyServer(function(input, output, session) {
           inputType <- checkInputVadility(filein)
           if(inputType == "fasta"){
             seqID <- paste0(as.character(dataOut$geneID[i]),"|ncbi",as.character(dataOut$ncbiID[i]),"|",as.character(dataOut$orthoID[i]))
-            fastaOut <- paste(getFasta(filein$datapath,seqID))
+            fastaOut <- paste(getFasta(filein$datapath,seqID,groupID,1))
             fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
           } else {
             if(input$input_type == 'oneSeq.extended.fa'){
@@ -3714,7 +3792,9 @@ shinyServer(function(input, output, session) {
             }
             
             ### read file and get sequence
-            fastaOut <- paste(getFasta(f,seqID))
+            if(input$input_type == 'oneSeq.extended.fa'){fastaOut <- paste(getFasta(f,seqID,groupID,1))}
+            else {fastaOut <- paste(getFasta(f,seqID,groupID,0))}
+            
             fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
           }
         }
