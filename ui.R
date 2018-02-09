@@ -206,8 +206,10 @@ shinyUI(fluidPage(
                
                conditionalPanel(
                  condition = "input.order_taxa == 'by user defined tree'",
-                 fileInput("inputTree","")
+                 fileInput("inputTree",""),
+                 uiOutput("checkNewick.ui")
                ),
+               
                hr(),
 
                shinyBS::bsButton("getConfig","FASTA config"),

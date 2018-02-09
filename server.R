@@ -112,7 +112,8 @@ shinyServer(function(input, output, session) {
       }
     }
   })
-
+  
+  
   ################## get ncbi taxa IDs ####################
   ##### retrieve ID for list of taxa names
   taxaID <- reactive({
@@ -465,6 +466,50 @@ shinyServer(function(input, output, session) {
 
 
   ########################################################
+  
+  ######## check the validity of input newick tree ########
+  checkNewick <- function(filein){
+    # tree <- readChar(treeFile$datapath, file.info(treeFile$datapath)$size)
+    tree <- read.table(file=filein$datapath, header=F,check.names=FALSE,comment.char="",fill=F)
+    tree <- gsub(regex("\\w"), "", tree)
+    
+    open = str_count(tree,"\\(")
+    close = str_count(tree,"\\)")
+    comma = str_count(tree,"\\,")
+    singleton = str_count(tree,"\\(\\)")
+    
+    if(singleton > 0){
+      return(3)
+    }
+    if(open != close){
+      return(1)
+    } else {
+      if(comma != (open+1)){
+        return(2)
+      }
+    }
+    return(0)
+  }
+  
+  ######## render checkNewick.ui
+  output$checkNewick.ui <- renderUI({
+    filein <- input$inputTree
+    if(is.null(filein)){return()}
+    
+    checkNewick = checkNewick(filein)
+    if(checkNewick == 1){
+      updateButton(session, "do", disabled = TRUE)
+      HTML("<p><em><span style=\"color: #ff0000;\"><strong>ERROR: Parenthesis(-es) missing!</strong></span></em></p>")
+    } else if(checkNewick == 2){
+      updateButton(session, "do", disabled = TRUE)
+      HTML("<p><em><span style=\"color: #ff0000;\"><strong>ERROR: Comma(s) missing!</strong></span></em></p>")
+    } else if(checkNewick == 3){
+      updateButton(session, "do", disabled = TRUE)
+      HTML("<p><em><span style=\"color: #ff0000;\"><strong>ERROR: Tree contains singleton!</strong></span></em></p>")
+    } else {
+      return()
+    }
+  })
   
   ######## check validity of main input file
   checkInputVadility <- function(filein){
