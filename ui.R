@@ -449,6 +449,10 @@ shinyUI(fluidPage(
                    uiOutput("percent_age.ui")
             ),
             column(2,
+                   strong("Appearance"),
+                   bsButton("geneAgeProtConfig","Plot config")
+            ),
+            column(2,
                    strong("Download"),
                    tags$head(
                      tags$style(HTML('#geneAgePlotDownload{background-color:#A9E2F3}'))
@@ -683,6 +687,16 @@ shinyUI(fluidPage(
             hr(),
             shinyBS::bsButton("resetMainConfig","Reset",style="danger"),
             shinyBS::bsButton("applyMainConfig","Done",style="warning")
+    ),
+  
+    ####### popup windows for setting gene age plot configurations
+    bsModal("geneAgeProtConfigBs", "Plot appearance configuration", "geneAgeProtConfig", size = "small",
+          sliderInput("geneAgeWidth","Width zoom (*600px)", min=0, max=5, step=0.1, value=1, width="100%"),
+          sliderInput("geneAgeHeight","Height zoom (*150px)", min=0, max=5, step=0.1, value=1, width="100%"),
+          sliderInput("geneAgeText","Text size zoom", min=0, max=5, step=0.1, value=1, width="100%"),
+          br(),
+          hr(),
+          shinyBS::bsButton("resetgeneAgeProtConfig","Reset",style="danger")
     ),
 
     ####### popup windows for setting main plot configurations

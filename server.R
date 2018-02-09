@@ -1546,7 +1546,7 @@ shinyServer(function(input, output, session) {
     split <- strsplit(as.character(input$inSelect),"_")
     inSelect <- as.character(split[[1]][1])
 
-    ### replace insufficient values according to the thresholds by NA or 0; and replace var1 0.0 by NA
+    ### replace insufficient values according to the thresholds by NA or 0
     dataHeat$presSpec[dataHeat$supertaxon != inSelect & dataHeat$presSpec < percent_cutoff_min] <- 0
     dataHeat$presSpec[dataHeat$supertaxon != inSelect & dataHeat$presSpec > percent_cutoff_max] <- 0
     dataHeat$presSpec[dataHeat$supertaxon != inSelect & dataHeat$var1 < var1_cutoff_min] <- 0
@@ -3120,16 +3120,16 @@ shinyServer(function(input, output, session) {
       scale_y_reverse() +
       coord_flip() +
       theme_minimal()
-    p <- p + geom_text(data=countDf, aes(x = 1, y = 100-pos, label = paste0(freq,"\n",percentage,"%")),size=4)
-    p <- p + theme(legend.position="bottom", legend.title = element_blank(), legend.text = element_text(size=12),
+    p <- p + geom_text(data=countDf, aes(x = 1, y = 100-pos, label = paste0(freq,"\n",percentage,"%")),size=4*input$geneAgeText)
+    p <- p + theme(legend.position="bottom", legend.title = element_blank(), legend.text = element_text(size=12*input$geneAgeText),
                    axis.title = element_blank(), axis.text = element_blank()) +
       scale_fill_brewer(palette="Spectral") +
-      guides(fill=guide_legend(nrow=3,byrow=TRUE))
+      guides(fill=guide_legend(nrow=round(nrow(countDf)/3,0),byrow=TRUE))
 
     p
   }
 
-  output$geneAgePlot <- renderPlot(height = 150, width = 600, {
+  output$geneAgePlot <- renderPlot({
     if(input$autoUpdate == FALSE){
       # Add dependency on the update button (only update when button is clicked)
       input$updateBtn
@@ -3159,7 +3159,7 @@ shinyServer(function(input, output, session) {
         # is changed
         isolate({
           withSpinner(
-            plotOutput("geneAgePlot",width=600,height = 150,
+            plotOutput("geneAgePlot",width=600*input$geneAgeWidth,height = 150*input$geneAgeHeight,
                      click = "plot_click_geneAge")
           )
         })
@@ -3167,7 +3167,7 @@ shinyServer(function(input, output, session) {
       ## if autoupdate is true
       else {
         withSpinner(
-          plotOutput("geneAgePlot",width=600,height = 150,
+          plotOutput("geneAgePlot",width=600*input$geneAgeWidth,height = 150*input$geneAgeHeight,
                    click = "plot_click_geneAge")
         )
       }
@@ -3178,7 +3178,7 @@ shinyServer(function(input, output, session) {
   output$geneAgePlotDownload <- downloadHandler(
     filename = function() {"geneAge_plot.pdf"},
     content = function(file) {
-      ggsave(file, plot = geneAgePlot(), dpi=300, device = "pdf", limitsize=FALSE)
+      ggsave(file, plot = geneAgePlot(), width=600*input$geneAgeWidth,height = 150*input$geneAgeHeight, units="cm", dpi=300, device = "pdf", limitsize=FALSE)
     }
   )
 
@@ -3246,6 +3246,13 @@ shinyServer(function(input, output, session) {
     if(input$addClusterCustomProfile == TRUE  | input$addConsGeneCustomProfile == TRUE){
       HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Profile clustering</strong> or <strong>Core genes finding</strong>&nbsp;to enable this function)</em></p>')
     }
+  })
+  
+  ### reset geneAgeProtConfig
+  observeEvent(input$resetgeneAgeProtConfig, {
+    shinyjs::reset("geneAgeWidth")
+    shinyjs::reset("geneAgeHeight")
+    shinyjs::reset("geneAgeText")
   })
 
   #############################################################
@@ -3637,7 +3644,7 @@ shinyServer(function(input, output, session) {
     #data <- preData()
     #data <- dataFiltered()
     #data <- dataSupertaxa()
-    #data <- dataHeat()
+    # data <- dataHeat()
     #data <- detailPlotDt()
     #data <- presSpecAllDt()
     #data <- distDf()
@@ -3652,7 +3659,7 @@ shinyServer(function(input, output, session) {
   output$downloadFasta.ui <- renderUI({
     dataOut <- as.data.frame(downloadData())
     # if(input$demo == TRUE){
-    if(input$demo_data == "demo" | input$demo_data == "ampk-tor"){
+    if(input$demo_data == "demo"){#} | input$demo_data == "ampk-tor"){
       if(nrow(dataOut) > 5){
         # downloadButton('downloadFasta', 'Download FASTA sequences', disabled = TRUE)
         HTML("<p><span style=\"background-color: #999999;\"><code>\"Download FASTA sequences\"</code></span> <em>function for more than 5 genes is disabled when using online demo data!</em></p>")
@@ -3805,7 +3812,7 @@ shinyServer(function(input, output, session) {
   output$downloadCustomFasta.ui <- renderUI({
     dataOut <- as.data.frame(downloadCustomData())
     # if(input$demo == TRUE){
-    if(input$demo_data == "demo" | input$demo_data == "ampk-tor"){
+    if(input$demo_data == "demo"){#} | input$demo_data == "ampk-tor"){
       if(nrow(dataOut) > 5){
         # downloadButton('downloadCustomFasta', 'Download FASTA sequences', disabled = TRUE)
         HTML("<p><span style=\"background-color: #999999;\"><code>\"Download FASTA sequences\"</code></span> <em>function for more than 5 genes is disabled when using online demo data!</em></p>")
