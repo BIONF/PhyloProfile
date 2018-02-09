@@ -54,7 +54,8 @@ shinyServer(function(input, output, session) {
   ####### check for internet connection  ####### 
   observe({
     if(hasInternet() == FALSE){
-      toggleState("demo")
+      # toggleState("demo")
+      toggleState("demo_data")
     }
   })
   output$noInternetMsg <- renderUI({
@@ -204,7 +205,11 @@ shinyServer(function(input, output, session) {
   ################# PARSING VARIABLE 1 AND 2 ##################
   ######## render textinput for variable 1 & 2
   output$var1_id.ui <- renderUI({
-    if(input$demo == TRUE){
+    # if(input$demo == TRUE){
+    #   textInput("var1_id", h5("First variable:"), value = "Domain similarity", width="100%", placeholder="Name of first variable")
+    if(input$demo_data == "ampk-tor"){
+      textInput("var1_id", h5("First variable:"), value = "Domain similarity (forward)", width="100%", placeholder="Name of first variable")
+    } else if(input$demo_data == "demo"){
       textInput("var1_id", h5("First variable:"), value = "Domain similarity", width="100%", placeholder="Name of first variable")
     } else {
       filein <- input$mainInput
@@ -229,7 +234,11 @@ shinyServer(function(input, output, session) {
   })
 
   output$var2_id.ui <- renderUI({
-    if(input$demo == TRUE){
+    # if(input$demo == TRUE){
+    #   textInput("var2_id", h5("Second variable:"), value = "Traceability", width="100%", placeholder="Name of second variable")
+    if(input$demo_data == "ampk-tor"){
+      textInput("var2_id", h5("Second variable:"), value = "Domain similarity (backward)", width="100%", placeholder="Name of second variable")
+    } else if(input$demo_data == "demo"){
       textInput("var2_id", h5("Second variable:"), value = "Traceability", width="100%", placeholder="Name of second variable")
     } else {
       filein <- input$mainInput
@@ -513,9 +522,13 @@ shinyServer(function(input, output, session) {
   
   ######## get input taxa
   subsetTaxa <- reactive({
-    if(input$demo == TRUE){
+    # if(input$demo == TRUE){
+    if(input$demo_data == "demo"){
       data <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/test.main.wide", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
       inputTaxa <- colnames(data)
+    } else if(input$demo_data == "ampk-tor"){
+      data <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.phyloprofile", sep="\t", header=T, fill=T, check.names=FALSE,comment.char="")
+      inputTaxa <- levels(data$ncbiID)
     } else {
       filein <- input$mainInput
       if(is.null(filein)){return()}
@@ -556,9 +569,13 @@ shinyServer(function(input, output, session) {
   ######## check if there is any "unknown" taxon in input matrix
   unkTaxa <- reactive({
     # get list of input taxa (from main input file)
-    if(input$demo == TRUE){
+    # if(input$demo == TRUE){
+    if(input$demo_data == "demo"){
       data <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/test.main.wide", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
       inputTaxa <- colnames(data)
+    } else if(input$demo_data == "ampk-tor"){
+      data <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.phyloprofile", sep="\t", header=T, fill=T, check.names=FALSE,comment.char="")
+      inputTaxa <- levels(data$ncbiID)
     } else {
       filein <- input$mainInput
       if(is.null(filein)){return()}
@@ -626,16 +643,22 @@ shinyServer(function(input, output, session) {
 
   ######## render input files
   output$mainInputFile.ui <- renderUI({
-    if(input$demo == TRUE){
+    # if(input$demo == TRUE){
+    if(input$demo_data == "demo"){
       h4(a("demo/test.main.long", href="https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/test.main.long", target="_blank"))
+    } else if(input$demo_data == "ampk-tor"){
+      h4(a("expTestData/ampk-tor/ampk-tor.phyloprofile", href="https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.phyloprofile", target="_blank"))
     } else {
       fileInput("mainInput",h5("Upload input file:"))
     }
   })
 
   output$domainInputFile.ui <- renderUI({
-    if(input$demo == TRUE){
+    # if(input$demo == TRUE){
+    if(input$demo_data == "demo"){
       h4(a("demo/domains", href="https://github.com/BIONF/phyloprofile-data/tree/master/demo/domain_files", target="_blank"))
+    } else if(input$demo_data == "ampk-tor"){
+      h4(a("expTestData/ampk-tor/ampk-tor.domains_F", href="https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.domains_F", target="_blank"))
     } else {
       if(input$annoChoose == "from file"){
         fileInput("fileDomainInput","")
@@ -806,11 +829,17 @@ shinyServer(function(input, output, session) {
 
   ######## list of taxonomy ranks for plotting
   output$rankSelect = renderUI({
-    if(input$demo == TRUE){
+    # if(input$demo == TRUE){
+    if(input$demo_data == "demo"){
       selectInput("rankSelect", label = "",
                   choices = list("Strain"="05_strain","Species" = "06_species","Genus" = "10_genus", "Family" = "14_family", "Order" = "19_order", "Class" = "23_class",
                                  "Phylum" = "26_phylum", "Kingdom" = "28_kingdom", "Superkingdom" = "29_superkingdom","unselected"=""),
                   selected = "26_phylum")
+    } else if(input$demo_data == "ampk-tor"){
+      selectInput("rankSelect", label = "",
+                  choices = list("Strain"="05_strain","Species" = "06_species","Genus" = "10_genus", "Family" = "14_family", "Order" = "19_order", "Class" = "23_class",
+                                 "Phylum" = "26_phylum", "Kingdom" = "28_kingdom", "Superkingdom" = "29_superkingdom","unselected"=""),
+                  selected = "06_species")
     } else {
       selectInput("rankSelect", label = "",
                   choices = list("Strain"="05_strain","Species" = "06_species","Genus" = "10_genus", "Family" = "14_family", "Order" = "19_order", "Class" = "23_class",
@@ -823,7 +852,8 @@ shinyServer(function(input, output, session) {
   allTaxaList <- reactive({
 
     filein <- input$mainInput
-    if(is.null(filein) & input$demo == FALSE){return()}
+    # if(is.null(filein) & input$demo == FALSE){return()}
+    if(is.null(filein) & input$demo_data == "none"){return()}
 
     rankSelect = input$rankSelect
 
@@ -853,13 +883,21 @@ shinyServer(function(input, output, session) {
     choice <- allTaxaList()
     choice$fullName <- as.factor(choice$fullName)
 
-    if(input$demo == TRUE){
+    # if(input$demo == TRUE){
+    if(input$demo_data == "demo"){
       hellemDf <- data.frame("name" = c("Encephalitozoon hellem","Encephalitozoon hellem","Encephalitozoon","Unikaryonidae","Apansporoblastina","Apansporoblastina","Microsporidia","Fungi","Eukaryota"),
                              "rank" = c("strain","species","genus","family","order","class","phylum","kingdom","superkingdom"))
       rankSelect = input$rankSelect
       rankName = substr(rankSelect,4,nchar(rankSelect))
       
       selectInput('inSelect',"",as.list(levels(choice$fullName)),hellemDf$name[hellemDf$rank == rankName])
+    } else if(input$demo_data == "ampk-tor"){
+      humanDf <- data.frame("name" = c("Homo sapiens","Homo sapiens","Homo","Hominidae","Primates","Mammalia","Chordata","Metazoa","Eukaryota"),
+                             "rank" = c("strain","species","genus","family","order","class","phylum","kingdom","superkingdom"))
+      rankSelect = input$rankSelect
+      rankName = substr(rankSelect,4,nchar(rankSelect))
+      
+      selectInput('inSelect',"",as.list(levels(choice$fullName)),humanDf$name[humanDf$rank == rankName])
     } else {
       selectInput('inSelect',"",as.list(levels(choice$fullName)),levels(choice$fullName)[1])
     }
@@ -968,14 +1006,16 @@ shinyServer(function(input, output, session) {
     if (input$do > 0) {
       toggleState("mainInput")
       toggleState("geneList_selected")
+      toggleState("demo_data")
     }
   })
 
   ######## disable demo checkbox and update var2_aggregateBy to mean if using demo data
   observe({
-    if (input$demo == TRUE) {
+    # if (input$demo == TRUE) {
+    if (input$demo_data == "demo") {
       ### disable demo checkbox
-      toggleState("demo")
+      # toggleState("demo")
       ### update var2_aggregateBy to mean
       updateSelectInput(session,"var2_aggregateBy",
                         choices = list("Max"="max", "Min"="min","Mean"="mean","Median"="median"),
@@ -1016,7 +1056,8 @@ shinyServer(function(input, output, session) {
     # 1+ will be coerced to TRUE
     v$doPlot <- input$do
     filein <- input$mainInput
-    if(is.null(filein) & input$demo==FALSE){
+    # if(is.null(filein) & input$demo==FALSE){
+    if(is.null(filein) & input$demo_data == "none"){
       v$doPlot <- FALSE
       updateButton(session, "do", disabled = TRUE)
     }
@@ -1184,8 +1225,13 @@ shinyServer(function(input, output, session) {
       }
     }
 
-    if(input$demo == TRUE){
-      inputDf <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/test.main.long", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
+    # if(input$demo == TRUE){
+    if(input$demo_data == "demo" | input$demo_data == "ampk-tor"){
+      if(input$demo_data == "demo"){
+        inputDf <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/test.main.long", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
+      } else {
+        inputDf <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.phyloprofile", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
+      }
       inputDf <- unsortID(inputDf,input$ordering)
       
       if(length(listGene) >= 1){
@@ -1394,7 +1440,8 @@ shinyServer(function(input, output, session) {
     filein <- input$mainInput
     fileCustom <- input$customFile
 
-    if(input$demo == TRUE){
+    # if(input$demo == TRUE){
+    if(input$demo_data == "demo" | input$demo_data == "ampk-tor"){
       filein = 1
     }
 
@@ -1451,7 +1498,8 @@ shinyServer(function(input, output, session) {
   ######## get list of all taxa for selectize input
   output$taxaIn = renderUI({
     filein <- input$mainInput
-    if(input$demo == TRUE){
+    # if(input$demo == TRUE){
+    if(input$demo_data == "demo" | input$demo_data == "ampk-tor"){
       filein = 1
     }
 
@@ -1486,7 +1534,8 @@ shinyServer(function(input, output, session) {
 
     ### check input file
     filein <- input$mainInput
-    if(input$demo == TRUE){
+    # if(input$demo == TRUE){
+    if(input$demo_data == "demo" | input$demo_data == "ampk-tor"){
       filein = 1
     }
     if(is.null(filein)){return()}
@@ -1830,9 +1879,13 @@ shinyServer(function(input, output, session) {
     if (v$doPlot == FALSE) return()
 
     # open main input file
-    if(input$demo == TRUE){
-      dataOrig <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/test.main.long", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
-      
+    # if(input$demo == TRUE){
+    if(input$demo_data == "demo" | input$demo_data == "ampk-tor"){
+      if(input$demo_data == "demo"){
+        dataOrig <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/test.main.long", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
+      } else {
+        dataOrig <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.phyloprofile", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
+      }
       colnames(dataOrig) <- c("geneID","ncbiID","orthoID","var1","var2")
       splitDt <- dataOrig[,c("orthoID","var1","var2")]
     } else {
@@ -2003,8 +2056,13 @@ shinyServer(function(input, output, session) {
   ## calculate % present species for input file
   presSpecAllDt <- reactive({
     # open main input file
-    if(input$demo == TRUE){
-      mdData <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/test.main.long", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
+    # if(input$demo == TRUE){
+    if(input$demo_data == "demo" | input$demo_data == "ampk-tor"){
+      if(input$demo_data == "demo"){
+        mdData <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/test.main.long", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
+      } else {
+        mdData <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.phyloprofile", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
+      }
       colnames(mdData) <- c("geneID","ncbiID","orthoID","var1","var2")
     } else {
       filein <- input$mainInput
@@ -2195,7 +2253,8 @@ shinyServer(function(input, output, session) {
     # 1+ will be coerced to TRUE
     vCt$doPlotCustom <- input$plotCustom
     filein <- input$mainInput
-    if(input$demo == TRUE){ filein = 1 }
+    # if(input$demo == TRUE){ filein = 1 }
+    if(input$demo_data == "demo" | input$demo_data == "ampk-tor"){ filein = 1 }
     if(is.null(filein)){vCt$doPlotCustom <- FALSE}
   })
 
@@ -2675,7 +2734,8 @@ shinyServer(function(input, output, session) {
       paste(seqID)
 
       ### fasta path and format
-      if(input$demo == TRUE){
+      # if(input$demo == TRUE){
+      if(input$demo_data == "demo"){
         ### get species ID
         specTMP <- unlist(strsplit(seqID,"@"))
         specID = paste0(specTMP[1],"%40",specTMP[2])
@@ -2691,6 +2751,13 @@ shinyServer(function(input, output, session) {
         } else {
           fastaOut <- paste0(fastaUrl," not found!!!")
         }
+      } else if(input$demo_data == "ampk-tor"){
+        fastaUrl <- paste0("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.extended.fa")
+        faFile <- as.data.frame(read.table(fastaUrl, sep="\t", header=F, fill=T, stringsAsFactors = FALSE, quote = ""))
+        faDf <- data.frame("seqID" = faFile$V1[grepl(">",faFile$V1)], "seq" = faFile$V1[!grepl(">",faFile$V1)], stringsAsFactors=FALSE)
+        
+        seq <- as.character(faDf$seq[faDf$seqID == paste0(">",seqID)])
+        fastaOut <- paste(paste0(">",seqID),seq,sep="\n")
       } else {
         filein <- input$mainInput
         inputType <- checkInputVadility(filein)
@@ -2754,13 +2821,18 @@ shinyServer(function(input, output, session) {
     var1 <- as.character(info[3])
 
     ### domain file
-    if(input$demo == TRUE){
+    # if(input$demo == TRUE){
+    if(input$demo_data == "demo" | input$demo_data == "ampk-tor"){
       if(is.null(info)){
         fileDomain <- "noSelectHit"
         updateButton(session, "doDomainPlot", disabled = TRUE)
       } else {
         updateButton(session, "doDomainPlot", disabled = FALSE)
-        fileDomain <- suppressWarnings(paste0("https://github.com/BIONF/phyloprofile-data/blob/master/demo/domain_files/",group,".domains?raw=true"))
+        if(input$demo_data == "demo"){
+          fileDomain <- suppressWarnings(paste0("https://github.com/BIONF/phyloprofile-data/blob/master/demo/domain_files/",group,".domains?raw=true"))
+        } else {
+          fileDomain <- suppressWarnings(paste0("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.domains_F"))
+        }
       }
     } else {
       if(input$annoChoose == "from file"){
@@ -2828,7 +2900,8 @@ shinyServer(function(input, output, session) {
   observeEvent(input$doDomainPlot, {
     v3$doPlot3 <- input$doDomainPlot
     filein <- input$mainInput
-    if(input$demo == TRUE){ filein = 1 }
+    # if(input$demo == TRUE){ filein = 1 }
+    if(input$demo_data == "demo" | input$demo_data == "ampk-tor"){ filein = 1 }
     if(is.null(filein)){v3$doPlot3 <- FALSE}
   })
 
@@ -2845,7 +2918,8 @@ shinyServer(function(input, output, session) {
     ### parse domain file
     fileDomain <- getDomainFile()
 
-    if(input$demo == TRUE){
+    # if(input$demo == TRUE){
+    if(input$demo_data == "demo" | input$demo_data == "ampk-tor"){
       domainDf <- as.data.frame(read.csv(fileDomain, sep="\t", header=F, comment.char = "", stringsAsFactors = FALSE, quote = ""))
     } else {
       if(fileDomain != FALSE){
@@ -3181,7 +3255,8 @@ shinyServer(function(input, output, session) {
   ### render list of available taxa
   output$taxaList_cons.ui = renderUI({
     filein <- input$mainInput
-    if(input$demo == TRUE){
+    # if(input$demo == TRUE){
+    if(input$demo_data == "demo" | input$demo_data == "ampk-tor"){
       filein = 1
     }
 
@@ -3576,9 +3651,14 @@ shinyServer(function(input, output, session) {
 
   output$downloadFasta.ui <- renderUI({
     dataOut <- as.data.frame(downloadData())
-    if(input$demo == TRUE & nrow(dataOut) > 5){
-      # downloadButton('downloadFasta', 'Download FASTA sequences', disabled = TRUE)
-      HTML("<p><span style=\"background-color: #999999;\"><code>\"Download FASTA sequences\"</code></span> <em>function for more than 5 genes is disabled when using online demo data!</em></p>")
+    # if(input$demo == TRUE){
+    if(input$demo_data == "demo" | input$demo_data == "ampk-tor"){
+      if(nrow(dataOut) > 5){
+        # downloadButton('downloadFasta', 'Download FASTA sequences', disabled = TRUE)
+        HTML("<p><span style=\"background-color: #999999;\"><code>\"Download FASTA sequences\"</code></span> <em>function for more than 5 genes is disabled when using online demo data!</em></p>")
+      } else {
+        downloadButton('downloadFasta', 'Download FASTA sequences')
+      }
     } else {
       downloadButton('downloadFasta', 'Download FASTA sequences')
     }
@@ -3595,12 +3675,18 @@ shinyServer(function(input, output, session) {
         groupID <- as.character(dataOut$geneID[i])
         
         ### fasta path and format
-        if(input$demo == TRUE){
+        # if(input$demo == TRUE){
+        if(input$demo_data == "demo" | input$demo_data == "ampk-tor"){
           ### get species ID
           specTMP <- unlist(strsplit(seqID,"@"))
           specID = paste0(specTMP[1],"%40",specTMP[2])
           
-          fastaUrl <- paste0("https://github.com/BIONF/phyloprofile-data/blob/master/demo/fasta_files/",specID,".fa?raw=true")
+          if(input$demo_data == "demo"){
+            fastaUrl <- paste0("https://github.com/BIONF/phyloprofile-data/blob/master/demo/fasta_files/",specID,".fa?raw=true")
+          } else {
+            fastaUrl <- paste0("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.extended.fa")
+          }
+          
           if(url.exists(fastaUrl)){
             faFile <- as.data.frame(read.table(fastaUrl, sep="\t", header=F, fill=T, stringsAsFactors = FALSE, quote = ""))
             
@@ -3715,11 +3801,17 @@ shinyServer(function(input, output, session) {
   })
   
   ######## download FASTA
+
   output$downloadCustomFasta.ui <- renderUI({
     dataOut <- as.data.frame(downloadCustomData())
-    if(input$demo == TRUE & nrow(dataOut) > 5){
-      # downloadButton('downloadCustomFasta', 'Download FASTA sequences', disabled = TRUE)
-      HTML("<p><span style=\"background-color: #999999;\"><code>\"Download FASTA sequences\"</code></span> <em>function for more than 5 genes is disabled when using online demo data!</em></p>")
+    # if(input$demo == TRUE){
+    if(input$demo_data == "demo" | input$demo_data == "ampk-tor"){
+      if(nrow(dataOut) > 5){
+        # downloadButton('downloadCustomFasta', 'Download FASTA sequences', disabled = TRUE)
+        HTML("<p><span style=\"background-color: #999999;\"><code>\"Download FASTA sequences\"</code></span> <em>function for more than 5 genes is disabled when using online demo data!</em></p>")
+      } else {
+        downloadButton('downloadCustomFasta', 'Download FASTA sequences')
+      }
     } else {
       downloadButton('downloadCustomFasta', 'Download FASTA sequences')
     }
@@ -3736,12 +3828,18 @@ shinyServer(function(input, output, session) {
         groupID <- as.character(dataOut$geneID[i])
         
         ### fasta path and format
-        if(input$demo == TRUE){
+        # if(input$demo == TRUE){
+        if(input$demo_data == "demo" | input$demo_data == "ampk-tor"){
           ### get species ID
           specTMP <- unlist(strsplit(seqID,"@"))
           specID = paste0(specTMP[1],"%40",specTMP[2])
           
-          fastaUrl <- paste0("https://github.com/BIONF/phyloprofile-data/blob/master/demo/fasta_files/",specID,".fa?raw=true")
+          if(input$demo_data == "demo"){
+            fastaUrl <- paste0("https://github.com/BIONF/phyloprofile-data/blob/master/demo/fasta_files/",specID,".fa?raw=true")
+          } else {
+            fastaUrl <- paste0("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.extended.fa")
+          }
+          
           if(url.exists(fastaUrl)){
             faFile <- as.data.frame(read.table(fastaUrl, sep="\t", header=F, fill=T, stringsAsFactors = FALSE, quote = ""))
             

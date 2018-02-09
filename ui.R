@@ -134,8 +134,13 @@ shinyUI(fluidPage(
                em(strong("RELOAD THIS TOOL TO UPLOAD A NEW INPUT FILE!!!",style = "color:red"))
              ),
 
-             checkboxInput("demo",em(strong("Use demo files"),style = "color:darkblue")),
-             bsPopover("demo","","automatically upload demo files to try all features of PhyloProfile","right"),
+             # checkboxInput("demo",em(strong("Use demo files"),style = "color:darkblue")),
+             selectInput("demo_data", label = h5("Use online demo data:"),
+                         choices = list("None" = "none", "AMPK-TOR"="ampk-tor", "LCA Microsporidia"="demo"),
+                         selected = "none",
+                         width = "100%"),
+             
+             bsPopover("demo_data","","automatically upload demo files to try all features of PhyloProfile","top"),
              
              uiOutput("noInternetMsg"),
 
