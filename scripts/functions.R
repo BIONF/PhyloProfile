@@ -235,34 +235,38 @@ heatmap.plotting <- function(data,xAxis,var1_id,var2_id,lowColor_var1,highColor_
 }
 
 ######## show FASTA sequence in popup windows of selected plot  ########
-getFasta <- function(file,seqID,groupID,faInput){
-  fasta <- ""
-  ### read file and get sequence
-  if(file.exists(file)){
-    fastaFile = readAAStringSet(file)
-    
-    seq_name = names(fastaFile)
-    sequence = paste(fastaFile)
-    fa <- data.frame(seq_name, sequence)
-    seq <- fa$sequence[pmatch(seqID,fa$seq_name)]
-    
-    if(length(seq[1]) < 1){
-      fasta <- paste0(seqID," not found in ",file,"! Please check id_format in FASTA config again!")
-    } else{
-      if(faInput == 1){
-        fasta <- paste(paste0(">",seqID),seq[1],sep="\n")
-      } else {
-        fasta <- paste(paste0(">",groupID,"|",seqID),seq[1],sep="\n")
-      }
-      
-    }
-  } else {
-    fasta <- paste0(file," not found! Please check the path and dir_format in FASTA config again!")
-  }
-  ### return
-  print(paste0(groupID,"|",seqID))
-  return(fasta)
-}
+# getFasta <- function(file,seqID,groupID,faInput){
+#   fasta <- ""
+#   ### read file and get sequence
+#   if(file.exists(file)){
+#     fastaFile = readAAStringSet(file)
+#     
+#     seq_name = names(fastaFile)
+#     sequence = paste(fastaFile)
+#     fa <- data.frame(seq_name, sequence)
+#     seq <- fa$sequence[pmatch(seqID,fa$seq_name)]
+#     
+#     if(length(seq[1]) < 1){
+#       fasta <- paste0(seqID," not found in ",file,"! Please check id_format in FASTA config again!")
+#     } else{
+#       if(faInput == 1){
+#         fasta <- paste(paste0(">",seqID),seq[1],sep="\n")
+#       } else {
+#         fasta <- paste(paste0(">",groupID,"|",seqID),seq[1],sep="\n")
+#       }
+#       
+#     }
+#   } else {
+#     fasta <- paste0(file," not found! Please check the path and dir_format in FASTA config again!")
+#   }
+#   ### return
+#   print(paste0(groupID,"|",seqID))
+#   return(fasta)
+# }
+
+######## reverse string ########
+strReverse <- function(x)
+  sapply(lapply(strsplit(x, NULL), rev), paste, collapse="")
 
 ######## get last n characters from string x  ########
 substrRight <- function(x, n){

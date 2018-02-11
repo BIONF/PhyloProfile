@@ -2743,12 +2743,13 @@ shinyServer(function(input, output, session) {
     var1 <- as.character(var1[!is.na(var1)])
     var2 <- as.list(selDf$var2[selDf$orthoID==orthoID])
     var2 <- as.character(var2[!is.na(var2)])
+    ncbiID <- as.character(selDf$abbrName[selDf$orthoID==orthoID])
     ### return info
     if(is.na(orthoID)){
       return(NULL)
     } else {
       if(orthoID != "NA"){
-        info <- c(seedID,orthoID,var1,var2)
+        info <- c(seedID,orthoID,var1,var2,ncbiID)
       }
     }
   })
@@ -2766,6 +2767,188 @@ shinyServer(function(input, output, session) {
       paste(a,b,c,d,sep="\n")
     }
   })
+  
+  ##### FASTA OUTPUT
+  fastaOutData <- function(dataOut){
+    # dataOut <- as.data.frame(downloadCustomData())
+    fastaOutDf <- data.frame()
+    
+    ### check main input
+    filein <- input$mainInput
+    if(!is.null(filein)){inputType <- checkInputVadility(filein)}
+    else{ inputType <- "NA"}
+    
+    ### get seqs for AMPK-TOR demo data
+    if(input$demo_data == "ampk-tor"){
+      fastaUrl <- paste0("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.extended.fa")
+      
+      if(url.exists(fastaUrl)){
+        # load fasta file
+        faFile <- as.data.frame(read.table(fastaUrl, sep="\t", header=F, fill=T, stringsAsFactors = FALSE, quote = ""))
+        faDf <- data.frame("seqID" = faFile$V1[grepl(">",faFile$V1)], "seq" = faFile$V1[!grepl(">",faFile$V1)], stringsAsFactors=FALSE)
+        
+        # get sequences
+        for(j in 1:nrow(dataOut)){
+          seqID <- as.character(dataOut$orthoID[j])
+          groupID <- as.character(dataOut$geneID[j])
+          
+          seq <- as.character(faDf$seq[faDf$seqID == paste0(">",seqID)])
+          fastaOut <- paste(paste0(">",groupID,"|",seqID),seq,sep="\n")
+          fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
+        }
+      } else {
+        fastaOut <- paste0(fastaUrl," not found!!!")
+        fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
+      }
+    }
+    
+    ### get seqs for Microsporidia online demo data
+    if(input$demo_data == "demo"){
+      specDf <- as.data.frame(str_split_fixed(dataOut$orthoID, "@", 3))
+      specDf$specID <- paste0(specDf[,1],"%40",specDf[,2])
+      
+      # read all species FASTA files
+      fa <- data.frame()
+      for(i in 1:length(levels(as.factor(specDf$specID)))){
+        specID <- as.character(levels(as.factor(specDf$specID))[i])
+        
+        fastaUrl <- paste0("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/fasta_files/",specID,".fa")
+        print(paste("read",fastaUrl))
+        
+        if(url.exists(fastaUrl)){
+          faFile <- as.data.frame(read.table(fastaUrl, sep="\t", header=F, fill=T, stringsAsFactors = FALSE, quote = ""))
+          faDf <- data.frame("seqID" = faFile$V1[grepl(">",faFile$V1)], "seq" = faFile$V1[!grepl(">",faFile$V1)], stringsAsFactors=FALSE)
+          fa <- rbind(fa,faDf)
+        }
+      }
+      
+      # get selected species
+      for(j in 1:nrow(dataOut)){
+        seqID <- as.character(dataOut$orthoID[j])
+        groupID <- as.character(dataOut$geneID[j])
+        
+        seq <- as.character(fa$seq[fa$seqID == paste0(">",seqID)])
+        if(length(seq) > 0){
+          fastaOut <- paste(paste0(">",groupID,"|",seqID),seq,sep="\n")
+          fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
+        }
+      }
+    }
+    
+    ### get seqs for fasta main input
+    if(inputType == "fasta"){
+      file <- filein$datapath
+      fastaFile = readAAStringSet(file)
+      
+      seq_name = names(fastaFile)
+      sequence = paste(fastaFile)
+      fa <- data.frame(seq_name, sequence)  # data frame contains all sequences from input file
+      
+      for(j in 1:nrow(dataOut)){
+        seqID <- paste0(as.character(dataOut$geneID[j]),"|ncbi",as.character(dataOut$ncbiID[j]),"|",as.character(dataOut$orthoID[j]))
+        
+        seq <- fa$sequence[pmatch(seqID,fa$seq_name)]
+        
+        if(length(seq[1]) < 1){
+          fastaOut <- paste0(seqID," not found in ",file,"! Please check id_format in FASTA config again!")
+        } else{
+          fastaOut <- paste(paste0(">",seqID),seq[1],sep="\n")
+        }
+        
+        fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
+      }
+    }
+    
+    ### get seqs for extended.fa
+    if(input$input_type == 'oneSeq.extended.fa'){
+      fasIn <- input$oneSeqFasta
+      file <- toString(fasIn$datapath)
+      
+      # read fasta file and save sequences into dataframe
+      fastaFile = readAAStringSet(file)
+      
+      seq_name = names(fastaFile)
+      sequence = paste(fastaFile)
+      fa <- data.frame(seq_name, sequence)  # data frame contains all sequences from input file
+      
+      # get selected sequences
+      for(j in 1:nrow(dataOut)){
+        seqID <- as.character(dataOut$orthoID[j])
+        groupID <- as.character(dataOut$geneID[j])
+        seq <- fa$sequence[pmatch(seqID,fa$seq_name)]
+        
+        if(length(seq[1]) < 1){
+          fastaOut <- paste0(seqID," not found in ",file,"! Please check id_format in FASTA config again!")
+        } else{
+          if(!is.na(seq[1])){
+            fastaOut <- paste(paste0(">",groupID,"|",seqID),seq[1],sep="\n")
+          }
+        }
+        
+        fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
+      }
+    }
+    
+    ### get seqs for other cases (input offline fasta files in a folder)
+    if(input$demo_data == "none" & input$input_type == "Fasta folder" & inputType != "fasta"){
+      # path, file format and fasta header format
+      path = input$path
+      dir_format = input$dir_format
+      file_ext = input$file_ext
+      id_format = input$id_format
+      
+      # get list of species IDs
+      if(id_format == 1){
+        specDf <- as.data.frame(str_split_fixed(strReverse(as.character(dataOut$orthoID)),":",2))
+        specDf$specID <- strReverse(as.character(specDf$V2))
+      } else if(id_format == 2){
+        specDf <- as.data.frame(str_split_fixed(strReverse(as.character(dataOut$orthoID)),"@",2))
+        specDf$specID <- strReverse(as.character(specDf$V2))
+      } else if(id_format == 3){
+        specDf <- as.data.frame(str_split_fixed(strReverse(as.character(dataOut$orthoID)),"|",2))
+        specDf$specID <- strReverse(as.character(specDf$V2))
+      }
+      
+      # read all specices FASTA files at once
+      fa = data.frame()
+      for(i in 1:length(levels(as.factor(specDf$specID)))){
+        specID <- as.character(levels(as.factor(specDf$specID))[i])
+        
+        # full path fasta file
+        file <- paste0(path,"/",specID,".",file_ext)
+        if(dir_format == 2){
+          file <- paste0(path,"/",specID,"/",specID,".",file_ext)
+        }
+        
+        # read fasta file and save sequences into dataframe
+        fastaFile = readAAStringSet(file)
+        
+        seq_name = names(fastaFile)
+        sequence = paste(fastaFile)
+        fa <- rbind(fa, data.frame(seq_name, sequence))  # data frame contains all sequences from input file
+      }
+      
+      # now get selected sequences
+      for(j in 1:nrow(dataOut)){
+        seqID <- as.character(dataOut$orthoID[j])
+        groupID <- as.character(dataOut$geneID[j])
+        
+        seq <- fa$sequence[pmatch(seqID,fa$seq_name)]
+        
+        if(length(seq[1]) < 1){
+          fastaOut <- paste0(seqID," not found in ",file,"! Please check id_format in FASTA config again!")
+        } else{
+          fastaOut <- paste(paste0(">",groupID,"|",seqID),seq[1],sep="\n")
+        }
+        fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
+      }
+    }
+    
+    # remove duplicated sequences
+    fastaOutDf <- fastaOutDf[!duplicated(fastaOutDf), ]
+    
+    return(fastaOutDf)
+  }
 
   ######## FASTA sequence
   output$fasta <- renderText({
@@ -2774,81 +2957,16 @@ shinyServer(function(input, output, session) {
     info <- pointInfoDetail() # info = seedID, orthoID, var1
     if(is.null(info)){return()}
     else{
+      data <- dataFiltered()
+      
       seqID <- toString(info[2])
       groupID <- toString(info[1])
-      paste(seqID)
+      ncbiID <- gsub("ncbi","",toString(info[5]))
+      
+      seqDf <- data.frame("geneID" = groupID, "orthoID" = seqID, "ncbiID" = ncbiID)
+      fastaOut <- fastaOutData(seqDf)
 
-      ### fasta path and format
-      # if(input$demo == TRUE){
-      if(input$demo_data == "demo"){
-        ### get species ID
-        specTMP <- unlist(strsplit(seqID,"@"))
-        specID = paste0(specTMP[1],"%40",specTMP[2])
-        
-        fastaUrl <- paste0("https://github.com/BIONF/phyloprofile-data/blob/master/demo/fasta_files/",specID,".fa?raw=true")
-        if(url.exists(fastaUrl)){
-          faFile <- as.data.frame(read.table(fastaUrl, sep="\t", header=F, fill=T, stringsAsFactors = FALSE, quote = ""))
-          
-          faDf <- data.frame("seqID" = faFile$V1[grepl(">",faFile$V1)], "seq" = faFile$V1[!grepl(">",faFile$V1)], stringsAsFactors=FALSE)
-          
-          seq <- as.character(faDf$seq[faDf$seqID == paste0(">",seqID)])
-          fastaOut <- paste(paste0(">",seqID),seq,sep="\n")
-        } else {
-          fastaOut <- paste0(fastaUrl," not found!!!")
-        }
-      } else if(input$demo_data == "ampk-tor"){
-        fastaUrl <- paste0("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.extended.fa")
-        faFile <- as.data.frame(read.table(fastaUrl, sep="\t", header=F, fill=T, stringsAsFactors = FALSE, quote = ""))
-        faDf <- data.frame("seqID" = faFile$V1[grepl(">",faFile$V1)], "seq" = faFile$V1[!grepl(">",faFile$V1)], stringsAsFactors=FALSE)
-        
-        seq <- as.character(faDf$seq[faDf$seqID == paste0(">",seqID)])
-        fastaOut <- paste(paste0(">",seqID),seq,sep="\n")
-      } else {
-        filein <- input$mainInput
-        inputType <- checkInputVadility(filein)
-        if(inputType == "fasta"){
-          data <- dataFiltered()
-          mainInfo <- mainPointInfo()
-          ncbiID <- data[data$supertaxon == mainInfo[3],]$ncbiID[1]
-          seqID <- paste0(info[1],"|",ncbiID,"|",info[2],"|",info[3])
-          fastaOut <- paste(getFasta(filein$datapath,seqID,groupID,1))
-        } else {
-          if(input$input_type == 'oneSeq.extended.fa'){
-            # f <- toString(input$oneseq.file)
-            fasIn <- input$oneSeqFasta
-            f <- toString(fasIn$datapath)
-          } else {
-            path = input$path
-            dir_format = input$dir_format
-            file_ext = input$file_ext
-            id_format = input$id_format
-            
-            ### get species ID and seqID
-            if(id_format == 1){
-              specTMP <- unlist(strsplit(seqID,":"))
-              specID = paste(specTMP[-length(specTMP)],collapse = ":")
-            } else if(id_format == 2){
-              specTMP <- unlist(strsplit(seqID,"@"))
-              specID = paste(specTMP[-length(specTMP)],collapse = "@")
-            } else if(id_format == 3){
-              specTMP <- unlist(strsplit(seqID,"|"))
-              specID = paste(specTMP[-length(specTMP)],collapse = "|")
-            }
-            
-            ### full path fasta file
-            f <- paste0(path,"/",specID,".",file_ext)
-            if(dir_format == 2){
-              f <- paste0(path,"/",specID,"/",specID,".",file_ext)
-            }
-          }
-          
-          ### read file and get sequence
-          if(input$input_type == 'oneSeq.extended.fa'){fastaOut <- paste(getFasta(f,seqID,groupID,1))}
-          else {fastaOut <- paste(getFasta(f,seqID,groupID,0))}
-        }
-      }
-      # return(c(seqID,specID))
-      return(fastaOut)
+      return(paste(fastaOut[1]))
     }
   })
 
@@ -3700,104 +3818,16 @@ shinyServer(function(input, output, session) {
   })
   
   ######## download FASTA
-
   output$downloadFasta.ui <- renderUI({
-    dataOut <- as.data.frame(downloadData())
-    # if(input$demo == TRUE){
-    if(input$demo_data == "demo"){#} | input$demo_data == "ampk-tor"){
-      if(nrow(dataOut) > 5){
-        # downloadButton('downloadFasta', 'Download FASTA sequences', disabled = TRUE)
-        HTML("<p><span style=\"background-color: #999999;\"><code>\"Download FASTA sequences\"</code></span> <em>function for more than 5 genes is disabled when using online demo data!</em></p>")
-      } else {
-        downloadButton('downloadFasta', 'Download FASTA sequences')
-      }
-    } else {
-      downloadButton('downloadFasta', 'Download FASTA sequences')
+    if(input$demo_data == "demo"){
+      HTML("<p><span style=\"color: #ff0000;\"><em>Depend on the number of taxa, this might take up to 3 minutes!</em></span></p>")
     }
   })
   
   output$downloadFasta <- downloadHandler(
     filename = function(){c("filteredSeq.fa")},
     content = function(file){
-      dataOut <- as.data.frame(downloadData())
-      fastaOutDf <- data.frame()
-      
-      for(i in 1:nrow(dataOut)){
-        seqID <- as.character(dataOut$orthoID[i])
-        groupID <- as.character(dataOut$geneID[i])
-        
-        ### fasta path and format
-        # if(input$demo == TRUE){
-        if(input$demo_data == "demo" | input$demo_data == "ampk-tor"){
-          ### get species ID
-          specTMP <- unlist(strsplit(seqID,"@"))
-          specID = paste0(specTMP[1],"%40",specTMP[2])
-          
-          if(input$demo_data == "demo"){
-            fastaUrl <- paste0("https://github.com/BIONF/phyloprofile-data/blob/master/demo/fasta_files/",specID,".fa?raw=true")
-          } else {
-            fastaUrl <- paste0("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.extended.fa")
-          }
-          
-          if(url.exists(fastaUrl)){
-            faFile <- as.data.frame(read.table(fastaUrl, sep="\t", header=F, fill=T, stringsAsFactors = FALSE, quote = ""))
-            
-            faDf <- data.frame("seqID" = faFile$V1[grepl(">",faFile$V1)], "seq" = faFile$V1[!grepl(">",faFile$V1)], stringsAsFactors=FALSE)
-            
-            seq <- as.character(faDf$seq[faDf$seqID == paste0(">",seqID)])
-            fastaOut <- paste(paste0(">",groupID,"|",seqID),seq,sep="\n")
-            fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
-          } else {
-            fastaOut <- paste0(fastaUrl," not found!!!")
-            fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
-          }
-        } else {
-          filein <- input$mainInput
-          inputType <- checkInputVadility(filein)
-          if(inputType == "fasta"){
-            seqID <- paste0(as.character(dataOut$geneID[i]),"|ncbi",as.character(dataOut$ncbiID[i]),"|",as.character(dataOut$orthoID[i]))
-            fastaOut <- paste(getFasta(filein$datapath,seqID,groupID,1))
-            fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
-          } else {
-            if(input$input_type == 'oneSeq.extended.fa'){
-              # f <- toString(input$oneseq.file)
-              fasIn <- input$oneSeqFasta
-              f <- toString(fasIn$datapath)
-            } else {
-              path = input$path
-              dir_format = input$dir_format
-              file_ext = input$file_ext
-              id_format = input$id_format
-              
-              ### get species ID and seqID
-              if(id_format == 1){
-                specTMP <- unlist(strsplit(seqID,":"))
-                specID = paste(specTMP[-length(specTMP)],collapse = ":")
-              } else if(id_format == 2){
-                specTMP <- unlist(strsplit(seqID,"@"))
-                specID = paste(specTMP[-length(specTMP)],collapse = "@")
-              } else if(id_format == 3){
-                specTMP <- unlist(strsplit(seqID,"|"))
-                specID = paste(specTMP[-length(specTMP)],collapse = "|")
-              }
-              
-              ### full path fasta file
-              f <- paste0(path,"/",specID,".",file_ext)
-              if(dir_format == 2){
-                f <- paste0(path,"/",specID,"/",specID,".",file_ext)
-              }
-            }
-            
-            ### read file and get sequence
-            if(input$input_type == 'oneSeq.extended.fa'){fastaOut <- paste(getFasta(f,seqID,groupID,1))}
-            else{fastaOut <- paste(getFasta(f,seqID,groupID,0))}
-            
-            fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
-          }
-          
-        }
-      }
-      
+      fastaOutDf <- fastaOutData(as.data.frame(downloadData()))
       write.table(fastaOutDf,file,sep="\t",col.names = FALSE,row.names = FALSE,quote = FALSE)
     }
   )
@@ -3853,103 +3883,16 @@ shinyServer(function(input, output, session) {
   })
   
   ######## download FASTA
-
   output$downloadCustomFasta.ui <- renderUI({
-    dataOut <- as.data.frame(downloadCustomData())
-    # if(input$demo == TRUE){
-    if(input$demo_data == "demo"){#} | input$demo_data == "ampk-tor"){
-      if(nrow(dataOut) > 5){
-        # downloadButton('downloadCustomFasta', 'Download FASTA sequences', disabled = TRUE)
-        HTML("<p><span style=\"background-color: #999999;\"><code>\"Download FASTA sequences\"</code></span> <em>function for more than 5 genes is disabled when using online demo data!</em></p>")
-      } else {
-        downloadButton('downloadCustomFasta', 'Download FASTA sequences')
-      }
-    } else {
-      downloadButton('downloadCustomFasta', 'Download FASTA sequences')
+    if(input$demo_data == "demo"){
+      HTML("<p><span style=\"color: #ff0000;\"><em>Depend on the number of taxa, this might take up to 3 minutes!</em></span></p>")
     }
   })
   
   output$downloadCustomFasta <- downloadHandler(
     filename = function(){c("customFilteredSeq.fa")},
     content = function(file){
-      dataOut <- as.data.frame(downloadCustomData())
-      
-      fastaOutDf <- data.frame()
-      for(i in 1:nrow(dataOut)){
-        seqID <- as.character(dataOut$orthoID[i])
-        groupID <- as.character(dataOut$geneID[i])
-        
-        ### fasta path and format
-        # if(input$demo == TRUE){
-        if(input$demo_data == "demo" | input$demo_data == "ampk-tor"){
-          ### get species ID
-          specTMP <- unlist(strsplit(seqID,"@"))
-          specID = paste0(specTMP[1],"%40",specTMP[2])
-          
-          if(input$demo_data == "demo"){
-            fastaUrl <- paste0("https://github.com/BIONF/phyloprofile-data/blob/master/demo/fasta_files/",specID,".fa?raw=true")
-          } else {
-            fastaUrl <- paste0("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.extended.fa")
-          }
-          
-          if(url.exists(fastaUrl)){
-            faFile <- as.data.frame(read.table(fastaUrl, sep="\t", header=F, fill=T, stringsAsFactors = FALSE, quote = ""))
-            
-            faDf <- data.frame("seqID" = faFile$V1[grepl(">",faFile$V1)], "seq" = faFile$V1[!grepl(">",faFile$V1)], stringsAsFactors=FALSE)
-            
-            seq <- as.character(faDf$seq[faDf$seqID == paste0(">",seqID)])
-            fastaOut <- paste(paste0(">",groupID,"|",seqID),seq,sep="\n")
-            fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
-          } else {
-            fastaOut <- paste0(fastaUrl," not found!!!")
-            fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
-          }
-        } else {
-          filein <- input$mainInput
-          inputType <- checkInputVadility(filein)
-          if(inputType == "fasta"){
-            seqID <- paste0(as.character(dataOut$geneID[i]),"|ncbi",as.character(dataOut$ncbiID[i]),"|",as.character(dataOut$orthoID[i]))
-            fastaOut <- paste(getFasta(filein$datapath,seqID,groupID,1))
-            fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
-          } else {
-            if(input$input_type == 'oneSeq.extended.fa'){
-              # f <- toString(input$oneseq.file)
-              fasIn <- input$oneSeqFasta
-              f <- toString(fasIn$datapath)
-            } else {
-              path = input$path
-              dir_format = input$dir_format
-              file_ext = input$file_ext
-              id_format = input$id_format
-              
-              ### get species ID and seqID
-              if(id_format == 1){
-                specTMP <- unlist(strsplit(seqID,":"))
-                specID = paste(specTMP[-length(specTMP)],collapse = ":")
-              } else if(id_format == 2){
-                specTMP <- unlist(strsplit(seqID,"@"))
-                specID = paste(specTMP[-length(specTMP)],collapse = "@")
-              } else if(id_format == 3){
-                specTMP <- unlist(strsplit(seqID,"|"))
-                specID = paste(specTMP[-length(specTMP)],collapse = "|")
-              }
-              
-              ### full path fasta file
-              f <- paste0(path,"/",specID,".",file_ext)
-              if(dir_format == 2){
-                f <- paste0(path,"/",specID,"/",specID,".",file_ext)
-              }
-            }
-            
-            ### read file and get sequence
-            if(input$input_type == 'oneSeq.extended.fa'){fastaOut <- paste(getFasta(f,seqID,groupID,1))}
-            else {fastaOut <- paste(getFasta(f,seqID,groupID,0))}
-            
-            fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
-          }
-        }
-      }
-      
+      fastaOutDf <- fastaOutData(as.data.frame(downloadCustomData()))
       write.table(fastaOutDf,file,sep="\t",col.names = FALSE,row.names = FALSE,quote = FALSE)
     }
   )

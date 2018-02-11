@@ -552,9 +552,9 @@ shinyUI(fluidPage(
                           column(3,
                                  downloadButton('downloadData', 'Download filtered data')
                           ),
-                          column(4,
+                          column(9,
+                                 downloadButton('downloadFasta', 'Download FASTA sequences'),
                                  uiOutput("downloadFasta.ui")
-                                 # downloadButton('downloadFasta', 'Download FASTA sequences')
                           )
                  ),
                  tabPanel("Customized data",
@@ -574,9 +574,9 @@ shinyUI(fluidPage(
                           column(3,
                                  downloadButton('downloadCustomData', 'Download customized data')
                           ),
-                          column(3,
+                          column(9,
+                                 downloadButton('downloadCustomFasta', 'Download FASTA sequences'),
                                  uiOutput("downloadCustomFasta.ui")
-                                 # downloadButton('downloadCustomFasta', 'Download FASTA sequences')
                           )
                   )
       ),
