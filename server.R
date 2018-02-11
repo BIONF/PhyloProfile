@@ -2823,14 +2823,19 @@ shinyServer(function(input, output, session) {
       }
       
       # get selected species
-      for(j in 1:nrow(dataOut)){
-        seqID <- as.character(dataOut$orthoID[j])
-        groupID <- as.character(dataOut$geneID[j])
-        
-        seq <- as.character(fa$seq[fa$seqID == paste0(">",seqID)])
-        if(length(seq) > 0){
-          fastaOut <- paste(paste0(">",groupID,"|",seqID),seq,sep="\n")
-          fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
+      if(nrow(fa) < 1){
+        fastaOut <- paste0("No FASTA has been found in github.com/BIONF/phyloprofile-data/master/demo/fasta_files/!!!")
+        fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
+      } else {
+        for(j in 1:nrow(dataOut)){
+          seqID <- as.character(dataOut$orthoID[j])
+          groupID <- as.character(dataOut$geneID[j])
+          
+          seq <- as.character(fa$seq[fa$seqID == paste0(">",seqID)])
+          if(length(seq) > 0){
+            fastaOut <- paste(paste0(">",groupID,"|",seqID),seq,sep="\n")
+            fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
+          }
         }
       }
     }
@@ -2850,7 +2855,7 @@ shinyServer(function(input, output, session) {
         seq <- fa$sequence[pmatch(seqID,fa$seq_name)]
         
         if(length(seq[1]) < 1){
-          fastaOut <- paste0(seqID," not found in ",file,"! Please check id_format in FASTA config again!")
+          fastaOut <- paste0(seqID," not found in ",file,"!")
         } else{
           fastaOut <- paste(paste0(">",seqID),seq[1],sep="\n")
         }
@@ -2878,7 +2883,7 @@ shinyServer(function(input, output, session) {
         seq <- fa$sequence[pmatch(seqID,fa$seq_name)]
         
         if(length(seq[1]) < 1){
-          fastaOut <- paste0(seqID," not found in ",file,"! Please check id_format in FASTA config again!")
+          fastaOut <- paste0(seqID," not found in ",file,"! Please check the header format in FASTA file!")
         } else{
           if(!is.na(seq[1])){
             fastaOut <- paste(paste0(">",groupID,"|",seqID),seq[1],sep="\n")
@@ -2891,55 +2896,68 @@ shinyServer(function(input, output, session) {
     
     ### get seqs for other cases (input offline fasta files in a folder)
     if(input$demo_data == "none" & input$input_type == "Fasta folder" & inputType != "fasta"){
-      # path, file format and fasta header format
-      path = input$path
-      dir_format = input$dir_format
-      file_ext = input$file_ext
-      id_format = input$id_format
-      
-      # get list of species IDs
-      if(id_format == 1){
-        specDf <- as.data.frame(str_split_fixed(strReverse(as.character(dataOut$orthoID)),":",2))
-        specDf$specID <- strReverse(as.character(specDf$V2))
-      } else if(id_format == 2){
-        specDf <- as.data.frame(str_split_fixed(strReverse(as.character(dataOut$orthoID)),"@",2))
-        specDf$specID <- strReverse(as.character(specDf$V2))
-      } else if(id_format == 3){
-        specDf <- as.data.frame(str_split_fixed(strReverse(as.character(dataOut$orthoID)),"|",2))
-        specDf$specID <- strReverse(as.character(specDf$V2))
-      }
-      
-      # read all specices FASTA files at once
-      fa = data.frame()
-      for(i in 1:length(levels(as.factor(specDf$specID)))){
-        specID <- as.character(levels(as.factor(specDf$specID))[i])
+      if(input$path != ""){
+        # path, file format and fasta header format
+        path = input$path
+        dir_format = input$dir_format
+        file_ext = input$file_ext
+        id_format = input$id_format
         
-        # full path fasta file
-        file <- paste0(path,"/",specID,".",file_ext)
-        if(dir_format == 2){
-          file <- paste0(path,"/",specID,"/",specID,".",file_ext)
+        # get list of species IDs
+        if(id_format == 1){
+          specDf <- as.data.frame(str_split_fixed(strReverse(as.character(dataOut$orthoID)),":",2))
+          specDf$specID <- strReverse(as.character(specDf$V2))
+        } else if(id_format == 2){
+          specDf <- as.data.frame(str_split_fixed(strReverse(as.character(dataOut$orthoID)),"@",2))
+          specDf$specID <- strReverse(as.character(specDf$V2))
+        } else if(id_format == 3){
+          specDf <- as.data.frame(str_split_fixed(strReverse(as.character(dataOut$orthoID)),"|",2))
+          specDf$specID <- strReverse(as.character(specDf$V2))
         }
         
-        # read fasta file and save sequences into dataframe
-        fastaFile = readAAStringSet(file)
-        
-        seq_name = names(fastaFile)
-        sequence = paste(fastaFile)
-        fa <- rbind(fa, data.frame(seq_name, sequence))  # data frame contains all sequences from input file
-      }
-      
-      # now get selected sequences
-      for(j in 1:nrow(dataOut)){
-        seqID <- as.character(dataOut$orthoID[j])
-        groupID <- as.character(dataOut$geneID[j])
-        
-        seq <- fa$sequence[pmatch(seqID,fa$seq_name)]
-        
-        if(length(seq[1]) < 1){
-          fastaOut <- paste0(seqID," not found in ",file,"! Please check id_format in FASTA config again!")
-        } else{
-          fastaOut <- paste(paste0(">",groupID,"|",seqID),seq[1],sep="\n")
+        # read all specices FASTA files at once
+        fa = data.frame()
+        for(i in 1:length(levels(as.factor(specDf$specID)))){
+          specID <- as.character(levels(as.factor(specDf$specID))[i])
+          
+          # full path fasta file
+          file <- paste0(path,"/",specID,".",file_ext)
+          if(dir_format == 2){
+            file <- paste0(path,"/",specID,"/",specID,".",file_ext)
+          }
+          
+          # read fasta file and save sequences into dataframe
+          if(file.exists(file)){
+            fastaFile = readAAStringSet(file)
+            
+            seq_name = names(fastaFile)
+            sequence = paste(fastaFile)
+            fa <- rbind(fa, data.frame(seq_name, sequence))  # data frame contains all sequences from input file
+          }
         }
+        
+        # now get selected sequences
+        if(nrow(fa) > 0){
+          for(j in 1:nrow(dataOut)){
+            seqID <- as.character(dataOut$orthoID[j])
+            groupID <- as.character(dataOut$geneID[j])
+            
+            seq <- fa$sequence[pmatch(seqID,fa$seq_name)]
+            
+            if(length(seq[1]) < 1){
+              fastaOut <- paste0(seqID," not found in ",file,"! Please check id_format in FASTA config again!")
+            } else{
+              fastaOut <- paste(paste0(">",groupID,"|",seqID),seq[1],sep="\n")
+            }
+            fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
+          }
+        } else {
+          fastaOut <- paste0("No fasta file has been found in ",path,"!!! Please check the full path and id_format in FASTA config again")
+          fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
+        }
+        
+      } else {
+        fastaOut <- paste0("Please provide FASTA files in Input & settings page!")
         fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
       }
     }

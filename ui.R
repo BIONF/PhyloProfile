@@ -645,7 +645,7 @@ shinyUI(fluidPage(
             ),
             conditionalPanel(
               condition = "input.input_type == 'Fasta folder'",
-              textInput("path","Main path:","")
+              textInput("path","Main FULL path:","")
               ,selectInput("dir_format","Directory format:",choices=list("path/speciesID.fa*"=1,"path/speciesID/speciesID.fa*"=2),selected="Path/speciesID.fasta")
               ,selectInput("file_ext","File extension:",choices=list("fa"="fa","fasta"="fasta","fas"="fas","txt"="txt"),selected="fa")
               ,selectInput("id_format","ID format:",choices=list(">speciesID:seqID"=1,">speciesID@seqID"=2,">speciesID|seqID"=3),selected=1)
