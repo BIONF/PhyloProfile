@@ -67,26 +67,29 @@ calcPresSpec <- function(taxaMdData, taxaCount){
   taxaMdData <- taxaMdData[taxaMdData$orthoID != "NA",]
   
   # get geneID and supertaxon
-  geneIDsupertaxon <- subset(taxaMdData,select=c('geneID','supertaxon','paralog'))
+  geneIDsupertaxon <- subset(taxaMdData,select=c('geneID','supertaxon','paralog','abbrName'))
   geneIDsupertaxon <- geneIDsupertaxon[!duplicated(geneIDsupertaxon),] # remove duplicated rows
   
   # remove NA rows from taxaMdData
   taxaMdDataNoNA <- taxaMdData[taxaMdData$orthoID != "NA",]
-  
+
   # count present frequency of supertaxon for each gene
   geneSupertaxonCount <- plyr::count(taxaMdDataNoNA,c('geneID','supertaxon'))
-  
+
   # merge with taxaCount to get total number of species of each supertaxon and calculate presSpec
-  presSpecDt <- merge(geneSupertaxonCount,taxaCount,by='supertaxon')
-  presSpecDt <- merge(presSpecDt,geneIDsupertaxon,by=c('geneID','supertaxon'))
-  presSpecDt$presSpec <- ((presSpecDt$freq.x-presSpecDt$paralog)+1)/presSpecDt$freq.y
+  presSpecDt <- merge(geneSupertaxonCount,taxaCount,by='supertaxon', all.x = TRUE)
+
+  specCount <- plyr::count(geneIDsupertaxon,c('geneID','supertaxon'))
+  presSpecDt <- merge(presSpecDt,specCount,by=c('geneID','supertaxon'))
+  
+  presSpecDt$presSpec <- presSpecDt$freq/presSpecDt$freq.y
   
   presSpecDt <- presSpecDt[presSpecDt$presSpec <= 1,]
   presSpecDt <- presSpecDt[order(presSpecDt$geneID),]
   presSpecDt <- presSpecDt[,c("geneID","supertaxon","presSpec")]
-  
+
   # add absent supertaxon into presSpecDt
-  geneIDsupertaxon <- subset(geneIDsupertaxon, select = -c(paralog))
+  geneIDsupertaxon <- subset(geneIDsupertaxon, select = -c(paralog,abbrName))
   finalPresSpecDt <- merge(presSpecDt,geneIDsupertaxon,by=c('geneID','supertaxon'),all.y = TRUE)
   finalPresSpecDt$presSpec[is.na(finalPresSpecDt$presSpec)] <- 0
   

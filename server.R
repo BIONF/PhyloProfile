@@ -1433,7 +1433,7 @@ shinyServer(function(input, output, session) {
     fullMdData$fullName <- as.vector(fullMdData$fullName)
     names(fullMdData)[names(fullMdData)=="orthoID.x"] <- "orthoID"
     fullMdData <- fullMdData[!duplicated(fullMdData), ] ### parsed input data frame !!!
-
+    
     return(fullMdData)
   })
 
@@ -1475,7 +1475,10 @@ shinyServer(function(input, output, session) {
       names(superDfExt)[names(superDfExt)=="mVar1"] <- "var1"
       names(superDfExt)[names(superDfExt)=="mVar2"] <- "var2"
     }
-
+    
+# print(superDfExt[superDfExt$geneID == "ampk_ACACB" & superDfExt$supertaxon == "1001_Chordata",])
+# print("END2222")
+    
     return(superDfExt)
   })
 
@@ -1662,7 +1665,8 @@ shinyServer(function(input, output, session) {
     dataHeatTB <- data.table(na.omit(dataHeat))
     dataHeatTB[ ,paralogNew := .N, by=c("geneID","supertaxon")]
     dataHeatTB <- data.frame(dataHeatTB[,c("geneID","supertaxon","paralogNew")])
-
+# print(dataHeatTB[dataHeatTB$paralogNew > 1,])
+# print("END")
     dataHeat <- merge(dataHeat,dataHeatTB,by=c('geneID','supertaxon'), all.x=TRUE)
     dataHeat$paralog <- dataHeat$paralogNew
     dataHeat <- dataHeat[!duplicated(dataHeat),]
@@ -1671,7 +1675,9 @@ shinyServer(function(input, output, session) {
     dataHeat$presSpec[dataHeat$presSpec == 0] <- NA
     dataHeat$paralog[dataHeat$presSpec < 1] <- NA
     dataHeat$paralog[dataHeat$paralog == 1] <- NA
-
+# print(head(dataHeat))
+# print(unique(na.omit(dataHeat$paralog)))
+# print(dataHeat[!is.na(dataHeat$paralog),])
     p <- heatmap.plotting(dataHeat,input$xAxis,input$var1_id,input$var2_id,input$lowColor_var1,input$highColor_var1,input$lowColor_var2,input$highColor_var2,input$paraColor,input$xSize,input$ySize,input$legendSize,input$mainLegend,input$dotZoom,input$xAngle,1)
 
     ### highlight taxon
