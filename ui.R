@@ -206,10 +206,9 @@ shinyUI(fluidPage(
                
                conditionalPanel(
                  condition = "input.order_taxa == 'by user defined tree'",
-                 fileInput("inputTree",""),
-                 uiOutput("checkNewick.ui")
+                 fileInput("inputTree","")
                ),
-               
+               uiOutput("checkNewick.ui"),
                hr(),
 
                shinyBS::bsButton("getConfig","FASTA config"),
@@ -582,10 +581,12 @@ shinyUI(fluidPage(
       ),
 
       ########## OTHERS TAB ###########
-      navbarMenu("More",
+      navbarMenu("Help",
                  # tabPanel("Help", includeMarkdown("help.md")
-                 tabPanel("Help", includeHTML("help.html")
-                 # tabPanel("Help", includeText("help.html")
+                 # tabPanel("Help", includeHTML("help.html")
+                 # # tabPanel("Help", includeText("help.html")
+                 # ),
+                 tabPanel(a("Wiki", href="https://github.com/BIONF/PhyloProfile/wiki", target="_blank")
                  ),
                  tabPanel(a("About", href="https://BIONF.github.io/PhyloProfile/", target="_blank")
                  )

@@ -469,23 +469,46 @@ shinyServer(function(input, output, session) {
   
   ######## check the validity of input newick tree ########
   checkNewick <- function(filein){
-    # tree <- readChar(treeFile$datapath, file.info(treeFile$datapath)$size)
     tree <- read.table(file=filein$datapath, header=F,check.names=FALSE,comment.char="",fill=F)
-    tree <- gsub(regex("\\w"), "", tree)
     
-    open = str_count(tree,"\\(")
-    close = str_count(tree,"\\)")
-    comma = str_count(tree,"\\,")
-    singleton = str_count(tree,"\\(\\)")
+    # get tree structure
+    treeStruc <- gsub(regex("\\w"), "", as.character(tree$V1))
     
-    if(singleton > 0){
-      return(3)
-    }
-    if(open != close){
-      return(1)
+    open = str_count(treeStruc,"\\(")
+    close = str_count(treeStruc,"\\)")
+    comma = str_count(treeStruc,"\\,")
+    singleton = str_count(treeStruc,"\\(\\)")
+    
+    # return check
+    if(is.null(input$mainInput)){
+      return(0) # don't check if main input is absent
     } else {
-      if(comma != (open+1)){
-        return(2)
+      if(singleton > 0){
+        return(3) # tree contains singleton
+      }
+      
+      if(open != close){
+        return(1) # missing parenthesis
+      } else {
+        if(comma != (open+1)){
+          return(2) # missing comma
+        } else {
+          # get list of tips
+          nodeString <- gsub(regex("\\W+"), "#", as.character(tree$V1))
+          nodeList <- unlist(strsplit(nodeString, "#"))
+          # list of input taxa
+          inputTaxa <- subsetTaxa()
+          
+          missingTaxa <- list()
+          j <- 1
+          for(i in 1:length(nodeList)){
+            if(nchar(nodeList[i]) > 0 & !(nodeList[i] %in% inputTaxa)){
+              missingTaxa[[j]] <- nodeList[i]
+              j <- j+1
+            }
+          }
+          return(paste(missingTaxa, collapse="; ")) # contains taxa that not exist in main input
+        }
       }
     }
     return(0)
@@ -495,7 +518,7 @@ shinyServer(function(input, output, session) {
   output$checkNewick.ui <- renderUI({
     filein <- input$inputTree
     if(is.null(filein)){return()}
-    
+
     checkNewick = checkNewick(filein)
     if(checkNewick == 1){
       updateButton(session, "do", disabled = TRUE)
@@ -506,8 +529,11 @@ shinyServer(function(input, output, session) {
     } else if(checkNewick == 3){
       updateButton(session, "do", disabled = TRUE)
       HTML("<p><em><span style=\"color: #ff0000;\"><strong>ERROR: Tree contains singleton!</strong></span></em></p>")
-    } else {
+    } else if(checkNewick ==0){
       return()
+    } else {
+      updateButton(session, "do", disabled = TRUE)
+      strong(em(paste0(checkNewick," not exist in main input file!")),style = "color:red")
     }
   })
   
@@ -2830,7 +2856,7 @@ shinyServer(function(input, output, session) {
       
       # get selected species
       if(nrow(fa) < 1){
-        fastaOut <- paste0("No FASTA has been found in github.com/BIONF/phyloprofile-data/master/demo/fasta_files/!!!")
+        fastaOut <- paste0("No FASTA has been found in github.com/BIONF/phyloprofile-data/master/demo/fasta_files/!!! Please contact us!")
         fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
       } else {
         for(j in 1:nrow(dataOut)){
@@ -2861,7 +2887,7 @@ shinyServer(function(input, output, session) {
         seq <- fa$sequence[pmatch(seqID,fa$seq_name)]
         
         if(length(seq[1]) < 1){
-          fastaOut <- paste0(seqID," not found in ",file,"!")
+          fastaOut <- paste0(seqID," not found in ",file,"! Please check again!")
         } else{
           fastaOut <- paste(paste0(">",seqID),seq[1],sep="\n")
         }
@@ -2874,14 +2900,14 @@ shinyServer(function(input, output, session) {
     if(input$input_type == 'oneSeq.extended.fa'){
       fasIn <- input$oneSeqFasta
       file <- toString(fasIn$datapath)
-      
+    
       # read fasta file and save sequences into dataframe
       fastaFile = readAAStringSet(file)
       
       seq_name = names(fastaFile)
       sequence = paste(fastaFile)
       fa <- data.frame(seq_name, sequence)  # data frame contains all sequences from input file
-      
+
       # get selected sequences
       for(j in 1:nrow(dataOut)){
         seqID <- as.character(dataOut$orthoID[j])
@@ -2893,9 +2919,10 @@ shinyServer(function(input, output, session) {
         } else{
           if(!is.na(seq[1])){
             fastaOut <- paste(paste0(">",groupID,"|",seqID),seq[1],sep="\n")
+          } else {
+            fastaOut <- paste0(seqID," not found in uploaded FASTA file!!! Please check again!!!")
           }
         }
-        
         fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
       }
     }
@@ -2958,7 +2985,7 @@ shinyServer(function(input, output, session) {
             fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
           }
         } else {
-          fastaOut <- paste0("No fasta file has been found in ",path,"!!! Please check the full path and id_format in FASTA config again")
+          fastaOut <- paste0("No fasta file has been found in ",path,"!!! Please check the full path to FASTA folder and the id_format (header format) in FASTA config again!!!")
           fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
         }
         
