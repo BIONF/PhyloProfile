@@ -15,7 +15,7 @@ By utilizing the NCBI taxonomy, *PhyloProfile* can dynamically collapse taxa int
 
 *PhyloProfile* furthermore allows for a dynamic filtering of profiles – taking the taxonomic distribution and the additional information layers into account. This, along with functions to estimate the age of genes and core gene sets facilitates the exploration and analysis of large phylogenetic profiles.
 
-Take a look at [the functionality](https://github.com/BIONF/PhyloProfile/wiki/Functionality) of PhyloProfile and [explore the installation-free online version](https://phyloprofile.shinyapps.io/phyloprofile/) to learn more.
+Take a look at [the functionality](https://github.com/BIONF/PhyloProfile/wiki/Functionality) of *PhyloProfile* and [explore the installation-free online version](https://phyloprofile.shinyapps.io/phyloprofile/) to learn more.
 
 # Table of Contents
 * [Installation &amp; Usage](#installation--usage)
