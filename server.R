@@ -760,9 +760,9 @@ shinyServer(function(input, output, session) {
     if(input$demo_data == "none"){
       return()
     } else if(input$demo_data == "ampk-tor"){
-      em(a("Data description", href="https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/README.md", target="_blank"))
+      em(a("Data description", href="https://github.com/BIONF/phyloprofile-data/blob/master/expTestData/ampk-tor/README.md", target="_blank"))
     } else {
-      em(a("Data description", href="https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/README.md", target="_blank"))
+      em(a("Data description", href="https://github.com/BIONF/phyloprofile-data/blob/master/demo/README.md", target="_blank"))
     }
   })
 
