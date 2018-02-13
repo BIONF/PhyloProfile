@@ -2091,9 +2091,28 @@ shinyServer(function(input, output, session) {
       # filter splitDt based on selected var2 cutoff
       splitDt <- splitDt[splitDt$var2 >= input$var2[1] & splitDt$var2 <= input$var2[2],]
     }
+    
+    # filter data base on customized plot (if chosen)
+    if(input$dataset.distribution == "Customized data"){
+      # get geneID and supertaxon name for splitDt
+      allData <- dataFiltered()
+      splitDtName <- merge(splitDt, allData, by = "orthoID", all.x = TRUE)
+      splitDtName$supertaxonMod <- substr(splitDtName$supertaxon,6,nchar(as.character(splitDtName$supertaxon)))
+      splitDtName <- subset(splitDtName, select=c(orthoID,var1.x,var2.y,supertaxonMod,geneID))
+      colnames(splitDtName) <- c("orthoID","var1","var2","supertaxonMod","geneID")
+
+      # filter
+      if(input$inTaxa[1] == "all" & input$inSeq[1] != "all"){
+        splitDt <- subset(splitDtName,geneID %in% input$inSeq) ##### <=== select data from dataHeat for selected sequences only
+      } else if(input$inSeq[1] == "all" & input$inTaxa[1] != "all"){
+        splitDt <- subset(splitDtName,supertaxonMod %in% input$inTaxa) ##### <=== select data from dataHeat for selected taxa only
+      } else {
+        splitDt <- subset(splitDtName,geneID %in% input$inSeq & supertaxonMod %in% input$inTaxa) ##### <=== select data from dataHeat for selected sequences and taxa
+      }
+    }
 
     # return dt
-    splitDt
+    return(splitDt)
   })
 
   ###### var1 score distribution plot

@@ -422,6 +422,7 @@ shinyUI(fluidPage(
         wellPanel(
           fluidRow(
             column(2,
+                   selectInput("dataset.distribution","Select data", choices = c("Main data","Customized data"), selected = "Main data"),
                    uiOutput("selected.distribution")
             ),
             column(2,
