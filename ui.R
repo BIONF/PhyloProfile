@@ -773,6 +773,7 @@ shinyUI(fluidPage(
     ####### popup windows for detailed plot
     bsModal("modalBS", "Detailed plot", "detailedBtn", size = "large",
             uiOutput("detailPlot.ui"),
+            checkboxInput("detailedremoveNA",strong("Hide taxa that have no ortholog (NAs)", style="color:red"),value = FALSE),
             fluidRow(
               column(
                 3,

@@ -2740,6 +2740,10 @@ shinyServer(function(input, output, session) {
     selDf <- detailPlotDt()
     selDf$x_label <- paste(selDf$orthoID," (",selDf$fullName,")",sep = "")
 
+    if(input$detailedremoveNA == TRUE){
+      selDf <- selDf[!is.na(selDf$orthoID),]
+    }
+
     ### create joined DF for plotting var1 next to var2
     var1Df <- subset(selDf, select = c("x_label","var1"))
     var1Df$type <- input$var1_id
