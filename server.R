@@ -209,27 +209,27 @@ shinyServer(function(input, output, session) {
     # if(input$demo == TRUE){
     #   textInput("var1_id", h5("First variable:"), value = "Domain similarity", width="100%", placeholder="Name of first variable")
     if(input$demo_data == "ampk-tor"){
-      textInput("var1_id", h5("First variable:"), value = "Domain similarity (forward)", width="100%", placeholder="Name of first variable")
+      textInput("var1_id", h5("1st variable:"), value = "Domain similarity (forward)", width="100%", placeholder="Name of first variable")
     } else if(input$demo_data == "demo"){
-      textInput("var1_id", h5("First variable:"), value = "Domain similarity", width="100%", placeholder="Name of first variable")
+      textInput("var1_id", h5("1st variable:"), value = "Domain similarity", width="100%", placeholder="Name of first variable")
     } else {
       filein <- input$mainInput
-      if(is.null(filein)){return(textInput("var1_id", h5("First variable:"), value = "Variable 1", width="100%", placeholder="Name of first variable"))}    # get var1/var2 names based on input (only if input file in long format table)
+      if(is.null(filein)){return(textInput("var1_id", h5("1st variable:"), value = "Variable 1", width="100%", placeholder="Name of first variable"))}    # get var1/var2 names based on input (only if input file in long format table)
 
       inputType <- checkInputVadility(filein)
       
       if(inputType == "xml"){
         longDf <- xmlParser(filein$datapath)
-        textInput("var1_id", h5("First variable:"), value = colnames(longDf)[4], width="100%", placeholder="Name of first variable")
+        textInput("var1_id", h5("1st variable:"), value = colnames(longDf)[4], width="100%", placeholder="Name of first variable")
       } else if(inputType == "fasta"){
         longDf <- fastaParser(filein$datapath)
-        textInput("var1_id", h5("First variable:"), value = colnames(longDf)[4], width="100%", placeholder="Name of first variable")
+        textInput("var1_id", h5("1st variable:"), value = colnames(longDf)[4], width="100%", placeholder="Name of first variable")
       } else if(inputType == "long"){
         headerIn <- readLines(filein$datapath, n = 1)
         headerIn <- unlist(strsplit(headerIn,split = '\t'))
-        textInput("var1_id", h5("First variable:"), value = headerIn[4], width="100%", placeholder="Name of first variable")
+        textInput("var1_id", h5("1st variable:"), value = headerIn[4], width="100%", placeholder="Name of first variable")
       } else{
-        textInput("var1_id", h5("First variable:"), value = "Variable 1", width="100%", placeholder="Name of first variable")
+        textInput("var1_id", h5("1st variable:"), value = "Variable 1", width="100%", placeholder="Name of first variable")
       }
     }
   })
@@ -238,27 +238,27 @@ shinyServer(function(input, output, session) {
     # if(input$demo == TRUE){
     #   textInput("var2_id", h5("Second variable:"), value = "Traceability", width="100%", placeholder="Name of second variable")
     if(input$demo_data == "ampk-tor"){
-      textInput("var2_id", h5("Second variable:"), value = "Domain similarity (backward)", width="100%", placeholder="Name of second variable")
+      textInput("var2_id", h5("2nd variable:"), value = "Domain similarity (backward)", width="100%", placeholder="Name of second variable")
     } else if(input$demo_data == "demo"){
-      textInput("var2_id", h5("Second variable:"), value = "Traceability", width="100%", placeholder="Name of second variable")
+      textInput("var2_id", h5("2nd variable:"), value = "Traceability", width="100%", placeholder="Name of second variable")
     } else {
       filein <- input$mainInput
-      if(is.null(filein)){return(textInput("var2_id", h5("Second variable:"), value = "Variable 2", width="100%", placeholder="Name of second variable"))}    # get var1/var2 names based on input (only if input file in long format table)
+      if(is.null(filein)){return(textInput("var2_id", h5("2nd variable:"), value = "Variable 2", width="100%", placeholder="Name of second variable"))}    # get var1/var2 names based on input (only if input file in long format table)
 
       inputType <- checkInputVadility(filein)
       
       if(inputType == "xml"){
         longDf <- xmlParser(filein$datapath)
-        textInput("var2_id", h5("Second variable:"), value = colnames(longDf)[5], width="100%", placeholder="Name of second variable")
+        textInput("var2_id", h5("2nd variable:"), value = colnames(longDf)[5], width="100%", placeholder="Name of second variable")
       } else if(inputType == "fasta"){
         longDf <- fastaParser(filein$datapath)
-        textInput("var2_id", h5("Second variable:"), value = colnames(longDf)[5], width="100%", placeholder="Name of second variable")
+        textInput("var2_id", h5("2nd variable:"), value = colnames(longDf)[5], width="100%", placeholder="Name of second variable")
       } else if(inputType == "long"){
         headerIn <- readLines(filein$datapath, n = 1)
         headerIn <- unlist(strsplit(headerIn,split = '\t'))
-        textInput("var2_id", h5("Second variable:"), value = headerIn[5], width="100%", placeholder="Name of second variable")
+        textInput("var2_id", h5("2nd variable:"), value = headerIn[5], width="100%", placeholder="Name of second variable")
       } else{
-        textInput("var2_id", h5("Second variable:"), value = "Variable 2", width="100%", placeholder="Name of second variable")
+        textInput("var2_id", h5("2nd variable:"), value = "Variable 2", width="100%", placeholder="Name of second variable")
       }
     }
   })
@@ -380,6 +380,22 @@ shinyServer(function(input, output, session) {
     updateSliderInput(session, "percent", value = newPercent,
                       min = 0, max = 1, step = 0.025)
   })
+  
+  ####### render 2. variable relationship according to demo data ########
+  output$var2_relation.ui <- renderUI({
+    if(input$demo_data == "ampk-tor"){
+      selectInput("var2_relation", label = h5("Relationship:"),
+                  choices = list("Prot-Prot"="protein", "Prot-Spec"="species"),
+                  selected = "protein",
+                  width = 130)
+    } else {
+      selectInput("var1_relation", label = h5("Relationship:"),
+                  choices = list("Prot-Prot"="protein", "Prot-Spec"="species"),
+                  selected = "species",
+                  width = 130)
+    }
+  })
+  
 
   ########################################################
 
@@ -1619,15 +1635,41 @@ shinyServer(function(input, output, session) {
     # get selected supertaxon name
     split <- strsplit(as.character(input$inSelect),"_")
     inSelect <- as.character(split[[1]][1])
-
+    
     ### replace insufficient values according to the thresholds by NA or 0
     dataHeat$presSpec[dataHeat$supertaxon != inSelect & dataHeat$presSpec < percent_cutoff_min] <- 0
     dataHeat$presSpec[dataHeat$supertaxon != inSelect & dataHeat$presSpec > percent_cutoff_max] <- 0
+
     dataHeat$presSpec[dataHeat$supertaxon != inSelect & dataHeat$var1 < var1_cutoff_min] <- 0
     dataHeat$presSpec[dataHeat$supertaxon != inSelect & dataHeat$var1 > var1_cutoff_max] <- 0
-    dataHeat$presSpec[dataHeat$supertaxon != inSelect & dataHeat$var2 < var2_cutoff_min] <- 0
-    dataHeat$presSpec[dataHeat$supertaxon != inSelect & dataHeat$var2 > var2_cutoff_max] <- 0
 
+    if(input$var1_relation == "protein"){
+      if(input$var2_relation == "protein"){
+        ### prot-prot: remove complete cell if one variable not sufficient
+        dataHeat$presSpec[dataHeat$supertaxon != inSelect & dataHeat$var2 < var2_cutoff_min] <- 0
+        dataHeat$presSpec[dataHeat$supertaxon != inSelect & dataHeat$var2 > var2_cutoff_max] <- 0
+        
+        dataHeat$var2[dataHeat$supertaxon != inSelect & dataHeat$var1 < var1_cutoff_min] <- NA
+        dataHeat$var2[dataHeat$supertaxon != inSelect & dataHeat$var1 > var1_cutoff_max] <- NA
+        dataHeat$var1[dataHeat$supertaxon != inSelect & dataHeat$var2 < var2_cutoff_min] <- NA
+        dataHeat$var1[dataHeat$supertaxon != inSelect & dataHeat$var2 > var2_cutoff_max] <- NA
+      } else {
+        ### prot-spec: var1 depend on var2
+        dataHeat$presSpec[dataHeat$supertaxon != inSelect & dataHeat$var2 < var2_cutoff_min] <- 0
+        dataHeat$presSpec[dataHeat$supertaxon != inSelect & dataHeat$var2 > var2_cutoff_max] <- 0
+      }
+    } else {
+      if(input$var2_relation == "species"){
+        ### spec-spec: remove var1 and var2 independently
+        # dataHeat$presSpec[dataHeat$supertaxon != inSelect & dataHeat$var1 < var1_cutoff_min] <- 0
+        # dataHeat$presSpec[dataHeat$supertaxon != inSelect & dataHeat$var1 > var1_cutoff_max] <- 0
+      } else {
+        ### spec-prot: var2 depend on var1
+        dataHeat$var2[dataHeat$supertaxon != inSelect & dataHeat$var1 < var1_cutoff_min] <- NA
+        dataHeat$var2[dataHeat$supertaxon != inSelect & dataHeat$var1 > var1_cutoff_max] <- NA
+      }
+    }
+    
     dataHeat$var1[dataHeat$supertaxon != inSelect & dataHeat$var1 < var1_cutoff_min] <- NA
     dataHeat$var1[dataHeat$supertaxon != inSelect & dataHeat$var1 > var1_cutoff_max] <- NA
     dataHeat$var2[dataHeat$supertaxon != inSelect & dataHeat$var2 < var2_cutoff_min] <- NA
@@ -1691,8 +1733,7 @@ shinyServer(function(input, output, session) {
     dataHeatTB <- data.table(na.omit(dataHeat))
     dataHeatTB[ ,paralogNew := .N, by=c("geneID","supertaxon")]
     dataHeatTB <- data.frame(dataHeatTB[,c("geneID","supertaxon","paralogNew")])
-# print(dataHeatTB[dataHeatTB$paralogNew > 1,])
-# print("END")
+
     dataHeat <- merge(dataHeat,dataHeatTB,by=c('geneID','supertaxon'), all.x=TRUE)
     dataHeat$paralog <- dataHeat$paralogNew
     dataHeat <- dataHeat[!duplicated(dataHeat),]
@@ -1701,9 +1742,7 @@ shinyServer(function(input, output, session) {
     dataHeat$presSpec[dataHeat$presSpec == 0] <- NA
     dataHeat$paralog[dataHeat$presSpec < 1] <- NA
     dataHeat$paralog[dataHeat$paralog == 1] <- NA
-# print(head(dataHeat))
-# print(unique(na.omit(dataHeat$paralog)))
-# print(dataHeat[!is.na(dataHeat$paralog),])
+
     p <- heatmap.plotting(dataHeat,input$xAxis,input$var1_id,input$var2_id,input$lowColor_var1,input$highColor_var1,input$lowColor_var2,input$highColor_var2,input$paraColor,input$xSize,input$ySize,input$legendSize,input$mainLegend,input$dotZoom,input$xAngle,1)
 
     ### highlight taxon

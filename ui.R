@@ -147,25 +147,38 @@ shinyUI(fluidPage(
              uiOutput("mainInputFile.ui"),
              uiOutput("inputCheck.ui"),
              fluidRow(
-               column(5,
+               column(4,
                       uiOutput("var1_id.ui")
                ),
-               column(5,
+               column(4,
                       selectInput("var1_aggregateBy", label = h5("Aggregate by:"),
                                   choices = list("Max"="max", "Min"="min","Mean"="mean","Median"="median"),
                                   selected = "max",
                                   width = 130)
+               ),
+               column(4,
+                      selectInput("var1_relation", label = h5("Relationship:"),
+                                  choices = list("Prot-Prot"="protein", "Prot-Spec"="species"),
+                                  selected = "protein",
+                                  width = 130)
                )
              ),
              fluidRow(
-               column(5,
+               column(4,
                       uiOutput("var2_id.ui")
                ),
-               column(5,
+               column(4,
                       selectInput("var2_aggregateBy", label = h5("Aggregate by:"),
                                   choices = list("Max"="max", "Min"="min","Mean"="mean","Median"="median"),
                                   selected = "max",
                                   width = 130)
+               ),
+               column(4,
+                      uiOutput("var2_relation.ui")
+                      # selectInput("var2_relation", label = h5("Relationship:"),
+                      #             choices = list("Prot-Prot"="protein", "Prot-Spec"="species"),
+                      #             selected = "species",
+                      #             width = 130)
                )
              ),
 
