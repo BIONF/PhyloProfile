@@ -113,7 +113,6 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  
   ################## get ncbi taxa IDs ####################
   ##### retrieve ID for list of taxa names
   taxaID <- reactive({
@@ -389,7 +388,7 @@ shinyServer(function(input, output, session) {
                   selected = "protein",
                   width = 130)
     } else {
-      selectInput("var1_relation", label = h5("Relationship:"),
+      selectInput("var2_relation", label = h5("Relationship:"),
                   choices = list("Prot-Prot"="protein", "Prot-Spec"="species"),
                   selected = "species",
                   width = 130)
@@ -754,6 +753,18 @@ shinyServer(function(input, output, session) {
       }
     }
   })
+  
+  
+  ####### render description for demo data #######
+  output$demoDataDescribe <- renderUI({
+    if(input$demo_data == "none"){
+      return()
+    } else if(input$demo_data == "ampk-tor"){
+      em(a("Data description", href="https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/README.md", target="_blank"))
+    } else {
+      em(a("Data description", href="https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/README.md", target="_blank"))
+    }
+  })
 
   ######## check if data is loaded and "parse" button (get info from input) is clicked and confirmed
   v1 <- reactiveValues(parse = FALSE)
@@ -1058,12 +1069,13 @@ shinyServer(function(input, output, session) {
   })
   
   ######## print total number of genes
-  output$titleEndIndex <- renderUI({
+  output$totalGeneNumber.ui <- renderUI({
     geneList <- preData()
     geneList$geneID <- as.factor(geneList$geneID)
     out <- as.list(levels(geneList$geneID))
     if(length(out) > 0){
-      em(paste0("Total number of genes:  ",length(out)))
+      # em(paste0("Total number of genes:  ",length(out)))
+      strong(paste0("Total number of genes:  ",length(out)))
     }
   })
 
@@ -2726,7 +2738,7 @@ shinyServer(function(input, output, session) {
     if (v$doPlot == FALSE) return()
 
     selDf <- detailPlotDt()
-    selDf$x_label <- paste(selDf$orthoID,"@",selDf$fullName,sep = "")
+    selDf$x_label <- paste(selDf$orthoID," (",selDf$fullName,")",sep = "")
 
     ### create joined DF for plotting var1 next to var2
     var1Df <- subset(selDf, select = c("x_label","var1"))
@@ -3910,7 +3922,7 @@ shinyServer(function(input, output, session) {
   ######## download FASTA
   output$downloadFasta.ui <- renderUI({
     if(input$demo_data == "demo"){
-      HTML("<p><span style=\"color: #ff0000;\"><em>Depend on the number of taxa, this might take up to 3 minutes!</em></span></p>")
+      HTML("<p><span style=\"color: #ff0000;\"><em>Be patient! For large number of taxa this can take up to 3 minutes!</em></span></p>")
     }
   })
   

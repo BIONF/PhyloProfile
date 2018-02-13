@@ -140,12 +140,11 @@ shinyUI(fluidPage(
                          selected = "none",
                          width = "80%"),
              
-             bsPopover("demo_data","","automatically upload demo files to try all features of PhyloProfile","top"),
-             
              uiOutput("noInternetMsg"),
-
+             uiOutput("demoDataDescribe"),
              uiOutput("mainInputFile.ui"),
              uiOutput("inputCheck.ui"),
+             
              fluidRow(
                column(4,
                       uiOutput("var1_id.ui")
@@ -160,7 +159,8 @@ shinyUI(fluidPage(
                       selectInput("var1_relation", label = h5("Relationship:"),
                                   choices = list("Prot-Prot"="protein", "Prot-Spec"="species"),
                                   selected = "protein",
-                                  width = 130)
+                                  width = 130),
+                      bsPopover("var1_relation","","select if variable is the comparison between *seed protein - ortholog protein* or *seed protein - search taxon*","top")
                )
              ),
              fluidRow(
@@ -274,13 +274,14 @@ shinyUI(fluidPage(
       "Main profile",
       sidebarLayout(
         sidebarPanel(
-          column(4,numericInput("stIndex","Gene from:",min=1,max=1600,value=1,width=100),style='padding:0px;'),
+          uiOutput("totalGeneNumber.ui"),
+          
+          column(4,numericInput("stIndex","Show from:",min=1,max=1600,value=1,width=100),style='padding:0px;'),
           column(4,numericInput("endIndex","...to:",min=1,max=1600,value=30,width=100),style='padding:0px;'),
           column(4,uiOutput("highlightGeneUI")),
           bsPopover("stIndex","","Set start index for sequence range","bottom"),
           bsPopover("endIndex","","Set end index for sequence range","bottom"),
-            
-          uiOutput("titleEndIndex"),
+
           br(),
 
           uiOutput("highlightTaxonUI"),
