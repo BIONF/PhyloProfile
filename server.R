@@ -2945,31 +2945,36 @@ shinyServer(function(input, output, session) {
     
     ### get seqs for extended.fa
     if(input$demo_data == "none" & input$input_type == 'Concatenated fasta file'){
-      fasIn <- input$oneSeqFasta
-      file <- toString(fasIn$datapath)
-    
-      # read fasta file and save sequences into dataframe
-      fastaFile = readAAStringSet(file)
-      
-      seq_name = names(fastaFile)
-      sequence = paste(fastaFile)
-      fa <- data.frame(seq_name, sequence)  # data frame contains all sequences from input file
-
-      # get selected sequences
-      for(j in 1:nrow(dataOut)){
-        seqID <- as.character(dataOut$orthoID[j])
-        groupID <- as.character(dataOut$geneID[j])
-        seq <- fa$sequence[pmatch(seqID,fa$seq_name)]
+      if(!is.null(input$oneSeqFasta)){
+        fasIn <- input$oneSeqFasta
+        file <- toString(fasIn$datapath)
         
-        if(length(seq[1]) < 1){
-          fastaOut <- paste0(seqID," not found in ",file,"! Please check the header format in FASTA file!")
-        } else{
-          if(!is.na(seq[1])){
-            fastaOut <- paste(paste0(">",groupID,"|",seqID),seq[1],sep="\n")
-          } else {
-            fastaOut <- paste0(seqID," not found in uploaded FASTA file!!! Please check again!!!")
+        # read fasta file and save sequences into dataframe
+        fastaFile = readAAStringSet(file)
+        
+        seq_name = names(fastaFile)
+        sequence = paste(fastaFile)
+        fa <- data.frame(seq_name, sequence)  # data frame contains all sequences from input file
+        
+        # get selected sequences
+        for(j in 1:nrow(dataOut)){
+          seqID <- as.character(dataOut$orthoID[j])
+          groupID <- as.character(dataOut$geneID[j])
+          seq <- fa$sequence[pmatch(seqID,fa$seq_name)]
+          
+          if(length(seq[1]) < 1){
+            fastaOut <- paste0(seqID," not found in ",file,"! Please check the header format in FASTA file!")
+          } else{
+            if(!is.na(seq[1])){
+              fastaOut <- paste(paste0(">",groupID,"|",seqID),seq[1],sep="\n")
+            } else {
+              fastaOut <- paste0(seqID," not found in uploaded FASTA file!!! Please check again!!!")
+            }
           }
+          fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
         }
+      } else {
+        fastaOut <- paste0("Please provide FASTA file(s) in Input & settings page!")
         fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
       }
     }
@@ -3188,9 +3193,11 @@ shinyServer(function(input, output, session) {
       }
     }
 
-    if(ncol(domainDf) == 6){
+    if(ncol(domainDf) == 5){
+      colnames(domainDf) <- c("seedID","orthoID","feature","start","end")
+    } else if(ncol(domainDf) == 6){
       colnames(domainDf) <- c("seedID","orthoID","feature","start","end","weight")
-    } else {
+    } else if(ncol(domainDf) == 7){
       colnames(domainDf) <- c("seedID","orthoID","feature","start","end","weight","path")
     }
 
@@ -3226,10 +3233,14 @@ shinyServer(function(input, output, session) {
       }
       
       ### join weight values and feature names
-      orderedOrthoDf$yLabel <- paste0(orderedOrthoDf$feature," (",round(orderedOrthoDf$weight,2),")")
-      orderedOrthoDf$feature <- orderedOrthoDf$yLabel
-      orderedSeedDf$yLabel <- paste0(orderedSeedDf$feature," (",round(orderedSeedDf$weight,2),")")
-      orderedSeedDf$feature <- orderedSeedDf$yLabel
+      if("weight" %in% colnames(orderedOrthoDf)){
+        orderedOrthoDf$yLabel <- paste0(orderedOrthoDf$feature," (",round(orderedOrthoDf$weight,2),")")
+        orderedOrthoDf$feature <- orderedOrthoDf$yLabel
+      }
+      if("weight" %in% colnames(orderedSeedDf)){
+        orderedSeedDf$yLabel <- paste0(orderedSeedDf$feature," (",round(orderedSeedDf$weight,2),")")
+        orderedSeedDf$feature <- orderedSeedDf$yLabel
+      }
       
       ### plotting
       sep = ":"
