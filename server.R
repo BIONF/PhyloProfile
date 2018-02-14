@@ -3928,9 +3928,9 @@ shinyServer(function(input, output, session) {
   
   ######## download FASTA
   output$downloadFasta.ui <- renderUI({
-    if(input$demo_data == "demo"){
-      HTML("<p><span style=\"color: #ff0000;\"><em>Be patient! For large number of taxa this can take up to 3 minutes!</em></span></p>")
-    }
+    # if(input$demo_data == "demo"){
+    #   HTML("<p><span style=\"color: #ff0000;\"><em>Be patient! For large number of taxa this can take up to 3 minutes!</em></span></p>")
+    # }
   })
   
   output$downloadFasta <- downloadHandler(
@@ -3993,9 +3993,9 @@ shinyServer(function(input, output, session) {
   
   ######## download FASTA
   output$downloadCustomFasta.ui <- renderUI({
-    if(input$demo_data == "demo"){
-      HTML("<p><span style=\"color: #ff0000;\"><em>Depend on the number of taxa, this might take up to 3 minutes!</em></span></p>")
-    }
+    # if(input$demo_data == "demo"){
+    #   HTML("<p><span style=\"color: #ff0000;\"><em>Depend on the number of taxa, this might take up to 3 minutes!</em></span></p>")
+    # }
   })
   
   output$downloadCustomFasta <- downloadHandler(
