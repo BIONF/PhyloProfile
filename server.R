@@ -731,9 +731,9 @@ shinyServer(function(input, output, session) {
   output$mainInputFile.ui <- renderUI({
     # if(input$demo == TRUE){
     if(input$demo_data == "demo"){
-      h4(a("demo/test.main.long", href="https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/test.main.long", target="_blank"))
+      h4(a("Download demo input file", href="https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/test.main.long", target="_blank"))
     } else if(input$demo_data == "ampk-tor"){
-      h4(a("expTestData/ampk-tor/ampk-tor.phyloprofile", href="https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.phyloprofile", target="_blank"))
+      h4(a("Download demo input file", href="https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.phyloprofile", target="_blank"))
     } else {
       fileInput("mainInput",h5("Upload input file:"))
     }
@@ -742,9 +742,9 @@ shinyServer(function(input, output, session) {
   output$domainInputFile.ui <- renderUI({
     # if(input$demo == TRUE){
     if(input$demo_data == "demo"){
-      h4(a("demo/domains", href="https://github.com/BIONF/phyloprofile-data/tree/master/demo/domain_files", target="_blank"))
+      h4(a("Download demo domain files", href="https://github.com/BIONF/phyloprofile-data/tree/master/demo/domain_files", target="_blank"))
     } else if(input$demo_data == "ampk-tor"){
-      h4(a("expTestData/ampk-tor/ampk-tor.domains_F", href="https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.domains_F", target="_blank"))
+      h4(a("Download demo domain file", href="https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.domains_F", target="_blank"))
     } else {
       if(input$annoChoose == "from file"){
         fileInput("fileDomainInput","")
@@ -753,7 +753,6 @@ shinyServer(function(input, output, session) {
       }
     }
   })
-  
   
   ####### render description for demo data #######
   output$demoDataDescribe <- renderUI({
