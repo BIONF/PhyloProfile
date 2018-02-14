@@ -650,15 +650,15 @@ shinyUI(fluidPage(
     ####### popup windows for FASTA configurations
     bsModal("config", "FASTA config", "getConfig", size = "small",
             selectInput("input_type", "Choose location for:",
-                        c("Fasta folder","oneSeq.extended.fa")
+                        c("Concatenated fasta file","Fasta folder")
             ),
             hr(),
+            uiOutput("downloadFastaDemo.ui"),
             conditionalPanel(
-              condition = "input.input_type == 'oneSeq.extended.fa'",
+              condition = "input.input_type == 'Concatenated fasta file'",
               #            textInput("oneseq.file","Path:",""),
               fileInput("oneSeqFasta",""),
               uiOutput("oneSeq.existCheck")
-
             ),
             conditionalPanel(
               condition = "input.input_type == 'Fasta folder'",

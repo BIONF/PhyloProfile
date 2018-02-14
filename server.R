@@ -727,13 +727,13 @@ shinyServer(function(input, output, session) {
     }
   })
 
-  ######## render input files
+  ######## render download link for demo online files
   output$mainInputFile.ui <- renderUI({
     # if(input$demo == TRUE){
     if(input$demo_data == "demo"){
-      h4(a("Download demo input file", href="https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/test.main.long", target="_blank"))
+      strong(a("Download demo input file", href="https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/test.main.long", target="_blank"))
     } else if(input$demo_data == "ampk-tor"){
-      h4(a("Download demo input file", href="https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.phyloprofile", target="_blank"))
+      strong(a("Download demo input file", href="https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.phyloprofile", target="_blank"))
     } else {
       fileInput("mainInput",h5("Upload input file:"))
     }
@@ -742,9 +742,9 @@ shinyServer(function(input, output, session) {
   output$domainInputFile.ui <- renderUI({
     # if(input$demo == TRUE){
     if(input$demo_data == "demo"){
-      h4(a("Download demo domain files", href="https://github.com/BIONF/phyloprofile-data/tree/master/demo/domain_files", target="_blank"))
+      strong(a("Download demo domain files", href="https://github.com/BIONF/phyloprofile-data/tree/master/demo/domain_files", target="_blank"))
     } else if(input$demo_data == "ampk-tor"){
-      h4(a("Download demo domain file", href="https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.domains_F", target="_blank"))
+      strong(a("Download demo domain file", href="https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.domains_F", target="_blank"))
     } else {
       if(input$annoChoose == "from file"){
         fileInput("fileDomainInput","")
@@ -753,6 +753,15 @@ shinyServer(function(input, output, session) {
       }
     }
   })
+  
+  output$downloadFastaDemo.ui <- renderUI({
+    if(input$demo_data == "demo"){
+      strong(a("Download demo fasta file", href="https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/fasta_file/concatenatedSeq.fa", target="_blank"))
+    } else if(input$demo_data == "ampk-tor"){
+      strong(a("Download demo fasta file", href="https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.extended.fa", target="_blank"))
+    }
+  })
+  
   
   ####### render description for demo data #######
   output$demoDataDescribe <- renderUI({
@@ -2688,12 +2697,12 @@ shinyServer(function(input, output, session) {
     if(is.null(info)){return()}
     else{
       orthoID <- info[2]
-      ## parse orthoID for oneSeq
-      if(input$input_type == 'oneSeq.extended.fa'){
-        orthoIDTmp <- unlist(strsplit(toString(info[2]),"\\|"))
-        #orthoID = toString(paste0(orthoIDTmp[2],":",orthoIDTmp[3]))
-        orthoID = toString(orthoIDTmp[3])
-      }
+      # ## parse orthoID for oneSeq
+      # if(input$input_type == 'Concatenated fasta file'){
+      #   orthoIDTmp <- unlist(strsplit(toString(info[2]),"\\|"))
+      #   #orthoID = toString(paste0(orthoIDTmp[2],":",orthoIDTmp[3]))
+      #   orthoID = toString(orthoIDTmp[3])
+      # }
       if(is.na(orthoID)){return()}
       else{
         # if(orthoID=="NA"){orthoID <- info[2]}
@@ -2883,9 +2892,12 @@ shinyServer(function(input, output, session) {
     if(!is.null(filein)){inputType <- checkInputVadility(filein)}
     else{ inputType <- "NA"}
     
-    ### get seqs for AMPK-TOR demo data
-    if(input$demo_data == "ampk-tor"){
-      fastaUrl <- paste0("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.extended.fa")
+    ### get seqs for AMPK-TOR and microsporidia ONLINE demo data
+    if(input$demo_data == "ampk-tor" | input$demo_data == "demo"){
+      fastaUrl <- paste0("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/fasta_file/concatenatedSeq.fa")
+      if(input$demo_data == "ampk-tor"){
+        fastaUrl <- paste0("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.extended.fa")
+      }
       
       if(url.exists(fastaUrl)){
         # load fasta file
@@ -2904,44 +2916,6 @@ shinyServer(function(input, output, session) {
       } else {
         fastaOut <- paste0(fastaUrl," not found!!!")
         fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
-      }
-    }
-    
-    ### get seqs for Microsporidia online demo data
-    if(input$demo_data == "demo"){
-      specDf <- as.data.frame(str_split_fixed(dataOut$orthoID, "@", 3))
-      specDf$specID <- paste0(specDf[,1],"%40",specDf[,2])
-      
-      # read all species FASTA files
-      fa <- data.frame()
-      for(i in 1:length(levels(as.factor(specDf$specID)))){
-        specID <- as.character(levels(as.factor(specDf$specID))[i])
-        
-        fastaUrl <- paste0("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/fasta_files/",specID,".fa")
-        print(paste("read",fastaUrl))
-        
-        if(url.exists(fastaUrl)){
-          faFile <- as.data.frame(read.table(fastaUrl, sep="\t", header=F, fill=T, stringsAsFactors = FALSE, quote = ""))
-          faDf <- data.frame("seqID" = faFile$V1[grepl(">",faFile$V1)], "seq" = faFile$V1[!grepl(">",faFile$V1)], stringsAsFactors=FALSE)
-          fa <- rbind(fa,faDf)
-        }
-      }
-      
-      # get selected species
-      if(nrow(fa) < 1){
-        fastaOut <- paste0("No FASTA has been found in github.com/BIONF/phyloprofile-data/master/demo/fasta_files/!!! Please contact us!")
-        fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
-      } else {
-        for(j in 1:nrow(dataOut)){
-          seqID <- as.character(dataOut$orthoID[j])
-          groupID <- as.character(dataOut$geneID[j])
-          
-          seq <- as.character(fa$seq[fa$seqID == paste0(">",seqID)])
-          if(length(seq) > 0){
-            fastaOut <- paste(paste0(">",groupID,"|",seqID),seq,sep="\n")
-            fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
-          }
-        }
       }
     }
     
@@ -2970,7 +2944,7 @@ shinyServer(function(input, output, session) {
     }
     
     ### get seqs for extended.fa
-    if(input$input_type == 'oneSeq.extended.fa'){
+    if(input$demo_data == "none" & input$input_type == 'Concatenated fasta file'){
       fasIn <- input$oneSeqFasta
       file <- toString(fasIn$datapath)
     
