@@ -2960,12 +2960,23 @@ shinyServer(function(input, output, session) {
           seqID <- as.character(dataOut$orthoID[j])
           groupID <- as.character(dataOut$geneID[j])
           seq <- fa$sequence[pmatch(seqID,fa$seq_name)]
+          flag <- 1
+          if(is.na(seq)){
+            seqID <- paste0(as.character(dataOut$geneID[j]),"|ncbi",as.character(dataOut$ncbiID[j]),"|",as.character(dataOut$orthoID[j]))
+            seq <- fa$sequence[pmatch(seqID,fa$seq_name)]
+            flag <- 0
+          }
           
           if(length(seq[1]) < 1){
             fastaOut <- paste0(seqID," not found in ",file,"! Please check the header format in FASTA file!")
           } else{
             if(!is.na(seq[1])){
-              fastaOut <- paste(paste0(">",groupID,"|",seqID),seq[1],sep="\n")
+              if(flag == 1){
+                fastaOut <- paste(paste0(">",groupID,"|",seqID),seq[1],sep="\n")
+              } else {
+                fastaOut <- paste(paste0(">",seqID),seq[1],sep="\n")
+              }
+              
             } else {
               fastaOut <- paste0(seqID," not found in uploaded FASTA file!!! Please check again!!!")
             }
