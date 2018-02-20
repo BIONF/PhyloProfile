@@ -109,7 +109,8 @@ print("now getting FASTA sequences for:")
 for orthogroup in soup.findAll("orthologGroup"):
 	groupID = orthogroup.get("id")
 	if groupID:
-		groupID = "OG_"+str(groupID)
+		if groupID.isdigit():
+			groupID = "OG_"+str(groupID)
 		for ortho in orthogroup.findAll("geneRef"):
 			geneID = ortho.get("id")
 			print(geneid2name[geneID])

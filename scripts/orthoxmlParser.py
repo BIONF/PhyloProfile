@@ -57,10 +57,10 @@ def main(argv):
 	for orthogroup in xmlIn.findAll("orthologGroup"):
 		groupID = orthogroup.get("id")
 		if groupID:
-			# if groupID.isdigit():
+			if groupID.isdigit():
 			# 	if int(groupID) < index:
 			# 		groupIndex = index + int(groupID)
-			groupID = "OG_"+str(groupID)
+				groupID = "OG_"+str(groupID)
 
 			for ortho in orthogroup.findAll("geneRef"):
 				orthoID = protID[ortho.get("id")]
