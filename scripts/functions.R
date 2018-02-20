@@ -25,6 +25,14 @@ fastaParser <- function(inputFile){
   colnames(dfIN) = as.character(unlist(dfIN[1,])) # the first row will be the header
   dfIN <- subset(dfIN[dfIN$geneID != "geneID",])
   dfIN <- droplevels(dfIN)
+  
+  if(all(is.na(dfIN$var2))){
+    dfIN = subset(dfIN, select = -c(var2) )
+  }
+  if(all(is.na(dfIN$var1))){
+    dfIN = subset(dfIN, select = -c(var1) )
+  }
+  
   dfIN
 }
 

@@ -83,22 +83,37 @@ print("(1/2) Profile input file is created: "+output+"\n")
 time.sleep(3)
 
 # get fasta sequences
-print("now getting FASTA sequences for:")
 def get_fasta(ID):
 	oma_url = urllib.urlopen("https://omabrowser.org/cgi-bin/gateway.pl?f=DisplayEntry&p1=%s" % ID)
 	page = oma_url.read()
 	oma_gene_soup = BeautifulSoup(page, 'html.parser')
 	fasta_section = oma_gene_soup.find_all('div', attrs={'class': 'panel-body'})[-1].text.strip()
 	seq = ''.join(''.join(i for i in fasta_section if not i.isdigit()).split())
-	fasta = ">"+ID+"\n"+seq+"\n"
-	return(fasta)
+	# fasta = ">"+ID+"\n"+seq+"\n"
+	return(seq)
 
 soup = BeautifulSoup(open(output),"xml")
+gene2spec = {}
+geneid2name = {}
+for spec in soup.findAll("species"):
+	specID = spec.get("NCBITaxId")
+	for gene in spec.findAll("gene"):
+		geneName = gene.get("protId")
+		geneID = gene.get("id")
+		gene2spec[geneID] = "ncbi"+specID
+		geneid2name[geneID] = geneName
+
 fasOut = args.input[0]+".fa"
 fasOutFile = open(fasOut,"w")
-for gene in soup.findAll("gene"):
-	geneID = gene.get("protId")
-	fasta = get_fasta(geneID)
-	fasOutFile.write(fasta)
-	print(geneID),
+print("now getting FASTA sequences for:")
+for orthogroup in soup.findAll("orthologGroup"):
+	groupID = orthogroup.get("id")
+	if groupID:
+		groupID = "OG_"+str(groupID)
+		for ortho in orthogroup.findAll("geneRef"):
+			geneID = ortho.get("id")
+			print(geneid2name[geneID])
+			seq = get_fasta(geneid2name[geneID])
+			fasta = ">"+groupID+"|"+gene2spec[geneID]+"|"+geneid2name[geneID]+"\n"+seq+"\n"
+			fasOutFile.write(fasta)
 print("(2/2) Fasta file is created: "+fasOut+"\n")

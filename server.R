@@ -1443,7 +1443,6 @@ shinyServer(function(input, output, session) {
   ### get all information for input data
   dataFiltered <- reactive({
     mdData <- preData()
-
     ### count number of inparalogs
     paralogCount <- plyr::count(mdData,c('geneID','ncbiID'))
     mdData <- merge(mdData,paralogCount,by=c('geneID','ncbiID'))

@@ -624,7 +624,7 @@ shinyUI(fluidPage(
 
     ####### popup to confirm parsing data from input file
     bsModal("parseConfirm", "Get info from input", "BUTparse", size = "small",
-            HTML("Processing...<br><br>"),
+            HTML("Fetching Missing Taxonomy Information from NCBI and Post-processing...<br><br>"),
             strong("PLEASE RELOAD THIS TOOL WHEN FINISHED!!!",style = "color:red"),
             # conditionalPanel(
               # condition = 'output.taxonomyParseStatus == 1',
