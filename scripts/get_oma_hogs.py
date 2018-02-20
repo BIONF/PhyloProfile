@@ -1,9 +1,13 @@
+# -*- coding: utf-8 -*-
 #!/usr/bin/env python
+from __future__ import print_function
 import argparse
 import urllib
 from cStringIO import StringIO
 from lxml import etree
-
+from bs4 import BeautifulSoup
+import time
+import re
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-i','--input', nargs='+',
@@ -27,8 +31,6 @@ def read_xml(ID):
         print("Could not find %s in OMA" % (ID))
         print("Are you sure that this is a valid protein ID?")
         exit()
-
-
 
 def merge_xml(oma1,oma2):
     '''
@@ -74,4 +76,29 @@ for single_id in other_ids:
     merged_xml = merge_xml(merged_xml,xml_to_append)
 
 # and print our new XML
-print(etree.tostring(merged_xml))
+output = args.input[0]+".orthoXML"
+file = open(output,"w")
+file.write(etree.tostring(merged_xml))
+print("(1/2) Profile input file is created: "+output+"\n")
+time.sleep(3)
+
+# get fasta sequences
+print("now getting FASTA sequences for:")
+def get_fasta(ID):
+	oma_url = urllib.urlopen("https://omabrowser.org/cgi-bin/gateway.pl?f=DisplayEntry&p1=%s" % ID)
+	page = oma_url.read()
+	oma_gene_soup = BeautifulSoup(page, 'html.parser')
+	fasta_section = oma_gene_soup.find_all('div', attrs={'class': 'panel-body'})[-1].text.strip()
+	seq = ''.join(''.join(i for i in fasta_section if not i.isdigit()).split())
+	fasta = ">"+ID+"\n"+seq+"\n"
+	return(fasta)
+
+soup = BeautifulSoup(open(output),"xml")
+fasOut = args.input[0]+".fa"
+fasOutFile = open(fasOut,"w")
+for gene in soup.findAll("gene"):
+	geneID = gene.get("protId")
+	fasta = get_fasta(geneID)
+	fasOutFile.write(fasta)
+	print(geneID),
+print("(2/2) Fasta file is created: "+fasOut+"\n")
