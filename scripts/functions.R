@@ -151,7 +151,7 @@ domain.plotting <- function(df,geneID,sep,labelSize,titleSize,minStart,maxEnd){
   ### theme format
   titleMod <- gsub(":",sep,geneID)
   gg <- gg + scale_y_discrete(expand=c(0.075,0))
-  gg <- gg + labs(title=paste0(titleMod), y="Feature (weight)")
+  gg <- gg + labs(title=paste0(titleMod), y="Feature")
   gg <- gg + theme_minimal()
   gg <- gg + theme(panel.border=element_blank())
   gg <- gg + theme(axis.ticks=element_blank())

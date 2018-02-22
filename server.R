@@ -263,25 +263,41 @@ shinyServer(function(input, output, session) {
   })
 
   ######## variable 1 & 2 cutoff slidebar (main plot)
-  output$var1_dist.ui <- renderUI({
-    sliderInput("var1_dist",paste(input$var1_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(input$var1[1],input$var1[2]), width = 200)
-  })
-
   output$var1_cutoff.ui <- renderUI({
-    sliderInput("var1",paste(input$var1_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(0.0,1.0), width = 200)
+    if(is.null(input$var1_id)){return()}
+    if(input$var1_id == ""){
+      sliderInput("var1",paste(input$var1_id,"cutoff:"), min = 1, max = 1, step = 0.025, value = c(1.0,1.0), width = 200)
+    } else {
+      sliderInput("var1",paste(input$var1_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(0.0,1.0), width = 200)
+    }
   })
 
   output$var2_cutoff.ui <- renderUI({
-    sliderInput("var2",paste(input$var2_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(0.0,1.0), width = 200)
+    if(is.null(input$var2_id)){return()}
+    if(input$var2_id == ""){
+      sliderInput("var2",paste(input$var2_id,"cutoff:"), min = 1, max = 1, step = 0.025, value = c(1.0,1.0), width = 200)
+    } else {
+      sliderInput("var2",paste(input$var2_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(0.0,1.0), width = 200)
+    }
   })
 
   ######## render filter slidebars for Customized plot
   output$var1Filter.ui <- renderUI({
-    sliderInput("var1cus",paste(input$var1_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(input$var1[1],input$var1[2]), width = 200)
+    if(is.null(input$var1_id)){return()}
+    if(input$var1_id == ""){
+      sliderInput("var1cus",paste(input$var1_id,"cutoff:"), min = 1, max = 1, step = 0.025, value = c(1.0,1.0), width = 200)
+    } else {
+      sliderInput("var1cus",paste(input$var1_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(input$var1[1],input$var1[2]), width = 200)
+    }
   })
 
   output$var2Filter.ui <- renderUI({
-    sliderInput("var2cus",paste(input$var2_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(input$var2[1],input$var2[2]), width = 200)
+    if(is.null(input$var2_id)){return()}
+    if(input$var2_id == ""){
+      sliderInput("var2cus",paste(input$var2_id,"cutoff:"), min = 1, max = 1, step = 0.025, value = c(1.0,1.0), width = 200)
+    } else {
+      sliderInput("var2cus",paste(input$var2_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(input$var2[1],input$var2[2]), width = 200)
+    }
   })
 
   output$percentFilter.ui <- renderUI({
@@ -291,11 +307,21 @@ shinyServer(function(input, output, session) {
 
   ######## render filter slidebars for Distribution plot
   output$var1_dist.ui <- renderUI({
-    sliderInput("var1_dist",paste(input$var1_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(input$var1[1],input$var1[2]), width = 200)
+    if(is.null(input$var1_id)){return()}
+    if(input$var1_id == ""){
+      sliderInput("var1_dist",paste(input$var1_id,"cutoff:"), min = 1, max = 1, step = 0.025, value = c(1.0,1.0), width = 200)
+    } else {
+      sliderInput("var1_dist",paste(input$var1_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(input$var1[1],input$var1[2]), width = 200)
+    }
   })
 
   output$var2_dist.ui <- renderUI({
-    sliderInput("var2_dist",paste(input$var2_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(input$var2[1],input$var2[2]), width = 200)
+    if(is.null(input$var2_id)){return()}
+    if(input$var2_id == ""){
+      sliderInput("var2_dist",paste(input$var2_id,"cutoff:"), min = 1, max = 1, step = 0.025, value = c(1.0,1.0), width = 200)
+    } else {
+      sliderInput("var2_dist",paste(input$var2_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(input$var2[1],input$var2[2]), width = 200)
+    }
   })
 
   output$percent_dist.ui <- renderUI({
@@ -305,11 +331,21 @@ shinyServer(function(input, output, session) {
 
   ######## render filter slidebars for Gene age estimation plot
   output$var1_age.ui <- renderUI({
-    sliderInput("var1_age",paste(input$var1_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(input$var1[1],input$var1[2]), width = 200)
+    if(is.null(input$var1_id)){return()}
+    if(input$var1_id == ""){
+      sliderInput("var1_age",paste(input$var1_id,"cutoff:"), min = 1, max = 1, step = 0.025, value = c(1.0,1.0), width = 200)
+    } else {
+      sliderInput("var1_age",paste(input$var1_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(input$var1[1],input$var1[2]), width = 200)
+    }
   })
 
   output$var2_age.ui <- renderUI({
-    sliderInput("var2_age",paste(input$var2_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(input$var2[1],input$var2[2]), width = 200)
+    if(is.null(input$var2_id)){return()}
+    if(input$var2_id == ""){
+      sliderInput("var2_age",paste(input$var2_id,"cutoff:"), min = 1, max = 1, step = 0.025, value = c(1.0,1.0), width = 200)
+    } else {
+      sliderInput("var2_age",paste(input$var2_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(input$var2[1],input$var2[2]), width = 200)
+    }
   })
 
   output$percent_age.ui <- renderUI({
@@ -319,11 +355,21 @@ shinyServer(function(input, output, session) {
 
   ######## render filter slidebars for Core gene finding function
   output$var1_cons.ui <- renderUI({
-    sliderInput("var1_cons",paste(input$var1_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(input$var1[1],input$var1[2]), width = 200)
+    if(is.null(input$var1_id)){return()}
+    if(input$var1_id == ""){
+      sliderInput("var1_cons",paste(input$var1_id,"cutoff:"), min = 1, max = 1, step = 0.025, value = c(1.0,1.0), width = 200)
+    } else {
+      sliderInput("var1_cons",paste(input$var1_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(input$var1[1],input$var1[2]), width = 200)
+    }
   })
 
   output$var2_cons.ui <- renderUI({
-    sliderInput("var2_cons",paste(input$var2_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(input$var2[1],input$var2[2]), width = 200)
+    if(is.null(input$var2_id)){return()}
+    if(input$var2_id == ""){
+      sliderInput("var2_cons",paste(input$var2_id,"cutoff:"), min = 1, max = 1, step = 0.025, value = c(1.0,1.0), width = 200)
+    } else {
+      sliderInput("var2_cons",paste(input$var2_id,"cutoff:"), min = 0, max = 1, step = 0.025, value = c(input$var2[1],input$var2[2]), width = 200)
+    }
   })
 
   output$percent_cons.ui <- renderUI({
@@ -334,13 +380,23 @@ shinyServer(function(input, output, session) {
   ######## update value for "main" filter slidebars based on "Customized", "Distribution", "Gene age estimation" slidebars
   observe({
     newVar1 <- input$var1cus
-    updateSliderInput(session, "var1", value = newVar1,
-                      min = 0, max = 1, step = 0.025)
+    
+    if(is.null(input$var1_id)){return()}
+    if(input$var1_id == ""){
+      updateSliderInput(session, "var1", value = newVar1,min = 1, max = 1, step = 0.025)
+    } else {
+      updateSliderInput(session, "var1", value = newVar1,min = 0, max = 1, step = 0.025)
+    }
   })
   observe({
     newVar2 <- input$var2cus
-    updateSliderInput(session, "var2", value = newVar2,
-                      min = 0, max = 1, step = 0.025)
+    
+    if(is.null(input$var2_id)){return()}
+    if(input$var2_id == ""){
+      updateSliderInput(session, "var2", value = newVar2,min = 1, max = 1, step = 0.025)
+    } else {
+      updateSliderInput(session, "var2", value = newVar2,min = 0, max = 1, step = 0.025)
+    }
   })
   observe({
     newPercent <- input$percent2
@@ -350,13 +406,23 @@ shinyServer(function(input, output, session) {
 
   observe({
     newVar1 <- input$var1_dist
-    updateSliderInput(session, "var1", value = newVar1,
-                      min = 0, max = 1, step = 0.025)
+    
+    if(is.null(input$var1_id)){return()}
+    if(input$var1_id == ""){
+      updateSliderInput(session, "var1", value = newVar1,min = 1, max = 1, step = 0.025)
+    } else {
+      updateSliderInput(session, "var1", value = newVar1,min = 0, max = 1, step = 0.025)
+    }
   })
   observe({
     newVar2 <- input$var2_dist
-    updateSliderInput(session, "var2", value = newVar2,
-                      min = 0, max = 1, step = 0.025)
+    
+    if(is.null(input$var2_id)){return()}
+    if(input$var2_id == ""){
+      updateSliderInput(session, "var2", value = newVar2,min = 1, max = 1, step = 0.025)
+    } else {
+      updateSliderInput(session, "var2", value = newVar2,min = 0, max = 1, step = 0.025)
+    }
   })
   observe({
     newPercent <- input$percent_dist
@@ -366,13 +432,23 @@ shinyServer(function(input, output, session) {
 
   observe({
     newVar1 <- input$var1_age
-    updateSliderInput(session, "var1", value = newVar1,
-                      min = 0, max = 1, step = 0.025)
+    
+    if(is.null(input$var1_id)){return()}
+    if(input$var1_id == ""){
+      updateSliderInput(session, "var1", value = newVar1,min = 1, max = 1, step = 0.025)
+    } else {
+      updateSliderInput(session, "var1", value = newVar1,min = 0, max = 1, step = 0.025)
+    }
   })
   observe({
     newVar2 <- input$var2_age
-    updateSliderInput(session, "var2", value = newVar2,
-                      min = 0, max = 1, step = 0.025)
+    
+    if(is.null(input$var2_id)){return()}
+    if(input$var2_id == ""){
+      updateSliderInput(session, "var2", value = newVar2,min = 1, max = 1, step = 0.025)
+    } else {
+      updateSliderInput(session, "var2", value = newVar2,min = 0, max = 1, step = 0.025)
+    }
   })
   observe({
     newPercent <- input$percent_age
@@ -2709,8 +2785,14 @@ shinyServer(function(input, output, session) {
         ## print output
         a <- toString(paste("Seed-ID:",info[1]))
         b <- toString(paste0("Hit-ID: ",orthoID," (",substr(info[3],6,nchar(info[3])),")"))
-        c <- toString(paste(input$var1_aggregateBy,input$var1_id,":",info[4]))
-        d <- toString(paste(input$var2_aggregateBy,input$var2_id,":",info[6]))
+        c <- ""
+        if(input$var1_id != ""){
+          c <- toString(paste(input$var1_aggregateBy,input$var1_id,":",info[4]))
+        }
+        d <- ""
+        if(input$var2_id != ""){
+          d <- toString(paste(input$var2_aggregateBy,input$var2_id,":",info[6]))
+        }
         e <- toString(paste("% present taxa:",info[5]))
         paste(a,b,c,d,e,sep="\n")
       }
@@ -2875,8 +2957,14 @@ shinyServer(function(input, output, session) {
     else{
       a <- paste0("seedID = ",info[1])
       b <- paste0("hitID = ",info[2])
-      c <- paste0(input$var1_id," = ",info[3])
-      d <- paste0(input$var2_id," = ",info[4])
+      c <- ""
+      if(input$var1_id != ""){
+        c <- paste0(input$var1_id," = ",info[3])
+      }
+      d <- ""
+      if(input$var2_id != ""){
+        d <- paste0(input$var2_id," = ",info[4])
+      }
       paste(a,b,c,d,sep="\n")
     }
   })
