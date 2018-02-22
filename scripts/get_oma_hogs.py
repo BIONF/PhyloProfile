@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python
-from __future__ import print_function
+import coreapi
 import argparse
 import urllib
 from cStringIO import StringIO
@@ -16,6 +16,11 @@ parser.add_argument('-i','--input', nargs='+',
                     (required)',required=True)
 args = parser.parse_args()
 
+# Initialize a client & load the OMA schema document
+client = coreapi.Client()
+schema = client.get("https://omabrowser.org/api/docs")
+
+# create orthoxml profile file
 def read_xml(ID):
     '''
     Get the XML-formatted HOG file from OMA.
@@ -79,18 +84,24 @@ for single_id in other_ids:
 output = args.input[0]+".orthoXML"
 file = open(output,"w")
 file.write(etree.tostring(merged_xml))
-print("(1/2) Profile input file is created: "+output+"\n")
-time.sleep(3)
 
-# get fasta sequences
-def get_fasta(ID):
-	oma_url = urllib.urlopen("https://omabrowser.org/cgi-bin/gateway.pl?f=DisplayEntry&p1=%s" % ID)
-	page = oma_url.read()
-	oma_gene_soup = BeautifulSoup(page, 'html.parser')
-	fasta_section = oma_gene_soup.find_all('div', attrs={'class': 'panel-body'})[-1].text.strip()
-	seq = ''.join(''.join(i for i in fasta_section if not i.isdigit()).split())
-	# fasta = ">"+ID+"\n"+seq+"\n"
-	return(seq)
+# get sequences and domain annotations
+def get_seq_info(ID):
+	# Interact with the API endpoint
+	action = ["protein", "read"]
+	params = {
+	    "entry_id": ID
+	}
+	result = client.action(schema, action, params=params)
+	return(result)
+
+def get_domain_info(ID):
+	action = ["protein", "domains"]
+	params = {
+	    "entry_id": ID
+	}
+	result = client.action(schema, action, params=params)
+	return(result)
 
 soup = BeautifulSoup(open(output),"xml")
 gene2spec = {}
@@ -105,7 +116,10 @@ for spec in soup.findAll("species"):
 
 fasOut = args.input[0]+".fa"
 fasOutFile = open(fasOut,"w")
-print("now getting FASTA sequences for:")
+domainOut = args.input[0]+".domains"
+domainOutFile = open(domainOut,"w")
+
+print("now getting FASTA sequence and domain annotations for:")
 for orthogroup in soup.findAll("orthologGroup"):
 	groupID = orthogroup.get("id")
 	if groupID:
@@ -114,7 +128,25 @@ for orthogroup in soup.findAll("orthologGroup"):
 		for ortho in orthogroup.findAll("geneRef"):
 			geneID = ortho.get("id")
 			print(geneid2name[geneID])
-			seq = get_fasta(geneid2name[geneID])
+
+			# output sequence
+			seq = get_seq_info(geneid2name[geneID])["sequence"]
 			fasta = ">"+groupID+"|"+gene2spec[geneID]+"|"+geneid2name[geneID]+"\n"+seq+"\n"
 			fasOutFile.write(fasta)
-print("(2/2) Fasta file is created: "+fasOut+"\n")
+
+			# output domains
+			domainInfo = get_domain_info(geneid2name[geneID])
+			for domain in domainInfo["regions"]:
+				source = domain["source"]
+				name = domain["name"]
+				region = domain["location"].split(':')
+				start = region[0]
+				end = region[1]
+				if(len(name) > 0):
+					domainLine = groupID+"#"+geneid2name[geneID]+"\t"+geneid2name[geneID]+"\t"+source+" "+name+"\t"+start+"\t"+end+"\n"
+					domainOutFile.write(domainLine)
+
+print("FINISHED!\n")
+print("(1/3) Profile input file: "+output+"\n")
+print("(2/3) Fasta file: "+fasOut+"\n")
+print("(3/3) Domain file: "+domainOut+"\n")
