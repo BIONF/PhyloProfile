@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python
 import coreapi
+import sys
 import argparse
 import urllib
 from cStringIO import StringIO
@@ -15,7 +16,7 @@ parser.add_argument('-i','--input',
                     Multiple IDs are separated by newline.\
                     (required)',required=True)
 parser.add_argument('-t','--type',
-                    help='type of orthologs: HOG or OG.\
+                    help='type of orthologs: PAIR, OG or HOG.\
                     (required)',required=True)
 args = parser.parse_args()
 
@@ -95,7 +96,6 @@ def get_orthogroup_info(ID):
 	result = client.action(schema, action, params=params)
 	return(result)
 
-
 def get_orthopair_info(ID):
 	action = ["protein", "orthologs"]
 	params = {
@@ -104,9 +104,36 @@ def get_orthopair_info(ID):
 	result = client.action(schema, action, params=params)
 	return(result)
 
+def get_taxonomy_info(ID):
+	action = ["taxonomy", "read"]
+	params = {
+		"root_id": ID		# either the taxon id, species name or the 5 letter UniProt species code for a root taxonomic level
+	}
+	result = client.action(schema, action, params=params)
+	return(result)
+
+def print_domain(domainInfo,pairID,geneID):
+	domainBlock = ""
+	for domain in domainInfo["regions"]:
+		source = domain["source"]
+		name = domain["name"]
+		region = domain["location"].split(':')
+		start = region[0]
+		end = region[1]
+		if(len(name) > 0):
+			domainLine = pairID+"\t"+geneID+"\t"+source+" "+name+"\t"+start+"\t"+end+"\n"
+			domainBlock += domainLine
+	return(domainBlock)
+
 ###########################
-output = args.input+".orthoXML"
+output = args.input+".phyloprofile"
 file = open(output,"w")
+# outputLong = args.input+".phyloprofile"
+# outputLongFile = open(outputLong,"w")
+fasOut = args.input+".fa"
+fasOutFile = open(fasOut,"w")
+domainOut = args.input+".domains"
+domainOutFile = open(domainOut,"w")
 
 ### get HOGs
 if args.type == "HOG":
@@ -138,11 +165,6 @@ if args.type == "HOG":
 			gene2spec[geneID] = "ncbi"+specID
 			geneid2name[geneID] = geneName
 
-	fasOut = args.input[0]+".fa"
-	fasOutFile = open(fasOut,"w")
-	domainOut = args.input[0]+".domains"
-	domainOutFile = open(domainOut,"w")
-
 	print("now getting FASTA sequence and domain annotations for:")
 	for orthogroup in soup.findAll("orthologGroup"):
 		groupID = orthogroup.get("id")
@@ -170,27 +192,46 @@ if args.type == "HOG":
 						domainLine = groupID+"#"+geneid2name[geneID]+"\t"+geneid2name[geneID]+"\t"+source+" "+name+"\t"+start+"\t"+end+"\n"
 						domainOutFile.write(domainLine)
 
-elif args.type == "OG":
+elif (args.type == "OG") or (args.type == "PAIR"):
+	file.write("geneID\tncbiID\torthoID\n")
 	with open(args.input) as f:
 	    ids = f.read().splitlines()
 	for id in ids:
+		# get domain for seedID
+		domainSeed = get_domain_info(id)
+
 		# get group ID
 		orthoGroupID = get_seq_info(id)["oma_group"]
 		print(orthoGroupID)
-		# get protein members
-		orthoGroup = get_orthogroup_info(orthoGroupID)
-		for mem in orthoGroup["members"]:
-			geneID = mem["omaid"]
-			geneInfo = get_seq_info(geneID)
-			print(geneInfo)
-			time.sleep(2)
 
-elif args.type == "PAIR":
-	with open(args.input) as f:
-	    ids = f.read().splitlines()
-	for id in ids:
-		orthoPairInfo = get_orthopair_info(id)
-		print(len(orthoPairInfo))
+		# get protein members
+		orthoGroup = get_orthopair_info(id)
+		if(args.type == "OG"):
+			orthoGroup = get_orthogroup_info(orthoGroupID)["members"]
+
+		for mem in orthoGroup:
+			geneID = mem["omaid"]
+			print(geneID)
+			specID = get_taxonomy_info(geneID[:5])["id"]
+
+			profileLine = "OG_%s\tncbi%s\t%s\n" % (orthoGroupID,specID,geneID)
+			file.write(profileLine)
+
+			geneInfo = get_seq_info(geneID)
+			header = ">OG_%s|ncbi%s|%s\n" % (orthoGroupID,specID,geneID)
+			fasta = header+geneInfo["sequence"]+"\n"
+			fasOutFile.write(fasta)
+
+			domainInfo = get_domain_info(geneID)
+			domainBlock = print_domain(domainInfo,"OG_"+str(orthoGroupID)+"#"+str(geneID),geneID)
+			domainSeedBlock = print_domain(domainSeed,"OG_"+str(orthoGroupID)+"#"+str(geneID),id)
+			domainOutFile.write(domainBlock)
+			domainOutFile.write(domainSeedBlock)
+
+else:
+	parser.print_help()
+	print("ERROR: un-accepted TYPE given!")
+	sys.exit(0)
 
 print("FINISHED!\n")
 print("(1/3) Profile input file: "+output+"\n")
