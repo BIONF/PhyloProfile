@@ -10,9 +10,12 @@ import time
 import re
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-i','--input', nargs='+',
+parser.add_argument('-i','--input',
                     help='list of one or more OMA protein-IDs that will be downloaded.\
                     Multiple IDs are separated by newline.\
+                    (required)',required=True)
+parser.add_argument('-t','--type',
+                    help='type of orthologs: HOG or OG.\
                     (required)',required=True)
 args = parser.parse_args()
 
@@ -67,25 +70,6 @@ def merge_xml(oma1,oma2):
         oma1.find(ns+"groups").getchildren()[-1].addnext(group)
     return oma1
 
-# get first file in list and read it
-with open(args.input[0]) as f:
-    ids = f.read().splitlines()
-
-merged_id = ids[0]
-merged_xml = read_xml(merged_id)
-
-# now read all other files and merge
-other_ids = ids[1:]
-for single_id in other_ids:
-    xml_to_append = read_xml(single_id)
-    merged_xml = merge_xml(merged_xml,xml_to_append)
-
-# and print our new XML
-output = args.input[0]+".orthoXML"
-file = open(output,"w")
-file.write(etree.tostring(merged_xml))
-
-# get sequences and domain annotations
 def get_seq_info(ID):
 	# Interact with the API endpoint
 	action = ["protein", "read"]
@@ -103,48 +87,110 @@ def get_domain_info(ID):
 	result = client.action(schema, action, params=params)
 	return(result)
 
-soup = BeautifulSoup(open(output),"xml")
-gene2spec = {}
-geneid2name = {}
-for spec in soup.findAll("species"):
-	specID = spec.get("NCBITaxId")
-	for gene in spec.findAll("gene"):
-		geneName = gene.get("protId")
-		geneID = gene.get("id")
-		gene2spec[geneID] = "ncbi"+specID
-		geneid2name[geneID] = geneName
+def get_orthogroup_info(ID):
+	action = ["group", "read"]
+	params = {
+		"group_id": ID
+	}
+	result = client.action(schema, action, params=params)
+	return(result)
 
-fasOut = args.input[0]+".fa"
-fasOutFile = open(fasOut,"w")
-domainOut = args.input[0]+".domains"
-domainOutFile = open(domainOut,"w")
 
-print("now getting FASTA sequence and domain annotations for:")
-for orthogroup in soup.findAll("orthologGroup"):
-	groupID = orthogroup.get("id")
-	if groupID:
-		if groupID.isdigit():
-			groupID = "OG_"+str(groupID)
-		for ortho in orthogroup.findAll("geneRef"):
-			geneID = ortho.get("id")
-			print(geneid2name[geneID])
+def get_orthopair_info(ID):
+	action = ["protein", "orthologs"]
+	params = {
+		"entry_id": ID
+	}
+	result = client.action(schema, action, params=params)
+	return(result)
 
-			# output sequence
-			seq = get_seq_info(geneid2name[geneID])["sequence"]
-			fasta = ">"+groupID+"|"+gene2spec[geneID]+"|"+geneid2name[geneID]+"\n"+seq+"\n"
-			fasOutFile.write(fasta)
+###########################
+output = args.input+".orthoXML"
+file = open(output,"w")
 
-			# output domains
-			domainInfo = get_domain_info(geneid2name[geneID])
-			for domain in domainInfo["regions"]:
-				source = domain["source"]
-				name = domain["name"]
-				region = domain["location"].split(':')
-				start = region[0]
-				end = region[1]
-				if(len(name) > 0):
-					domainLine = groupID+"#"+geneid2name[geneID]+"\t"+geneid2name[geneID]+"\t"+source+" "+name+"\t"+start+"\t"+end+"\n"
-					domainOutFile.write(domainLine)
+### get HOGs
+if args.type == "HOG":
+	# get first file in list and read it
+	with open(args.input) as f:
+	    ids = f.read().splitlines()
+
+	merged_id = ids[0]
+	merged_xml = read_xml(merged_id)
+
+	# now read all other files and merge
+	other_ids = ids[1:]
+	for single_id in other_ids:
+	    xml_to_append = read_xml(single_id)
+	    merged_xml = merge_xml(merged_xml,xml_to_append)
+
+	# and print our new XML
+	file.write(etree.tostring(merged_xml))
+
+	# get sequences and domain annotations
+	soup = BeautifulSoup(open(output),"xml")
+	gene2spec = {}
+	geneid2name = {}
+	for spec in soup.findAll("species"):
+		specID = spec.get("NCBITaxId")
+		for gene in spec.findAll("gene"):
+			geneName = gene.get("protId")
+			geneID = gene.get("id")
+			gene2spec[geneID] = "ncbi"+specID
+			geneid2name[geneID] = geneName
+
+	fasOut = args.input[0]+".fa"
+	fasOutFile = open(fasOut,"w")
+	domainOut = args.input[0]+".domains"
+	domainOutFile = open(domainOut,"w")
+
+	print("now getting FASTA sequence and domain annotations for:")
+	for orthogroup in soup.findAll("orthologGroup"):
+		groupID = orthogroup.get("id")
+		if groupID:
+			if groupID.isdigit():
+				groupID = "OG_"+str(groupID)
+			for ortho in orthogroup.findAll("geneRef"):
+				geneID = ortho.get("id")
+				print(geneid2name[geneID])
+
+				# output sequence
+				seq = get_seq_info(geneid2name[geneID])["sequence"]
+				fasta = ">"+groupID+"|"+gene2spec[geneID]+"|"+geneid2name[geneID]+"\n"+seq+"\n"
+				fasOutFile.write(fasta)
+
+				# output domains
+				domainInfo = get_domain_info(geneid2name[geneID])
+				for domain in domainInfo["regions"]:
+					source = domain["source"]
+					name = domain["name"]
+					region = domain["location"].split(':')
+					start = region[0]
+					end = region[1]
+					if(len(name) > 0):
+						domainLine = groupID+"#"+geneid2name[geneID]+"\t"+geneid2name[geneID]+"\t"+source+" "+name+"\t"+start+"\t"+end+"\n"
+						domainOutFile.write(domainLine)
+
+elif args.type == "OG":
+	with open(args.input) as f:
+	    ids = f.read().splitlines()
+	for id in ids:
+		# get group ID
+		orthoGroupID = get_seq_info(id)["oma_group"]
+		print(orthoGroupID)
+		# get protein members
+		orthoGroup = get_orthogroup_info(orthoGroupID)
+		for mem in orthoGroup["members"]:
+			geneID = mem["omaid"]
+			geneInfo = get_seq_info(geneID)
+			print(geneInfo)
+			time.sleep(2)
+
+elif args.type == "PAIR":
+	with open(args.input) as f:
+	    ids = f.read().splitlines()
+	for id in ids:
+		orthoPairInfo = get_orthopair_info(id)
+		print(len(orthoPairInfo))
 
 print("FINISHED!\n")
 print("(1/3) Profile input file: "+output+"\n")

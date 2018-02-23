@@ -2836,6 +2836,11 @@ shinyServer(function(input, output, session) {
       joinedDf$var1[is.na(joinedDf$orthoID)] <- NA
       joinedDf$var2[is.na(joinedDf$orthoID)] <- NA
 
+      # remove NA orthologs if required
+      if(input$detailedremoveNA == TRUE){
+        joinedDf <- joinedDf[!is.na(joinedDf$orthoID),]
+      }
+      
       ### return data for detailed plot
       return(joinedDf)
     }
@@ -2848,9 +2853,9 @@ shinyServer(function(input, output, session) {
     selDf <- detailPlotDt()
     selDf$x_label <- paste(selDf$orthoID," (",selDf$fullName,")",sep = "")
 
-    if(input$detailedremoveNA == TRUE){
-      selDf <- selDf[!is.na(selDf$orthoID),]
-    }
+    # if(input$detailedremoveNA == TRUE){
+    #   selDf <- selDf[!is.na(selDf$orthoID),]
+    # }
 
     ### create joined DF for plotting var1 next to var2
     var1Df <- subset(selDf, select = c("x_label","var1"))
@@ -2931,14 +2936,17 @@ shinyServer(function(input, output, session) {
     }
 
     ### get pair of sequence IDs & var1
-    seedID <- as.character(selDf$geneID[1])
+    seedID <- as.character(selDf$geneID[!is.na(selDf$geneID)][1])
     orthoID <- as.character(selDf$orthoID[corX])
 
     var1 <- as.list(selDf$var1[selDf$orthoID==orthoID])
     var1 <- as.character(var1[!is.na(var1)])
     var2 <- as.list(selDf$var2[selDf$orthoID==orthoID])
     var2 <- as.character(var2[!is.na(var2)])
-    ncbiID <- as.character(selDf$abbrName[selDf$orthoID==orthoID])
+    # ncbiID <- as.character(selDf$abbrName[selDf$orthoID==orthoID])
+    ncbiID <- selDf[selDf$orthoID == orthoID,]$abbrName
+    ncbiID <- as.character(ncbiID[!is.na(ncbiID)][1])
+
     ### return info
     if(is.na(orthoID)){
       return(NULL)
