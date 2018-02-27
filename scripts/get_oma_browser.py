@@ -197,8 +197,17 @@ elif (args.type == "OG") or (args.type == "PAIR"):
 	with open(args.input) as f:
 	    ids = f.read().splitlines()
 	for id in ids:
-		# get domain for seedID
+		# get info for seedID
+		seedInfo = get_seq_info(id)
+		specID = get_taxonomy_info(seedInfo["omaid"][:5])["id"]
+		profileSeed = "OG_%s\tncbi%s\t%s\n" % (id,specID,id)
+		file.write(profileSeed)
+		headerSeed = ">OG_%s|ncbi%s|%s\n" % (id,specID,id)
+		fastaSeed = headerSeed+seedInfo["sequence"]+"\n"
+		fasOutFile.write(fastaSeed)
 		domainSeed = get_domain_info(id)
+		domainSeedBlock = print_domain(domainSeed,"OG_"+str(id)+"#"+str(id),id)
+		domainOutFile.write(domainSeedBlock)
 
 		# get group ID
 		orthoGroupID = get_seq_info(id)["oma_group"]
@@ -214,17 +223,17 @@ elif (args.type == "OG") or (args.type == "PAIR"):
 			print(geneID)
 			specID = get_taxonomy_info(geneID[:5])["id"]
 
-			profileLine = "OG_%s\tncbi%s\t%s\n" % (orthoGroupID,specID,geneID)
+			profileLine = "OG_%s\tncbi%s\t%s\n" % (id,specID,geneID)
 			file.write(profileLine)
 
 			geneInfo = get_seq_info(geneID)
-			header = ">OG_%s|ncbi%s|%s\n" % (orthoGroupID,specID,geneID)
+			header = ">OG_%s|ncbi%s|%s\n" % (id,specID,geneID)
 			fasta = header+geneInfo["sequence"]+"\n"
 			fasOutFile.write(fasta)
 
 			domainInfo = get_domain_info(geneID)
-			domainBlock = print_domain(domainInfo,"OG_"+str(orthoGroupID)+"#"+str(geneID),geneID)
-			domainSeedBlock = print_domain(domainSeed,"OG_"+str(orthoGroupID)+"#"+str(geneID),id)
+			domainBlock = print_domain(domainInfo,"OG_"+str(id)+"#"+str(geneID),geneID)
+			domainSeedBlock = print_domain(domainSeed,"OG_"+str(id)+"#"+str(geneID),id)
 			domainOutFile.write(domainBlock)
 			domainOutFile.write(domainSeedBlock)
 
