@@ -3485,7 +3485,7 @@ shinyServer(function(input, output, session) {
     geneAgeDf <- geneAgeDf[,c("geneID","cat","age")]
 
     geneAgeDf$age[is.na(geneAgeDf$age)] <- "Undef"
-    geneAgeDf
+    return(geneAgeDf)
   })
 
   geneAgePlot <- function(geneAgeDf){
@@ -3556,7 +3556,7 @@ shinyServer(function(input, output, session) {
   output$geneAgePlotDownload <- downloadHandler(
     filename = function() {"geneAge_plot.pdf"},
     content = function(file) {
-      ggsave(file, plot = geneAgePlot(), width=600*input$geneAgeWidth,height = 150*input$geneAgeHeight, units="cm", dpi=300, device = "pdf", limitsize=FALSE)
+      ggsave(file, plot = geneAgePlot(geneAgeDf()), width=600*input$geneAgeWidth,height = 150*input$geneAgeHeight, units="cm", dpi=300, device = "pdf", limitsize=FALSE)
     }
   )
 
