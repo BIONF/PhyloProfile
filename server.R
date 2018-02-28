@@ -3487,12 +3487,17 @@ shinyServer(function(input, output, session) {
     geneAgeDf$age[is.na(geneAgeDf$age)] <- "Undef"
     return(geneAgeDf)
   })
-
-  geneAgePlot <- function(geneAgeDf){
+  
+  geneAgeDfMod <- reactive({
+    geneAgeDf <- geneAgeDf()
     countDf <- plyr::count(geneAgeDf,c('age'))
     countDf$percentage <- round(countDf$freq/sum(countDf$freq)*100)
     countDf$pos <- cumsum(countDf$percentage) - (0.5 * countDf$percentage)
+    return(countDf)
+  })
 
+  geneAgePlot <- function(){
+    countDf <- geneAgeDfMod()
     p <- ggplot(countDf, aes(fill=age, y=percentage, x=1)) +
       geom_bar(stat="identity") +
       scale_y_reverse() +
@@ -3503,7 +3508,6 @@ shinyServer(function(input, output, session) {
                    axis.title = element_blank(), axis.text = element_blank()) +
       scale_fill_brewer(palette="Spectral") +
       guides(fill=guide_legend(nrow=round(nrow(countDf)/3,0),byrow=TRUE))
-
     p
   }
 
@@ -3516,10 +3520,10 @@ shinyServer(function(input, output, session) {
       # wrap in an isolate() so that the data won't update every time an input
       # is changed
       isolate({
-        geneAgePlot(geneAgeDf())
+        geneAgePlot()
       })
     } else {
-      geneAgePlot(geneAgeDf())
+      geneAgePlot()
     }
   })
 
@@ -3555,8 +3559,8 @@ shinyServer(function(input, output, session) {
   ### download gene age plot
   output$geneAgePlotDownload <- downloadHandler(
     filename = function() {"geneAge_plot.pdf"},
-    content = function(file) {
-      ggsave(file, plot = geneAgePlot(geneAgeDf()), width=600*input$geneAgeWidth,height = 150*input$geneAgeHeight, units="cm", dpi=300, device = "pdf", limitsize=FALSE)
+    content = function(file) { 
+      ggsave(file, plot = geneAgePlot(), width=600*input$geneAgeWidth*0.056458333,height = 150*input$geneAgeHeight*0.056458333, units="cm", dpi=300, device = "pdf")
     }
   )
 
