@@ -207,6 +207,8 @@ elif (args.type == "OG") or (args.type == "PAIR"):
 		fasOutFile.write(fastaSeed)
 		domainSeed = get_domain_info(id)
 		domainSeedBlock = print_domain(domainSeed,"OG_"+str(id)+"#"+str(id),id)
+		if len(domainSeedBlock) == 0:
+			domainSeedBlock = "OG_"+str(id)+"#"+str(id)+"\t"+id+"\tn/a\t0\t0\n"
 		domainOutFile.write(domainSeedBlock)
 
 		# get group ID
@@ -233,7 +235,11 @@ elif (args.type == "OG") or (args.type == "PAIR"):
 
 			domainInfo = get_domain_info(geneID)
 			domainBlock = print_domain(domainInfo,"OG_"+str(id)+"#"+str(geneID),geneID)
+			if len(domainBlock) == 0:
+				domainBlock = "OG_"+str(id)+"#"+str(geneID)+"\t"+geneID+"\tn/a\t0\t0\n"
 			domainSeedBlock = print_domain(domainSeed,"OG_"+str(id)+"#"+str(geneID),id)
+			if len(domainSeedBlock) == 0:
+				domainSeedBlock = "OG_"+str(id)+"#"+str(geneID)+"\t"+id+"\tn/a\t0\t0\n"
 			domainOutFile.write(domainBlock)
 			domainOutFile.write(domainSeedBlock)
 
