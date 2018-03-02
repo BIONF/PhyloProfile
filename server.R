@@ -884,7 +884,7 @@ shinyServer(function(input, output, session) {
           # Create 0-row data frame which will be used to store data
           withProgress(message = 'Parsing input file', value = 0, {
             allTaxonInfo<-fread("data/taxonNamesFull.txt")
-            newTaxaFromFile <- fread("data/newTaxa.txt")
+            newTaxaFromFile <- fread("data/newTaxa.txt", colClasses=c("ncbiID" = "character"))
             
             allTaxonInfo <- rbind(newTaxaFromFile,allTaxonInfo)
             
