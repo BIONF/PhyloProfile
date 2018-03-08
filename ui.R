@@ -568,16 +568,16 @@ shinyUI(fluidPage(
                sidebarPanel(
                  uiOutput("getSignificantGenes"),
                  bsPopover("getSignificantGenes", "","Select gene to show the plots", "right"),
+                 
                  popify(downloadButton("gcDownloadGenes","Download"), "", "Download a file with the list of significant genes"),
 
                  checkboxInput("addGcGenesCustomProfile",strong(em("Add to Customized profile")), value = FALSE, width = NULL),
                  uiOutput('addGcGenesCustomProfileCheck.ui')
                ),
+             
                mainPanel(
-                 column(6, plotOutput("boxplot1")),
-                 column(6, plotOutput("boxplot2")),
-                 column(12,plotOutput("barplot"))
-               )
+                 uiOutput("plotsGc")
+                 )
       )),
 
       ########## DATA TAB ###########
@@ -818,6 +818,12 @@ shinyUI(fluidPage(
           ),
           column(12,
                  sliderInput("gcAngle","Angle of the X-axis label", min = 0, max = 180, step = 1, value = 90, width = 250)
+          ),
+          column(12,
+                 checkboxInput("showPvalue", strong("Show P-Values"), value = FALSE, width = 250)
+          ),
+          column(12,
+                 popify(checkboxInput("highlightSignificant", strong("Highlight significant plots"), value =TRUE, width = 250),"","If both variables are selected the significant Plot is colored"  )
           ),
 
           br(),
