@@ -205,6 +205,15 @@ domainOutFile = open(domainOut,"w")
 #
 # 				# output domains
 # 				domainInfo = get_domain_info(geneid2name[geneID])
+# 				for domain in domainInfo["regions"]:
+# 					source = domain["source"]
+# 					name = domain["name"]
+# 					region = domain["location"].split(':')
+# 					start = region[0]
+# 					end = region[1]
+# 					if(len(name) > 0):
+# 						domainLine = groupID+"#"+geneid2name[geneID]+"\t"+geneid2name[geneID]+"\t"+source+" "+name+"\t"+start+"\t"+end+"\n"
+# 						domainOutFile.write(domainLine)
 # 				domainBlock = print_domain(domainInfo,groupID+"#"+str(geneid2name[geneID]),geneid2name[geneID])
 # 				print("here")
 # 				print(domainBlock)
