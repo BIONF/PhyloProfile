@@ -1,7 +1,7 @@
 # PhyloProfile
 [![language: R](https://img.shields.io/badge/language-R-blue.svg?style=flat)](https://www.r-project.org/)
 [![presented at: BOSC2017](https://img.shields.io/badge/presented%20at-BOSC2017-green.svg?style=flat)](https://f1000research.com/posters/6-1782)
-[![GitHub release](https://img.shields.io/badge/stable%20release-v0.1.0-orange.svg)](https://github.com/BIONF/PhyloProfile/releases/tag/v0.1.0)
+[![GitHub release](https://img.shields.io/badge/stable%20release-v0.2.1-orange.svg)](https://github.com/BIONF/PhyloProfile/releases/tag/v0.2.1)
 [![license: MIT](https://img.shields.io/badge/license-MIT-lightgrey.svg)](https://opensource.org/licenses/MIT)
 
 [![](www/posterSub.png)](https://f1000research.com/posters/6-1782)
