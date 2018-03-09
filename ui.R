@@ -547,22 +547,21 @@ shinyUI(fluidPage(
                wellPanel(
                  fluidRow(
                    column(3,
-                          uiOutput("ButtonVarGC"),
-                          uiOutput("significance.ui")
+                          uiOutput("ButtonVarGC")
                    ),
                    column(3,
                           uiOutput("geneInGc"),
-                          popify(fileInput("gcFile","",width='100%'),"", "Select file of sequences")
-
+                          popify(fileInput("gcFile",NULL,width='100%'),"", "Select file of sequences")
                    ),
                    column(3,
                           uiOutput("taxaList_gc.ui"), ## Select In-Group
                           shinyBS::bsButton("gcTaxa","Change rank")
                    ),
                    column(3,
+                          uiOutput("significance.ui"),
                           actionButton("plotGc", "Plot"),
-                          popify(actionButton("gcPlotConfig","Appearance"),"", "Change the appearance of the plots"),
-                          popify(downloadButton("gcDownloadPlots","Download"), "", "Download a file with the plots to the significant genes")
+                          popify(actionButton("gcPlotConfig","Appearance"),"", "Change the appearance of the plots")
+                          
                    )
                  )),
                sidebarPanel(
@@ -570,14 +569,24 @@ shinyUI(fluidPage(
                  bsPopover("getSignificantGenes", "","Select gene to show the plots", "right"),
                  
                  popify(downloadButton("gcDownloadGenes","Download"), "", "Download a file with the list of significant genes"),
+                 popify(downloadButton("gcDownloadPlots","Download"), "", "Download a file with the plots to the significant genes"),
 
                  checkboxInput("addGcGenesCustomProfile",strong(em("Add to Customized profile")), value = FALSE, width = NULL),
-                 uiOutput('addGcGenesCustomProfileCheck.ui')
+                 uiOutput('addGcGenesCustomProfileCheck.ui'),
+                 
+                 uiOutput("featuresOfInterestGc"),
+                 width = 3
                ),
-             
                mainPanel(
-                 uiOutput("plotsGc")
-                 )
+                 tags$style(HTML("
+                  #plotsGc {
+                    height:650px;
+                    overflow-y:scroll
+                  }
+                  ")),
+                 uiOutput("plotsGc"),
+                 
+                 width = 9)
       )),
 
       ########## DATA TAB ###########
