@@ -4820,10 +4820,8 @@ shinyServer(function(input, output, session) {
   # }
 =======
   ### Dataframe with Information about the significant Genes
-  ### geneID | inGroup| outGroup| pvalues
+  ### geneID | inGroup| outGroup| pvalues| rank | var
   significantGenesGroupCompairison = NULL
-  ### selected Variable(s)
-  parametersGroupComparison = NULL
   
   #### Select In-Group ####
   output$taxaList_gc.ui = renderUI({
@@ -4970,28 +4968,26 @@ shinyServer(function(input, output, session) {
 
   })
   
-  ####Generate the Output
+  ###Generate the Output
   get_plot_output_list <- function() {
     ### if we dont have parameters we can not generate plots
     if(is.null(significantGenesGroupCompairison)){ return()}
- 
+
     # Insert plot output objects the list
     plot_output_list <- lapply(1:nrow(significantGenesGroupCompairison), function(i) {
       plotname <- paste(significantGenesGroupCompairison[i,1])
-      plot_output_object <- plotOutput(plotname, height = 1000, width = 250)
-      plot_output_object <- renderPlot({getMultiplot(significantGenesGroupCompairison[i,])},height=700, width=500)
+      plot_output_object <- plotOutput(plotname, height = 650, width = 700)
+      plot_output_object <- renderPlot({getMultiplot(significantGenesGroupCompairison[i,])},height=650, width=700)
     })
     do.call(tagList, plot_output_list) # needed to display properly.
     return(plot_output_list)
   }
-  
- 
+
   #### List with all significant Genes
   output$getSignificantGenes <- renderUI({
     input$plotGc
     isolate({
       getSignificantGenes()
-      #varGC <<- input$varGcName
       choices = unlist(significantGenesGroupCompairison$geneID)
       choices = unname(choices)
       ### selected Gene 
@@ -4999,9 +4995,17 @@ shinyServer(function(input, output, session) {
     })
   })
   
-  output$plotsGc <- renderUI({ 
+  ## Generate output plots
+  output$plotsGc <- renderUI({
     input$plotGc
     isolate({get_plot_output_list()})
+  })
+
+  ### Select Feaures you want to see in the barplots
+  ### default: All 
+  output$featuresOfInterestGc <- renderUI({
+    choices <- c("all","pfam","smart","cast","tmhmm","seq")
+    selectInput('interestingFeatures','Select features of interest:',choices,selected =choices[1],multiple = TRUE, selectize=FALSE)
   })
 
   ######## reset config of customized plot
@@ -5118,12 +5122,12 @@ shinyServer(function(input, output, session) {
       ### in at least one of the variables
       
       ### If there is not enough data to calculate a p-value consider the gene as intereisting 
-      if (is.na(pvalues1)[1]){significant = TRUE}
+      if (is.null(pvalues1)){}
       ### check if the at last calculated p-value is smaller than the significane level 
       else if(pvalues1[length(pvalues1)] < significanceLevel){significant = TRUE}
       
       ### analog to pvalues in the first variable
-      if(is.na(pvalues2)[1]){significant = TRUE}
+      if(is.null(pvalues2)){}
       else if (pvalues2[length(pvalues2)]  < significanceLevel){significant = TRUE}
       
       ### if the gene is interisting return the p-values
@@ -5141,7 +5145,8 @@ shinyServer(function(input, output, session) {
       else {pvalues <- getPvalues(inG$var2, outG$var2)}
       
       #### Analog to getting the significance with both variables
-      if(is.na(pvalues)[1] | pvalues[length(pvalues)] < significanceLevel){
+      if (is.null(pvalues)){return(NULL)}
+      else if(pvalues[length(pvalues)] < significanceLevel){
         pvalues<-  list(pvalues)
         return(pvalues)
       } else{return(NULL)}
@@ -5158,8 +5163,8 @@ shinyServer(function(input, output, session) {
     varOut <- varOut[!is.na(varOut)]
     
     ### if there is no data in one of the groups the p-value is NA
-    if (length(varIn)==0){pvalue <- NA}
-    else if(length(varOut)== 0){pvalue <- NA }
+    if (length(varIn)==0){return(NULL)}
+    else if(length(varOut)== 0){return(NULL) }
     
     ### if there is data the p-value is calculatet with a combination of two non-parametric test 
     else{
@@ -5317,6 +5322,20 @@ shinyServer(function(input, output, session) {
     subdomainDF <- subset(domainDf, substr(domainDf$seedID,1,nchar(as.character(selectedGene)))== selectedGene)
     subdomainDF[!duplicated(subdomainDF),]
     
+    ### only show features that interest the user 
+    if(!("all" %in% input$interestingFeatures)){
+      ifeatures <- NULL
+      for(x in input$interestingFeatures){
+        f <- subset(subdomainDF$feature, startsWith(subdomainDF$feature, x))
+        ifeatures <- rbind(ifeatures, f)
+      }
+      
+      if(is.null(ifeatures)){return()}
+      #### only keep rows in which the feature begins with a element out of the interesingFeatures
+      subdomainDF <- subset(subdomainDF, subdomainDF$feature %in% ifeatures) #### how to look only at the prefix 
+      }
+      
+    
     ### part in In-Group and Out-Group
     inGroupDomainDF  <- subset(subdomainDF, subdomainDF$orthoID %in% inGroup$orthoID)
     outGroupDomainDF <- subset(subdomainDF, subdomainDF$orthoID %in% outGroup$orthoID)
@@ -5325,7 +5344,7 @@ shinyServer(function(input, output, session) {
     seeds <- unique (subdomainDF$seedID)
     inNotEmpty = 0
     outNotEmpty = 0
-    
+
     if (nrow(inGroupDomainDF) == 0){dataIn <- NULL}
     else{
       feature <- unique(inGroupDomainDF$feature)
@@ -5494,7 +5513,7 @@ shinyServer(function(input, output, session) {
 
     ### the barplot does not depent on the selected variable(s)
     barplot <-  gcBarPlot(gene, inGroup, outGroup)
-    
+    if(is.null(barplot)){barplot <- textGrob("The selected domains are not found in the gene")}
     ### if both variables are selected there are going to be 2 boxplots
     if (var == "Both"){
       pvalues <- unlist(pvalues, recursive = FALSE)
