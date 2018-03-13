@@ -540,46 +540,6 @@ shinyUI(fluidPage(
                       dataTableOutput("taxaID"),
                       downloadButton("downloadTaxaID","Download")
                )
-        )#,
-      #### Group Comparison  #### 
-      # tabPanel("Group Comparison",
-      #          h4(strong("Group Comparison")),
-      #          wellPanel(
-      #            fluidRow(
-      #              column(3,
-      #                     uiOutput("ButtonVarGC"),
-      #                     uiOutput("significance.ui")
-      #              ),
-      #              column(3,
-      #                     uiOutput("geneInGc"),
-      #                     popify(fileInput("gcFile","",width='100%'),"", "Select file of sequences")
-      #                     
-      #              ),
-      #              column(3, 
-      #                     uiOutput("taxaList_gc.ui"), ## Select In-Group
-      #                     shinyBS::bsButton("gcTaxa","Change rank")
-      #              ),
-      #              column(3,
-      #                     actionButton("plotGc", "Plot"),
-      #                     popify(actionButton("gcPlotConfig","Appearance"),"", "Change the appearance of the plots"),
-      #                     popify(downloadButton("gcDownloadPlots","Download"), "", "Download a file with the plots to the significant genes")
-      #              )
-      #            )),
-      #          sidebarPanel(
-      #            uiOutput("getSignificantGenes"),
-      #            bsPopover("getSignificantGenes", "","Select gene to show the plots", "right"),
-      #            popify(downloadButton("gcDownloadGenes","Download"), "", "Download a file with the list of significant genes"),
-      #            
-      #            checkboxInput("addGcGenesCustomProfile",strong(em("Add to Customized profile")), value = FALSE, width = NULL),
-      #            uiOutput('addGcGenesCustomProfileCheck.ui')
-      #          ),
-      #          mainPanel(
-      #            column(6, plotOutput("boxplot1")),
-      #            column(6, plotOutput("boxplot2")),
-      #            column(12,plotOutput("barplot"))
-      #          )
-      #)
-      #),
         ),
       ### Group Comparison  ####
       tabPanel("Group Comparison",
@@ -607,14 +567,13 @@ shinyUI(fluidPage(
                sidebarPanel(
                  uiOutput("getSignificantGenes"),
                  bsPopover("getSignificantGenes", "","Select gene to show the plots", "right"),
-                 
-                 popify(downloadButton("gcDownloadGenes","Download"), "", "Download a file with the list of significant genes"),
-                 popify(downloadButton("gcDownloadPlots","Download"), "", "Download a file with the plots to the significant genes"),
 
                  checkboxInput("addGcGenesCustomProfile",strong(em("Add to Customized profile")), value = FALSE, width = NULL),
                  uiOutput('addGcGenesCustomProfileCheck.ui'),
                  
                  uiOutput("featuresOfInterestGc"),
+                 actionButton("gcDownloads","Download"),
+                 
                  width = 3
                ),
                mainPanel(
@@ -628,7 +587,7 @@ shinyUI(fluidPage(
                  
                  width = 9)
       )),
->>>>>>> now the plots for all genes are shown in the output
+
 
       ########## DATA TAB ###########
       navbarMenu("Download filtered data",
@@ -845,38 +804,7 @@ shinyUI(fluidPage(
             shinyBS::bsButton("resetSelectedConfig","Reset",style="danger"),
             shinyBS::bsButton("applySelectedConfig","Done",style="warning")
     ),
-  
-<<<<<<< 5bca19de4929c231da600ec464ceafe75a74559b
-  # ### popup windows for setting group compariosn plot configurations ###
-  # bsModal("gcPlotConfigBs", "Plot appearance configuration", "gcPlotConfig", size = "small",
-  #         column(6,
-  #                numericInput("xSizeGC","X-axis label size (px)",min=8,max=99,step=1,value=10,width=100)
-  #         ),
-  #         column(6,
-  #                
-  #                numericInput("ySizeGC","Y-axis label size (px)",min=8,max=99,step=1,value=10,width=100)
-  #         ),
-  #         
-  #         
-  #         column(6,
-  #                numericInput("legendSizeGC","Legend label size (px)",min=8,max=99,step=1,value=10,width=150)
-  #         ),
-  #         column(6,
-  #                selectInput("gcLegend", label = "Legend position:",
-  #                            choices = list("Right"="right", "Left"="left","Top"="top","Bottom"="bottom", "Hide"="none"),
-  #                            selected = "right",
-  #                            width = 150)
-  #         ),
-  #         column(12,
-  #                sliderInput("gcAngle","Angle of the X-axis label", min = 0, max = 180, step = 1, value = 90, width = 250)
-  #         ),
-  #         
-  #         br(),
-  #         hr(),
-  #         shinyBS::bsButton("resetGcConfig","Reset",style="danger"),
-  #         shinyBS::bsButton("applyGcConfig","Done",style="warning")
-  #         ),
-=======
+
   ### popup windows for setting group compariosn plot configurations ###
   bsModal("gcPlotConfigBs", "Plot appearance configuration", "gcPlotConfig", size = "small",
           column(6,
@@ -912,7 +840,7 @@ shinyUI(fluidPage(
           shinyBS::bsButton("resetGcConfig","Reset",style="danger"),
           shinyBS::bsButton("applyGcConfig","Done",style="warning")
           ),
->>>>>>> now the plots for all genes are shown in the output
+
 
     ####### popup windows for select taxa on Customized Profile
     bsModal("cusTaxaBS", "Select taxon/taxa of interest", "cusTaxa", size = "small",
@@ -978,6 +906,19 @@ shinyUI(fluidPage(
             uiOutput("archiPlot.ui"),
             downloadButton("archiDownload","Download plot")
     ),
+  
+  bsModal("gcTaxaBS", "Select taxon/taxa of interest", "gcTaxa", size = "small",
+          uiOutput("rankSelectGc"),
+          uiOutput("taxaSelectGc"),
+          checkboxInput("applyGcTaxa",strong("Apply to group comparison", style="color:red"),value = FALSE)
+  ),
+  
+  bsModal("gcDownloadsBS", "Download","gcDownloads", size="small",
+          h5(strong("Download the significant Genes")),
+          downloadButton("gcDownloadGenes","Download"),
+          h5(""),
+          uiOutput("SelectPlotsToDownload"),
+          downloadButton("gcDownloadPlots","Download")),
     
   
   
