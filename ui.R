@@ -6,7 +6,7 @@
 # packages <- c("shiny","shinyBS","shinyjs","DT","colourpicker")
 # sapply(packages, require, character.only = TRUE)
 #######################################################
-
+ 
 if (!require("shiny")) {install.packages("shiny")}
 if (!require("shinyBS")) {install.packages("shinyBS")}
 if (!require("DT")) {install.packages("DT")}

@@ -4966,7 +4966,7 @@ shinyServer(function(input, output, session) {
     
     else if (input$showGene == "") {
       shinyjs::disable('gcDownloadPlots')
-      shinyjs::disable('gcDownloadGenes')}
+      shinyjs::disable('gcDownloadGenes')} 
     else{
       shinyjs::enable('gcDownloadPlots')
       shinyjs::enable('gcDownloadGenes')
