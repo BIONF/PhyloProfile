@@ -4134,7 +4134,7 @@ shinyServer(function(input, output, session) {
   #############################################################
   ###################### GROUP COMPARISON #####################
   #############################################################
-
+  
   ### Dataframe with Information about the significant Genes
   ### geneID | inGroup| outGroup| pvalues| rank | var
   significantGenesGroupCompairison = NULL
@@ -4168,7 +4168,7 @@ shinyServer(function(input, output, session) {
     }
     
   })
-
+  
   #### Functions: Popup Window Select Rank ####
   #### print list of available taxonomy ranks (the lowest rank is the same as the chosen main rank)
   output$rankSelectGc = renderUI({
@@ -4176,26 +4176,26 @@ shinyServer(function(input, output, session) {
     mainChoices = list("Strain"="05_strain","Species" = "06_species","Genus" = "10_genus", "Family" = "14_family", "Order" = "19_order", "Class" = "23_class",
                        "Phylum" = "26_phylum", "Kingdom" = "28_kingdom", "Superkingdom" = "29_superkingdom","unselected"="")
     gcChoices <- mainChoices[mainChoices >= mainRank]
-
+    
     selectInput("rankSelectGc", label = h5("Select taxonomy rank:"),
                 choices = as.list(gcChoices),
                 selected = mainRank)
   })
-
+  
   #### print list of available taxa
   taxaSelectGc <- reactive({
     rankSelectGc = input$rankSelectGc
-
+    
     if(length(rankSelectGc) == 0){return()}
     else{
       ### load list of unsorted taxa
       Dt <- as.data.frame(read.table("data/taxonomyMatrix.txt", sep='\t', header=T, stringsAsFactors=T))
       Dt <- Dt[Dt$abbrName  %in% subsetTaxa(),]
-
+      
       ### load list of taxon name
       nameList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T,fill = TRUE))
       nameList$fullName <- as.character(nameList$fullName)
-
+      
       rankName = substr(rankSelectGc,4,nchar(rankSelectGc))   # get rank name from rankSelect
       choice <- as.data.frame
       choice <- rbind(Dt[rankName])
@@ -4204,14 +4204,14 @@ shinyServer(function(input, output, session) {
       return(choice)
     }
   })
-
+  
   #### Supertaxon of intrest in the popup window for the rank
   output$taxaSelectGc = renderUI({
     choice <- taxaSelectGc()
     choice$fullName <- as.factor(choice$fullName)
     selectInput('taxaSelectGc',h5('Choose (super)taxon of interest:'),as.list(levels(choice$fullName)),levels(choice$fullName)[1])
   })
-
+  
   ### get list of taxa based on selected taxaSelectGc
   gcTaxaName <- reactive({
     
@@ -4235,16 +4235,16 @@ shinyServer(function(input, output, session) {
     
     return(gcTaxaName)
   })
-
+  
   #### Select Gene ####
   output$geneInGc = renderUI({
     filein <- input$mainInput
     fileGc <- input$gcFile
-
+    
     if(input$demo_data == "demo" | input$demo_data == "ampk-tor"){
       filein = 1
     }
-
+    
     if(is.null(filein) & is.null(fileGc)){return(selectInput('inSeqGc','Select sequence:',"none"))}
     else{
       ### full list
@@ -4253,7 +4253,7 @@ shinyServer(function(input, output, session) {
       data$geneID <- as.factor(data$geneID)
       outAll <- as.list(levels(data$geneID))
       outAll <- append("all", outAll)
-
+      
       if(is.null(fileGc)){
         selectInput('inSeqGc','Select Sequence:',outAll,selected=outAll[1],multiple=TRUE,selectize=FALSE)
       }
@@ -4264,9 +4264,9 @@ shinyServer(function(input, output, session) {
         selectInput('inSeqGc','Select sequence:',out,selected=NULL,multiple=FALSE, selectize=FALSE)
       }
     }
-
+    
   })
-
+  
   #### Buttons to choose the variable ####
   output$ButtonVarGC <- renderUI ({
     popify(
@@ -4279,14 +4279,14 @@ shinyServer(function(input, output, session) {
       "",
       "Select variable(s) to generate plots for")
   })
-
+  
   #### Slider to choose significance ####
   output$significance.ui <- renderUI({
     popify(
       sliderInput("significance",paste("significance level:"), min = 0, max = 1, step = 0.005, value = c(0.05), width = 200),
       "",
       "maximal probability to reject that In-Group and Out-Group have no significant difference by mistake")
-
+    
   })
   
   #### List with all significant Genes
@@ -4339,7 +4339,7 @@ shinyServer(function(input, output, session) {
   get_plot_output_list <- function(genes) {
     ### if we dont have parameters we can not generate plots
     if(is.null(genes)){return()}
-
+    
     # Insert plot output objects the list
     plot_output_list <- lapply(1:nrow(genes), function(i) {
       plotname <- paste(genes[i,1])
@@ -4362,9 +4362,9 @@ shinyServer(function(input, output, session) {
     }
   })
   
-
-
-
+  
+  
+  
   ######## reset config of customized plot
   observeEvent(input$resetGcConfig, {
     shinyjs::reset("xSizeGC")
@@ -4372,15 +4372,15 @@ shinyServer(function(input, output, session) {
     shinyjs::reset("gcAngle")
     shinyjs::reset("legendSizeGC")
   })
-
+  
   ######## close customized config
   observeEvent(input$applyGcConfig, {
     toggleModal(session, "gcPlotConfigBs", toggle = "close")
   })
-
+  
   ### Get the P-values to print under the plot
   getInfo_pValues <- function (p){
-
+    
     if(is.na(p[1])){info_pValues = "not enough information"}
     else if (length(p) == 1){info_pValues = paste("Kolmogorov-Smirnov-Test:", as.character(p[1]), sep=" " )}
     else{ 
@@ -4391,12 +4391,12 @@ shinyServer(function(input, output, session) {
     info_pValues <- paste("P-Values:",info_pValues, sep="\n")
     info_pValues
   }
-
+  
   #### Get the Subset depending on the choosen rank
   selectedSubset <- function (rank, inGroup){
     ### load list of unsorted taxa
     Dt <- as.data.frame(read.table("data/taxonomyMatrix.txt", sep='\t', header=T, stringsAsFactors=T))
-
+    
     ### load list of taxon name
     nameList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T,fill = TRUE))
     nameList$fullName <- as.character(nameList$fullName)
@@ -4404,7 +4404,7 @@ shinyServer(function(input, output, session) {
     
     ### Look if the fullName is in the In-Group
     x <- subset(nameList,  nameList$fullName %in% inGroup)
-
+    
     ### Look if it has the right rank
     x1 <- Dt[Dt[,rank] %in% x$ncbiID,]
     
@@ -4442,7 +4442,7 @@ shinyServer(function(input, output, session) {
       
       ### subset of inG with elements that belong to the in-Group
       inG <- subset(inG,inG$fullName %in% inGroup)
-
+      
       ### dataset with all elements that could belong to the In-Group
       possibleInGroup <- subset(allTaxaGc, select=c(currentRank, nextRank))
       possibleInGroup <- possibleInGroup[possibleInGroup[,currentRank] %in% inG$ncbiID,]
@@ -4468,7 +4468,7 @@ shinyServer(function(input, output, session) {
     if (var == "Both"){
       var1 = input$var1
       var2 = input$var2
-
+      
       significant = FALSE
       
       ### get the pValues for both variables
@@ -4548,11 +4548,11 @@ shinyServer(function(input, output, session) {
       }
     }
   }
-
+  
   #### look at all selected genes ####
   getSignificantGenes <- function (){
     if (is.null(input$taxaGc) | length(input$inSeqGc) == 0){return()}
-
+    
     #### Parameters that are identical for all genes 
     inGroup =  input$taxaGc
     rank = input$rankSelect
@@ -4580,10 +4580,10 @@ shinyServer(function(input, output, session) {
       genes <- genes[!duplicated(genes)]
     } else {genes = input$inSeqGc}
     genes <- sort(genes)
-
+    
     #### Subset depending on the rank and the In-Group
     subsetSelected <- selectedSubset(rank, inGroup)
-
+    
     ### Check for each of the selected genes if they are significant 
     ### If a gene is significant generate the plots and save them in significantGenesGroupComparison
     for(gene in genes){
@@ -4597,14 +4597,14 @@ shinyServer(function(input, output, session) {
       
       #### Generate the P-values for the gene
       pvalues <- getSignificant(inGroupDF, outGroupDF, var, gene)
-     
+      
       if(!is.null(pvalues)){
         newRow <- data.frame(geneID = gene, inGroup = NA, outGroup = NA, pvalues=NA)
         newRow$inGroup <- list(inGroupDF)
         newRow$outGroup <- list(outGroupDF)
         newRow$pvalues <- list(pvalues)
         significantGenes <- rbind(significantGenes, newRow)
-
+        
       }
     } 
     if(nrow(significantGenes)!=0){
@@ -4612,8 +4612,8 @@ shinyServer(function(input, output, session) {
       significantGenes$rank <- rank 
       significantGenesGroupCompairison <<- significantGenes
     }
-    }
-
+  }
+  
   ### Create a Boxplot
   getPlot <-function (inGroupDF,outGroupDF, var, gene, colour, info){
     
@@ -4637,23 +4637,23 @@ shinyServer(function(input, output, session) {
     outG <- as.data.frame(outG)
     names(outG)[1]<-paste("values")
     outG$group <- "Out-Group"
-
+    
     dataBox <- rbind(inG,outG)
     dataBox <- dataBox[complete.cases(dataBox),]
     
     names <- c(paste("In-Group \n n=",a, sep= ""),paste("Out-Group \n n=",b, sep= ""))
-
+    
     boxPlot <- ggplot(dataBox, aes(group,values)) +
       geom_boxplot (stat="boxplot", position=position_dodge(), width=0.5, fill = colour) +
       labs(x= "", y=var, caption = paste(info))+
       scale_x_discrete(labels = names)+
       theme_minimal()
-
+    
     boxPlot = boxPlot + theme(axis.text.x = element_text(size= input$xSizeGC, hjust=1), axis.text.y = element_text(size=input$ySizeGC), axis.title.y = element_text(size=input$ySizeGC)) #angle=input$gcAngle,
-
+    
     boxPlot
   }
-
+  
   #### Create Barplot ####
   gcBarPlot <- function(selectedGene, inGroup, outGroup){
     ### parse domain file
@@ -4694,31 +4694,31 @@ shinyServer(function(input, output, session) {
       if(is.null(ifeatures)){return()}
       #### only keep rows in which the feature begins with a element out of the interesingFeatures
       subdomainDF <- subset(subdomainDF, subdomainDF$feature %in% ifeatures) #### how to look only at the prefix 
-      }
-      
+    }
+    
     
     ### part in In-Group and Out-Group
     inGroupDomainDF  <- subset(subdomainDF, subdomainDF$orthoID %in% inGroup$orthoID)
     outGroupDomainDF <- subset(subdomainDF, subdomainDF$orthoID %in% outGroup$orthoID)
-
+    
     ### Get list of all seeds
     seeds <- unique (subdomainDF$seedID)
     inNotEmpty = 0
     outNotEmpty = 0
-
+    
     if (nrow(inGroupDomainDF) == 0){dataIn <- NULL}
     else{
       feature <- unique(inGroupDomainDF$feature)
       dataIn <- as.data.frame(feature)
       dataIn$amount <- 0
-        }
+    }
     
     if (nrow(outGroupDomainDF) == 0){dataOut <- NULL}
     else{
       feature <- unique(outGroupDomainDF$feature) 
       dataOut <- as.data.frame(feature)
       dataOut$amount <- 0
-      }
+    }
     
     for (seed in seeds){
       
@@ -4770,7 +4770,7 @@ shinyServer(function(input, output, session) {
     else if(is.null(dataOut) & !is.null(dataIn)){dataBar <- dataIn}
     else if (!is.null(dataIn) & !is.null(dataOut)){dataBar <- rbind(dataIn, dataOut) }
     else{dataBar <- NULL }
-
+    
     if(!is.null(dataBar)){
       ### generate Barplot
       barPlot <- ggplot(dataBar, aes(x=feature, y=amount, fill=type ), main =" ") +
@@ -4792,7 +4792,7 @@ shinyServer(function(input, output, session) {
       barPlot
     } else(return(NULL))
   }
-
+  
   getDomainFileGc <- function(group){
     ### domain file
     if(input$demo_data == "demo" | input$demo_data == "ampk-tor"){
@@ -4837,7 +4837,7 @@ shinyServer(function(input, output, session) {
               break()
             }
           }
-
+          
           if(flag == 0){
             fileDomain <- "noFileInFolder"
             updateButton(session, "doDomainPlot", disabled = TRUE)
@@ -4845,10 +4845,10 @@ shinyServer(function(input, output, session) {
         }
       }
     }
-
+    
     return (fileDomain)
   }
-
+  
   
   #### Downloads for GroupCompairison ####
   ### download list of significant genes
@@ -4861,15 +4861,15 @@ shinyServer(function(input, output, session) {
   )
   
   getMultiplot<- function(geneInfo){
-
-
+    
+    
     ### Sorting the information to the selected gene
     gene <- as.character(geneInfo$geneID)
     inGroup <- as.data.frame(geneInfo$inGroup)
     outGroup <- as.data.frame(geneInfo$outGroup)
     pvalues <-geneInfo$pvalues
     var <- geneInfo$var
-
+    
     ### the barplot does not depent on the selected variable(s)
     barplot <-  gcBarPlot(gene, inGroup, outGroup)
     if(is.null(barplot)){barplot <- textGrob("The selected domains are not found in the gene")}
@@ -4878,8 +4878,8 @@ shinyServer(function(input, output, session) {
       pvalues <- unlist(pvalues, recursive = FALSE)
       p1 <-unlist(pvalues[1])
       p2 <-unlist(pvalues[2])
-
-     
+      
+      
       #### Check if the p-values should be printed
       if(input$showPvalue == TRUE){
         infoP1 <- getInfo_pValues(p1)
@@ -4905,13 +4905,13 @@ shinyServer(function(input, output, session) {
       
       boxplot1 <- getPlot(inGroup, outGroup, input$var1_id, gene, c1, infoP1)
       boxplot2 <- getPlot(inGroup, outGroup, input$var2_id, gene, c2, infoP2)
-
+      
       m <-grid.arrange(textGrob(gene), arrangeGrob(boxplot1,boxplot2,ncol=2), barplot,heights=c(0.02, 0.45, 0.458), ncol=1) 
     }
     
     else {
       p <- unlist(pvalues)
-
+      
       if(input$showPvalue == TRUE){info <- getInfo_pValues(p)}
       else{info <- " "}
       
@@ -4922,13 +4922,13 @@ shinyServer(function(input, output, session) {
     }
     return(m)
   }
-
+  
   ### download file with the shown plots
   output$gcDownloadPlots <- downloadHandler(
     filename = "plotSignificantGenes.zip",
     content = function(file){
       genes <- input$plotsToDownload
-
+      
       if("all" %in% genes){genes <-significantGenesGroupCompairison$geneID}
       
       fs <- c()
@@ -4943,7 +4943,7 @@ shinyServer(function(input, output, session) {
         dev.off()
       }
       zip(zipfile=file, files=fs)
-      },
+    },
     contentType = "application/zip"
   )
   
@@ -4952,18 +4952,18 @@ shinyServer(function(input, output, session) {
     getMultiplot(x)
   }
   
-
+  
   observe({
     if (is.null(input$taxaGc) | length(input$inSeqGc) == 0){
       shinyjs::disable('gcDownloadPlots')
       shinyjs::disable('gcDownloadGenes')
     }
-
+    
     else if(input$plotGc == FALSE){
       shinyjs::disable('gcDownloadPlots')
       shinyjs::disable('gcDownloadGenes')
     }
-
+    
     else if (input$showGene == "") {
       shinyjs::disable('gcDownloadPlots')
       shinyjs::disable('gcDownloadGenes')}
@@ -4972,7 +4972,7 @@ shinyServer(function(input, output, session) {
       shinyjs::enable('gcDownloadGenes')
     }
   })
-
+  
   ### check if addCustomProfile (gene age plot) are being clicked
   observe({
     if(input$addCustomProfile == TRUE | input$addConsGeneCustomProfile == TRUE | input$addClusterCustomProfile == TRUE){
@@ -4981,10 +4981,10 @@ shinyServer(function(input, output, session) {
       shinyjs::enable('addGcGenesCustomProfile')
     }
   })
-
+  
   output$addGcGenesCustomProfileCheck.ui <- renderUI({
     if(input$addCustomProfile == TRUE | input$addConsGeneCustomProfile == TRUE | input$addClusterCustomProfile == TRUE){
       HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Gene age estimation</strong>or <strong>Profile clustering</strong> or <strong>Core genes finding</strong>&nbsp;to enable this function)</em></p>')
     }
   })
-})
+  })
