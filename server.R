@@ -4135,8 +4135,8 @@ shinyServer(function(input, output, session) {
   ###################### GROUP COMPARISON #####################
   #############################################################
   
-  ### Dataframe with Information about the significant Genes
-  ### geneID | inGroup| outGroup| pvalues| rank | var
+  #### Dataframe with Information about the significant Genes ####
+  ### geneID | inGroup| outGroup| pvalues| features | databases | rank | var
   significantGenesGroupCompairison = NULL
   
   #### Select In-Group ####
@@ -4212,7 +4212,7 @@ shinyServer(function(input, output, session) {
     selectInput('taxaSelectGc',h5('Choose (super)taxon of interest:'),as.list(levels(choice$fullName)),levels(choice$fullName)[1])
   })
   
-  ### get list of taxa based on selected taxaSelectGc
+  #### get list of taxa based on selected taxaSelectGc
   gcTaxaName <- reactive({
     
     taxaSelectGc = input$taxaSelectGc
@@ -4289,7 +4289,7 @@ shinyServer(function(input, output, session) {
     
   })
   
-  #### List with all significant Genes
+  #### List with all significant Genes####
   output$getSignificantGenes <- renderUI({
     input$plotGc
     
@@ -4309,45 +4309,40 @@ shinyServer(function(input, output, session) {
     })
   })
   
-  ## Generate output plots
+  #### Generate output plots ####
   output$plotsGc <- renderUI({getPlots()})
   
-  ### Select Feaures you want to see in the barplots
+  ### Select Feaures you want to see in the barplots ####
   ### default: All 
   output$featuresOfInterestGc <- renderUI({
     input$showGene
     isolate({
       gene <- input$showGene
-      if (is.null(gene)){selectInput('interestingFeatures','Database(s) of interest:',NULL,selected = NULL,multiple = TRUE, selectize=FALSE)}
+      if(!input$rightFormatFeatures){selectInput('interestingFeatures','Database(s) of interest:',NULL,selected = NULL,multiple = TRUE, selectize=FALSE)}
+      else if (is.null(gene)){selectInput('interestingFeatures','Database(s) of interest:',NULL,selected = NULL,multiple = TRUE, selectize=FALSE)}
       else if(gene == ""){selectInput('interestingFeatures','Database(s) of interest:',NULL,selected = NULL,multiple = TRUE, selectize=FALSE)}
       else{ 
-        choices <- c("all")
-        if(gene == "all"){
-          print("all")
-          for(g in significantGenesGroupCompairison$geneID){
-            choices <- append(choices,getPrefixFeatures(g))
+          choices <- c("all")
+          if(gene == "all"){
+            for(g in significantGenesGroupCompairison$geneID){
+              x <-subset(significantGenesGroupCompairison, significantGenesGroupCompairison$geneID == g)
+              choices <- append(choices,unlist(x$databases))
+            }
+            ### show each database only once
+            choices <- choices[!duplicated(choices)]
           }
-          choices <- choices[!duplicated(choices)]
+          else { 
+            x <- subset(significantGenesGroupCompairison, significantGenesGroupCompairison$geneID == gene)
+            choices <- append(choices,unlist(x$databases))
+            
+          }
+          selectInput('interestingFeatures','Database(s) of interest',choices,selected =choices[1],multiple = TRUE, selectize=FALSE)
         }
-        else { choices <- append(choices,getPrefixFeatures(gene))
-          
-        }
-        selectInput('interestingFeatures','Database(s) of interest',choices,selected =choices[1],multiple = TRUE, selectize=FALSE)
-      }
-      
     })
     
   })
   
-  getPrefixFeatures <- function(g){
-    gene <- subset(significantGenesGroupCompairison, significantGenesGroupCompairison$geneID == g)
-    f <- as.data.frame(gene$features)
-    features <- f$feature
-    choices <- gsub("_.*","", features)
-    choices <- choices[!duplicated(choices)]
-    choices
-  }
-  
+  #### Select Plots to download ####
   output$SelectPlotsToDownload <- renderUI({
     input$plotGc
     isolate({if(!is.null(significantGenesGroupCompairison)){
@@ -4364,7 +4359,21 @@ shinyServer(function(input, output, session) {
   })
   
   
-  ###Generate the Output
+  #### Generate the  main Output ####
+  #### Deciding which plots should be shown 
+  getPlots <- reactive({
+    gene <- as.character(input$showGene)
+    y <- input$plotGc
+    if(is.null(significantGenesGroupCompairison)){return()}
+    else if (gene == "all"){get_plot_output_list(significantGenesGroupCompairison)}
+    else{
+      x <-   significantGenesGroupCompairison[significantGenesGroupCompairison$geneID == gene,]
+      if(nrow(x)== 0){return()}
+      get_plot_output_list(x)
+    }
+  })
+  
+  #### Generate the list with all plots
   get_plot_output_list <- function(genes) {
     ### if we dont have parameters we can not generate plots
     if(is.null(genes)){return()}
@@ -4379,272 +4388,74 @@ shinyServer(function(input, output, session) {
     return(plot_output_list)
   }
   
-  getPlots <- reactive({
-    gene <- as.character(input$showGene)
-    y <- input$plotGc
-    if(is.null(significantGenesGroupCompairison)){return()}
-    else if (gene == "all"){get_plot_output_list(significantGenesGroupCompairison)}
-    else{
-      x <-   significantGenesGroupCompairison[significantGenesGroupCompairison$geneID == gene,]
-      if(nrow(x)== 0){return()}
-      get_plot_output_list(x)
-    }
-  })
   
-  
-  
-  
-  ######## reset config of customized plot
-  observeEvent(input$resetGcConfig, {
-    shinyjs::reset("xSizeGC")
-    shinyjs::reset("ySizeGC")
-    shinyjs::reset("gcAngle")
-    shinyjs::reset("legendSizeGC")
-  })
-  
-  ######## close customized config
-  observeEvent(input$applyGcConfig, {
-    toggleModal(session, "gcPlotConfigBs", toggle = "close")
-  })
-  
-  ### Get the P-values to print under the plot
-  getInfo_pValues <- function (p){
-    
-    if(is.na(p[1])){info_pValues = "not enough information"}
-    else if (length(p) == 1){info_pValues = paste("Kolmogorov-Smirnov-Test:", as.character(p[1]), sep=" " )}
-    else{ 
-      info_pValues1 = paste("Kolmogorov-Smirnov-Test:", as.character(p[1]),sep=" " )
-      info_pValues2 = paste("Wilcoxon-Mann-Whitney-Test: ", as.character(round(p[2], 3)), sep = " ")
-      info_pValues = paste(info_pValues1, info_pValues2, sep = "\n")}
-    
-    info_pValues <- paste("P-Values:",info_pValues, sep="\n")
-    info_pValues
-  }
-  
-  #### Get the Subset depending on the choosen rank
-  selectedSubset <- function (rank, inGroup){
-    ### load list of unsorted taxa
-    Dt <- as.data.frame(read.table("data/taxonomyMatrix.txt", sep='\t', header=T, stringsAsFactors=T))
-    
-    ### load list of taxon name
-    nameList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T,fill = TRUE))
-    nameList$fullName <- as.character(nameList$fullName)
-    nameList$rank <- as.character(nameList$rank)
-    
-    ### Look if the fullName is in the In-Group
-    x <- subset(nameList,  nameList$fullName %in% inGroup)
-    
-    ### Look if it has the right rank
-    x1 <- Dt[Dt[,rank] %in% x$ncbiID,]
-    
-    x1
-  }
-  
-  #### Generate the In-Group
-  getCommonAncestor <- function(inGroup, rank){
-    allRanks = list("Strain"="05_strain","Species" = "06_species","Genus" = "10_genus", "Family" = "14_family", "Order" = "19_order", "Class" = "23_class",
-                    "Phylum" = "26_phylum", "Kingdom" = "28_kingdom", "Superkingdom" = "29_superkingdom","unselected"="")
-    
-    nameList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T,fill = TRUE))
-    nameList$fullName <- as.character(nameList$fullName)
-    nameList$rank <- as.character(nameList$rank)
-    nameList <- nameList[!duplicated(nameList),]
+  #### Generating the plots ####
+  #### Put the plots for one spicific gene in one multiplot
+  getMultiplot<- function(geneInfo){
     
     
-    allTaxaGc  <- as.data.frame(read.table("data/taxonomyMatrix.txt", sep='\t', header=T, stringsAsFactors=T))
-    allTaxaGc <- allTaxaGc[!duplicated(allTaxaGc),]
+    ### Sorting the information to the selected gene
+    gene <- as.character(geneInfo$geneID)
+    inGroup <- as.data.frame(geneInfo$inGroup)
+    outGroup <- as.data.frame(geneInfo$outGroup)
+    features <- as.data.frame(geneInfo$features)
+    pvalues <-geneInfo$pvalues
+    var <- geneInfo$var
     
-    ### all ranks higher than the selected rank
-    ### ranks were all elements of the inGroup might be in the same taxon 
-    possibleRanks <- allRanks [allRanks >= rank]
-    i <-  1
-    
-    if (length(inGroup)==1){rank = substring(rank,4)}
-    
-    ### find the common ancestor of all taxa in the In-Group and us it as In-Group
-    while (length(inGroup)>1 & i < length(possibleRanks)){
-      currentRank <- substring(possibleRanks[i],4)
-      nextRank <- substring(possibleRanks[i+1],4) 
-      
-      ### dataframe with all elements with fitting rank
-      inG <- subset(nameList, nameList$rank == currentRank) 
-      
-      ### subset of inG with elements that belong to the in-Group
-      inG <- subset(inG,inG$fullName %in% inGroup)
-      
-      ### dataset with all elements that could belong to the In-Group
-      possibleInGroup <- subset(allTaxaGc, select=c(currentRank, nextRank))
-      possibleInGroup <- possibleInGroup[possibleInGroup[,currentRank] %in% inG$ncbiID,]
-      possibleInGroup <- possibleInGroup[!duplicated(possibleInGroup),]
-      
-      ### only consider elements of the list that have the next higher rank
-      x <- subset(nameList, nameList$rank == nextRank)
-      x <- subset(x, x$ncbiID %in% possibleInGroup[,nextRank])
-      inGroup <- x$fullName
-      i = i+1
-      rank = nextRank
-    }
-    
-    ### If there is no common ancestor
-    if (i > length(possibleRanks)){ return()}
-    
-    c(inGroup, rank)
-  }
-  
-  getSignificant <- function(inG,outG, var, gene){
-    significanceLevel <- input$significance
-    
+    ### the barplot does not depent on the selected variable(s)
+    barplot <-  gcBarPlot(gene, inGroup, outGroup,features)
+    if(is.null(barplot)){barplot <- textGrob("The selected domains are not found in the gene")}
+    ### if both variables are selected there are going to be 2 boxplots
     if (var == "Both"){
-      var1 = input$var1
-      var2 = input$var2
+      pvalues <- unlist(pvalues, recursive = FALSE)
+      p1 <-unlist(pvalues[1])
+      p2 <-unlist(pvalues[2])
       
-      significant = FALSE
       
-      ### get the pValues for both variables
-      pvalues1 <- getPvalues(inG$var1, outG$var1)
-      pvalues2 <- getPvalues(inG$var2, outG$var2)
-      
-      ### check if the gene has a significant difference in the distribioution of In- and Out-Group
-      ### in at least one of the variables
-      
-      ### If there is not enough data to calculate a p-value consider the gene as intereisting 
-      if (is.null(pvalues1)){}
-      ### check if the at last calculated p-value is smaller than the significane level 
-      else if(pvalues1[length(pvalues1)] < significanceLevel){significant = TRUE}
-      
-      ### analog to pvalues in the first variable
-      if(is.null(pvalues2)){}
-      else if (pvalues2[length(pvalues2)]  < significanceLevel){significant = TRUE}
-      
-      ### if the gene is interisting return the p-values
-      if(significant){
-        pvalues <- list(pvalues1, pvalues2)
-        return(pvalues) 
+      #### Check if the p-values should be printed
+      if(input$showPvalue == TRUE){
+        infoP1 <- getInfo_pValues(p1)
+        infoP2 <- getInfo_pValues(p2)
       }
-      ### if the gene is not interisting return NULL 
-      else{return(NULL)}
-      
-    } 
-    else{
-      ### Check which variable is selected and get the p-values
-      if (var == input$var1_id){pvalues <- getPvalues(inG$var1, outG$var1)}
-      else {pvalues <- getPvalues(inG$var2, outG$var2)}
-      
-      #### Analog to getting the significance with both variables
-      if (is.null(pvalues)){return(NULL)}
-      else if(pvalues[length(pvalues)] < significanceLevel){
-        pvalues<-  list(pvalues)
-        return(pvalues)
-      } else{return(NULL)}
-      
-    }
-  }
-  
-  getPvalues <- function(varIn,varOut){
-    #### upper limit for the probability to reject H0 if it is correct
-    significanceLevel <- input$significance
-    
-    #### delete all entrys that are NA
-    varIn <- varIn[!is.na(varIn)]
-    varOut <- varOut[!is.na(varOut)]
-    
-    ### if there is no data in one of the groups the p-value is NA
-    if (length(varIn)==0){return(NULL)}
-    else if(length(varOut)== 0){return(NULL) }
-    
-    ### if there is data the p-value is calculatet with a combination of two non-parametric test 
-    else{
-      #### Kolmogorov-Smirnov-Test
-      #### H0 : The two samples have the same distribution
-      ks = ks.boot(varIn, varOut,alternative = "two.sided")
-      
-      #### p-value = Probability(test statistic >= value for the samples)
-      #### probabilitiy to recet H0 if it is correct
-      p.value = ks$ks.boot.pvalue
-      
-      ###  You reject the null hypothesis that the two samples were drawn from the same distribution if the p-value is less than your significance level
-      if(p.value < significanceLevel ){pvalue <- c(p.value)}
-      
-      ### if we accept H0 it does not mean that the samples are uninteresting
-      ### they could still have different location values
       else{
-        #### Wilcoxon-Mann-Whitney-Test
-        #### H0: the samples have the same location parameters
-        wilcox <- wilcox.test(varIn, varOut,alternative = "two.sided", exact = FALSE)
-        p.value.wilcox = wilcox$p.value
-        pvalue <- c(p.value, p.value.wilcox)
-        
+        infoP1 <- " "
+        infoP2 <- " "}
+      
+      ### check if the significant plot should be highlighted
+      if(input$highlightSignificant == TRUE){
+        if(is.na (p1[1])){c1 = "grey"}
+        else if(p1[length(p1)] < input$significance){c1 ="indianred2"}
+        else{ c1 = "grey"}
+        if(is.na (p2[1])){c2 = "grey"}
+        else if(p2[length(p2)] < input$significance){c2 ="indianred2"}
+        else{ c2 = "grey"}
       }
+      else{
+        c1 = "grey"
+        c2 = "grey"
+      }
+      
+      boxplot1 <- getPlot(inGroup, outGroup, input$var1_id, gene, c1, infoP1)
+      boxplot2 <- getPlot(inGroup, outGroup, input$var2_id, gene, c2, infoP2)
+      
+      m <-grid.arrange(textGrob(gene), arrangeGrob(boxplot1,boxplot2,ncol=2), barplot,heights=c(0.02, 0.45, 0.458), ncol=1) 
     }
+    
+    else {
+      p <- unlist(pvalues)
+      
+      if(input$showPvalue == TRUE){info <- getInfo_pValues(p)}
+      else{info <- " "}
+      
+      boxplot <- getPlot(inGroup, outGroup, var, gene, "grey", info)
+      # m <- multiplot(boxplot, barplot, cols=1)
+      
+      m<- grid.arrange(textGrob(gene),boxplot,barplot, heights=c(0.02, 0.45, 0.458),ncol=1) # 
+    }
+    return(m)
   }
   
-  #### look at all selected genes ####
-  getSignificantGenes <- function (){
-    if (is.null(input$taxaGc) | length(input$inSeqGc) == 0){return()}
-    
-    #### Parameters that are identical for all genes 
-    inGroup =  input$taxaGc
-    rank = input$rankSelect
-    var = input$varGcName
-    
-    #### Updateing of the Input
-    ### if there is more than one element in the In-Group we look at the next common anchstor
-    ancestor = getCommonAncestor(inGroup,rank)
-    if (is.null(ancestor)){return()}
-    inGroup <- ancestor[1]
-    rank <- ancestor[2]
-    
-    #### List with all significant genes
-    ### size of the matrix depends on how many variables are selected
-    #significantGenes <- data.frame(matrix(vector(), 0, 4, dimnames=list(c(), c("geneID", "inGroup", "outGroup", "pvalues"))),stringsAsFactors=F)
-    significantGenes <- data.frame( 
-      gene = character(),
-      inGroup = I(list()),
-      outGroup = I(list()),
-      pvalues = I(list()))
-    ### List of genes to look at
-    dataFull <- dataFiltered()
-    if (is.element("all",input$inSeqGc)){
-      genes<- dataFull$geneID
-      genes <- genes[!duplicated(genes)]
-    } else {genes = input$inSeqGc}
-    genes <- sort(genes)
-    
-    #### Subset depending on the rank and the In-Group
-    subsetSelected <- selectedSubset(rank, inGroup)
-    
-    ### Check for each of the selected genes if they are significant 
-    ### If a gene is significant generate the plots and save them in significantGenesGroupComparison
-    for(gene in genes){
-      
-      #### creates Substet only for current Gene 
-      selectedGeneDF <- subset(dataFull, dataFull$geneID == gene)
-      
-      ### In- and Out-Group depending on the Gene 
-      inGroupDF <- subset(selectedGeneDF, selectedGeneDF$abbrName %in% subsetSelected$abbrName)
-      outGroupDF <- subset (selectedGeneDF, !(selectedGeneDF$abbrName %in% subsetSelected$abbrName))
-      
-      #### Generate the P-values for the gene
-      pvalues <- getSignificant(inGroupDF, outGroupDF, var, gene)
-      
-      if(!is.null(pvalues)){
-        newRow <- data.frame(geneID = gene, inGroup = NA, outGroup = NA, pvalues=NA, features =NA)
-        newRow$inGroup <- list(inGroupDF)
-        newRow$outGroup <- list(outGroupDF)
-        newRow$pvalues <- list(pvalues)
-        newRow$features <- list(getFeatures(gene))
-        significantGenes <- rbind(significantGenes, newRow)
-        
-      }
-    } 
-    if(nrow(significantGenes)!=0){
-      significantGenes$var <- var
-      significantGenes$rank <- rank 
-      significantGenesGroupCompairison <<- significantGenes
-    }
-  }
-  
-  ### Create a Boxplot
+  #### Create a Boxplot
   getPlot <-function (inGroupDF,outGroupDF, var, gene, colour, info){
     
     if (var == input$var1_id){
@@ -4684,10 +4495,10 @@ shinyServer(function(input, output, session) {
     boxPlot
   }
   
-  #### Create Barplot ####
+  #### Create Barplot 
   gcBarPlot <- function(selectedGene, inGroup, outGroup, features){
     
-    subdomainDF <- features #getFeatures(selectedGene)
+    subdomainDF <- features
     
     ### only show features that interest the user 
     if(!("all" %in% input$interestingFeatures)){
@@ -4750,7 +4561,6 @@ shinyServer(function(input, output, session) {
         if (!empty(outG)){
           outNotEmpty <- outNotEmpty + 1
           outGFeatures <-  plyr::count(outG,"feature")
-          #outGFeatures$freq <- outGFeatures$freq / sum(outGFeatures$freq)
           for (i in 1:nrow(outGFeatures)){
             for (j in 1:nrow(dataOut)){
               if (dataOut[j,1] == outGFeatures[i,1]){
@@ -4781,7 +4591,6 @@ shinyServer(function(input, output, session) {
       ### generate Barplot
       barPlot <- ggplot(dataBar, aes(x=feature, y=amount, fill=type ), main =" ") +
         geom_bar(stat="identity", position=position_dodge(), width=0.5) +
-        #scale_y_continuous(labels=percent)+ ## y-axis in percentage
         scale_fill_grey()+
         labs(x=" ", y="Average instances per protein", fill="Group")+
         theme_minimal()
@@ -4799,6 +4608,268 @@ shinyServer(function(input, output, session) {
     } else(return(NULL))
   }
   
+  ### Get the P-values to print under the plot
+  getInfo_pValues <- function (p){
+    
+    if(is.na(p[1])){info_pValues = "not enough information"}
+    else if (length(p) == 1){info_pValues = paste("Kolmogorov-Smirnov-Test:", as.character(p[1]), sep=" " )}
+    else{ 
+      info_pValues1 = paste("Kolmogorov-Smirnov-Test:", as.character(p[1]),sep=" " )
+      info_pValues2 = paste("Wilcoxon-Mann-Whitney-Test: ", as.character(round(p[2], 3)), sep = " ")
+      info_pValues = paste(info_pValues1, info_pValues2, sep = "\n")}
+    
+    info_pValues <- paste("P-Values:",info_pValues, sep="\n")
+    info_pValues
+  }
+  
+  
+  #### observe Events for the Appearance of the plots ####
+  #### reset config of customized plot
+  observeEvent(input$resetGcConfig, {
+    shinyjs::reset("xSizeGC")
+    shinyjs::reset("ySizeGC")
+    shinyjs::reset("gcAngle")
+    shinyjs::reset("legendSizeGC")
+  })
+  
+  #### close customized config
+  observeEvent(input$applyGcConfig, {
+    toggleModal(session, "gcPlotConfigBs", toggle = "close")
+  })
+  
+  
+  #### Get the list with all the significant genes and the dataset ####
+  getSignificantGenes <- function (){
+    if (is.null(input$taxaGc) | length(input$inSeqGc) == 0){return()}
+    
+    #### load name List
+    nameList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T,fill = TRUE))
+    nameList$fullName <- as.character(nameList$fullName)
+    nameList$rank <- as.character(nameList$rank)
+    nameList <- nameList[!duplicated(nameList),]
+    
+    ### load list of unsorted taxa
+    Dt <- as.data.frame(read.table("data/taxonomyMatrix.txt", sep='\t', header=T, stringsAsFactors=T))
+    
+    #### Parameters that are identical for all genes 
+    inGroup =  input$taxaGc
+    rank = input$rankSelect
+    var = input$varGcName
+    
+    #### Updateing of the Input
+    ### if there is more than one element in the In-Group we look at the next common anchstor
+    ancestor = getCommonAncestor(inGroup,rank, nameList, Dt)
+    if (is.null(ancestor)){return()}
+    inGroup <- ancestor[1]
+    rank <- ancestor[2]
+    
+    #### List with all significant genes
+    significantGenes <- data.frame( 
+      geneID = character(),
+      inGroup = I(list()),
+      outGroup = I(list()),
+      pvalues = I(list()),
+      features = I(list()),
+      databases = I(list()))
+    
+    ### List of genes to look at
+    dataFull <- dataFiltered()
+    if (is.element("all",input$inSeqGc)){
+      genes<- dataFull$geneID
+      genes <- genes[!duplicated(genes)]
+    } else {genes = input$inSeqGc}
+    genes <- sort(genes)
+    
+    #### Subset depending on the rank and the In-Group
+    subsetSelected <- selectedSubset(rank, inGroup, nameList, Dt)
+    
+    ### Check for each of the selected genes if they are significant 
+    ### If a gene is significant generate the plots and save them in significantGenesGroupComparison
+    for(gene in genes){
+      
+      #### creates Substet only for current Gene 
+      selectedGeneDF <- subset(dataFull, dataFull$geneID == gene)
+      
+      ### In- and Out-Group depending on the Gene 
+      inGroupDF <- subset(selectedGeneDF, selectedGeneDF$abbrName %in% subsetSelected$abbrName)
+      outGroupDF <- subset (selectedGeneDF, !(selectedGeneDF$abbrName %in% subsetSelected$abbrName))
+      
+      #### Generate the P-values for the gene
+      pvalues <- getSignificant(inGroupDF, outGroupDF, var, gene)
+      
+      if(!is.null(pvalues)){
+        newRow <- data.frame(geneID = gene, inGroup = NA, outGroup = NA, pvalues=NA, features =NA)
+        newRow$inGroup <- list(inGroupDF)
+        newRow$outGroup <- list(outGroupDF)
+        newRow$pvalues <- list(pvalues)
+        features  <- getFeatures(gene)
+        newRow$features <- list(features)
+        if(input$rightFormatFeatures){newRow$databases <- list(getPrefixFeatures(features))}
+        significantGenes <- rbind(significantGenes, newRow)
+      }
+    } 
+    if(nrow(significantGenes)!=0){
+      significantGenes$var <- var
+      significantGenes$rank <- rank 
+      significantGenesGroupCompairison <<- significantGenes
+    }
+  } 
+  
+  #### Get the database for each feature in a specific gene
+  ### f is dataframe in $features
+  getPrefixFeatures <- function(f){
+    features <- f$feature
+    choices <- gsub("_.*","", features)
+    choices <- choices[!duplicated(choices)]
+    choices
+  }
+  
+  #### Get the Subset depending on the choosen rank
+  selectedSubset <- function (rank, inGroup, nameList, Dt){
+    ### Look if the fullName is in the In-Group
+    x <- subset(nameList,  nameList$fullName %in% inGroup)
+    
+    ### Look if it has the right rank
+    x1 <- Dt[Dt[,rank] %in% x$ncbiID,]
+    
+    x1
+  }
+  
+  #### Generate the In-Group
+  getCommonAncestor <- function(inGroup, rank, nameList, allTaxaGc){
+    allRanks = list("Strain"="05_strain","Species" = "06_species","Genus" = "10_genus", "Family" = "14_family", "Order" = "19_order", "Class" = "23_class",
+                    "Phylum" = "26_phylum", "Kingdom" = "28_kingdom", "Superkingdom" = "29_superkingdom","unselected"="")
+    
+    allTaxaGc <- allTaxaGc[!duplicated(allTaxaGc),]
+    
+    ### all ranks higher than the selected rank
+    ### ranks were all elements of the inGroup might be in the same taxon 
+    possibleRanks <- allRanks [allRanks >= rank]
+    i <-  1
+    
+    if (length(inGroup)==1){rank = substring(rank,4)}
+    
+    ### find the common ancestor of all taxa in the In-Group and us it as In-Group
+    while (length(inGroup)>1 & i < length(possibleRanks)){
+      currentRank <- substring(possibleRanks[i],4)
+      nextRank <- substring(possibleRanks[i+1],4) 
+      
+      ### dataframe with all elements with fitting rank
+      inG <- subset(nameList, nameList$rank == currentRank) 
+      
+      ### subset of inG with elements that belong to the in-Group
+      inG <- subset(inG,inG$fullName %in% inGroup)
+      
+      ### dataset with all elements that could belong to the In-Group
+      possibleInGroup <- subset(allTaxaGc, select=c(currentRank, nextRank))
+      possibleInGroup <- possibleInGroup[possibleInGroup[,currentRank] %in% inG$ncbiID,]
+      possibleInGroup <- possibleInGroup[!duplicated(possibleInGroup),]
+      
+      ### only consider elements of the list that have the next higher rank
+      x <- subset(nameList, nameList$rank == nextRank)
+      x <- subset(x, x$ncbiID %in% possibleInGroup[,nextRank])
+      inGroup <- x$fullName
+      i = i+1
+      rank = nextRank
+    }
+    
+    ### If there is no common ancestor
+    if (i > length(possibleRanks)){ return()}
+    
+    c(inGroup, rank)
+  }
+  
+  #### Decide if the gene is significant
+  ### if the gene is significant return the pvalues
+  getSignificant <- function(inG,outG, var, gene){
+    significanceLevel <- input$significance
+    
+    if (var == "Both"){
+      var1 = input$var1
+      var2 = input$var2
+      
+      significant = FALSE
+      
+      ### get the pValues for both variables
+      pvalues1 <- getPvalues(inG$var1, outG$var1)
+      pvalues2 <- getPvalues(inG$var2, outG$var2)
+      
+      ### check if the gene has a significant difference in the distribioution of In- and Out-Group
+      ### in at least one of the variables
+      
+      ### If there is not enough data to calculate a p-value consider the gene as intereisting 
+      if (is.null(pvalues1)){}
+      ### check if the at last calculated p-value is smaller than the significane level 
+      else if(pvalues1[length(pvalues1)] < significanceLevel){significant = TRUE}
+      
+      ### analog to pvalues in the first variable
+      if(is.null(pvalues2)){}
+      else if (pvalues2[length(pvalues2)]  < significanceLevel){significant = TRUE}
+      
+      ### if the gene is interisting return the p-values
+      if(significant){
+        pvalues <- list(pvalues1, pvalues2)
+        return(pvalues) 
+      }
+      ### if the gene is not interisting return NULL 
+      else{return(NULL)}
+      
+    } 
+    else{
+      ### Check which variable is selected and get the p-values
+      if (var == input$var1_id){pvalues <- getPvalues(inG$var1, outG$var1)}
+      else {pvalues <- getPvalues(inG$var2, outG$var2)}
+      
+      #### Analog to getting the significance with both variables
+      if (is.null(pvalues)){return(NULL)}
+      else if(pvalues[length(pvalues)] < significanceLevel){
+        pvalues<-  list(pvalues)
+        return(pvalues)
+      } else{return(NULL)}
+      
+    }
+  }
+  
+  ### calculate the p-values
+  getPvalues <- function(varIn,varOut){
+    #### upper limit for the probability to reject H0 if it is correct
+    significanceLevel <- input$significance
+    
+    #### delete all entrys that are NA
+    varIn <- varIn[!is.na(varIn)]
+    varOut <- varOut[!is.na(varOut)]
+    
+    ### if there is no data in one of the groups the p-value is NA
+    if (length(varIn)==0){return(NULL)}
+    else if(length(varOut)== 0){return(NULL) }
+    
+    ### if there is data the p-value is calculatet with a combination of two non-parametric test 
+    else{
+      #### Kolmogorov-Smirnov-Test
+      #### H0 : The two samples have the same distribution
+      ks = ks.boot(varIn, varOut,alternative = "two.sided")
+      
+      #### p-value = Probability(test statistic >= value for the samples)
+      #### probabilitiy to recet H0 if it is correct
+      p.value = ks$ks.boot.pvalue
+      
+      ###  You reject the null hypothesis that the two samples were drawn from the same distribution if the p-value is less than your significance level
+      if(p.value < significanceLevel ){pvalue <- c(p.value)}
+      
+      ### if we accept H0 it does not mean that the samples are uninteresting
+      ### they could still have different location values
+      else{
+        #### Wilcoxon-Mann-Whitney-Test
+        #### H0: the samples have the same location parameters
+        wilcox <- wilcox.test(varIn, varOut,alternative = "two.sided", exact = FALSE)
+        p.value.wilcox = wilcox$p.value
+        pvalue <- c(p.value, p.value.wilcox)
+        
+      }
+    }
+  }
+  
+  #### get the list with all the features in the gene
   getFeatures <- function(selectedGene){
     ### parse domain file
     fileDomain <- getDomainFileGc(selectedGene)
@@ -4822,14 +4893,12 @@ shinyServer(function(input, output, session) {
       colnames(domainDf) <- c("seedID","orthoID","feature","start","end","weight","path")
     }
     
-    # domainDf$seedID <- gsub("\\|",":",domainDf$seedID)
-    # domainDf$orthoID <- gsub("\\|",":",domainDf$orthoID)
     subdomainDF <- subset(domainDf, substr(domainDf$seedID,1,nchar(as.character(selectedGene)))== selectedGene)
     subdomainDF <- subdomainDF[!duplicated(subdomainDF),]
-    
     subdomainDF
   }
   
+  #### get the data where to find the features
   getDomainFileGc <- function(group){
     ### domain file
     if(input$demo_data == "demo" | input$demo_data == "ampk-tor"){
@@ -4897,70 +4966,6 @@ shinyServer(function(input, output, session) {
     }
   )
   
-  getMultiplot<- function(geneInfo){
-    
-    
-    ### Sorting the information to the selected gene
-    gene <- as.character(geneInfo$geneID)
-    inGroup <- as.data.frame(geneInfo$inGroup)
-    outGroup <- as.data.frame(geneInfo$outGroup)
-    features <- as.data.frame(geneInfo$features)
-    pvalues <-geneInfo$pvalues
-    var <- geneInfo$var
-    
-    ### the barplot does not depent on the selected variable(s)
-    barplot <-  gcBarPlot(gene, inGroup, outGroup,features)
-    if(is.null(barplot)){barplot <- textGrob("The selected domains are not found in the gene")}
-    ### if both variables are selected there are going to be 2 boxplots
-    if (var == "Both"){
-      pvalues <- unlist(pvalues, recursive = FALSE)
-      p1 <-unlist(pvalues[1])
-      p2 <-unlist(pvalues[2])
-      
-      
-      #### Check if the p-values should be printed
-      if(input$showPvalue == TRUE){
-        infoP1 <- getInfo_pValues(p1)
-        infoP2 <- getInfo_pValues(p2)
-      }
-      else{
-        infoP1 <- " "
-        infoP2 <- " "}
-      
-      ### check if the significant plot should be highlighted
-      if(input$highlightSignificant == TRUE){
-        if(is.na (p1[1])){c1 = "grey"}
-        else if(p1[length(p1)] < input$significance){c1 ="indianred2"}
-        else{ c1 = "grey"}
-        if(is.na (p2[1])){c2 = "grey"}
-        else if(p2[length(p2)] < input$significance){c2 ="indianred2"}
-        else{ c2 = "grey"}
-      }
-      else{
-        c1 = "grey"
-        c2 = "grey"
-      }
-      
-      boxplot1 <- getPlot(inGroup, outGroup, input$var1_id, gene, c1, infoP1)
-      boxplot2 <- getPlot(inGroup, outGroup, input$var2_id, gene, c2, infoP2)
-      
-      m <-grid.arrange(textGrob(gene), arrangeGrob(boxplot1,boxplot2,ncol=2), barplot,heights=c(0.02, 0.45, 0.458), ncol=1) 
-    }
-    
-    else {
-      p <- unlist(pvalues)
-      
-      if(input$showPvalue == TRUE){info <- getInfo_pValues(p)}
-      else{info <- " "}
-      
-      boxplot <- getPlot(inGroup, outGroup, var, gene, "grey", info)
-      # m <- multiplot(boxplot, barplot, cols=1)
-      
-      m<- grid.arrange(textGrob(gene),boxplot,barplot, heights=c(0.02, 0.45, 0.458),ncol=1) # 
-    }
-    return(m)
-  }
-  
   ### download file with the shown plots
   output$gcDownloadPlots <- downloadHandler(
     filename = "plotSignificantGenes.zip",
@@ -4990,7 +4995,7 @@ shinyServer(function(input, output, session) {
     getMultiplot(x)
   }
   
-  
+  #### observer for the download functions
   observe({
     if (is.null(input$taxaGc) | length(input$inSeqGc) == 0){
       shinyjs::disable('gcDownloadPlots')
@@ -5011,6 +5016,7 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  #### addCustomProfile ####
   ### check if addCustomProfile (gene age plot) are being clicked
   observe({
     if(input$addCustomProfile == TRUE | input$addConsGeneCustomProfile == TRUE | input$addClusterCustomProfile == TRUE){
@@ -5019,7 +5025,7 @@ shinyServer(function(input, output, session) {
       shinyjs::enable('addGcGenesCustomProfile')
     }
   })
-  
+
   output$addGcGenesCustomProfileCheck.ui <- renderUI({
     if(input$addCustomProfile == TRUE | input$addConsGeneCustomProfile == TRUE | input$addClusterCustomProfile == TRUE){
       HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Gene age estimation</strong>or <strong>Profile clustering</strong> or <strong>Core genes finding</strong>&nbsp;to enable this function)</em></p>')

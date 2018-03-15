@@ -559,6 +559,7 @@ shinyUI(fluidPage(
                    ),
                    column(3,
                           uiOutput("significance.ui"),
+                          checkboxInput("rightFormatFeatures","feature format: ’featuretype_featurename’", value = TRUE, width = NULL),
                           actionButton("plotGc", "Plot"),
                           popify(actionButton("gcPlotConfig","Appearance"),"", "Change the appearance of the plots")
                           
@@ -572,7 +573,7 @@ shinyUI(fluidPage(
                  checkboxInput("addGcGenesCustomProfile",strong(em("Add to Customized profile")), value = FALSE, width = NULL),
                  uiOutput('addGcGenesCustomProfileCheck.ui'),
                  
-                 uiOutput("featuresOfInterestGc"),
+                 popify(uiOutput("featuresOfInterestGc"),"","This function is only use full if the features are saved in the right format: featuretype_featurename"),
 
                  actionButton("gcDownloads","Download"),
                  
