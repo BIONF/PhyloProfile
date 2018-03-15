@@ -6,7 +6,7 @@
 # packages <- c("shiny","shinyBS","shinyjs","DT","colourpicker")
 # sapply(packages, require, character.only = TRUE)
 #######################################################
- 
+
 if (!require("shiny")) {install.packages("shiny")}
 if (!require("shinyBS")) {install.packages("shinyBS")}
 if (!require("DT")) {install.packages("DT")}
@@ -540,56 +540,8 @@ shinyUI(fluidPage(
                       dataTableOutput("taxaID"),
                       downloadButton("downloadTaxaID","Download")
                )
-        ),
-      ### Group Comparison  ####
-      tabPanel("Group Comparison",
-               h4(strong("Group Comparison")),
-               wellPanel(
-                 fluidRow(
-                   column(3,
-                          uiOutput("ButtonVarGC")
-                   ),
-                   column(3,
-                          uiOutput("geneInGc"),
-                          popify(fileInput("gcFile",NULL,width='100%'),"", "Select file of sequences")
-                   ),
-                   column(3,
-                          uiOutput("taxaList_gc.ui"), ## Select In-Group
-                          shinyBS::bsButton("gcTaxa","Change rank")
-                   ),
-                   column(3,
-                          uiOutput("significance.ui"),
-                          checkboxInput("rightFormatFeatures","feature format: ’featuretype_featurename’", value = TRUE, width = NULL),
-                          actionButton("plotGc", "Plot"),
-                          popify(actionButton("gcPlotConfig","Appearance"),"", "Change the appearance of the plots")
-                          
-                   )
-                 )),
-               sidebarPanel(
-                 uiOutput("getSignificantGenes"),
-                 bsPopover("getSignificantGenes", "","Select gene to show the plots", "right"),
-                 
-
-                 checkboxInput("addGcGenesCustomProfile",strong(em("Add to Customized profile")), value = FALSE, width = NULL),
-                 uiOutput('addGcGenesCustomProfileCheck.ui'),
-                 
-                 popify(uiOutput("featuresOfInterestGc"),"","This function is only use full if the features are saved in the right format: featuretype_featurename"),
-
-                 actionButton("gcDownloads","Download"),
-                 
-                 width = 3
-               ),
-               mainPanel(
-                 tags$style(HTML("
-                  #plotsGc {
-                    height:650px;
-                    overflow-y:scroll
-                  }
-                  ")),
-                 uiOutput("plotsGc"),
-                 
-                 width = 9)
-      )),
+        )
+      ),
 
       ########## DATA TAB ###########
       navbarMenu("Download filtered data",
@@ -806,79 +758,6 @@ shinyUI(fluidPage(
             shinyBS::bsButton("resetSelectedConfig","Reset",style="danger"),
             shinyBS::bsButton("applySelectedConfig","Done",style="warning")
     ),
-  
-  ### popup windows for setting group compariosn plot configurations ###
-  bsModal("gcPlotConfigBs", "Plot appearance configuration", "gcPlotConfig", size = "small",
-          column(6,
-                 numericInput("xSizeGC","X-axis label size (px)",min=8,max=99,step=1,value=10,width=100)
-          ),
-          column(6,
-
-                 numericInput("ySizeGC","Y-axis label size (px)",min=8,max=99,step=1,value=10,width=100)
-          ),
-
-
-          column(6,
-                 numericInput("legendSizeGC","Legend label size (px)",min=8,max=99,step=1,value=10,width=150)
-          ),
-          column(6,
-                 selectInput("gcLegend", label = "Legend position:",
-                             choices = list("Right"="right", "Left"="left","Top"="top","Bottom"="bottom", "Hide"="none"),
-                             selected = "right",
-                             width = 150)
-          ),
-          column(12,
-                 sliderInput("gcAngle","Angle of the X-axis label", min = 0, max = 180, step = 1, value = 90, width = 250)
-          ),
-          column(12,
-                 checkboxInput("showPvalue", strong("Show P-Values"), value = FALSE, width = 250)
-          ),
-          column(12,
-                 popify(checkboxInput("highlightSignificant", strong("Highlight significant plots"), value =TRUE, width = 250),"","If both variables are selected the significant Plot is colored"  )
-          ),
-
-          br(),
-          hr(),
-          shinyBS::bsButton("resetGcConfig","Reset",style="danger"),
-          shinyBS::bsButton("applyGcConfig","Done",style="warning")
-          ),
-
-  ### popup windows for setting group compariosn plot configurations ###
-  bsModal("gcPlotConfigBs", "Plot appearance configuration", "gcPlotConfig", size = "small",
-          column(6,
-                 numericInput("xSizeGC","X-axis label size (px)",min=8,max=99,step=1,value=10,width=100)
-          ),
-          column(6,
-
-                 numericInput("ySizeGC","Y-axis label size (px)",min=8,max=99,step=1,value=10,width=100)
-          ),
-
-
-          column(6,
-                 numericInput("legendSizeGC","Legend label size (px)",min=8,max=99,step=1,value=10,width=150)
-          ),
-          column(6,
-                 selectInput("gcLegend", label = "Legend position:",
-                             choices = list("Right"="right", "Left"="left","Top"="top","Bottom"="bottom", "Hide"="none"),
-                             selected = "right",
-                             width = 150)
-          ),
-          column(12,
-                 sliderInput("gcAngle","Angle of the X-axis label", min = 0, max = 180, step = 1, value = 90, width = 250)
-          ),
-          column(12,
-                 checkboxInput("showPvalue", strong("Show P-Values"), value = FALSE, width = 250)
-          ),
-          column(12,
-                 popify(checkboxInput("highlightSignificant", strong("Highlight significant plots"), value =TRUE, width = 250),"","If both variables are selected the significant Plot is colored"  )
-          ),
-
-          br(),
-          hr(),
-          shinyBS::bsButton("resetGcConfig","Reset",style="danger"),
-          shinyBS::bsButton("applyGcConfig","Done",style="warning")
-          ),
-
 
     ####### popup windows for select taxa on Customized Profile
     bsModal("cusTaxaBS", "Select taxon/taxa of interest", "cusTaxa", size = "small",
@@ -944,24 +823,6 @@ shinyUI(fluidPage(
             uiOutput("archiPlot.ui"),
             downloadButton("archiDownload","Download plot")
     ),
-  
-  bsModal("gcTaxaBS", "Select taxon/taxa of interest", "gcTaxa", size = "small",
-          uiOutput("rankSelectGc"),
-          uiOutput("taxaSelectGc"),
-          checkboxInput("applyGcTaxa",strong("Apply to group comparison", style="color:red"),value = FALSE)
-  ),
-
-  
-  bsModal("gcDownloadsBS", "Download","gcDownloads", size="small",
-          h5(strong("Download the significant Genes")),
-          downloadButton("gcDownloadGenes","Download"),
-          h5(""),
-          uiOutput("SelectPlotsToDownload"),
-          downloadButton("gcDownloadPlots","Download")),
-
-  
-  
-  
 
     ################### POINT INFO BOX ##########################
     conditionalPanel(

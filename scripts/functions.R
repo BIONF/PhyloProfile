@@ -133,13 +133,10 @@ sortDomains <- function(seedDf, orthoDf){
 ######## plot domain architecture ########
 domain.plotting <- function(df,geneID,sep,labelSize,titleSize,minStart,maxEnd){
   gg <- ggplot(df, aes(y=feature, x=end, color = feature)) +
-    geom_segment(data=df, aes(y=feature, yend=feature, x=minStart, xend=maxEnd), color="white", size=0)
-  
-  ### draw lines for representing sequence lenght
-  gg <- gg + geom_segment(data=df, aes(x=0, xend=length, y=feature, yend=feature), size=1, color="#b2b2b2")
+    geom_segment(data=df, aes(y=feature, yend=feature, x=minStart, xend=maxEnd), color="#b2b2b2", size=0.15)
   
   ### draw line and points
-  gg <- gg + geom_segment(data=df, aes(x=start, xend=end, y=feature, yend=feature),size=1.5)
+  gg <- gg + geom_segment(data=df, aes(x=start, xend=end, y=feature, yend=feature),size=1)
   gg <- gg + geom_point(data=df, aes(y=feature, x=start), color="#b2b2b2", size=3, shape=3)
   gg <- gg + geom_point(data=df, aes(y=feature, x=end), color="#edae52", size=3, shape=5)
   
@@ -162,9 +159,7 @@ domain.plotting <- function(df,geneID,sep,labelSize,titleSize,minStart,maxEnd){
   gg <- gg + theme(plot.title=element_text(hjust = 0.5))
   gg <- gg + theme(legend.position="none",axis.title.x=element_blank(),
                    axis.text.y = element_text(size=labelSize),
-                   axis.title.y = element_text(size=labelSize),
-                   panel.grid.minor.x = element_blank(),
-                   panel.grid.major.x = element_blank())
+                   axis.title.y = element_text(size=labelSize))
   
   ### return plot
   return(gg)
