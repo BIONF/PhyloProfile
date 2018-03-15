@@ -123,7 +123,6 @@ def get_taxonomy_info(ID):
 
 def print_domain(domainInfo,pairID,geneID):
 	domainBlock = ""
-	length = get_seq_info(geneID)["sequence_length"]
 	for domain in domainInfo["regions"]:
 		source = domain["source"]
 		name = domain["name"]
@@ -131,7 +130,7 @@ def print_domain(domainInfo,pairID,geneID):
 		start = region[0]
 		end = region[1]
 		if(len(name) > 0):
-			domainLine = pairID+"\t"+geneID+"\t"+str(length)+"\t"+source+" "+name+"\t"+start+"\t"+end+"\n"
+			domainLine = pairID+"\t"+geneID+"\t"+source+" "+name+"\t"+start+"\t"+end+"\n"
 			domainBlock += domainLine
 	return(domainBlock)
 
@@ -167,7 +166,6 @@ domainOutFile = open(domainOut,"w")
 # 	soup = BeautifulSoup(open(output),"xml")
 # 	gene2spec = {}
 # 	geneid2name = {}
-# 	seedname2id = {}
 # 	for spec in soup.findAll("species"):
 # 		specID = spec.get("NCBITaxId")
 # 		for gene in spec.findAll("gene"):
@@ -175,22 +173,10 @@ domainOutFile = open(domainOut,"w")
 # 			geneID = gene.get("id")
 # 			gene2spec[geneID] = "ncbi"+specID
 # 			geneid2name[geneID] = geneName
-# 			if geneName in ids:
-# 				seedname2id[geneName] = geneID
 #
 # 	print("now getting FASTA sequence and domain annotations for:")
 # 	for orthogroup in soup.findAll("orthologGroup"):
 # 		groupID = orthogroup.get("id")
-# 		seedName = ""
-# 		for name in ids:
-# 			searchSeed = "geneRef id=\""+str(seedname2id[name])+"\""
-# 			if searchSeed in str(orthogroup):
-# 				seedName = name
-# 		domainSeed = get_domain_info(seedName)
-# 		print(domainSeed)
-# 		time.sleep(2)
-# 		#print(str(orthogroup))
-# 		#sys.exit(0)
 # 		if groupID:
 # 			if groupID.isdigit():
 # 				groupID = "OG_"+str(groupID)
@@ -214,17 +200,6 @@ domainOutFile = open(domainOut,"w")
 # 					if(len(name) > 0):
 # 						domainLine = groupID+"#"+geneid2name[geneID]+"\t"+geneid2name[geneID]+"\t"+source+" "+name+"\t"+start+"\t"+end+"\n"
 # 						domainOutFile.write(domainLine)
-# 				domainBlock = print_domain(domainInfo,groupID+"#"+str(geneid2name[geneID]),geneid2name[geneID])
-# 				print("here")
-# 				print(domainBlock)
-# 				if len(domainBlock) == 0:
-# 					domainBlock = groupID+"#"+str(geneid2name[geneID])+"\t"+geneid2name[geneID]+"\t0\tn/a\t0\t0\n"
-# 				domainOutFile.write(domainBlock)
-#
-# 				domainSeedBlock = print_domain(domainSeed,groupID+"#"+str(geneid2name[geneID]),seedName)
-# 				if len(domainSeedBlock) == 0:
-# 					domainSeedBlock = groupID+"#"+str(geneid2name[geneID])+"\t"+seedName+"\t0\tn/a\t0\t0\n"
-# 				domainOutFile.write(domainSeedBlock)
 
 ### get OMA orthologs and their sequences, domains
 if (args.type == "OG") or (args.type == "PAIR") or (args.type == "HOG"):
@@ -243,7 +218,7 @@ if (args.type == "OG") or (args.type == "PAIR") or (args.type == "HOG"):
 		domainSeed = get_domain_info(id)
 		domainSeedBlock = print_domain(domainSeed,"OG_"+str(id)+"#"+str(id),id)
 		if len(domainSeedBlock) == 0:
-			domainSeedBlock = "OG_"+str(id)+"#"+str(id)+"\t"+id+"\t0\tn/a\t0\t0\n"
+			domainSeedBlock = "OG_"+str(id)+"#"+str(id)+"\t"+id+"\tn/a\t0\t0\n"
 		domainOutFile.write(domainSeedBlock)
 
 		# get group ID
@@ -273,10 +248,10 @@ if (args.type == "OG") or (args.type == "PAIR") or (args.type == "HOG"):
 			domainInfo = get_domain_info(geneID)
 			domainBlock = print_domain(domainInfo,"OG_"+str(id)+"#"+str(geneID),geneID)
 			if len(domainBlock) == 0:
-				domainBlock = "OG_"+str(id)+"#"+str(geneID)+"\t"+geneID+"\t0\tn/a\t0\t0\n"
+				domainBlock = "OG_"+str(id)+"#"+str(geneID)+"\t"+geneID+"\tn/a\t0\t0\n"
 			domainSeedBlock = print_domain(domainSeed,"OG_"+str(id)+"#"+str(geneID),id)
 			if len(domainSeedBlock) == 0:
-				domainSeedBlock = "OG_"+str(id)+"#"+str(geneID)+"\t"+id+"\t0\tn/a\t0\t0\n"
+				domainSeedBlock = "OG_"+str(id)+"#"+str(geneID)+"\t"+id+"\tn/a\t0\t0\n"
 			domainOutFile.write(domainBlock)
 			domainOutFile.write(domainSeedBlock)
 
