@@ -6,7 +6,7 @@
 # packages <- c("shiny","shinyBS","shinyjs","DT","colourpicker")
 # sapply(packages, require, character.only = TRUE)
 #######################################################
-
+ 
 if (!require("shiny")) {install.packages("shiny")}
 if (!require("shinyBS")) {install.packages("shinyBS")}
 if (!require("DT")) {install.packages("DT")}
@@ -559,6 +559,7 @@ shinyUI(fluidPage(
                    ),
                    column(3,
                           uiOutput("significance.ui"),
+                          checkboxInput("rightFormatFeatures","feature format: ’featuretype_featurename’", value = TRUE, width = NULL),
                           actionButton("plotGc", "Plot"),
                           popify(actionButton("gcPlotConfig","Appearance"),"", "Change the appearance of the plots")
                           
@@ -568,13 +569,14 @@ shinyUI(fluidPage(
                  uiOutput("getSignificantGenes"),
                  bsPopover("getSignificantGenes", "","Select gene to show the plots", "right"),
                  
-                 popify(downloadButton("gcDownloadGenes","Download"), "", "Download a file with the list of significant genes"),
-                 popify(downloadButton("gcDownloadPlots","Download"), "", "Download a file with the plots to the significant genes"),
 
                  checkboxInput("addGcGenesCustomProfile",strong(em("Add to Customized profile")), value = FALSE, width = NULL),
                  uiOutput('addGcGenesCustomProfileCheck.ui'),
                  
-                 uiOutput("featuresOfInterestGc"),
+                 popify(uiOutput("featuresOfInterestGc"),"","This function is only use full if the features are saved in the right format: featuretype_featurename"),
+
+                 actionButton("gcDownloads","Download"),
+                 
                  width = 3
                ),
                mainPanel(
@@ -841,6 +843,43 @@ shinyUI(fluidPage(
           shinyBS::bsButton("applyGcConfig","Done",style="warning")
           ),
 
+  ### popup windows for setting group compariosn plot configurations ###
+  bsModal("gcPlotConfigBs", "Plot appearance configuration", "gcPlotConfig", size = "small",
+          column(6,
+                 numericInput("xSizeGC","X-axis label size (px)",min=8,max=99,step=1,value=10,width=100)
+          ),
+          column(6,
+
+                 numericInput("ySizeGC","Y-axis label size (px)",min=8,max=99,step=1,value=10,width=100)
+          ),
+
+
+          column(6,
+                 numericInput("legendSizeGC","Legend label size (px)",min=8,max=99,step=1,value=10,width=150)
+          ),
+          column(6,
+                 selectInput("gcLegend", label = "Legend position:",
+                             choices = list("Right"="right", "Left"="left","Top"="top","Bottom"="bottom", "Hide"="none"),
+                             selected = "right",
+                             width = 150)
+          ),
+          column(12,
+                 sliderInput("gcAngle","Angle of the X-axis label", min = 0, max = 180, step = 1, value = 90, width = 250)
+          ),
+          column(12,
+                 checkboxInput("showPvalue", strong("Show P-Values"), value = FALSE, width = 250)
+          ),
+          column(12,
+                 popify(checkboxInput("highlightSignificant", strong("Highlight significant plots"), value =TRUE, width = 250),"","If both variables are selected the significant Plot is colored"  )
+          ),
+
+          br(),
+          hr(),
+          shinyBS::bsButton("resetGcConfig","Reset",style="danger"),
+          shinyBS::bsButton("applyGcConfig","Done",style="warning")
+          ),
+
+
     ####### popup windows for select taxa on Customized Profile
     bsModal("cusTaxaBS", "Select taxon/taxa of interest", "cusTaxa", size = "small",
             uiOutput("rankSelectCus"),
@@ -911,7 +950,15 @@ shinyUI(fluidPage(
           uiOutput("taxaSelectGc"),
           checkboxInput("applyGcTaxa",strong("Apply to group comparison", style="color:red"),value = FALSE)
   ),
-    
+
+  
+  bsModal("gcDownloadsBS", "Download","gcDownloads", size="small",
+          h5(strong("Download the significant Genes")),
+          downloadButton("gcDownloadGenes","Download"),
+          h5(""),
+          uiOutput("SelectPlotsToDownload"),
+          downloadButton("gcDownloadPlots","Download")),
+
   
   
   
