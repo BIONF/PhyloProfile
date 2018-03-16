@@ -19,3 +19,4 @@ Don't hesitate to get in touch with us if you have any questions. You can contac
 ### Contributors
 * [Vinh Tran](https://github.com/trvinh)
 * [Bastian Greshake Tzovaras](https://github.com/gedankenstuecke)
+* [Carla Moelbert](https://github.com/CarlaMoelbert)
