@@ -493,7 +493,7 @@ shinyUI(fluidPage(
                uiOutput('addCustomProfileCheck.ui')
         ),
         tableOutput("geneAge.table")
-          ),
+      ),
       
       tabPanel(
         "Core gene identification",
@@ -541,6 +541,7 @@ shinyUI(fluidPage(
                       downloadButton("downloadTaxaID","Download")
                )
       ),
+      
       ### Group Comparison  ####
       tabPanel("Group Comparison",
                h4(strong("Group Comparison")),
@@ -564,7 +565,8 @@ shinyUI(fluidPage(
                           popify(actionButton("gcPlotConfig","Appearance"),"", "Change the appearance of the plots")
                           
                    )
-                 )),
+                 )
+               ),
                sidebarPanel(
                  uiOutput("getSignificantGenes"),
                  bsPopover("getSignificantGenes", "","Select gene to show the plots", "right"),
@@ -588,8 +590,10 @@ shinyUI(fluidPage(
                                  ")),
                  uiOutput("plotsGc"),
                  
-                 width = 9)
-                 )),
+                 width = 9
+                )
+        )
+      ),
     
     ########## DATA TAB ###########
     navbarMenu("Download filtered data",
@@ -642,60 +646,8 @@ shinyUI(fluidPage(
                                uiOutput("downloadCustomFasta.ui")
                         )
                )
-      )),
-
-      ########## DATA TAB ###########
-      navbarMenu("Download filtered data",
-                 tabPanel("Main data",
-                          column(4,
-                                 checkboxInput("getRepresentativeMain",strong(em("Download representative sequences")), value = FALSE, width = NULL)
-                          ),
-                          column(4,
-                                 conditionalPanel(
-                                   condition = "input.getRepresentativeMain == true",
-                                   uiOutput("refVarMain.ui")
-                                 )
-                          ),
-                          column(4,
-                                 conditionalPanel(
-                                   condition = "input.getRepresentativeMain == true",
-                                   radioButtons(inputId="refTypeMain", label="Select representative by", choices=list("max","min"), selected="max", inline=T)
-                                 )
-                          ),
-                          column(12,
-                                 dataTableOutput("filteredMainData")
-                          ),
-                          column(3,
-                                 downloadButton('downloadData', 'Download filtered data')
-                          ),
-                          column(9,
-                                 downloadButton('downloadFasta', 'Download FASTA sequences'),
-                                 uiOutput("downloadFasta.ui")
-                          )
-                 ),
-                 tabPanel("Customized data",
-                          column(12,
-                                 conditionalPanel(
-                                   condition = "input.getRepresentativeMain == true",
-                                   uiOutput("representativeInfo.ui")
-                                 )
-                          ),
-                          # hr(),
-                          # dataTableOutput("filteredCustomData"),
-                          # downloadButton('downloadCustomData', 'Download customized data')
-
-                          column(12,
-                                 dataTableOutput("filteredCustomData")
-                          ),
-                          column(3,
-                                 downloadButton('downloadCustomData', 'Download customized data')
-                          ),
-                          column(9,
-                                 downloadButton('downloadCustomFasta', 'Download FASTA sequences'),
-                                 uiOutput("downloadCustomFasta.ui")
-                          )
-                  )
-      ),
+      )
+    ),
 
       ########## OTHERS TAB ###########
       navbarMenu("Help",
@@ -707,8 +659,7 @@ shinyUI(fluidPage(
                  ),
                  tabPanel(a("About", href="https://BIONF.github.io/PhyloProfile/", target="_blank")
                  )
-      )
-    ),
+      ),
 
     ################### LIST OF POP-UP WINDOWS ##########################
 
@@ -810,120 +761,6 @@ shinyUI(fluidPage(
             shinyBS::bsButton("resetMainConfig","Reset",style="danger"),
             shinyBS::bsButton("applyMainConfig","Done",style="warning")
     ),
-    
-    ########## OTHERS TAB ###########
-    navbarMenu("Help",
-               # tabPanel("Help", includeMarkdown("help.md")
-               # tabPanel("Help", includeHTML("help.html")
-               # # tabPanel("Help", includeText("help.html")
-               # ),
-               tabPanel(a("Wiki", href="https://github.com/BIONF/PhyloProfile/wiki", target="_blank")
-               ),
-               tabPanel(a("About", href="https://BIONF.github.io/PhyloProfile/", target="_blank")
-               )
-    )
-      ),
-  
-  ################### LIST OF POP-UP WINDOWS ##########################
-  
-  ####### popup to confirm parsing data from input file
-  bsModal("addTaxaWindows", "Add new taxa", "addTaxa", size = "medium",
-          helpText(em("Use this form to add taxon that does not exist in NCBI taxonomy database")),
-          textInput("newID","ID (must be a number and greater than 1835343, e.g. 2000001)",2000001,width=500),
-          textInput("newName","Name (e.g. Saccharomyces cerevisiae strain ABC)","",width=500),
-          textInput("newRank","Rank (e.g. \"norank\" (for strain), species, order, etc.)","norank",width=500),
-          textInput("newParent","Parent ID (NCBI taxonomy ID of the next higher rank, e.g. 4932 (S.cerevisiae species))",4932,width=500),
-          actionButton("newAdd","Add"),
-          actionButton("newDone","Done")
-  ),
-  
-  ####### popup to confirm parsing data from input file
-  bsModal("parseConfirm", "Get info from input", "BUTparse", size = "small",
-          HTML("Fetching Missing Taxonomy Information from NCBI and Post-processing...<br><br>"),
-          em("This windows will close automatically when eveything is done!"),
-          br(),
-          strong("PLEASE RELOAD THIS TOOL WHEN FINISHED!!!",style = "color:red"),
-          # conditionalPanel(
-          # condition = 'output.taxonomyParseStatus == 1',
-          # strong(h4("Invalid NCBI IDs:")),
-          dataTableOutput("invalidIDout")
-          # )
-  ),
-  
-  ####### popup windows for setting plot colors
-  bsModal("color", "Set colors for profile", "setColor", size = "small",
-          colourpicker::colourInput("lowColor_var1", "Low variable 1", value = "darkorange"),
-          colourpicker::colourInput("highColor_var1", "High variable 1", value = "steelblue"),
-          actionButton("defaultColorVar1","Default",style='padding:4px; font-size:100%'),
-          hr(),
-          colourpicker::colourInput("lowColor_var2", "Low variable 2", value = "grey95"),
-          colourpicker::colourInput("highColor_var2", "High variable 2", value = "khaki"),
-          actionButton("defaultColorVar2","Default",style='padding:4px; font-size:100%'),
-          hr(),
-          colourpicker::colourInput("paraColor", "Color for inparalogs", value = "#07d000"),
-          actionButton("defaultColorPara","Default",style='padding:4px; font-size:100%')
-  ),
-  
-  ####### popup windows for FASTA configurations
-  bsModal("config", "FASTA config", "getConfig", size = "small",
-          selectInput("input_type", "Choose location for:",
-                      c("Concatenated fasta file","Fasta folder")
-          ),
-          hr(),
-          uiOutput("downloadFastaDemo.ui"),
-          conditionalPanel(
-            condition = "input.input_type == 'Concatenated fasta file'",
-            #            textInput("oneseq.file","Path:",""),
-            fileInput("oneSeqFasta",""),
-            uiOutput("oneSeq.existCheck")
-          ),
-          conditionalPanel(
-            condition = "input.input_type == 'Fasta folder'",
-            textInput("path","Main FULL path:","")
-            ,selectInput("dir_format","Directory format:",choices=list("path/speciesID.fa*"=1,"path/speciesID/speciesID.fa*"=2),selected="Path/speciesID.fasta")
-            ,selectInput("file_ext","File extension:",choices=list("fa"="fa","fasta"="fasta","fas"="fas","txt"="txt"),selected="fa")
-            ,selectInput("id_format","ID format:",choices=list(">speciesID:seqID"=1,">speciesID@seqID"=2,">speciesID|seqID"=3),selected=1)
-          )
-  ),
-  
-  ####### popup windows for setting main plot configurations
-  bsModal("mainPlotConfigBs", "Plot appearance configuration", "mainPlotConfig", size = "small",
-          column(6,
-                 numericInput("xSize","X-axis label size (px)",min=8,max=99,step=1,value=8,width=100)
-          ),
-          column(6,
-                 
-                 numericInput("ySize","Y-axis label size (px)",min=8,max=99,step=1,value=8,width=100)
-          ),
-          
-          column(6,
-                 numericInput("legendSize","Legend label size (px)",min=8,max=99,step=1,value=8,width=150)
-          ),
-          column(6,
-                 selectInput("mainLegend", label = "Legend position:",
-                             choices = list("Right"="right", "Left"="left","Top"="top","Bottom"="bottom", "Hide"="none"),
-                             selected = "right",
-                             width = 150)
-          ),
-          column(12,
-                 HTML("<strong>Angle for x-axis label</strong>:<br>"),
-                 sliderInput("xAngle","", min = 0, max = 90, step = 10, value = 60, width = 250),
-                 br()
-          ),
-          
-          column(12,
-                 HTML("<strong>Zooming factor (α) for dots on profile</strong>:<br>"),
-                 sliderInput("dotZoom","", min = -1, max = 3, step = 0.1, value = 0, width = 250),
-                 HTML("<em>size = (1+α)*default_size<br>default_size=[0:5]</em>"),
-                 uiOutput("dotSizeInfo"),
-                 br()
-          ),
-          
-          br(),
-          hr(),
-          shinyBS::bsButton("resetMainConfig","Reset",style="danger"),
-          shinyBS::bsButton("applyMainConfig","Done",style="warning")
-  ),
   
   ####### popup windows for setting gene age plot configurations
   bsModal("geneAgeProtConfigBs", "Plot appearance configuration", "geneAgeProtConfig", size = "small",
@@ -1124,11 +961,8 @@ shinyUI(fluidPage(
           downloadButton("gcDownloadGenes","Download"),
           h5(""),
           uiOutput("SelectPlotsToDownload"),
-          downloadButton("gcDownloadPlots","Download")),
-  
-  
-  
-  
+          downloadButton("gcDownloadPlots","Download")
+  ),
   
   ################### POINT INFO BOX ##########################
   conditionalPanel(
@@ -1147,5 +981,5 @@ shinyUI(fluidPage(
       style = "opacity: 0.80"
     )
   )
-  )
-  )
+)
+)
