@@ -1124,7 +1124,7 @@ shinyServer(function(input, output, session) {
   
   ######## Get list of genes for highlighting
   output$highlightGeneUI = renderUI({
-    geneList <- preData()
+    geneList <- dataHeat()
     geneList$geneID <- as.factor(geneList$geneID)
     
     out <- as.list(levels(geneList$geneID))
@@ -1135,13 +1135,19 @@ shinyServer(function(input, output, session) {
   
   #### update highlightGeneUI based on double clicked dot
   observe({
-    geneList <- preData()
-    geneList$geneID <- as.factor(geneList$geneID)
-    
-    out <- as.list(levels(geneList$geneID))
-    out <- append("none",out)
-    
     if(!is.null(input$plot_dblclick)){
+      geneList <- dataHeat()
+      if(input$applyCluster == TRUE){
+        geneList <- clusteredDataHeat()
+      }
+      
+      geneList$geneID <- as.factor(geneList$geneID)
+
+      out <- as.list(levels(geneList$geneID))
+      out <- append("none",out)
+      
+      clickedInfo <- mainPointInfo()
+      
       if(input$xAxis == "genes"){
         corX = round(input$plot_dblclick$y);
         corY = round(input$plot_dblclick$x)
@@ -1150,7 +1156,7 @@ shinyServer(function(input, output, session) {
         corY = round(input$plot_dblclick$y)
       }
       updateSelectInput(session,'geneHighlight',label = 'Highlight:',choices=out,selected=out[corY+1])
-    }
+    } else {return()}
   })
   
   ######## print total number of genes
@@ -1792,7 +1798,7 @@ shinyServer(function(input, output, session) {
   clusteredDataHeat <- reactive({
     dataHeat <- dataHeat()
     if(nrow(dataHeat) < 1){return()}
-    
+
     # dataframe for calculate distance matrix
     subDataHeat <- subset(dataHeat,dataHeat$presSpec > 0)
     subDataHeat <- subDataHeat[,c('geneID','supertaxon','presSpec')]
@@ -1805,10 +1811,9 @@ shinyServer(function(input, output, session) {
     
     # get clustered gene ids
     clusteredGeneIDs <- clusteredGeneList(dat,input$distMethod,input$clusterMethod)
-    
+
     # sort original data according to clusteredGeneIDs
     dataHeat$geneID <- factor(dataHeat$geneID, levels = clusteredGeneIDs)
-    
     return(dataHeat)
   })
   
@@ -2006,7 +2011,7 @@ shinyServer(function(input, output, session) {
     if(input$applyCluster == TRUE){
       dataHeat <- clusteredDataHeat()
     }
-    
+
     ### get values
     if (is.null(input$plot_click$x)) {return()}
     else{
@@ -2690,6 +2695,10 @@ shinyServer(function(input, output, session) {
     inSelect <- as.numeric(taxaList$ncbiID[taxaList$fullName == input$inSelect])
     
     dataHeat <- dataHeat()
+    if(input$applyCluster == TRUE){
+      dataHeat <- clusteredDataHeat()
+    }
+    
     ### get sub-dataframe of selected taxa and sequences
     dataHeat$supertaxonMod <- substr(dataHeat$supertaxon,6,nchar(as.character(dataHeat$supertaxon)))
     if(input$inTaxa[1] == "all" & input$inSeq[1] != "all"){
@@ -2699,6 +2708,7 @@ shinyServer(function(input, output, session) {
     } else {
       dataHeat <- subset(dataHeat,geneID %in% input$inSeq & supertaxonMod %in% input$inTaxa) ##### <=== select data from dataHeat for selected sequences and taxa
     }
+    
     ### drop all other supertaxon that are not in sub-dataframe
     dataHeat$supertaxon <- factor(dataHeat$supertaxon)
     dataHeat$geneID <- factor(dataHeat$geneID)
@@ -2716,11 +2726,7 @@ shinyServer(function(input, output, session) {
       }
       
       # get geneID
-      if(input$inSeq[1] == "all"){
-        genes <- levels(dataHeat$geneID)
-      } else {
-        genes <- sort(input$inSeq)
-      }
+      genes <- levels(dataHeat$geneID)
       geneID <- toString(genes[corY])
       # get supertaxon (spec)
       supertaxa <- levels(dataHeat$supertaxon)
