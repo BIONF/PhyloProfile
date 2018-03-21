@@ -4149,12 +4149,9 @@ shinyServer(function(input, output, session) {
     if(is.null(filein)){return(selectInput('inTaxa','Select In-Group:',"none"))}
     if(v$doPlot == FALSE){return(selectInput('inTaxa','Select In-Group:',"none"))}
     else{
-      choice <- allTaxaList()
-      choice$fullName <- as.factor(choice$fullName)
-      out <- as.list(levels(choice$fullName))
       
       if(input$applyGcTaxa == TRUE){
-        choice <- taxaSelectGc()
+        choice <- taxaSelectGc(input$rankSelectGc)
         choice$fullName <- as.factor(choice$fullName)
         out = as.list(levels(choice$fullName))
         
@@ -4162,7 +4159,27 @@ shinyServer(function(input, output, session) {
         selectInput('taxaGc','Select In-Group:',out,selected=x,multiple=TRUE,selectize=FALSE)
         
       } else {
-        x <- out[out == input$inSelect]
+        ranks <- list("Strain"="05_strain","Species" = "06_species","Genus" = "10_genus", "Family" = "14_family", "Order" = "19_order", "Class" = "23_class",
+                      "Phylum" = "26_phylum", "Kingdom" = "28_kingdom", "Superkingdom" = "29_superkingdom","unselected"="")
+        pos <- which(ranks == input$rankSelect )
+        r <- ranks[pos+1]
+        r2 <- substr(r,4,nchar(r))
+  
+        nameList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T,fill = TRUE))
+        nameList$fullName <- as.character(nameList$fullName)
+        nameList$rank <- as.character(nameList$rank)
+        nameList <- nameList[!duplicated(nameList),]
+        Dt <- as.data.frame(read.table("data/taxonomyMatrix.txt", sep='\t', header=T, stringsAsFactors=T))
+        
+        x <- subset(nameList,  nameList$fullName == input$inSelect)
+        r1 <- substr(input$rankSelect,4,nchar(input$rankSelect))
+        x1 <- Dt[Dt[,r1] == x$ncbiID,]
+        nameList <- nameList[nameList$rank == r2,]
+        selectedTaxon <- subset(nameList, nameList$ncbiID %in% x1[r2])
+        choice <- taxaSelectGc(r)
+        choice$fullName <- as.factor(choice$fullName)
+        out <- as.list(levels(choice$fullName))
+        x <- out[out == selectedTaxon$fullName]
         selectInput('taxaGc','Select In-Group:',out,selected=x,multiple=TRUE,selectize=FALSE)
       }
     }
@@ -4175,7 +4192,7 @@ shinyServer(function(input, output, session) {
     mainRank <- input$rankSelect
     mainChoices = list("Strain"="05_strain","Species" = "06_species","Genus" = "10_genus", "Family" = "14_family", "Order" = "19_order", "Class" = "23_class",
                        "Phylum" = "26_phylum", "Kingdom" = "28_kingdom", "Superkingdom" = "29_superkingdom","unselected"="")
-    gcChoices <- mainChoices[mainChoices >= mainRank]
+    gcChoices <- mainChoices[mainChoices > mainRank]
     
     selectInput("rankSelectGc", label = h5("Select taxonomy rank:"),
                 choices = as.list(gcChoices),
@@ -4183,9 +4200,8 @@ shinyServer(function(input, output, session) {
   })
   
   #### print list of available taxa
-  taxaSelectGc <- reactive({
-    rankSelectGc = input$rankSelectGc
-    
+  taxaSelectGc <- function(rankSelectGc){
+
     if(length(rankSelectGc) == 0){return()}
     else{
       ### load list of unsorted taxa
@@ -4203,11 +4219,11 @@ shinyServer(function(input, output, session) {
       choice <- merge(choice,nameList,by="ncbiID",all = FALSE)
       return(choice)
     }
-  })
+  }
   
   #### Supertaxon of intrest in the popup window for the rank
   output$taxaSelectGc = renderUI({
-    choice <- taxaSelectGc()
+    choice <- taxaSelectGc(input$rankSelectGc)
     choice$fullName <- as.factor(choice$fullName)
     selectInput('taxaSelectGc',h5('Choose (super)taxon of interest:'),as.list(levels(choice$fullName)),levels(choice$fullName)[1])
   })
@@ -4283,7 +4299,7 @@ shinyServer(function(input, output, session) {
   #### Slider to choose significance ####
   output$significance.ui <- renderUI({
     popify(
-      sliderInput("significance",paste("significance level:"), min = 0, max = 1, step = 0.005, value = c(0.05), width = 200),
+      sliderInput("significance",paste("Significance level:"), min = 0, max = 1, step = 0.005, value = c(0.05), width = 200),
       "",
       "maximal probability to reject that In-Group and Out-Group have no significant difference by mistake")
     
@@ -4300,11 +4316,11 @@ shinyServer(function(input, output, session) {
         choices = c("all",x)
         
         ### selected Gene 
-        selectInput('showGene','Significant Genes:',choices,selected=choices[2],multiple=FALSE)
+        selectInput('showGene','Candidate gene(s):',choices,selected=choices[2],multiple=FALSE)
         
       } else{
         ### selected Gene 
-        selectInput('showGene','Significant Genes:',NULL,selected=NULL,multiple=FALSE)
+        selectInput('showGene','Candidate gene(s):',NULL,selected=NULL,multiple=FALSE)
       }
     })
   })
@@ -4318,26 +4334,26 @@ shinyServer(function(input, output, session) {
     input$showGene
     isolate({
       gene <- input$showGene
-      if(!input$rightFormatFeatures){selectInput('interestingFeatures','Database(s) of interest:',NULL,selected = NULL,multiple = TRUE, selectize=FALSE)}
-      else if (is.null(gene)){selectInput('interestingFeatures','Database(s) of interest:',NULL,selected = NULL,multiple = TRUE, selectize=FALSE)}
-      else if(gene == ""){selectInput('interestingFeatures','Database(s) of interest:',NULL,selected = NULL,multiple = TRUE, selectize=FALSE)}
+      if(!input$rightFormatFeatures){selectInput('interestingFeatures','Feature type(s) of interest:',NULL,selected = NULL,multiple = TRUE, selectize=FALSE)}
+      else if (is.null(gene)){selectInput('interestingFeatures','Feature type(s) of interest:',NULL,selected = NULL,multiple = TRUE, selectize=FALSE)}
+      else if(gene == ""){selectInput('interestingFeatures','Feature type(s) of interest:',NULL,selected = NULL,multiple = TRUE, selectize=FALSE)}
       else{ 
-          choices <- c("all")
-          if(gene == "all"){
-            for(g in significantGenesGroupCompairison$geneID){
-              x <-subset(significantGenesGroupCompairison, significantGenesGroupCompairison$geneID == g)
-              choices <- append(choices,unlist(x$databases))
-            }
-            ### show each database only once
-            choices <- choices[!duplicated(choices)]
-          }
-          else { 
-            x <- subset(significantGenesGroupCompairison, significantGenesGroupCompairison$geneID == gene)
+        choices <- c("all")
+        if(gene == "all"){
+          for(g in significantGenesGroupCompairison$geneID){
+            x <-subset(significantGenesGroupCompairison, significantGenesGroupCompairison$geneID == g)
             choices <- append(choices,unlist(x$databases))
-            
           }
-          selectInput('interestingFeatures','Database(s) of interest',choices,selected =choices[1],multiple = TRUE, selectize=FALSE)
+          ### show each database only once
+          choices <- choices[!duplicated(choices)]
         }
+        else { 
+          x <- subset(significantGenesGroupCompairison, significantGenesGroupCompairison$geneID == gene)
+          choices <- append(choices,unlist(x$databases))
+          
+        }
+        selectInput('interestingFeatures','Feature type(s) of interest:',choices,selected =choices[1],multiple = TRUE, selectize=FALSE)
+      }
     })
     
   })
@@ -4615,7 +4631,7 @@ shinyServer(function(input, output, session) {
     else if (length(p) == 1){info_pValues = paste("Kolmogorov-Smirnov-Test:", as.character(p[1]), sep=" " )}
     else{ 
       info_pValues1 = paste("Kolmogorov-Smirnov-Test:", as.character(p[1]),sep=" " )
-      info_pValues2 = paste("Wilcoxon-Mann-Whitney-Test: ", as.character(round(p[2], 3)), sep = " ")
+      info_pValues2 = paste("Wilcoxon-Mann-Whitney-Test: ", as.character(round(p[2], 6)), sep = " ")
       info_pValues = paste(info_pValues1, info_pValues2, sep = "\n")}
     
     info_pValues <- paste("P-Values:",info_pValues, sep="\n")
@@ -4682,7 +4698,9 @@ shinyServer(function(input, output, session) {
     
     #### Subset depending on the rank and the In-Group
     subsetSelected <- selectedSubset(rank, inGroup, nameList, Dt)
-    
+    subsetSelected <- subset(subsetSelected, !subsetSelected$fullName == input$inSelect)
+
+     species <- subsetSelected$fullName
     ### Check for each of the selected genes if they are significant 
     ### If a gene is significant generate the plots and save them in significantGenesGroupComparison
     for(gene in genes){
@@ -4693,6 +4711,7 @@ shinyServer(function(input, output, session) {
       ### In- and Out-Group depending on the Gene 
       inGroupDF <- subset(selectedGeneDF, selectedGeneDF$abbrName %in% subsetSelected$abbrName)
       outGroupDF <- subset (selectedGeneDF, !(selectedGeneDF$abbrName %in% subsetSelected$abbrName))
+      outGroupDF <- subset(outGroupDF,!outGroupDF$fullName == input$inSelect)
       
       #### Generate the P-values for the gene
       pvalues <- getSignificant(inGroupDF, outGroupDF, var, gene)
@@ -4728,7 +4747,6 @@ shinyServer(function(input, output, session) {
   selectedSubset <- function (rank, inGroup, nameList, Dt){
     ### Look if the fullName is in the In-Group
     x <- subset(nameList,  nameList$fullName %in% inGroup)
-    
     ### Look if it has the right rank
     x1 <- Dt[Dt[,rank] %in% x$ncbiID,]
     
@@ -4745,10 +4763,9 @@ shinyServer(function(input, output, session) {
     ### all ranks higher than the selected rank
     ### ranks were all elements of the inGroup might be in the same taxon 
     possibleRanks <- allRanks [allRanks >= rank]
-    i <-  1
-    
+    i <-  2
     if (length(inGroup)==1){rank = substring(rank,4)}
-    
+    allSpecies <- (inGroup) 
     ### find the common ancestor of all taxa in the In-Group and us it as In-Group
     while (length(inGroup)>1 & i < length(possibleRanks)){
       currentRank <- substring(possibleRanks[i],4)
@@ -4756,27 +4773,28 @@ shinyServer(function(input, output, session) {
       
       ### dataframe with all elements with fitting rank
       inG <- subset(nameList, nameList$rank == currentRank) 
-      
       ### subset of inG with elements that belong to the in-Group
       inG <- subset(inG,inG$fullName %in% inGroup)
       
       ### dataset with all elements that could belong to the In-Group
       possibleInGroup <- subset(allTaxaGc, select=c(currentRank, nextRank))
       possibleInGroup <- possibleInGroup[possibleInGroup[,currentRank] %in% inG$ncbiID,]
+      
       possibleInGroup <- possibleInGroup[!duplicated(possibleInGroup),]
       
       ### only consider elements of the list that have the next higher rank
       x <- subset(nameList, nameList$rank == nextRank)
-      x <- subset(x, x$ncbiID %in% possibleInGroup[,nextRank])
+      x <- subset(x, x$ncbiID %in% possibleInGroup[,nextRank] )
+      
+      
       inGroup <- x$fullName
       i = i+1
       rank = nextRank
     }
-    
     ### If there is no common ancestor
     if (i > length(possibleRanks)){ return()}
-    
     c(inGroup, rank)
+    
   }
   
   #### Decide if the gene is significant
@@ -4789,7 +4807,6 @@ shinyServer(function(input, output, session) {
       var2 = input$var2
       
       significant = FALSE
-      
       ### get the pValues for both variables
       pvalues1 <- getPvalues(inG$var1, outG$var1)
       pvalues2 <- getPvalues(inG$var2, outG$var2)
@@ -4852,13 +4869,13 @@ shinyServer(function(input, output, session) {
       #### p-value = Probability(test statistic >= value for the samples)
       #### probabilitiy to recet H0 if it is correct
       p.value = ks$ks.boot.pvalue
-      
       ###  You reject the null hypothesis that the two samples were drawn from the same distribution if the p-value is less than your significance level
       if(p.value < significanceLevel ){pvalue <- c(p.value)}
       
       ### if we accept H0 it does not mean that the samples are uninteresting
       ### they could still have different location values
       else{
+
         #### Wilcoxon-Mann-Whitney-Test
         #### H0: the samples have the same location parameters
         wilcox <- wilcox.test(varIn, varOut,alternative = "two.sided", exact = FALSE)
@@ -5025,7 +5042,7 @@ shinyServer(function(input, output, session) {
       shinyjs::enable('addGcGenesCustomProfile')
     }
   })
-
+  
   output$addGcGenesCustomProfileCheck.ui <- renderUI({
     if(input$addCustomProfile == TRUE | input$addConsGeneCustomProfile == TRUE | input$addClusterCustomProfile == TRUE){
       HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Gene age estimation</strong>or <strong>Profile clustering</strong> or <strong>Core genes finding</strong>&nbsp;to enable this function)</em></p>')
