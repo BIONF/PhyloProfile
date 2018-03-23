@@ -135,7 +135,7 @@ domain.plotting <- function(df,geneID,sep,labelSize,titleSize,minStart,maxEnd){
   gg <- ggplot(df, aes(y=feature, x=end, color = feature)) +
     geom_segment(data=df, aes(y=feature, yend=feature, x=minStart, xend=maxEnd), color="white", size=0)
   
-  ### draw lines for representing sequence lenght
+  ### draw lines for representing sequence length
   gg <- gg + geom_segment(data=df, aes(x=0, xend=length, y=feature, yend=feature), size=1, color="#b2b2b2")
   
   ### draw line and points

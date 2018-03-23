@@ -3319,14 +3319,14 @@ shinyServer(function(input, output, session) {
       }
     }
     
-    if(ncol(domainDf) == 5){
-      colnames(domainDf) <- c("seedID","orthoID","feature","start","end")
-    } else if(ncol(domainDf) == 6){
-      colnames(domainDf) <- c("seedID","orthoID","feature","start","end","weight")
+    if(ncol(domainDf) == 6){
+      colnames(domainDf) <- c("seedID","orthoID","length","feature","start","end")
     } else if(ncol(domainDf) == 7){
-      colnames(domainDf) <- c("seedID","orthoID","feature","start","end","weight","path")
+      colnames(domainDf) <- c("seedID","orthoID","length","feature","start","end","weight")
+    } else if(ncol(domainDf) == 8){
+      colnames(domainDf) <- c("seedID","orthoID","length","feature","start","end","weight","path")
     }
-    
+
     domainDf$seedID <- gsub("\\|",":",domainDf$seedID)
     domainDf$orthoID <- gsub("\\|",":",domainDf$orthoID)
     
@@ -3372,8 +3372,8 @@ shinyServer(function(input, output, session) {
       sep = ":"
       if(!is.null(input$oneSeqFasta)){sep="|"}
       
-      plot_ortho <- domain.plotting(orderedOrthoDf,ortho,sep,input$labelArchiSize,input$titleArchiSize,min(subDomainDf$start),max(subDomainDf$end))
-      plot_seed <- domain.plotting(orderedSeedDf,seed,sep,input$labelArchiSize,input$titleArchiSize,min(subDomainDf$start),max(subDomainDf$end))
+      plot_ortho <- domain.plotting(orderedOrthoDf,ortho,sep,input$labelArchiSize,input$titleArchiSize,min(subDomainDf$start),max(c(subDomainDf$end,subDomainDf$length)))
+      plot_seed <- domain.plotting(orderedSeedDf,seed,sep,input$labelArchiSize,input$titleArchiSize,min(subDomainDf$start),max(c(subDomainDf$end,subDomainDf$length)))
       
       # grid.arrange(plot_seed,plot_ortho,ncol=1)
       if(ortho == seed){
