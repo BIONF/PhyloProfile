@@ -3322,7 +3322,7 @@ shinyServer(function(input, output, session) {
     } else if(ncol(domainDf) == 8){
       colnames(domainDf) <- c("seedID","orthoID","length","feature","start","end","weight","path")
     }
-    
+
     domainDf$seedID <- gsub("\\|",":",domainDf$seedID)
     domainDf$orthoID <- gsub("\\|",":",domainDf$orthoID)
     
@@ -3371,6 +3371,7 @@ shinyServer(function(input, output, session) {
       
       plot_ortho <- domain.plotting(orderedOrthoDf,ortho,sep,input$label_archi_size,input$title_archi_size,min(subDomainDf$start),max(c(subDomainDf$end,subDomainDf$length)))
       plot_seed <- domain.plotting(orderedSeedDf,seed,sep,input$label_archi_size,input$title_archi_size,min(subDomainDf$start),max(c(subDomainDf$end,subDomainDf$length)))
+
       
       # grid.arrange(plot_seed,plot_ortho,ncol=1)
       if(ortho == seed){

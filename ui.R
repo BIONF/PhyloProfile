@@ -675,10 +675,12 @@ shinyUI(fluidPage(
                              width = NULL),
                uiOutput("add_custom_profile_check.ui")
         ),
+
         tableOutput("gene_age.table")
       ),
 
       # Core gene identification  -----------------------------------------
+
       tabPanel(
         "Core gene identification",
         h4(strong("Core gene identification")),
@@ -729,7 +731,7 @@ shinyUI(fluidPage(
                       downloadButton("download_taxa_id", "Download")
                )
       ),
-
+      
       # Group Comparison  -----------------------------------------------------
       tabPanel("Group Comparison",
                h4(strong("Group Comparison")),
@@ -877,6 +879,7 @@ shinyUI(fluidPage(
       ),
 
 
+
       # OTHERS TAB ============================================================
       navbarMenu("Help",
                  # tabPanel("Help", includeMarkdown("help.md")
@@ -893,8 +896,10 @@ shinyUI(fluidPage(
                             href = "https://BIONF.github.io/PhyloProfile/",
                             target = "_blank")
                  )
+
       )
   ),
+
 
      # LIST OF POP-UP WINDOWS =================================================
 
@@ -1406,6 +1411,7 @@ shinyUI(fluidPage(
           h5(strong("Download the significant Genes")),
           downloadButton("download_genes_gc", "Download"),
           h5(""),
+
           uiOutput("select_plots_to_download "),
           downloadButton("download_plots_gc", "Download")
   ),
