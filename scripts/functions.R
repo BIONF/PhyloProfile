@@ -80,13 +80,13 @@ calcPresSpec <- function(taxaMdData, taxaCount){
   
   # remove NA rows from taxaMdData
   taxaMdDataNoNA <- taxaMdData[taxaMdData$orthoID != "NA",]
-
+  
   # count present frequency of supertaxon for each gene
   geneSupertaxonCount <- plyr::count(taxaMdDataNoNA,c('geneID','supertaxon'))
-
+  
   # merge with taxaCount to get total number of species of each supertaxon and calculate presSpec
   presSpecDt <- merge(geneSupertaxonCount,taxaCount,by='supertaxon', all.x = TRUE)
-
+  
   specCount <- plyr::count(geneIDsupertaxon,c('geneID','supertaxon'))
   presSpecDt <- merge(presSpecDt,specCount,by=c('geneID','supertaxon'))
   
@@ -95,7 +95,7 @@ calcPresSpec <- function(taxaMdData, taxaCount){
   presSpecDt <- presSpecDt[presSpecDt$presSpec <= 1,]
   presSpecDt <- presSpecDt[order(presSpecDt$geneID),]
   presSpecDt <- presSpecDt[,c("geneID","supertaxon","presSpec")]
-
+  
   # add absent supertaxon into presSpecDt
   geneIDsupertaxon <- subset(geneIDsupertaxon, select = -c(paralog,abbrName))
   finalPresSpecDt <- merge(presSpecDt,geneIDsupertaxon,by=c('geneID','supertaxon'),all.y = TRUE)
@@ -132,6 +132,7 @@ sortDomains <- function(seedDf, orthoDf){
 
 ######## plot domain architecture ########
 domain.plotting <- function(df,geneID,sep,labelSize,titleSize,minStart,maxEnd){
+  
   gg <- ggplot(df, aes(y=feature, x=end, color = feature)) +
     geom_segment(data=df, aes(y=feature, yend=feature, x=minStart, xend=maxEnd), color="white", size=0)
   
