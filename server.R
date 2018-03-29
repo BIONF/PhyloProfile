@@ -583,7 +583,7 @@ shinyServer(function(input, output, session) {
         return(1) # missing parenthesis
       } else {
         if(comma != (open+1)){
-         # return(2) # missing comma
+          # return(2) # missing comma
         } else {
           # get list of tips
           nodeString <- gsub(regex("\\W+"), "#", as.character(tree$V1))
@@ -1149,7 +1149,7 @@ shinyServer(function(input, output, session) {
       clickedInfo <- mainpoint_info()
       
       if(input$x_axis == "genes"){
-
+        
         corX = round(input$plot_dblclick$y);
         corY = round(input$plot_dblclick$x)
       } else {
@@ -1799,7 +1799,7 @@ shinyServer(function(input, output, session) {
   clusteredDataHeat <- reactive({
     dataHeat <- dataHeat()
     if(nrow(dataHeat) < 1){return()}
-
+    
     # dataframe for calculate distance matrix
     subDataHeat <- subset(dataHeat,dataHeat$presSpec > 0)
     subDataHeat <- subDataHeat[,c('geneID','supertaxon','presSpec')]
@@ -1813,7 +1813,7 @@ shinyServer(function(input, output, session) {
     # get clustered gene ids
     clusteredGeneIDs <- clusteredGeneList(dat,input$dist_method,input$cluster_method)
     
-
+    
     # sort original data according to clusteredGeneIDs
     dataHeat$geneID <- factor(dataHeat$geneID, levels = clusteredGeneIDs)
     return(dataHeat)
@@ -2013,7 +2013,7 @@ shinyServer(function(input, output, session) {
     if(input$apply_cluster == TRUE){
       dataHeat <- clusteredDataHeat()
     }
-
+    
     ### get values
     if (is.null(input$plot_click$x)) {return()}
     else{
@@ -2555,7 +2555,7 @@ shinyServer(function(input, output, session) {
     
     ### load list of unsorted taxa
     Dt <- get_taxa_list(TRUE)
-
+    
     
     ### get ID of customized (super)taxon
     taxa_list <- get_name_list(FALSE, FALSE)
@@ -2694,7 +2694,7 @@ shinyServer(function(input, output, session) {
     in_select <- as.numeric(taxa_list$ncbiID[taxa_list$fullName == input$in_select])
     
     dataHeat <- dataHeat()
-
+    
     if(input$apply_cluster == TRUE){
       dataHeat <- clusteredDataHeat()
     }
@@ -3211,7 +3211,7 @@ shinyServer(function(input, output, session) {
     group <- as.character(info[1])
     ortho <- as.character(info[2])
     var1 <- as.character(info[3])
-
+    
     ### domain file
     # if(input$demo == TRUE){
     if(input$demo_data == "demo" | input$demo_data == "ampk-tor"){
@@ -3336,7 +3336,7 @@ shinyServer(function(input, output, session) {
                                 "feature",
                                 "start",
                                 "end")
-
+        
       } else if(ncol(domainDf) == 7){
         colnames(domainDf) <- c("seedID",
                                 "orthoID",
@@ -3345,7 +3345,7 @@ shinyServer(function(input, output, session) {
                                 "start",
                                 "end",
                                 "weight")
-
+        
       } else if(ncol(domainDf) == 8){
         colnames(domainDf) <- c("seedID",
                                 "orthoID",
@@ -3357,10 +3357,10 @@ shinyServer(function(input, output, session) {
                                 "path")
       }
     }
-
+    
     domainDf$seedID <- gsub("\\|", ":", domainDf$seedID)
     domainDf$orthoID <- gsub("\\|", ":", domainDf$orthoID)
-
+    
     # get sub dataframe based on selected groupID and orthoID
     ortho <- gsub("\\|", ":", ortho)
     grepID = paste(group, "#", ortho, sep = "")
@@ -3371,17 +3371,17 @@ shinyServer(function(input, output, session) {
       v3$doPlot3 = FALSE
       return()
     } else {
-  
+      
       # ortho domains df
       orthoDf <- filter(subDomainDf, orthoID == ortho)
       
       # seed domains df
       seedDf <- filter(subDomainDf, orthoID != ortho)
-
+      
       if(nrow(seedDf) == 0){seedDf <- orthoDf}
       
       seed = as.character(seedDf$orthoID[1])
-
+      
       # change order of one dataframe's features based on order of other df's features
       if(length(orthoDf$feature) < length(seedDf$feature)){
         orderedOrthoDf <- orthoDf[order(orthoDf$feature), ]
@@ -3390,7 +3390,7 @@ shinyServer(function(input, output, session) {
         orderedSeedDf <- seedDf[order(seedDf$feature), ]
         orderedOrthoDf <- sortDomains(orderedSeedDf, orthoDf)
       }
-  
+      
       # join weight values and feature names
       if("weight" %in% colnames(orderedOrthoDf)){
         orderedOrthoDf$yLabel <- paste0(orderedOrthoDf$feature," (",round(orderedOrthoDf$weight,2),")")
@@ -3400,7 +3400,7 @@ shinyServer(function(input, output, session) {
         orderedSeedDf$yLabel <- paste0(orderedSeedDf$feature," (",round(orderedSeedDf$weight,2),")")
         orderedSeedDf$feature <- orderedSeedDf$yLabel
       }
-    
+      
       # plotting
       sep = ":"
       if(!is.null(input$oneSeqFasta)) sep <- "|"
@@ -3445,7 +3445,7 @@ shinyServer(function(input, output, session) {
       } else {
         seedHeight = length(levels(as.factor(orderedSeedDf$feature)))
         orthoHeight = length(levels(as.factor(orderedOrthoDf$feature)))
-
+        
         arrangeGrob(plot_seed ,plot_ortho, ncol = 1, heights = c(seedHeight, orthoHeight))
       }
     }
@@ -4191,7 +4191,7 @@ shinyServer(function(input, output, session) {
   output$download_custom_fasta <- downloadHandler(
     filename = function(){
       c("customFilteredSeq.fa")
-      },
+    },
     content = function(file){
       fastaOutDf <- fastaOutData(as.data.frame(download_custom_data()))
       write.table(fastaOutDf,
@@ -4222,7 +4222,7 @@ shinyServer(function(input, output, session) {
     if (is.null(filein)){
       return(selectInput("in_taxa", "Select in_group:", "none"))
     }
-
+    
     if (v$doPlot == FALSE){
       return(selectInput("in_taxa", "Select in_group:", "none"))
     }else{
@@ -4239,8 +4239,8 @@ shinyServer(function(input, output, session) {
                     selected = x,
                     multiple = TRUE,
                     selectize = FALSE)
-
-      # When the taxonomy is the same as in input and settings ----------------
+        
+        # When the taxonomy is the same as in input and settings ----------------
       } else {
         
         # check for the rank of the rank in the input
@@ -4248,11 +4248,11 @@ shinyServer(function(input, output, session) {
         pos <- which(ranks == input$rank_select) # position in the list 
         higher_rank <- ranks[pos + 1] # take the next higher rank 
         higher_rank_name <- substr(higher_rank, 4, nchar(higher_rank))
-
+        
         name_list <- get_name_list(TRUE, TRUE) # get the taxon names
         dt <- get_taxa_list(FALSE) # get the taxa 
         
-
+        
         # get the info for the reference protein from the namelist
         reference <- subset(name_list,
                             name_list$fullName == input$in_select)
@@ -4266,8 +4266,8 @@ shinyServer(function(input, output, session) {
         reference_higher_rank <- {
           reference_higher_rank[!duplicated(reference_higher_rank),]
         }
-
-
+        
+        
         # get all the taxa with the same id in the next higher rank
         selected_taxa_dt <- {
           subset(dt, dt[,higher_rank_name] %in% reference_higher_rank)
@@ -4281,7 +4281,7 @@ shinyServer(function(input, output, session) {
         if(length(selected_taxa_ids[[1]]) >= 1){
           selected_taxa_ids <- selected_taxa_ids[[1]]
         }
-
+        
         selected_taxa <- subset(name_list, name_list$rank == rank_name)
         selected_taxa <- {
           subset(selected_taxa, selected_taxa$ncbiID %in% selected_taxa_ids)
@@ -4324,7 +4324,7 @@ shinyServer(function(input, output, session) {
       
       # load list of unsorted taxa
       dt <- get_taxa_list(TRUE)
- 
+      
       
       # load list of taxon name
       name_list <- get_name_list(TRUE, FALSE)
@@ -4593,14 +4593,14 @@ shinyServer(function(input, output, session) {
     
     # the barplot does not depent on the selected variable(s)
     barplot <-  get_barplot_gc(gene, in_group, out_group, features)
-
+    
     if (is.null(barplot)){
       barplot <- textGrob("The selected domains are not found in the gene")
     }
     # if both variables are selected there are going to be 2 boxplots
     if (var == "Both"){
       pvalues <- unlist(pvalues, recursive = FALSE)
-
+      
       p1 <- unlist(pvalues[1])
       p2 <- unlist(pvalues[2])
       
@@ -4613,7 +4613,7 @@ shinyServer(function(input, output, session) {
         info_p1 <- " "
         info_p2 <- " "
       }
-
+      
       # check if the significant plot should be highlighted
       if (input$highlight_significant == TRUE){
         if (is.null (p1[1])) c1 <- "grey"
@@ -4719,14 +4719,14 @@ shinyServer(function(input, output, session) {
   get_barplot_gc <- function(selected_gene, in_group, out_group, features){
     
     subdomain_df <- features
- 
+    
     # only show features that interest the user
     if (!("all" %in% input$interesting_features)){
       ifeatures <- NULL
       for (x in input$interesting_features){
         f <- subset(subdomain_df$feature, startsWith(subdomain_df$feature, x))
         ifeatures <- append(ifeatures, f)
-
+        
       }
       
       if (is.null(ifeatures))return()
@@ -4735,7 +4735,7 @@ shinyServer(function(input, output, session) {
       subdomain_df <- subset(subdomain_df, subdomain_df$feature %in% ifeatures)
     }
     
-
+    
     # part in in_group and Out-Group
     in_group_domain_df  <-  {
       subset(subdomain_df, subdomain_df$orthoID %in% in_group$orthoID)
@@ -4914,7 +4914,7 @@ shinyServer(function(input, output, session) {
       genes <- input$list_selected_genes_gc
     }
     genes <- sort(genes)
-
+    
     # Subset depending on the rank and the in_group
     selected_subset <- get_selected_subset(rank, in_group, name_list, dt)
     selected_subset <- subset(selected_subset,
@@ -4983,13 +4983,13 @@ shinyServer(function(input, output, session) {
     name_list$fullName <- as.character(name_list$fullName)
     
     #rank <- substring(rank, 4)
-
-
+    
+    
     name_list_rank <- subset(name_list, name_list$rank == rank)
-
+    
     x <- subset(name_list, name_list$fullName %in% in_group)
     # Look if it has the right rank
-
+    
     x1 <- dt[dt[, rank] %in% x$ncbiID, ]
     x1
   }
@@ -5000,7 +5000,7 @@ shinyServer(function(input, output, session) {
                                   name_list,
                                   all_selected_in_group_gc){
     
-
+    
     # Get the list with all taxonomy ranks
     all_ranks <- get_taxonomy_ranks()
     
@@ -5030,7 +5030,7 @@ shinyServer(function(input, output, session) {
       # dataset with all elements that could belong to the in_group
       possible_in_group <- subset(all_selected_in_group_gc,
                                   select = c(current_rank, next_rank))
-    
+      
       possible_in_group <- {
         possible_in_group[possible_in_group[, current_rank] %in% in_g$ncbiID, ]
       }
@@ -5040,11 +5040,11 @@ shinyServer(function(input, output, session) {
       possible_in_group <- possible_in_group[!duplicated(possible_in_group), ]
       # only consider elements of the list that have the next higher rank
       x <- subset(name_list, name_list$rank == next_rank)
-
+      
       x <- subset(x, x$ncbiID %in% possible_in_group[, next_rank] )
       
       in_group <- x$fullName
-
+      
       
       i <- i + 1
       rank <- next_rank
@@ -5052,7 +5052,7 @@ shinyServer(function(input, output, session) {
     # If there is no common ancestor
     if (i > length(possible_ranks)) return()
     c(in_group, rank)
-  
+    
   }
   
   # Decide if the gene is significant =========================================
@@ -5209,16 +5209,16 @@ shinyServer(function(input, output, session) {
   get_domain_file_gc <- function(group){
     # domain file
     if (input$demo_data == "demo" | input$demo_data == "ampk-tor"){
-        updateButton(session, "do_domain_plot", disabled = FALSE)
-        if (input$demo_data == "demo"){
-          file_domain <- {
-            suppressWarnings(paste0("https://github.com/BIONF/phyloprofile-data/blob/master/demo/domain_files/", group, ".domains?raw=true"))
-          }
-        } else {
-          file_domain <- {
-            suppressWarnings(paste0("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.domains_F"))
-          }
+      updateButton(session, "do_domain_plot", disabled = FALSE)
+      if (input$demo_data == "demo"){
+        file_domain <- {
+          suppressWarnings(paste0("https://github.com/BIONF/phyloprofile-data/blob/master/demo/domain_files/", group, ".domains?raw=true"))
         }
+      } else {
+        file_domain <- {
+          suppressWarnings(paste0("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.domains_F"))
+        }
+      }
       
     }else {
       if (input$anno_choose == "from file"){
@@ -5397,4 +5397,4 @@ shinyServer(function(input, output, session) {
     return(dt)
   }
   
-})
+  })

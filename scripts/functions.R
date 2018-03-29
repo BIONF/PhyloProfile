@@ -132,7 +132,7 @@ sortDomains <- function(seedDf, orthoDf){
 
 ######## plot domain architecture ########
 domain.plotting <- function(df,geneID,sep,labelSize,titleSize,minStart,maxEnd){
-
+  
   gg <- ggplot(df, aes(y=feature, x=end, color = feature)) +
     geom_segment(data=df, aes(y=feature, yend=feature, x=minStart, xend=maxEnd), color="white", size=0)
   
