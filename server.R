@@ -583,7 +583,7 @@ shinyServer(function(input, output, session) {
         return(1) # missing parenthesis
       } else {
         if(comma != (open+1)){
-          return(2) # missing comma
+         # return(2) # missing comma
         } else {
           # get list of tips
           nodeString <- gsub(regex("\\W+"), "#", as.character(tree$V1))
@@ -599,7 +599,11 @@ shinyServer(function(input, output, session) {
               j <- j+1
             }
           }
-          return(paste(missingTaxa, collapse="; ")) # contains taxa that not exist in main input
+          if(length(missingTaxa) > 0){
+            return(paste(missingTaxa, collapse="; ")) # contains taxa that not exist in main input
+          } else {
+            return(0)
+          }
         }
       }
     }
@@ -3207,15 +3211,15 @@ shinyServer(function(input, output, session) {
     group <- as.character(info[1])
     ortho <- as.character(info[2])
     var1 <- as.character(info[3])
-    
+
     ### domain file
     # if(input$demo == TRUE){
     if(input$demo_data == "demo" | input$demo_data == "ampk-tor"){
       if(is.null(info)){
         fileDomain <- "noSelectHit"
-        updateButton(session, "doDomainPlot", disabled = TRUE)
+        updateButton(session, "do_domain_plot", disabled = TRUE)
       } else {
-        updateButton(session, "doDomainPlot", disabled = FALSE)
+        updateButton(session, "do_domain_plot", disabled = FALSE)
         if(input$demo_data == "demo"){
           fileDomain <- suppressWarnings(paste0("https://github.com/BIONF/phyloprofile-data/blob/master/demo/domain_files/",group,".domains?raw=true"))
         } else {
@@ -3230,16 +3234,16 @@ shinyServer(function(input, output, session) {
         } else {
           if(is.null(info)){
             fileDomain <- "noSelectHit"
-            updateButton(session, "doDomainPlot", disabled = TRUE)
+            updateButton(session, "do_domain_plot", disabled = TRUE)
           } else {
-            updateButton(session, "doDomainPlot", disabled = FALSE)
+            updateButton(session, "do_domain_plot", disabled = FALSE)
             fileDomain <- fileDomain$datapath
           }
         }
       } else {
         if(is.null(info)){
           fileDomain <- "noSelectHit"
-          updateButton(session, "doDomainPlot", disabled = TRUE)
+          updateButton(session, "do_domain_plot", disabled = TRUE)
         } else {
           ### check file extension
           allExtension <- c("txt","csv","list","domains","architecture")
@@ -3247,7 +3251,7 @@ shinyServer(function(input, output, session) {
           for(i in 1:length(allExtension)){
             fileDomain <- paste0(input$domainPath,"/",group,".",allExtension[i])
             if(file.exists(fileDomain) == TRUE){
-              updateButton(session, "doDomainPlot", disabled = FALSE)
+              updateButton(session, "do_domain_plot", disabled = FALSE)
               flag <- 1
               break()
             }
@@ -3255,12 +3259,11 @@ shinyServer(function(input, output, session) {
           
           if(flag == 0){
             fileDomain <- "noFileInFolder"
-            updateButton(session, "doDomainPlot", disabled = TRUE)
+            updateButton(session, "do_domain_plot", disabled = TRUE)
           }
         }
       }
     }
-    
     return (fileDomain)
   })
   
@@ -3285,8 +3288,8 @@ shinyServer(function(input, output, session) {
   
   ######## check clicked
   v3 <- reactiveValues(doPlot3 = FALSE)
-  observeEvent(input$doDomainPlot, {
-    v3$doPlot3 <- input$doDomainPlot
+  observeEvent(input$do_domain_plot, {
+    v3$doPlot3 <- input$do_domain_plot
     filein <- input$mainInput
     # if(input$demo == TRUE){ filein = 1 }
     if(input$demo_data == "demo" | input$demo_data == "ampk-tor"){ filein = 1 }
@@ -3296,7 +3299,6 @@ shinyServer(function(input, output, session) {
   ######## create domain plot
   archi_plot <- function(){
     if (v3$doPlot3 == FALSE) return()
-    
     ### info
     info <- point_infoDetail() # info = seedID, orthoID, var1
     group <- as.character(info[1])
@@ -3305,48 +3307,82 @@ shinyServer(function(input, output, session) {
     
     ### parse domain file
     fileDomain <- getDomainFile()
-    
     # if(input$demo == TRUE){
     if(input$demo_data == "demo" | input$demo_data == "ampk-tor"){
       domainDf <- as.data.frame(read.csv(fileDomain, sep="\t", header=F, comment.char = "", stringsAsFactors = FALSE, quote = ""))
+      
+      if(ncol(domainDf) == 5){
+        colnames(domainDf) <- c("seedID","orthoID","feature","start","end")
+      } else if(ncol(domainDf) == 6){
+        colnames(domainDf) <- c("seedID","orthoID","feature","start","end","weight")
+      } else if(ncol(domainDf) == 7){
+        colnames(domainDf) <- c("seedID","orthoID","feature","start","end","weight","path")
+      }
+      
+      domainDf$length <- max(domainDf$end)
+      
     } else {
       if(fileDomain != FALSE){
-        domainDf <- as.data.frame(read.table(fileDomain, sep='\t',header=FALSE,comment.char=""))
+        domainDf <- as.data.frame(read.table(fileDomain,
+                                             sep='\t',
+                                             header = FALSE,
+                                             comment.char=""))
+      }
+      
+      if(ncol(domainDf) == 6){
+        colnames(domainDf) <- c("seedID",
+                                "orthoID",
+                                "length",
+                                "feature",
+                                "start",
+                                "end")
+
+      } else if(ncol(domainDf) == 7){
+        colnames(domainDf) <- c("seedID",
+                                "orthoID",
+                                "length",
+                                "feature",
+                                "start",
+                                "end",
+                                "weight")
+
+      } else if(ncol(domainDf) == 8){
+        colnames(domainDf) <- c("seedID",
+                                "orthoID",
+                                "length",
+                                "feature",
+                                "start",
+                                "end",
+                                "weight",
+                                "path")
       }
     }
-    
-    if(ncol(domainDf) == 6){
-      colnames(domainDf) <- c("seedID","orthoID","length","feature","start","end")
-    } else if(ncol(domainDf) == 7){
-      colnames(domainDf) <- c("seedID","orthoID","length","feature","start","end","weight")
-    } else if(ncol(domainDf) == 8){
-      colnames(domainDf) <- c("seedID","orthoID","length","feature","start","end","weight","path")
-    }
-    
-    domainDf$seedID <- gsub("\\|",":",domainDf$seedID)
-    domainDf$orthoID <- gsub("\\|",":",domainDf$orthoID)
-    
 
-    ### get sub dataframe based on selected groupID and orthoID
-    ortho <- gsub("\\|",":",ortho)
-    grepID = paste(group,"#",ortho,sep="")
-    subDomainDf <- domainDf[grep(grepID,domainDf$seedID),]
+    domainDf$seedID <- gsub("\\|", ":", domainDf$seedID)
+    domainDf$orthoID <- gsub("\\|", ":", domainDf$orthoID)
+
+    # get sub dataframe based on selected groupID and orthoID
+    ortho <- gsub("\\|", ":", ortho)
+    grepID = paste(group, "#", ortho, sep = "")
+    subDomainDf <- domainDf[grep(grepID, domainDf$seedID), ]
     subDomainDf$feature <- as.character(subDomainDf$feature)
     
     if(nrow(subDomainDf) < 1){
       v3$doPlot3 = FALSE
       return()
     } else {
-      ### ortho domains df
-      orthoDf <- filter(subDomainDf,orthoID==ortho)
+  
+      # ortho domains df
+      orthoDf <- filter(subDomainDf, orthoID == ortho)
       
-      ### seed domains df
-      seedDf <- filter(subDomainDf,orthoID != ortho)
+      # seed domains df
+      seedDf <- filter(subDomainDf, orthoID != ortho)
+
       if(nrow(seedDf) == 0){seedDf <- orthoDf}
       
       seed = as.character(seedDf$orthoID[1])
-      
-      ### change order of one dataframe's features based on order of other df's features
+
+      # change order of one dataframe's features based on order of other df's features
       if(length(orthoDf$feature) < length(seedDf$feature)){
         orderedOrthoDf <- orthoDf[order(orthoDf$feature), ]
         orderedSeedDf <- sortDomains(orderedOrthoDf, seedDf)
@@ -3354,8 +3390,8 @@ shinyServer(function(input, output, session) {
         orderedSeedDf <- seedDf[order(seedDf$feature), ]
         orderedOrthoDf <- sortDomains(orderedSeedDf, orthoDf)
       }
-      
-      ### join weight values and feature names
+  
+      # join weight values and feature names
       if("weight" %in% colnames(orderedOrthoDf)){
         orderedOrthoDf$yLabel <- paste0(orderedOrthoDf$feature," (",round(orderedOrthoDf$weight,2),")")
         orderedOrthoDf$feature <- orderedOrthoDf$yLabel
@@ -3364,22 +3400,53 @@ shinyServer(function(input, output, session) {
         orderedSeedDf$yLabel <- paste0(orderedSeedDf$feature," (",round(orderedSeedDf$weight,2),")")
         orderedSeedDf$feature <- orderedSeedDf$yLabel
       }
-      
-      ### plotting
+    
+      # plotting
       sep = ":"
-      if(!is.null(input$oneSeqFasta)){sep="|"}
+      if(!is.null(input$oneSeqFasta)) sep <- "|"
       
-      plot_ortho <- domain.plotting(orderedOrthoDf,ortho,sep,input$label_archi_size,input$title_archi_size,min(subDomainDf$start),max(c(subDomainDf$end,subDomainDf$length)))
-      plot_seed <- domain.plotting(orderedSeedDf,seed,sep,input$label_archi_size,input$title_archi_size,min(subDomainDf$start),max(c(subDomainDf$end,subDomainDf$length)))
+      if("length" %in% colnames(subDomainDf)){
+        plot_ortho <- domain.plotting(orderedOrthoDf,
+                                      ortho,
+                                      sep,
+                                      input$label_archi_size,
+                                      input$title_archi_size,
+                                      min(subDomainDf$start),
+                                      max(c(subDomainDf$end, subDomainDf$length)))
+        plot_seed <- domain.plotting(orderedSeedDf,
+                                     seed,
+                                     sep,
+                                     input$label_archi_size,
+                                     input$title_archi_size,
+                                     min(subDomainDf$start),
+                                     max(c(subDomainDf$end, subDomainDf$length)))
+        
+      } else{
+        plot_ortho <- domain.plotting(orderedOrthoDf,
+                                      ortho,
+                                      sep,
+                                      input$label_archi_size,
+                                      input$title_archi_size,
+                                      min(subDomainDf$start),
+                                      max(subDomainDf$end))
+        plot_seed <- domain.plotting(orderedSeedDf,
+                                     seed,
+                                     sep,
+                                     input$label_archi_size,
+                                     input$title_archi_size,
+                                     min(subDomainDf$start),
+                                     max(subDomainDf$end))
+      }
       
       # grid.arrange(plot_seed,plot_ortho,ncol=1)
+      
       if(ortho == seed){
-        arrangeGrob(plot_seed,ncol=1)
+        arrangeGrob(plot_seed, ncol = 1)
       } else {
         seedHeight = length(levels(as.factor(orderedSeedDf$feature)))
         orthoHeight = length(levels(as.factor(orderedOrthoDf$feature)))
-        
-        arrangeGrob(plot_seed,plot_ortho,ncol=1, heights = c(seedHeight,orthoHeight))
+
+        arrangeGrob(plot_seed ,plot_ortho, ncol = 1, heights = c(seedHeight, orthoHeight))
       }
     }
   }
@@ -3403,7 +3470,7 @@ shinyServer(function(input, output, session) {
         )
       HTML(msg)
     } else {
-      withSpinner(plotOutput("archi_plot",height = input$archiHeight, width = input$archi_width))
+      withSpinner(plotOutput("archi_plot",height = input$archi_height, width = input$archi_width))
     }
   })
   
@@ -5142,10 +5209,6 @@ shinyServer(function(input, output, session) {
   get_domain_file_gc <- function(group){
     # domain file
     if (input$demo_data == "demo" | input$demo_data == "ampk-tor"){
-      if (is.null(info)){
-        file_domain <- "noSelectHit"
-        updateButton(session, "do_domain_plot", disabled = TRUE)
-      } else {
         updateButton(session, "do_domain_plot", disabled = FALSE)
         if (input$demo_data == "demo"){
           file_domain <- {
@@ -5156,7 +5219,7 @@ shinyServer(function(input, output, session) {
             suppressWarnings(paste0("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.domains_F"))
           }
         }
-      }
+      
     }else {
       if (input$anno_choose == "from file"){
         file_domain <- input$file_domain_input

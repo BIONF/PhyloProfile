@@ -1351,7 +1351,7 @@ shinyUI(fluidPage(
           fluidRow(
             column(2,
                    numericInput("archi_height",
-                                "plot_height(px)",
+                                "plot height(px)",
                                 min = 100,
                                 max = 1600,
                                 step = 50,
@@ -1360,7 +1360,7 @@ shinyUI(fluidPage(
             ),
             column(2,
                    numericInput("archi_width",
-                                "plot_width(px)",
+                                "plot width(px)",
                                 min = 100,
                                 max = 1600,
                                 step = 50,
