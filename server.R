@@ -1145,6 +1145,7 @@ shinyServer(function(input, output, session) {
       clickedInfo <- mainpoint_info()
       
       if(input$x_axis == "genes"){
+
         corX = round(input$plot_dblclick$y);
         corY = round(input$plot_dblclick$x)
       } else {
@@ -1794,7 +1795,7 @@ shinyServer(function(input, output, session) {
   clusteredDataHeat <- reactive({
     dataHeat <- dataHeat()
     if(nrow(dataHeat) < 1){return()}
-    
+
     # dataframe for calculate distance matrix
     subDataHeat <- subset(dataHeat,dataHeat$presSpec > 0)
     subDataHeat <- subDataHeat[,c('geneID','supertaxon','presSpec')]
@@ -1808,6 +1809,7 @@ shinyServer(function(input, output, session) {
     # get clustered gene ids
     clusteredGeneIDs <- clusteredGeneList(dat,input$dist_method,input$cluster_method)
     
+
     # sort original data according to clusteredGeneIDs
     dataHeat$geneID <- factor(dataHeat$geneID, levels = clusteredGeneIDs)
     return(dataHeat)
@@ -2007,7 +2009,7 @@ shinyServer(function(input, output, session) {
     if(input$apply_cluster == TRUE){
       dataHeat <- clusteredDataHeat()
     }
-    
+
     ### get values
     if (is.null(input$plot_click$x)) {return()}
     else{
@@ -2688,6 +2690,7 @@ shinyServer(function(input, output, session) {
     in_select <- as.numeric(taxa_list$ncbiID[taxa_list$fullName == input$in_select])
     
     dataHeat <- dataHeat()
+
     if(input$apply_cluster == TRUE){
       dataHeat <- clusteredDataHeat()
     }
