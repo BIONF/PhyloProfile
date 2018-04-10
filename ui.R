@@ -190,6 +190,24 @@ shinyUI(fluidPage(
              uiOutput("main_input_file.ui"),
              uiOutput("input_check.ui"),
              
+             # # Using list of OMA protein IDs as input -------------------------
+             # conditionalPanel(
+             # 
+             #   # check if the input is a list of OMA IDs
+             #   condition = "output.input_type == 'oma'",
+             # 
+             #   # Options to select the OMA type to generate the output 
+             #   radioButtons(
+             #     inputId = "selected_oma_type",
+             #     label = "Select type of orthologs:",
+             #     choices = list("PAIR", "HOG", "OG"),
+             #     selected = "PAIR",
+             #     inline = T
+             #   ),
+             # 
+             #   shinyBS::bsButton("get_data_oma", "Get data from OMA Browser")
+             # ),
+
              fluidRow(
                column(4,
                       uiOutput("var1_id.ui")
@@ -740,13 +758,22 @@ shinyUI(fluidPage(
                    ),
                    column(3,
                           uiOutput("list_genes_gc"),
-                          popify(fileInput("gcFile", NULL, width = "100%"),
+                          popify(fileInput("gc_file", NULL, width = "100%"),
                                  "",
                                  "Select file of sequences")
                    ),
                    column(3,
                           uiOutput("taxa_list_gc"), # Select In-Group
+                          checkboxInput("use_common_anchestor",
+                                        "Use common anchestor",
+                                        value = TRUE,
+                                        width = NULL),
+                          bsPopover("use_common_anchestor",
+                                    "",
+                                    "The common anchestor of the selected taxa is used as the in-group",
+                                    "top"),
                           shinyBS::bsButton("taxa_gc", "Change rank")
+                          
                    ),
                    column(3,
                           uiOutput("significance.ui"),

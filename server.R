@@ -138,10 +138,16 @@ shinyServer(function(input, output, session) {
                 idDf[i,] <- c(as.character(taxaNameDf[i,]),as.character(temp[1,3]),paste0("ncbi",new_id),"notfound")
               }
             } else {
-              idDf[i,] <- c(as.character(taxaNameDf[i,]),paste0("no alternative"),paste0("NA"),"notfound")
+              idDf[i,] <- c(as.character(taxaNameDf[i, ]),
+                            paste0("no alternative"),
+                            paste0("NA"),
+                            "notfound")
             }
           } else {
-            idDf[i,] <- c(as.character(taxaNameDf[i,]),"NA",paste0("ncbi",id),"retrieved")
+            idDf[i,] <- c(as.character(taxaNameDf[i, ]),
+                          "NA",
+                          paste0("ncbi", id),
+                          "retrieved")
           }
           # Increment the progress bar, and update the detail text.
           incProgress(1/nrow(taxaNameDf), detail = paste(i,"/",nrow(taxaNameDf)))
@@ -160,7 +166,9 @@ shinyServer(function(input, output, session) {
         tb <- as.data.frame(taxa_id())
         tbFiltered <- tb[tb$type == "notfound",]
         notFoundDt <- tbFiltered[,c("name","new_name","id")]
-        colnames(notFoundDt) <- c("Summitted name","Alternative name","Alternative ID")
+        colnames(notFoundDt) <- c("Summitted name",
+                                  "Alternative name",
+                                  "Alternative ID")
         notFoundDt
       }
     }
@@ -172,9 +180,14 @@ shinyServer(function(input, output, session) {
       tb <- as.data.frame(taxa_id())
       tbFiltered <- tb[tb$type == "notfound",]
       notFoundDt <- tbFiltered[,c("name","new_name","id")]
-      colnames(notFoundDt) <- c("Summitted name","Alternative name","Alternative ID")
+      colnames(notFoundDt) <- c("Summitted name",
+                                "Alternative name",
+                                "Alternative ID")
       
-      write.table(notFoundDt,file,sep="\t",row.names = FALSE,quote = FALSE)
+      write.table(notFoundDt, file,
+                  sep = "\t",
+                  row.names = FALSE,
+                  quote = FALSE)
     }
   )
   
@@ -209,25 +222,59 @@ shinyServer(function(input, output, session) {
     # if(input$demo == TRUE){
     #   textInput("var1_id", h5("First variable:"), value = "Domain similarity", width="100%", placeholder="Name of first variable")
     if(input$demo_data == "ampk-tor"){
-      textInput("var1_id", h5("1st variable:"), value = "Domain similarity (forward)", width="100%", placeholder="Name of first variable")
+      textInput("var1_id", h5("1st variable:"),
+                value = "Domain similarity (forward)",
+                width = "100%",
+                placeholder = "Name of first variable")
     } else if(input$demo_data == "demo"){
-      textInput("var1_id", h5("1st variable:"), value = "Domain similarity", width="100%", placeholder="Name of first variable")
+      textInput("var1_id",
+                h5("1st variable:"),
+                value = "Domain similarity",
+                width = "100%",
+                placeholder = "Name of first variable")
     } else {
       filein <- input$mainInput
-      if(is.null(filein)){return(textInput("var1_id", h5("1st variable:"), value = "Variable 1", width="100%", placeholder="Name of first variable"))}    # get var1/var2 names based on input (only if input file in long format table)
+      # get var1/var2 names based on input 
+      # (only if input file in long format table)
+      if(is.null(filein)){return(textInput("var1_id",
+                                           h5("1st variable:"),
+                                           value = "Variable 1",
+                                           width = "100%",
+                                           placeholder = "Name of first variable"))}    
       
-      inputType <- checkInputVadility(filein)
       
-      if(inputType == "xml"){
+      input_type <- check_input_vadility(filein)
+      
+      # XML -------------------------------------------------------------------
+      if(input_type == "xml"){
         longDf <- xmlParser(filein$datapath)
-        textInput("var1_id", h5("1st variable:"), value = colnames(longDf)[4], width="100%", placeholder="Name of first variable")
-      } else if(inputType == "fasta"){
+        textInput("var1_id", h5("1st variable:"),
+                  value = colnames(longDf)[4],
+                  width = "100%",
+                  placeholder = "Name of first variable")
+        
+      # FASTA -----------------------------------------------------------------
+      } else if(input_type == "fasta"){
         longDf <- fastaParser(filein$datapath)
-        textInput("var1_id", h5("1st variable:"), value = colnames(longDf)[4], width="100%", placeholder="Name of first variable")
-      } else if(inputType == "long"){
+        textInput("var1_id", h5("1st variable:"),
+                  value = colnames(longDf)[4],
+                  width = "100%",
+                  placeholder = "Name of first variable")
+        
+      # LONG ------------------------------------------------------------------
+      } else if(input_type == "long"){
         headerIn <- readLines(filein$datapath, n = 1)
         headerIn <- unlist(strsplit(headerIn,split = '\t'))
-        textInput("var1_id", h5("1st variable:"), value = headerIn[4], width="100%", placeholder="Name of first variable")
+        textInput("var1_id", h5("1st variable:"),
+                  value = headerIn[4],
+                  width = "100%",
+                  placeholder = "Name of first variable")
+      #   # OMA -------------------------------------------------------------------
+      # } else if (input_type == "oma"){
+      #   #  what exactly needs to happen here+
+        
+        
+      # None of the definded types --------------------------------------------
       } else{
         textInput("var1_id", h5("1st variable:"), value = "Variable 1", width="100%", placeholder="Name of first variable")
       }
@@ -238,27 +285,77 @@ shinyServer(function(input, output, session) {
     # if(input$demo == TRUE){
     #   textInput("var2_id", h5("Second variable:"), value = "Traceability", width="100%", placeholder="Name of second variable")
     if(input$demo_data == "ampk-tor"){
-      textInput("var2_id", h5("2nd variable:"), value = "Domain similarity (backward)", width="100%", placeholder="Name of second variable")
+      textInput("var2_id", h5("2nd variable:"),
+                value = "Domain similarity (backward)",
+                width = "100%", 
+                placeholder = "Name of second variable")
     } else if(input$demo_data == "demo"){
-      textInput("var2_id", h5("2nd variable:"), value = "Traceability", width="100%", placeholder="Name of second variable")
+      textInput("var2_id", h5("2nd variable:"),
+                value = "Traceability",
+                width = "100%",
+                placeholder = "Name of second variable")
     } else {
       filein <- input$mainInput
-      if(is.null(filein)){return(textInput("var2_id", h5("2nd variable:"), value = "Variable 2", width="100%", placeholder="Name of second variable"))}    # get var1/var2 names based on input (only if input file in long format table)
+      # get var1/var2 names based on input 
+      # (only if input file in long format table)
+      if(is.null(filein)){return(textInput("var2_id", h5("2nd variable:"),
+                                           value = "Variable 2",
+                                           width = "100%",
+                                           placeholder = "Name of second variable"))
+        }    
       
-      inputType <- checkInputVadility(filein)
+      input_type <- check_input_vadility(filein)
       
-      if(inputType == "xml"){
+      # XML -------------------------------------------------------------------
+      if(input_type == "xml"){
         longDf <- xmlParser(filein$datapath)
-        textInput("var2_id", h5("2nd variable:"), value = colnames(longDf)[5], width="100%", placeholder="Name of second variable")
-      } else if(inputType == "fasta"){
+        textInput("var2_id", h5("2nd variable:"),
+                  value = colnames(longDf)[5],
+                  width = "100%",
+                  placeholder = "Name of second variable")
+        
+        
+      # FASTA -----------------------------------------------------------------
+      } else if(input_type == "fasta"){
         longDf <- fastaParser(filein$datapath)
-        textInput("var2_id", h5("2nd variable:"), value = colnames(longDf)[5], width="100%", placeholder="Name of second variable")
-      } else if(inputType == "long"){
+        textInput("var2_id", h5("2nd variable:"),
+                  value = colnames(longDf)[5],
+                  width = "100%",
+                  placeholder = "Name of second variable")
+        
+      # LONG ------------------------------------------------------------------
+      } else if(input_type == "long"){
         headerIn <- readLines(filein$datapath, n = 1)
         headerIn <- unlist(strsplit(headerIn,split = '\t'))
-        textInput("var2_id", h5("2nd variable:"), value = headerIn[5], width="100%", placeholder="Name of second variable")
-      } else{
-        textInput("var2_id", h5("2nd variable:"), value = "Variable 2", width="100%", placeholder="Name of second variable")
+        textInput("var2_id", h5("2nd variable:"),
+                  value = headerIn[5],
+                  width="100%",
+                  placeholder = "Name of second variable")
+        
+      # # OMA -------------------------------------------------------------------
+      # } else if (input_type == "oma") {
+      #   # Add dependency on the get data button 
+      #   # (only update when button is clicked)
+      #   
+      #   input$get_data_oma
+      # 
+      #   isolate({
+      #     print("isolate")
+      #     longDf <- oma_parser (filein$datapath, input$selected_oma_type)
+      #     textInput("var2_id", h5("2nd variable:"),
+      #               value = colnames(longDf)[5],
+      #               width = "100%",
+      #               placeholder = "Name of second variable")
+      #   })
+      #   
+      
+      # None of the definded types --------------------------------------------  
+      }else{
+        textInput("var2_id",
+                  h5("2nd variable:"),
+                  value = "Variable 2",
+                  width = "100%",
+                  placeholder = "Name of second variable")
       }
     }
   })
@@ -633,52 +730,20 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  ######## check validity of main input file
-  checkInputVadility <- function(filein){
-    inputDt <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=F,check.names=FALSE,comment.char="",fill=T))
-    # print(head(inputDt))
-    if(is.na(inputDt[1,ncol(inputDt)])){
-      return("moreCol")
-    } else {
-      names(inputDt) <- as.character(unlist(inputDt[1,]))
-      
-      if(grepl("<?xml",colnames(inputDt)[1])){
-        return("xml")
-      } else if(grepl(">",colnames(inputDt)[1]) == TRUE){
-        return("fasta")
-      } else {
-        if(grepl("geneID",colnames(inputDt)[1])){
-          if(is.na(pmatch("ncbi",colnames(inputDt)[3])) || is.na(pmatch("ncbi",colnames(inputDt)[4])) || is.na(pmatch("ncbi",colnames(inputDt)[5]))){
-            return("long")
-          } else {
-            tmp <- inputDt[inputDt==""][1]
-            if( !is.na(tmp) & tmp == ""){
-              return("emptyCell")
-            } else {
-              return("wide")
-            }
-          }
-        } else {
-          return("noGeneID")
-        }
-      }
-    }
-  }
-  
   ######## render input_check.ui
   output$input_check.ui <- renderUI({
     filein <- input$mainInput
     if(is.null(filein)){return()}
     
-    inputType <- checkInputVadility(filein)
-    if(inputType == "noGeneID"){
+    input_type <- check_input_vadility(filein)
+    if(input_type == "noGeneID"){
       updateButton(session, "do", disabled = TRUE)
       HTML("<font color=\"red\"><em><strong>ERROR: Unsupported input format. <a href=\"https://github.com/BIONF/PhyloProfile/wiki/Input-Data\" target=\"_blank\">Click here for more info</a></em></strong></font>")
-    } else if(inputType == "emptyCell"){
+    } else if(input_type == "emptyCell"){
       updateButton(session, "do", disabled = TRUE)
       em(strong("ERROR: Rows have unequal length",style = "color:red"))
     }
-    else if(inputType == "moreCol"){
+    else if(input_type == "moreCol"){
       updateButton(session, "do", disabled = TRUE)
       em(strong("ERROR: More columns than column names",style = "color:red"))
     } else {
@@ -708,7 +773,7 @@ shinyServer(function(input, output, session) {
       strong(a("Download demo domain file", href="https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.domains_F", target="_blank"))
     } else {
       if(input$anno_choose == "from file"){
-        fileInput("fileDomainInput","")
+        fileInput("fileDomain_input","")
       } else {
         textInput("domainPath","","")
       }
@@ -751,18 +816,42 @@ shinyServer(function(input, output, session) {
         
         if(length(unkTaxa()) == 0){
           # get list of input taxa (from main input file)
-          inputType <- checkInputVadility(filein)
-          if(inputType == "xml"){
+          input_type <- check_input_vadility(filein)
+          
+          # XML ---------------------------------------------------------------
+          if(input_type == "xml"){
             longDf <- xmlParser(filein$datapath)
             inputTaxa <- levels(longDf$ncbiID)
-          } else if(inputType == "fasta"){
+            
+          # FASTA -------------------------------------------------------------
+          } else if(input_type == "fasta"){
             longDf <- fastaParser(filein$datapath)
             inputTaxa <- levels(longDf$ncbiID)
-          } else if(inputType == "long"){
-            inputDf <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+            
+          # LONG --------------------------------------------------------------
+          } else if(input_type == "long"){
+            inputDf <- as.data.frame(read.table(file = filein$datapath,
+                                                sep = '\t',
+                                                header = T,
+                                                check.names = FALSE,
+                                                comment.char = ""))
             inputTaxa <- levels(inputDf$ncbiID)
-          } else if(inputType == "wide"){
+          
+          # WIDE --------------------------------------------------------------
+          } else if(input_type == "wide"){
             inputTaxa <- readLines(filein$datapath, n = 1)
+            
+          # # OMA ---------------------------------------------------------------
+          # } else if (input_type == "oma"){
+          #   input$get_data_oma
+          #   
+          #   isolate({
+          #     long_df <- oma_parser( filein$datapath, selected_oma_type)
+          #     input$Taxa <- levels(longDf$ncbiID)
+          #   })
+            
+            
+          # None of the definded types ----------------------------------------  
           } else {
             inputTaxa <- "NA"
           }
@@ -770,7 +859,7 @@ shinyServer(function(input, output, session) {
           inputTaxa <- readLines(filein$datapath, n = 1)
         }
         
-        inputTaxa <- unlist(strsplit(inputTaxa,split = '\t'))
+        inputTaxa <- unlist(strsplit(inputTaxa,split = "\t"))
         if(inputTaxa[1] == "geneID"){
           inputTaxa <- inputTaxa[-1]   # remove "geneID" element from vector inputTaxa
         }
@@ -781,33 +870,64 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  ######## check if there is any "unknown" taxon in input matrix
+  # check if there is any "unknown" taxon in input matrix =====================
   unkTaxa <- reactive({
+    
     # get list of input taxa (from main input file)
     # if(input$demo == TRUE){
     if(input$demo_data == "demo"){
-      data <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/test.main.wide", sep="\t", header=T, fill=T, stringsAsFactors = FALSE)
+      data <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/test.main.wide",
+                         sep = "\t",
+                         header = T,
+                         fill = T,
+                         stringsAsFactors = FALSE)
       inputTaxa <- colnames(data)
     } else if(input$demo_data == "ampk-tor"){
-      data <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.phyloprofile", sep="\t", header=T, fill=T, check.names=FALSE,comment.char="")
+      data <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.phyloprofile",
+                         sep = "\t",
+                         header = T,
+                         fill = T,
+                         check.names = FALSE,
+                         comment.char = "")
       inputTaxa <- levels(data$ncbiID)
+      
     } else {
       filein <- input$mainInput
-      if(is.null(filein)){return()}
+      if(is.null(filein)) return() 
       
-      inputType <- checkInputVadility(filein)
-      if(inputType == "xml"){
+      input_type <- check_input_vadility(filein)
+
+      # XML -------------------------------------------------------------------
+      if(input_type == "xml"){
         longDf <- xmlParser(filein$datapath)
         inputTaxa <- levels(longDf$ncbiID)
-      } else if(inputType == "fasta"){
+        
+      # FASTA -----------------------------------------------------------------
+      } else if(input_type == "fasta"){
         longDf <- fastaParser(filein$datapath)
         inputTaxa <- levels(longDf$ncbiID)
-      } else if(inputType == "long"){
-        inputDf <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+        
+      # LONG ------------------------------------------------------------------
+      } else if(input_type == "long"){
+        inputDf <- as.data.frame(read.table(file = filein$datapath,
+                                            sep = "\t",
+                                            header = T,
+                                            check.names = FALSE,
+                                            comment.char = ""))
         inputTaxa <- levels(inputDf$ncbiID)
-      } else if(inputType == "wide"){
+        
+      # WIDE ------------------------------------------------------------------
+      } else if(input_type == "wide"){
         inputTaxa <- readLines(filein$datapath, n = 1)
-      } else {
+        
+      # # OMA -------------------------------------------------------------------
+      # } else if (input_type == "oma"){
+      #   long_df <- oma_parser( filein$datapath, input$selected_oma_type)
+      #   print(head(long_df))
+      #   inputTaxa <- levels(long_df$ncbiID)
+        
+      # None of the definded types --------------------------------------------
+      }else {
         inputTaxa <- c("NA")
       }
     }
@@ -815,7 +935,7 @@ shinyServer(function(input, output, session) {
     if(inputTaxa[1] == "NA"){
       return()
     } else {
-      inputTaxa <- unlist(strsplit(inputTaxa,split = '\t'))
+      inputTaxa <- unlist(strsplit(inputTaxa,split = "\t"))
       if(inputTaxa[1] == "geneID"){
         inputTaxa <- inputTaxa[-1]   # remove "geneID" element from vector inputTaxa
       }
@@ -840,15 +960,17 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  ### get status of unkTaxa for conditional panel
+  # get status of unkTaxa for conditional panel -------------------------------
   output$unk_taxa_status <- reactive({
     unkTaxa <- unkTaxa()
     length(unkTaxa) > 0
   })
+  
   outputOptions(output, "unk_taxa_status", suspendWhenHidden = FALSE)
   
   ### show full list of unkTaxa
-  output$unk_taxa_full <- renderDataTable(option = list(searching = FALSE,pageLength = 10),{
+  output$unk_taxa_full <- renderDataTable(option = list(searching = FALSE,
+                                                        pageLength = 10),{
     if(length(unkTaxa())>0){
       tb <- as.data.frame(unkTaxa())
       names(tb)[1] <- "New taxon"
@@ -866,30 +988,44 @@ shinyServer(function(input, output, session) {
     toggleState("mainInput")
   })
   
-  ######### create rankList.txt, idList.txt, taxonNamesReduced.txt from input file (if confirmed by BUTyes). 
-  ######### and also create a full taxonomy matrix for sorting taxa (taxonomyMatrix.txt)
-  invalidID <- reactiveValues(df=data.frame("Invalid NCBI ID(s)" = as.character(), stringsAsFactors = F))
+  # create rankList.txt, idList.txt, taxonNamesReduced.txt from input file ----
+  # (if confirmed by BUTyes). 
+  # and also create a full taxonomy matrix for sorting taxa 
+  # (taxonomyMatrix.txt)
+  invalidID <- {
+    reactiveValues(df = data.frame("Invalid NCBI ID(s)" = as.character(),
+                                   stringsAsFactors = F))
+  }
   observe({
     filein <- input$mainInput
     if(is.null(filein)){return()}
     else{
-      inputType <- checkInputVadility(filein)
-      if(inputType == "xml" | inputType == "long" | inputType == "wide" | inputType == "fasta"){
-        inputDf <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+      input_type <- check_input_vadility(filein)
+      if(input_type == "xml" |
+         input_type == "long" |
+         input_type == "wide" |
+         input_type == "fasta" ){
+        inputDf <- as.data.frame(read.table(file = filein$datapath,
+                                            sep = "\t",
+                                            header = T,
+                                            check.names = FALSE,
+                                            comment.char = ""))
         
         if(v1$parse == F){return()}
         else{
-          ## get list of taxa need to be parsed (the one mising taxonomy information)
+          ## get list of taxa need to be parsed 
+          #(the one mising taxonomy information)
           if(v1$parse == T){
             unkTaxa <- unkTaxa()
-            titleline <- c("geneID",unkTaxa)
+            titleline <- c("geneID", unkTaxa)
           }
           
           invalidIDtmp <- list()
           # Create 0-row data frame which will be used to store data
-          withProgress(message = 'Parsing input file', value = 0, {
+          withProgress(message = "Parsing input file", value = 0, {
             allTaxonInfo<-fread("data/taxonNamesFull.txt")
-            newTaxaFromFile <- fread("data/newTaxa.txt", colClasses=c("ncbiID" = "character"))
+            newTaxaFromFile <- fread("data/newTaxa.txt",
+                                     colClasses = c("ncbiID" = "character"))
             
             allTaxonInfo <- rbind(newTaxaFromFile,allTaxonInfo)
             
@@ -908,88 +1044,167 @@ shinyServer(function(input, output, session) {
                 invalidIDtmp <- c(invalidIDtmp,refID)
               } else {
                 if(nrow(reducedInfoList[reducedInfoList$X1 == refEntry$ncbiID,]) == 0){
-                  refInfoList <- data.frame(matrix(c(refEntry$ncbiID,refEntry$fullName,refEntry$rank,refEntry$parentID), nrow=1, byrow=T),stringsAsFactors=FALSE)
+                  refInfoList <- data.frame(matrix(c(refEntry$ncbiID,
+                                                     refEntry$fullName,
+                                                     refEntry$rank,
+                                                     refEntry$parentID),
+                                                   nrow = 1,
+                                                   byrow = T),
+                                            stringsAsFactors = FALSE)
                   reducedInfoList <- rbind(reducedInfoList,refInfoList)
                 }
                 
-                ## parentID (used to check if hitting last rank, i.e. norank_1)
+                # parentID (used to check if hitting last rank, i.e. norank_1)
                 lastID <- refEntry$parentID
                 
-                ## create list of rank for this taxon
-                rank <- c(paste0("ncbi",refID),refEntry$fullName)
+                # create list of rank for this taxon
+                rank <- c(paste0("ncbi", refID), refEntry$fullName)
                 if(refEntry$rank == "norank"){
-                  rank <- c(rank,paste0("strain"))
+                  rank <- c(rank, paste0("strain"))
                 } else {
-                  rank <- c(rank,refEntry$rank)
+                  rank <- c(rank, refEntry$rank)
                 }
                 
                 ## create list of IDs for this taxon
-                ids <- list(paste0(refEntry$fullName,"#name"))
+                ids <- list(paste0(refEntry$fullName, "#name"))
                 if(refEntry$rank == "norank"){
-                  ids <- c(ids,paste0(refEntry$ncbiID,"#","strain","_",refEntry$ncbiID))
+                  ids <- c(ids,
+                           paste0(refEntry$ncbiID,
+                                  "#",
+                                  "strain",
+                                  "_",
+                                  refEntry$ncbiID))
                 } else {
-                  ids <- c(ids,paste0(refEntry$ncbiID,"#",refEntry$rank))
+                  ids <- c(ids,
+                           paste0(refEntry$ncbiID,"#",refEntry$rank))
                 }
                 
                 ## append info into rank and ids
                 while(lastID != 1){
-                  nextEntry <- allTaxonInfo[allTaxonInfo$ncbiID == lastID,]
+                  nextEntry <- allTaxonInfo[allTaxonInfo$ncbiID == lastID, ]
                   
-                  if(nrow(reducedInfoList[reducedInfoList$X1 == nextEntry$ncbiID,]) == 0){
-                    nextEntryList <- data.frame(matrix(c(nextEntry$ncbiID,nextEntry$fullName,nextEntry$rank,nextEntry$parentID), nrow=1, byrow=T),stringsAsFactors=FALSE)
-                    reducedInfoList <- rbind(reducedInfoList,nextEntryList)
+                  if(nrow(reducedInfoList[reducedInfoList$X1 == nextEntry$ncbiID, ]) == 0){
+                    nextEntryList <- {
+                      data.frame(matrix(c(nextEntry$ncbiID,
+                                          nextEntry$fullName,
+                                          nextEntry$rank,
+                                          nextEntry$parentID),
+                                          nrow=1, byrow=T),
+                                 stringsAsFactors=FALSE)
+                    }
+                    reducedInfoList <- rbind(reducedInfoList, nextEntryList)
                   }
                   
                   lastID <- nextEntry$parentID
                   
                   if("norank" %in% nextEntry$rank){
-                    rank <- c(rank,paste0(nextEntry$rank,"_",nextEntry$ncbiID))
-                    ids <- c(ids,paste0(nextEntry$ncbiID,"#",nextEntry$rank,"_",nextEntry$ncbiID))
+                    rank <- c(rank,
+                              paste0(nextEntry$rank, "_", nextEntry$ncbiID))
+                    ids <- c(ids,
+                             paste0(nextEntry$ncbiID,
+                                    "#",
+                                    nextEntry$rank,
+                                    "_",
+                                    nextEntry$ncbiID))
                   } else {
                     rank <- c(rank,nextEntry$rank)
-                    ids <- c(ids,paste0(nextEntry$ncbiID,"#",nextEntry$rank))
+                    ids <- c(ids,
+                             paste0(nextEntry$ncbiID, "#", nextEntry$rank))
                   }
                 }
                 
                 ## last rank and id
-                rank <- c(rank,"norank_1")
-                ids <- c(ids,"1#norank_1")
+                rank <- c(rank, "norank_1")
+                ids <- c(ids, "1#norank_1")
                 
                 ## append into rankList and idList files
-                rankListTMP <- data.frame(matrix(unlist(rank), nrow=1, byrow=T),stringsAsFactors=FALSE)
-                rankList <- rbind.fill(rankList,rankListTMP)
-                idListTMP <- data.frame(matrix(unlist(ids), nrow=1, byrow=T),stringsAsFactors=FALSE)
-                idList <- rbind.fill(idList,idListTMP)
+                rankListTMP <- data.frame(matrix(unlist(rank),
+                                                 nrow = 1, byrow = T),
+                                          stringsAsFactors = FALSE)
+                rankList <- rbind.fill(rankList, rankListTMP)
+                idListTMP <- data.frame(matrix(unlist(ids),
+                                               nrow = 1,
+                                               byrow = T),
+                                        stringsAsFactors = FALSE)
+                idList <- rbind.fill(idList, idListTMP)
               }
               
               # Increment the progress bar, and update the detail text.
-              incProgress(1/(length(titleline)-1), detail = paste((i-1),"/",length(titleline)-1))
+              incProgress(1/(length(titleline)-1),
+                          detail = paste((i-1),
+                                         "/",
+                                         length(titleline)-1))
             }
           })
-          ### save invalid IDs to invalidID$df
+          # save invalid IDs to invalidID$df
           invalidID$df <- as.data.frame(unlist(invalidIDtmp))
           
           if(nrow(invalidID$df) < 1){
-            ### open existing files (idList.txt, rankList.txt and taxonNamesReduced.txt)
-            ncol <- max(count.fields("data/rankList.txt", sep = '\t'))
+            # open existing files (idList.txt, rankList.txt and taxonNamesReduced.txt)
+            ncol <- max(count.fields("data/rankList.txt", sep = "\t"))
             # print(ncol)
-            oldIDList <- as.data.frame(read.table("data/idList.txt", sep='\t', header=F, check.names=FALSE, comment.char="", fill = T, stringsAsFactors=T, na.strings=c("","NA"), col.names=paste0('X', seq_len(ncol))))
-            oldRankList <- as.data.frame(read.table("data/rankList.txt", sep='\t', header=F, check.names=FALSE, comment.char="", fill = T, stringsAsFactors=T, na.strings=c("","NA"), col.names=paste0('X', seq_len(ncol))))
-            oldNameList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t', header=T, check.names=FALSE, comment.char="", fill = T, stringsAsFactors=T))
+            oldIDList <- as.data.frame(read.table("data/idList.txt",
+                                                  sep = "\t",
+                                                  header = F,
+                                                  check.names = FALSE,
+                                                  comment.char = "", fill = T,
+                                                  stringsAsFactors = T,
+                                                  na.strings = c("", "NA"),
+                                                  col.names = paste0("X", seq_len(ncol))))
+            oldRankList <- as.data.frame(read.table("data/rankList.txt",
+                                                    sep = "\t",
+                                                    header = F,
+                                                    check.names = FALSE,
+                                                    comment.char = "",
+                                                    fill = T,
+                                                    stringsAsFactors = T,
+                                                    na.strings = c("","NA"),
+                                                    col.names = paste0("X", seq_len(ncol))))
+            oldNameList <- as.data.frame(read.table("data/taxonNamesReduced.txt",
+                                                    sep = "\t",
+                                                    header = T,
+                                                    check.names = FALSE,
+                                                    comment.char = "",
+                                                    fill = T,
+                                                    stringsAsFactors = T))
             
             ### and append new info into those files
             new_idList <- rbind.fill(oldIDList,idList)
             new_rankList <- rbind.fill(oldRankList,rankList)
-            colnames(reducedInfoList) <- c("ncbiID","fullName","rank","parentID")
+            colnames(reducedInfoList) <- c("ncbiID",
+                                           "fullName",
+                                           "rank",
+                                           "parentID")
             new_nameList <- rbind.fill(oldNameList,reducedInfoList)
             
-            write.table(new_idList[!duplicated(new_idList),], file ="data/idList.txt", col.names = F, row.names = F, quote = F, sep="\t")
-            write.table(new_rankList[!duplicated(new_rankList),], file ="data/rankList.txt", col.names = F, row.names = F, quote = F, sep="\t")
-            write.table(new_nameList[!duplicated(new_nameList),], file ="data/taxonNamesReduced.txt", col.names = T, row.names = F, quote = F, sep="\t")
+            write.table(new_idList[!duplicated(new_idList),],
+                        file  = "data/idList.txt",
+                        col.names = F,
+                        row.names = F,
+                        quote = F,
+                        sep = "\t")
+            write.table(new_rankList[!duplicated(new_rankList),],
+                        file ="data/rankList.txt",
+                        col.names = F,
+                        row.names = F,
+                        quote = F,
+                        sep = "\t")
+            write.table(new_nameList[!duplicated(new_nameList),],
+                        file ="data/taxonNamesReduced.txt",
+                        col.names = T,
+                        row.names = F,
+                        quote = F,
+                        sep="\t")
             
             ### create taxonomy matrix
-            taxMatrix <- taxonomyTableCreator("data/idList.txt","data/rankList.txt")
-            write.table(taxMatrix,"data/taxonomyMatrix.txt",sep="\t",eol="\n",row.names=FALSE,quote = FALSE)
+            taxMatrix <- taxonomyTableCreator("data/idList.txt",
+                                              "data/rankList.txt")
+            write.table(taxMatrix,
+                        "data/taxonomyMatrix.txt",
+                        sep = "\t",
+                        eol = "\n",
+                        row.names = FALSE,
+                        quote = FALSE)
           }
         }
       }
@@ -1033,10 +1248,11 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  ####### GET list of all (super)taxa
+  # Get list of all (super)taxa ===============================================
   alltaxa_list <- reactive({
     
     filein <- input$mainInput
+    
     # if(is.null(filein) & input$demo == FALSE){return()}
     if(is.null(filein) & input$demo_data == "none"){return()}
     
@@ -1046,15 +1262,19 @@ shinyServer(function(input, output, session) {
     
     if(length(unkTaxa()) > 0){return()}
     
-    ### load list of unsorted taxa
+    # load list of unsorted taxa ----------------------------------------------
     Dt <- get_taxa_list(TRUE)
     
     
-    ### load list of taxon name
+    # load list of taxon name -------------------------------------------------
     nameList <- get_name_list(TRUE, FALSE)
     
-    rankName = substr(rank_select,4,nchar(rank_select))   # get rank name from rank_select
-    #    rankNr = 0 + as.numeric(substr(rank_select,1,2))     # get rank number (number of column in unsorted taxa list - dataframe Dt)
+    # get rank name from rank_select
+    rankName = substr(rank_select,4,nchar(rank_select))
+    
+    # get rank number (number of column in unsorted taxa list - dataframe Dt)
+    #    rankNr = 0 + as.numeric(substr(rank_select,1,2))  
+    
     choice <- as.data.frame
     choice <- rbind(Dt[rankName])
     colnames(choice) <- "ncbiID"
@@ -1068,21 +1288,39 @@ shinyServer(function(input, output, session) {
     
     # if(input$demo == TRUE){
     if(input$demo_data == "demo"){
-      hellemDf <- data.frame("name" = c("Encephalitozoon hellem","Encephalitozoon hellem","Encephalitozoon","Unikaryonidae","Apansporoblastina","Apansporoblastina","Microsporidia","Fungi","Eukaryota"),
-                             "rank" = c("strain","species","genus","family","order","class","phylum","kingdom","superkingdom"))
+      hellemDf <- data.frame("name" = c("Encephalitozoon hellem",
+                                        "Encephalitozoon hellem",
+                                        "Encephalitozoon",
+                                        "Unikaryonidae",
+                                        "Apansporoblastina",
+                                        "Apansporoblastina",
+                                        "Microsporidia",
+                                        "Fungi",
+                                        "Eukaryota"),
+                             "rank" = c("strain",
+                                        "species",
+                                        "genus",
+                                        "family",
+                                        "order",
+                                        "class",
+                                        "phylum",
+                                        "kingdom",
+                                        "superkingdom"))
       rank_select = input$rank_select
       rankName = substr(rank_select,4,nchar(rank_select))
       
-      selectInput('in_select',"",as.list(levels(choice$fullName)),hellemDf$name[hellemDf$rank == rankName])
+      selectInput("in_select", "",
+                  as.list(levels(choice$fullName)),
+                  hellemDf$name[hellemDf$rank == rankName])
     } else if(input$demo_data == "ampk-tor"){
       humanDf <- data.frame("name" = c("Homo sapiens","Homo sapiens","Homo","Hominidae","Primates","Mammalia","Chordata","Metazoa","Eukaryota"),
                             "rank" = c("strain","species","genus","family","order","class","phylum","kingdom","superkingdom"))
       rank_select = input$rank_select
       rankName = substr(rank_select,4,nchar(rank_select))
       
-      selectInput('in_select',"",as.list(levels(choice$fullName)),humanDf$name[humanDf$rank == rankName])
+      selectInput("in_select","",as.list(levels(choice$fullName)),humanDf$name[humanDf$rank == rankName])
     } else {
-      selectInput('in_select',"",as.list(levels(choice$fullName)),levels(choice$fullName)[1])
+      selectInput("in_select","",as.list(levels(choice$fullName)),levels(choice$fullName)[1])
     }
   })
   
@@ -1093,7 +1331,7 @@ shinyServer(function(input, output, session) {
     out <- as.list(levels(choice$fullName))
     out <- append("none",out)
     
-    selectInput('taxonHighlight','Select (super)taxon to highlight:',out,selected=out[1])
+    selectInput("taxonHighlight","Select (super)taxon to highlight:",out,selected=out[1])
   })
   
   #### update highlight_taxon_ui based on double clicked dot
@@ -1118,7 +1356,7 @@ shinyServer(function(input, output, session) {
       spec <- toString(supertaxa[corX])
       selectedIndex = match(substr(spec,6,nchar(spec)),out)
       
-      updateSelectInput(session,'taxonHighlight',label = 'Select (super)taxon to highlight:',choices=out,selected=out[selectedIndex])
+      updateSelectInput(session,"taxonHighlight",label = "Select (super)taxon to highlight:",choices=out,selected=out[selectedIndex])
     }
   })
   
@@ -1130,7 +1368,7 @@ shinyServer(function(input, output, session) {
     out <- as.list(levels(geneList$geneID))
     out <- append("none",out)
     
-    selectInput('geneHighlight','Highlight:',out,selected=out[1])
+    selectInput("geneHighlight","Highlight:",out,selected=out[1])
   })
   
   #### update highlight_gene_ui based on double clicked dot
@@ -1156,7 +1394,7 @@ shinyServer(function(input, output, session) {
         corX = round(input$plot_dblclick$x);
         corY = round(input$plot_dblclick$y)
       }
-      updateSelectInput(session,'geneHighlight',label = 'Highlight:',choices=out,selected=out[corY+1])
+      updateSelectInput(session,"geneHighlight",label = "Highlight:",choices=out,selected=out[corY+1])
     } else {return()}
   })
   
@@ -1185,7 +1423,7 @@ shinyServer(function(input, output, session) {
   
   ######## move to main tab when "PLOT" button has been clicked
   observe({
-    # use tabsetPanel 'id' argument to change tabs
+    # use tabsetPanel "id" argument to change tabs
     if (input$do > 0) {
       updateTabsetPanel(session, "tabs", selected = "Main profile")
     }
@@ -1193,7 +1431,7 @@ shinyServer(function(input, output, session) {
   
   ######## disable main input, genelist input and initial questions
   observe({
-    # use tabsetPanel 'id' argument to change tabs
+    # use tabsetPanel "id" argument to change tabs
     if (input$do > 0) {
       toggleState("mainInput")
       toggleState("gene_list_selected")
@@ -1209,7 +1447,10 @@ shinyServer(function(input, output, session) {
       # toggleState("demo")
       ### update var2_aggregate_by to mean
       updateSelectInput(session,"var2_aggregate_by",
-                        choices = list("Max"="max", "Min"="min","Mean"="mean","Median"="median"),
+                        choices = list("Max" = "max",
+                                       "Min" = "min",
+                                       "Mean" = "mean",
+                                       "Median" = "median"),
                         selected = "mean")
     }
   })
@@ -1218,14 +1459,22 @@ shinyServer(function(input, output, session) {
   ######################  ADD NEW TAXA  #######################
   #############################################################
   newTaxa <- reactiveValues()
-  newTaxa$Df <- data.frame("ncbiID"=numeric(),"fullName"=character(),"rank"=character(),"parentID"=numeric(),stringsAsFactors=FALSE)
+  newTaxa$Df <- data.frame("ncbiID" = numeric(),
+                           "fullName" = character(),
+                           "rank" = character(),
+                           "parentID" = numeric(),
+                           stringsAsFactors = FALSE)
   newIndex <- reactiveValues()
   newIndex$value <- 1
   
   observeEvent(input$new_add, {
-    newTaxa$Df[newIndex$value,] <- c(input$new_id,input$new_name,input$new_rank,input$new_parent)
+    newTaxa$Df[newIndex$value,] <- c(input$new_id,
+                                     input$new_name,
+                                     input$new_rank,
+                                     input$new_parent)
     newIndex$value <- newIndex$value + 1
-    updateTextInput(session, "new_id", value=as.numeric(input$new_id)+1)
+    updateTextInput(session, "new_id",
+                    value = as.numeric(input$new_id) + 1)
     updateTextInput(session, "new_name", value="")
     updateTextInput(session, "new_rank", value="norank")
     updateTextInput(session, "new_parent", value="")
@@ -1233,7 +1482,11 @@ shinyServer(function(input, output, session) {
   
   observeEvent(input$new_done, {
     toggleModal(session, "add_taxa_windows", toggle = "close")
-    write.table(newTaxa$Df,"data/newTaxa.txt",sep="\t",eol="\n",row.names=FALSE,quote = FALSE)
+    write.table(newTaxa$Df, "data/newTaxa.txt",
+                sep = "\t",
+                eol = "\n",
+                row.names = FALSE,
+                quote = FALSE)
   })
   
   #############################################################
@@ -1287,7 +1540,10 @@ shinyServer(function(input, output, session) {
     Dt <- get_taxa_list(FALSE)
     
     ### load list of taxon name
-    nameList <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T,fill = TRUE))
+    nameList <- as.data.frame(read.table("data/taxonNamesReduced.txt",
+                                         sep = "\t",
+                                         header = T,
+                                         fill = TRUE))
     nameList$fullName <- as.character(nameList$fullName)
     
     ### input parameters
@@ -1296,7 +1552,7 @@ shinyServer(function(input, output, session) {
     rankNr = 0 + as.numeric(substr(rank_select,1,2))     # get rank number (number of column in unsorted taxa list - dataframe Dt)
     
     ### get selected supertaxon ID
-    taxa_list <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep='\t',header=T))
+    taxa_list <- as.data.frame(read.table("data/taxonNamesReduced.txt", sep="\t",header=T))
     allTaxa <- alltaxa_list()
     rankNameTMP <- allTaxa$rank[allTaxa$fullName == input$in_select]
     if(rankName == "strain"){
@@ -1381,9 +1637,9 @@ shinyServer(function(input, output, session) {
   
   observe({
     if(input$ordering == FALSE){
-      shinyjs::disable('apply_cluster')
+      shinyjs::disable("apply_cluster")
     } else {
-      shinyjs::enable('apply_cluster')
+      shinyjs::enable("apply_cluster")
     }
   })
   
@@ -1403,7 +1659,7 @@ shinyServer(function(input, output, session) {
     end_index <- input$end_index
     if(is.na(input$end_index)){end_index <- 30}
     
-    if(input$gene_list_selected == 'from file'){
+    if(input$gene_list_selected == "from file"){
       listIn <- input$list
       if(!is.null(listIn)){
         list <- as.data.frame(read.table(file=listIn$datapath, header=FALSE))
@@ -1442,8 +1698,9 @@ shinyServer(function(input, output, session) {
       filein <- input$mainInput
       if(is.null(filein)){return()}
       
-      inputType <- checkInputVadility(filein)
-      if(inputType == "xml"){
+      input_type <- check_input_vadility(filein)
+      # XML -------------------------------------------------------------------
+      if(input_type == "xml"){
         longDf <- xmlParser(filein$datapath)
         longDf <- unsortID(longDf,input$ordering)
         
@@ -1460,7 +1717,9 @@ shinyServer(function(input, output, session) {
           }
         }
         colnames(data) <- c("geneID","ncbiID","orthoID","var1","var2")
-      } else if(inputType == "fasta"){
+        
+      # fasta ----------------------------------------------------------------- 
+      } else if(input_type == "fasta"){
         longDf <- fastaParser(filein$datapath)
         longDf <- unsortID(longDf,input$ordering)
         
@@ -1477,9 +1736,15 @@ shinyServer(function(input, output, session) {
           }
         }
         colnames(data) <- c("geneID","ncbiID","orthoID","var1","var2")
-      } else if(inputType == "long"){
-        inputDf <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
-        inputDf <- unsortID(inputDf,input$ordering)
+        
+      # long ------------------------------------------------------------------
+      } else if(input_type == "long"){
+        inputDf <- as.data.frame(read.table(file = filein$datapath,
+                                            sep = "\t",
+                                            header = T,
+                                            check.names = FALSE, 
+                                            comment.char = ""))
+        inputDf <- unsortID(inputDf, input$ordering)
         
         if(length(listGene) >= 1){
           data <- inputDf[inputDf$geneID %in% listGene,]
@@ -1494,10 +1759,16 @@ shinyServer(function(input, output, session) {
           }
         }
         colnames(data) <- c("geneID","ncbiID","orthoID","var1","var2")
-      } else if (inputType == "wide"){
-        inputDf <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
-        mdData <- melt(inputDf,id="geneID")
-        mdData <- unsortID(mdData,input$ordering)
+        
+      # wide ------------------------------------------------------------------
+      } else if (input_type == "wide"){
+        inputDf <- as.data.frame(read.table(file = filein$datapath,
+                                            sep = "\t",
+                                            header = T,
+                                            check.names = FALSE,
+                                            comment.char = ""))
+        mdData <- melt(inputDf, id = "geneID")
+        mdData <- unsortID(mdData, input$ordering)
         
         if(length(listGene) >= 1){
           mdData <- mdData[mdData$geneID %in% listGene,]
@@ -1506,8 +1777,8 @@ shinyServer(function(input, output, session) {
           mdData <- mdData[mdData$geneID %in% subsetID,]
         }
         
-        splitCol <- data.frame(do.call('rbind', strsplit(as.character(mdData$value), '#', fixed=TRUE)))
-        data <- cbind(mdData[,c('geneID','variable')],splitCol)
+        splitCol <- data.frame(do.call("rbind", strsplit(as.character(mdData$value), "#", fixed=TRUE)))
+        data <- cbind(mdData[,c("geneID","variable")],splitCol)
         
         if(ncol(data) < 5){
           for(i in 1:(5-ncol(data))){
@@ -1515,8 +1786,19 @@ shinyServer(function(input, output, session) {
           }
         }
         colnames(data) <- c("geneID","ncbiID","orthoID","var1","var2")
+        
+      # # OMA -------------------------------------------------------------------
+      # } else if (input_type == "oma"){
+      #   # What exactally needs to happen here 
+        
+      # None of the definded types --------------------------------------------
       } else {
-        data <- data.frame("geneID" = character(),"ncbiID" = character(),"orthoID" = character(),"var1" = character(),"var2" = character(), stringsAsFactors = F)
+        data <- data.frame("geneID" = character(),
+                           "ncbiID" = character(),
+                           "orthoID" = character(),
+                           "var1" = character(),
+                           "var2" = character(),
+                           stringsAsFactors = F)
       }
     }
     
@@ -1558,7 +1840,10 @@ shinyServer(function(input, output, session) {
     taxaMdDataNoNA_var2 <- taxaMdData[!is.na(taxaMdData$var2),]
     # calculate max/min/mean/median VAR2
     if(nrow(taxaMdDataNoNA_var2) > 0){
-      mVar2Dt <- aggregate(taxaMdDataNoNA_var2[,"var2"],list(taxaMdDataNoNA_var2$supertaxon,taxaMdDataNoNA_var2$geneID),FUN=input$var2_aggregate_by)
+      mVar2Dt <- aggregate(taxaMdDataNoNA_var2[, "var2"],
+                           list(taxaMdDataNoNA_var2$supertaxon,
+                                taxaMdDataNoNA_var2$geneID),
+                           FUN = input$var2_aggregate_by)
       colnames(mVar2Dt) <- c("supertaxon","geneID","mVar2")
     } else {
       mVar2Dt <- taxaMdData[,c("supertaxon","geneID")]
@@ -1566,10 +1851,10 @@ shinyServer(function(input, output, session) {
     }
     
     ### (5+6) & join mVar2 together with mVar1 scores into one df (5+6)
-    scoreDf <- merge(mVar1Dt,mVar2Dt, by=c("supertaxon","geneID"), all = TRUE)
+    scoreDf <- merge(mVar1Dt,mVar2Dt, by = c("supertaxon","geneID"), all = TRUE)
     
     ### (4+5+6) add presSpec and mVar1 into taxaMdData (4+5+6)
-    presMdData <- merge(taxaMdData,finalPresSpecDt,by=c('geneID','supertaxon'),all.x = TRUE)
+    presMdData <- merge(taxaMdData,finalPresSpecDt,by = c('geneID','supertaxon'),all.x = TRUE)
     fullMdData <- merge(presMdData,scoreDf,by=c('geneID','supertaxon'), all.x = TRUE)
     fullMdData <- merge(fullMdData,taxaCount,by=('supertaxon'), all.x = TRUE)
     # rename "freq" into "numberSpec"
@@ -1594,7 +1879,15 @@ shinyServer(function(input, output, session) {
     flag <- 1 # to check if working with the lowest taxonomy rank; 1 for NO; 0 for YES
     if(length(unique(levels(as.factor(fullMdData$numberSpec)))) == 1){
       if(unique(levels(as.factor(fullMdData$numberSpec))) == 1){
-        superDfExt <- fullMdData[,c("geneID","supertaxon","supertaxonID","var1","presSpec","category","orthoID","var2","paralog")]
+        superDfExt <- fullMdData[,c("geneID",
+                                    "supertaxon",
+                                    "supertaxonID",
+                                    "var1",
+                                    "presSpec",
+                                    "category",
+                                    "orthoID",
+                                    "var2",
+                                    "paralog")]
         flag <- 0
       }
     }
@@ -1914,7 +2207,7 @@ shinyServer(function(input, output, session) {
     ### do plotting
     if(input$auto_update == FALSE){
       # Add dependency on the update button (only update when button is clicked)
-      input$updateBtn
+      input$update_btn
       
       # Add all the filters to the data based on the user inputs
       # wrap in an isolate() so that the data won't update every time an input
@@ -1927,11 +2220,12 @@ shinyServer(function(input, output, session) {
     }
   }
   
-  ########### plot profile into plot.ui
+  # plot profile into plot.ui =================================================
   output$mainPlot <- renderPlot({
     if(input$auto_update == FALSE){
-      # Add dependency on the update button (only update when button is clicked)
-      input$updateBtn
+      # Add dependency on the update button 
+      # (only update when button is clicked)
+      input$update_btn
       
       # Add all the filters to the data based on the user inputs
       # wrap in an isolate() so that the data won't update every time an input
@@ -1949,10 +2243,10 @@ shinyServer(function(input, output, session) {
     if(v$doPlot == FALSE){
       return()
     } else{
-      ## if auto_update is NOT selected, use updateBtn to trigger plot changing
+      ## if auto_update is NOT selected, use update_btn to trigger plot changing
       if(input$auto_update == FALSE){
         # Add dependency on the update button (only update when button is clicked)
-        input$updateBtn
+        input$update_btn
         
         # Add all the filters to the data based on the user inputs
         # wrap in an isolate() so that the data won't update every time an input
@@ -2121,8 +2415,9 @@ shinyServer(function(input, output, session) {
     } else {
       filein <- input$mainInput
       
-      inputType <- checkInputVadility(filein)
-      if(inputType == "xml"){
+      input_type <- check_input_vadility(filein)
+      # XML -------------------------------------------------------------------
+      if(input_type == "xml"){
         dataOrig <- xmlParser(filein$datapath)
         if(ncol(dataOrig) < 4){
           colnames(dataOrig) <- c("geneID","ncbiID","orthoID")
@@ -2134,7 +2429,9 @@ shinyServer(function(input, output, session) {
           colnames(dataOrig) <- c("geneID","ncbiID","orthoID","var1","var2")
           splitDt <- dataOrig[,c("orthoID","var1","var2")]
         }
-      } else if(inputType == "fasta"){
+        
+      # FASTA -----------------------------------------------------------------
+      } else if(input_type == "fasta"){
         dataOrig <- fastaParser(filein$datapath)
         if(ncol(dataOrig) < 4){
           colnames(dataOrig) <- c("geneID","ncbiID","orthoID")
@@ -2146,8 +2443,14 @@ shinyServer(function(input, output, session) {
           colnames(dataOrig) <- c("geneID","ncbiID","orthoID","var1","var2")
           splitDt <- dataOrig[,c("orthoID","var1","var2")]
         }
-      } else if(inputType == "long"){
-        dataOrig <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+        
+      # LONG ------------------------------------------------------------------
+      } else if(input_type == "long"){
+        dataOrig <- as.data.frame(read.table(file = filein$datapath,
+                                             sep = '\t',
+                                             header = T,
+                                             check.names = FALSE,
+                                             comment.char = ""))
         if(ncol(dataOrig) < 4){
           colnames(dataOrig) <- c("geneID","ncbiID","orthoID")
           splitDt <- dataOrig[,c("orthoID")]
@@ -2158,18 +2461,29 @@ shinyServer(function(input, output, session) {
           colnames(dataOrig) <- c("geneID","ncbiID","orthoID","var1","var2")
           splitDt <- dataOrig[,c("orthoID","var1","var2")]
         }
-      } else if(inputType == "wide"){
-        dataOrig <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+        
+      # WIDE ------------------------------------------------------------------
+      } else if(input_type == "wide"){
+        dataOrig <- as.data.frame(read.table(file = filein$datapath,
+                                             sep = '\t',
+                                             header = T,
+                                             check.names = FALSE,
+                                             comment.char = ""))
         # convert into paired columns
         mdData <- melt(dataOrig,id="geneID")
         
-        # replace NA value with "NA#NA" (otherwise the corresponding orthoID will be empty)
+        # replace NA value with "NA#NA" 
+        # (otherwise the corresponding orthoID will be empty)
         mdData$value <- as.character(mdData$value)
         mdData$value[is.na(mdData$value)] <- "NA#NA"
         
         # split "orthoID#var1#var2" into 3 columns
         splitDt <- as.data.frame(str_split_fixed(mdData$value, '#', 3))
         colnames(splitDt) <- c("orthoID","var1","var2")
+        
+      # # OMA -------------------------------------------------------------------
+      # } else if (input_type == "oma"){
+      #   #  what exactly needs to happen here
       }
     }
     
@@ -2237,8 +2551,11 @@ shinyServer(function(input, output, session) {
         theme_minimal()
       p <- p + theme(legend.position = "none",
                      #                   plot.title = element_text(hjust = 0.5),
-                     axis.title = element_text(size=input$dist_text_size),axis.text = element_text(size=input$dist_text_size)) +
-        labs(x = paste0(input$var1_id," (mean = ",round(mean(splitDt$var1),3),")"), y = "Frequency")
+                     axis.title = element_text(size=input$dist_text_size),
+                     axis.text = element_text(size=input$dist_text_size)) +
+        labs(x = paste0(input$var1_id,
+                        " (mean = ",round(mean(splitDt$var1),3),")"),
+             y = "Frequency")
       p
     }
   }
@@ -2246,7 +2563,7 @@ shinyServer(function(input, output, session) {
   output$var1DistPlot <- renderPlot(width = 512, height = 356,{
     if(input$auto_update == FALSE){
       # Add dependency on the update button (only update when button is clicked)
-      input$updateBtn
+      input$update_btn
       
       # Add all the filters to the data based on the user inputs
       # wrap in an isolate() so that the data won't update every time an input
@@ -2287,7 +2604,7 @@ shinyServer(function(input, output, session) {
   output$var2DistPlot <- renderPlot(width = 512, height = 356,{
     if(input$auto_update == FALSE){
       # Add dependency on the update button (only update when button is clicked)
-      input$updateBtn
+      input$update_btn
       
       # Add all the filters to the data based on the user inputs
       # wrap in an isolate() so that the data won't update every time an input
@@ -2316,8 +2633,9 @@ shinyServer(function(input, output, session) {
     } else {
       filein <- input$mainInput
       
-      inputType <- checkInputVadility(filein)
-      if(inputType == "xml"){
+      input_type <- check_input_vadility(filein)
+      # XML -------------------------------------------------------------------
+      if(input_type == "xml"){
         mdData <- xmlParser(filein$datapath)
         if(ncol(mdData) < 4){
           colnames(mdData) <- c("geneID","ncbiID","orthoID")
@@ -2326,7 +2644,10 @@ shinyServer(function(input, output, session) {
         } else {
           colnames(mdData) <- c("geneID","ncbiID","orthoID","var1","var2")
         }
-      } else if(inputType == "fasta"){
+        
+        
+      # FASTA -----------------------------------------------------------------
+      } else if(input_type == "fasta"){
         mdData <- fastaParser(filein$datapath)
         if(ncol(mdData) < 4){
           colnames(mdData) <- c("geneID","ncbiID","orthoID")
@@ -2335,8 +2656,14 @@ shinyServer(function(input, output, session) {
         } else {
           colnames(mdData) <- c("geneID","ncbiID","orthoID","var1","var2")
         }
-      }else if(inputType == "long"){
-        mdData <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+        
+      # LONG ------------------------------------------------------------------
+      }else if(input_type == "long"){
+        mdData <- as.data.frame(read.table(file = filein$datapath,
+                                           sep = '\t',
+                                           header = T,
+                                           check.names = FALSE,
+                                           comment.char = ""))
         if(ncol(mdData) < 4){
           colnames(mdData) <- c("geneID","ncbiID","orthoID")
         } else if(ncol(mdData) < 5){
@@ -2344,8 +2671,14 @@ shinyServer(function(input, output, session) {
         } else {
           colnames(mdData) <- c("geneID","ncbiID","orthoID","var1","var2")
         }
-      } else if(inputType == "wide"){
-        data <- as.data.frame(read.table(file=filein$datapath, sep='\t',header=T,check.names=FALSE,comment.char=""))
+        
+      # WIDE ------------------------------------------------------------------
+      } else if(input_type == "wide"){
+        data <- as.data.frame(read.table(file = filein$datapath,
+                                         sep = '\t',
+                                         header = T,
+                                         check.names = FALSE,
+                                         comment.char = ""))
         # convert into paired columns
         mdData <- melt(data,id="geneID")
         
@@ -2356,6 +2689,12 @@ shinyServer(function(input, output, session) {
         # rename columns
         colnames(mdData) <- c("geneID","ncbiID","value","orthoID","var1","var2")
         mdData <- mdData[,c("geneID","ncbiID","orthoID","var1","var2")]
+        
+        
+        
+      # # OMA -------------------------------------------------------------------
+      # } else if (input_type == "oma"){
+      #   #  what exactly needs to happen here
       }
     }
     
@@ -2414,7 +2753,8 @@ shinyServer(function(input, output, session) {
       theme_minimal()
     p <- p + theme(legend.position = "none",
                    #                   plot.title = element_text(hjust = 0.5),
-                   axis.title = element_text(size=input$dist_text_size),axis.text = element_text(size=input$dist_text_size)) +
+                   axis.title = element_text(size=input$dist_text_size),
+                   axis.text = element_text(size=input$dist_text_size)) +
       labs(x = paste0("% present taxa (mean = ",round(mean(dt$presSpec),3),")"), y = "Frequency")
     p
   }
@@ -2422,7 +2762,7 @@ shinyServer(function(input, output, session) {
   output$presSpecPlot <- renderPlot(width = 512, height = 356,{
     if(input$auto_update == FALSE){
       # Add dependency on the update button (only update when button is clicked)
-      input$updateBtn
+      input$update_btn
       
       # Add all the filters to the data based on the user inputs
       # wrap in an isolate() so that the data won't update every time an input
@@ -2753,7 +3093,12 @@ shinyServer(function(input, output, session) {
       
       if(is.na(as.numeric(Percent))){return()}
       else{
-        info <- c(geneID,as.character(orthoID),as.character(spec),round(as.numeric(var1),2),round(as.numeric(Percent),2),round(as.numeric(var2),2))
+        info <- c(geneID,
+                  as.character(orthoID),
+                  as.character(spec),
+                  round(as.numeric(var1), 2),
+                  round(as.numeric(Percent), 2),
+                  round(as.numeric(var2), 2))
       }
     }
   })
@@ -2935,7 +3280,14 @@ shinyServer(function(input, output, session) {
     filename = function() {c("detailedPlot.pdf")},
     content = function(file) {
       g <- detail_plot()
-      ggsave(file, plot = g, width = 800*0.056458333, height = input$detailed_height*0.056458333, units="cm", dpi=300, device = "pdf", limitsize=FALSE)
+      ggsave(file,
+             plot = g,
+             width = 800*0.056458333,
+             height = input$detailed_height * 0.056458333,
+             units = "cm",
+             dpi = 300,
+             device = "pdf",
+             limitsize = FALSE)
     }
   )
   
@@ -3002,8 +3354,8 @@ shinyServer(function(input, output, session) {
     
     ### check main input
     filein <- input$mainInput
-    if(!is.null(filein)){inputType <- checkInputVadility(filein)}
-    else{ inputType <- "NA"}
+    if(!is.null(filein)){input_type <- check_input_vadility(filein)}
+    else{ input_type <- "NA"}
     
     ### get seqs for AMPK-TOR and microsporidia ONLINE demo data
     if(input$demo_data == "ampk-tor" | input$demo_data == "demo"){
@@ -3032,24 +3384,32 @@ shinyServer(function(input, output, session) {
       }
     }
     
-    ### get seqs for fasta main input
-    if(inputType == "fasta"){
+    # get seqs for fasta main input -------------------------------------------
+    if(input_type == "fasta"){
       file <- filein$datapath
       fastaFile = readAAStringSet(file)
       
       seq_name = names(fastaFile)
       sequence = paste(fastaFile)
-      fa <- data.frame(seq_name, sequence)  # data frame contains all sequences from input file
+      # data frame contains all sequences from input file
+      fa <- data.frame(seq_name, sequence)  
       
       for(j in 1:nrow(dataOut)){
-        seqID <- paste0(as.character(dataOut$geneID[j]),"|ncbi",as.character(dataOut$ncbiID[j]),"|",as.character(dataOut$orthoID[j]))
+        seqID <- paste0(as.character(dataOut$geneID[j]),
+                        "|ncbi",
+                        as.character(dataOut$ncbiID[j]),
+                        "|",
+                        as.character(dataOut$orthoID[j]))
         
         seq <- fa$sequence[pmatch(seqID,fa$seq_name)]
         
         if(length(seq[1]) < 1){
-          fastaOut <- paste0(seqID," not found in ",file,"! Please check again!")
+          fastaOut <- paste0(seqID,
+                             " not found in ",
+                             file,
+                             "! Please check again!")
         } else{
-          fastaOut <- paste(paste0(">",seqID),seq[1],sep="\n")
+          fastaOut <- paste(paste0(">", seqID), seq[1], sep = "\n")
         }
         
         fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
@@ -3098,7 +3458,7 @@ shinyServer(function(input, output, session) {
           fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
         }
       } else {
-        if(inputType != "fasta"){
+        if(input_type != "fasta"){
           fastaOut <- paste0("Please provide FASTA file(s) in Input & settings page!")
           fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
         }
@@ -3106,7 +3466,7 @@ shinyServer(function(input, output, session) {
     }
     
     ### get seqs for other cases (input offline fasta files in a folder)
-    if(input$demo_data == "none" & input$input_type == "Fasta folder" & inputType != "fasta"){
+    if(input$demo_data == "none" & input$input_type == "Fasta folder" & input_type != "fasta"){
       if(input$path != ""){
         # path, file format and fasta header format
         path = input$path
@@ -3163,13 +3523,17 @@ shinyServer(function(input, output, session) {
             fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
           }
         } else {
-          fastaOut <- paste0("No fasta file has been found in ",path,"!!! Please check the full path to FASTA folder and the id_format (header format) in FASTA config again!!!")
-          fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
+          fastaOut <- paste0("No fasta file has been found in ",
+                             path,
+                             "!!! Please check the full path to FASTA folder and the id_format (header format) in FASTA config again!!!")
+          fastaOutDf <- rbind(fastaOutDf,
+                              as.data.frame(fastaOut))
         }
         
       } else {
         fastaOut <- paste0("Please provide FASTA files in Input & settings page!")
-        fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
+        fastaOutDf <- rbind(fastaOutDf,
+                            as.data.frame(fastaOut))
       }
     }
     
@@ -3228,7 +3592,7 @@ shinyServer(function(input, output, session) {
       }
     } else {
       if(input$anno_choose == "from file"){
-        fileDomain <- input$fileDomainInput
+        fileDomain <- input$fileDomain_input
         if(is.null(fileDomain)){
           fileDomain <- "noFileInput"
         } else {
@@ -3309,36 +3673,53 @@ shinyServer(function(input, output, session) {
     fileDomain <- getDomainFile()
     # if(input$demo == TRUE){
     if(input$demo_data == "demo" | input$demo_data == "ampk-tor"){
-      domainDf <- as.data.frame(read.csv(fileDomain, sep="\t", header=F, comment.char = "", stringsAsFactors = FALSE, quote = ""))
+      domain_df <- as.data.frame(read.csv(fileDomain, sep="\t", header=F, comment.char = "", stringsAsFactors = FALSE, quote = ""))
       
-      if(ncol(domainDf) == 5){
-        colnames(domainDf) <- c("seedID","orthoID","feature","start","end")
-      } else if(ncol(domainDf) == 6){
-        colnames(domainDf) <- c("seedID","orthoID","feature","start","end","weight")
-      } else if(ncol(domainDf) == 7){
-        colnames(domainDf) <- c("seedID","orthoID","feature","start","end","weight","path")
+      if(ncol(domain_df) == 5){
+        colnames(domain_df) <- c("seedID",
+                                "orthoID",
+                                "feature",
+                                "start",
+                                "end")
+        
+      } else if(ncol(domain_df) == 6){
+        colnames(domain_df) <- c("seedID",
+                                "orthoID",
+                                "feature",
+                                "start",
+                                "end",
+                                "weight")
+        
+      } else if(ncol(domain_df) == 7){
+        colnames(domain_df) <- c("seedID",
+                                "orthoID",
+                                "feature",
+                                "start",
+                                "end",
+                                "weight",
+                                "path")
       }
-      
-      domainDf$length <- max(domainDf$end)
+      print(head(domain_df))
+      domain_df$length <- max(domain_df$end)
       
     } else {
       if(fileDomain != FALSE){
-        domainDf <- as.data.frame(read.table(fileDomain,
+        domain_df <- as.data.frame(read.table(fileDomain,
                                              sep='\t',
                                              header = FALSE,
                                              comment.char=""))
       }
       
-      if(ncol(domainDf) == 6){
-        colnames(domainDf) <- c("seedID",
+      if(ncol(domain_df) == 6){
+        colnames(domain_df) <- c("seedID",
                                 "orthoID",
                                 "length",
                                 "feature",
                                 "start",
                                 "end")
         
-      } else if(ncol(domainDf) == 7){
-        colnames(domainDf) <- c("seedID",
+      } else if(ncol(domain_df) == 7){
+        colnames(domain_df) <- c("seedID",
                                 "orthoID",
                                 "length",
                                 "feature",
@@ -3346,8 +3727,8 @@ shinyServer(function(input, output, session) {
                                 "end",
                                 "weight")
         
-      } else if(ncol(domainDf) == 8){
-        colnames(domainDf) <- c("seedID",
+      } else if(ncol(domain_df) == 8){
+        colnames(domain_df) <- c("seedID",
                                 "orthoID",
                                 "length",
                                 "feature",
@@ -3358,25 +3739,25 @@ shinyServer(function(input, output, session) {
       }
     }
     
-    domainDf$seedID <- gsub("\\|", ":", domainDf$seedID)
-    domainDf$orthoID <- gsub("\\|", ":", domainDf$orthoID)
+    domain_df$seedID <- gsub("\\|", ":", domain_df$seedID)
+    domain_df$orthoID <- gsub("\\|", ":", domain_df$orthoID)
     
     # get sub dataframe based on selected groupID and orthoID
     ortho <- gsub("\\|", ":", ortho)
     grepID = paste(group, "#", ortho, sep = "")
-    subDomainDf <- domainDf[grep(grepID, domainDf$seedID), ]
-    subDomainDf$feature <- as.character(subDomainDf$feature)
+    subdomain_df <- domain_df[grep(grepID, domain_df$seedID), ]
+    subdomain_df$feature <- as.character(subdomain_df$feature)
     
-    if(nrow(subDomainDf) < 1){
+    if(nrow(subdomain_df) < 1){
       v3$doPlot3 = FALSE
       return()
     } else {
       
       # ortho domains df
-      orthoDf <- filter(subDomainDf, orthoID == ortho)
+      orthoDf <- filter(subdomain_df, orthoID == ortho)
       
       # seed domains df
-      seedDf <- filter(subDomainDf, orthoID != ortho)
+      seedDf <- filter(subdomain_df, orthoID != ortho)
       
       if(nrow(seedDf) == 0){seedDf <- orthoDf}
       
@@ -3405,21 +3786,21 @@ shinyServer(function(input, output, session) {
       sep = ":"
       if(!is.null(input$oneSeqFasta)) sep <- "|"
       
-      if("length" %in% colnames(subDomainDf)){
+      if("length" %in% colnames(subdomain_df)){
         plot_ortho <- domain.plotting(orderedOrthoDf,
                                       ortho,
                                       sep,
                                       input$label_archi_size,
                                       input$title_archi_size,
-                                      min(subDomainDf$start),
-                                      max(c(subDomainDf$end, subDomainDf$length)))
+                                      min(subdomain_df$start),
+                                      max(c(subdomain_df$end, subdomain_df$length)))
         plot_seed <- domain.plotting(orderedSeedDf,
                                      seed,
                                      sep,
                                      input$label_archi_size,
                                      input$title_archi_size,
-                                     min(subDomainDf$start),
-                                     max(c(subDomainDf$end, subDomainDf$length)))
+                                     min(subdomain_df$start),
+                                     max(c(subdomain_df$end, subdomain_df$length)))
         
       } else{
         plot_ortho <- domain.plotting(orderedOrthoDf,
@@ -3427,15 +3808,15 @@ shinyServer(function(input, output, session) {
                                       sep,
                                       input$label_archi_size,
                                       input$title_archi_size,
-                                      min(subDomainDf$start),
-                                      max(subDomainDf$end))
+                                      min(subdomain_df$start),
+                                      max(subdomain_df$end))
         plot_seed <- domain.plotting(orderedSeedDf,
                                      seed,
                                      sep,
                                      input$label_archi_size,
                                      input$title_archi_size,
-                                     min(subDomainDf$start),
-                                     max(subDomainDf$end))
+                                     min(subdomain_df$start),
+                                     max(subdomain_df$end))
       }
       
       # grid.arrange(plot_seed,plot_ortho,ncol=1)
@@ -3598,7 +3979,7 @@ shinyServer(function(input, output, session) {
   output$gene_agePlot <- renderPlot({
     if(input$auto_update == FALSE){
       # Add dependency on the update button (only update when button is clicked)
-      input$updateBtn
+      input$update_btn
       
       # Add all the filters to the data based on the user inputs
       # wrap in an isolate() so that the data won't update every time an input
@@ -3615,10 +3996,10 @@ shinyServer(function(input, output, session) {
     if(v$doPlot == FALSE){
       return()
     } else{
-      ## if auto_update is NOT selected, use updateBtn to trigger plot changing
+      ## if auto_update is NOT selected, use update_btn to trigger plot changing
       if(input$auto_update == FALSE){
         # Add dependency on the update button (only update when button is clicked)
-        input$updateBtn
+        input$update_btn
         
         # Add all the filters to the data based on the user inputs
         # wrap in an isolate() so that the data won't update every time an input
@@ -4214,7 +4595,7 @@ shinyServer(function(input, output, session) {
   
   # Select in_group ===========================================================
   output$taxa_list_gc <- renderUI({
-    filein <- input$main_input
+    filein <- input$mainInput
     if (input$demo_data == "demo" | input$demo_data == "ampk-tor"){
       filein <- 1
     }
@@ -4380,13 +4761,14 @@ shinyServer(function(input, output, session) {
   
   # Select Gene ===============================================================
   output$list_genes_gc <- renderUI({
-    filein <- input$main_input
+    filein <- input$mainInput
+
     file_gc <- input$gc_file
-    
+
     if (input$demo_data == "demo" | input$demo_data == "ampk-tor"){
       filein <- 1
     }
-    
+
     if (is.null(filein) & is.null(file_gc)){
       return(selectInput("list_selected_genes_gc", "Select sequence:", "none"))
     }else{
@@ -4542,7 +4924,8 @@ shinyServer(function(input, output, session) {
                     selected = NULL,
                     multiple = TRUE,
                     selectize = FALSE)
-      }})
+      }
+      })
   })
   
   
@@ -4891,10 +5274,17 @@ shinyServer(function(input, output, session) {
     # Updateing of the Input ==================================================
     # if there is more than one element in the in_group
     # we look at the next common anchstor
-    ancestor <- get_common_ancestor(in_group, rank, name_list, dt)
-    if (is.null(ancestor))return()
-    in_group <- ancestor[1]
-    rank <- ancestor[2]
+    
+    if(input$use_common_anchestor == TRUE){
+      ancestor <- get_common_ancestor(in_group, rank, name_list, dt)
+      if (is.null(ancestor))return()
+      in_group <- ancestor[1]
+      rank <- ancestor[2]
+    } else{
+      rank <- substring(rank, 4)
+      print(rank)
+    }
+    
     
     # List with all significant genes
     significantGenes <- data.frame(
@@ -4989,7 +5379,8 @@ shinyServer(function(input, output, session) {
     
     x <- subset(name_list, name_list$fullName %in% in_group)
     # Look if it has the right rank
-    
+    print(rank)
+
     x1 <- dt[dt[, rank] %in% x$ncbiID, ]
     x1
   }
@@ -5072,7 +5463,7 @@ shinyServer(function(input, output, session) {
       # check if the gene has a significant difference
       # in the distribioution of In- and Out-Group
       # in at least one of the variables
-      
+      print(pvalues1)
       # If there is not enough data to calculate a p-value
       # consider the gene as not intereisting
       if (is.null(pvalues1)){
@@ -5110,7 +5501,9 @@ shinyServer(function(input, output, session) {
       
       # Analog to getting the significance with both variables
       if (is.null(pvalues)) return(NULL)
-      else if (pvalues[length(pvalues)] < significance_level){
+      else if (is.nan(pvalues[length(pvalues)])){
+       return(NULL) 
+      }else if (pvalues[length(pvalues)] < significance_level){
         pvalues <-  list(pvalues)
         return(pvalues)
       } else{
@@ -5169,30 +5562,60 @@ shinyServer(function(input, output, session) {
     # parse domain file
     file_domain <- get_domain_file_gc(selected_gene)
     
-    if (input$demo_data == "demo" | input$demo_data == "ampk-tor"){
+    if(input$demo_data == "demo" | input$demo_data == "ampk-tor"){
       domain_df <- as.data.frame(read.csv(file_domain,
-                                          sep = "\t",
-                                          header = F,
-                                          comment.char = "",
-                                          stringsAsFactors = FALSE,
-                                          quote = ""))
-    } else {
-      if (file_domain != FALSE){
-        domain_df <- as.data.frame(read.table(file_domain,
-                                              sep = "\t",
-                                              header = FALSE,
-                                              comment.char = ""))
+                                         sep = "\t",
+                                         header = F,
+                                         comment.char = "",
+                                         stringsAsFactors = FALSE,
+                                         quote = ""))
+      
+      if(ncol(domain_df) == 5){
+        colnames(domain_df) <- c("seedID", "orthoID", "feature", "start", "end")
+      } else if(ncol(domain_df) == 6){
+        colnames(domain_df) <- c("seedID", "orthoID", "feature", "start", "end", "weight")
+      } else if(ncol(domain_df) == 7){
+        colnames(domain_df) <- c("seedID", "orthoID", "feature", "start", "end", "weight", "path")
       }
-    }
-    
-    if(ncol(domain_df) == 5){
-      colnames(domain_df) <- c("seedID","orthoID","feature","start","end")
-    } 
-    else if(ncol(domain_df) == 6){
-      colnames(domainDf) <- c("seedID","orthoID","feature","start","end","weight")
-    } 
-    else if(ncol(domain_df) == 7){
-      colnames(domain_df) <- c("seedID","orthoID","feature","start","end","weight","path")
+      
+      domain_df$length <- max(domain_df$end)
+      
+    } else {
+      if(file_domain != FALSE){
+        print(file_domain)
+        domain_df <- as.data.frame(read.table(file_domain,
+                                             sep = "\t",
+                                             header = FALSE,
+                                             comment.char=""))
+      }
+      print(head(domain_df))
+      if(ncol(domain_df) == 6){
+        colnames(domain_df) <- c("seedID",
+                                "orthoID",
+                                "length",
+                                "feature",
+                                "start",
+                                "end")
+        
+      } else if(ncol(domain_df) == 7){
+        colnames(domain_df) <- c("seedID",
+                                "orthoID",
+                                "length",
+                                "feature",
+                                "start",
+                                "end",
+                                "weight")
+        
+      } else if(ncol(domain_df) == 8){
+        colnames(domain_df) <- c("seedID",
+                                "orthoID",
+                                "length",
+                                "feature",
+                                "start",
+                                "end",
+                                "weight",
+                                "path")
+      }
     }
     
     subdomain_df <- {
@@ -5222,7 +5645,8 @@ shinyServer(function(input, output, session) {
       
     }else {
       if (input$anno_choose == "from file"){
-        file_domain <- input$file_domain_input
+        file_domain <- input$fileDomain_input
+        print(file_domain)
         if (is.null(file_domain)){
           file_domain <- "noFileInput"
         } else {
@@ -5356,6 +5780,7 @@ shinyServer(function(input, output, session) {
   # Essential functions =======================================================
   # ===========================================================================
   
+  # get list with all taxanomy ranks ==========================================
   get_taxonomy_ranks <- function(){
     all_ranks <- list("Strain " = "05_strain",
                       "Species" = "06_species",
@@ -5370,6 +5795,7 @@ shinyServer(function(input, output, session) {
     return(all_ranks)
   }
   
+  # Get name list ("data/taxonNamesReduced.txt") ==============================
   get_name_list <- function (as_character, delete_duplicated){
     name_list <- as.data.frame(read.table("data/taxonNamesReduced.txt",
                                           sep = "\t",
@@ -5386,6 +5812,7 @@ shinyServer(function(input, output, session) {
     return(name_list)
   }
   
+  # Get taxa list ("data/taxonomyMatrix.txt") =================================
   get_taxa_list <- function(subset_taxa_check){
     dt <- as.data.frame(read.table("data/taxonomyMatrix.txt",
                                    sep = "\t",
@@ -5396,5 +5823,75 @@ shinyServer(function(input, output, session) {
     }
     return(dt)
   }
+  
+  # check validity of main input file =========================================
+  check_input_vadility <- function(filein){
+    inputDt <- as.data.frame(read.table(file = filein$datapath,
+                                        sep = "\t",
+                                        header = F,
+                                        check.names = FALSE,
+                                        comment.char = "",
+                                        fill = T))
+    # print(head(inputDt))
+    if(is.na(inputDt[1, ncol(inputDt)])){
+      return("moreCol")
+    } else {
+      names(inputDt) <- as.character(unlist(inputDt[1, ]))
+      
+      # XML -------------------------------------------------------------------
+      # a XML file always starts with <?xml
+      if(grepl("<?xml", colnames(inputDt)[1])){
+        return("xml")
+        
+        # FASTA -----------------------------------------------------------------
+        # a faste file always starts with > (start symbol of the header) 
+      } else if(grepl(">", colnames(inputDt)[1]) == TRUE){
+        return("fasta")
+        
+      } else {
+        # long and wide files always start with geneID
+        if(grepl("geneID", colnames(inputDt)[1])){
+          # LONG --------------------------------------------------------------
+          if(is.na(pmatch("ncbi", colnames(inputDt)[3])) ||
+             is.na(pmatch("ncbi", colnames(inputDt)[4])) ||
+             is.na(pmatch("ncbi", colnames(inputDt)[5]))){
+            return("long")
+            
+            # WIDE --------------------------------------------------------------  
+          } else {
+            tmp <- inputDt[inputDt == ""][1]
+            if( !is.na(tmp) & tmp == ""){
+              return("emptyCell")
+            } else {
+              return("wide")
+            }
+          }
+        } else {
+          # # OMA ---------------------------------------------------------------
+          # # A list of OMA protein ID's do not start with a gene ID 
+          # # The list has only one column (is that enough to identify it?)
+          # if (ncol(inputDt) == 1) {
+          #   return ("oma")
+          #   
+          # # When it has no gene ID and is not a list of oma protein IDs -------
+          # } else { 
+          #   return("noGeneID")
+          #   }
+          return("noGeneID")
+
+        }
+      }
+    }
+  }
+  
+  # variable to check the input type in the UI 
+  output$input_type <- reactive({
+    filein <- input$mainInput
+    if(is.null(filein)){return()}
+    
+    input_type <- check_input_vadility(filein)
+    
+    return(input_type) 
+  })
   
   })
