@@ -2,7 +2,9 @@
 # FUNCTIONS ===================================================================
 # =============================================================================
 
-# parse orthoXML file =========================================================
+#  OUTPUT AND INPUT ===========================================================
+
+# parse orthoXML file ---------------------------------------------------------
 xmlParser <- function(inputFile){
   cmd <- paste("python ",
                getwd(),
@@ -21,7 +23,7 @@ xmlParser <- function(inputFile){
   dfIN
 }
 
-# parse fasta input file ======================================================
+# parse fasta input file ------------------------------------------------------
 fastaParser <- function(inputFile){
   
   cmd <- paste("python ",
@@ -48,7 +50,7 @@ fastaParser <- function(inputFile){
   dfIN
 }
 
-# # parse OMA input file ========================================================
+# # parse OMA input file ------------------------------------------------------
 # oma_parser <- function(input_file, selected_type ){
 #   print("oma parser")
 #   
@@ -71,374 +73,283 @@ fastaParser <- function(inputFile){
 #   dfIN
 # }
 
-# # convert long to wide format -----------------------------------------------
-# long2wide <- function(longDf){
-#   # rename column names
-#   colnames(longDf) <- c("geneID","ncbiID","orthoID","var1","var2")
-#   longDf$value <- paste0(longDf$orthoID,"#",longDf$var1,"#",longDf$var2)
-#   longDfmod <- longDf[,c("geneID","ncbiID","value")]
-#
-#   # count paralogs
-#   longDfmod <- data.table(longDfmod)
-#   longDfmod[ ,paralog := 1:.N, by=c("geneID","ncbiID")]
-#   longDfmod <- data.frame(longDfmod)
-#
-#   # return wide data frame
-#   wideDf <- spread(longDfmod, ncbiID, value)
-#   wideDf <- subset(wideDf,paralog == 1)   # remove co-orthologs
-#   wideDf <- subset(wideDf, select=-paralog)
-# }
-
-# FUNCTION FOR CLUSTERING PROFILES ============================================
-clusteredGeneList <- function(data,distMethod,clusterMethod){
+# Fasta output ----------------------------------------------------------------
+# input$mainInput, input$demo_data
+fastaOutData <- function(dataOut, filein, demo_data,
+                         input_type_fasta,
+                         oneSeqFasta,
+                         path,
+                         dir_format,
+                         file_ext,
+                         id_format){
+  # dataOut <- as.data.frame(download_custom_data())
+  fastaOutDf <- data.frame()
   
-  # do clustering
-  row.order <- hclust(dist(data, method = distMethod),
-                      method = clusterMethod)$order
-  col.order <- hclust(dist(t(data), method = distMethod),
-                      method = clusterMethod)$order
-  
-  # re-order data accoring to clustering
-  dat_new <- data[row.order, col.order]
-  
-  # return clustered gene ID list
-  clusteredGeneIDs <- as.factor(row.names(dat_new))
-  clusteredGeneIDs
-}
-
-# calculate percentage of present species =====================================
-calcPresSpec <- function(taxaMdData, taxaCount){
-  ### taxaMdData = df("geneID","ncbiID","orthoID","var1","var2","paralog",....,"supertaxon")
-  taxaMdData <- taxaMdData[taxaMdData$orthoID != "NA",]
-  
-  # get geneID and supertaxon
-  geneIDsupertaxon <- subset(taxaMdData, 
-                             select = c('geneID',
-                                        'supertaxon',
-                                        'paralog',
-                                        'abbrName'))
-  # remove duplicated rows
-  geneIDsupertaxon <- geneIDsupertaxon[!duplicated(geneIDsupertaxon), ] 
-  
-  # remove NA rows from taxaMdData
-  taxaMdDataNoNA <- taxaMdData[taxaMdData$orthoID != "NA", ]
-  
-  # count present frequency of supertaxon for each gene
-  geneSupertaxonCount <- plyr::count(taxaMdDataNoNA, c('geneID', 'supertaxon'))
-  
-  # merge with taxaCount to get total number of species of each supertaxon
-  # and calculate presSpec
-  presSpecDt <- merge(geneSupertaxonCount,
-                      taxaCount,
-                      by = 'supertaxon',
-                      all.x = TRUE)
-  
-  specCount <- plyr::count(geneIDsupertaxon,c('geneID',
-                                              'supertaxon'))
-  presSpecDt <- merge(presSpecDt,
-                      specCount,by = c('geneID',
-                                                'supertaxon'))
-  
-  presSpecDt$presSpec <- presSpecDt$freq / presSpecDt$freq.y
-  
-  presSpecDt <- presSpecDt[presSpecDt$presSpec <= 1, ]
-  presSpecDt <- presSpecDt[order(presSpecDt$geneID), ]
-  presSpecDt <- presSpecDt[, c("geneID", "supertaxon", "presSpec")]
-  
-  # add absent supertaxon into presSpecDt
-  geneIDsupertaxon <- subset(geneIDsupertaxon,
-                             select = -c(paralog,abbrName))
-  finalPresSpecDt <- merge(presSpecDt,
-                           geneIDsupertaxon,
-                           by = c('geneID', 'supertaxon'),
-                           all.y = TRUE)
-  finalPresSpecDt$presSpec[is.na(finalPresSpecDt$presSpec)] <- 0
-
-  # remove duplicated rows
-  finalPresSpecDt <- finalPresSpecDt[!duplicated(finalPresSpecDt), ]
-  
-  # return finalPresSpecDt
-  return(finalPresSpecDt)
-}
-
-#sort one domain dataframe (ortho) based on the other domain Df (seed) ========
-sortDomains <- function(seedDf, orthoDf){
-  # get list of features in seedDf
-  featureList <- as.data.frame(levels(as.factor(seedDf$feature)))
-  colnames(featureList) <- c("feature")
-  # and add order number to each feature
-  featureList$orderNo <- seq(length(featureList$feature))
-  
-  # merge those info to orthoDf
-  orderedOrthoDf <- merge(orthoDf,featureList, all.x=TRUE)
-  
-  # sort orthoDf
-  index <- with(orderedOrthoDf, order(orderNo))
-  orderedOrthoDf <- orderedOrthoDf[index,]
-  
-  #turn feature column into a character vector
-  orderedOrthoDf$feature <- as.character(orderedOrthoDf$feature)
-  #then turn it back into an ordered factor (to keep this order while plotting)
-  orderedOrthoDf$feature <- factor(orderedOrthoDf$feature,
-                                   levels = unique(orderedOrthoDf$feature))
-  
-  #return sorted df
-  orderedOrthoDf
-}
-
-# plot domain architecture ====================================================
-domain.plotting <- function(df,
-                            geneID,
-                            sep,
-                            labelSize,
-                            titleSize,
-                            minStart,
-                            maxEnd){
-  gg <- ggplot(df, aes(y = feature, x = end, color = feature)) +
-    geom_segment(data = df,
-                 aes(y = feature, yend = feature,
-                     x = minStart, xend = maxEnd),
-                 color = "white",
-                 size = 0)
-  
-  # draw lines for representing sequence length
-  gg <- gg + geom_segment(data=df,
-                          aes(x = 0, xend = length,
-                              y = feature, yend = feature),
-                          size = 1,
-                          color = "#b2b2b2")
-  
-  # draw line and points
-  gg <- gg + geom_segment(data=df,
-                          aes(x = start, xend = end,
-                              y = feature, yend = feature),
-                          size = 1.5)
-  gg <- gg + geom_point(data = df,
-                        aes(y = feature, x=start),
-                        color = "#b2b2b2",
-                        size = 3,
-                        shape = 3)
-  gg <- gg + geom_point(data = df,
-                        aes(y = feature, x = end),
-                        color = "#edae52",
-                        size = 3,
-                        shape = 5)
-  
-  # draw dashed line for domain path
-  gg <- gg + geom_segment(data = df[df$path == "Y", ], 
-                          aes(x = start, xend = end,
-                              y = feature, yend = feature),
-                          size = 3,
-                          linetype = "dashed")
-  
-  # # add text above
-  # gg <- gg + geom_text(data=df,
-  #                      aes(x=(start+end)/2, y=feature, label=round(weight,2)),
-  #                      color="#9fb059", size=descSize, vjust=-0.75, fontface="bold", family="serif")
-  
-  # theme format
-  titleMod <- gsub(":",sep,geneID)
-  gg <- gg + scale_y_discrete(expand=c(0.075,0))
-  gg <- gg + labs(title=paste0(titleMod), y="Feature")
-  gg <- gg + theme_minimal()
-  gg <- gg + theme(panel.border=element_blank())
-  gg <- gg + theme(axis.ticks=element_blank())
-  gg <- gg + theme(plot.title=element_text(face="bold",size=titleSize))
-  gg <- gg + theme(plot.title=element_text(hjust = 0.5))
-  gg <- gg + theme(legend.position="none",axis.title.x=element_blank(),
-                   axis.text.y = element_text(size=labelSize),
-                   axis.title.y = element_text(size=labelSize),
-                   panel.grid.minor.x = element_blank(),
-                   panel.grid.major.x = element_blank())
-  
-  # return plot
-  return(gg)
-}
-
-# plot profile heatmap ========================================================
-heatmap.plotting <- function(data,
-                             xAxis,
-                             var1_id,
-                             var2_id,
-                             lowColor_var1,
-                             highColor_var1,
-                             lowColor_var2,
-                             highColor_var2,
-                             paraColor,
-                             xSize,
-                             ySize,
-                             legendSize,
-                             mainLegend,
-                             dotZoom,
-                             xAngle,
-                             guideline){
-  dataHeat <- data
-  
-  # rescale numbers of paralogs
-  dataHeat$paralog <- as.numeric(dataHeat$paralog)
-  if(length(unique(na.omit(dataHeat$paralog))) > 0){
-    maxParalog <- max(na.omit(dataHeat$paralog))
-    dataHeat$paralogSize <- (dataHeat$paralog / maxParalog)*3
-  }
-  
-  # remove prefix number of taxa names but keep the order
-  dataHeat$supertaxon <- {
-    mapvalues(warn_missing = F,
-              dataHeat$supertaxon,
-              from = as.character(dataHeat$supertaxon),  
-              to = substr(as.character(dataHeat$supertaxon),
-              6,
-              nchar(as.character(dataHeat$supertaxon))))
-  }
-  
-  # format plot
-  if(xAxis == "genes"){
-    p = ggplot(dataHeat, aes(x = geneID, y = supertaxon)) # global aes
+  ### check main input
+  # filein <- input$mainInput
+  if(!is.null(filein)){
+    input_type <- check_input_vadility(filein)
   } else{
-    p = ggplot(dataHeat, aes(y = geneID, x = supertaxon)) # global aes
+    input_type <- "NA"
   }
   
-  if(length(unique(na.omit(dataHeat$var2))) != 1){
-    p = p + scale_fill_gradient(low = lowColor_var2,
-                                high = highColor_var2,
-                                na.value = "gray95",
-                                limits = c(0,1)) +  # fill color (var2)
-      geom_tile(aes(fill = var2))    # filled rect (var2 score)
-  }
-  
-  if(length(unique(na.omit(dataHeat$presSpec))) < 3){
-    if(length(unique(na.omit(dataHeat$var1))) == 1){
-      # geom_point for circle illusion (var1 and presence/absence)
-      p = p + geom_point(aes(colour = var1),
-                         size = dataHeat$presSpec * 5 * (1 + dotZoom),
-                         na.rm = TRUE,show.legend=F)  
-    } else {
-      # geom_point for circle illusion (var1 and presence/absence)
-      p = p + geom_point(aes(colour = var1),
-                         size = dataHeat$presSpec * 5 * (1 + dotZoom),
-                         na.rm = TRUE) 
-      # color of the corresponding aes (var1)
-      p = p + scale_color_gradient(low = lowColor_var1,
-                                   high = highColor_var1,
-                                   limits=c(0,1)) 
+  ### get seqs for AMPK-TOR and microsporidia ONLINE demo data
+  if(demo_data == "ampk-tor" | demo_data == "demo"){
+    fastaUrl <- paste0("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/fasta_file/concatenatedSeq.fa")
+    if(demo_data == "ampk-tor"){
+      fastaUrl <- paste0("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.extended.fa")
     }
-  } else {
-    if(length(unique(na.omit(dataHeat$var1))) == 1){
-      # geom_point for circle illusion (var1 and presence/absence)
-      p = p + geom_point(aes(size = presSpec),
-                         color = "#336a98",
-                         na.rm = TRUE)    
-    } else {
-      # geom_point for circle illusion (var1 and presence/absence)
-      p = p + geom_point(aes(colour = var1, size = presSpec),
-                         na.rm = TRUE)
-      # color of the corresponding aes (var1)
-      p = p + scale_color_gradient(low = lowColor_var1, high = highColor_var1,
-                                   limits=c(0,1))
-    }
-  }
-  
-  # plot inparalogs (if available)
-  if(length(unique(na.omit(dataHeat$paralog))) > 0){
-    p <- p + geom_point(data = dataHeat,
-                        aes(size = paralog),
-                        color = paraColor,
-                        na.rm = TRUE,
-                        show.legend = TRUE)
-    p <- p + guides(size = guide_legend(title = "# of co-orthologs"))
     
-    # to tune the size of circles;
-    # "floor(value*10)/10" is used to round "down" the value with one decimal number
-    p <- p + scale_size_continuous(range = c(min(na.omit(dataHeat$paralogSize)) * (1 + dotZoom),
-                                             max(na.omit(dataHeat$paralogSize)) * (1 + dotZoom)))
-  } else {
-    # remain the scale of point while filtering
-    presentVl <- dataHeat$presSpec[!is.na(dataHeat$presSpec)]
-    
-    # to tune the size of circles; 
-    # "floor(value*10)/10" is used to round "down" the value with one decimal number
-    p <- p + scale_size_continuous(range = c((floor(min(presentVl) * 10) / 10 * 5) * (1 + dotZoom),
-                                             (floor(max(presentVl) * 10) / 10 * 5) * (1 + dotZoom)))  
-  }
-  
-  p = p + guides(fill = guide_colourbar(title = var2_id),
-                 color = guide_colourbar(title = var1_id))
-  base_size <- 9
-  
-  # guideline for separating ref species
-  if(guideline == 1){
-    if(xAxis == "genes"){
-      p = p + labs(y="Taxon")
-      p = p + geom_hline(yintercept = 0.5, colour = "dodgerblue4")
-      p = p + geom_hline(yintercept = 1.5, colour = "dodgerblue4")
-    } else{
-      p = p + labs(x="Taxon")
-      p = p + geom_vline(xintercept = 0.5,colour = "dodgerblue4")
-      p = p + geom_vline(xintercept = 1.5, colour = "dodgerblue4")
+    if(url.exists(fastaUrl)){
+      # load fasta file
+      faFile <- as.data.frame(read.table(fastaUrl,
+                                         sep = "\t",
+                                         header = F,
+                                         fill = T,
+                                         stringsAsFactors = FALSE,
+                                         quote = ""))
+      faDf <- data.frame("seqID" = faFile$V1[grepl(">", faFile$V1)],
+                         "seq" = faFile$V1[!grepl(">", faFile$V1)],
+                         stringsAsFactors = FALSE)
+      
+      # get sequences
+      for(j in 1:nrow(dataOut)){
+        seqID <- as.character(dataOut$orthoID[j])
+        groupID <- as.character(dataOut$geneID[j])
+        
+        seq <- as.character(faDf$seq[faDf$seqID == paste0(">",seqID)])
+        fastaOut <- paste(paste0(">",groupID,"|",seqID),seq,sep="\n")
+        fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
+      }
+    } else {
+      fastaOut <- paste0(fastaUrl," not found!!!")
+      fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
     }
   }
   
-  # format theme
-  p = p + theme_minimal()
-  p = p + theme(axis.text.x = element_text(angle = xAngle,
-                                           hjust = 1,
-                                           size = xSize),
-                axis.text.y = element_text(size = ySize),
-                axis.title.x = element_text(size = xSize),
-                axis.title.y = element_text(size = ySize),
-                legend.title = element_text(size = legendSize), 
-                legend.text = element_text(size = legendSize),
-                legend.position = mainLegend)
+  # get seqs for fasta main input 
+  if(input_type == "fasta"){
+    file <- filein$datapath
+    fastaFile = readAAStringSet(file)
+    
+    seq_name = names(fastaFile)
+    sequence = paste(fastaFile)
+    # data frame contains all sequences from input file
+    fa <- data.frame(seq_name, sequence)  
+    
+    for(j in 1:nrow(dataOut)){
+      seqID <- paste0(as.character(dataOut$geneID[j]),
+                      "|ncbi",
+                      as.character(dataOut$ncbiID[j]),
+                      "|",
+                      as.character(dataOut$orthoID[j]))
+      
+      seq <- fa$sequence[pmatch(seqID,fa$seq_name)]
+      
+      if(length(seq[1]) < 1){
+        fastaOut <- paste0(seqID,
+                           " not found in ",
+                           file,
+                           "! Please check again!")
+      } else{
+        fastaOut <- paste(paste0(">", seqID), seq[1], sep = "\n")
+      }
+      
+      fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
+    }
+  }
   
-  # return plot
-  return(p)
+  ### get seqs for extended.fa
+  if(demo_data == "none" & input_type_fasta == "Concatenated fasta file"){
+    if(!is.null(oneSeqFasta)){
+      fasIn <- oneSeqFasta
+      file <- toString(fasIn$datapath)
+      
+      # read fasta file and save sequences into dataframe
+      fastaFile = readAAStringSet(file)
+      
+      seq_name = names(fastaFile)
+      sequence = paste(fastaFile)
+      fa <- data.frame(seq_name, sequence)  # data frame contains all sequences from input file
+      
+      # get selected sequences
+      for(j in 1:nrow(dataOut)){
+        seqID <- as.character(dataOut$orthoID[j])
+        groupID <- as.character(dataOut$geneID[j])
+        seq <- fa$sequence[pmatch(seqID,fa$seq_name)]
+        flag <- 1
+        if(is.na(seq)){
+          seqID <- paste0(as.character(dataOut$geneID[j]),"|ncbi",as.character(dataOut$ncbiID[j]),"|",as.character(dataOut$orthoID[j]))
+          seq <- fa$sequence[pmatch(seqID,fa$seq_name)]
+          flag <- 0
+        }
+        
+        if(length(seq[1]) < 1){
+          fastaOut <- paste0(seqID," not found in ",file,"! Please check the header format in FASTA file!")
+        } else{
+          if(!is.na(seq[1])){
+            if(flag == 1){
+              fastaOut <- paste(paste0(">",groupID,"|",seqID),seq[1],sep="\n")
+            } else {
+              fastaOut <- paste(paste0(">",seqID),seq[1],sep="\n")
+            }
+            
+          } else {
+            fastaOut <- paste0(seqID," not found in uploaded FASTA file!!! Please check again!!!")
+          }
+        }
+        fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
+      }
+    } else {
+      if(input_type != "fasta"){
+        fastaOut <- paste0("Please provide FASTA file(s) in Input & settings page!")
+        fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
+      }
+    }
+  }
+  
+  ### get seqs for other cases (input offline fasta files in a folder)
+  if(demo_data == "none" & input_type_fasta == "Fasta folder" & input_type != "fasta"){
+    if(input$path != ""){
+      # path, file format and fasta header format
+      # path = input$path
+      # dir_format = input$dir_format
+      # file_ext = input$file_ext
+      # id_format = input$id_format
+      
+      # get list of species IDs
+      if(id_format == 1){
+        specDf <- as.data.frame(str_split_fixed(strReverse(as.character(dataOut$orthoID)),":",2))
+        specDf$specID <- strReverse(as.character(specDf$V2))
+      } else if(id_format == 2){
+        specDf <- as.data.frame(str_split_fixed(strReverse(as.character(dataOut$orthoID)),"@",2))
+        specDf$specID <- strReverse(as.character(specDf$V2))
+      } else if(id_format == 3){
+        specDf <- as.data.frame(str_split_fixed(strReverse(as.character(dataOut$orthoID)),"|",2))
+        specDf$specID <- strReverse(as.character(specDf$V2))
+      }
+      
+      # read all specices FASTA files at once
+      fa = data.frame()
+      for(i in 1:length(levels(as.factor(specDf$specID)))){
+        specID <- as.character(levels(as.factor(specDf$specID))[i])
+        
+        # full path fasta file
+        file <- paste0(path,"/",specID,".",file_ext)
+        if(dir_format == 2){
+          file <- paste0(path,"/",specID,"/",specID,".",file_ext)
+        }
+        
+        # read fasta file and save sequences into dataframe
+        if(file.exists(file)){
+          fastaFile = readAAStringSet(file)
+          
+          seq_name = names(fastaFile)
+          sequence = paste(fastaFile)
+          fa <- rbind(fa, data.frame(seq_name, sequence))  # data frame contains all sequences from input file
+        }
+      }
+      
+      # now get selected sequences
+      if(nrow(fa) > 0){
+        for(j in 1:nrow(dataOut)){
+          seqID <- as.character(dataOut$orthoID[j])
+          groupID <- as.character(dataOut$geneID[j])
+          
+          seq <- fa$sequence[pmatch(seqID,fa$seq_name)]
+          
+          if(length(seq[1]) < 1){
+            fastaOut <- paste0(seqID," not found in ",file,"! Please check id_format in FASTA config again!")
+          } else{
+            fastaOut <- paste(paste0(">",groupID,"|",seqID),seq[1],sep="\n")
+          }
+          fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
+        }
+      } else {
+        fastaOut <- paste0("No fasta file has been found in ",
+                           path,
+                           "!!! Please check the full path to FASTA folder and the id_format (header format) in FASTA config again!!!")
+        fastaOutDf <- rbind(fastaOutDf,
+                            as.data.frame(fastaOut))
+      }
+      
+    } else {
+      fastaOut <- paste0("Please provide FASTA files in Input & settings page!")
+      fastaOutDf <- rbind(fastaOutDf,
+                          as.data.frame(fastaOut))
+    }
+  }
+  
+  # remove duplicated sequences
+  fastaOutDf <- fastaOutDf[!duplicated(fastaOutDf), ]
+  
+  return(fastaOutDf)
 }
 
-######## show FASTA sequence in popup windows of selected plot  ########
-# getFasta <- function(file,seqID,groupID,faInput){
-#   fasta <- ""
-#   ### read file and get sequence
-#   if(file.exists(file)){
-#     fastaFile = readAAStringSet(file)
-#     
-#     seq_name = names(fastaFile)
-#     sequence = paste(fastaFile)
-#     fa <- data.frame(seq_name, sequence)
-#     seq <- fa$sequence[pmatch(seqID,fa$seq_name)]
-#     
-#     if(length(seq[1]) < 1){
-#       fasta <- paste0(seqID," not found in ",file,"! Please check id_format in FASTA config again!")
-#     } else{
-#       if(faInput == 1){
-#         fasta <- paste(paste0(">",seqID),seq[1],sep="\n")
-#       } else {
-#         fasta <- paste(paste0(">",groupID,"|",seqID),seq[1],sep="\n")
-#       }
-#       
-#     }
-#   } else {
-#     fasta <- paste0(file," not found! Please check the path and dir_format in FASTA config again!")
-#   }
-#   ### return
-#   print(paste0(groupID,"|",seqID))
-#   return(fasta)
-# }
-
-# reverse string ==============================================================
-strReverse <- function(x)
-  sapply(lapply(strsplit(x, NULL), rev), paste, collapse="")
-
-# get last n characters from string x  ========================================
-substrRight <- function(x, n){
-  substr(x, nchar(x)-n+1, nchar(x))
+# check validity of main input file -------------------------------------------
+check_input_vadility <- function(filein){
+  inputDt <- as.data.frame(read.table(file = filein$datapath,
+                                      sep = "\t",
+                                      header = F,
+                                      check.names = FALSE,
+                                      comment.char = "",
+                                      fill = T))
+  # print(head(inputDt))
+  if(is.na(inputDt[1, ncol(inputDt)])){
+    return("moreCol")
+  } else {
+    names(inputDt) <- as.character(unlist(inputDt[1, ]))
+    
+    # XML -------------------------------------------------------------------
+    # a XML file always starts with <?xml
+    if(grepl("<?xml", colnames(inputDt)[1])){
+      return("xml")
+      
+      # FASTA -----------------------------------------------------------------
+      # a faste file always starts with > (start symbol of the header) 
+    } else if(grepl(">", colnames(inputDt)[1]) == TRUE){
+      return("fasta")
+      
+    } else {
+      # long and wide files always start with geneID
+      if(grepl("geneID", colnames(inputDt)[1])){
+        # LONG --------------------------------------------------------------
+        if(is.na(pmatch("ncbi", colnames(inputDt)[3])) ||
+           is.na(pmatch("ncbi", colnames(inputDt)[4])) ||
+           is.na(pmatch("ncbi", colnames(inputDt)[5]))){
+          return("long")
+          
+          # WIDE --------------------------------------------------------------  
+        } else {
+          tmp <- inputDt[inputDt == ""][1]
+          if( !is.na(tmp) & tmp == ""){
+            return("emptyCell")
+          } else {
+            return("wide")
+          }
+        }
+      } else {
+        # # OMA ---------------------------------------------------------------
+        # # A list of OMA protein ID's do not start with a gene ID 
+        # # The list has only one column (is that enough to identify it?)
+        # if (ncol(inputDt) == 1) {
+        #   return ("oma")
+        #   
+        # # When it has no gene ID and is not a list of oma protein IDs -------
+        # } else { 
+        #   return("noGeneID")
+        #   }
+        return("noGeneID")
+        
+      }
+    }
+  }
 }
 
-# check internet connection  ==================================================
-hasInternet <- function(){
-  !is.null(curl::nslookup("r-project.org", error = FALSE))
-}
 
-# used to replace read.tree function of APE package ===========================
+# NEWICK ======================================================================
+
+# used to replace read.tree function of APE package ---------------------------
 # when input tree has singletons  
 # function to read a Newick string with node labels & (possible) singles
 # written by Liam J. Revell 2013
@@ -577,10 +488,6 @@ getEdgeLength<-function(text, start){
   return(list(edge.length = as.numeric(paste(temp, collapse="")), end = i))
 }
 
-# NEED TO BE CHANGED ==========================================================
-
-# input$mainInput
-# , main_input
 # check the validity of input newick tree -------------------------------------
 checkNewick <- function(filein, main_input){
   tree <- read.table(file = filein$datapath,
@@ -645,6 +552,171 @@ unsortID <- function(data,order){
     data$geneID <- factor(data$geneID, levels = unique(data$geneID))  
   }
   return(data)
+}
+
+# create rooted tree from a matrix --------------------------------------------
+createRootedTree <- function(df,rootTaxon){
+  # calculate distance matrix
+  taxdis <- tryCatch(taxa2dist(df), error = function(e) e)
+  
+  # root tree 
+  tree <- as.phylo(hclust(taxdis))
+  tree <- root(tree, outgroup = rootTaxon, resolve.root = TRUE)
+  
+  # return
+  return(tree)
+}
+
+# sort supertaxa list based on chosen reference taxon -------------------------
+sortTaxaFromTree <- function(tree){
+  # and get ordered taxon list
+  is_tip <- tree$edge[,2] <= length(tree$tip.label)
+  ordered_tips <- tree$edge[is_tip, 2]
+  taxonList <- rev(tree$tip.label[ordered_tips])
+  
+  # return
+  return(taxonList)
+}
+
+# HEATMAP (main and selected plot) ============================================
+
+# plot profile heatmap --------------------------------------------------------
+heatmap.plotting <- function(data,
+                             xAxis,
+                             var1_id,
+                             var2_id,
+                             lowColor_var1,
+                             highColor_var1,
+                             lowColor_var2,
+                             highColor_var2,
+                             paraColor,
+                             xSize,
+                             ySize,
+                             legendSize,
+                             mainLegend,
+                             dotZoom,
+                             xAngle,
+                             guideline){
+  dataHeat <- data
+  
+  # rescale numbers of paralogs
+  dataHeat$paralog <- as.numeric(dataHeat$paralog)
+  if(length(unique(na.omit(dataHeat$paralog))) > 0){
+    maxParalog <- max(na.omit(dataHeat$paralog))
+    dataHeat$paralogSize <- (dataHeat$paralog / maxParalog)*3
+  }
+  
+  # remove prefix number of taxa names but keep the order
+  dataHeat$supertaxon <- {
+    mapvalues(warn_missing = F,
+              dataHeat$supertaxon,
+              from = as.character(dataHeat$supertaxon),  
+              to = substr(as.character(dataHeat$supertaxon),
+                          6,
+                          nchar(as.character(dataHeat$supertaxon))))
+  }
+  
+  # format plot
+  if(xAxis == "genes"){
+    p = ggplot(dataHeat, aes(x = geneID, y = supertaxon)) # global aes
+  } else{
+    p = ggplot(dataHeat, aes(y = geneID, x = supertaxon)) # global aes
+  }
+  
+  if(length(unique(na.omit(dataHeat$var2))) != 1){
+    p = p + scale_fill_gradient(low = lowColor_var2,
+                                high = highColor_var2,
+                                na.value = "gray95",
+                                limits = c(0,1)) +  # fill color (var2)
+      geom_tile(aes(fill = var2))    # filled rect (var2 score)
+  }
+  
+  if(length(unique(na.omit(dataHeat$presSpec))) < 3){
+    if(length(unique(na.omit(dataHeat$var1))) == 1){
+      # geom_point for circle illusion (var1 and presence/absence)
+      p = p + geom_point(aes(colour = var1),
+                         size = dataHeat$presSpec * 5 * (1 + dotZoom),
+                         na.rm = TRUE,show.legend=F)  
+    } else {
+      # geom_point for circle illusion (var1 and presence/absence)
+      p = p + geom_point(aes(colour = var1),
+                         size = dataHeat$presSpec * 5 * (1 + dotZoom),
+                         na.rm = TRUE) 
+      # color of the corresponding aes (var1)
+      p = p + scale_color_gradient(low = lowColor_var1,
+                                   high = highColor_var1,
+                                   limits=c(0,1)) 
+    }
+  } else {
+    if(length(unique(na.omit(dataHeat$var1))) == 1){
+      # geom_point for circle illusion (var1 and presence/absence)
+      p = p + geom_point(aes(size = presSpec),
+                         color = "#336a98",
+                         na.rm = TRUE)    
+    } else {
+      # geom_point for circle illusion (var1 and presence/absence)
+      p = p + geom_point(aes(colour = var1, size = presSpec),
+                         na.rm = TRUE)
+      # color of the corresponding aes (var1)
+      p = p + scale_color_gradient(low = lowColor_var1, high = highColor_var1,
+                                   limits=c(0,1))
+    }
+  }
+  
+  # plot inparalogs (if available)
+  if(length(unique(na.omit(dataHeat$paralog))) > 0){
+    p <- p + geom_point(data = dataHeat,
+                        aes(size = paralog),
+                        color = paraColor,
+                        na.rm = TRUE,
+                        show.legend = TRUE)
+    p <- p + guides(size = guide_legend(title = "# of co-orthologs"))
+    
+    # to tune the size of circles;
+    # "floor(value*10)/10" is used to round "down" the value with one decimal number
+    p <- p + scale_size_continuous(range = c(min(na.omit(dataHeat$paralogSize)) * (1 + dotZoom),
+                                             max(na.omit(dataHeat$paralogSize)) * (1 + dotZoom)))
+  } else {
+    # remain the scale of point while filtering
+    presentVl <- dataHeat$presSpec[!is.na(dataHeat$presSpec)]
+    
+    # to tune the size of circles; 
+    # "floor(value*10)/10" is used to round "down" the value with one decimal number
+    p <- p + scale_size_continuous(range = c((floor(min(presentVl) * 10) / 10 * 5) * (1 + dotZoom),
+                                             (floor(max(presentVl) * 10) / 10 * 5) * (1 + dotZoom)))  
+  }
+  
+  p = p + guides(fill = guide_colourbar(title = var2_id),
+                 color = guide_colourbar(title = var1_id))
+  base_size <- 9
+  
+  # guideline for separating ref species
+  if(guideline == 1){
+    if(xAxis == "genes"){
+      p = p + labs(y="Taxon")
+      p = p + geom_hline(yintercept = 0.5, colour = "dodgerblue4")
+      p = p + geom_hline(yintercept = 1.5, colour = "dodgerblue4")
+    } else{
+      p = p + labs(x="Taxon")
+      p = p + geom_vline(xintercept = 0.5,colour = "dodgerblue4")
+      p = p + geom_vline(xintercept = 1.5, colour = "dodgerblue4")
+    }
+  }
+  
+  # format theme
+  p = p + theme_minimal()
+  p = p + theme(axis.text.x = element_text(angle = xAngle,
+                                           hjust = 1,
+                                           size = xSize),
+                axis.text.y = element_text(size = ySize),
+                axis.title.x = element_text(size = xSize),
+                axis.title.y = element_text(size = ySize),
+                legend.title = element_text(size = legendSize), 
+                legend.text = element_text(size = legendSize),
+                legend.position = mainLegend)
+  
+  # return plot
+  return(p)
 }
 
 # create profile heatmap ------------------------------------------------------
@@ -790,110 +862,6 @@ mainPlot <- function(v, dataHeat, clusteredDataHeat, input){
   }
 }
 
-# var1 score distribution plot ------------------------------------------------
-# v, distDf(), input$dist_text_size
-var1DistPlot <- function(v, splitDt, dist_text_size, var1_id){
-  if (v$doPlot == FALSE) return()
-  
-  # splitDt <- distDf()
-  
-  if(is.null(levels(as.factor(splitDt$var1)))) return() 
-  else{
-    splitDt <- splitDt[!is.na(splitDt$var1),]
-    splitDt$mean <- mean(splitDt$var1)
-    
-    # plot var1 score distribution
-    p <- ggplot(splitDt, aes(x = var1)) +
-      geom_histogram(binwidth=.01, alpha=.5, position="identity") +
-      geom_vline(data = splitDt,
-                 aes(xintercept = splitDt$mean,colour = "red"),
-                 linetype = "dashed",
-                 size = 1) +
-      #      ggtitle(paste("Mean",input$var1_id,"=",round(mean(splitDt$var1),3))) +
-      theme_minimal()
-    p <- p + theme(legend.position = "none",
-                   #                   plot.title = element_text(hjust = 0.5),
-                   axis.title = element_text(size = dist_text_size),
-                   axis.text = element_text(size = dist_text_size)) +
-      labs(x = paste0(var1_id,
-                      " (mean = ",round(mean(splitDt$var1),3),")"),
-           y = "Frequency")
-    p
-  }
-}
-
-# var2 score distribution plot ----------------------------------------------
-# v, distDf(), input$dist_text_size
-var2DistPlot <- function(v, splitDt, dist_text_size, var2_id){
-  if (v$doPlot == FALSE) return()
-  
-  # splitDt <- distDf()
-  if(is.null(levels(as.factor(splitDt$var2)))) return()
-  else{
-    splitDt <- splitDt[!is.na(splitDt$var2),]
-    splitDt$mean <- mean(splitDt$var2)
-    
-    # plot var1 score distribution
-    p <- ggplot(splitDt, aes(x=var2)) +
-      geom_histogram(binwidth=.01, alpha=.5, position="identity") +
-      geom_vline(data=splitDt,
-                 aes(xintercept=splitDt$mean,colour="red"),
-                 linetype="dashed",
-                 size=1) +
-      #      ggtitle(paste("Mean",input$var2_id,"=",round(mean(splitDt$var2),3))) +
-      theme_minimal()
-    p <- p + theme(legend.position = "none",
-                   # plot.title = element_text(size=input$legend_size),#hjust = 0.5,
-                   axis.title = element_text(size = dist_text_size),
-                   axis.text = element_text(size = dist_text_size)) +
-      labs(x = paste0(var2_id,
-                      " (mean = ",
-                      round(mean(splitDt$var2),3),
-                      ")"),
-           y = "Frequency")
-    p
-  }
-}
-
-# % presSpec distribution plot ----------------------------------------------
-# v, presSpecAllDt,input$percent, input$dist_text_size
-presSpecPlot <- function(v, dt, percent, dist_text_size){
-  if (v$doPlot == FALSE) return()
-  
-  # data
-  # dt <- presSpecAllDt()
-  
-  # remove presSpec < cutoff_min or > cutoff_max
-  if(percent[1] > 0){
-    dt <- dt[dt$presSpec >= percent[1] & dt$presSpec <= percent[2],]
-  } else {
-    if(input$percent[2] > 0){
-      dt <- dt[dt$presSpec > 0 & dt$presSpec <= percent[2],]
-    } else {
-      dt <- dt[dt$presSpec > 0,]
-    }
-  }
-  
-  # calculate mean presSpec score
-  dt$mean <- mean(dt$presSpec)
-  
-  # plot presSpec distribution
-  p <- ggplot(dt, aes(x=presSpec)) +
-    geom_histogram(binwidth=.01, alpha=.5, position="identity") +
-    geom_vline(data=dt, aes(xintercept=dt$mean,colour="red"),
-               linetype="dashed", size=1) +
-    #      ggtitle(paste("Mean % present taxa = ",round(mean(dt$presSpec),3))) +
-    theme_minimal()
-  p <- p + theme(legend.position = "none",
-                 #                   plot.title = element_text(hjust = 0.5),
-                 axis.title = element_text(size = dist_text_size),
-                 axis.text = element_text(size = dist_text_size)) +
-    labs(x = paste0("% present taxa (mean = ",
-                    round(mean(dt$presSpec),3),")"),
-         y = "Frequency")
-  p
-}
-
 # create plot (same as main plot) -------------------------------------------
 # vCt, dataHeat(), clusteredDataHeat(), get_input_selected()
 selected_plot <- function(vCt, dataHeat, clusteredDataHeat, input){
@@ -1017,212 +985,117 @@ detail_plot <- function(v, selDf, detailed_text, var1_id, var2_id){
   gp
 }
 
-# FASTA OUTPUT --------------------------------------------------------------
-# input$mainInput, input$demo_data
-fastaOutData <- function(dataOut, filein, demo_data){
-  # dataOut <- as.data.frame(download_custom_data())
-  fastaOutDf <- data.frame()
+# DISTRIBUTION PLOT ===========================================================
+
+# var1 score distribution plot ------------------------------------------------
+# v, distDf(), input$dist_text_size
+var1DistPlot <- function(v, splitDt, dist_text_size, var1_id){
+  if (v$doPlot == FALSE) return()
   
-  ### check main input
-  # filein <- input$mainInput
-  if(!is.null(filein)){input_type <- check_input_vadility(filein)}
-  else{ input_type <- "NA"}
+  # splitDt <- distDf()
   
-  ### get seqs for AMPK-TOR and microsporidia ONLINE demo data
-  if(demo_data == "ampk-tor" | demo_data == "demo"){
-    fastaUrl <- paste0("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/fasta_file/concatenatedSeq.fa")
-    if(demo_data == "ampk-tor"){
-      fastaUrl <- paste0("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.extended.fa")
-    }
+  if(is.null(levels(as.factor(splitDt$var1)))) return() 
+  else{
+    splitDt <- splitDt[!is.na(splitDt$var1),]
+    splitDt$mean <- mean(splitDt$var1)
     
-    if(url.exists(fastaUrl)){
-      # load fasta file
-      faFile <- as.data.frame(read.table(fastaUrl,
-                                         sep = "\t",
-                                         header = F,
-                                         fill = T,
-                                         stringsAsFactors = FALSE,
-                                         quote = ""))
-      faDf <- data.frame("seqID" = faFile$V1[grepl(">", faFile$V1)],
-                         "seq" = faFile$V1[!grepl(">", faFile$V1)],
-                         stringsAsFactors = FALSE)
-      
-      # get sequences
-      for(j in 1:nrow(dataOut)){
-        seqID <- as.character(dataOut$orthoID[j])
-        groupID <- as.character(dataOut$geneID[j])
-        
-        seq <- as.character(faDf$seq[faDf$seqID == paste0(">",seqID)])
-        fastaOut <- paste(paste0(">",groupID,"|",seqID),seq,sep="\n")
-        fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
-      }
-    } else {
-      fastaOut <- paste0(fastaUrl," not found!!!")
-      fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
-    }
+    # plot var1 score distribution
+    p <- ggplot(splitDt, aes(x = var1)) +
+      geom_histogram(binwidth=.01, alpha=.5, position="identity") +
+      geom_vline(data = splitDt,
+                 aes(xintercept = splitDt$mean,colour = "red"),
+                 linetype = "dashed",
+                 size = 1) +
+      #      ggtitle(paste("Mean",input$var1_id,"=",round(mean(splitDt$var1),3))) +
+      theme_minimal()
+    p <- p + theme(legend.position = "none",
+                   #                   plot.title = element_text(hjust = 0.5),
+                   axis.title = element_text(size = dist_text_size),
+                   axis.text = element_text(size = dist_text_size)) +
+      labs(x = paste0(var1_id,
+                      " (mean = ",round(mean(splitDt$var1),3),")"),
+           y = "Frequency")
+    p
   }
-  
-  # get seqs for fasta main input -------------------------------------------
-  if(input_type == "fasta"){
-    file <- filein$datapath
-    fastaFile = readAAStringSet(file)
-    
-    seq_name = names(fastaFile)
-    sequence = paste(fastaFile)
-    # data frame contains all sequences from input file
-    fa <- data.frame(seq_name, sequence)  
-    
-    for(j in 1:nrow(dataOut)){
-      seqID <- paste0(as.character(dataOut$geneID[j]),
-                      "|ncbi",
-                      as.character(dataOut$ncbiID[j]),
-                      "|",
-                      as.character(dataOut$orthoID[j]))
-      
-      seq <- fa$sequence[pmatch(seqID,fa$seq_name)]
-      
-      if(length(seq[1]) < 1){
-        fastaOut <- paste0(seqID,
-                           " not found in ",
-                           file,
-                           "! Please check again!")
-      } else{
-        fastaOut <- paste(paste0(">", seqID), seq[1], sep = "\n")
-      }
-      
-      fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
-    }
-  }
-  
-  ### get seqs for extended.fa
-  if(input$demo_data == "none" & input$input_type == "Concatenated fasta file"){
-    if(!is.null(input$oneSeqFasta)){
-      fasIn <- input$oneSeqFasta
-      file <- toString(fasIn$datapath)
-      
-      # read fasta file and save sequences into dataframe
-      fastaFile = readAAStringSet(file)
-      
-      seq_name = names(fastaFile)
-      sequence = paste(fastaFile)
-      fa <- data.frame(seq_name, sequence)  # data frame contains all sequences from input file
-      
-      # get selected sequences
-      for(j in 1:nrow(dataOut)){
-        seqID <- as.character(dataOut$orthoID[j])
-        groupID <- as.character(dataOut$geneID[j])
-        seq <- fa$sequence[pmatch(seqID,fa$seq_name)]
-        flag <- 1
-        if(is.na(seq)){
-          seqID <- paste0(as.character(dataOut$geneID[j]),"|ncbi",as.character(dataOut$ncbiID[j]),"|",as.character(dataOut$orthoID[j]))
-          seq <- fa$sequence[pmatch(seqID,fa$seq_name)]
-          flag <- 0
-        }
-        
-        if(length(seq[1]) < 1){
-          fastaOut <- paste0(seqID," not found in ",file,"! Please check the header format in FASTA file!")
-        } else{
-          if(!is.na(seq[1])){
-            if(flag == 1){
-              fastaOut <- paste(paste0(">",groupID,"|",seqID),seq[1],sep="\n")
-            } else {
-              fastaOut <- paste(paste0(">",seqID),seq[1],sep="\n")
-            }
-            
-          } else {
-            fastaOut <- paste0(seqID," not found in uploaded FASTA file!!! Please check again!!!")
-          }
-        }
-        fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
-      }
-    } else {
-      if(input_type != "fasta"){
-        fastaOut <- paste0("Please provide FASTA file(s) in Input & settings page!")
-        fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
-      }
-    }
-  }
-  
-  ### get seqs for other cases (input offline fasta files in a folder)
-  if(input$demo_data == "none" & input$input_type == "Fasta folder" & input_type != "fasta"){
-    if(input$path != ""){
-      # path, file format and fasta header format
-      path = input$path
-      dir_format = input$dir_format
-      file_ext = input$file_ext
-      id_format = input$id_format
-      
-      # get list of species IDs
-      if(id_format == 1){
-        specDf <- as.data.frame(str_split_fixed(strReverse(as.character(dataOut$orthoID)),":",2))
-        specDf$specID <- strReverse(as.character(specDf$V2))
-      } else if(id_format == 2){
-        specDf <- as.data.frame(str_split_fixed(strReverse(as.character(dataOut$orthoID)),"@",2))
-        specDf$specID <- strReverse(as.character(specDf$V2))
-      } else if(id_format == 3){
-        specDf <- as.data.frame(str_split_fixed(strReverse(as.character(dataOut$orthoID)),"|",2))
-        specDf$specID <- strReverse(as.character(specDf$V2))
-      }
-      
-      # read all specices FASTA files at once
-      fa = data.frame()
-      for(i in 1:length(levels(as.factor(specDf$specID)))){
-        specID <- as.character(levels(as.factor(specDf$specID))[i])
-        
-        # full path fasta file
-        file <- paste0(path,"/",specID,".",file_ext)
-        if(dir_format == 2){
-          file <- paste0(path,"/",specID,"/",specID,".",file_ext)
-        }
-        
-        # read fasta file and save sequences into dataframe
-        if(file.exists(file)){
-          fastaFile = readAAStringSet(file)
-          
-          seq_name = names(fastaFile)
-          sequence = paste(fastaFile)
-          fa <- rbind(fa, data.frame(seq_name, sequence))  # data frame contains all sequences from input file
-        }
-      }
-      
-      # now get selected sequences
-      if(nrow(fa) > 0){
-        for(j in 1:nrow(dataOut)){
-          seqID <- as.character(dataOut$orthoID[j])
-          groupID <- as.character(dataOut$geneID[j])
-          
-          seq <- fa$sequence[pmatch(seqID,fa$seq_name)]
-          
-          if(length(seq[1]) < 1){
-            fastaOut <- paste0(seqID," not found in ",file,"! Please check id_format in FASTA config again!")
-          } else{
-            fastaOut <- paste(paste0(">",groupID,"|",seqID),seq[1],sep="\n")
-          }
-          fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
-        }
-      } else {
-        fastaOut <- paste0("No fasta file has been found in ",
-                           path,
-                           "!!! Please check the full path to FASTA folder and the id_format (header format) in FASTA config again!!!")
-        fastaOutDf <- rbind(fastaOutDf,
-                            as.data.frame(fastaOut))
-      }
-      
-    } else {
-      fastaOut <- paste0("Please provide FASTA files in Input & settings page!")
-      fastaOutDf <- rbind(fastaOutDf,
-                          as.data.frame(fastaOut))
-    }
-  }
-  
-  # remove duplicated sequences
-  fastaOutDf <- fastaOutDf[!duplicated(fastaOutDf), ]
-  
-  return(fastaOutDf)
 }
 
-# create domain plot --------------------------------------------------------
-# v3, point_infoDetail(), getDomainFile(), input$demo_data, input$oneSeqFasta, input$label_archi_size, input$title_archi_size
+# var2 score distribution plot ----------------------------------------------
+# v, distDf(), input$dist_text_size
+var2DistPlot <- function(v, splitDt, dist_text_size, var2_id){
+  if (v$doPlot == FALSE) return()
+  
+  # splitDt <- distDf()
+  if(is.null(levels(as.factor(splitDt$var2)))) return()
+  else{
+    splitDt <- splitDt[!is.na(splitDt$var2),]
+    splitDt$mean <- mean(splitDt$var2)
+    
+    # plot var1 score distribution
+    p <- ggplot(splitDt, aes(x=var2)) +
+      geom_histogram(binwidth=.01, alpha=.5, position="identity") +
+      geom_vline(data=splitDt,
+                 aes(xintercept=splitDt$mean,colour="red"),
+                 linetype="dashed",
+                 size=1) +
+      #      ggtitle(paste("Mean",input$var2_id,"=",round(mean(splitDt$var2),3))) +
+      theme_minimal()
+    p <- p + theme(legend.position = "none",
+                   # plot.title = element_text(size=input$legend_size),#hjust = 0.5,
+                   axis.title = element_text(size = dist_text_size),
+                   axis.text = element_text(size = dist_text_size)) +
+      labs(x = paste0(var2_id,
+                      " (mean = ",
+                      round(mean(splitDt$var2),3),
+                      ")"),
+           y = "Frequency")
+    p
+  }
+}
+
+# % presSpec distribution plot ----------------------------------------------
+# v, presSpecAllDt,input$percent, input$dist_text_size
+presSpecPlot <- function(v, dt, percent, dist_text_size){
+  if (v$doPlot == FALSE) return()
+  
+  # data
+  # dt <- presSpecAllDt()
+  
+  # remove presSpec < cutoff_min or > cutoff_max
+  if(percent[1] > 0){
+    dt <- dt[dt$presSpec >= percent[1] & dt$presSpec <= percent[2],]
+  } else {
+    if(input$percent[2] > 0){
+      dt <- dt[dt$presSpec > 0 & dt$presSpec <= percent[2],]
+    } else {
+      dt <- dt[dt$presSpec > 0,]
+    }
+  }
+  
+  # calculate mean presSpec score
+  dt$mean <- mean(dt$presSpec)
+  
+  # plot presSpec distribution
+  p <- ggplot(dt, aes(x=presSpec)) +
+    geom_histogram(binwidth=.01, alpha=.5, position="identity") +
+    geom_vline(data=dt, aes(xintercept=dt$mean,colour="red"),
+               linetype="dashed", size=1) +
+    #      ggtitle(paste("Mean % present taxa = ",round(mean(dt$presSpec),3))) +
+    theme_minimal()
+  p <- p + theme(legend.position = "none",
+                 #                   plot.title = element_text(hjust = 0.5),
+                 axis.title = element_text(size = dist_text_size),
+                 axis.text = element_text(size = dist_text_size)) +
+    labs(x = paste0("% present taxa (mean = ",
+                    round(mean(dt$presSpec),3),")"),
+         y = "Frequency")
+  p
+}
+
+# ARCHITECTURE PLOT ===========================================================
+
+# create domain plot ----------------------------------------------------------
+# v3, point_infoDetail(), getDomainFile(), input$demo_data,
+# input$oneSeqFasta, input$label_archi_size, input$title_archi_size
 archi_plot <- function(v3, info, fileDomain, demo_data,
                        oneSeqFasta,label_archi_size, title_archi_size){
   if (v3$doPlot3 == FALSE) return()
@@ -1406,7 +1279,101 @@ archi_plot <- function(v3, info, fileDomain, demo_data,
   }
 }
 
-# MISSING COMMENT -----------------------------------------------------------
+# sort one domain dataframe (ortho) based on the other domain Df (seed) -------
+sortDomains <- function(seedDf, orthoDf){
+  # get list of features in seedDf
+  featureList <- as.data.frame(levels(as.factor(seedDf$feature)))
+  colnames(featureList) <- c("feature")
+  # and add order number to each feature
+  featureList$orderNo <- seq(length(featureList$feature))
+  
+  # merge those info to orthoDf
+  orderedOrthoDf <- merge(orthoDf,featureList, all.x=TRUE)
+  
+  # sort orthoDf
+  index <- with(orderedOrthoDf, order(orderNo))
+  orderedOrthoDf <- orderedOrthoDf[index,]
+  
+  #turn feature column into a character vector
+  orderedOrthoDf$feature <- as.character(orderedOrthoDf$feature)
+  #then turn it back into an ordered factor (to keep this order while plotting)
+  orderedOrthoDf$feature <- factor(orderedOrthoDf$feature,
+                                   levels = unique(orderedOrthoDf$feature))
+  
+  #return sorted df
+  orderedOrthoDf
+}
+
+# plot domain architecture ----------------------------------------------------
+domain.plotting <- function(df,
+                            geneID,
+                            sep,
+                            labelSize,
+                            titleSize,
+                            minStart,
+                            maxEnd){
+  gg <- ggplot(df, aes(y = feature, x = end, color = feature)) +
+    geom_segment(data = df,
+                 aes(y = feature, yend = feature,
+                     x = minStart, xend = maxEnd),
+                 color = "white",
+                 size = 0)
+  
+  # draw lines for representing sequence length
+  gg <- gg + geom_segment(data=df,
+                          aes(x = 0, xend = length,
+                              y = feature, yend = feature),
+                          size = 1,
+                          color = "#b2b2b2")
+  
+  # draw line and points
+  gg <- gg + geom_segment(data=df,
+                          aes(x = start, xend = end,
+                              y = feature, yend = feature),
+                          size = 1.5)
+  gg <- gg + geom_point(data = df,
+                        aes(y = feature, x=start),
+                        color = "#b2b2b2",
+                        size = 3,
+                        shape = 3)
+  gg <- gg + geom_point(data = df,
+                        aes(y = feature, x = end),
+                        color = "#edae52",
+                        size = 3,
+                        shape = 5)
+  
+  # draw dashed line for domain path
+  gg <- gg + geom_segment(data = df[df$path == "Y", ], 
+                          aes(x = start, xend = end,
+                              y = feature, yend = feature),
+                          size = 3,
+                          linetype = "dashed")
+  
+  # # add text above
+  # gg <- gg + geom_text(data=df,
+  #                      aes(x=(start+end)/2, y=feature, label=round(weight,2)),
+  #                      color="#9fb059", size=descSize, vjust=-0.75, fontface="bold", family="serif")
+  
+  # theme format
+  titleMod <- gsub(":",sep,geneID)
+  gg <- gg + scale_y_discrete(expand=c(0.075,0))
+  gg <- gg + labs(title=paste0(titleMod), y="Feature")
+  gg <- gg + theme_minimal()
+  gg <- gg + theme(panel.border=element_blank())
+  gg <- gg + theme(axis.ticks=element_blank())
+  gg <- gg + theme(plot.title=element_text(face="bold",size=titleSize))
+  gg <- gg + theme(plot.title=element_text(hjust = 0.5))
+  gg <- gg + theme(legend.position="none",axis.title.x=element_blank(),
+                   axis.text.y = element_text(size=labelSize),
+                   axis.title.y = element_text(size=labelSize),
+                   panel.grid.minor.x = element_blank(),
+                   panel.grid.major.x = element_blank())
+  
+  # return plot
+  return(gg)
+}
+
+# gene age plot ---------------------------------------------------------------
 # gene_ageDfMod(), input$gene_age_text
 gene_agePlot <- function(countDf, gene_age_text){
   # countDf <- gene_ageDfMod()
@@ -1429,7 +1396,7 @@ gene_agePlot <- function(countDf, gene_age_text){
   p
 }
 
-# plot clustered profiles ---------------------------------------------------
+# plot clustered profiles -----------------------------------------------------
 dendrogram <- function(dd.col){
   py <- as.ggdend(dd.col)
   p <- ggplot(py, horiz = TRUE, theme = theme_minimal()) +
@@ -1437,7 +1404,9 @@ dendrogram <- function(dd.col){
   p
 }
 
-# print list of available taxa ----------------------------------------------
+# GROUP COMPARISON ============================================================
+
+# print list of available taxa ------------------------------------------------
 taxa_select_gc <- function(rank_select_gc, subset_taxa){
   
   # if there is no rank set, there can not be any available taxa
@@ -1460,23 +1429,23 @@ taxa_select_gc <- function(rank_select_gc, subset_taxa){
   }
 }
 
-# Generate the list with all plots ------------------------------------------
+# Generate the list with all plots --------------------------------------------
 get_plot_output_list <- function(genes, input, interesting_features) {
   # if we dont have parameters we can not generate plots
   if (is.null(genes)) return()
   # Insert plot output objects the list
-  plot_output_list <- lapply(1:nrow(genes), function(i) {
-    plotname <- paste(genes[i, 1])
-    plot_output_object <- renderPlot(get_multiplot(genes[i, ], input, 
-                                                   interesting_features),
-                                     height = 650, width = 700)
-  })
-  do.call(tagList, plot_output_list) # needed to display properly.
-  return(plot_output_list)
+    plot_output_list <- lapply(1:nrow(genes), function(i) {
+      plotname <- paste(genes[i, 1])
+      plot_output_object <- renderPlot(get_multiplot(genes[i, ], input, 
+                                                     interesting_features),
+                                       height = 650, width = 700)
+    })
+    do.call(tagList, plot_output_list) # needed to display properly.
+    return(plot_output_list)
+  
 }
 
-# Generating the plots ======================================================
-# Put the plots for one spicific gene in one multiplot ----------------------
+# Put the plots for one spicific gene in one multiplot ------------------------
 # get_input_gc
 get_multiplot <- function(gene_info, input, interesting_features){
   
@@ -1566,7 +1535,7 @@ get_multiplot <- function(gene_info, input, interesting_features){
   return(m)
 }
 
-# Create a Boxplot ----------------------------------------------------------
+# Create a Boxplot ------------------------------------------------------------
 #
 get_boxplot_gc <- function (in_group_df,
                             out_group_df,
@@ -1769,7 +1738,9 @@ get_info_p_values <- function (p){
 }
 
 # Get the list with all the significant genes and the dataset ---------------
-# input$selected_in_group_gc, input$list_selected_genes_gc, input$rank_select, input$var_name_gc, input$use_common_anchestor, input$inSelect
+# input$selected_in_group_gc, input$list_selected_genes_gc, 
+# input$rank_select, input$var_name_gc, input$use_common_anchestor,
+# input$inSelect
 get_significant_genes <- function (in_group,
                                    list_selected_genes_gc,
                                    rank,
@@ -2028,7 +1999,9 @@ get_significant <- function(in_g, out_g, var, gene, input){
 }
 
 # calculate the p_values ----------------------------------------------------
-get_p_values <- function(var_in, var_out, significance_level){
+get_p_values <- function(var_in,
+                         var_out,
+                         significance_level){
   # upper limit for the probability to reject H0 if it is correct
   #significance_level <- input$significance
 
@@ -2074,7 +2047,11 @@ get_p_values <- function(var_in, var_out, significance_level){
 
 # get the list with all the features in the gene ----------------------------
 # input$demo_data
-get_features <- function(selected_gene, demo_data, anno_choose, file_domain, session){
+get_features <- function(selected_gene,
+                         demo_data,
+                         anno_choose,
+                         file_domain,
+                         session){
   # parse domain file
   file_domain <- get_domain_file_gc(selected_gene, demo_data, anno_choose, file_domain, session)
   
@@ -2144,7 +2121,11 @@ get_features <- function(selected_gene, demo_data, anno_choose, file_domain, ses
 
 # get the data where to find the features -----------------------------------
 # input$demo_data, input$anno_choose, input$fileDomain_input
-get_domain_file_gc <- function(group, demo_data, anno_choose, file_domain, session){
+get_domain_file_gc <- function(group,
+                               demo_data,
+                               anno_choose,
+                               file_domain,
+                               session){
   # domain file
   if (demo_data == "demo" | demo_data == "ampk-tor"){
     updateButton(session, "do_domain_plot", disabled = FALSE)
@@ -2215,12 +2196,9 @@ get_multiplot_download_gc <- function(gene, input){
   get_multiplot(x, input, interesting_features)
 }
 
+# Essential functions =========================================================
 
-# ===========================================================================
-# Essential functions =======================================================
-# ===========================================================================
-
-# get list with all taxanomy ranks ==========================================
+# get list with all taxanomy ranks --------------------------------------------
 get_taxonomy_ranks <- function(){
   all_ranks <- list("Strain " = "05_strain",
                     "Species" = "06_species",
@@ -2235,7 +2213,7 @@ get_taxonomy_ranks <- function(){
   return(all_ranks)
 }
 
-# Get name list ("data/taxonNamesReduced.txt") ==============================
+# Get name list ("data/taxonNamesReduced.txt") --------------------------------
 get_name_list <- function (as_character, delete_duplicated){
   name_list <- as.data.frame(read.table("data/taxonNamesReduced.txt",
                                         sep = "\t",
@@ -2252,7 +2230,7 @@ get_name_list <- function (as_character, delete_duplicated){
   return(name_list)
 }
 
-# Get taxa list ("data/taxonomyMatrix.txt") =================================
+# Get taxa list ("data/taxonomyMatrix.txt") -----------------------------------
 get_taxa_list <- function(subset_taxa_check, subset_taxa){
   dt <- as.data.frame(read.table("data/taxonomyMatrix.txt",
                                  sep = "\t",
@@ -2264,86 +2242,138 @@ get_taxa_list <- function(subset_taxa_check, subset_taxa){
   return(dt)
 }
 
-# check validity of main input file =========================================
-check_input_vadility <- function(filein){
-  inputDt <- as.data.frame(read.table(file = filein$datapath,
-                                      sep = "\t",
-                                      header = F,
-                                      check.names = FALSE,
-                                      comment.char = "",
-                                      fill = T))
-  # print(head(inputDt))
-  if(is.na(inputDt[1, ncol(inputDt)])){
-    return("moreCol")
-  } else {
-    names(inputDt) <- as.character(unlist(inputDt[1, ]))
-    
-    # XML -------------------------------------------------------------------
-    # a XML file always starts with <?xml
-    if(grepl("<?xml", colnames(inputDt)[1])){
-      return("xml")
-      
-      # FASTA -----------------------------------------------------------------
-      # a faste file always starts with > (start symbol of the header) 
-    } else if(grepl(">", colnames(inputDt)[1]) == TRUE){
-      return("fasta")
-      
-    } else {
-      # long and wide files always start with geneID
-      if(grepl("geneID", colnames(inputDt)[1])){
-        # LONG --------------------------------------------------------------
-        if(is.na(pmatch("ncbi", colnames(inputDt)[3])) ||
-           is.na(pmatch("ncbi", colnames(inputDt)[4])) ||
-           is.na(pmatch("ncbi", colnames(inputDt)[5]))){
-          return("long")
-          
-          # WIDE --------------------------------------------------------------  
-        } else {
-          tmp <- inputDt[inputDt == ""][1]
-          if( !is.na(tmp) & tmp == ""){
-            return("emptyCell")
-          } else {
-            return("wide")
-          }
-        }
-      } else {
-        # # OMA ---------------------------------------------------------------
-        # # A list of OMA protein ID's do not start with a gene ID 
-        # # The list has only one column (is that enough to identify it?)
-        # if (ncol(inputDt) == 1) {
-        #   return ("oma")
-        #   
-        # # When it has no gene ID and is not a list of oma protein IDs -------
-        # } else { 
-        #   return("noGeneID")
-        #   }
-        return("noGeneID")
-        
-      }
-    }
-  }
+# reverse string --------------------------------------------------------------
+strReverse <- function(x)
+  sapply(lapply(strsplit(x, NULL), rev), paste, collapse="")
+
+# get last n characters from string x  ----------------------------------------
+substrRight <- function(x, n){
+  substr(x, nchar(x)-n+1, nchar(x))
 }
 
-# create rooted tree from a matrix ------------------------------------------
-createRootedTree <- function(df,rootTaxon){
-  # calculate distance matrix
-  taxdis <- tryCatch(taxa2dist(df), error = function(e) e)
-  
-  # root tree 
-  tree <- as.phylo(hclust(taxdis))
-  tree <- root(tree, outgroup = rootTaxon, resolve.root = TRUE)
-  
-  # return
-  return(tree)
+# check internet connection  --------------------------------------------------
+hasInternet <- function(){
+  !is.null(curl::nslookup("r-project.org", error = FALSE))
 }
 
-# sort supertaxa list based on chosen reference taxon -----------------------
-sortTaxaFromTree <- function(tree){
-  # and get ordered taxon list
-  is_tip <- tree$edge[,2] <= length(tree$tip.label)
-  ordered_tips <- tree$edge[is_tip, 2]
-  taxonList <- rev(tree$tip.label[ordered_tips])
+# FUNCTION FOR CLUSTERING PROFILES --------------------------------------------
+clusteredGeneList <- function(data,distMethod,clusterMethod){
   
-  # return
-  return(taxonList)
+  # do clustering
+  row.order <- hclust(dist(data, method = distMethod),
+                      method = clusterMethod)$order
+  col.order <- hclust(dist(t(data), method = distMethod),
+                      method = clusterMethod)$order
+  
+  # re-order data accoring to clustering
+  dat_new <- data[row.order, col.order]
+  
+  # return clustered gene ID list
+  clusteredGeneIDs <- as.factor(row.names(dat_new))
+  clusteredGeneIDs
 }
+
+# calculate percentage of present species -------------------------------------
+calcPresSpec <- function(taxaMdData, taxaCount){
+  ### taxaMdData = df("geneID","ncbiID","orthoID","var1","var2","paralog",....,"supertaxon")
+  taxaMdData <- taxaMdData[taxaMdData$orthoID != "NA",]
+  
+  # get geneID and supertaxon
+  geneIDsupertaxon <- subset(taxaMdData, 
+                             select = c('geneID',
+                                        'supertaxon',
+                                        'paralog',
+                                        'abbrName'))
+  # remove duplicated rows
+  geneIDsupertaxon <- geneIDsupertaxon[!duplicated(geneIDsupertaxon), ] 
+  
+  # remove NA rows from taxaMdData
+  taxaMdDataNoNA <- taxaMdData[taxaMdData$orthoID != "NA", ]
+  
+  # count present frequency of supertaxon for each gene
+  geneSupertaxonCount <- plyr::count(taxaMdDataNoNA, c('geneID', 'supertaxon'))
+  
+  # merge with taxaCount to get total number of species of each supertaxon
+  # and calculate presSpec
+  presSpecDt <- merge(geneSupertaxonCount,
+                      taxaCount,
+                      by = 'supertaxon',
+                      all.x = TRUE)
+  
+  specCount <- plyr::count(geneIDsupertaxon,c('geneID',
+                                              'supertaxon'))
+  presSpecDt <- merge(presSpecDt,
+                      specCount,by = c('geneID',
+                                       'supertaxon'))
+  
+  presSpecDt$presSpec <- presSpecDt$freq / presSpecDt$freq.y
+  
+  presSpecDt <- presSpecDt[presSpecDt$presSpec <= 1, ]
+  presSpecDt <- presSpecDt[order(presSpecDt$geneID), ]
+  presSpecDt <- presSpecDt[, c("geneID", "supertaxon", "presSpec")]
+  
+  # add absent supertaxon into presSpecDt
+  geneIDsupertaxon <- subset(geneIDsupertaxon,
+                             select = -c(paralog,abbrName))
+  finalPresSpecDt <- merge(presSpecDt,
+                           geneIDsupertaxon,
+                           by = c('geneID', 'supertaxon'),
+                           all.y = TRUE)
+  finalPresSpecDt$presSpec[is.na(finalPresSpecDt$presSpec)] <- 0
+  
+  # remove duplicated rows
+  finalPresSpecDt <- finalPresSpecDt[!duplicated(finalPresSpecDt), ]
+  
+  # return finalPresSpecDt
+  return(finalPresSpecDt)
+}
+
+# UNUSED FUNCTIONS ============================================================
+
+# # convert long to wide format -----------------------------------------------
+# long2wide <- function(longDf){
+#   # rename column names
+#   colnames(longDf) <- c("geneID","ncbiID","orthoID","var1","var2")
+#   longDf$value <- paste0(longDf$orthoID,"#",longDf$var1,"#",longDf$var2)
+#   longDfmod <- longDf[,c("geneID","ncbiID","value")]
+#
+#   # count paralogs
+#   longDfmod <- data.table(longDfmod)
+#   longDfmod[ ,paralog := 1:.N, by=c("geneID","ncbiID")]
+#   longDfmod <- data.frame(longDfmod)
+#
+#   # return wide data frame
+#   wideDf <- spread(longDfmod, ncbiID, value)
+#   wideDf <- subset(wideDf,paralog == 1)   # remove co-orthologs
+#   wideDf <- subset(wideDf, select=-paralog)
+# }
+
+# # show FASTA sequence in popup windows of selected plot =====================
+# getFasta <- function(file,seqID,groupID,faInput){
+#   fasta <- ""
+#   ### read file and get sequence
+#   if(file.exists(file)){
+#     fastaFile = readAAStringSet(file)
+#     
+#     seq_name = names(fastaFile)
+#     sequence = paste(fastaFile)
+#     fa <- data.frame(seq_name, sequence)
+#     seq <- fa$sequence[pmatch(seqID,fa$seq_name)]
+#     
+#     if(length(seq[1]) < 1){
+#       fasta <- paste0(seqID," not found in ",file,"! Please check id_format in FASTA config again!")
+#     } else{
+#       if(faInput == 1){
+#         fasta <- paste(paste0(">",seqID),seq[1],sep="\n")
+#       } else {
+#         fasta <- paste(paste0(">",groupID,"|",seqID),seq[1],sep="\n")
+#       }
+#       
+#     }
+#   } else {
+#     fasta <- paste0(file," not found! Please check the path and dir_format in FASTA config again!")
+#   }
+#   ### return
+#   print(paste0(groupID,"|",seqID))
+#   return(fasta)
+# }
