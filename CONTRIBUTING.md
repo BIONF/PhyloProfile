@@ -20,7 +20,7 @@ Contributions to *PhyloProfile* can take many forms. If you are
   * or basically whatever great idea you have!
 * and all points for non-coding contributors as well :)
 
-**not biologist but can code**, it would be greate if you can
+**not biologist but can code**, it would be great if you can
 * test the tool in different environments (Windows, Linux, Mac - Firefox, Chrome, IE, Safari,...)
 * suggest a better user interface
 * improve the code quality
