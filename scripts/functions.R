@@ -5,347 +5,389 @@
 #  OUTPUT AND INPUT ===========================================================
 
 # parse orthoXML file ---------------------------------------------------------
-xmlParser <- function(inputFile){
+xml_parser <- function(input_file){
   cmd <- paste("python ",
                getwd(),
                "/scripts/orthoxmlParser.py",
                " -i ",
-               inputFile,
+               input_file,
                sep = "")
-  
-  dfIN <- as.data.frame(read.table(text = system(cmd, intern = TRUE)))
-  
+
+  df_in <- as.data.frame(read.table(text = system(cmd, intern = TRUE)))
+
   # the first row will be the header
-  colnames(dfIN) = as.character(unlist(dfIN[1,])) 
-  
-  dfIN <- subset(dfIN[dfIN$geneID != "geneID",])
-  dfIN <- droplevels(dfIN)
-  dfIN
+  colnames(df_in) <- as.character(unlist(df_in[1, ]))
+
+  df_in <- subset(df_in[df_in$geneID != "geneID", ])
+  df_in <- droplevels(df_in)
+  df_in
 }
 
 # parse fasta input file ------------------------------------------------------
-fastaParser <- function(inputFile){
-  
+fasta_parser <- function(input_file){
+
   cmd <- paste("python ",
-                   getwd(),
-                   "/scripts/fastaParser.py",
-                   " -i ",
-                   inputFile,
-                   sep = "")
-  
-  dfIN <- as.data.frame(read.table(text = system(cmd, intern = TRUE)))
-  
+               getwd(),
+               "/scripts/fastaParser.py",
+               " -i ",
+               input_file,
+               sep = "")
+
+  df_in <- as.data.frame(read.table(text = system(cmd, intern = TRUE)))
+
   # the first row will be the header
-  colnames(dfIN) = as.character(unlist(dfIN[1,])) 
-  dfIN <- subset(dfIN[dfIN$geneID != "geneID",])
-  dfIN <- droplevels(dfIN)
-  
-  if(all(is.na(dfIN$var2))){
-    dfIN = subset(dfIN, select = -c(var2) )
+  colnames(df_in) <- as.character(unlist(df_in[1, ]))
+  df_in <- subset(df_in[df_in$geneID != "geneID", ])
+  df_in <- droplevels(df_in)
+
+  if (all(is.na(df_in$var2))){
+    df_in <- subset(df_in, select = -c(var2) )
   }
-  if(all(is.na(dfIN$var1))){
-    dfIN = subset(dfIN, select = -c(var1) )
+  if (all(is.na(df_in$var1))){
+    df_in <- subset(df_in, select = -c(var1) )
   }
-  
-  dfIN
+
+  df_in
 }
 
-# # parse OMA input file ------------------------------------------------------
-# oma_parser <- function(input_file, selected_type ){
-#   print("oma parser")
-#   
-#   # use the python script to get the information from oma
-#   cmd <- paste("python ", 
-#                getwd(),
-#                "/scripts/get_oma_browser.py",
-#                " -i ",
-#                input_file,
-#                " -t ",
-#                selected_type,
-#                sep = "")
-#   print(cmd)
-#   dfIN <- as.data.frame(read.table(text = system(cmd, intern = TRUE)))
-#   print(dfIN)
-#   # the first row will be the header
-#   colnames(dfIN) = as.character(unlist(dfIN[1, ]))
-#   dfIN <- subset(dfIN[dfIN$geneID != "geneID", ])
-#   dfIN <- droplevels(dfIN)
-#   dfIN
-# }
+# transform wide format input to long format ----------------------------------
+wide_to_long <- function(input_file){
+  wide_dataframe <- as.data.frame(read.table(file = input_file,
+                                             sep = "\t",
+                                             header = T,
+                                             check.names = FALSE,
+                                             comment.char = ""))
+  long_dataframe <- data.frame()
+  row_nr_long <- 0 
+  ncbi_ids <- colnames(wide_dataframe)
+  
+  for (row_nr in 1:nrow(wide_dataframe)){
+    geneID <- wide_dataframe[row_nr, 1]
+    for(column_nr in 2:ncol(wide_dataframe)){
+      current_cell <- as.character(wide_dataframe[row_nr, column_nr])
+      new_row_info <- unlist(strsplit(current_cell, "#"))
+      row_nr_long <- row_nr_long + 1
+      long_dataframe[row_nr_long, 1] <- geneID
+      long_dataframe[row_nr_long, 2] <- ncbi_ids[column_nr] 
+      long_dataframe[row_nr_long, 3] <- new_row_info[1]
+      long_dataframe[row_nr_long, 4] <- new_row_info[2]
+      long_dataframe[row_nr_long, 5] <- new_row_info[3]
+      #print(new_row_info)
+    }
+  }
+  colnames(long_dataframe) <- c("geneID", "ncbiID", "orthoID", "var1", "var2")
+  return(long_dataframe)
+}
+
 
 # Fasta output ----------------------------------------------------------------
-# input$mainInput, input$demo_data
-fastaOutData <- function(dataOut, filein, demo_data,
+# input$main_input, input$demo_data
+fasta_out_data <- function(data_out, filein, demo_data,
                          input_type_fasta,
-                         oneSeqFasta,
+                         one_seq_fasta,
                          path,
                          dir_format,
                          file_ext,
-                         id_format){
-  # dataOut <- as.data.frame(download_custom_data())
-  fastaOutDf <- data.frame()
-  
-  ### check main input
-  # filein <- input$mainInput
-  if(!is.null(filein)){
+                         id_format,
+                         long_df){
+
+  fasta_out_df <- data.frame()
+
+  # check main input
+  if (!is.null(filein)){
     input_type <- check_input_vadility(filein)
   } else{
     input_type <- "NA"
   }
-  
-  ### get seqs for AMPK-TOR and microsporidia ONLINE demo data
-  if(demo_data == "ampk-tor" | demo_data == "demo"){
-    fastaUrl <- paste0("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/fasta_file/concatenatedSeq.fa")
-    if(demo_data == "ampk-tor"){
-      fastaUrl <- paste0("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.extended.fa")
+
+  # get seqs for AMPK-TOR and microsporidia ONLINE demo data
+  if (demo_data == "ampk-tor" | demo_data == "demo"){
+    fasta_url <- paste0("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/fasta_file/concatenatedSeq.fa")
+    if (demo_data == "ampk-tor"){
+      fasta_url <- paste0("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.extended.fa")
     }
-    
-    if(url.exists(fastaUrl)){
+
+    if (url.exists(fasta_url)){
       # load fasta file
-      faFile <- as.data.frame(read.table(fastaUrl,
+      fa_file <- as.data.frame(read.table(fasta_url,
                                          sep = "\t",
                                          header = F,
                                          fill = T,
                                          stringsAsFactors = FALSE,
                                          quote = ""))
-      faDf <- data.frame("seqID" = faFile$V1[grepl(">", faFile$V1)],
-                         "seq" = faFile$V1[!grepl(">", faFile$V1)],
+      fa_df <- data.frame("seqID" = fa_file$V1[grepl(">", fa_file$V1)],
+                         "seq" = fa_file$V1[!grepl(">", fa_file$V1)],
                          stringsAsFactors = FALSE)
-      
+
       # get sequences
-      for(j in 1:nrow(dataOut)){
-        seqID <- as.character(dataOut$orthoID[j])
-        groupID <- as.character(dataOut$geneID[j])
-        
-        seq <- as.character(faDf$seq[faDf$seqID == paste0(">",seqID)])
-        fastaOut <- paste(paste0(">",groupID,"|",seqID),seq,sep="\n")
-        fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
+      for (j in 1:nrow(data_out)){
+        seq_id <- as.character(data_out$orthoID[j])
+        group_id <- as.character(data_out$geneID[j])
+
+        seq <- as.character(fa_df$seq[fa_df$seqID == paste0(">", seq_id)])
+        fasta_out <- paste(paste0(">", group_id, "|", seq_id),
+                           seq,
+                           sep = "\n")
+        fasta_out_df <- rbind(fasta_out_df, as.data.frame(fasta_out))
       }
     } else {
-      fastaOut <- paste0(fastaUrl," not found!!!")
-      fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
+      fasta_out <- paste0(fasta_url, " not found!!!")
+      fasta_out_df <- rbind(fasta_out_df, as.data.frame(fasta_out))
     }
   }
-  
-  # get seqs for fasta main input 
-  if(input_type == "fasta"){
+
+  # get seqs for fasta main input
+  if (input_type == "fasta"){
     file <- filein$datapath
-    fastaFile = readAAStringSet(file)
-    
-    seq_name = names(fastaFile)
-    sequence = paste(fastaFile)
+    fasta_file <- readAAStringSet(file)
+
+    seq_name <- names(fasta_file)
+    sequence <- paste(fasta_file)
     # data frame contains all sequences from input file
-    fa <- data.frame(seq_name, sequence)  
-    
-    for(j in 1:nrow(dataOut)){
-      seqID <- paste0(as.character(dataOut$geneID[j]),
+    fa <- data.frame(seq_name, sequence)
+
+    for (j in 1:nrow(data_out)){
+      seq_id <- paste0(as.character(data_out$geneID[j]),
                       "|ncbi",
-                      as.character(dataOut$ncbiID[j]),
+                      as.character(data_out$ncbiID[j]),
                       "|",
-                      as.character(dataOut$orthoID[j]))
-      
-      seq <- fa$sequence[pmatch(seqID,fa$seq_name)]
-      
-      if(length(seq[1]) < 1){
-        fastaOut <- paste0(seqID,
+                      as.character(data_out$orthoID[j]))
+
+      seq <- fa$sequence[pmatch(seq_id, fa$seq_name)]
+
+      if (length(seq[1]) < 1){
+        fasta_out <- paste0(seq_id,
                            " not found in ",
                            file,
                            "! Please check again!")
       } else{
-        fastaOut <- paste(paste0(">", seqID), seq[1], sep = "\n")
+        fasta_out <- paste(paste0(">", seq_id), seq[1], sep = "\n")
       }
-      
-      fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
+      fasta_out_df <- rbind(fasta_out_df, as.data.frame(fasta_out))
     }
   }
   
-  ### get seqs for extended.fa
-  if(demo_data == "none" & input_type_fasta == "Concatenated fasta file"){
-    if(!is.null(oneSeqFasta)){
-      fasIn <- oneSeqFasta
-      file <- toString(fasIn$datapath)
-      
-      # read fasta file and save sequences into dataframe
-      fastaFile = readAAStringSet(file)
-      
-      seq_name = names(fastaFile)
-      sequence = paste(fastaFile)
-      fa <- data.frame(seq_name, sequence)  # data frame contains all sequences from input file
-      
-      # get selected sequences
-      for(j in 1:nrow(dataOut)){
-        seqID <- as.character(dataOut$orthoID[j])
-        groupID <- as.character(dataOut$geneID[j])
-        seq <- fa$sequence[pmatch(seqID,fa$seq_name)]
-        flag <- 1
-        if(is.na(seq)){
-          seqID <- paste0(as.character(dataOut$geneID[j]),"|ncbi",as.character(dataOut$ncbiID[j]),"|",as.character(dataOut$orthoID[j]))
-          seq <- fa$sequence[pmatch(seqID,fa$seq_name)]
-          flag <- 0
-        }
-        
-        if(length(seq[1]) < 1){
-          fastaOut <- paste0(seqID," not found in ",file,"! Please check the header format in FASTA file!")
-        } else{
-          if(!is.na(seq[1])){
-            if(flag == 1){
-              fastaOut <- paste(paste0(">",groupID,"|",seqID),seq[1],sep="\n")
-            } else {
-              fastaOut <- paste(paste0(">",seqID),seq[1],sep="\n")
-            }
-            
-          } else {
-            fastaOut <- paste0(seqID," not found in uploaded FASTA file!!! Please check again!!!")
-          }
-        }
-        fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
-      }
-    } else {
-      if(input_type != "fasta"){
-        fastaOut <- paste0("Please provide FASTA file(s) in Input & settings page!")
-        fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
-      }
+  if (input_type == "oma"){
+    for(j in 1:nrow(data_out)){
+      seq_id <- as.character(data_out$orthoID[j])
+      group_id <- as.character(data_out$geneID[j])
+      fasta_out <- get_fasta_oma(seq_id, group_id, long_df)
+      fasta_out_df <- rbind(fasta_out_df, as.data.frame(fasta_out))
     }
-  }
-  
-  ### get seqs for other cases (input offline fasta files in a folder)
-  if(demo_data == "none" & input_type_fasta == "Fasta folder" & input_type != "fasta"){
-    if(input$path != ""){
-      # path, file format and fasta header format
-      # path = input$path
-      # dir_format = input$dir_format
-      # file_ext = input$file_ext
-      # id_format = input$id_format
-      
-      # get list of species IDs
-      if(id_format == 1){
-        specDf <- as.data.frame(str_split_fixed(strReverse(as.character(dataOut$orthoID)),":",2))
-        specDf$specID <- strReverse(as.character(specDf$V2))
-      } else if(id_format == 2){
-        specDf <- as.data.frame(str_split_fixed(strReverse(as.character(dataOut$orthoID)),"@",2))
-        specDf$specID <- strReverse(as.character(specDf$V2))
-      } else if(id_format == 3){
-        specDf <- as.data.frame(str_split_fixed(strReverse(as.character(dataOut$orthoID)),"|",2))
-        specDf$specID <- strReverse(as.character(specDf$V2))
-      }
-      
-      # read all specices FASTA files at once
-      fa = data.frame()
-      for(i in 1:length(levels(as.factor(specDf$specID)))){
-        specID <- as.character(levels(as.factor(specDf$specID))[i])
-        
-        # full path fasta file
-        file <- paste0(path,"/",specID,".",file_ext)
-        if(dir_format == 2){
-          file <- paste0(path,"/",specID,"/",specID,".",file_ext)
-        }
+    
+    
+  } else {
+    # get seqs for extended.fa
+    if (demo_data == "none" & input_type_fasta == "Concatenated fasta file"){
+      if (!is.null(one_seq_fasta)){
+        fas_in <- one_seq_fasta
+        file <- toString(fas_in$datapath)
         
         # read fasta file and save sequences into dataframe
-        if(file.exists(file)){
-          fastaFile = readAAStringSet(file)
-          
-          seq_name = names(fastaFile)
-          sequence = paste(fastaFile)
-          fa <- rbind(fa, data.frame(seq_name, sequence))  # data frame contains all sequences from input file
-        }
-      }
-      
-      # now get selected sequences
-      if(nrow(fa) > 0){
-        for(j in 1:nrow(dataOut)){
-          seqID <- as.character(dataOut$orthoID[j])
-          groupID <- as.character(dataOut$geneID[j])
-          
-          seq <- fa$sequence[pmatch(seqID,fa$seq_name)]
-          
-          if(length(seq[1]) < 1){
-            fastaOut <- paste0(seqID," not found in ",file,"! Please check id_format in FASTA config again!")
-          } else{
-            fastaOut <- paste(paste0(">",groupID,"|",seqID),seq[1],sep="\n")
+        fasta_file <- readAAStringSet(file)
+        
+        seq_name <- names(fasta_file)
+        sequence <- paste(fasta_file)
+        # data frame contains all sequences from input file
+        fa <- data.frame(seq_name, sequence)
+        
+        # get selected sequences
+        for (j in 1:nrow(data_out)){
+          seq_id <- as.character(data_out$orthoID[j])
+          group_id <- as.character(data_out$geneID[j])
+          seq <- fa$sequence[pmatch(seq_id, fa$seq_name)]
+          flag <- 1
+          if (is.na(seq)){
+            seq_id <- paste0(as.character(data_out$geneID[j]),
+                             "|ncbi",
+                             as.character(data_out$ncbiID[j]),
+                             "|",
+                             as.character(data_out$orthoID[j]))
+            seq <- fa$sequence[pmatch(seq_id, fa$seq_name)]
+            flag <- 0
           }
-          fastaOutDf <- rbind(fastaOutDf,as.data.frame(fastaOut))
+          if (length(seq[1]) < 1){
+            fasta_out <- paste0(seq_id,
+                                " not found in ",
+                                file,
+                                "! Please check the header format in FASTA file!")
+          } else{
+            if (!is.na(seq[1])){
+              if (flag == 1){
+                fasta_out <- paste(paste0(">", group_id, "|", seq_id),
+                                   seq[1],
+                                   sep = "\n")
+              } else {
+                fasta_out <- paste(paste0(">", seq_id), seq[1], sep = "\n")
+              }
+              
+            } else {
+              fasta_out <- {
+                paste0(seq_id,
+                       " not found in uploaded FASTA file!!! Please check again!!!")
+              }
+            }
+          }
+          fasta_out_df <- rbind(fasta_out_df, as.data.frame(fasta_out))
         }
       } else {
-        fastaOut <- paste0("No fasta file has been found in ",
-                           path,
-                           "!!! Please check the full path to FASTA folder and the id_format (header format) in FASTA config again!!!")
-        fastaOutDf <- rbind(fastaOutDf,
-                            as.data.frame(fastaOut))
+        if (input_type != "fasta"){
+          fasta_out <- {
+            paste0("Please provide FASTA file(s) in Input & settings page!")
+          }
+          fasta_out_df <- rbind(fasta_out_df, as.data.frame(fasta_out))
+        }
       }
-      
-    } else {
-      fastaOut <- paste0("Please provide FASTA files in Input & settings page!")
-      fastaOutDf <- rbind(fastaOutDf,
-                          as.data.frame(fastaOut))
+    }
+    
+    # get seqs for other cases (input offline fasta files in a folder)
+    if (demo_data == "none"
+        & input_type_fasta == "Fasta folder"
+        & input_type != "fasta"){
+      if (path != ""){
+        
+        # get list of species IDs
+        if (id_format == 1){
+          spec_df <- {
+            as.data.frame(str_split_fixed(str_reverse(as.character(data_out$orthoID)),
+                                          ":", 2))
+          }
+          spec_df$spec_id <- str_reverse(as.character(spec_df$V2))
+        } else if (id_format == 2){
+          spec_df <- {
+            as.data.frame(str_split_fixed(str_reverse(as.character(data_out$orthoID)),
+                                          "@", 2))
+          }
+          
+          spec_df$spec_id <- str_reverse(as.character(spec_df$V2))
+        } else if (id_format == 3){
+          spec_df <- {
+            as.data.frame(str_split_fixed(str_reverse(as.character(data_out$orthoID)),
+                                          "|", 2))
+          }
+          spec_df$spec_id <- str_reverse(as.character(spec_df$V2))
+        }
+        
+        # read all specices FASTA files at once
+        fa <- data.frame()
+        for (i in 1:length(levels(as.factor(spec_df$specID)))){
+          spec_id <- as.character(levels(as.factor(spec_df$specID))[i])
+          
+          # full path fasta file
+          file <- paste0(path, "/", spec_id, ".", file_ext)
+          if (dir_format == 2){
+            file <- paste0(path, "/", spec_id, "/", spec_id, ".", file_ext)
+          }
+          
+          # read fasta file and save sequences into dataframe
+          if (file.exists(file)){
+            fasta_file <- readAAStringSet(file)
+            
+            seq_name <- names(fasta_file)
+            sequence <- paste(fasta_file)
+            # data frame contains all sequences from input file
+            fa <- rbind(fa, data.frame(seq_name, sequence))
+          }
+        }
+        # now get selected sequences
+        if (nrow(fa) > 0){
+          for (j in 1:nrow(data_out)){
+            seq_id <- as.character(data_out$orthoID[j])
+            group_id <- as.character(data_out$geneID[j])
+            
+            seq <- fa$sequence[pmatch(seq_id, fa$seq_name)]
+            
+            if (length(seq[1]) < 1){
+              fasta_out <- {
+                paste0(seq_id,
+                       " not found in ",
+                       file,
+                       "! Please check id_format in FASTA config again!")
+              }
+            } else{
+              fasta_out <- paste(paste0(">", group_id, "|", seq_id),
+                                 seq[1],
+                                 sep = "\n")
+            }
+            fasta_out_df <- rbind(fasta_out_df, as.data.frame(fasta_out))
+          }
+        } else {
+          fasta_out <- paste0("No fasta file has been found in ",
+                              path,
+                              "!!! Please check the full path to FASTA folder and the id_format (header format) in FASTA config again!!!")
+          fasta_out_df <- rbind(fasta_out_df,
+                                as.data.frame(fasta_out))
+        }
+      } else {
+        fasta_out <- {
+          paste0("Please provide FASTA files in Input & settings page!")
+        }
+        fasta_out_df <- rbind(fasta_out_df,
+                              as.data.frame(fasta_out))
+      }
     }
   }
-  
   # remove duplicated sequences
-  fastaOutDf <- fastaOutDf[!duplicated(fastaOutDf), ]
-  
-  return(fastaOutDf)
+  fasta_out_df <- fasta_out_df[!duplicated(fasta_out_df), ]
+
+
+  #print(fasta_out_df)
+  return(fasta_out_df)
 }
 
 # check validity of main input file -------------------------------------------
 check_input_vadility <- function(filein){
-  inputDt <- as.data.frame(read.table(file = filein$datapath,
+  input_dt <- as.data.frame(read.table(file = filein$datapath,
                                       sep = "\t",
                                       header = F,
                                       check.names = FALSE,
                                       comment.char = "",
                                       fill = T))
-  # print(head(inputDt))
-  if(is.na(inputDt[1, ncol(inputDt)])){
+
+  if (is.na(input_dt[1, ncol(input_dt)])){
     return("moreCol")
   } else {
-    names(inputDt) <- as.character(unlist(inputDt[1, ]))
-    
+    names(input_dt) <- as.character(unlist(input_dt[1, ]))
+
     # XML -------------------------------------------------------------------
     # a XML file always starts with <?xml
-    if(grepl("<?xml", colnames(inputDt)[1])){
+    if (grepl("<?xml", colnames(input_dt)[1])){
       return("xml")
-      
+
       # FASTA -----------------------------------------------------------------
-      # a faste file always starts with > (start symbol of the header) 
-    } else if(grepl(">", colnames(inputDt)[1]) == TRUE){
+      # a faste file always starts with > (start symbol of the header)
+    } else if (grepl(">", colnames(input_dt)[1]) == TRUE){
       return("fasta")
-      
     } else {
       # long and wide files always start with geneID
-      if(grepl("geneID", colnames(inputDt)[1])){
+      if (grepl("geneID", colnames(input_dt)[1])){
         # LONG --------------------------------------------------------------
-        if(is.na(pmatch("ncbi", colnames(inputDt)[3])) ||
-           is.na(pmatch("ncbi", colnames(inputDt)[4])) ||
-           is.na(pmatch("ncbi", colnames(inputDt)[5]))){
+        if (is.na(pmatch("ncbi", colnames(input_dt)[3])) ||
+           is.na(pmatch("ncbi", colnames(input_dt)[4])) ||
+           is.na(pmatch("ncbi", colnames(input_dt)[5]))){
           return("long")
-          
-          # WIDE --------------------------------------------------------------  
+
+          # WIDE --------------------------------------------------------------
         } else {
-          tmp <- inputDt[inputDt == ""][1]
-          if( !is.na(tmp) & tmp == ""){
+          tmp <- input_dt[input_dt == ""][1]
+          if ( !is.na(tmp) & tmp == ""){
             return("emptyCell")
           } else {
             return("wide")
           }
         }
       } else {
-        # # OMA ---------------------------------------------------------------
-        # # A list of OMA protein ID's do not start with a gene ID 
-        # # The list has only one column (is that enough to identify it?)
-        # if (ncol(inputDt) == 1) {
-        #   return ("oma")
-        #   
-        # # When it has no gene ID and is not a list of oma protein IDs -------
-        # } else { 
-        #   return("noGeneID")
-        #   }
-        return("noGeneID")
-        
+        # checks for the first entry if it's a OMA or Uniprot id --------------
+        if (check_oma_id(input_dt[1, 1])){
+          return ("oma")
+        } else{
+          return("noGeneID")
+        }
+
       }
     }
   }
 }
-
 
 # NEWICK ======================================================================
 
@@ -354,10 +396,10 @@ check_input_vadility <- function(filein){
 # function to read a Newick string with node labels & (possible) singles
 # written by Liam J. Revell 2013
 
-read.newick<-function(file = "", text){
+read.newick <- function(file = "", text){
   # check to see if reading from file
-  if(file != "") text <- scan(file, sep = "\n", what = "character")
-  if(length(text) > 1){
+  if (file != "") text <- scan(file, sep = "\n", what = "character")
+  if (length(text) > 1){
     tree <- lapply(text, newick)
     class(tree) <- "multiPhylo"
   } else tree <- newick(text)
@@ -369,76 +411,76 @@ read.newick<-function(file = "", text){
 newick <- function(text){
   text <- unlist(strsplit(text, NULL))
   tip.label <- vector(mode = "character")
-  node.label <- vector(mode = "character") 
-  edge <- matrix(c(1, NA), 1, 2) 
+  node.label <- vector(mode = "character")
+  edge <- matrix(c(1, NA), 1, 2)
   edge.length <- vector()
   currnode <- 1
   Nnode <- currnode
   i <- j <- k <- 1
-  while(text[i] != ";"){
-    if(text[i] == "("){
-      if(j > nrow(edge)) edge <- rbind(edge, c(NA, NA))
+  while (text[i] != ";"){
+    if (text[i] == "("){
+      if (j > nrow(edge)) edge <- rbind(edge, c(NA, NA))
       edge[j, 1] <- currnode
       i <- i + 1
       # is the next element a label?
-      if(is.na(match(text[i],
+      if (is.na(match(text[i],
                      c("(", ")", ",", ":", ";")))){
-        temp <- getLabel(text, i)
+        temp <- get_label(text, i)
         tip.label[k] <- temp$label
         i <- temp$end
         edge[j, 2] <-- k
         k <- k + 1
         # is there a branch length?
-        if(text[i] == ":"){
-          temp <- getEdgeLength(text, i)
+        if (text[i] == ":"){
+          temp <- get_edge_length(text, i)
           edge.length[j] <- temp$edge.length
           i <- temp$end
-        }	
-      } else if(text[i] == "("){
+        }
+      } else if (text[i] == "("){
         Nnode <- Nnode + 1 # creating a new internal node
         currnode <- Nnode
         edge[j, 2] <- currnode # move to new internal node
       }
       j <- j + 1
-    } else if(text[i] == ")"){
+    } else if (text[i] == ")"){
       i <- i + 1
       # is the next element a label?
-      if(is.na(match(text[i],
+      if (is.na(match(text[i],
                      c("(", ")", ",", ":", ";")))){
-        temp <- getLabel(text, i)
+        temp <- get_label(text, i)
         node.label[currnode] <- temp$label
         i <- temp$end
       }
       # is there a branch length?
-      if(text[i] == ":"){
-        temp <- getEdgeLength(text, i)
-        if(currnode > 1){ 
+      if (text[i] == ":"){
+        temp <- get_edge_length(text, i)
+        if (currnode > 1){
           ii <- match(currnode, edge[, 2])
           edge.length[ii] <- temp$edge.length
         } else root.edge <- temp$edge.length
         i <- temp$end
       }
       # move down the tree
-      if(currnode > 1) currnode <- edge[match(currnode, edge[, 2]), 1]
-    } else if(text[i] == ","){
-      if(j > nrow(edge)) edge <- rbind(edge, c(NA, NA))
+      if (currnode > 1) currnode <- edge[match(currnode, edge[, 2]), 1]
+    } else if (text[i] == ","){
+      if (j > nrow(edge)) edge <- rbind(edge, c(NA, NA))
       edge[j, 1] <- currnode
       i <- i + 1
       # is the next element a label?
-      if(is.na(match(text[i],
+      if (is.na(match(text[i],
                      c("(", ")", ",", ":", ";")))){
-        temp <- getLabel(text, i)
+        temp <- get_label(text, i)
         tip.label[k] <- temp$label
         i <- temp$end
         edge[j, 2] <-- k
         k <- k + 1
         # is there a branch length?
-        if(text[i] == ":"){
-          temp <- getEdgeLength(text, i)
+        if (text[i] == ":"){
+          temp <- get_edge_length(text, i)
           edge.length[j] <- temp$edge.length
           i <- temp$end
         }
-      } else if(text[i] == "("){
+      } else if (text[i] == "("){
         Nnode <- Nnode + 1 # creating a new internal node
         currnode <- Nnode
         edge[j, 2] <- currnode # move to internal node
@@ -450,11 +492,11 @@ newick <- function(text){
   edge[edge > 0] <- edge[edge > 0] + Ntip
   edge[edge < 0] <-- edge[edge < 0]
   edge.length[is.na(edge.length)] <- 0
-  if(length(edge.length) == 0) edge.length <- NULL
+  if (length(edge.length) == 0) edge.length <- NULL
   node.label[is.na(node.label)] <- ""
-  if(length(node.label) == 0) node.label <- NULL
+  if (length(node.label) == 0) node.label <- NULL
   # assemble into "phylo" object
-  tree<-list(edge = edge,
+  tree <- list(edge = edge,
              Nnode = as.integer(Nnode),
              tip.label = tip.label,
              edge.length = edge.length,
@@ -465,10 +507,10 @@ newick <- function(text){
 
 # function gets label ---------------------------------------------------------
 # written by Liam J. Revell 2011-2013
-getLabel <- function(text, start, stop.char = c(",", ":", ")")){
+get_label <- function(text, start, stop.char = c(",", ":", ")")){
   i <- 0
   label <- vector()
-  while(is.na(match(text[i + start], stop.char))){
+  while (is.na(match(text[i + start], stop.char))){
     label[i + 1] <- text[i + start]
     i <- i + 1
   }
@@ -477,64 +519,65 @@ getLabel <- function(text, start, stop.char = c(",", ":", ")")){
 
 # function gets branch length -------------------------------------------------
 # written by Liam J. Revell 2011-2013
-getEdgeLength<-function(text, start){
+get_edge_length <- function(text, start){
   i <- start + 1; m <- 1
   temp <- vector()
-  while(is.na(match(text[i], c(",", ")", ";")))){
+  while (is.na(match(text[i], c(",", ")", ";")))){
     temp[m] <- text[i]
     i <- i + 1
     m <- m + 1
   }
-  return(list(edge.length = as.numeric(paste(temp, collapse="")), end = i))
+  return(list(edge.length = as.numeric(paste(temp, collapse = "")),
+              end = i))
 }
 
 # check the validity of input newick tree -------------------------------------
-checkNewick <- function(filein, main_input){
+check_newick <- function(filein, main_input){
   tree <- read.table(file = filein$datapath,
                      header = F,
                      check.names = FALSE,
                      comment.char = "",
                      fill = F)
-  
+
   # get tree structure
-  treeStruc <- gsub(regex("\\w"), "", as.character(tree$V1))
-  
-  open = str_count(treeStruc, "\\(")
-  close = str_count(treeStruc, "\\)")
-  comma = str_count(treeStruc, "\\,")
-  singleton = str_count(treeStruc, "\\(\\)")
-  
+  tree_struc <- gsub(regex("\\w"), "", as.character(tree$V1))
+
+  open <- str_count(tree_struc, "\\(")
+  close <- str_count(tree_struc, "\\)")
+  comma <- str_count(tree_struc, "\\,")
+  singleton <- str_count(tree_struc, "\\(\\)")
+
   # return check
-  if(is.null(main_input)){
+  if (is.null(main_input)){
     return(0) # don't check if main input is absent
   } else {
-    if(singleton > 0){
+    if (singleton > 0){
       return(3) # tree contains singleton
     }
-    
-    if(open != close){
+
+    if (open != close){
       return(1) # missing parenthesis
     } else {
-      if(comma != (open+1)){
+      if (comma != (open + 1)){
         # return(2) # missing comma
       } else {
         # get list of tips
-        nodeString <- gsub(regex("\\W+"), "#", as.character(tree$V1))
-        nodeList <- unlist(strsplit(nodeString, "#"))
+        node_string <- gsub(regex("\\W+"), "#", as.character(tree$V1))
+        node_list <- unlist(strsplit(node_string, "#"))
         # list of input taxa
-        inputTaxa <- subset_taxa()
-        
-        missingTaxa <- list()
+        input_taxa <- subset_taxa()
+
+        missing_taxa <- list()
         j <- 1
-        for(i in 1:length(nodeList)){
-          if(nchar(nodeList[i]) > 0 & !(nodeList[i] %in% inputTaxa)){
-            missingTaxa[[j]] <- nodeList[i]
-            j <- j+1
+        for (i in 1:length(node_list)){
+          if (nchar(node_list[i]) > 0 & !(node_list[i] %in% input_taxa)){
+            missing_taxa[[j]] <- node_list[i]
+            j <- j + 1
           }
         }
-        if(length(missingTaxa) > 0){
+        if (length(missing_taxa) > 0){
           # contains taxa that not exist in main input
-          return(paste(missingTaxa, collapse="; ")) 
+          return(paste(missing_taxa, collapse = "; "))
         } else {
           return(0)
         }
@@ -545,210 +588,204 @@ checkNewick <- function(filein, main_input){
 }
 
 # unsorting function to keep user defined geneID order ------------------------
-unsortID <- function(data,order){
+unsort_id <- function(data, order){
   data$geneID <- as.factor(data$geneID)
-  if(order == FALSE){
+  if (order == FALSE){
     # keep user defined geneID order
-    data$geneID <- factor(data$geneID, levels = unique(data$geneID))  
+    data$geneID <- factor(data$geneID, levels = unique(data$geneID))
   }
   return(data)
 }
 
 # create rooted tree from a matrix --------------------------------------------
-createRootedTree <- function(df,rootTaxon){
+create_rooted_tree <- function(df, root_taxon){
   # calculate distance matrix
   taxdis <- tryCatch(taxa2dist(df), error = function(e) e)
-  
-  # root tree 
+
+  # root tree
   tree <- as.phylo(hclust(taxdis))
-  tree <- root(tree, outgroup = rootTaxon, resolve.root = TRUE)
-  
+  tree <- root(tree, outgroup = root_taxon, resolve.root = TRUE)
+
   # return
   return(tree)
 }
 
 # sort supertaxa list based on chosen reference taxon -------------------------
-sortTaxaFromTree <- function(tree){
+sort_taxa_from_tree <- function(tree){
   # and get ordered taxon list
-  is_tip <- tree$edge[,2] <= length(tree$tip.label)
+  is_tip <- tree$edge[, 2] <= length(tree$tip.label)
   ordered_tips <- tree$edge[is_tip, 2]
-  taxonList <- rev(tree$tip.label[ordered_tips])
-  
+  taxon_list <- rev(tree$tip.label[ordered_tips])
+
   # return
-  return(taxonList)
+  return(taxon_list)
 }
 
 # HEATMAP (main and selected plot) ============================================
 
 # plot profile heatmap --------------------------------------------------------
-heatmap.plotting <- function(data,
-                             xAxis,
+heatmap_plotting <- function(data,
+                             x_axis,
                              var1_id,
                              var2_id,
-                             lowColor_var1,
-                             highColor_var1,
-                             lowColor_var2,
-                             highColor_var2,
-                             paraColor,
-                             xSize,
-                             ySize,
-                             legendSize,
-                             mainLegend,
-                             dotZoom,
-                             xAngle,
+                             low_color_var1,
+                             high_color_var1,
+                             low_color_var2,
+                             high_color_var2,
+                             para_color,
+                             x_size,
+                             y_size,
+                             legend_size,
+                             main_legend,
+                             dot_zoom,
+                             x_angle,
                              guideline){
-  dataHeat <- data
-  
+  data_heat <- data
+
   # rescale numbers of paralogs
-  dataHeat$paralog <- as.numeric(dataHeat$paralog)
-  if(length(unique(na.omit(dataHeat$paralog))) > 0){
-    maxParalog <- max(na.omit(dataHeat$paralog))
-    dataHeat$paralogSize <- (dataHeat$paralog / maxParalog)*3
+  data_heat$paralog <- as.numeric(data_heat$paralog)
+  if (length(unique(na.omit(data_heat$paralog))) > 0){
+    max_paralog <- max(na.omit(data_heat$paralog))
+    data_heat$paralogSize <- (data_heat$paralog / max_paralog) * 3
   }
-  
+
   # remove prefix number of taxa names but keep the order
-  dataHeat$supertaxon <- {
+  data_heat$supertaxon <- {
     mapvalues(warn_missing = F,
-              dataHeat$supertaxon,
-              from = as.character(dataHeat$supertaxon),  
-              to = substr(as.character(dataHeat$supertaxon),
+              data_heat$supertaxon,
+              from = as.character(data_heat$supertaxon),
+              to = substr(as.character(data_heat$supertaxon),
                           6,
-                          nchar(as.character(dataHeat$supertaxon))))
+                          nchar(as.character(data_heat$supertaxon))))
   }
-  
+
   # format plot
-  if(xAxis == "genes"){
-    p = ggplot(dataHeat, aes(x = geneID, y = supertaxon)) # global aes
+  if (x_axis == "genes"){
+    p <- ggplot(data_heat, aes(x = geneID, y = supertaxon)) # global aes
   } else{
-    p = ggplot(dataHeat, aes(y = geneID, x = supertaxon)) # global aes
+    p <- ggplot(data_heat, aes(y = geneID, x = supertaxon)) # global aes
   }
-  
-  if(length(unique(na.omit(dataHeat$var2))) != 1){
-    p = p + scale_fill_gradient(low = lowColor_var2,
-                                high = highColor_var2,
+  if (length(unique(na.omit(data_heat$var2))) != 1){
+    p <- p + scale_fill_gradient(low = low_color_var2,
+                                high = high_color_var2,
                                 na.value = "gray95",
-                                limits = c(0,1)) +  # fill color (var2)
+                                limits = c(0, 1)) +  # fill color (var2)
       geom_tile(aes(fill = var2))    # filled rect (var2 score)
   }
-  
-  if(length(unique(na.omit(dataHeat$presSpec))) < 3){
-    if(length(unique(na.omit(dataHeat$var1))) == 1){
+  if (length(unique(na.omit(data_heat$presSpec))) < 3){
+    if (length(unique(na.omit(data_heat$var1))) == 1){
       # geom_point for circle illusion (var1 and presence/absence)
-      p = p + geom_point(aes(colour = var1),
-                         size = dataHeat$presSpec * 5 * (1 + dotZoom),
-                         na.rm = TRUE,show.legend=F)  
+      p <- p + geom_point(aes(colour = var1),
+                         size = data_heat$presSpec * 5 * (1 + dot_zoom),
+                         na.rm = TRUE, show.legend = F)
     } else {
       # geom_point for circle illusion (var1 and presence/absence)
-      p = p + geom_point(aes(colour = var1),
-                         size = dataHeat$presSpec * 5 * (1 + dotZoom),
-                         na.rm = TRUE) 
-      # color of the corresponding aes (var1)
-      p = p + scale_color_gradient(low = lowColor_var1,
-                                   high = highColor_var1,
-                                   limits=c(0,1)) 
-    }
-  } else {
-    if(length(unique(na.omit(dataHeat$var1))) == 1){
-      # geom_point for circle illusion (var1 and presence/absence)
-      p = p + geom_point(aes(size = presSpec),
-                         color = "#336a98",
-                         na.rm = TRUE)    
-    } else {
-      # geom_point for circle illusion (var1 and presence/absence)
-      p = p + geom_point(aes(colour = var1, size = presSpec),
+      p <- p + geom_point(aes(colour = var1),
+                         size = data_heat$presSpec * 5 * (1 + dot_zoom),
                          na.rm = TRUE)
       # color of the corresponding aes (var1)
-      p = p + scale_color_gradient(low = lowColor_var1, high = highColor_var1,
-                                   limits=c(0,1))
+      p <- p + scale_color_gradient(low = low_color_var1,
+                                   high = high_color_var1,
+                                   limits = c(0, 1))
+    }
+  } else {
+    if (length(unique(na.omit(data_heat$var1))) == 1){
+      # geom_point for circle illusion (var1 and presence/absence)
+      p <- p + geom_point(aes(size = presSpec),
+                         color = "#336a98",
+                         na.rm = TRUE)
+    } else {
+      # geom_point for circle illusion (var1 and presence/absence)
+      p <- p + geom_point(aes(colour = var1, size = presSpec),
+                         na.rm = TRUE)
+      # color of the corresponding aes (var1)
+      p <- p + scale_color_gradient(low = low_color_var1, high = high_color_var1,
+                                   limits = c(0, 1))
     }
   }
-  
+
   # plot inparalogs (if available)
-  if(length(unique(na.omit(dataHeat$paralog))) > 0){
-    p <- p + geom_point(data = dataHeat,
+  if (length(unique(na.omit(data_heat$paralog))) > 0){
+    p <- p + geom_point(data = data_heat,
                         aes(size = paralog),
-                        color = paraColor,
+                        color = para_color,
                         na.rm = TRUE,
                         show.legend = TRUE)
     p <- p + guides(size = guide_legend(title = "# of co-orthologs"))
-    
+
     # to tune the size of circles;
     # "floor(value*10)/10" is used to round "down" the value with one decimal number
-    p <- p + scale_size_continuous(range = c(min(na.omit(dataHeat$paralogSize)) * (1 + dotZoom),
-                                             max(na.omit(dataHeat$paralogSize)) * (1 + dotZoom)))
+    p <- p + scale_size_continuous(range = c(min(na.omit(data_heat$paralogSize)) * (1 + dot_zoom),
+                                             max(na.omit(data_heat$paralogSize)) * (1 + dot_zoom)))
   } else {
     # remain the scale of point while filtering
-    presentVl <- dataHeat$presSpec[!is.na(dataHeat$presSpec)]
-    
-    # to tune the size of circles; 
+    present_vl <- data_heat$presSpec[!is.na(data_heat$presSpec)]
+
+    # to tune the size of circles;
     # "floor(value*10)/10" is used to round "down" the value with one decimal number
-    p <- p + scale_size_continuous(range = c((floor(min(presentVl) * 10) / 10 * 5) * (1 + dotZoom),
-                                             (floor(max(presentVl) * 10) / 10 * 5) * (1 + dotZoom)))  
+    p <- p + scale_size_continuous(range = c( (floor(min(present_vl) * 10) / 10 * 5) * (1 + dot_zoom),
+                                             (floor(max(present_vl) * 10) / 10 * 5) * (1 + dot_zoom)))
   }
-  
-  p = p + guides(fill = guide_colourbar(title = var2_id),
+  p <- p + guides(fill = guide_colourbar(title = var2_id),
                  color = guide_colourbar(title = var1_id))
   base_size <- 9
-  
+
   # guideline for separating ref species
-  if(guideline == 1){
-    if(xAxis == "genes"){
-      p = p + labs(y="Taxon")
-      p = p + geom_hline(yintercept = 0.5, colour = "dodgerblue4")
-      p = p + geom_hline(yintercept = 1.5, colour = "dodgerblue4")
+  if (guideline == 1){
+    if (x_axis == "genes"){
+      p <- p + labs(y = "Taxon")
+      p <- p + geom_hline(yintercept = 0.5, colour = "dodgerblue4")
+      p <- p + geom_hline(yintercept = 1.5, colour = "dodgerblue4")
     } else{
-      p = p + labs(x="Taxon")
-      p = p + geom_vline(xintercept = 0.5,colour = "dodgerblue4")
-      p = p + geom_vline(xintercept = 1.5, colour = "dodgerblue4")
+      p <- p + labs(x = "Taxon")
+      p <- p + geom_vline(xintercept = 0.5, colour = "dodgerblue4")
+      p <- p + geom_vline(xintercept = 1.5, colour = "dodgerblue4")
     }
   }
-  
   # format theme
-  p = p + theme_minimal()
-  p = p + theme(axis.text.x = element_text(angle = xAngle,
+  p <- p + theme_minimal()
+  p <- p + theme(axis.text.x = element_text(angle = x_angle,
                                            hjust = 1,
-                                           size = xSize),
-                axis.text.y = element_text(size = ySize),
-                axis.title.x = element_text(size = xSize),
-                axis.title.y = element_text(size = ySize),
-                legend.title = element_text(size = legendSize), 
-                legend.text = element_text(size = legendSize),
-                legend.position = mainLegend)
-  
+                                           size = x_size),
+                axis.text.y = element_text(size = y_size),
+                axis.title.x = element_text(size = x_size),
+                axis.title.y = element_text(size = y_size),
+                legend.title = element_text(size = legend_size),
+                legend.text = element_text(size = legend_size),
+                legend.position = main_legend)
   # return plot
   return(p)
 }
 
 # create profile heatmap ------------------------------------------------------
 # v, dataHeat(), clusteredDataHeat(), get_input_main ()
-mainPlot <- function(v, dataHeat, clusteredDataHeat, input){
+main_plot <- function(v, data_heat, clustered_data_heat, input){
   if (v$doPlot == FALSE) return()
-  #dataHeat <- dataHeat()
-  
+
   # cluster dataHeat (if selected)
-  if(input$apply_cluster == TRUE){
-    dataHeat <- clusteredDataHeat #()
+  if (input$apply_cluster == TRUE){
+    data_heat <- clustered_data_heat #()
   }
-  
+
   # reduce number of inparalogs based on filtered dataHeat
-  dataHeatTB <- data.table(na.omit(dataHeat))
-  dataHeatTB[, paralogNew := .N, by = c("geneID","supertaxon")]
-  dataHeatTB <- data.frame(dataHeatTB[, c("geneID",
+  data_heat_tb <- data.table(na.omit(data_heat))
+  data_heat_tb[, paralogNew := .N, by = c("geneID", "supertaxon")]
+  data_heat_tb <- data.frame(data_heat_tb[, c("geneID",
                                           "supertaxon",
                                           "paralogNew")])
-  
-  dataHeat <- merge(dataHeat, dataHeatTB,
+
+  data_heat <- merge(data_heat, data_heat_tb,
                     by = c("geneID", "supertaxon"),
                     all.x = TRUE)
-  dataHeat$paralog <- dataHeat$paralogNew
-  dataHeat <- dataHeat[!duplicated(dataHeat), ]
-  
+  data_heat$paralog <- data_heat$paralogNew
+  data_heat <- data_heat[!duplicated(data_heat), ]
+
   # remove unneeded dots
-  dataHeat$presSpec[dataHeat$presSpec == 0] <- NA
-  dataHeat$paralog[dataHeat$presSpec < 1] <- NA
-  dataHeat$paralog[dataHeat$paralog == 1] <- NA
-  
-  p <- heatmap.plotting(dataHeat,
+  data_heat$presSpec[data_heat$presSpec == 0] <- NA
+  data_heat$paralog[data_heat$presSpec < 1] <- NA
+  data_heat$paralog[data_heat$paralog == 1] <- NA
+
+  p <- heatmap_plotting(data_heat,
                         input$x_axis,
                         input$var1_id,
                         input$var2_id,
@@ -764,93 +801,93 @@ mainPlot <- function(v, dataHeat, clusteredDataHeat, input){
                         input$dot_zoom,
                         input$x_angle,
                         1)
-  
+
   # highlight taxon
-  if(input$taxonHighlight != "none"){
+  if (input$taxon_highlight != "none"){
     # get selected highlight taxon ID
-    rank_select = input$rank_select
+    rank_select <- input$rank_select
     # get rank name from rank_select
-    rankName = substr(rank_select,
+    rank_rame <- substr(rank_select,
                       4,
-                      nchar(rank_select))   
+                      nchar(rank_select))
     taxa_list <- as.data.frame(read.table("data/taxonNamesReduced.txt",
                                           sep = "\t",
                                           header = T))
-    taxonHighlight <- {
-      taxa_list$ncbiID[taxa_list$fullName == input$taxonHighlight
-                       & taxa_list$rank == rankName]
+    taxon_highlight <- {
+      taxa_list$ncbiID[taxa_list$fullName == input$taxon_highlight
+                       & taxa_list$rank == rank_rame]
     }
-    if(length(taxonHighlight) == 0L){
-      taxonHighlight <- {
-        taxa_list$ncbiID[taxa_list$fullName == input$taxonHighlight]
+    if (length(taxon_highlight) == 0L){
+      taxon_highlight <- {
+        taxa_list$ncbiID[taxa_list$fullName == input$taxon_highlight]
       }
     }
-    
+
     # get taxonID together with it sorted index
-    highlightTaxon <- {
-      toString(dataHeat[dataHeat$supertaxonID == taxonHighlight, 2][1])
+    highlight_taxon <- {
+      toString(data_heat[data_heat$supertaxonID == taxon_highlight, 2][1])
     }
-    
+
     # get index
-    selectedIndex = as.numeric(as.character(substr(highlightTaxon,2,4)))
-    
+    selected_index <- as.numeric(as.character(substr(highlight_taxon, 2, 4)))
+
     # draw a rect to highlight this taxon's column
-    if(input$x_axis == "taxa"){
-      rect <- data.frame(xmin = selectedIndex - 0.5,
-                         xmax = selectedIndex + 0.5,
+    if (input$x_axis == "taxa"){
+      rect <- data.frame(xmin = selected_index - 0.5,
+                         xmax = selected_index + 0.5,
                          ymin = -Inf,
                          ymax = Inf)
     } else {
-      rect <- data.frame(ymin = selectedIndex - 0.5,
-                         ymax = selectedIndex + 0.5,
+      rect <- data.frame(ymin = selected_index - 0.5,
+                         ymax = selected_index + 0.5,
                          xmin = -Inf,
                          xmax = Inf)
     }
-    
-    p = p + geom_rect(data = rect,
-                      aes(xmin = xmin, xmax = xmax,
-                          ymin = ymin, ymax = ymax),
-                      color="yellow",
-                      alpha=0.3,
-                      inherit.aes = FALSE)
-  }
-  
-  # highlight gene
-  if(input$geneHighlight != "none"){
-    # get selected highlight gene ID
-    geneHighlight <- input$geneHighlight
-    
-    # get index
-    allGenes <- levels(dataHeat$geneID)
-    selectedIndex = match(geneHighlight, allGenes)
-    
-    # draw a rect to highlight this taxon's column
-    if(input$x_axis == "taxa"){
-      rect <- data.frame(ymin = selectedIndex - 0.5,
-                         ymax = selectedIndex + 0.5,
-                         xmin = -Inf,
-                         xmax = Inf)
-    } else {
-      rect <- data.frame(xmin = selectedIndex - 0.5,
-                         xmax = selectedIndex + 0.5,
-                         ymin = -Inf,
-                         ymax = Inf)
-    }
-    
-    p = p + geom_rect(data = rect,
+
+    p <- p + geom_rect(data = rect,
                       aes(xmin = xmin, xmax = xmax,
                           ymin = ymin, ymax = ymax),
                       color = "yellow",
                       alpha = 0.3,
                       inherit.aes = FALSE)
   }
-  
+
+  # highlight gene
+  if (input$gene_highlight != "none"){
+    # get selected highlight gene ID
+    gene_highlight <- input$gene_highlight
+
+    # get index
+    all_genes <- levels(data_heat$geneID)
+    selected_index <- match(gene_highlight, all_genes)
+
+    # draw a rect to highlight this taxon's column
+    if (input$x_axis == "taxa"){
+      rect <- data.frame(ymin = selected_index - 0.5,
+                         ymax = selected_index + 0.5,
+                         xmin = -Inf,
+                         xmax = Inf)
+    } else {
+      rect <- data.frame(xmin = selected_index - 0.5,
+                         xmax = selected_index + 0.5,
+                         ymin = -Inf,
+                         ymax = Inf)
+    }
+
+    p <- p + geom_rect(data = rect,
+                      aes(xmin = xmin, xmax = xmax,
+                          ymin = ymin, ymax = ymax),
+                      color = "yellow",
+                      alpha = 0.3,
+                      inherit.aes = FALSE)
+  }
+
   # do plotting
-  if(input$auto_update == FALSE){
+  if (input$auto_update == FALSE){
     # Add dependency on the update button
     # (only update when button is clicked)
     input$update_btn
-    
+
     # Add all the filters to the data based on the user inputs
     # wrap in an isolate() so that the data won't update every time an input
     # is changed
@@ -864,44 +901,42 @@ mainPlot <- function(v, dataHeat, clusteredDataHeat, input){
 
 # create plot (same as main plot) -------------------------------------------
 # vCt, dataHeat(), clusteredDataHeat(), get_input_selected()
-selected_plot <- function(vCt, dataHeat, clusteredDataHeat, input){
-  if (vCt$doPlotCustom == FALSE) return()
-  if(input$inSeq[1] == "all" & input$inTaxa[1] == "all") return()
+selected_plot <- function(v_ct, data_heat, clustered_data_heat, input){
+  if (v_ct$doPlotCustom == FALSE) return()
+  if (input$in_seq[1] == "all" & input$in_taxa[1] == "all") return()
   else{
-    # dataHeat <- dataHeat()
-    
     # cluster dataHeat (if selected)
-    if(input$apply_cluster == TRUE){
-      dataHeat <- clusteredDataHeat # ()
+    if (input$apply_cluster == TRUE){
+      data_heat <- clustered_data_heat # ()
     }
-    
+
     # process data
-    dataHeat$supertaxonMod <- {
-      substr(dataHeat$supertaxon,
+    data_heat$supertaxonMod <- {
+      substr(data_heat$supertaxon,
              6,
-             nchar(as.character(dataHeat$supertaxon)))
+             nchar(as.character(data_heat$supertaxon)))
     }
-    
-    if(input$inTaxa[1] == "all" & input$inSeq[1] != "all"){
+
+    if (input$in_taxa[1] == "all" & input$in_seq[1] != "all"){
       # select data from dataHeat for selected sequences only
-      dataHeat <- subset(dataHeat,geneID %in% input$inSeq) 
-    } else if(input$inSeq[1] == "all" & input$inTaxa[1] != "all"){
+      data_heat <- subset(data_heat, geneID %in% input$in_seq)
+    } else if (input$in_seq[1] == "all" & input$in_taxa[1] != "all"){
       # select data from dataHeat for selected taxa only
-      dataHeat <- subset(dataHeat, supertaxonMod %in% input$inTaxa) 
+      data_heat <- subset(data_heat, supertaxonMod %in% input$in_taxa)
     } else {
       # select data from dataHeat for selected sequences and taxa
-      dataHeat <- subset(dataHeat,
-                         geneID %in% input$inSeq
-                         & supertaxonMod %in% input$inTaxa) 
+      data_heat <- subset(data_heat,
+                         geneID %in% input$in_seq
+                         & supertaxonMod %in% input$in_taxa)
     }
-    
+
     # remove unneeded dots
-    dataHeat$presSpec[dataHeat$presSpec == 0] <- NA
-    dataHeat$paralog[dataHeat$presSpec < 1] <- NA
-    dataHeat$paralog[dataHeat$paralog == 1] <- NA
-    
+    data_heat$presSpec[data_heat$presSpec == 0] <- NA
+    data_heat$paralog[data_heat$presSpec < 1] <- NA
+    data_heat$paralog[data_heat$paralog == 1] <- NA
+
     # create plot
-    p <- heatmap.plotting(dataHeat,
+    p <- heatmap_plotting(data_heat,
                           input$x_axis_selected,
                           input$var1_id,
                           input$var2_id,
@@ -916,12 +951,12 @@ selected_plot <- function(vCt, dataHeat, clusteredDataHeat, input){
                           input$selected_legend,
                           input$dot_zoom_select,
                           input$x_angle_select, 0)
-    
+
     ### do plotting
-    if(input$auto_update_selected == FALSE){
+    if (input$auto_update_selected == FALSE){
       # Add dependency on the update button (only update when button is clicked)
-      input$plotCustom
-      
+      input$plot_custom
+
       # Add all the filters to the data based on the user inputs
       # wrap in an isolate() so that the data won't update every time an input
       # is changed
@@ -936,48 +971,47 @@ selected_plot <- function(vCt, dataHeat, clusteredDataHeat, input){
 
 # render detailed plot ------------------------------------------------------
 # v, detai_plotDt(), input$detailed_text
-detail_plot <- function(v, selDf, detailed_text, var1_id, var2_id){
+detail_plot <- function(v, sel_df, detailed_text, var1_id, var2_id){
   if (v$doPlot == FALSE) return()
-  
-  # selDf <- detail_plotDt()
-  selDf$x_label <- paste(selDf$orthoID,
+
+  sel_df$x_label <- paste(sel_df$orthoID,
                          " (",
-                         selDf$fullName,
+                         sel_df$fullName,
                          ")",
                          sep = "")
-  
+
   # if(input$detailed_remove_na == TRUE){
-  #   selDf <- selDf[!is.na(selDf$orthoID),]
+  #   sel_df <- sel_df[!is.na(sel_df$orthoID),]
   # }
-  
+
   # create joined DF for plotting var1 next to var2
-  var1Df <- subset(selDf, select = c("x_label","var1"))
+  var1Df <- subset(sel_df, select = c("x_label", "var1"))
   var1Df$type <- var1_id
-  colnames(var1Df) <- c("id","score","var")
-  
-  var2Df <- subset(selDf, select = c("x_label","var2"))
+  colnames(var1Df) <- c("id", "score", "var")
+
+  var2Df <- subset(sel_df, select = c("x_label", "var2"))
   var2Df$type <- var2_id
-  colnames(var2Df) <- c("id","score","var")
-  
-  detailedDf <- rbind(var1Df,var2Df)
-  
+  colnames(var2Df) <- c("id", "score", "var")
+
+  detailed_df <- rbind(var1Df, var2Df)
+
   # remove ONE missing variable
-  if(nlevels(as.factor(detailedDf$var)) > 1){
-    detailedDf <- detailedDf[nchar(detailedDf$var)>0,]
+  if (nlevels(as.factor(detailed_df$var)) > 1){
+    detailed_df <- detailed_df[nchar(detailed_df$var) > 0, ]
   }
-  
+
   # keep order of ID (x_label)
-  detailedDf$id <- factor(detailedDf$id, levels = unique(detailedDf$id))
-  
+  detailed_df$id <- factor(detailed_df$id, levels = unique(detailed_df$id))
+
   # create plot
-  gp = ggplot(detailedDf, aes(y=score,x=id,fill=var)) +
-    geom_bar(stat="identity", position = position_dodge(), na.rm = TRUE) +
+  gp <- ggplot(detailed_df, aes(y = score, x = id, fill = var)) +
+    geom_bar(stat = "identity", position = position_dodge(), na.rm = TRUE) +
     coord_flip() +
-    labs(x="") +
-    labs(fill="") +
+    labs(x = "") +
+    labs(fill = "") +
     theme_minimal()
   #geom_text(aes(label=var1), vjust=3)
-  gp = gp+theme(axis.text.x = element_text(angle=90,hjust=1),
+  gp <- gp + theme(axis.text.x = element_text(angle = 90, hjust = 1),
                 axis.text = element_text(size = detailed_text),
                 axis.title = element_text(size = detailed_text),
                 legend.text = element_text(size = detailed_text)
@@ -989,31 +1023,29 @@ detail_plot <- function(v, selDf, detailed_text, var1_id, var2_id){
 
 # var1 score distribution plot ------------------------------------------------
 # v, distDf(), input$dist_text_size
-var1DistPlot <- function(v, splitDt, dist_text_size, var1_id){
+var1_dist_plot <- function(v, split_dt, dist_text_size, var1_id){
   if (v$doPlot == FALSE) return()
-  
-  # splitDt <- distDf()
-  
-  if(is.null(levels(as.factor(splitDt$var1)))) return() 
+
+  if (is.null(levels(as.factor(split_dt$var1)))) return()
   else{
-    splitDt <- splitDt[!is.na(splitDt$var1),]
-    splitDt$mean <- mean(splitDt$var1)
-    
+    split_dt <- split_dt[!is.na(split_dt$var1), ]
+    split_dt$mean <- mean(split_dt$var1)
+
     # plot var1 score distribution
-    p <- ggplot(splitDt, aes(x = var1)) +
-      geom_histogram(binwidth=.01, alpha=.5, position="identity") +
-      geom_vline(data = splitDt,
-                 aes(xintercept = splitDt$mean,colour = "red"),
+    p <- ggplot(split_dt, aes(x = var1)) +
+      geom_histogram(binwidth = .01, alpha = .5, position = "identity") +
+      geom_vline(data = split_dt,
+                 aes(xintercept = split_dt$mean, colour = "red"),
                  linetype = "dashed",
                  size = 1) +
-      #      ggtitle(paste("Mean",input$var1_id,"=",round(mean(splitDt$var1),3))) +
+      #      ggtitle(paste("Mean",input$var1_id,"=",round(mean(split_dt$var1),3))) +
       theme_minimal()
     p <- p + theme(legend.position = "none",
                    #                   plot.title = element_text(hjust = 0.5),
                    axis.title = element_text(size = dist_text_size),
                    axis.text = element_text(size = dist_text_size)) +
       labs(x = paste0(var1_id,
-                      " (mean = ",round(mean(splitDt$var1),3),")"),
+                      " (mean = ", round(mean(split_dt$var1), 3), ")"),
            y = "Frequency")
     p
   }
@@ -1021,23 +1053,22 @@ var1DistPlot <- function(v, splitDt, dist_text_size, var1_id){
 
 # var2 score distribution plot ----------------------------------------------
 # v, distDf(), input$dist_text_size
-var2DistPlot <- function(v, splitDt, dist_text_size, var2_id){
+var2_dist_plot <- function(v, split_dt, dist_text_size, var2_id){
   if (v$doPlot == FALSE) return()
-  
-  # splitDt <- distDf()
-  if(is.null(levels(as.factor(splitDt$var2)))) return()
+
+  if (is.null(levels(as.factor(split_dt$var2)))) return()
   else{
-    splitDt <- splitDt[!is.na(splitDt$var2),]
-    splitDt$mean <- mean(splitDt$var2)
-    
+    split_dt <- split_dt[!is.na(split_dt$var2), ]
+    split_dt$mean <- mean(split_dt$var2)
+
     # plot var1 score distribution
-    p <- ggplot(splitDt, aes(x=var2)) +
-      geom_histogram(binwidth=.01, alpha=.5, position="identity") +
-      geom_vline(data=splitDt,
-                 aes(xintercept=splitDt$mean,colour="red"),
-                 linetype="dashed",
-                 size=1) +
-      #      ggtitle(paste("Mean",input$var2_id,"=",round(mean(splitDt$var2),3))) +
+    p <- ggplot(split_dt, aes(x = var2)) +
+      geom_histogram(binwidth = .01, alpha = .5, position = "identity") +
+      geom_vline(data = split_dt,
+                 aes(xintercept = split_dt$mean, colour = "red"),
+                 linetype = "dashed",
+                 size = 1) +
+      #      ggtitle(paste("Mean",input$var2_id,"=",round(mean(split_dt$var2),3))) +
       theme_minimal()
     p <- p + theme(legend.position = "none",
                    # plot.title = element_text(size=input$legend_size),#hjust = 0.5,
@@ -1045,7 +1076,7 @@ var2DistPlot <- function(v, splitDt, dist_text_size, var2_id){
                    axis.text = element_text(size = dist_text_size)) +
       labs(x = paste0(var2_id,
                       " (mean = ",
-                      round(mean(splitDt$var2),3),
+                      round(mean(split_dt$var2), 3),
                       ")"),
            y = "Frequency")
     p
@@ -1054,31 +1085,31 @@ var2DistPlot <- function(v, splitDt, dist_text_size, var2_id){
 
 # % presSpec distribution plot ----------------------------------------------
 # v, presSpecAllDt,input$percent, input$dist_text_size
-presSpecPlot <- function(v, dt, percent, dist_text_size){
+pres_spec_plot <- function(v, dt, percent, dist_text_size){
   if (v$doPlot == FALSE) return()
-  
+
   # data
   # dt <- presSpecAllDt()
-  
+
   # remove presSpec < cutoff_min or > cutoff_max
-  if(percent[1] > 0){
-    dt <- dt[dt$presSpec >= percent[1] & dt$presSpec <= percent[2],]
+  if (percent[1] > 0){
+    dt <- dt[dt$presSpec >= percent[1] & dt$presSpec <= percent[2], ]
   } else {
-    if(input$percent[2] > 0){
-      dt <- dt[dt$presSpec > 0 & dt$presSpec <= percent[2],]
+    if (input$percent[2] > 0){
+      dt <- dt[dt$presSpec > 0 & dt$presSpec <= percent[2], ]
     } else {
-      dt <- dt[dt$presSpec > 0,]
+      dt <- dt[dt$presSpec > 0, ]
     }
   }
-  
+
   # calculate mean presSpec score
   dt$mean <- mean(dt$presSpec)
-  
+
   # plot presSpec distribution
-  p <- ggplot(dt, aes(x=presSpec)) +
-    geom_histogram(binwidth=.01, alpha=.5, position="identity") +
-    geom_vline(data=dt, aes(xintercept=dt$mean,colour="red"),
-               linetype="dashed", size=1) +
+  p <- ggplot(dt, aes(x = presSpec)) +
+    geom_histogram(binwidth = .01, alpha = .5, position = "identity") +
+    geom_vline(data = dt, aes(xintercept = dt$mean, colour = "red"),
+               linetype = "dashed", size = 1) +
     #      ggtitle(paste("Mean % present taxa = ",round(mean(dt$presSpec),3))) +
     theme_minimal()
   p <- p + theme(legend.position = "none",
@@ -1086,7 +1117,7 @@ presSpecPlot <- function(v, dt, percent, dist_text_size){
                  axis.title = element_text(size = dist_text_size),
                  axis.text = element_text(size = dist_text_size)) +
     labs(x = paste0("% present taxa (mean = ",
-                    round(mean(dt$presSpec),3),")"),
+                    round(mean(dt$presSpec), 3), ")"),
          y = "Frequency")
   p
 }
@@ -1095,168 +1126,94 @@ presSpecPlot <- function(v, dt, percent, dist_text_size){
 
 # create domain plot ----------------------------------------------------------
 # v3, point_infoDetail(), getDomainFile(), input$demo_data,
-# input$oneSeqFasta, input$label_archi_size, input$title_archi_size
-archi_plot <- function(v3, info, fileDomain, demo_data,
-                       oneSeqFasta,label_archi_size, title_archi_size){
+# input$one_seq_fasta, input$label_archi_size, input$title_archi_size
+archi_plot <- function(v3, 
+                       info, domain_df, 
+                       one_seq_fasta, label_archi_size, title_archi_size){
   if (v3$doPlot3 == FALSE) return()
   # info
-  # info <- point_infoDetail() # info = seedID, orthoID, var1
   group <- as.character(info[1])
   ortho <- as.character(info[2])
   var1 <- as.character(info[3])
-  
-  # parse domain file
-  # fileDomain <- getDomainFile()
-  # if(input$demo == TRUE){
-  if(demo_data == "demo" | demo_data == "ampk-tor"){
-    domain_df <- as.data.frame(read.csv(fileDomain,
-                                        sep = "\t",
-                                        header = F,
-                                        comment.char = "",
-                                        stringsAsFactors = FALSE,
-                                        quote = ""))
-    
-    if(ncol(domain_df) == 5){
-      colnames(domain_df) <- c("seedID",
-                               "orthoID",
-                               "feature",
-                               "start",
-                               "end")
-      
-    } else if(ncol(domain_df) == 6){
-      colnames(domain_df) <- c("seedID",
-                               "orthoID",
-                               "feature",
-                               "start",
-                               "end",
-                               "weight")
-      
-    } else if(ncol(domain_df) == 7){
-      colnames(domain_df) <- c("seedID",
-                               "orthoID",
-                               "feature",
-                               "start",
-                               "end",
-                               "weight",
-                               "path")
-    }
-    domain_df$length <- max(domain_df$end)
-    
-  } else {
-    if(fileDomain != FALSE){
-      domain_df <- as.data.frame(read.table(fileDomain,
-                                            sep = "\t",
-                                            header = FALSE,
-                                            comment.char = ""))
-    }
-    
-    if(ncol(domain_df) == 6){
-      colnames(domain_df) <- c("seedID",
-                               "orthoID",
-                               "length",
-                               "feature",
-                               "start",
-                               "end")
-      
-    } else if(ncol(domain_df) == 7){
-      colnames(domain_df) <- c("seedID",
-                               "orthoID",
-                               "length",
-                               "feature",
-                               "start",
-                               "end",
-                               "weight")
-      
-    } else if(ncol(domain_df) == 8){
-      colnames(domain_df) <- c("seedID",
-                               "orthoID",
-                               "length",
-                               "feature",
-                               "start",
-                               "end",
-                               "weight",
-                               "path")
-    }
-  }
-  
-  domain_df$seedID <- gsub("\\|", ":", domain_df$seedID)
-  domain_df$orthoID <- gsub("\\|", ":", domain_df$orthoID)
-  
-  # get sub dataframe based on selected groupID and orthoID
+
+  # get sub dataframe based on selected group_id and orthoID
   ortho <- gsub("\\|", ":", ortho)
-  grepID = paste(group, "#", ortho, sep = "")
+  grepID <- paste(group, "#", ortho, sep = "")
+  
   subdomain_df <- domain_df[grep(grepID, domain_df$seedID), ]
   subdomain_df$feature <- as.character(subdomain_df$feature)
-  
-  if(nrow(subdomain_df) < 1){
-    v3$doPlot3 = FALSE
+
+  if (nrow(subdomain_df) < 1){
+    v3$doPlot3 <- FALSE
     return()
   } else {
-    
+
     # ortho domains df
-    orthoDf <- filter(subdomain_df, orthoID == ortho)
-    
+    ortho_df <- filter(subdomain_df, orthoID == ortho)
+
     # seed domains df
-    seedDf <- filter(subdomain_df, orthoID != ortho)
-    
-    if(nrow(seedDf) == 0){seedDf <- orthoDf}
-    
-    seed = as.character(seedDf$orthoID[1])
-    
-    # change order of one dataframe's features based on order of other df's features
-    if(length(orthoDf$feature) < length(seedDf$feature)){
-      orderedOrthoDf <- orthoDf[order(orthoDf$feature), ]
-      orderedSeedDf <- sortDomains(orderedOrthoDf, seedDf)
+    seed_df <- filter(subdomain_df, orthoID != ortho)
+
+    if (nrow(seed_df) == 0) seed_df <- ortho_df
+
+    seed <- as.character(seed_df$orthoID[1])
+
+    # change order of one dataframe's features
+    # based on order of other df's features
+    if (length(ortho_df$feature) < length(seed_df$feature)){
+      ordered_ortho_df <- ortho_df[order(ortho_df$feature), ]
+      ordered_seed_df <- sort_domains(ordered_ortho_df, seed_df)
     } else {
-      orderedSeedDf <- seedDf[order(seedDf$feature), ]
-      orderedOrthoDf <- sortDomains(orderedSeedDf, orthoDf)
+      ordered_seed_df <- seed_df[order(seed_df$feature), ]
+      ordered_ortho_df <- sort_domains(ordered_seed_df, ortho_df)
     }
-    
+
     # join weight values and feature names
-    if("weight" %in% colnames(orderedOrthoDf)){
-      orderedOrthoDf$yLabel <- paste0(orderedOrthoDf$feature,
+    if ("weight" %in% colnames(ordered_ortho_df)){
+      ordered_ortho_df$yLabel <- paste0(ordered_ortho_df$feature,
                                       " (",
-                                      round(orderedOrthoDf$weight,2),
+                                      round(ordered_ortho_df$weight, 2),
                                       ")")
-      orderedOrthoDf$feature <- orderedOrthoDf$yLabel
+      ordered_ortho_df$feature <- ordered_ortho_df$yLabel
     }
-    if("weight" %in% colnames(orderedSeedDf)){
-      orderedSeedDf$yLabel <- paste0(orderedSeedDf$feature,
+    if ("weight" %in% colnames(ordered_seed_df)){
+      ordered_seed_df$yLabel <- paste0(ordered_seed_df$feature,
                                      " (",
-                                     round(orderedSeedDf$weight,2),
+                                     round(ordered_seed_df$weight, 2),
                                      ")")
-      orderedSeedDf$feature <- orderedSeedDf$yLabel
+      ordered_seed_df$feature <- ordered_seed_df$yLabel
     }
-    
+
     # plotting
-    sep = ":"
-    if(!is.null(oneSeqFasta)) sep <- "|"
-    
-    if("length" %in% colnames(subdomain_df)){
-      plot_ortho <- domain.plotting(orderedOrthoDf,
+    sep <- ":"
+    if (!is.null(one_seq_fasta)) sep <- "|"
+    if ("length" %in% colnames(subdomain_df)){
+      plot_ortho <- domain_plotting(ordered_ortho_df,
                                     ortho,
                                     sep,
                                     label_archi_size,
                                     title_archi_size,
                                     min(subdomain_df$start),
-                                    max(c(subdomain_df$end, subdomain_df$length)))
-      plot_seed <- domain.plotting(orderedSeedDf,
+                                    max(c(subdomain_df$end,
+                                          subdomain_df$length)))
+      plot_seed <- domain_plotting(ordered_seed_df,
                                    seed,
                                    sep,
                                    label_archi_size,
                                    title_archi_size,
                                    min(subdomain_df$start),
-                                   max(c(subdomain_df$end, subdomain_df$length)))
-      
+                                   max(c(subdomain_df$end,
+                                         subdomain_df$length)))
+
     } else{
-      plot_ortho <- domain.plotting(orderedOrthoDf,
+      plot_ortho <- domain_plotting(ordered_ortho_df,
                                     ortho,
                                     sep,
                                     label_archi_size,
                                     title_archi_size,
                                     min(subdomain_df$start),
                                     max(subdomain_df$end))
-      plot_seed <- domain.plotting(orderedSeedDf,
+      plot_seed <- domain_plotting(ordered_seed_df,
                                    seed,
                                    sep,
                                    label_archi_size,
@@ -1264,75 +1221,74 @@ archi_plot <- function(v3, info, fileDomain, demo_data,
                                    min(subdomain_df$start),
                                    max(subdomain_df$end))
     }
-    
+
     # grid.arrange(plot_seed,plot_ortho,ncol=1)
-    
-    if(ortho == seed){
+
+    if (ortho == seed){
       arrangeGrob(plot_seed, ncol = 1)
     } else {
-      seedHeight = length(levels(as.factor(orderedSeedDf$feature)))
-      orthoHeight = length(levels(as.factor(orderedOrthoDf$feature)))
-      
-      arrangeGrob(plot_seed ,plot_ortho, ncol = 1,
-                  heights = c(seedHeight, orthoHeight))
+      seed_height <- length(levels(as.factor(ordered_seed_df$feature)))
+      ortho_height <- length(levels(as.factor(ordered_ortho_df$feature)))
+
+      arrangeGrob(plot_seed, plot_ortho, ncol = 1,
+                  heights = c(seed_height, ortho_height))
     }
   }
 }
 
 # sort one domain dataframe (ortho) based on the other domain Df (seed) -------
-sortDomains <- function(seedDf, orthoDf){
-  # get list of features in seedDf
-  featureList <- as.data.frame(levels(as.factor(seedDf$feature)))
-  colnames(featureList) <- c("feature")
+sort_domains <- function(seed_df, ortho_df){
+  # get list of features in seed_df
+  feature_list <- as.data.frame(levels(as.factor(seed_df$feature)))
+  colnames(feature_list) <- c("feature")
   # and add order number to each feature
-  featureList$orderNo <- seq(length(featureList$feature))
-  
-  # merge those info to orthoDf
-  orderedOrthoDf <- merge(orthoDf,featureList, all.x=TRUE)
-  
-  # sort orthoDf
-  index <- with(orderedOrthoDf, order(orderNo))
-  orderedOrthoDf <- orderedOrthoDf[index,]
-  
+  feature_list$orderNo <- seq(length(feature_list$feature))
+
+  # merge those info to ortho_df
+  ordered_ortho_df <- merge(ortho_df, feature_list, all.x = TRUE)
+
+  # sort ortho_df
+  index <- with(ordered_ortho_df, order(orderNo))
+  ordered_ortho_df <- ordered_ortho_df[index, ]
+
   #turn feature column into a character vector
-  orderedOrthoDf$feature <- as.character(orderedOrthoDf$feature)
+  ordered_ortho_df$feature <- as.character(ordered_ortho_df$feature)
   #then turn it back into an ordered factor (to keep this order while plotting)
-  orderedOrthoDf$feature <- factor(orderedOrthoDf$feature,
-                                   levels = unique(orderedOrthoDf$feature))
-  
+  ordered_ortho_df$feature <- factor(ordered_ortho_df$feature,
+                                   levels = unique(ordered_ortho_df$feature))
   #return sorted df
-  orderedOrthoDf
+  ordered_ortho_df
 }
 
 # plot domain architecture ----------------------------------------------------
-domain.plotting <- function(df,
+domain_plotting <- function(df,
                             geneID,
                             sep,
-                            labelSize,
-                            titleSize,
-                            minStart,
-                            maxEnd){
+                            label_size,
+                            title_size,
+                            min_start,
+                            max_end){
   gg <- ggplot(df, aes(y = feature, x = end, color = feature)) +
     geom_segment(data = df,
                  aes(y = feature, yend = feature,
-                     x = minStart, xend = maxEnd),
+                     x = min_start, xend = max_end),
                  color = "white",
                  size = 0)
-  
+
   # draw lines for representing sequence length
-  gg <- gg + geom_segment(data=df,
+  gg <- gg + geom_segment(data = df,
                           aes(x = 0, xend = length,
                               y = feature, yend = feature),
                           size = 1,
                           color = "#b2b2b2")
-  
+
   # draw line and points
-  gg <- gg + geom_segment(data=df,
+  gg <- gg + geom_segment(data = df,
                           aes(x = start, xend = end,
                               y = feature, yend = feature),
                           size = 1.5)
   gg <- gg + geom_point(data = df,
-                        aes(y = feature, x=start),
+                        aes(y = feature, x = start),
                         color = "#b2b2b2",
                         size = 3,
                         shape = 3)
@@ -1341,57 +1297,60 @@ domain.plotting <- function(df,
                         color = "#edae52",
                         size = 3,
                         shape = 5)
-  
+
   # draw dashed line for domain path
-  gg <- gg + geom_segment(data = df[df$path == "Y", ], 
+  gg <- gg + geom_segment(data = df[df$path == "Y", ],
                           aes(x = start, xend = end,
                               y = feature, yend = feature),
                           size = 3,
                           linetype = "dashed")
-  
+
   # # add text above
-  # gg <- gg + geom_text(data=df,
-  #                      aes(x=(start+end)/2, y=feature, label=round(weight,2)),
-  #                      color="#9fb059", size=descSize, vjust=-0.75, fontface="bold", family="serif")
-  
+  # gg <- gg + geom_text(data = df,
+  #                      aes(x = (start + end) / 2,
+  #                          y = feature, label = round(weight,2)),
+  #                        color = "#9fb059",
+  #                        size = descSize,
+  #                        vjust = -0.75,
+  #                        fontface = "bold",
+  #                        family = "serif")
+
   # theme format
-  titleMod <- gsub(":",sep,geneID)
-  gg <- gg + scale_y_discrete(expand=c(0.075,0))
-  gg <- gg + labs(title=paste0(titleMod), y="Feature")
+  title_mod <- gsub(":", sep, geneID)
+  gg <- gg + scale_y_discrete(expand = c(0.075, 0))
+  gg <- gg + labs(title = paste0(title_mod), y = "Feature")
   gg <- gg + theme_minimal()
-  gg <- gg + theme(panel.border=element_blank())
-  gg <- gg + theme(axis.ticks=element_blank())
-  gg <- gg + theme(plot.title=element_text(face="bold",size=titleSize))
-  gg <- gg + theme(plot.title=element_text(hjust = 0.5))
-  gg <- gg + theme(legend.position="none",axis.title.x=element_blank(),
-                   axis.text.y = element_text(size=labelSize),
-                   axis.title.y = element_text(size=labelSize),
+  gg <- gg + theme(panel.border = element_blank())
+  gg <- gg + theme(axis.ticks = element_blank())
+  gg <- gg + theme(plot.title = element_text(face = "bold", size = title_size))
+  gg <- gg + theme(plot.title = element_text(hjust = 0.5))
+  gg <- gg + theme(legend.position = "none", axis.title.x = element_blank(),
+                   axis.text.y = element_text(size = label_size),
+                   axis.title.y = element_text(size = label_size),
                    panel.grid.minor.x = element_blank(),
                    panel.grid.major.x = element_blank())
-  
   # return plot
   return(gg)
 }
 
 # gene age plot ---------------------------------------------------------------
 # gene_ageDfMod(), input$gene_age_text
-gene_agePlot <- function(countDf, gene_age_text){
-  # countDf <- gene_ageDfMod()
-  p <- ggplot(countDf, aes(fill = age, y = percentage, x=1)) +
+gene_age_plot <- function(count_df, gene_age_text){
+  p <- ggplot(count_df, aes(fill = age, y = percentage, x = 1)) +
     geom_bar(stat = "identity") +
     scale_y_reverse() +
     coord_flip() +
     theme_minimal()
-  p <- p + geom_text(data=countDf,
-                     aes(x = 1, y = 100-pos,
-                         label = paste0(freq,"\n",percentage,"%")),
+  p <- p + geom_text(data = count_df,
+                     aes(x = 1, y = 100 - pos,
+                         label = paste0(freq, "\n", percentage, "%")),
                      size = 4 * gene_age_text)
-  p <- p + theme(legend.position="bottom",
+  p <- p + theme(legend.position = "bottom",
                  legend.title = element_blank(),
                  legend.text = element_text(size = 12 * gene_age_text),
                  axis.title = element_blank(), axis.text = element_blank()) +
     scale_fill_brewer(palette = "Spectral") +
-    guides(fill = guide_legend(nrow = round(nrow(countDf) / 3, 0),
+    guides(fill = guide_legend(nrow = round(nrow(count_df) / 3, 0),
                                byrow = TRUE))
   p
 }
@@ -1408,17 +1367,17 @@ dendrogram <- function(dd.col){
 
 # print list of available taxa ------------------------------------------------
 taxa_select_gc <- function(rank_select_gc, subset_taxa){
-  
+
   # if there is no rank set, there can not be any available taxa
   if (length(rank_select_gc) == 0) return()
   else{
-    
+
     # load list of unsorted taxa
     dt <- get_taxa_list(TRUE, subset_taxa)
-    
+
     # load list of taxon name
     name_list <- get_name_list(TRUE, FALSE)
-    
+
     # get rank name from rank_select
     rank_name <- substr(rank_select_gc, 4, nchar(rank_select_gc))
     choice <- as.data.frame
@@ -1436,19 +1395,19 @@ get_plot_output_list <- function(genes, input, interesting_features) {
   # Insert plot output objects the list
     plot_output_list <- lapply(1:nrow(genes), function(i) {
       plotname <- paste(genes[i, 1])
-      plot_output_object <- renderPlot(get_multiplot(genes[i, ], input, 
+      plot_output_object <- renderPlot(get_multiplot(genes[i, ], input,
                                                      interesting_features),
                                        height = 650, width = 700)
     })
     do.call(tagList, plot_output_list) # needed to display properly.
     return(plot_output_list)
-  
+
 }
 
 # Put the plots for one spicific gene in one multiplot ------------------------
 # get_input_gc
 get_multiplot <- function(gene_info, input, interesting_features){
-  
+
   # Sorting the information to the selected gene
   gene <- as.character(gene_info$geneID)
   in_group <- as.data.frame(gene_info$in_group)
@@ -1456,17 +1415,22 @@ get_multiplot <- function(gene_info, input, interesting_features){
   features <- as.data.frame(gene_info$features)
   pvalues <- gene_info$pvalues
   var <- gene_info$var
-  
+
   # the barplot does not depent on the selected variable(s)
-  barplot <-  get_barplot_gc(gene, in_group, out_group, features, input,interesting_features)
-  
+  barplot <-  get_barplot_gc(gene,
+                             in_group,
+                             out_group,
+                             features,
+                             input,
+                             interesting_features)
+
   if (is.null(barplot)){
     barplot <- textGrob("The selected domains are not found in the gene")
   }
   # if both variables are selected there are going to be 2 boxplots
   if (var == "Both"){
     pvalues <- unlist(pvalues, recursive = FALSE)
-    
+
     p1 <- unlist(pvalues[1])
     p2 <- unlist(pvalues[2])
     # Check if the p_values should be printed
@@ -1483,7 +1447,7 @@ get_multiplot <- function(gene_info, input, interesting_features){
       if (is.null (p1[1])) c1 <- "grey"
       else if (p1[length(p1)] < input$significance) c1 <- "indianred2"
       else c1 <- "grey"
-      
+
       if (is.null (p2[1])) c2 <- "grey"
       else if (p2[length(p2)] < input$significance) c2 <- "indianred2"
       else c2 <- "grey"
@@ -1492,21 +1456,21 @@ get_multiplot <- function(gene_info, input, interesting_features){
       c1 <- "grey"
       c2 <- "grey"
     }
-    
+
     boxplot1 <- get_boxplot_gc(in_group,
                                out_group,
                                input$var1_id,
                                gene,
                                c1,
                                info_p1, input)
-    
+
     boxplot2 <- get_boxplot_gc(in_group,
                                out_group,
                                input$var2_id,
                                gene,
                                c2,
                                info_p2, input)
-    
+
     m <- grid.arrange(textGrob(gene),
                       arrangeGrob(boxplot1, boxplot2, ncol = 2),
                       barplot,
@@ -1518,15 +1482,15 @@ get_multiplot <- function(gene_info, input, interesting_features){
     }else{
       info <- " "
     }
-    
+
     boxplot <- get_boxplot_gc(in_group,
                               out_group,
                               var,
                               gene,
                               "grey",
-                              info, 
+                              info,
                               input)
-    
+
     m <- grid.arrange(textGrob(gene),
                       boxplot,
                       barplot,
@@ -1601,16 +1565,14 @@ get_barplot_gc <- function(selected_gene,
       f <- subset(subdomain_df$feature,
                   startsWith(subdomain_df$feature, x))
       ifeatures <- append(ifeatures, f)
-      
     }
-    
+
     if (is.null(ifeatures))return()
     # only keep rows in which the feature begins with a element out of the
     # interesing Features
     subdomain_df <- subset(subdomain_df, subdomain_df$feature %in% ifeatures)
   }
-  
-  
+
   # part in in_group and Out-Group
   in_group_domain_df  <-  {
     subset(subdomain_df, subdomain_df$orthoID %in% in_group$orthoID)
@@ -1618,12 +1580,12 @@ get_barplot_gc <- function(selected_gene,
   out_group_domain_df <- {
     subset(subdomain_df, subdomain_df$orthoID %in% out_group$orthoID)
   }
-  
+
   # Get list of all seeds
   seeds <- unique (subdomain_df$seedID)
   in_not_empty <- 0
   out_not_empty <- 0
-  
+
   if (nrow(in_group_domain_df) == 0) {
     data_in <- NULL
     } else{
@@ -1631,7 +1593,7 @@ get_barplot_gc <- function(selected_gene,
     data_in <- as.data.frame(feature)
     data_in$amount <- 0
   }
-  
+
   if (nrow(out_group_domain_df) == 0) {
     data_out <- NULL
     } else{
@@ -1639,7 +1601,7 @@ get_barplot_gc <- function(selected_gene,
     data_out <- as.data.frame(feature)
     data_out$amount <- 0
   }
-  
+
   for (seed in seeds){
     if (!is.null(data_in)){
       in_g <- subset(in_group_domain_df, in_group_domain_df$seedID == seed)
@@ -1655,12 +1617,12 @@ get_barplot_gc <- function(selected_gene,
         }
       }
     }
-    
+
     if (!is.null(data_out)){
       out_g <- {
         subset(out_group_domain_df, out_group_domain_df$seedID == seed)
       }
-      
+
       if (!empty(out_g)){
         out_not_empty <- out_not_empty + 1
         out_group_features <-  plyr::count(out_g, "feature")
@@ -1674,17 +1636,17 @@ get_barplot_gc <- function(selected_gene,
       }
     }
   }
-  
+
   if (!is.null(data_in)){
     data_in$amount <- data_in$amount / in_not_empty
     data_in$type <- "in_group"
   }
-  
+
   if (!is.null(data_out)){
     data_out$amount <- data_out$amount / out_not_empty
     data_out$type <- "Out-Group"
   }
-  
+
   if (is.null(data_in) & !is.null(data_out)) {
     data_barplot <- data_out
     }  else if (is.null(data_out) & !is.null(data_in)){
@@ -1694,7 +1656,7 @@ get_barplot_gc <- function(selected_gene,
   } else{
     data_barplot <- NULL
   }
-  
+
   if (!is.null(data_barplot)){
     # generate Barplot
     barplot_gc <- ggplot(data_barplot,
@@ -1704,7 +1666,7 @@ get_barplot_gc <- function(selected_gene,
       scale_fill_grey() +
       labs(x = " ", y = "Average instances per protein", fill = "Group") +
       theme_minimal()
-    
+
     barplot_gc <- barplot_gc +
       theme(axis.text.x = element_text(size = input$x_size_gc,
                                        angle = input$angle_gc, hjust = 1),
@@ -1719,7 +1681,7 @@ get_barplot_gc <- function(selected_gene,
 
 # Get the p_values to print under the plot ----------------------------------
 get_info_p_values <- function (p){
-  
+
   if (is.na(p[1]))info_p_values <- "not enough information"
   else if (length(p) == 1){
     info_p_values <- paste("Kolmogorov-Smirnov-Test:",
@@ -1732,7 +1694,7 @@ get_info_p_values <- function (p){
                             as.character(round(p[2], 6)), sep = " ")
     info_p_values <- paste(info_p_values1, info_p_values2, sep = "\n")
   }
-  
+
   info_p_values <- paste("p_values:", info_p_values, sep = "\n")
   info_p_values
 }
@@ -1752,21 +1714,22 @@ get_significant_genes <- function (in_group,
                                    subset_taxa,
                                    data_full,
                                    session,
-                                   right_format_features){
+                                   right_format_features,
+                                   domains){
   if (is.null(in_group)
       | length(list_selected_genes_gc) == 0)return()
-  
+
   # load name List
   name_list <- get_name_list(TRUE, TRUE)
-  
+
   # load list of unsorted taxa
   dt <- get_taxa_list(FALSE, subset_taxa)
-  
+
   # Updateing of the Input ==================================================
   # if there is more than one element in the in_group
   # we look at the next common anchstor
-  
-  if(use_common_anchestor == TRUE){
+
+  if (use_common_anchestor == TRUE){
     ancestor <- get_common_ancestor(in_group, rank, name_list, dt)
     if (is.null(ancestor))return()
     in_group <- ancestor[1]
@@ -1774,7 +1737,7 @@ get_significant_genes <- function (in_group,
   } else{
     rank <- substring(rank, 4)
   }
-  
+
   # List with all significant genes
   significantGenes <- data.frame(
     geneID = character(),
@@ -1783,9 +1746,8 @@ get_significant_genes <- function (in_group,
     pvalues = I(list()),
     features = I(list()),
     databases = I(list()))
-  
+
   # List of genes to look at
-  #data_full <- get_data_filtered()
   if (is.element("all", list_selected_genes_gc)){
     genes <- data_full$geneID
     genes <- genes[!duplicated(genes)]
@@ -1798,12 +1760,12 @@ get_significant_genes <- function (in_group,
   selected_subset <- get_selected_subset(rank, in_group, name_list, dt)
   selected_subset <- subset(selected_subset,
                             !selected_subset$fullName == in_select)
-  
+
   # Check for each of the selected genes if they are significant
   # If a gene is significant generate the plots
   # and save them in significantGenesGroupComparison
   for (gene in genes){
-    
+
     # creates Substet only for current Gene
     selected_gene_df <- subset(data_full, data_full$geneID == gene)
     # In- and Out-Group depending on the Gene
@@ -1821,7 +1783,7 @@ get_significant_genes <- function (in_group,
 
     # Generate the p_values for the gene
     pvalues <- get_significant(in_group_df, out_group_df, var, gene, input)
-    
+
     if (!is.null(pvalues)){
       new_row <- data.frame(geneID = gene,
                             in_group = NA,
@@ -1831,7 +1793,9 @@ get_significant_genes <- function (in_group,
       new_row$in_group <- list(in_group_df)
       new_row$out_group <- list(out_group_df)
       new_row$pvalues <- list(pvalues)
-      features  <- get_features(gene, demo_data, anno_choose, file_domain, session)
+      features  <- get_features(gene,
+                                domains,
+                                session)
       new_row$features <- list(features)
       if (right_format_features){
         new_row$databases <- list(get_prefix_features(features))
@@ -1859,15 +1823,12 @@ get_prefix_features <- function(f){
 get_selected_subset <- function (rank, in_group, name_list, dt){
   # Look if the fullName is in the in_group
   name_list$fullName <- as.character(name_list$fullName)
-  
+
   #rank <- substring(rank, 4)
-  
-  
+
   name_list_rank <- subset(name_list, name_list$rank == rank)
-  
   x <- subset(name_list, name_list$fullName %in% in_group)
   # Look if it has the right rank
-  
   x1 <- dt[dt[, rank] %in% x$ncbiID, ]
   x1
 }
@@ -1877,60 +1838,50 @@ get_common_ancestor <- function(in_group,
                                 rank,
                                 name_list,
                                 all_selected_in_group_gc){
-  
-  
   # Get the list with all taxonomy ranks
   all_ranks <- get_taxonomy_ranks()
-  
   all_selected_in_group_gc <- {
     all_selected_in_group_gc[!duplicated(all_selected_in_group_gc), ]
   }
-  
+
   # all ranks higher than the selected rank
   # ranks were all elements of the in_group might be in the same taxon
   possible_ranks <- all_ranks [all_ranks >= rank]
   i <-  1
   if (length(in_group) == 1) rank <- substring(rank, 4)
-  
+
   # find the common ancestor of all taxa in the in_group
   # and use it as in_group
   while (length(in_group) > 1 & i < length(possible_ranks)){
     current_rank <- substring(possible_ranks[i], 4)
     next_rank <- substring(possible_ranks[i + 1], 4)
-    
+
     # dataframe with all elements with fitting rank
     in_g <- subset(name_list, name_list$rank == current_rank)
-    
+
     # subset of in_g with elements that belong to the in_group
     in_g <- subset(in_g, in_g$fullName %in% in_group)
-    
-    
+
     # dataset with all elements that could belong to the in_group
     possible_in_group <- subset(all_selected_in_group_gc,
                                 select = c(current_rank, next_rank))
-    
+
     possible_in_group <- {
       possible_in_group[possible_in_group[, current_rank] %in% in_g$ncbiID, ]
     }
-    
-    
-    
+
     possible_in_group <- possible_in_group[!duplicated(possible_in_group), ]
     # only consider elements of the list that have the next higher rank
     x <- subset(name_list, name_list$rank == next_rank)
-    
     x <- subset(x, x$ncbiID %in% possible_in_group[, next_rank] )
-    
+
     in_group <- x$fullName
-    
-    
     i <- i + 1
     rank <- next_rank
   }
   # If there is no common ancestor
   if (i > length(possible_ranks)) return()
   c(in_group, rank)
-  
 }
 
 # Decide if the gene is significant -----------------------------------------
@@ -1941,33 +1892,33 @@ get_significant <- function(in_g, out_g, var, gene, input){
   if (var == "Both"){
     var1 <- input$var1
     var2 <- input$var2
-    
+
     significant <-  FALSE
     # get the pValues for both variables
     pvalues1 <- get_p_values(in_g$var1, out_g$var1, significance_level)
     pvalues2 <- get_p_values(in_g$var2, out_g$var2, significance_level)
-    
+
     # check if the gene has a significant difference
     # in the distribioution of In- and Out-Group
     # in at least one of the variables
     # If there is not enough data to calculate a p-value
     # consider the gene as not intereisting
     if (is.null(pvalues1)){
-      
+
     }
     # check if the at last calculated p-value
     #is smaller than the significane level
     else if (pvalues1[length(pvalues1)] < significance_level){
       significant <- TRUE
     }
-    
+
     # analog to pvalues in the first variable
     if (is.null(pvalues2)){
-      
+
     } else if (pvalues2[length(pvalues2)] < significance_level){
       significant <-  TRUE
     }
-    
+
     # if the gene is interisting return the p_values
     if (significant){
       pvalues <- list(pvalues1, pvalues2)
@@ -1975,7 +1926,7 @@ get_significant <- function(in_g, out_g, var, gene, input){
     }
     # if the gene is not interisting return NULL
     else return(NULL)
-    
+
   } else{
     # Check which variable is selected and get the p_values
     if (var == input$var1_id){
@@ -1984,11 +1935,11 @@ get_significant <- function(in_g, out_g, var, gene, input){
     else {
       pvalues <- get_p_values(in_g$var2, out_g$var2, significance_level)
     }
-    
+
     # Analog to getting the significance with both variables
     if (is.null(pvalues)) return(NULL)
     else if (is.nan(pvalues[length(pvalues)])){
-      return(NULL) 
+      return(NULL)
     }else if (pvalues[length(pvalues)] < significance_level){
       pvalues <-  list(pvalues)
       return(pvalues)
@@ -2002,24 +1953,22 @@ get_significant <- function(in_g, out_g, var, gene, input){
 get_p_values <- function(var_in,
                          var_out,
                          significance_level){
-  # upper limit for the probability to reject H0 if it is correct
-  #significance_level <- input$significance
 
   # delete all entrys that are NA
   var_in <- var_in[!is.na(var_in)]
   var_out <- var_out[!is.na(var_out)]
-  
+
   # if there is no data in one of the groups the p-value is NA
   if (length(var_in) == 0)return(NULL)
   else if (length(var_out) == 0)return(NULL)
-  
+
   # if there is data the p-value is calculatet
   #with a combination of two non-parametric test
   else{
     # Kolmogorov-Smirnov Test
     # H0 : The two samples have the same distribution
     ks <- ks.boot(var_in, var_out, alternative = "two.sided")
-    
+
     # p-value = Probability(test statistic >= value for the samples)
     # probabilitiy to recet H0 if it is correct
     p.value <- ks$ks.boot.pvalue
@@ -2027,11 +1976,10 @@ get_p_values <- function(var_in,
     # from the same distribution
     # if the p-value is less than your significance level
     if (p.value < significance_level) pvalue <- c(p.value)
-    
+
     # if we accept H0 it does not mean that the samples are uninteresting
     # they could still have different location values
     else{
-      
       # Wilcoxon-Mann-Whitney Test
       # H0: the samples have the same location parameters
       wilcox <- wilcox.test(var_in,
@@ -2048,67 +1996,9 @@ get_p_values <- function(var_in,
 # get the list with all the features in the gene ----------------------------
 # input$demo_data
 get_features <- function(selected_gene,
-                         demo_data,
-                         anno_choose,
-                         file_domain,
+                         domains,
                          session){
-  # parse domain file
-  file_domain <- get_domain_file_gc(selected_gene, demo_data, anno_choose, file_domain, session)
-  
-  if(demo_data == "demo" | demo_data == "ampk-tor"){
-    domain_df <- as.data.frame(read.csv(file_domain,
-                                        sep = "\t",
-                                        header = F,
-                                        comment.char = "",
-                                        stringsAsFactors = FALSE,
-                                        quote = ""))
-    
-    if(ncol(domain_df) == 5){
-      colnames(domain_df) <- c("seedID", "orthoID", "feature", "start", "end")
-    } else if(ncol(domain_df) == 6){
-      colnames(domain_df) <- c("seedID", "orthoID", "feature", "start", "end", "weight")
-    } else if(ncol(domain_df) == 7){
-      colnames(domain_df) <- c("seedID", "orthoID", "feature", "start", "end", "weight", "path")
-    }
-    
-    domain_df$length <- max(domain_df$end)
-    
-  } else {
-    if(file_domain != FALSE){
-      domain_df <- as.data.frame(read.table(file_domain,
-                                            sep = "\t",
-                                            header = FALSE,
-                                            comment.char=""))
-    }
-    if(ncol(domain_df) == 6){
-      colnames(domain_df) <- c("seedID",
-                               "orthoID",
-                               "length",
-                               "feature",
-                               "start",
-                               "end")
-      
-    } else if(ncol(domain_df) == 7){
-      colnames(domain_df) <- c("seedID",
-                               "orthoID",
-                               "length",
-                               "feature",
-                               "start",
-                               "end",
-                               "weight")
-      
-    } else if(ncol(domain_df) == 8){
-      colnames(domain_df) <- c("seedID",
-                               "orthoID",
-                               "length",
-                               "feature",
-                               "start",
-                               "end",
-                               "weight",
-                               "path")
-    }
-  }
-  
+
   subdomain_df <- {
     subset(domain_df,
            substr(domain_df$seedID,
@@ -2120,12 +2010,14 @@ get_features <- function(selected_gene,
 }
 
 # get the data where to find the features -----------------------------------
-# input$demo_data, input$anno_choose, input$fileDomain_input
+# input$demo_data, input$anno_choose, input$file_domain_input
 get_domain_file_gc <- function(group,
                                demo_data,
                                anno_choose,
                                file_domain,
-                               session){
+                               session,
+                               domain_path){
+
   # domain file
   if (demo_data == "demo" | demo_data == "ampk-tor"){
     updateButton(session, "do_domain_plot", disabled = FALSE)
@@ -2143,7 +2035,7 @@ get_domain_file_gc <- function(group,
     
   }else {
     if (anno_choose == "from file"){
-       # file_domain <- input$fileDomain_input
+      # file_domain <- input$fileDomain_input
       if (is.null(file_domain)){
         file_domain <- "noFileInput"
       } else {
@@ -2164,7 +2056,8 @@ get_domain_file_gc <- function(group,
         all_extension <- c("txt", "csv", "list", "domains", "architecture")
         flag <- 0
         for (i in 1:length(all_extension)){
-          file_domain <- paste0(input$domain_path,
+          
+          file_domain <- paste0(domain_path,
                                 "/",
                                 group,
                                 ".",
@@ -2187,10 +2080,11 @@ get_domain_file_gc <- function(group,
       }
     }
   }
+
   return (file_domain)
 }
 
-get_multiplot_download_gc <- function(gene, input){
+get_multiplot_download_gc <- function(gene, input, interesting_features){
   x <- subset(significant_genes_gc,
               significant_genes_gc$geneID == gene)
   get_multiplot(x, input, interesting_features)
@@ -2219,14 +2113,13 @@ get_name_list <- function (as_character, delete_duplicated){
                                         sep = "\t",
                                         header = T,
                                         fill = TRUE))
-  if(as_character) {
+  if (as_character) {
     name_list$fullName <- as.character(name_list$fullName)
     name_list$rank <- as.character(name_list$rank)
   }
   if (delete_duplicated){
     name_list <- name_list[!duplicated(name_list), ]
   }
-  
   return(name_list)
 }
 
@@ -2236,96 +2129,104 @@ get_taxa_list <- function(subset_taxa_check, subset_taxa){
                                  sep = "\t",
                                  header = T,
                                  stringsAsFactors = T))
-  if(subset_taxa_check){
-    dt <- dt[dt$abbrName  %in% subset_taxa,]
+  if (subset_taxa_check){
+    dt <- dt[dt$abbrName  %in% subset_taxa, ]
   }
   return(dt)
 }
 
 # reverse string --------------------------------------------------------------
-strReverse <- function(x)
-  sapply(lapply(strsplit(x, NULL), rev), paste, collapse="")
+str_reverse <- function(x)
+  sapply(lapply(strsplit(x, NULL), rev), paste, collapse = "")
 
 # get last n characters from string x  ----------------------------------------
-substrRight <- function(x, n){
-  substr(x, nchar(x)-n+1, nchar(x))
+substr_right <- function(x, n){
+  substr(x, nchar(x) - n + 1, nchar(x))
 }
 
 # check internet connection  --------------------------------------------------
-hasInternet <- function(){
+has_internet <- function(){
   !is.null(curl::nslookup("r-project.org", error = FALSE))
 }
 
 # FUNCTION FOR CLUSTERING PROFILES --------------------------------------------
-clusteredGeneList <- function(data,distMethod,clusterMethod){
-  
+clustered_gene_list <- function(data, dist_method, cluster_method){
+
   # do clustering
-  row.order <- hclust(dist(data, method = distMethod),
-                      method = clusterMethod)$order
-  col.order <- hclust(dist(t(data), method = distMethod),
-                      method = clusterMethod)$order
-  
+  row.order <- hclust(dist(data, method = dist_method),
+                      method = cluster_method)$order
+  col.order <- hclust(dist(t(data), method = dist_method),
+                      method = cluster_method)$order
+
   # re-order data accoring to clustering
   dat_new <- data[row.order, col.order]
-  
+
   # return clustered gene ID list
-  clusteredGeneIDs <- as.factor(row.names(dat_new))
-  clusteredGeneIDs
+  clustered_gene_ids <- as.factor(row.names(dat_new))
+  clustered_gene_ids
 }
 
 # calculate percentage of present species -------------------------------------
-calcPresSpec <- function(taxaMdData, taxaCount){
-  ### taxaMdData = df("geneID","ncbiID","orthoID","var1","var2","paralog",....,"supertaxon")
-  taxaMdData <- taxaMdData[taxaMdData$orthoID != "NA",]
-  
+calc_pres_spec <- function(taxa_md_data, taxa_count){
+   # taxa_md_data = df("geneID",
+   #                 "ncbiID",
+   #                 "orthoID",
+   #                 "var1",
+   #                 "var2",
+   #                 "paralog",
+   #                 ....,
+   #                 "supertaxon")
+  taxa_md_data <- taxa_md_data[taxa_md_data$orthoID != "NA", ]
+
   # get geneID and supertaxon
-  geneIDsupertaxon <- subset(taxaMdData, 
-                             select = c('geneID',
-                                        'supertaxon',
-                                        'paralog',
-                                        'abbrName'))
+  gene_id_supertaxon <- subset(taxa_md_data,
+                             select = c("geneID",
+                                        "supertaxon",
+                                        "paralog",
+                                        "abbrName"))
   # remove duplicated rows
-  geneIDsupertaxon <- geneIDsupertaxon[!duplicated(geneIDsupertaxon), ] 
-  
-  # remove NA rows from taxaMdData
-  taxaMdDataNoNA <- taxaMdData[taxaMdData$orthoID != "NA", ]
-  
+  gene_id_supertaxon <- gene_id_supertaxon[!duplicated(gene_id_supertaxon), ]
+
+  # remove NA rows from taxa_md_data
+  taxa_md_data_no_na <- taxa_md_data[taxa_md_data$orthoID != "NA", ]
+
   # count present frequency of supertaxon for each gene
-  geneSupertaxonCount <- plyr::count(taxaMdDataNoNA, c('geneID', 'supertaxon'))
-  
-  # merge with taxaCount to get total number of species of each supertaxon
+  gene_supertaxon_count <- plyr::count(taxa_md_data_no_na,
+                                       c("geneID", "supertaxon"))
+
+  # merge with taxa_count to get total number of species of each supertaxon
   # and calculate presSpec
-  presSpecDt <- merge(geneSupertaxonCount,
-                      taxaCount,
-                      by = 'supertaxon',
+  pres_spec_dt <- merge(gene_supertaxon_count,
+                      taxa_count,
+                      by = "supertaxon",
                       all.x = TRUE)
-  
-  specCount <- plyr::count(geneIDsupertaxon,c('geneID',
-                                              'supertaxon'))
-  presSpecDt <- merge(presSpecDt,
-                      specCount,by = c('geneID',
-                                       'supertaxon'))
-  
-  presSpecDt$presSpec <- presSpecDt$freq / presSpecDt$freq.y
-  
-  presSpecDt <- presSpecDt[presSpecDt$presSpec <= 1, ]
-  presSpecDt <- presSpecDt[order(presSpecDt$geneID), ]
-  presSpecDt <- presSpecDt[, c("geneID", "supertaxon", "presSpec")]
-  
-  # add absent supertaxon into presSpecDt
-  geneIDsupertaxon <- subset(geneIDsupertaxon,
-                             select = -c(paralog,abbrName))
-  finalPresSpecDt <- merge(presSpecDt,
-                           geneIDsupertaxon,
-                           by = c('geneID', 'supertaxon'),
+
+  spec_count <- plyr::count(gene_id_supertaxon, c("geneID",
+                                              "supertaxon"))
+  pres_spec_dt <- merge(pres_spec_dt,
+                      spec_count, by = c("geneID",
+                                       "supertaxon"))
+
+  pres_spec_dt$presSpec <- pres_spec_dt$freq / pres_spec_dt$freq.y
+
+  pres_spec_dt <- pres_spec_dt[pres_spec_dt$presSpec <= 1, ]
+  pres_spec_dt <- pres_spec_dt[order(pres_spec_dt$geneID), ]
+  pres_spec_dt <- pres_spec_dt[, c("geneID", "supertaxon", "presSpec")]
+
+  # add absent supertaxon into pres_spec_dt
+  gene_id_supertaxon <- subset(gene_id_supertaxon,
+                             select = -c(paralog, abbrName))
+  final_pres_spec_dt <- merge(pres_spec_dt,
+                           gene_id_supertaxon,
+                           by = c("geneID", "supertaxon"),
                            all.y = TRUE)
-  finalPresSpecDt$presSpec[is.na(finalPresSpecDt$presSpec)] <- 0
-  
+  final_pres_spec_dt$presSpec[is.na(final_pres_spec_dt$presSpec)] <- 0
+
   # remove duplicated rows
-  finalPresSpecDt <- finalPresSpecDt[!duplicated(finalPresSpecDt), ]
-  
-  # return finalPresSpecDt
-  return(finalPresSpecDt)
+  final_pres_spec_dt <- final_pres_spec_dt[!duplicated(final_pres_spec_dt), ]
+
+  # return final_pres_spec_dt
+  return(final_pres_spec_dt)
 }
 
 # UNUSED FUNCTIONS ============================================================
