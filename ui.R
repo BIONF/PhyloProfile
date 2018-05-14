@@ -189,11 +189,25 @@ shinyUI(fluidPage(
              uiOutput("demo_data_describe"),
              uiOutput("main_input_file.ui"),
              uiOutput("input_check.ui"),
-             fluidRow(
-               column(6, uiOutput("select_oma_type")),
-               column(6, uiOutput("button_oma"),
-                      uiOutput("oma_download"))
-             ),
+             
+             # # Using list of OMA protein IDs as input -------------------------
+             # conditionalPanel(
+             # 
+             #   # check if the input is a list of OMA IDs
+             #   condition = "output.input_type == 'oma'",
+             # 
+             #   # Options to select the OMA type to generate the output 
+             #   radioButtons(
+             #     inputId = "selected_oma_type",
+             #     label = "Select type of orthologs:",
+             #     choices = list("PAIR", "HOG", "OG"),
+             #     selected = "PAIR",
+             #     inline = T
+             #   ),
+             # 
+             #   shinyBS::bsButton("get_data_oma", "Get data from OMA Browser")
+             # ),
+
              fluidRow(
                column(4,
                       uiOutput("var1_id.ui")
@@ -968,7 +982,7 @@ shinyUI(fluidPage(
           colourpicker::colourInput("high_color_var1",
                                     "High variable 1",
                                     value = "steelblue"),
-          actionButton("default_color_var1",
+          actionButton("defaultColorVar1",
                        "Default",
                        style = "padding:4px; font-size:100%"),
           hr(),
@@ -978,7 +992,7 @@ shinyUI(fluidPage(
           colourpicker::colourInput("high_color_var2",
                                     "High variable 2",
                                     value = "khaki"),
-          actionButton("default_color_var2",
+          actionButton("high_color_var2",
                        "Default",
                        style = "padding:4px; font-size:100%"),
           hr(),
