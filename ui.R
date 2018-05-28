@@ -157,7 +157,7 @@ shinyUI(fluidPage(
   
   # main narvarpage tabs ------------------------------------------------------
   navbarPage(
-    em(strong("PhyloProfile Tool")),
+    em(strong("PhyloProfile v0.3.0-beta")),
     id = "tabs",
     collapsible = TRUE,
     inverse = TRUE,
