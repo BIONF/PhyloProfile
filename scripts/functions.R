@@ -2151,7 +2151,6 @@ has_internet <- function(){
 
 # FUNCTION FOR CLUSTERING PROFILES --------------------------------------------
 clustered_gene_list <- function(data, dist_method, cluster_method){
-  print(head(data))
 
   # do clustering
   row.order <- hclust(dist(data, method = dist_method),

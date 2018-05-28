@@ -842,6 +842,7 @@ shinyServer(function(input, output, session) {
     if (input_type == "oma"){
       # Options to select the OMA type to generate the output
       selectInput("selected_oma_type", label = "Select type of OMA orthologs:",
+
                   choices = list("PAIR", "HOG", "OG"),
                   selected = "PAIR")
     } else {
@@ -875,6 +876,7 @@ shinyServer(function(input, output, session) {
       write.table(get_long_matrix(), "long.txt",
                   sep = "\t",
                   row.names = FALSE,
+
                   col.names = TRUE,
                   quote = FALSE)
       write.table(long_to_fasta(get_long_matrix()), "fasta.txt",
@@ -882,6 +884,7 @@ shinyServer(function(input, output, session) {
                   row.names = FALSE,
                   col.names = FALSE,
                   quote = FALSE)
+
       write.table(get_domain_information (), "domain.txt",
                   sep = "\t",
                   row.names = FALSE,
@@ -1559,6 +1562,7 @@ shinyServer(function(input, output, session) {
     if (v$doPlot == FALSE){
       return(selectInput("in_seq", "", "all"))
       }
+
     else{
       # full list
       data <- as.data.frame(get_data_filtered())
@@ -1638,6 +1642,7 @@ shinyServer(function(input, output, session) {
                       multiple = TRUE,
                       selectize = FALSE)
         }
+
         else {
           customList <- as.data.frame(read.table(file = fileCustom$datapath,
                                                  header = FALSE))
@@ -2318,6 +2323,7 @@ shinyServer(function(input, output, session) {
              width = input$selected_width * 0.056458333,
              height = input$selected_height * 0.056458333,
              units = "cm", dpi = 300, device = "pdf", limitsize = FALSE)
+
     }
   )
 
@@ -2430,6 +2436,7 @@ shinyServer(function(input, output, session) {
        | input$add_cons_gene_custom_profile == TRUE
        | input$add_gc_genes_custom_profile == TRUE){
       HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Profile clustering</strong> or <strong>Core genes finding</strong> or <strong>Groupcomparison</strong> &nbsp;to enable this function)</em></p>')
+
     }
   })
 
@@ -2451,7 +2458,6 @@ shinyServer(function(input, output, session) {
     if (input$demo_data == "demo" | input$demo_data == "ampk-tor"){
       filein <- 1
     }
-
     if (is.null(filein)){
       return(selectInput("in_taxa",
                          "Select taxa of interest:",
@@ -3172,6 +3178,7 @@ shinyServer(function(input, output, session) {
     }
   })
 
+
   # ===========================================================================
   # REACTIVE FUCTIONS =========================================================
   # ===========================================================================
@@ -3263,6 +3270,7 @@ shinyServer(function(input, output, session) {
   # Save the domain files as a data frame -------------------------------------
   get_domain_information <- reactive({
     domains <- data.frame()
+
     files <- c()
   
     if(!is.null(get_input_type())){
@@ -3280,6 +3288,7 @@ shinyServer(function(input, output, session) {
         genes <- unique(genes)
         
         for (gene in genes){
+
           file <- get_domain_file_gc(gene, 
                                      input$demo_data,
                                      input$anno_choose,
@@ -3302,6 +3311,7 @@ shinyServer(function(input, output, session) {
       if (input$demo_data == "demo" | input$demo_data == "ampk-tor"){
         
         for(file in files){
+
           domain_df <- as.data.frame(read.csv(file,
                                               sep = "\t",
                                               header = F,
@@ -3377,8 +3387,10 @@ shinyServer(function(input, output, session) {
                                  "path")
         }
       }
+
     domains$seedID <- gsub("\\|",":",domains$seedID)
     domains$orthoID <- gsub("\\|",":",domains$orthoID)
+
     return(domains)
    })
   
@@ -3451,6 +3463,7 @@ shinyServer(function(input, output, session) {
                        "angle_gc" = input$angle_gc,
                        "legend_gc" = input$legend_gc,
                        "legend_size_gc" = input$legend_size_gc)
+
   })
   
   # get ncbi taxa IDs ---------------------------------------------------------
@@ -3570,9 +3583,13 @@ shinyServer(function(input, output, session) {
           return(unkTaxa)
         }
       }
+
     }
+    # return input taxa
+    return(inputTaxa)
   })
   
+
   # Get list of all (super)taxa -----------------------------------------------
   alltaxa_list <- reactive({
     
@@ -3659,6 +3676,7 @@ shinyServer(function(input, output, session) {
     row.names(distDf) <- distDf$abbrName
     distDf <- distDf[, -1]
     
+
     # get sorted taxon IDs & sort full taxonomy info dataframe ----------------
     treeIn <- input$inputTree
     
@@ -4049,6 +4067,7 @@ shinyServer(function(input, output, session) {
     dat <- wide_data[, 2:ncol(wide_data)]  # numerical columns
     rownames(dat) <- wide_data[, 1]
     dat[is.na(dat)] <- 0
+
     # get clustered gene ids
     clusteredGeneIDs <- clustered_gene_list(dat,
                                             input$dist_method,
@@ -4312,6 +4331,7 @@ shinyServer(function(input, output, session) {
       
       ### load list of taxon name
       nameList <- get_name_list(TRUE, FALSE)
+
       
       # get rank name from rank_select
       rankName <- substr(rank_select_cus, 4, nchar(rank_select_cus))
