@@ -10,7 +10,7 @@ check_oma_id <- function(id){
   if (!is.null(data_id$entry_nr)) return (TRUE)
   else {
     return (FALSE)
-    }
+  }
 }
 
 # get the members for a OMA or Uniprot id -------------------------------------
@@ -18,11 +18,11 @@ get_members <- function(id, output_type){
   if (output_type == "HOG"){
     # get the members of the Hierarchical Orthologous Group
     members <- getAttribute(getHOG(id = id, level = "root", members = TRUE),
-                               "members")
+                            "members")
   } else if (output_type == "OG"){
     # get the members of the Ortholoug group
     members <- getAttribute(getData(type = "group", id = id),
-                               "members")
+                            "members")
   } else if (output_type == "PAIR"){
     # get the members of the Orthologous Pair 
     data <- getData(type = "protein", id = id)
@@ -85,11 +85,11 @@ oma_ids_to_fasta <- function(oma_ids, output_type){
     for (i in 1:nrow(members)){
       member <- members[i, ]
       ortho_id <- member$omaid # use the oma ID as ortho ID
-
+      
       # Data for the current member (ortho ID)
       member_data <- getData("protein", ortho_id)
       ncbi_id <- get_ncbi_id(member_data$omaid)
-
+      
       # New lines for the fasta format
       header_sequence <- paste0(">", gene_id, "|", ncbi_id, "|", ortho_id)
       sequence <- as.character(member_data$sequence)
@@ -158,11 +158,11 @@ oma_ids_to_domain <- function(oma_ids, output_type){
       domains <- resolveURL(member_data$domains) 
       regions <- domains$regions
       regions$feature <- paste(regions$source, regions$name, sep = " ")
-
+      
       for (i in 1:nrow(regions)){
         row_nr <- row_nr + 1
         domain <- regions[i, ]
-
+        
         location <- unlist(strsplit(domain$location, ":")) 
         
         domain_data[row_nr,1] <- seed_id
