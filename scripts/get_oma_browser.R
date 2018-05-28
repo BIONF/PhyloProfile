@@ -1,5 +1,5 @@
 library(devtools)
-if (!require("roma")) install_github("trvihn/roma")
+if (!require("roma")) install_github("trvinh/roma")
 library ("roma")
 
 # OMA IDs or Uniprot IDs as Input =============================================
