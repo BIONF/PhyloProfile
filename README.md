@@ -7,15 +7,15 @@
 [![](www/posterSub.png)](https://f1000research.com/posters/6-1782)
 [Click for the full PDF version of the poster](https://f1000research.com/posters/6-1782)
 
-*PhyloProfile* is a *Shiny*-based tool for integrating, visualizing and exploring multi-layered phylogenetic profiles.
+*PhyloProfile* is a *Shiny*-based tool for integrating, visualizing and exploring multi-layered [phylogenetic profiles](https://en.wikipedia.org/wiki/Phylogenetic_profiling).
 
-Alongside the presence/absence patterns of orthologs across large taxon collections, *PhyloProfile* allows the integration of any two additional information layers. These complementary data, like sequence similarity between orthologs, similarities in their domain architecture, or differences in functional annotations enable a more informed interpretation of phylogenetic profiles.
+Alongside the presence/absence patterns of [orthologs](https://en.wikipedia.org/wiki/Homology_(biology)) across large [taxon](https://en.wikipedia.org/wiki/Taxon) collections, *PhyloProfile* allows the integration of any two additional information layers. These complementary data, like [sequence similarity](https://en.wikipedia.org/wiki/Sequence_alignment) between orthologs, similarities in their [domain architecture](https://www.ncbi.nlm.nih.gov/pubmed/20221914), or differences in [functional annotations](https://en.wikipedia.org/wiki/Protein_function_prediction) enable a more informed interpretation of phylogenetic profiles.
 
-By utilizing the NCBI taxonomy, *PhyloProfile* can dynamically collapse taxa into higher systematic groups. This enables rapidly changing the resolution from the comparative analyses of proteins in individual species to that of entire kingdoms or even domains without changes to the input data.
+By utilizing the [NCBI taxonomy](https://www.ncbi.nlm.nih.gov/taxonomy), *PhyloProfile* can dynamically collapse taxa into higher [systematic groups](https://en.wikipedia.org/wiki/Taxonomy_(biology)). This enables rapidly changing the resolution from the comparative analyses of proteins in individual species to that of entire kingdoms or even domains without changes to the input data.
 
-*PhyloProfile* furthermore allows for a dynamic filtering of profiles – taking the taxonomic distribution and the additional information layers into account. This, along with functions to estimate the age of genes and core gene sets facilitates the exploration and analysis of large phylogenetic profiles.
+*PhyloProfile* furthermore allows for a dynamic filtering of profiles – taking the taxonomic distribution and the additional information layers into account. This, along with functions to estimate [the age of genes](http://www.cell.com/trends/genetics/fulltext/S0168-9525(13)00111-X) and [core gene](https://en.wikipedia.org/wiki/Pan-genome) sets facilitates the exploration and analysis of large phylogenetic profiles.
 
-Take a look at [the functionality](https://github.com/BIONF/PhyloProfile/wiki/Functionality) of *PhyloProfile* and [explore the installation-free online version](https://phyloprofile.shinyapps.io/phyloprofile/) to learn more.
+Take a look at [the functionality](https://github.com/BIONF/PhyloProfile/wiki/Functionality) of *PhyloProfile* and [explore the installation-free online version](http://applbio.biologie.uni-frankfurt.de/phyloprofile/) to learn more.
 
 # Table of Contents
 * [Installation &amp; Usage](#installation--usage)
@@ -61,6 +61,9 @@ We would like to thank
 
 # Code of Conduct & License
 This tool is released with a [Contributor Code of Conduct](https://github.com/BIONF/PhyloProfile/blob/master/CODE_OF_CONDUCT.md) & under [MIT license](https://github.com/BIONF/PhyloProfile/blob/master/LICENSE).
+
+# How-To Cite
+Ngoc-Vinh Tran, Bastian Greshake Tzovaras, Ingo Ebersberger; PhyloProfile: Dynamic visualization and exploration of multi-layered phylogenetic profiles, Bioinformatics, , bty225, https://doi.org/10.1093/bioinformatics/bty225
 
 # Contact
 Vinh Tran
