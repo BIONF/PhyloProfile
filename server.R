@@ -75,9 +75,14 @@ if (!require("shinycssloaders")) {
   devtools::install_github("andrewsali/shinycssloaders", force = TRUE)
 }
 if (!require("Matching")) install.packages("Matching")
+
 source("scripts/taxonomyProcessing.R")
 source("scripts/functions.R")
 source("scripts/get_oma_browser.R")
+
+source("scripts/search_taxon_id.R")
+source("scripts/parse_main_input.R")
+source("scripts/parse_domain_input.R")
 
 # MAIN ========================================================================
 options(shiny.maxRequestSize = 99 * 1024 ^ 2)  # size limit for input 99mb
@@ -94,12 +99,11 @@ shinyServer(function(input, output, session) {
   # check for internet connection ---------------------------------------------
   observe({
     if (has_internet() == FALSE){
-      # toggleState("demo")
+      # toggleState("lca-micros")
       toggleState("demo_data")
     }
   })
-
-  # MISSING COMMENT -----------------------------------------------------------
+  
   output$no_internet_msg <- renderUI({
     if (has_internet() == FALSE){
       strong(em("Internet connection is required for using demo data!"),
@@ -211,75 +215,77 @@ shinyServer(function(input, output, session) {
     }
   })
 
-  # output mismatched taxa ----------------------------------------------------
-  output$not_found_taxa <- renderDataTable(option = list(searching = FALSE), {
-    if (input$id_search > 0){
-      if (length(taxa_id()) > 0){
-        tb <- as.data.frame(taxa_id())
-        tb_filtered <- tb[tb$type == "notfound", ]
-        not_found_dt <- tb_filtered[, c("name", "new_name", "id")]
-        colnames(not_found_dt) <- c("Summitted name",
-                                  "Alternative name",
-                                  "Alternative ID")
-        not_found_dt
-      }
-    }
-  })
-
-  # MISSING COMMENT -----------------------------------------------------------
-  output$download_not_found_taxa <- downloadHandler(
-    filename = function(){
-      c("mismatchedTaxa.txt")
-      },
-    content = function(file){
-      tb <- as.data.frame(taxa_id())
-      tb_filtered <- tb[tb$type == "notfound", ]
-      not_found_dt <- tb_filtered[, c("name", "new_name", "id")]
-      colnames(not_found_dt) <- c("Summitted name",
-                                "Alternative name",
-                                "Alternative ID")
-
-      write.table(not_found_dt, file,
-                  sep = "\t",
-                  row.names = FALSE,
-                  quote = FALSE)
-    }
-  )
-
-  # output retrieved taxa IDs -------------------------------------------------
-  output$taxa_id <- renderDataTable(option = list(searching = FALSE), {
-    if (input$id_search > 0){
-      if (length(taxa_id()) > 0){
-        tb <- as.data.frame(taxa_id())
-        tb_filtered <- tb[tb$type == "retrieved", ]
-        retrieved_dt <- tb_filtered[, c("name", "id")]
-        colnames(retrieved_dt) <- c("Taxon_name", "Taxon_ID")
-        retrieved_dt
-      }
-    }
-  })
-
-  output$download_taxa_id <- downloadHandler(
-    filename = function(){
-      c("retrievedtaxa_id.txt")
-      },
-    content = function(file){
-      tb <- as.data.frame(taxa_id())
-      tb_filtered <- tb[tb$type == "retrieved", ]
-      retrieved_dt <- tb_filtered[, c("name", "id")]
-      colnames(retrieved_dt) <- c("Taxon name", "Taxon ID")
-
-      write.table(retrieved_dt, file,
-                  sep = "\t",
-                  row.names = FALSE,
-                  quote = FALSE)
-    }
-  )
+  # GET TAXONOMY IDS FROM LIST OF TAXON NAMES  ==================================
+  # # output mismatched taxa ----------------------------------------------------
+  # output$not_found_taxa <- renderDataTable(option = list(searching = FALSE), {
+  #   if (input$id_search > 0){
+  #     if (length(taxa_id()) > 0){
+  #       tb <- as.data.frame(taxa_id())
+  #       tb_filtered <- tb[tb$type == "notfound", ]
+  #       not_found_dt <- tb_filtered[, c("name", "new_name", "id")]
+  #       colnames(not_found_dt) <- c("Summitted name",
+  #                                 "Alternative name",
+  #                                 "Alternative ID")
+  #       not_found_dt
+  #     }
+  #   }
+  # })
+  # 
+  # # MISSING COMMENT -----------------------------------------------------------
+  # output$download_not_found_taxa <- downloadHandler(
+  #   filename = function(){
+  #     c("mismatchedTaxa.txt")
+  #     },
+  #   content = function(file){
+  #     tb <- as.data.frame(taxa_id())
+  #     tb_filtered <- tb[tb$type == "notfound", ]
+  #     not_found_dt <- tb_filtered[, c("name", "new_name", "id")]
+  #     colnames(not_found_dt) <- c("Summitted name",
+  #                               "Alternative name",
+  #                               "Alternative ID")
+  # 
+  #     write.table(not_found_dt, file,
+  #                 sep = "\t",
+  #                 row.names = FALSE,
+  #                 quote = FALSE)
+  #   }
+  # )
+  
+  # # output retrieved taxa IDs -------------------------------------------------
+  # output$taxa_id <- renderDataTable(option = list(searching = FALSE), {
+  #   if (input$id_search > 0){
+  #     if (length(taxa_id()) > 0){
+  #       tb <- as.data.frame(taxa_id())
+  #       tb_filtered <- tb[tb$type == "retrieved", ]
+  #       retrieved_dt <- tb_filtered[, c("name", "id")]
+  #       colnames(retrieved_dt) <- c("Taxon_name", "Taxon_ID")
+  #       retrieved_dt
+  #     }
+  #   }
+  # })
+  # 
+  # output$download_taxa_id <- downloadHandler(
+  #   filename = function(){
+  #     c("retrievedtaxa_id.txt")
+  #     },
+  #   content = function(file){
+  #     tb <- as.data.frame(taxa_id())
+  #     tb_filtered <- tb[tb$type == "retrieved", ]
+  #     retrieved_dt <- tb_filtered[, c("name", "id")]
+  #     colnames(retrieved_dt) <- c("Taxon name", "Taxon ID")
+  # 
+  #     write.table(retrieved_dt, file,
+  #                 sep = "\t",
+  #                 row.names = FALSE,
+  #                 quote = FALSE)
+  #   }
+  # )
+  callModule(search_taxon_id,"search_taxon_id")
 
   # PARSING VARIABLE 1 AND 2 ==================================================
   # render textinput for variable 1 & 2 ---------------------------------------
   output$var1_id.ui <- renderUI({
-    long_dataframe <- get_long_matrix()
+    long_dataframe <- get_main_input()
 
     if (is.null(long_dataframe)){
       textInput("var1_id",
@@ -296,7 +302,7 @@ shinyServer(function(input, output, session) {
   })
 
   output$var2_id.ui <- renderUI({
-    long_dataframe <- get_long_matrix()
+    long_dataframe <- get_main_input()
     if (is.null(long_dataframe)){
       textInput("var2_id",
                 h5("1st variable:"),
@@ -815,8 +821,10 @@ shinyServer(function(input, output, session) {
 
   # render input_check.ui -----------------------------------------------------
   output$input_check.ui <- renderUI({
-    if(is.null(input$main_input)) return()
-    input_type <- get_input_type()
+    filein <- input$main_input
+    if(is.null(filein)) return()
+    input_type <- check_input_vadility(filein) #get_input_type()
+    
     if (input_type == "noGeneID"){
       updateButton(session, "do", disabled = TRUE)
       HTML("<font color=\"red\"><em><strong>ERROR: Unsupported input format. <a href=\"https://github.com/BIONF/PhyloProfile/wiki/Input-Data\" target=\"_blank\">Click here for more info</a></em></strong></font>")
@@ -837,8 +845,10 @@ shinyServer(function(input, output, session) {
   
   
   output$select_oma_type <- renderUI({
-    if(is.null(input$main_input)) return()
-    input_type <- get_input_type()
+    filein <- input$main_input
+    if(is.null(filein)) return()
+    input_type <- check_input_vadility(filein) #get_input_type()
+    
     if (input_type == "oma"){
       # Options to select the OMA type to generate the output
       selectInput("selected_oma_type", label = "Select type of OMA orthologs:",
@@ -852,16 +862,20 @@ shinyServer(function(input, output, session) {
   })
   
   output$button_oma <- renderUI({
-    if(is.null(input$main_input)) return()
-    input_type <- get_input_type()
+    filein <- input$main_input
+    if(is.null(filein)) return()
+    input_type <- check_input_vadility(filein) #get_input_type()
+    
     if (input_type == "oma"){
       shinyBS::bsButton("get_data_oma", "Get data")
     }
   })
   
   output$oma_download <- renderUI({
-    if(is.null(input$main_input)) return()
-    input_type <- get_input_type()
+    filein <- input$main_input
+    if(is.null(filein)) return()
+    input_type <- check_input_vadility(filein) #get_input_type()
+    
     if (input_type == "oma"){
       downloadButton("download_files_oma", "Download")
     } 
@@ -873,13 +887,13 @@ shinyServer(function(input, output, session) {
       "oma_data_to_phyloprofile_input.zip"
       },
     content <- function(file){
-      write.table(get_long_matrix(), "long.txt",
+      write.table(get_main_input(), "long.txt",
                   sep = "\t",
                   row.names = FALSE,
 
                   col.names = TRUE,
                   quote = FALSE)
-      write.table(long_to_fasta(get_long_matrix()), "fasta.txt",
+      write.table(long_to_fasta(get_main_input()), "fasta.txt",
                   sep = "\t",
                   row.names = FALSE,
                   col.names = FALSE,
@@ -900,7 +914,7 @@ shinyServer(function(input, output, session) {
   # render download link for demo online files --------------------------------
   output$main_input_file.ui <- renderUI({
     # if(input$demo == TRUE){
-    if (input$demo_data == "demo"){
+    if (input$demo_data == "lca-micros"){
       strong(a("Download demo input file",
                href = "https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/test.main.long",
                target = "_blank"))
@@ -915,7 +929,7 @@ shinyServer(function(input, output, session) {
 
   output$domain_input_file.ui <- renderUI({
     # if(input$demo == TRUE){
-    if (input$demo_data == "demo"){
+    if (input$demo_data == "lca-micros"){
       strong(a("Download demo domain files",
                href = "https://github.com/BIONF/phyloprofile-data/tree/master/demo/domain_files",
                target = "_blank"))
@@ -924,8 +938,10 @@ shinyServer(function(input, output, session) {
                href = "https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.domains_F",
                target = "_blank"))
     } else {
-      input_type <- get_input_type()
-      if (input$anno_choose == "from file"){
+      # filein <- input$main_input
+      # input_type <- check_input_vadility(filein) #get_input_type()
+      
+      if (input$anno_location == "from file"){
         fileInput("file_domain_input", "")
       } else {
         textInput("domainPath", "", "")
@@ -934,7 +950,7 @@ shinyServer(function(input, output, session) {
   })
 
   output$download_fastaDemo.ui <- renderUI({
-    if (input$demo_data == "demo"){
+    if (input$demo_data == "lca-micros"){
       strong(a("Download demo fasta file",
                href = "https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/fasta_file/concatenatedSeq.fa",
                target = "_blank"))
@@ -1001,7 +1017,8 @@ shinyServer(function(input, output, session) {
   observe({
     filein <- input$main_input
     if(is.null(filein)) return()
-    input_type <- get_input_type()
+    input_type <- check_input_vadility(filein) #get_input_type()
+    
     if (input_type == "xml" |
         input_type == "long" |
         input_type == "wide" |
@@ -1250,7 +1267,7 @@ shinyServer(function(input, output, session) {
   # list of taxonomy ranks for plotting ---------------------------------------
   output$rank_select <- renderUI({
     # if(input$demo == TRUE){
-    if (input$demo_data == "demo"){
+    if (input$demo_data == "lca-micros"){
       selectInput("rank_select", label = "",
                   choices = get_taxonomy_ranks(),
                   selected = "26_phylum")
@@ -1271,7 +1288,7 @@ shinyServer(function(input, output, session) {
     choice$fullName <- as.factor(choice$fullName)
 
     # if(input$demo == TRUE){
-    if (input$demo_data == "demo"){
+    if (input$demo_data == "lca-micros"){
       hellemDf <- data.frame("name" = c("Encephalitozoon hellem",
                                         "Encephalitozoon hellem",
                                         "Encephalitozoon",
@@ -1456,9 +1473,7 @@ shinyServer(function(input, output, session) {
   # if using demo data
   observe({
     # if (input$demo == TRUE) {
-    if (input$demo_data == "demo") {
-      ### disable demo checkbox
-      # toggleState("demo")
+    if (input$demo_data == "lca-micros") {
       ### update var2_aggregate_by to mean
       updateSelectInput(session, "var2_aggregate_by",
                         choices = list("Max" = "max",
@@ -1552,7 +1567,7 @@ shinyServer(function(input, output, session) {
     fileCustom <- input$custom_file
 
     # if(input$demo == TRUE){
-    if (input$demo_data == "demo" | input$demo_data == "ampk-tor"){
+    if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor"){
       filein <- 1
     }
 
@@ -1662,7 +1677,7 @@ shinyServer(function(input, output, session) {
   output$taxa_in <- renderUI({
     filein <- input$main_input
     # if(input$demo == TRUE){
-    if (input$demo_data == "demo" | input$demo_data == "ampk-tor"){
+    if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor"){
       filein <- 1
     }
 
@@ -1717,10 +1732,10 @@ shinyServer(function(input, output, session) {
       # wrap in an isolate() so that the data won't update every time an input
       # is changed
       isolate({
-        main_plot(v, dataHeat(), clusteredDataHeat(), get_input_main ())
+        main_plot(v, dataHeat(), clusteredDataHeat(), get_parameter_input_main ())
       })
     } else {
-      main_plot(v, dataHeat(), clusteredDataHeat(), get_input_main ())
+      main_plot(v, dataHeat(), clusteredDataHeat(), get_parameter_input_main ())
     }
   })
 
@@ -1783,7 +1798,7 @@ shinyServer(function(input, output, session) {
     content = function(file) {
       ggsave(file, plot = main_plot(v, dataHeat(),
                                    clusteredDataHeat(),
-                                   get_input_main ()),
+                                   get_parameter_input_main ()),
              width = input$width * 0.056458333,
              height = input$height * 0.056458333,
              units = "cm",
@@ -1969,7 +1984,7 @@ shinyServer(function(input, output, session) {
     vCt$doPlotCustom <- input$plot_custom
     filein <- input$main_input
     # if(input$demo == TRUE){ filein = 1 }
-    if (input$demo_data == "demo" | input$demo_data == "ampk-tor") filein <- 1
+    if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor") filein <- 1
     if (is.null(filein)) vCt$doPlotCustom <- FALSE
   })
 
@@ -2007,13 +2022,13 @@ shinyServer(function(input, output, session) {
         selected_plot(vCt,
                       dataHeat(),
                       clusteredDataHeat(),
-                      get_input_selected())
+                      get_parameter_input_selected())
       })
     } else {
       selected_plot(vCt,
                     dataHeat(),
                     clusteredDataHeat(),
-                    get_input_selected())
+                    get_parameter_input_selected())
     }
   })
 
@@ -2072,7 +2087,7 @@ shinyServer(function(input, output, session) {
       ggsave(file, plot = selected_plot(vCt,
                                         dataHeat(),
                                         clusteredDataHeat(),
-                                        get_input_selected()),
+                                        get_parameter_input_selected()),
              width = input$selected_width * 0.056458333,
              height = input$selected_height * 0.056458333,
              units = "cm", dpi = 300, device = "pdf", limitsize = FALSE)
@@ -2237,7 +2252,7 @@ shinyServer(function(input, output, session) {
                                input$dir_format,
                                input$file_ext,
                                input$id_format,
-                               get_long_matrix())
+                               get_main_input())
       return(paste(fastaOut[1]))
     }
   })
@@ -2271,7 +2286,7 @@ shinyServer(function(input, output, session) {
     v3$doPlot3 <- input$do_domain_plot
     filein <- input$main_input
     # if(input$demo == TRUE){ filein = 1 }
-    if (input$demo_data == "demo" | input$demo_data == "ampk-tor") filein <- 1
+    if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor") filein <- 1
     if (is.null(filein)) v3$doPlot3 <- FALSE
   })
 
@@ -2284,7 +2299,7 @@ shinyServer(function(input, output, session) {
                     input$title_archi_size)
     grid.draw(g)
   })
-
+  
   # render domain architecture plot -------------------------------------------
   output$archi_plot.ui <- renderUI({
     if (v3$doPlot3 == FALSE) {
@@ -2455,7 +2470,7 @@ shinyServer(function(input, output, session) {
   output$taxa_list_cons.ui <- renderUI({
     filein <- input$main_input
     # if(input$demo == TRUE){
-    if (input$demo_data == "demo" | input$demo_data == "ampk-tor"){
+    if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor"){
       filein <- 1
     }
     if (is.null(filein)){
@@ -2691,7 +2706,7 @@ shinyServer(function(input, output, session) {
 
   # download FASTA ------------------------------------------------------------
   output$download_fasta.ui <- renderUI({
-    # if(input$demo_data == "demo"){
+    # if(input$demo_data == "lca-micros"){
     #   HTML("<p><span style=\"color: #ff0000;\"><em>Be patient! For large number of taxa this can take up to 3 minutes!</em></span></p>")
     # }
   })
@@ -2708,7 +2723,7 @@ shinyServer(function(input, output, session) {
                                  input$dir_format,
                                  input$file_ext,
                                  input$id_format,
-                                 get_long_matrix())
+                                 get_main_input())
       write.table(fasta_out_df, file,
                   sep = "\t",
                   col.names = FALSE,
@@ -2753,7 +2768,7 @@ shinyServer(function(input, output, session) {
 
   # download FASTA ------------------------------------------------------------
   output$download_custom_fasta.ui <- renderUI({
-    # if(input$demo_data == "demo"){
+    # if(input$demo_data == "lca-micros"){
     #   HTML("<p><span style=\"color: #ff0000;\"><em>Depend on the number of taxa, this might take up to 3 minutes!</em></span></p>")
     # }
   })
@@ -2770,7 +2785,7 @@ shinyServer(function(input, output, session) {
                                  input$dir_format,
                                  input$file_ext,
                                  input$id_format,
-                                 get_long_matrix())
+                                 get_main_input())
       write.table(fasta_out_df,
                   file,
                   sep = "\t",
@@ -2791,7 +2806,7 @@ shinyServer(function(input, output, session) {
   # Select in_group -----------------------------------------------------------
   output$taxa_list_gc <- renderUI({
     filein <- input$main_input
-    if (input$demo_data == "demo" | input$demo_data == "ampk-tor"){
+    if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor"){
       filein <- 1
     }
 
@@ -2904,7 +2919,7 @@ shinyServer(function(input, output, session) {
 
     file_gc <- input$gc_file
 
-    if (input$demo_data == "demo" | input$demo_data == "ampk-tor"){
+    if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor"){
       filein <- 1
     }
 
@@ -2976,9 +2991,9 @@ shinyServer(function(input, output, session) {
                               input$var_name_gc,
                               input$use_common_anchestor,
                               input$in_select,
-                              get_input_gc(),
+                              get_parameter_input_gc(),
                               input$demo_data,
-                              input$anno_choose,
+                              input$anno_location,
                               input$file_domain_input,
                               subset_taxa(),
                               get_data_filtered(),
@@ -3132,7 +3147,7 @@ shinyServer(function(input, output, session) {
         path <- paste(gene, ".pdf", sep = "")
         fs <- c(fs, path)
         pdf(path)
-        get_multiplot_download_gc(gene, get_input_gc(),
+        get_multiplot_download_gc(gene, get_parameter_input_gc(),
                                   input$interesting_features)
         dev.off()
       }
@@ -3184,224 +3199,47 @@ shinyServer(function(input, output, session) {
   # ===========================================================================
   
   # Working with the input file(s) ============================================
-  # Get the type of the input file --------------------------------------------
-  get_input_type <- reactive({
-    filein <- input$main_input
-    if (is.null(filein)) return()
-    input_type <- check_input_vadility(filein)
-    
-    return(input_type)
-  })
-  
-  # Turn the input in to a matrix in long format ------------------------------
-  get_long_matrix <- reactive({
-    if (input$demo_data == "demo" | input$demo_data == "ampk-tor"){
-      if (input$demo_data == "demo"){
-        long_dataframe <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/test.main.long",
-                                     sep = "\t",
-                                     header = T,
-                                     fill = T,
-                                     stringsAsFactors = FALSE)
-      } else {
-        long_dataframe <- read.table("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.phyloprofile",
-                                     sep = "\t",
-                                     header = T,
-                                     fill = T,
-                                     stringsAsFactors = FALSE)
-      }
+  # # Get the type of the input file --------------------------------------------
+  get_main_input <- reactive({
+    if(input$demo_data == "lca-micros"){
+      long_dataframe <- create_long_matrix("lca-micros")
+    } else if (input$demo_data == "ampk-tor"){
+      long_dataframe <- create_long_matrix("ampk-tor")
     } else {
       filein <- input$main_input
       if(is.null(filein)) return()
-      input_type <- get_input_type()
-      
-      # XML
-      if (input_type == "xml"){
-        long_dataframe <- xml_parser(filein$datapath)
-        
-        # FASTA
-      } else if (input_type == "fasta"){
-        long_dataframe <- fasta_parser(filein$datapath)
-        
-        # LONG
-      } else if (input_type == "long"){
-        long_dataframe <- as.data.frame(read.table(file = filein$datapath,
-                                                   sep = "\t",
-                                                   header = T,
-                                                   check.names = FALSE,
-                                                   comment.char = ""))
-        # WIDE
-      } else if (input_type == "wide"){
-        long_dataframe <- wide_to_long(filein$datapath)
-        
-      } else if (input_type == "oma"){
-        # dont load the data before the button is loaded
-        if(is.null(input$get_data_oma)) return()
-  
-        isolate({
-          # dont generate data befor the button was clicked
-          if (input$get_data_oma[1] == 0) return() 
-          oma_type <- input$selected_oma_type
-          if(is.null(oma_type))return()
-          oma_ids <- as.data.frame(read.table(file = filein$datapath,
-                                              sep = "\t",
-                                              header = F,
-                                              check.names = FALSE,
-                                              comment.char = ""))
-
-          oma_ids[, 1] <- as.character(oma_ids[, 1])
-          long_dataframe <- oma_ids_to_long(oma_ids[, 1], oma_type)
-        })
-       
-        
-      # When there is no  usable data (moreCol, emptyCell, noGeneID)
-      }else{
-        return (NULL)
-      }
+      long_dataframe <- create_long_matrix(filein)
     }
     
-    # make sure the cells have the same type (factor) 
-    # independent of the input file 
-    for (i in 1:ncol(long_dataframe)){
-      long_dataframe[, i] <- as.factor(long_dataframe[, i])
-    }
     return(long_dataframe)
   })
   
   # Save the domain files as a data frame -------------------------------------
   get_domain_information <- reactive({
-    domains <- data.frame()
+    filein <- input$main_input
+    if(is.null(filein)) return()
+    input_type <- check_input_vadility(filein)
+    main_input <- get_main_input()
 
-    files <- c()
-  
-    if(!is.null(get_input_type())){
-      if(get_input_type() == "oma"){
-        domains <- long_to_domain(get_long_matrix())
-        domains$seedID <- gsub("\\|",":",domains$seedID)
-        domains$orthoID <- gsub("\\|",":",domains$orthoID)
-        
-        return(domains)
-      }
-    }
-    if(!input$demo_data == "ampk-tor" | !input$anno_choose == "from file" ){
-        long_df <- get_long_matrix()
-        genes <- unlist(long_df$geneID)
-        genes <- unique(genes)
-        
-        for (gene in genes){
-
-          file <- get_domain_file_gc(gene, 
-                                     input$demo_data,
-                                     input$anno_choose,
-                                     input$file_domain_input,
-                                     session,
-                                     input$domainPath)
-          files <- append(files, file)
-        }
-      } else{
-        file <- get_domain_file_gc(NULL,
-                                   input$demo_data,
-                                   input$anno_choose,
-                                   input$file_domain_input,
-                                   session,
-                                   input$domainPath)
-        files <- c(file)
-      }
-      
-      # parse domain file
-      if (input$demo_data == "demo" | input$demo_data == "ampk-tor"){
-        
-        for(file in files){
-
-          domain_df <- as.data.frame(read.csv(file,
-                                              sep = "\t",
-                                              header = F,
-                                              comment.char = "",
-                                              stringsAsFactors = FALSE,
-                                              quote = ""))
-          domains <- rbind(domains, domain_df)
-        }
-        
-        if (ncol(domains) == 5){
-          colnames(domains) <- c("seedID",
-                                 "orthoID",
-                                 "feature",
-                                 "start",
-                                 "end")
-        } else if (ncol(domains) == 6){
-          colnames(domains) <- c("seedID",
-                                 "orthoID",
-                                 "feature",
-                                 "start",
-                                 "end",
-                                 "weight")
-        } else if (ncol(domains) == 7){
-          colnames(domains) <- c("seedID",
-                                 "orthoID",
-                                 "feature",
-                                 "start",
-                                 "end",
-                                 "weight",
-                                 "path")
-        }
-        domains$length <- max(domains$end)
-        
-      } else {
-        
-        for(file in files){
-          if (file != FALSE){
-            exeptions <- c("noFileInput", "noSelectHit",
-                           "noSelectHit", "noFileInFolder")
-            if(!(file %in% exeptions)){
-              domain_df <- as.data.frame(read.table(file,
-                                                    sep = "\t",
-                                                    header = FALSE,
-                                                    comment.char = ""))
-              domains <- rbind(domains, domain_df)
-            }
-          }
-        }
-        
-        if (ncol(domains) == 6){
-          colnames(domains) <- c("seedID",
-                                 "orthoID",
-                                 "length",
-                                 "feature",
-                                 "start",
-                                 "end")
-        } else if (ncol(domains) == 7){
-          colnames(domains) <- c("seedID",
-                                 "orthoID",
-                                 "length",
-                                 "feature",
-                                 "start",
-                                 "end",
-                                 "weight")
-        } else if (ncol(domains) == 8){
-          colnames(domains) <- c("seedID",
-                                 "orthoID",
-                                 "length",
-                                 "feature",
-                                 "start",
-                                 "end",
-                                 "weight",
-                                 "path")
-        }
-      }
-
-    domains$seedID <- gsub("\\|",":",domains$seedID)
-    domains$orthoID <- gsub("\\|",":",domains$orthoID)
-
-    return(domains)
-   })
-  
-  # Save the fasta file(s) as a data frame ------------------------------------
-  get_fasta_information <- reactive({
-    
+    domain_df <- parse_domain_input(main_input,
+                                    input_type,
+                                    input$demo_data,
+                                    input$anno_location,
+                                    input$file_domain_input,
+                                    input$domainPath,
+                                    session,
+                                    datapath)
+    return(domain_df)
   })
+  
+  # # Save the fasta file(s) as a data frame ------------------------------------
+  # get_fasta_information <- reactive({
+  #   
+  # })
   
   # Parameters for the plots ==================================================
   # Parameters for the main profile plot --------------------------------------
-  get_input_main <- reactive({
+  get_parameter_input_main <- reactive({
     input_data <- list( "x_axis" = input$x_axis,
                         "var1_id" = input$var1_id,
                         "var2_id"  = input$var2_id,
@@ -3427,7 +3265,7 @@ shinyServer(function(input, output, session) {
   })
 
   # Parameters for the customized profile plot --------------------------------
-  get_input_selected <- reactive ({
+  get_parameter_input_selected <- reactive ({
     input_data <- list ("x_axis_selected" = input$x_axis_selected,
                         "var1_id" = input$var1_id,
                         "var2_id" = input$var2_id,
@@ -3451,7 +3289,7 @@ shinyServer(function(input, output, session) {
   })
 
   # Parameters for the plots in Group Comparison ------------------------------
-  get_input_gc <- reactive ({
+  get_parameter_input_gc <- reactive ({
     input_data <- list("show_p_value" = input$show_p_value,
                        "highlight_significant" = input$highlight_significant,
                        "significance" = input$significance,
@@ -3526,10 +3364,10 @@ shinyServer(function(input, output, session) {
   
   # get input taxa ------------------------------------------------------------
   subset_taxa <- reactive({
-    if (input$demo_data == "demo" |
+    if (input$demo_data == "lca-micros" |
         input$demo_data == "ampk-tor" |
         length(unkTaxa()) == 0){
-      long_dataframe <- get_long_matrix()
+      long_dataframe <- get_main_input()
       if (is.null(long_dataframe)) return()
       inputTaxa <- levels(long_dataframe$ncbiID)
     } else {
@@ -3547,7 +3385,7 @@ shinyServer(function(input, output, session) {
   
   # check if there is any "unknown" taxon in input matrix ---------------------
   unkTaxa <- reactive({
-    long_dataframe <- get_long_matrix ()
+    long_dataframe <- get_main_input ()
     if (is.null(long_dataframe)){
       inputTaxa <- c("NA")
     } else{
@@ -3782,7 +3620,7 @@ shinyServer(function(input, output, session) {
       }
     }
     
-    long_dataframe <- get_long_matrix()
+    long_dataframe <- get_main_input()
     if (is.null(long_dataframe)){
       data <- data.frame("geneID" = character(),
                          "ncbiID" = character(),
@@ -3982,7 +3820,7 @@ shinyServer(function(input, output, session) {
     # check input file
     filein <- input$main_input
     # if(input$demo == TRUE){
-    if (input$demo_data == "demo" | input$demo_data == "ampk-tor"){
+    if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor"){
       filein <- 1
     }
     if (is.null(filein)) return()
@@ -4182,7 +4020,7 @@ shinyServer(function(input, output, session) {
   distDf <- reactive({
     if (v$doPlot == FALSE) return()
     
-    dataOrig <- get_long_matrix()
+    dataOrig <- get_main_input()
     if (ncol(dataOrig) < 4){
       colnames(dataOrig) <- c("geneID",
                               "ncbiID",
@@ -4273,7 +4111,7 @@ shinyServer(function(input, output, session) {
   # calculate % present species for input file --------------------------------
   presSpecAllDt <- reactive({
     # open main input file
-    mdData <- get_long_matrix()
+    mdData <- get_main_input()
     if (ncol(mdData) < 4){
       colnames(mdData) <- c("geneID",
                             "ncbiID",
@@ -4572,13 +4410,13 @@ shinyServer(function(input, output, session) {
     
 
     # domain file
-    if (input$demo_data == "demo" | input$demo_data == "ampk-tor"){
+    if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor"){
       if (is.null(info)){
         fileDomain <- "noSelectHit"
         updateButton(session, "do_domain_plot", disabled = TRUE)
       } else {
         updateButton(session, "do_domain_plot", disabled = FALSE)
-        if (input$demo_data == "demo"){
+        if (input$demo_data == "lca-micros"){
           fileDomain <- {
             suppressWarnings(paste0("https://github.com/BIONF/phyloprofile-data/blob/master/demo/domain_files/",
                                     group,
@@ -4591,10 +4429,12 @@ shinyServer(function(input, output, session) {
         } 
       }
     } else {
-      if (get_input_type() == "oma"){
+      filein <- input$main_input
+      if (check_input_vadility(filein) == "oma"){
+      # if (get_input_type() == "oma"){
         fileDomain <- "oma_input"
         updateButton(session, "do_domain_plot", disabled = FALSE)
-      } else if (input$anno_choose == "from file"){
+      } else if (input$anno_location == "from file"){
         fileDomain <- input$file_domain_input
         #print(fileDomain)
         if (is.null(fileDomain)){
@@ -5099,14 +4939,14 @@ shinyServer(function(input, output, session) {
     if (is.null(significant_genes_gc)) return()
     else if (gene == "all"){
       get_plot_output_list(significant_genes_gc,
-                           get_input_gc(),
+                           get_parameter_input_gc(),
                            input$interesting_features)
     }else{
       x <- {
         significant_genes_gc[significant_genes_gc$geneID == gene, ]
       }
       if (nrow(x) == 0) return()
-      get_plot_output_list(x, get_input_gc(), input$interesting_features)
+      get_plot_output_list(x, get_parameter_input_gc(), input$interesting_features)
     }
   })
   

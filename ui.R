@@ -19,6 +19,8 @@ if (!require("shinycssloaders")) {
   devtools::install_github("andrewsali/shinycssloaders")
 }
 
+source("scripts/search_taxon_id.R")
+
 # MAIN UI =====================================================================
 
 shinyUI(fluidPage(
@@ -181,7 +183,7 @@ shinyUI(fluidPage(
              selectInput("demo_data", label = h5("Use online demo data:"),
                          choices = list("None" = "none",
                                         "AMPK-TOR" = "ampk-tor",
-                                        "LCA Microsporidia" = "demo"),
+                                        "LCA Microsporidia" = "lca-micros"),
                          selected = "none",
                          width = "80%"),
              
@@ -251,7 +253,7 @@ shinyUI(fluidPage(
              
              hr(),
              strong(h4("Additional annotation input:")),
-             radioButtons(inputId = "anno_choose", label = "",
+             radioButtons(inputId = "anno_location", label = "",
                           choices = list("from file", "from folder"),
                           selected = "from file",
                           inline = T),
@@ -719,22 +721,23 @@ shinyUI(fluidPage(
       ),
       
       # Search for NCBI taxonomy IDs  -----------------------------------------
-      tabPanel("Search for NCBI taxonomy IDs",
-               column(3,
-                      fileInput("taxa_list", h4("Upload taxa list")),
-                      shinyBS::bsButton("id_search", "Search")
-               ),
-               column(9,
-                      h4("Mismatch(es):"),
-                      dataTableOutput("not_found_taxa"),
-                      downloadButton("download_not_found_taxa", "Download"),
-                      
-                      hr(),
-                      h4("Retrieved taxonomy ID(s):"),
-                      dataTableOutput("taxa_id"),
-                      downloadButton("download_taxa_id", "Download")
-               )
-      ),
+      search_taxon_id_ui("search_taxon_id"),
+      # tabPanel("Search for NCBI taxonomy IDs",
+      #          column(3,
+      #                 fileInput("taxa_list", h4("Upload taxa list")),
+      #                 shinyBS::bsButton("id_search", "Search")
+      #          ),
+      #          column(9,
+      #                 h4("Mismatch(es):"),
+      #                 dataTableOutput("not_found_taxa"),
+      #                 downloadButton("download_not_found_taxa", "Download"),
+      #                 
+      #                 hr(),
+      #                 h4("Retrieved taxonomy ID(s):"),
+      #                 dataTableOutput("taxa_id"),
+      #                 downloadButton("download_taxa_id", "Download")
+      #          )
+      # ),
       
       # Group Comparison  -----------------------------------------------------
       tabPanel("Group Comparison",

@@ -4,80 +4,80 @@
 
 #  OUTPUT AND INPUT ===========================================================
 
-# parse orthoXML file ---------------------------------------------------------
-xml_parser <- function(input_file){
-  cmd <- paste("python ",
-               getwd(),
-               "/scripts/orthoxmlParser.py",
-               " -i ",
-               input_file,
-               sep = "")
-
-  df_in <- as.data.frame(read.table(text = system(cmd, intern = TRUE)))
-
-  # the first row will be the header
-  colnames(df_in) <- as.character(unlist(df_in[1, ]))
-
-  df_in <- subset(df_in[df_in$geneID != "geneID", ])
-  df_in <- droplevels(df_in)
-  df_in
-}
-
-# parse fasta input file ------------------------------------------------------
-fasta_parser <- function(input_file){
-
-  cmd <- paste("python ",
-               getwd(),
-               "/scripts/fastaParser.py",
-               " -i ",
-               input_file,
-               sep = "")
-
-  df_in <- as.data.frame(read.table(text = system(cmd, intern = TRUE)))
-
-  # the first row will be the header
-  colnames(df_in) <- as.character(unlist(df_in[1, ]))
-  df_in <- subset(df_in[df_in$geneID != "geneID", ])
-  df_in <- droplevels(df_in)
-
-  if (all(is.na(df_in$var2))){
-    df_in <- subset(df_in, select = -c(var2) )
-  }
-  if (all(is.na(df_in$var1))){
-    df_in <- subset(df_in, select = -c(var1) )
-  }
-
-  df_in
-}
-
-# transform wide format input to long format ----------------------------------
-wide_to_long <- function(input_file){
-  wide_dataframe <- as.data.frame(read.table(file = input_file,
-                                             sep = "\t",
-                                             header = T,
-                                             check.names = FALSE,
-                                             comment.char = ""))
-  long_dataframe <- data.frame()
-  row_nr_long <- 0 
-  ncbi_ids <- colnames(wide_dataframe)
-  
-  for (row_nr in 1:nrow(wide_dataframe)){
-    geneID <- wide_dataframe[row_nr, 1]
-    for(column_nr in 2:ncol(wide_dataframe)){
-      current_cell <- as.character(wide_dataframe[row_nr, column_nr])
-      new_row_info <- unlist(strsplit(current_cell, "#"))
-      row_nr_long <- row_nr_long + 1
-      long_dataframe[row_nr_long, 1] <- geneID
-      long_dataframe[row_nr_long, 2] <- ncbi_ids[column_nr] 
-      long_dataframe[row_nr_long, 3] <- new_row_info[1]
-      long_dataframe[row_nr_long, 4] <- new_row_info[2]
-      long_dataframe[row_nr_long, 5] <- new_row_info[3]
-      #print(new_row_info)
-    }
-  }
-  colnames(long_dataframe) <- c("geneID", "ncbiID", "orthoID", "var1", "var2")
-  return(long_dataframe)
-}
+# # parse orthoXML file ---------------------------------------------------------
+# xml_parser <- function(input_file){
+#   cmd <- paste("python ",
+#                getwd(),
+#                "/scripts/orthoxmlParser.py",
+#                " -i ",
+#                input_file,
+#                sep = "")
+# 
+#   df_in <- as.data.frame(read.table(text = system(cmd, intern = TRUE)))
+# 
+#   # the first row will be the header
+#   colnames(df_in) <- as.character(unlist(df_in[1, ]))
+# 
+#   df_in <- subset(df_in[df_in$geneID != "geneID", ])
+#   df_in <- droplevels(df_in)
+#   df_in
+# }
+# 
+# # parse fasta input file ------------------------------------------------------
+# fasta_parser <- function(input_file){
+# 
+#   cmd <- paste("python ",
+#                getwd(),
+#                "/scripts/fastaParser.py",
+#                " -i ",
+#                input_file,
+#                sep = "")
+# 
+#   df_in <- as.data.frame(read.table(text = system(cmd, intern = TRUE)))
+# 
+#   # the first row will be the header
+#   colnames(df_in) <- as.character(unlist(df_in[1, ]))
+#   df_in <- subset(df_in[df_in$geneID != "geneID", ])
+#   df_in <- droplevels(df_in)
+# 
+#   if (all(is.na(df_in$var2))){
+#     df_in <- subset(df_in, select = -c(var2) )
+#   }
+#   if (all(is.na(df_in$var1))){
+#     df_in <- subset(df_in, select = -c(var1) )
+#   }
+# 
+#   df_in
+# }
+# 
+# # transform wide format input to long format ----------------------------------
+# wide_to_long <- function(input_file){
+#   wide_dataframe <- as.data.frame(read.table(file = input_file,
+#                                              sep = "\t",
+#                                              header = T,
+#                                              check.names = FALSE,
+#                                              comment.char = ""))
+#   long_dataframe <- data.frame()
+#   row_nr_long <- 0 
+#   ncbi_ids <- colnames(wide_dataframe)
+#   
+#   for (row_nr in 1:nrow(wide_dataframe)){
+#     geneID <- wide_dataframe[row_nr, 1]
+#     for(column_nr in 2:ncol(wide_dataframe)){
+#       current_cell <- as.character(wide_dataframe[row_nr, column_nr])
+#       new_row_info <- unlist(strsplit(current_cell, "#"))
+#       row_nr_long <- row_nr_long + 1
+#       long_dataframe[row_nr_long, 1] <- geneID
+#       long_dataframe[row_nr_long, 2] <- ncbi_ids[column_nr] 
+#       long_dataframe[row_nr_long, 3] <- new_row_info[1]
+#       long_dataframe[row_nr_long, 4] <- new_row_info[2]
+#       long_dataframe[row_nr_long, 5] <- new_row_info[3]
+#       #print(new_row_info)
+#     }
+#   }
+#   colnames(long_dataframe) <- c("geneID", "ncbiID", "orthoID", "var1", "var2")
+#   return(long_dataframe)
+# }
 
 
 # Fasta output ----------------------------------------------------------------
@@ -101,7 +101,7 @@ fasta_out_data <- function(data_out, filein, demo_data,
   }
 
   # get seqs for AMPK-TOR and microsporidia ONLINE demo data
-  if (demo_data == "ampk-tor" | demo_data == "demo"){
+  if (demo_data == "ampk-tor" | demo_data == "lca-micros"){
     fasta_url <- paste0("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/demo/fasta_file/concatenatedSeq.fa")
     if (demo_data == "ampk-tor"){
       fasta_url <- paste0("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.extended.fa")
@@ -335,59 +335,59 @@ fasta_out_data <- function(data_out, filein, demo_data,
   return(fasta_out_df)
 }
 
-# check validity of main input file -------------------------------------------
-check_input_vadility <- function(filein){
-  input_dt <- as.data.frame(read.table(file = filein$datapath,
-                                      sep = "\t",
-                                      header = F,
-                                      check.names = FALSE,
-                                      comment.char = "",
-                                      fill = T))
-
-  if (is.na(input_dt[1, ncol(input_dt)])){
-    return("moreCol")
-  } else {
-    names(input_dt) <- as.character(unlist(input_dt[1, ]))
-
-    # XML -------------------------------------------------------------------
-    # a XML file always starts with <?xml
-    if (grepl("<?xml", colnames(input_dt)[1])){
-      return("xml")
-
-      # FASTA -----------------------------------------------------------------
-      # a faste file always starts with > (start symbol of the header)
-    } else if (grepl(">", colnames(input_dt)[1]) == TRUE){
-      return("fasta")
-    } else {
-      # long and wide files always start with geneID
-      if (grepl("geneID", colnames(input_dt)[1])){
-        # LONG --------------------------------------------------------------
-        if (is.na(pmatch("ncbi", colnames(input_dt)[3])) ||
-           is.na(pmatch("ncbi", colnames(input_dt)[4])) ||
-           is.na(pmatch("ncbi", colnames(input_dt)[5]))){
-          return("long")
-
-          # WIDE --------------------------------------------------------------
-        } else {
-          tmp <- input_dt[input_dt == ""][1]
-          if ( !is.na(tmp) & tmp == ""){
-            return("emptyCell")
-          } else {
-            return("wide")
-          }
-        }
-      } else {
-        # checks for the first entry if it's a OMA or Uniprot id --------------
-        if (check_oma_id(input_dt[1, 1])){
-          return ("oma")
-        } else{
-          return("noGeneID")
-        }
-
-      }
-    }
-  }
-}
+# # check validity of main input file -------------------------------------------
+# check_input_vadility <- function(filein){
+#   input_dt <- as.data.frame(read.table(file = filein$datapath,
+#                                       sep = "\t",
+#                                       header = F,
+#                                       check.names = FALSE,
+#                                       comment.char = "",
+#                                       fill = T))
+# 
+#   if (is.na(input_dt[1, ncol(input_dt)])){
+#     return("moreCol")
+#   } else {
+#     names(input_dt) <- as.character(unlist(input_dt[1, ]))
+# 
+#     # XML -------------------------------------------------------------------
+#     # a XML file always starts with <?xml
+#     if (grepl("<?xml", colnames(input_dt)[1])){
+#       return("xml")
+# 
+#       # FASTA -----------------------------------------------------------------
+#       # a faste file always starts with > (start symbol of the header)
+#     } else if (grepl(">", colnames(input_dt)[1]) == TRUE){
+#       return("fasta")
+#     } else {
+#       # long and wide files always start with geneID
+#       if (grepl("geneID", colnames(input_dt)[1])){
+#         # LONG --------------------------------------------------------------
+#         if (is.na(pmatch("ncbi", colnames(input_dt)[3])) ||
+#            is.na(pmatch("ncbi", colnames(input_dt)[4])) ||
+#            is.na(pmatch("ncbi", colnames(input_dt)[5]))){
+#           return("long")
+# 
+#           # WIDE --------------------------------------------------------------
+#         } else {
+#           tmp <- input_dt[input_dt == ""][1]
+#           if ( !is.na(tmp) & tmp == ""){
+#             return("emptyCell")
+#           } else {
+#             return("wide")
+#           }
+#         }
+#       } else {
+#         # checks for the first entry if it's a OMA or Uniprot id --------------
+#         if (check_oma_id(input_dt[1, 1])){
+#           return ("oma")
+#         } else{
+#           return("noGeneID")
+#         }
+# 
+#       }
+#     }
+#   }
+# }
 
 # NEWICK ======================================================================
 
@@ -1710,7 +1710,7 @@ get_significant_genes <- function (in_group,
                                    use_common_anchestor,
                                    in_select,
                                    input,
-                                   demo_data, anno_choose, file_domain,
+                                   demo_data, anno_location, file_domain,
                                    subset_taxa,
                                    data_full,
                                    session,
@@ -2010,79 +2010,78 @@ get_features <- function(selected_gene,
 }
 
 # get the data where to find the features -----------------------------------
-# input$demo_data, input$anno_choose, input$file_domain_input
-get_domain_file_gc <- function(group,
-                               demo_data,
-                               anno_choose,
-                               file_domain,
-                               session,
-                               domain_path){
-
-  # domain file
-  if (demo_data == "demo" | demo_data == "ampk-tor"){
-    updateButton(session, "do_domain_plot", disabled = FALSE)
-    if (demo_data == "demo"){
-      file_domain <- {
-        suppressWarnings(paste0("https://github.com/BIONF/phyloprofile-data/blob/master/demo/domain_files/",
-                                group,
-                                ".domains?raw=true"))
-      }
-    } else {
-      file_domain <- {
-        suppressWarnings(paste0("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.domains_F"))
-      }
-    }
-    
-  }else {
-    if (anno_choose == "from file"){
-      # file_domain <- input$fileDomain_input
-      if (is.null(file_domain)){
-        file_domain <- "noFileInput"
-      } else {
-        if (is.null(info)){
-          file_domain <- "noSelectHit"
-          updateButton(session, "do_domain_plot", disabled = TRUE)
-        } else {
-          updateButton(session, "do_domain_plot", disabled = FALSE)
-          file_domain <- file_domain$datapath
-        }
-      }
-    } else {
-      if (is.null(info)){
-        file_domain <- "noSelectHit"
-        updateButton(session, "do_domain_plot", disabled = TRUE)
-      } else {
-        ### check file extension
-        all_extension <- c("txt", "csv", "list", "domains", "architecture")
-        flag <- 0
-        for (i in 1:length(all_extension)){
-          
-          file_domain <- paste0(domain_path,
-                                "/",
-                                group,
-                                ".",
-                                all_extension[i])
-          if (file.exists(file_domain) == TRUE){
-            updateButton(session,
-                         "do_domain_plot",
-                         disabled = FALSE)
-            flag <- 1
-            break ()
-          }
-        }
-        
-        if (flag == 0){
-          file_domain <- "noFileInFolder"
-          updateButton(session,
-                       "do_domain_plot",
-                       disabled = TRUE)
-        }
-      }
-    }
-  }
-
-  return (file_domain)
-}
+# input$demo_data, input$anno_location, input$file_domain_input
+# get_domain_file_gc <- function(group,
+#                                demo_data,
+#                                anno_location,
+#                                file_domain,
+#                                session,
+#                                domain_path){
+#   # domain file
+#   if (demo_data == "lca-micros" | demo_data == "ampk-tor"){
+#     updateButton(session, "do_domain_plot", disabled = FALSE)
+#     if (demo_data == "lca-micros"){
+#       file_domain <- {
+#         suppressWarnings(paste0("https://github.com/BIONF/phyloprofile-data/blob/master/demo/domain_files/",
+#                                 group,
+#                                 ".domains?raw=true"))
+#       }
+#     } else {
+#       file_domain <- {
+#         suppressWarnings(paste0("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.domains_F"))
+#       }
+#     }
+# 
+#   }else {
+#     if (anno_location == "from file"){
+#       # file_domain <- input$fileDomain_input
+#       if (is.null(file_domain)){
+#         file_domain <- "noFileInput"
+#       } else {
+#         if (is.null(info)){
+#           file_domain <- "noSelectHit"
+#           updateButton(session, "do_domain_plot", disabled = TRUE)
+#         } else {
+#           updateButton(session, "do_domain_plot", disabled = FALSE)
+#           file_domain <- file_domain$datapath
+#         }
+#       }
+#     } else {
+#       if (is.null(info)){
+#         file_domain <- "noSelectHit"
+#         updateButton(session, "do_domain_plot", disabled = TRUE)
+#       } else {
+#         ### check file extension
+#         all_extension <- c("txt", "csv", "list", "domains", "architecture")
+#         flag <- 0
+#         for (i in 1:length(all_extension)){
+# 
+#           file_domain <- paste0(domain_path,
+#                                 "/",
+#                                 group,
+#                                 ".",
+#                                 all_extension[i])
+#           if (file.exists(file_domain) == TRUE){
+#             updateButton(session,
+#                          "do_domain_plot",
+#                          disabled = FALSE)
+#             flag <- 1
+#             break ()
+#           }
+#         }
+# 
+#         if (flag == 0){
+#           file_domain <- "noFileInFolder"
+#           updateButton(session,
+#                        "do_domain_plot",
+#                        disabled = TRUE)
+#         }
+#       }
+#     }
+#   }
+# 
+#   return (file_domain)
+# }
 
 get_multiplot_download_gc <- function(gene, input, interesting_features){
   x <- subset(significant_genes_gc,
