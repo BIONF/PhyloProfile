@@ -83,6 +83,8 @@ source("scripts/get_oma_browser.R")
 source("scripts/search_taxon_id.R")
 source("scripts/parse_main_input.R")
 source("scripts/parse_domain_input.R")
+source("scripts/download_filtered_main.R")
+source("scripts/get_fasta_seqs.R")
 
 # MAIN ========================================================================
 options(shiny.maxRequestSize = 99 * 1024 ^ 2)  # size limit for input 99mb
@@ -2650,87 +2652,91 @@ shinyServer(function(input, output, session) {
   # FILTERED DATA FOR DOWNLOADING =============================================
   # ===========================================================================
 
-  # FOR MAIN PROFILE ==========================================================
-
-  # render variable used for identifying representative genes -----------------
-  output$ref_var_main.ui <- renderUI({
-    if (nchar(input$var2_id) < 1 & nchar(input$var1_id) < 1){
-      radioButtons(inputId = "ref_var_main", label = "Reference variable",
-                   choices = list(input$var1_id, input$var2_id),
-                   selected = input$var1_id)
-    } else if (nchar(input$var2_id) < 1){
-      radioButtons(inputId = "ref_var_main",
-                   label = "Reference variable",
-                   choices = list(input$var1_id),
-                   selected = input$var1_id)
-    } else {
-      radioButtons(inputId = "ref_var_main",
-                   label = "Reference variable",
-                   choices = list(input$var1_id, input$var2_id),
-                   selected = input$var1_id)
-    }
+  # FOR MAIN PROFILE ========================================================== HERERERERERE
+  
+  main_fasta_download <- reactive({
+    main_fasta_out <- fasta_out_data(as.data.frame(download_data()),
+                                     input$main_input, input$demo_data,
+                                     input$input_type, input$one_seq_fasta,
+                                     input$path,
+                                     input$dir_format,
+                                     input$file_ext,
+                                     input$id_format,
+                                     get_main_input())
+    return(main_fasta_out)
   })
+  download_data <- callModule(download_filtered_main, "filtered_main_download", 
+                              data = get_data_filtered, fasta = main_fasta_download,
+                              var1_id = reactive(input$var1_id), var2_id = reactive(input$var2_id),
+                              var1 = reactive(input$var1), var2 = reactive(input$var2), percent = reactive(input$percent))
 
-  # download data -------------------------------------------------------------
-  output$download_data <- downloadHandler(
-    filename = function(){
-      c("filteredData.out")
-      },
-    content = function(file){
-      data_out <- download_data()
-      write.table(data_out, file,
-                  sep = "\t",
-                  row.names = FALSE,
-                  quote = FALSE)
-    }
-  )
+  # # render variable used for identifying representative genes -----------------
+  # output$ref_var_main.ui <- renderUI({
+  #   if (nchar(input$var2_id) < 1 & nchar(input$var1_id) < 1){
+  #     radioButtons(inputId = "ref_var_main", label = "Reference variable",
+  #                  choices = list(input$var1_id, input$var2_id),
+  #                  selected = input$var1_id)
+  #   } else if (nchar(input$var2_id) < 1){
+  #     radioButtons(inputId = "ref_var_main",
+  #                  label = "Reference variable",
+  #                  choices = list(input$var1_id),
+  #                  selected = input$var1_id)
+  #   } else {
+  #     radioButtons(inputId = "ref_var_main",
+  #                  label = "Reference variable",
+  #                  choices = list(input$var1_id, input$var2_id),
+  #                  selected = input$var1_id)
+  #   }
+  # })
 
-  # data table ui tab ---------------------------------------------------------
-  output$filtered_main_data <- renderDataTable(rownames = FALSE, {
-    if (v$doPlot == FALSE) return()
-    #data <- taxa_id()
-    #data <- alltaxa_list()
-    #data <- sortedtaxa_list()
-    #data <- preData()
-    #data <- get_data_filtered()
-    #data <- dataSupertaxa()
-    # data <- dataHeat()
-    #data <- detail_plotDt()
-    #data <- presSpecAllDt()
-    #data <- distDf()
-    #data <- gene_ageDf()
-    data <- download_data()
+  # # download data -------------------------------------------------------------
+  # output$download_data <- downloadHandler(
+  #   filename = function(){
+  #     c("filteredData.out")
+  #     },
+  #   content = function(file){
+  #     data_out <- download_data()
+  #     write.table(data_out, file,
+  #                 sep = "\t",
+  #                 row.names = FALSE,
+  #                 quote = FALSE)
+  #   }
+  # )
 
-    data
-  })
+  # # data table ui tab ---------------------------------------------------------
+  # output$filtered_main_data <- renderDataTable(rownames = FALSE, {
+  #   if (v$doPlot == FALSE) return()
+  #   data <- download_data()
+  #   data
+  # })
 
-  # download FASTA ------------------------------------------------------------
-  output$download_fasta.ui <- renderUI({
-    # if(input$demo_data == "lca-micros"){
-    #   HTML("<p><span style=\"color: #ff0000;\"><em>Be patient! For large number of taxa this can take up to 3 minutes!</em></span></p>")
-    # }
-  })
+  # # download FASTA ------------------------------------------------------------
+  # output$download_fasta.ui <- renderUI({
+  #   # if(input$demo_data == "lca-micros"){
+  #   #   HTML("<p><span style=\"color: #ff0000;\"><em>Be patient! For large number of taxa this can take up to 3 minutes!</em></span></p>")
+  #   # }
+  # })
 
-  output$download_fasta <- downloadHandler(
-    filename = function(){
-      c("filteredSeq.fa")
-      },
-    content = function(file){
-      fasta_out_df <- fasta_out_data(as.data.frame(download_data()),
-                                 input$main_input, input$demo_data,
-                                 input$input_type, input$one_seq_fasta,
-                                 input$path,
-                                 input$dir_format,
-                                 input$file_ext,
-                                 input$id_format,
-                                 get_main_input())
-      write.table(fasta_out_df, file,
-                  sep = "\t",
-                  col.names = FALSE,
-                  row.names = FALSE,
-                  quote = FALSE)
-    }
-  )
+  # output$download_fasta <- downloadHandler(
+  #   filename = function(){
+  #     c("filteredSeq.fa")
+  #     },
+  #   content = function(file){
+  #     fasta_out_df <- fasta_out_data(as.data.frame(download_data()),
+  #                                input$main_input, input$demo_data,
+  #                                input$input_type, input$one_seq_fasta,
+  #                                input$path,
+  #                                input$dir_format,
+  #                                input$file_ext,
+  #                                input$id_format,
+  #                                get_main_input())
+  #     write.table(fasta_out_df, file,
+  #                 sep = "\t",
+  #                 col.names = FALSE,
+  #                 row.names = FALSE,
+  #                 quote = FALSE)
+  #   }
+  # )
 
   # FOR CUSTOMIZED PROFILE ====================================================
 
@@ -4798,109 +4804,109 @@ shinyServer(function(input, output, session) {
     df <- df[complete.cases(df), 3]
   })
   
-  # filtered data for downloading (Main Profile ) -----------------------------
-  download_data <- reactive({
-    ### check input
-    if (v$doPlot == FALSE) return()
-    
-    ### filtered data
-    data_out <- get_data_filtered()
-    data_out <- as.data.frame(data_out[data_out$presSpec > 0, ])
-    data_out <- data_out[!is.na(data_out$geneID), ]
-    
-    data_out <- as.data.frame(data_out[data_out$presSpec >= input$percent[1], ])
-    data_out <- as.data.frame(data_out[data_out$var1 >= input$var1[1]
-                                       & data_out$var1 <= input$var1[2], ])
-    
-    if (!all(is.na(data_out$var2))){
-      data_out <- as.data.frame(data_out[data_out$var2 >= input$var2[1]
-                                         & data_out$var2 <= input$var2[2], ])
-    } else {
-      data_out$var2 <- 0
-    }
-    
-    ### select only representative genes if chosen
-    if (input$get_representative_main == TRUE){
-      if (is.null(input$ref_var_main)) return()
-      else{
-        if (input$ref_var_main == input$var1_id){
-          data_out_agg <- aggregate(as.numeric(data_out$var1),
-                                    by = list(data_out$geneID, data_out$ncbiID),
-                                    FUN = input$ref_type_main)
-        } else if (input$ref_var_main == input$var2_id){
-          data_out_agg <- aggregate(as.numeric(data_out$var2),
-                                    by = list(data_out$geneID, data_out$ncbiID),
-                                    FUN = input$ref_type_main)
-        } else {
-          data_out_agg <- data_out[data_out, c("geneID", "ncbiID", "var1")]
-        }
-        colnames(data_out_agg) <- c("geneID", "ncbiID", "var_best")
-        
-        data_out_representative <- merge(data_out, data_out_agg,
-                                         by = c("geneID", "ncbiID"),
-                                         all.x = TRUE)
-        
-        if (input$ref_var_main == input$var1_id){
-          data_out <- {
-            data_out_representative[data_out_representative$var1 == data_out_representative$var_best, ]
-          }
-        } else if (input$ref_var_main == input$var2_id){
-          data_out <- {
-            data_out_representative[data_out_representative$var2 == data_out_representative$var_best, ]
-          }
-        } else {
-          data_out <- data_out
-        }
-        # used to select only one ortholog,
-        # if there exist more than one "representative"
-        data_out$dup <- paste0(data_out$geneID, "#", data_out$ncbiID)
-        data_out <- data_out[!duplicated(c(data_out$dup)), ]
-      }
-    }
-    
-    # sub select columns of dataout
-    data_out <- data_out[, c("geneID",
-                             "orthoID",
-                             "fullName",
-                             "ncbiID",
-                             "supertaxon",
-                             "var1",
-                             "var2",
-                             "presSpec")] #,"numberSpec"
-    data_out <- data_out[order(data_out$geneID, data_out$supertaxon), ]
-    data_out <- data_out[complete.cases(data_out), ]
-    
-    data_out$geneID <- as.character(data_out$geneID)
-    data_out$fullName <- as.character(data_out$fullName)
-    data_out$ncbiID <- substr(data_out$ncbiID,
-                              5,
-                              nchar(as.character(data_out$ncbiID)))
-    data_out$supertaxon <- substr(data_out$supertaxon,
-                                  6,
-                                  nchar(as.character(data_out$supertaxon)))
-    data_out$var1 <- as.character(data_out$var1)
-    data_out$var2 <- as.character(data_out$var2)
-    # data_out$numberSpec <- as.numeric(data_out$numberSpec)
-    data_out$presSpec <- as.numeric(data_out$presSpec)
-    
-    # rename columns
-    names(data_out)[names(data_out) == "presSpec"] <- "%Spec"
-    # names(data_out)[names(data_out)=="numberSpec"] <- "totalSpec"
-    if (nchar(input$var1_id) > 0){
-      names(data_out)[names(data_out) == "var1"] <- input$var1_id
-    } else {
-      data_out <- subset(data_out, select = -c(var1) )
-    }
-    if (nchar(input$var2_id) > 0){
-      names(data_out)[names(data_out) == "var2"] <- input$var2_id
-    } else {
-      data_out <- subset(data_out, select = -c(var2) )
-    }
-    
-    # return data for downloading
-    data_out <- as.matrix(data_out)
-    return(data_out)
-  })
+  # # filtered data for downloading (Main Profile ) -----------------------------
+  # download_data <- reactive({
+  #   ### check input
+  #   if (v$doPlot == FALSE) return()
+  #   
+  #   ### filtered data
+  #   data_out <- get_data_filtered()
+  #   data_out <- as.data.frame(data_out[data_out$presSpec > 0, ])
+  #   data_out <- data_out[!is.na(data_out$geneID), ]
+  #   
+  #   data_out <- as.data.frame(data_out[data_out$presSpec >= input$percent[1], ])
+  #   data_out <- as.data.frame(data_out[data_out$var1 >= input$var1[1]
+  #                                      & data_out$var1 <= input$var1[2], ])
+  #   
+  #   if (!all(is.na(data_out$var2))){
+  #     data_out <- as.data.frame(data_out[data_out$var2 >= input$var2[1]
+  #                                        & data_out$var2 <= input$var2[2], ])
+  #   } else {
+  #     data_out$var2 <- 0
+  #   }
+  #   
+  #   ### select only representative genes if chosen
+  #   if (input$get_representative_main == TRUE){
+  #     if (is.null(input$ref_var_main)) return()
+  #     else{
+  #       if (input$ref_var_main == input$var1_id){
+  #         data_out_agg <- aggregate(as.numeric(data_out$var1),
+  #                                   by = list(data_out$geneID, data_out$ncbiID),
+  #                                   FUN = input$ref_type_main)
+  #       } else if (input$ref_var_main == input$var2_id){
+  #         data_out_agg <- aggregate(as.numeric(data_out$var2),
+  #                                   by = list(data_out$geneID, data_out$ncbiID),
+  #                                   FUN = input$ref_type_main)
+  #       } else {
+  #         data_out_agg <- data_out[data_out, c("geneID", "ncbiID", "var1")]
+  #       }
+  #       colnames(data_out_agg) <- c("geneID", "ncbiID", "var_best")
+  #       
+  #       data_out_representative <- merge(data_out, data_out_agg,
+  #                                        by = c("geneID", "ncbiID"),
+  #                                        all.x = TRUE)
+  #       
+  #       if (input$ref_var_main == input$var1_id){
+  #         data_out <- {
+  #           data_out_representative[data_out_representative$var1 == data_out_representative$var_best, ]
+  #         }
+  #       } else if (input$ref_var_main == input$var2_id){
+  #         data_out <- {
+  #           data_out_representative[data_out_representative$var2 == data_out_representative$var_best, ]
+  #         }
+  #       } else {
+  #         data_out <- data_out
+  #       }
+  #       # used to select only one ortholog,
+  #       # if there exist more than one "representative"
+  #       data_out$dup <- paste0(data_out$geneID, "#", data_out$ncbiID)
+  #       data_out <- data_out[!duplicated(c(data_out$dup)), ]
+  #     }
+  #   }
+  #   
+  #   # sub select columns of dataout
+  #   data_out <- data_out[, c("geneID",
+  #                            "orthoID",
+  #                            "fullName",
+  #                            "ncbiID",
+  #                            "supertaxon",
+  #                            "var1",
+  #                            "var2",
+  #                            "presSpec")] #,"numberSpec"
+  #   data_out <- data_out[order(data_out$geneID, data_out$supertaxon), ]
+  #   data_out <- data_out[complete.cases(data_out), ]
+  #   
+  #   data_out$geneID <- as.character(data_out$geneID)
+  #   data_out$fullName <- as.character(data_out$fullName)
+  #   data_out$ncbiID <- substr(data_out$ncbiID,
+  #                             5,
+  #                             nchar(as.character(data_out$ncbiID)))
+  #   data_out$supertaxon <- substr(data_out$supertaxon,
+  #                                 6,
+  #                                 nchar(as.character(data_out$supertaxon)))
+  #   data_out$var1 <- as.character(data_out$var1)
+  #   data_out$var2 <- as.character(data_out$var2)
+  #   # data_out$numberSpec <- as.numeric(data_out$numberSpec)
+  #   data_out$presSpec <- as.numeric(data_out$presSpec)
+  #   
+  #   # rename columns
+  #   names(data_out)[names(data_out) == "presSpec"] <- "%Spec"
+  #   # names(data_out)[names(data_out)=="numberSpec"] <- "totalSpec"
+  #   if (nchar(input$var1_id) > 0){
+  #     names(data_out)[names(data_out) == "var1"] <- input$var1_id
+  #   } else {
+  #     data_out <- subset(data_out, select = -c(var1) )
+  #   }
+  #   if (nchar(input$var2_id) > 0){
+  #     names(data_out)[names(data_out) == "var2"] <- input$var2_id
+  #   } else {
+  #     data_out <- subset(data_out, select = -c(var2) )
+  #   }
+  #   
+  #   # return data for downloading
+  #   data_out <- as.matrix(data_out)
+  #   return(data_out)
+  # })
   
   # filtered data for downloading (Customized Profile) ------------------------
   download_custom_data <- reactive({
@@ -4980,4 +4986,4 @@ shinyServer(function(input, output, session) {
     return(taxa_name_gc)
   })
   
-  })
+})

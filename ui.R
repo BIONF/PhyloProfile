@@ -20,6 +20,7 @@ if (!require("shinycssloaders")) {
 }
 
 source("scripts/search_taxon_id.R")
+source("scripts/download_filtered_main.R")
 
 # MAIN UI =====================================================================
 
@@ -820,51 +821,53 @@ shinyUI(fluidPage(
     
     # DATA TAB ================================================================
     navbarMenu("Download filtered data",
-               tabPanel("Main data",
-                        column(4,
-                               checkboxInput("get_representative_main",
-                                             strong(em(
-                                               "Download representative
-                                               sequences")
-                                             ),
-                                             value = FALSE,
-                                             width = NULL)
-                               ),
-                        column(4,
-                               conditionalPanel(
-                                 condition = {
-                                   "input.get_representative_main == true"
-                                 },
-                                 uiOutput("ref_var_main.ui")
-                               )
-                        ),
-                        column(4,
-                               conditionalPanel(
-                                 condition = {
-                                   "input.get_representative_main == true"
-                                 },
-                                 radioButtons(inputId = "ref_type_main",
-                                              label = {
-                                                "Select representative by"
-                                              },
-                                              choices = list("max", "min"),
-                                              selected = "max",
-                                              inline = T)
-                               )
-                        ),
-                        column(12,
-                               dataTableOutput("filtered_main_data")
-                        ),
-                        column(3,
-                               downloadButton("download_data",
-                                              "Download filtered data")
-                        ),
-                        column(9,
-                               downloadButton("download_fasta",
-                                              "Download FASTA sequences"),
-                               uiOutput("download_fasta.ui")
-                        )
-               ),
+               # tabPanel("Main data",
+               #          column(4,
+               #                 checkboxInput("get_representative_main",
+               #                               strong(em(
+               #                                 "Download representative
+               #                                 sequences")
+               #                               ),
+               #                               value = FALSE,
+               #                               width = NULL)
+               #                 ),
+               #          column(4,
+               #                 conditionalPanel(
+               #                   condition = {
+               #                     "input.get_representative_main == true"
+               #                   },
+               #                   uiOutput("ref_var_main.ui")
+               #                 )
+               #          ),
+               #          column(4,
+               #                 conditionalPanel(
+               #                   condition = {
+               #                     "input.get_representative_main == true"
+               #                   },
+               #                   radioButtons(inputId = "ref_type_main",
+               #                                label = {
+               #                                  "Select representative by"
+               #                                },
+               #                                choices = list("max", "min"),
+               #                                selected = "max",
+               #                                inline = T)
+               #                 )
+               #          ),
+               #          column(12,
+               #                 dataTableOutput("filtered_main_data")
+               #          ),
+               #          column(3,
+               #                 downloadButton("download_data",
+               #                                "Download filtered data")
+               #          ),
+               #          column(9,
+               #                 downloadButton("download_fasta",
+               #                                "Download FASTA sequences"),
+               #                 uiOutput("download_fasta.ui")
+               #          )
+               # ),
+               download_filtered_main_ui("filtered_main_download"),
+               
                tabPanel("Customized data",
                         column(12,
                                conditionalPanel(
@@ -895,7 +898,7 @@ shinyUI(fluidPage(
                ),
     
     
-    # OTHERS TAB ============================================================
+    # HELP TAB ============================================================
     navbarMenu("Help",
                # tabPanel("Help", includeMarkdown("help.md")
                # tabPanel("Help", includeHTML("help.html")
