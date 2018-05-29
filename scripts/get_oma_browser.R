@@ -45,31 +45,42 @@ oma_ids_to_long <- function(oma_ids, output_type){
   row_nr <- 1
   
   for(id in oma_ids){
-    members <- get_members(id, output_type)
-    gene_id <- paste0("OG_", id)
-    
-    ncbi <- get_ncbi_id(id)
-    long_dataframe[row_nr,1] <- gene_id
-    long_dataframe[row_nr,2] <- ncbi
-    long_dataframe[row_nr,3] <- id
-    row_nr <- row_nr +1
-    
-    # Get orthoID and ncbiID for each member of the hogs
-    for (i in 1:nrow(members)){
-      member <- members[i, ]
-      ortho_id <- member$omaid # use the oma ID as ortho ID
+    if(check_oma_id(id)){############## NEU (Makeing sure that it is a valid id, the function is the first in the script)
+      start_id = Sys.time() ############## NEU (For the time stamp)
+      members <- get_members(id, output_type)
       
-      # Data for the current member (ortho ID)
-      member_data <- getData("protein", ortho_id)
+      gene_id <- paste0("OG_", id)
+      oma_id <- getAttribute(getData("protein", id), "omaid")############## NEU
       
-      ncbi_id <- get_ncbi_id(member_data$omaid)
-      
-      # New line for the long format
+      ncbi <- get_ncbi_id(oma_id)############## NEU (need an oma id not an uniprot id)
       long_dataframe[row_nr,1] <- gene_id
-      long_dataframe[row_nr,2] <- ncbi_id
-      long_dataframe[row_nr,3] <-ortho_id
-      row_nr <- row_nr + 1
-    }
+      long_dataframe[row_nr,2] <- ncbi
+      long_dataframe[row_nr,3] <- oma_id ############## NEU (so it is consistent)
+      row_nr <- row_nr +1
+      
+      # Get orthoID and ncbiID for each member of the hogs
+      for (i in 1:nrow(members)){
+        member <- members[i, ]
+        ortho_id <- member$omaid # use the oma ID as ortho ID
+        
+        # Data for the current member (ortho ID)
+        member_data <- getData("protein", ortho_id)
+        
+        ncbi_id <- get_ncbi_id(member_data$omaid)
+        
+        # New line for the long format
+        long_dataframe[row_nr,1] <- gene_id
+        long_dataframe[row_nr,2] <- ncbi_id
+        long_dataframe[row_nr,3] <-ortho_id
+        row_nr <- row_nr + 1
+      }
+      end_id <- Sys.time()############## NEU (for the time stamp)
+      time <- end_id - start_id############## NEU (for the time stamp)
+      print(paste("runtime for", id, "with", nrow(members),"members:", time, sep = " "  ))############## NEU (time stamp for each input id)
+    } else {############## NEU
+      print(paste(id, "is not a valid oma or uniprot id"))############## NEU 
+    } ############## NEU
+    
   }
   colnames(long_dataframe) <- c("geneID", "ncbiID", "orthoID")
   return(long_dataframe)
@@ -203,20 +214,21 @@ long_to_domain <- function(long){
     domains <- resolveURL(member_data$domains) 
     regions <- domains$regions
     regions$feature <- paste(regions$source, regions$name, sep = " ")
-    
-    for (i in 1:nrow(regions)){
-      row_nr <- row_nr + 1
-      domain <- regions[i, ]
-      
-      location <- unlist(strsplit(domain$location, ":")) 
-      
-      domain_data[row_nr,1] <- seed_id
-      domain_data[row_nr,2] <- ortho_id
-      domain_data[row_nr,3] <- length
-      domain_data[row_nr,4] <- domain$feature
-      domain_data[row_nr,5] <- location[1]
-      domain_data[row_nr,6] <- location[2]
-    }
+    if(!is.null(nrow(regions))){############## NEU (Do catch when there are no regions found)
+      for (i in 1:nrow(regions)){
+        row_nr <- row_nr + 1
+        domain <- regions[i, ]
+        
+        location <- unlist(strsplit(domain$location, ":")) 
+        
+        domain_data[row_nr,1] <- seed_id
+        domain_data[row_nr,2] <- ortho_id
+        domain_data[row_nr,3] <- length
+        domain_data[row_nr,4] <- domain$feature
+        domain_data[row_nr,5] <- location[1]
+        domain_data[row_nr,6] <- location[2]
+      }
+    }############## NEU
   }
   colnames(domain_data) <- c("seedID",
                              "orthoID",
