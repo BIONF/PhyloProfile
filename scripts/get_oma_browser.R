@@ -1,5 +1,5 @@
 library(devtools)
-if (!require("roma")) install_github("trvinh/roma")
+if (!require("roma")) install_github("trvihn/roma")
 library ("roma")
 
 # OMA IDs or Uniprot IDs as Input =============================================
@@ -10,27 +10,24 @@ check_oma_id <- function(id){
   if (!is.null(data_id$entry_nr)) return (TRUE)
   else {
     return (FALSE)
-    }
+  }
 }
 
 # get the members for a OMA or Uniprot id -------------------------------------
 get_members <- function(id, output_type){
-  print(output_type)
-  print(id)
   if (output_type == "HOG"){
     # get the members of the Hierarchical Orthologous Group
     members <- getAttribute(getHOG(id = id, level = "root", members = TRUE),
-                               "members")
+                            "members")
   } else if (output_type == "OG"){
     # get the members of the Ortholoug group
     members <- getAttribute(getData(type = "group", id = id),
-                               "members")
+                            "members")
   } else if (output_type == "PAIR"){
     # get the members of the Orthologous Pair 
     data <- getData(type = "protein", id = id)
     members <- resolveURL(data$orthologs) 
   }
-  print(nrow(members))
   return(members)
 }
 
@@ -45,18 +42,23 @@ get_ncbi_id <- function(oma_id){
 oma_ids_to_long <- function(oma_ids, output_type){
   # "geneID ncbiID orthoID"
   long_dataframe <- data.frame()
-  row_nr <- 0
+  row_nr <- 1
+  
   for(id in oma_ids){
     members <- get_members(id, output_type)
     gene_id <- paste0("OG_", id)
-  
-
+    
+    ncbi <- get_ncbi_id(id)
+    long_dataframe[row_nr,1] <- gene_id
+    long_dataframe[row_nr,2] <- ncbi
+    long_dataframe[row_nr,3] <- id
+    row_nr <- row_nr +1
+    
     # Get orthoID and ncbiID for each member of the hogs
     for (i in 1:nrow(members)){
-      row_nr <- row_nr + 1
       member <- members[i, ]
       ortho_id <- member$omaid # use the oma ID as ortho ID
-
+      
       # Data for the current member (ortho ID)
       member_data <- getData("protein", ortho_id)
       
@@ -66,6 +68,7 @@ oma_ids_to_long <- function(oma_ids, output_type){
       long_dataframe[row_nr,1] <- gene_id
       long_dataframe[row_nr,2] <- ncbi_id
       long_dataframe[row_nr,3] <-ortho_id
+      row_nr <- row_nr + 1
     }
   }
   colnames(long_dataframe) <- c("geneID", "ncbiID", "orthoID")
@@ -82,11 +85,11 @@ oma_ids_to_fasta <- function(oma_ids, output_type){
     for (i in 1:nrow(members)){
       member <- members[i, ]
       ortho_id <- member$omaid # use the oma ID as ortho ID
-
+      
       # Data for the current member (ortho ID)
       member_data <- getData("protein", ortho_id)
       ncbi_id <- get_ncbi_id(member_data$omaid)
-
+      
       # New lines for the fasta format
       header_sequence <- paste0(">", gene_id, "|", ncbi_id, "|", ortho_id)
       sequence <- as.character(member_data$sequence)
@@ -155,11 +158,11 @@ oma_ids_to_domain <- function(oma_ids, output_type){
       domains <- resolveURL(member_data$domains) 
       regions <- domains$regions
       regions$feature <- paste(regions$source, regions$name, sep = " ")
-
+      
       for (i in 1:nrow(regions)){
         row_nr <- row_nr + 1
         domain <- regions[i, ]
-
+        
         location <- unlist(strsplit(domain$location, ":")) 
         
         domain_data[row_nr,1] <- seed_id
