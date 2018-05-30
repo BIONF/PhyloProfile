@@ -25,6 +25,9 @@ source("scripts/download_filtered_customized.R")
 
 source("scripts/select_taxon_rank.R")
 
+source("scripts/identify_core_gene.R")
+
+
 # MAIN UI =====================================================================
 
 shinyUI(fluidPage(
@@ -722,7 +725,8 @@ shinyUI(fluidPage(
                              width = NULL),
                uiOutput("add_cons_gene_custom_profile_check.ui")
         ),
-        dataTableOutput("cons_gene.table")
+        # dataTableOutput("cons_gene.table")
+        identify_core_gene_ui("cons_gene")
       ),
       
       # Search for NCBI taxonomy IDs  -----------------------------------------
@@ -1209,8 +1213,6 @@ shinyUI(fluidPage(
           "Select taxon/taxa of interest",
           "cus_taxa", size = "small",
           select_taxon_rank_ui("select_taxon_rank"),
-          # uiOutput("rank_select_cus"),
-          # uiOutput("taxa_select_cus"),
           checkboxInput("apply_cus_taxa",
                         strong("Apply to customized profile",
                                style = "color:red"),
@@ -1222,8 +1224,7 @@ shinyUI(fluidPage(
           "Select taxon/taxa of interest",
           "browse_taxa_cons",
           size = "small",
-          uiOutput("rank_select_cons"),
-          uiOutput("taxa_select_cons"),
+          select_taxon_rank_ui("select_taxon_rank_cons"),
           checkboxInput("apply_cons_taxa",
                         strong("Apply", style = "color:red"),
                         value = FALSE)

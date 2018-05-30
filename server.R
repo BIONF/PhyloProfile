@@ -89,8 +89,9 @@ source("scripts/download_filtered_main.R")
 source("scripts/download_filtered_customized.R")
 
 source("scripts/parse_phylotree.R")
-
 source("scripts/select_taxon_rank.R")
+
+source("scripts/identify_core_gene.R")
 
 
 # MAIN ========================================================================
@@ -225,70 +226,6 @@ shinyServer(function(input, output, session) {
   })
 
   # GET TAXONOMY IDS FROM LIST OF TAXON NAMES  ==================================
-  # # output mismatched taxa ----------------------------------------------------
-  # output$not_found_taxa <- renderDataTable(option = list(searching = FALSE), {
-  #   if (input$id_search > 0){
-  #     if (length(taxa_id()) > 0){
-  #       tb <- as.data.frame(taxa_id())
-  #       tb_filtered <- tb[tb$type == "notfound", ]
-  #       not_found_dt <- tb_filtered[, c("name", "new_name", "id")]
-  #       colnames(not_found_dt) <- c("Summitted name",
-  #                                 "Alternative name",
-  #                                 "Alternative ID")
-  #       not_found_dt
-  #     }
-  #   }
-  # })
-  # 
-  # # MISSING COMMENT -----------------------------------------------------------
-  # output$download_not_found_taxa <- downloadHandler(
-  #   filename = function(){
-  #     c("mismatchedTaxa.txt")
-  #     },
-  #   content = function(file){
-  #     tb <- as.data.frame(taxa_id())
-  #     tb_filtered <- tb[tb$type == "notfound", ]
-  #     not_found_dt <- tb_filtered[, c("name", "new_name", "id")]
-  #     colnames(not_found_dt) <- c("Summitted name",
-  #                               "Alternative name",
-  #                               "Alternative ID")
-  # 
-  #     write.table(not_found_dt, file,
-  #                 sep = "\t",
-  #                 row.names = FALSE,
-  #                 quote = FALSE)
-  #   }
-  # )
-  
-  # # output retrieved taxa IDs -------------------------------------------------
-  # output$taxa_id <- renderDataTable(option = list(searching = FALSE), {
-  #   if (input$id_search > 0){
-  #     if (length(taxa_id()) > 0){
-  #       tb <- as.data.frame(taxa_id())
-  #       tb_filtered <- tb[tb$type == "retrieved", ]
-  #       retrieved_dt <- tb_filtered[, c("name", "id")]
-  #       colnames(retrieved_dt) <- c("Taxon_name", "Taxon_ID")
-  #       retrieved_dt
-  #     }
-  #   }
-  # })
-  # 
-  # output$download_taxa_id <- downloadHandler(
-  #   filename = function(){
-  #     c("retrievedtaxa_id.txt")
-  #     },
-  #   content = function(file){
-  #     tb <- as.data.frame(taxa_id())
-  #     tb_filtered <- tb[tb$type == "retrieved", ]
-  #     retrieved_dt <- tb_filtered[, c("name", "id")]
-  #     colnames(retrieved_dt) <- c("Taxon name", "Taxon ID")
-  # 
-  #     write.table(retrieved_dt, file,
-  #                 sep = "\t",
-  #                 row.names = FALSE,
-  #                 quote = FALSE)
-  #   }
-  # )
   callModule(search_taxon_id,"search_taxon_id")
 
   # PARSING VARIABLE 1 AND 2 ==================================================
@@ -2461,6 +2398,11 @@ shinyServer(function(input, output, session) {
   # CORE GENES ================================================================
   # ===========================================================================
 
+  consTaxaName <- callModule(select_taxon_rank,
+                             "select_taxon_rank_cons",
+                             rank_select = reactive(input$rank_select),
+                             subset_taxa = subset_taxa)
+  
   # render list of available taxa ---------------------------------------------
   output$taxa_list_cons.ui <- renderUI({
     filein <- input$main_input
@@ -2502,17 +2444,17 @@ shinyServer(function(input, output, session) {
     }
   })
 
-  output$cons_gene.table <- renderDataTable({
-    data <- cons_geneDf()
-    if (is.null(data)) return()
-    else {
-      data <- as.data.frame(data)
-      # data$number <- rownames(data)
-      # colnames(data) <- c("geneID","No.")
-      # data <- data[,c("No.","geneID")]
-      data
-    }
-  })
+  # output$cons_gene.table <- renderDataTable({
+  #   data <- cons_geneDf()
+  #   if (is.null(data)) return()
+  #   else {
+  #     data <- as.data.frame(data)
+  #     # data$number <- rownames(data)
+  #     # colnames(data) <- c("geneID","No.")
+  #     # data <- data[,c("No.","geneID")]
+  #     data
+  #   }
+  # })
 
   # download gene list from cons_gene.table -----------------------------------
   output$cons_gene_table_download <- downloadHandler(
@@ -2542,27 +2484,6 @@ shinyServer(function(input, output, session) {
        | input$add_gc_genes_custom_profile == TRUE){
       HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Profiles clustering</strong> or <strong>Gene age estimating</strong> or r <strong>Group Comparioson</strong>&nbsp;to enable this function)</em></p>')
     }
-  })
-
-  # print list of available taxonomy ranks ------------------------------------
-  # (the lowest rank is the same as the chosen main rank)
-  output$rank_select_cons <- renderUI({
-    mainRank <- input$rank_select
-    mainChoices <- get_taxonomy_ranks()
-    consChoices <- mainChoices[mainChoices >= mainRank]
-
-    selectInput("rank_select_cons", label = h5("Select taxonomy rank:"),
-                choices = as.list(consChoices),
-                selected = mainRank)
-  })
-
-  output$taxa_select_cons <- renderUI({
-    choice <- taxa_select_cons()
-    choice$fullName <- as.factor(choice$fullName)
-    selectInput("taxa_select_cons",
-                h5("Choose (super)taxon of interest:"),
-                as.list(levels(choice$fullName)),
-                levels(choice$fullName)[1])
   })
 
   # ===========================================================================
@@ -4047,59 +3968,6 @@ shinyServer(function(input, output, session) {
     finalPresSpecDt
   })
   
-  # # print list of available taxa for customized plot --------------------------
-  # # (based on rank from rank_select_cus)
-  # taxa_select_cus <- reactive({
-  #   rank_select_cus <- input$rank_select_cus
-  #   
-  #   if (length(rank_select_cus) == 0) return()
-  #   else{
-  #     ### load list of unsorted taxa
-  #     Dt <- get_taxa_list(TRUE, subset_taxa())
-  #     
-  #     ### load list of taxon name
-  #     nameList <- get_name_list(TRUE, FALSE)
-  # 
-  #     
-  #     # get rank name from rank_select
-  #     rankName <- substr(rank_select_cus, 4, nchar(rank_select_cus))
-  #     choice <- as.data.frame
-  #     choice <- rbind(Dt[rankName])
-  #     colnames(choice) <- "ncbiID"
-  #     choice <- merge(choice, nameList, by = "ncbiID", all = FALSE)
-  #     return(choice)
-  #   }
-  # })
-  
-  # # get list of taxa based on selected taxa_select_cus ------------------------
-  # cus_taxaName <- reactive({
-  #   
-  #   taxa_select_cus <- input$taxa_select_cus
-  #   rankName <- substr(input$rank_select_cus, 4, nchar(input$rank_select_cus))
-  #   
-  #   if (taxa_select_cus == "") return()
-  #   
-  #   # load list of unsorted taxa
-  #   Dt <- get_taxa_list(TRUE, subset_taxa())
-  #   
-  #   # get ID of customized (super)taxon
-  #   taxa_list <- get_name_list(FALSE, FALSE)
-  #   superID <- taxa_list$ncbiID[taxa_list$fullName == taxa_select_cus
-  #                               & taxa_list$rank %in% c(rankName, "norank")]
-  #   
-  #   # from that ID, get list of all taxa for main selected taxon
-  #   mainRankName <- substr(input$rank_select, 4, nchar(input$rank_select))
-  #   customizedtaxa_id <- {
-  #     levels(as.factor(Dt[mainRankName][Dt[rankName] == superID, ]))
-  #   }
-  #   
-  #   cus_taxaName <- {
-  #     taxa_list$fullName[taxa_list$rank %in% c(mainRankName, "norank")
-  #                        & taxa_list$ncbiID %in% customizedtaxa_id]
-  #   }
-  #   return(cus_taxaName)
-  # })
-  
   # get info of a clicked point on selected plot ------------------------------
   # (also the same as get info from main plot)
   selectedpoint_info <- reactive({
@@ -4546,107 +4414,12 @@ shinyServer(function(input, output, session) {
     geneList
   })
   
-  cons_geneDf <- reactive({
-    if (v$doPlot == FALSE) return()
-    
-    rankName <- substr(input$rank_select, 4, nchar(input$rank_select))
-    
-    # get ID list of chosen taxa
-    taxa_list <- get_name_list(FALSE, FALSE)
-    
-    if ("none" %in% input$taxaCons) superID <- NA
-    else{
-      superID <- {
-        taxa_list$ncbiID[taxa_list$fullName %in% input$taxaCons
-                         & taxa_list$rank %in% c(rankName, "norank")]
-      }
-    }
-    
-    # get main input data
-    mdData <- get_data_filtered()
-    mdData <- mdData[, c("geneID",
-                         "ncbiID",
-                         "fullName",
-                         "supertaxon",
-                         "supertaxonID",
-                         "rank",
-                         "presSpec",
-                         "mVar1",
-                         "mVar2")]
-    
-    # filter by selecting taxa
-    if (is.na(superID[1])) data <- NULL
-    else{
-      data <- subset(mdData, supertaxonID %in% superID
-                     & presSpec >= input$percent_cons)
-      # get supertaxa present in each geneID
-      supertaxonCount <- {
-        as.data.frame(plyr::count(data,
-                                  c("geneID", "supertaxonID")))
-      }
-      # count number of supertaxa present in each geneID
-      # and get only gene that contains all chosen taxa
-      count <- as.data.frame(table(supertaxonCount$geneID))
-      cons_gene <- subset(count, Freq == length(superID))
-      cons_gene$Var1 <- factor(cons_gene$Var1)
-      
-      return(levels(cons_gene$Var1))
-    }
-  })
-  
-  # print list of available taxa for customized plot --------------------------
-  # (based on rank from rank_select_cus)
-  taxa_select_cons <- reactive({
-    rank_select_cons <- input$rank_select_cons
-    
-    if (length(rank_select_cons) == 0) return()
-    else{
-      # load list of unsorted taxa
-      Dt <- get_taxa_list(TRUE, subset_taxa())
-      
-      # load list of taxon name
-      nameList <- get_name_list(TRUE, FALSE)
-      
-      # get rank name from rank_select
-      rankName <- substr(rank_select_cons, 4, nchar(rank_select_cons))
-      choice <- as.data.frame
-      choice <- rbind(Dt[rankName])
-      colnames(choice) <- "ncbiID"
-      choice <- merge(choice, nameList, by = "ncbiID", all = FALSE)
-      return(choice)
-    }
-  })
-  
-  # get list of taxa based on selected taxa_select_cus ------------------------
-  consTaxaName <- reactive({
-    
-    taxa_select_cons <- input$taxa_select_cons
-    rankName <- substr(input$rank_select_cons,
-                       4,
-                       nchar(input$rank_select_cons))
-    
-    if (taxa_select_cons == "") return()
-    
-    # load list of unsorted taxa
-    Dt <- get_taxa_list(TRUE, subset_taxa())
-    
-    # get ID of customized (super)taxon
-    taxa_list <- get_name_list(FALSE, FALSE)
-    superID <- taxa_list$ncbiID[taxa_list$fullName == taxa_select_cons
-                                & taxa_list$rank %in% c(rankName, "norank")]
-    
-    # from that ID, get list of all taxa for main selected taxon
-    mainRankName <- substr(input$rank_select, 4, nchar(input$rank_select))
-    constaxa_id <- {
-      levels(as.factor(Dt[mainRankName][Dt[rankName] == superID, ]))
-    }
-    
-    consTaxaName <- {
-      taxa_list$fullName[taxa_list$rank %in% c(mainRankName, "norank")
-                         & taxa_list$ncbiID %in% constaxa_id]
-    }
-    return(consTaxaName)
-  })
+  cons_geneDf <- callModule(identify_core_gene,
+                            "cons_gene",
+                            filtered_data = get_data_filtered,
+                            rank_select = reactive(input$rank_select),
+                            taxaCons = reactive(input$taxaCons),
+                            percent_cons = reactive(input$percent_cons))
   
   # cluster data --------------------------------------------------------------
   clusterDataDend <- reactive({
