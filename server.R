@@ -83,9 +83,12 @@ source("scripts/get_oma_browser.R")
 source("scripts/search_taxon_id.R")
 source("scripts/parse_main_input.R")
 source("scripts/parse_domain_input.R")
+
 source("scripts/get_fasta_seqs.R")
 source("scripts/download_filtered_main.R")
 source("scripts/download_filtered_customized.R")
+
+source("scripts/parse_phylotree.R")
 
 
 # MAIN ========================================================================

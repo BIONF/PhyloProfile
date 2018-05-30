@@ -249,8 +249,6 @@ fasta_out_data <- function(data_out, filein, demo_data,
   }
   # remove duplicated sequences
   fasta_out_df <- fasta_out_df[!duplicated(fasta_out_df), ]
-  
-  
-  #print(fasta_out_df)
+
   return(fasta_out_df)
 }
