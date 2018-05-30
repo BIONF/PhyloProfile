@@ -661,9 +661,9 @@ shinyServer(function(input, output, session) {
   output$one_seq.exist_check <- renderUI({
     #f <- toString(input$oneseq.file)
 
-    if (is.null(input$one_seq_fasta)) return()
+    if (is.null(input$concat_fasta)) return()
     else{
-      f <- input$one_seq_fasta$datapath
+      f <- input$concat_fasta$datapath
       if (!file.exists(f)){
         helpText("File not exists!!")
       } else {
@@ -2178,8 +2178,8 @@ shinyServer(function(input, output, session) {
       seqDf <- data.frame("geneID" = groupID,
                           "orthoID" = seqID,
                           "ncbiID" = ncbiID)
-      fastaOut <- fasta_out_data(seqDf, input$main_input, input$demo_data,
-                               input$input_type, input$one_seq_fasta,
+      fastaOut <- get_fasta_seqs(seqDf, input$main_input, input$demo_data,
+                               input$input_type, input$concat_fasta,
                                input$path,
                                input$dir_format,
                                input$file_ext,
@@ -2226,7 +2226,7 @@ shinyServer(function(input, output, session) {
     g <- archi_plot(v3,
                     point_infoDetail(),
                     get_domain_information(),
-                    input$one_seq_fasta,
+                    input$concat_fasta,
                     input$label_archi_size,
                     input$title_archi_size)
     grid.draw(g)
@@ -2262,7 +2262,7 @@ shinyServer(function(input, output, session) {
       g <- archi_plot(v3,
                       point_infoDetail(),
                       get_domain_information(),
-                      input$one_seq_fasta,
+                      input$concat_fasta,
                       input$label_archi_size,
                       input$title_archi_size)
       grid.draw(g)
@@ -2568,9 +2568,9 @@ shinyServer(function(input, output, session) {
 
   # FOR MAIN PROFILE ==========================================================
   main_fasta_download <- reactive({
-    main_fasta_out <- fasta_out_data(as.data.frame(download_data()),
+    main_fasta_out <- get_fasta_seqs(as.data.frame(download_data()),
                                      input$main_input, input$demo_data,
-                                     input$input_type, input$one_seq_fasta,
+                                     input$input_type, input$concat_fasta,
                                      input$path,
                                      input$dir_format,
                                      input$file_ext,
@@ -2590,9 +2590,9 @@ shinyServer(function(input, output, session) {
 
   # FOR CUSTOMIZED PROFILE ==========================================================
   customized_fasta_download <- reactive({
-    fasta_out_df <- fasta_out_data(as.data.frame(download_custom_data()),
+    fasta_out_df <- get_fasta_seqs(as.data.frame(download_custom_data()),
                                    input$main_input, input$demo_data,
-                                   input$input_type, input$one_seq_fasta,
+                                   input$input_type, input$concat_fasta,
                                    input$path,
                                    input$dir_format,
                                    input$file_ext,

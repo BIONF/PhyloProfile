@@ -1,9 +1,23 @@
-#' Functions for downloading filtered data from main profile
+#' Module for downloading filtered data from main profile
+#'
+#' @export
 #' 
+#' @param data full input data, obtained from reactive function "get_data_filtered"
+#' @param fasta fasta sequences, obtained from reactive function "main_fasta_download"
+#' @param var1_id name of 1st variable, from input$var1_id
+#' @param var2_id name of 2nd variable, from input$var2_id
+#' @param var1 cutoff value of 1st variable, from input$var1
+#' @param var2 cutoff value of 2nd variable, from input$var2
+#' @param percent cutoff value of percentage species in each supertaxon
+#'                , from input$percent
+#'
+#' @return data of main profile for downloading
+#'
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 
 download_filtered_main_ui <- function(id){
   ns <- NS(id)
-  
+
   tabPanel(
     "Main data",
     column(
@@ -60,12 +74,10 @@ download_filtered_main_ui <- function(id){
   )
 }
 
-
-# render variable used for identifying representative genes -----------------
 download_filtered_main <- function(input, output, session, data, fasta,
                                    var1_id, var2_id,
                                    var1, var2, percent){
-  
+
   output$ref_var_main.ui <- renderUI({
     ns <- session$ns
     if (nchar(var2_id()) < 1 & nchar(var1_id()) < 1){
@@ -84,18 +96,18 @@ download_filtered_main <- function(input, output, session, data, fasta,
                    selected = var1_id())
     }
   })
-  
+
   # filtered data for downloading (Main Profile ) -----------------------------
   download_data <- reactive({
     ### filtered data
     data_out <- data() # <---- get_data_filtered()
     data_out <- as.data.frame(data_out[data_out$presSpec > 0, ])
     data_out <- data_out[!is.na(data_out$geneID), ]
-    
+
     data_out <- as.data.frame(data_out[data_out$presSpec >= percent()[1], ])
     data_out <- as.data.frame(data_out[data_out$var1 >= var1()[1]
                                        & data_out$var1 <= var1()[2], ])
-    
+
     if (!all(is.na(data_out$var2))){
       data_out <- as.data.frame(data_out[data_out$var2 >= var2()[1]
                                          & data_out$var2 <= var2()[2], ])
@@ -119,11 +131,11 @@ download_filtered_main <- function(input, output, session, data, fasta,
           data_out_agg <- data_out[data_out, c("geneID", "ncbiID", "var1")]
         }
         colnames(data_out_agg) <- c("geneID", "ncbiID", "var_best")
-        
+
         data_out_representative <- merge(data_out, data_out_agg,
                                          by = c("geneID", "ncbiID"),
                                          all.x = TRUE)
-        
+
         if (input$ref_var_main == var1_id()){
           data_out <- {
             data_out_representative[data_out_representative$var1 == data_out_representative$var_best, ]
@@ -141,7 +153,7 @@ download_filtered_main <- function(input, output, session, data, fasta,
         data_out <- data_out[!duplicated(c(data_out$dup)), ]
       }
     }
-    
+
     # sub select columns of dataout
     data_out <- data_out[, c("geneID",
                              "orthoID",
@@ -153,7 +165,7 @@ download_filtered_main <- function(input, output, session, data, fasta,
                              "presSpec")] #,"numberSpec"
     data_out <- data_out[order(data_out$geneID, data_out$supertaxon), ]
     data_out <- data_out[complete.cases(data_out), ]
-    
+
     data_out$geneID <- as.character(data_out$geneID)
     data_out$fullName <- as.character(data_out$fullName)
     data_out$ncbiID <- substr(data_out$ncbiID,
@@ -166,7 +178,7 @@ download_filtered_main <- function(input, output, session, data, fasta,
     data_out$var2 <- as.character(data_out$var2)
     # data_out$numberSpec <- as.numeric(data_out$numberSpec)
     data_out$presSpec <- as.numeric(data_out$presSpec)
-    
+
     # rename columns
     names(data_out)[names(data_out) == "presSpec"] <- "%Spec"
     # names(data_out)[names(data_out)=="numberSpec"] <- "totalSpec"
@@ -180,12 +192,12 @@ download_filtered_main <- function(input, output, session, data, fasta,
     } else {
       data_out <- subset(data_out, select = -c(var2) )
     }
-    
+
     # return data for downloading
     data_out <- as.matrix(data_out)
     return(data_out)
   })
-  
+
   # download data -------------------------------------------------------------
   output$download_data <- downloadHandler(
     filename = function(){
@@ -200,14 +212,14 @@ download_filtered_main <- function(input, output, session, data, fasta,
     }
   )
 
-  # data table ui tab ---------------------------------------------------------
+  # data table ui -------------------------------------------------------------
   output$filtered_main_data <- renderDataTable(rownames = FALSE, {
-    
+
     # if (is.null(data())) return()
     data <- download_data()
     data
   })
-  
+
   # download FASTA ------------------------------------------------------------
   output$download_fasta <- downloadHandler(
     filename = function(){
@@ -222,6 +234,6 @@ download_filtered_main <- function(input, output, session, data, fasta,
                   quote = FALSE)
     }
   )
-  
+
   return(download_data)
 }

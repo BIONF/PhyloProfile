@@ -1,5 +1,15 @@
-#' Functions for downloading filtered data from customized profile
+#' Module for downloading filtered data from customized profile
 #'
+#' @export
+#' 
+#' @param data main data for downloading, obtained from module "download_filtered_main.R"
+#' @param fasta fasta sequences, obtained from reactive function "customized_fasta_download"
+#' @param in_seq selected sequences in customized profile, from input$in_seq
+#' @param in_taxa selected taxa in customized profile, from input$in_taxa
+#'
+#' @return data of customized profile for downloading
+#'
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 
 download_filtered_customized_ui <- function(id){
   ns <- NS(id)
@@ -32,15 +42,11 @@ download_filtered_customized_ui <- function(id){
   )
 }
 
-
-# render variable used for identifying representative genes -----------------
 download_filtered_customized <- function(input, output, session, data, fasta,
                                          in_seq, in_taxa){
 
   # filtered data for downloading (Customized Profile) ------------------------
   download_custom_data <- reactive({
-    # check input
-    # if (v$doPlot == FALSE) return()
     data <- as.data.frame(data()) # <--- download_data()
 
     # get subset of data according to selected genes/taxa
@@ -80,7 +86,7 @@ download_filtered_customized <- function(input, output, session, data, fasta,
     }
   )
 
-  # data table ui tab ---------------------------------------------------------
+  # data table ui  ------------------------------------------------------------
   output$filtered_custom_data <- renderDataTable(rownames = FALSE, {
     # if (v$doPlot == FALSE) return()
     data <- download_custom_data()

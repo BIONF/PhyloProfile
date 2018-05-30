@@ -725,7 +725,6 @@ shinyUI(fluidPage(
                              width = NULL),
                uiOutput("add_cons_gene_custom_profile_check.ui")
         ),
-        # dataTableOutput("cons_gene.table")
         identify_core_gene_ui("cons_gene")
       ),
       
@@ -931,7 +930,7 @@ shinyUI(fluidPage(
           conditionalPanel(
             condition = "input.input_type == 'Concatenated fasta file'",
             #            textInput("oneseq.file","Path:",""),
-            fileInput("one_seq_fasta", ""),
+            fileInput("concat_fasta", ""),
             uiOutput("one_seq.exist_check")
           ),
           conditionalPanel(

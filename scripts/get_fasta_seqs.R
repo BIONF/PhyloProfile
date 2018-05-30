@@ -1,10 +1,30 @@
+#' Function for getting fasta sequences
+#' 
+#' @export
+#' 
+#' @param data_in input data (dataframe) contains at least 3 columns:
+#'                geneIDs, orthoIDs and ncbiIDs
+#' @param filein main input file (input$main_input)
+#' @param demo_data name of demo data (input$demo_data)
+#' @param input_type_fasta source of fasta sequences ("Concatenated fasta file"
+#'                         or "Fasta folder, from inpu$input_type)
+#' @param concat_fasta input concatenated source fasta (input$concat_fasta)
+#' @param path path to fasta folder (input$path)
+#' @param dir_format directory format (from inpu$dir_format,
+#'                   "path/speciesID.fa*" or "path/speciesID/speciesID.fa*")
+#' @param file_ext fasta file extension (from input$file_ext,
+#'                 "fa", "fasta", "fas" or "txt")
+#' @param id_format fasta header format (from input$id_format,
+#'                ">speciesID:seqID", ">speciesID@seqID" or ">speciesID|seqID")
+#' @param long_df main input in long-format (from function "get_main_input")
+#'
+#' @return dataframe contains fasta sequences
+#'
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 
-
-# Fasta output ----------------------------------------------------------------
-# input$main_input, input$demo_data
-fasta_out_data <- function(data_out, filein, demo_data,
+get_fasta_seqs <- function(data_in, filein, demo_data,
                            input_type_fasta,
-                           one_seq_fasta,
+                           concat_fasta,
                            path,
                            dir_format,
                            file_ext,
@@ -40,9 +60,9 @@ fasta_out_data <- function(data_out, filein, demo_data,
                           stringsAsFactors = FALSE)
       
       # get sequences
-      for (j in 1:nrow(data_out)){
-        seq_id <- as.character(data_out$orthoID[j])
-        group_id <- as.character(data_out$geneID[j])
+      for (j in 1:nrow(data_in)){
+        seq_id <- as.character(data_in$orthoID[j])
+        group_id <- as.character(data_in$geneID[j])
         
         seq <- as.character(fa_df$seq[fa_df$seqID == paste0(">", seq_id)])
         fasta_out <- paste(paste0(">", group_id, "|", seq_id),
@@ -66,12 +86,12 @@ fasta_out_data <- function(data_out, filein, demo_data,
     # data frame contains all sequences from input file
     fa <- data.frame(seq_name, sequence)
     
-    for (j in 1:nrow(data_out)){
-      seq_id <- paste0(as.character(data_out$geneID[j]),
+    for (j in 1:nrow(data_in)){
+      seq_id <- paste0(as.character(data_in$geneID[j]),
                        "|ncbi",
-                       as.character(data_out$ncbiID[j]),
+                       as.character(data_in$ncbiID[j]),
                        "|",
-                       as.character(data_out$orthoID[j]))
+                       as.character(data_in$orthoID[j]))
       
       seq <- fa$sequence[pmatch(seq_id, fa$seq_name)]
       
@@ -88,9 +108,9 @@ fasta_out_data <- function(data_out, filein, demo_data,
   }
   
   if (input_type == "oma"){
-    for(j in 1:nrow(data_out)){
-      seq_id <- as.character(data_out$orthoID[j])
-      group_id <- as.character(data_out$geneID[j])
+    for(j in 1:nrow(data_in)){
+      seq_id <- as.character(data_in$orthoID[j])
+      group_id <- as.character(data_in$geneID[j])
       fasta_out <- get_fasta_oma(seq_id, group_id, long_df)
       fasta_out_df <- rbind(fasta_out_df, as.data.frame(fasta_out))
     }
@@ -99,8 +119,8 @@ fasta_out_data <- function(data_out, filein, demo_data,
   } else {
     # get seqs for extended.fa
     if (demo_data == "none" & input_type_fasta == "Concatenated fasta file"){
-      if (!is.null(one_seq_fasta)){
-        fas_in <- one_seq_fasta
+      if (!is.null(concat_fasta)){
+        fas_in <- concat_fasta
         file <- toString(fas_in$datapath)
         
         # read fasta file and save sequences into dataframe
@@ -112,17 +132,17 @@ fasta_out_data <- function(data_out, filein, demo_data,
         fa <- data.frame(seq_name, sequence)
         
         # get selected sequences
-        for (j in 1:nrow(data_out)){
-          seq_id <- as.character(data_out$orthoID[j])
-          group_id <- as.character(data_out$geneID[j])
+        for (j in 1:nrow(data_in)){
+          seq_id <- as.character(data_in$orthoID[j])
+          group_id <- as.character(data_in$geneID[j])
           seq <- fa$sequence[pmatch(seq_id, fa$seq_name)]
           flag <- 1
           if (is.na(seq)){
-            seq_id <- paste0(as.character(data_out$geneID[j]),
+            seq_id <- paste0(as.character(data_in$geneID[j]),
                              "|ncbi",
-                             as.character(data_out$ncbiID[j]),
+                             as.character(data_in$ncbiID[j]),
                              "|",
-                             as.character(data_out$orthoID[j]))
+                             as.character(data_in$orthoID[j]))
             seq <- fa$sequence[pmatch(seq_id, fa$seq_name)]
             flag <- 0
           }
@@ -169,20 +189,20 @@ fasta_out_data <- function(data_out, filein, demo_data,
         # get list of species IDs
         if (id_format == 1){
           spec_df <- {
-            as.data.frame(str_split_fixed(str_reverse(as.character(data_out$orthoID)),
+            as.data.frame(str_split_fixed(str_reverse(as.character(data_in$orthoID)),
                                           ":", 2))
           }
           spec_df$spec_id <- str_reverse(as.character(spec_df$V2))
         } else if (id_format == 2){
           spec_df <- {
-            as.data.frame(str_split_fixed(str_reverse(as.character(data_out$orthoID)),
+            as.data.frame(str_split_fixed(str_reverse(as.character(data_in$orthoID)),
                                           "@", 2))
           }
           
           spec_df$spec_id <- str_reverse(as.character(spec_df$V2))
         } else if (id_format == 3){
           spec_df <- {
-            as.data.frame(str_split_fixed(str_reverse(as.character(data_out$orthoID)),
+            as.data.frame(str_split_fixed(str_reverse(as.character(data_in$orthoID)),
                                           "|", 2))
           }
           spec_df$spec_id <- str_reverse(as.character(spec_df$V2))
@@ -211,9 +231,9 @@ fasta_out_data <- function(data_out, filein, demo_data,
         }
         # now get selected sequences
         if (nrow(fa) > 0){
-          for (j in 1:nrow(data_out)){
-            seq_id <- as.character(data_out$orthoID[j])
-            group_id <- as.character(data_out$geneID[j])
+          for (j in 1:nrow(data_in)){
+            seq_id <- as.character(data_in$orthoID[j])
+            group_id <- as.character(data_in$geneID[j])
             
             seq <- fa$sequence[pmatch(seq_id, fa$seq_name)]
             
