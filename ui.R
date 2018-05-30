@@ -23,6 +23,8 @@ source("scripts/search_taxon_id.R")
 source("scripts/download_filtered_main.R")
 source("scripts/download_filtered_customized.R")
 
+source("scripts/select_taxon_rank.R")
+
 # MAIN UI =====================================================================
 
 shinyUI(fluidPage(
@@ -497,6 +499,7 @@ shinyUI(fluidPage(
                    column(4,
                           h3(""),
                           shinyBS::bsButton("cus_taxa", "Browse...")
+                          # select_taxon_rank_ui("cus_taxa")
                    )
                  )
           ),
@@ -1205,8 +1208,9 @@ shinyUI(fluidPage(
   bsModal("cus_taxa_bs",
           "Select taxon/taxa of interest",
           "cus_taxa", size = "small",
-          uiOutput("rank_select_cus"),
-          uiOutput("taxa_select_cus"),
+          select_taxon_rank_ui("select_taxon_rank"),
+          # uiOutput("rank_select_cus"),
+          # uiOutput("taxa_select_cus"),
           checkboxInput("apply_cus_taxa",
                         strong("Apply to customized profile",
                                style = "color:red"),
