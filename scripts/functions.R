@@ -532,7 +532,7 @@ get_edge_length <- function(text, start){
 }
 
 # check the validity of input newick tree -------------------------------------
-check_newick <- function(filein, main_input){
+check_newick <- function(filein, main_input, subset_taxa){
   tree <- read.table(file = filein$datapath,
                      header = F,
                      check.names = FALSE,
@@ -565,7 +565,7 @@ check_newick <- function(filein, main_input){
         node_string <- gsub(regex("\\W+"), "#", as.character(tree$V1))
         node_list <- unlist(strsplit(node_string, "#"))
         # list of input taxa
-        input_taxa <- subset_taxa()
+        input_taxa <- subset_taxa
 
         missing_taxa <- list()
         j <- 1
