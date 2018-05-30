@@ -724,22 +724,6 @@ shinyUI(fluidPage(
       
       # Search for NCBI taxonomy IDs  -----------------------------------------
       search_taxon_id_ui("search_taxon_id"),
-      # tabPanel("Search for NCBI taxonomy IDs",
-      #          column(3,
-      #                 fileInput("taxa_list", h4("Upload taxa list")),
-      #                 shinyBS::bsButton("id_search", "Search")
-      #          ),
-      #          column(9,
-      #                 h4("Mismatch(es):"),
-      #                 dataTableOutput("not_found_taxa"),
-      #                 downloadButton("download_not_found_taxa", "Download"),
-      #                 
-      #                 hr(),
-      #                 h4("Retrieved taxonomy ID(s):"),
-      #                 dataTableOutput("taxa_id"),
-      #                 downloadButton("download_taxa_id", "Download")
-      #          )
-      # ),
       
       # Group Comparison  -----------------------------------------------------
       tabPanel("Group Comparison",
@@ -820,103 +804,31 @@ shinyUI(fluidPage(
                  )
                ),
     
-    # DATA TAB ================================================================
-    navbarMenu("Download filtered data",
-               # tabPanel("Main data",
-               #          column(4,
-               #                 checkboxInput("get_representative_main",
-               #                               strong(em(
-               #                                 "Download representative
-               #                                 sequences")
-               #                               ),
-               #                               value = FALSE,
-               #                               width = NULL)
-               #                 ),
-               #          column(4,
-               #                 conditionalPanel(
-               #                   condition = {
-               #                     "input.get_representative_main == true"
-               #                   },
-               #                   uiOutput("ref_var_main.ui")
-               #                 )
-               #          ),
-               #          column(4,
-               #                 conditionalPanel(
-               #                   condition = {
-               #                     "input.get_representative_main == true"
-               #                   },
-               #                   radioButtons(inputId = "ref_type_main",
-               #                                label = {
-               #                                  "Select representative by"
-               #                                },
-               #                                choices = list("max", "min"),
-               #                                selected = "max",
-               #                                inline = T)
-               #                 )
-               #          ),
-               #          column(12,
-               #                 dataTableOutput("filtered_main_data")
-               #          ),
-               #          column(3,
-               #                 downloadButton("download_data",
-               #                                "Download filtered data")
-               #          ),
-               #          column(9,
-               #                 downloadButton("download_fasta",
-               #                                "Download FASTA sequences"),
-               #                 uiOutput("download_fasta.ui")
-               #          )
-               # ),
-               download_filtered_main_ui("filtered_main_download"),
-               download_filtered_customized_ui("filtered_customized_download")
-               # tabPanel("Customized data",
-               #          column(12,
-               #                 conditionalPanel(
-               #                   condition = {
-               #                     "input.get_representative_main == true"
-               #                   },
-               #                   uiOutput("representative_info.ui")
-               #                 )
-               #          ),
-               #          # hr(),
-               #          # dataTableOutput("filtered_custom_data"),
-               #          # downloadButton('download_custom_data',
-               #          #                'Download customized data')
-               #          
-               #          column(12,
-               #                 dataTableOutput("filtered_custom_data")
-               #          ),
-               #          column(3,
-               #                 downloadButton("download_custom_data",
-               #                                "Download customized data")
-               #          ),
-               #          column(9,
-               #                 downloadButton("download_custom_fasta",
-               #                                "Download FASTA sequences"),
-               #                 uiOutput("download_custom_fasta.ui")
-               #          )
-               # )
-               ),
+    # DATA DOWNLOAD TAB ===================================================
+    navbarMenu(
+      "Download filtered data",
+      download_filtered_main_ui("filtered_main_download"),
+      download_filtered_customized_ui("filtered_customized_download")
+    ),
     
     
     # HELP TAB ============================================================
-    navbarMenu("Help",
-               # tabPanel("Help", includeMarkdown("help.md")
-               # tabPanel("Help", includeHTML("help.html")
-               # tabPanel("Help", includeText("help.html")
-               # ),
-               tabPanel(a("Wiki",
-                          href = {
-                            "https://github.com/BIONF/PhyloProfile/wiki"
-                          },
-                          target = "_blank")
-               ),
-               tabPanel(a("About",
-                          href = "https://BIONF.github.io/PhyloProfile/",
-                          target = "_blank")
-               )
+    navbarMenu(
+      "Help",
+      tabPanel(
+        a("Wiki",
+          href = {
+            "https://github.com/BIONF/PhyloProfile/wiki"
+          },
+          target = "_blank")
+      ),
+      tabPanel(
+        a("About",
+          href = "https://BIONF.github.io/PhyloProfile/",
+          target = "_blank")
+      )
     )
-    ),
+  ),
   
   # LIST OF POP-UP WINDOWS =================================================
   
