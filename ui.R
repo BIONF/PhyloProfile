@@ -21,6 +21,7 @@ if (!require("shinycssloaders")) {
 
 source("scripts/search_taxon_id.R")
 source("scripts/download_filtered_main.R")
+source("scripts/download_filtered_customized.R")
 
 # MAIN UI =====================================================================
 
@@ -867,34 +868,34 @@ shinyUI(fluidPage(
                #          )
                # ),
                download_filtered_main_ui("filtered_main_download"),
-               
-               tabPanel("Customized data",
-                        column(12,
-                               conditionalPanel(
-                                 condition = {
-                                   "input.get_representative_main == true"
-                                 },
-                                 uiOutput("representative_info.ui")
-                               )
-                        ),
-                        # hr(),
-                        # dataTableOutput("filtered_custom_data"),
-                        # downloadButton('download_custom_data',
-                        #                'Download customized data')
-                        
-                        column(12,
-                               dataTableOutput("filtered_custom_data")
-                        ),
-                        column(3,
-                               downloadButton("download_custom_data",
-                                              "Download customized data")
-                        ),
-                        column(9,
-                               downloadButton("download_custom_fasta",
-                                              "Download FASTA sequences"),
-                               uiOutput("download_custom_fasta.ui")
-                        )
-               )
+               download_filtered_customized_ui("filtered_customized_download")
+               # tabPanel("Customized data",
+               #          column(12,
+               #                 conditionalPanel(
+               #                   condition = {
+               #                     "input.get_representative_main == true"
+               #                   },
+               #                   uiOutput("representative_info.ui")
+               #                 )
+               #          ),
+               #          # hr(),
+               #          # dataTableOutput("filtered_custom_data"),
+               #          # downloadButton('download_custom_data',
+               #          #                'Download customized data')
+               #          
+               #          column(12,
+               #                 dataTableOutput("filtered_custom_data")
+               #          ),
+               #          column(3,
+               #                 downloadButton("download_custom_data",
+               #                                "Download customized data")
+               #          ),
+               #          column(9,
+               #                 downloadButton("download_custom_fasta",
+               #                                "Download FASTA sequences"),
+               #                 uiOutput("download_custom_fasta.ui")
+               #          )
+               # )
                ),
     
     
