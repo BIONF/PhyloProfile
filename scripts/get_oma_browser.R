@@ -1,5 +1,5 @@
 library(devtools)
-if (!require("roma")) install_github("trvihn/roma")
+if (!require("roma")) install_github("trvinh/roma")
 library ("roma")
 
 # OMA IDs or Uniprot IDs as Input =============================================
@@ -45,11 +45,9 @@ oma_ids_to_long <- function(oma_ids, output_type){
   row_nr <- 1
   
   for(id in oma_ids){
-
     if(check_oma_id(id)){############## NEU (Makeing sure that it is a valid id, the function is the first in the script)
       start_id = Sys.time() ############## NEU (For the time stamp)
       members <- get_members(id, output_type)
-
       
       gene_id <- paste0("OG_", id)
       oma_id <- getAttribute(getData("protein", id), "omaid")############## NEU
@@ -78,10 +76,11 @@ oma_ids_to_long <- function(oma_ids, output_type){
       }
       end_id <- Sys.time()############## NEU (for the time stamp)
       time <- end_id - start_id############## NEU (for the time stamp)
-      print(paste("runtime for", id, "with", nrow(members),"members:", time, sep = " "  ))############## NEU (time stamp for each input id)
+      #print(paste("runtime for", id, "with", nrow(members),"members:", time, sep = " "  ))############## NEU (time stamp for each input id)
     } else {############## NEU
       print(paste(id, "is not a valid oma or uniprot id"))############## NEU 
     } ############## NEU
+    
   }
   colnames(long_dataframe) <- c("geneID", "ncbiID", "orthoID")
   return(long_dataframe)
@@ -237,6 +236,9 @@ long_to_domain <- function(long){
                              "feature",
                              "start",
                              "end")
+  
+  domain_data$start <- as.integer(domain_data$start)
+  domain_data$end <- as.integer(domain_data$end)
   return(domain_data)
 }
 
