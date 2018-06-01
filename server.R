@@ -793,8 +793,8 @@ shinyServer(function(input, output, session) {
   output$checkNewick.ui <- renderUI({
     filein <- input$inputTree
     if (is.null(filein)) return()
-    
-    check_newick <- check_newick(filein)
+    check_newick <- check_newick(filein,input$main_input, subset_taxa())
+
     if (check_newick == 1){
       updateButton(session, "do", disabled = TRUE)
       HTML("<p><em><span style=\"color: #ff0000;\"><strong>ERROR: Parenthesis(-es) missing!</strong></span></em></p>")
