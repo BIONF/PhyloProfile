@@ -92,6 +92,7 @@ source("scripts/parse_phylotree.R")
 source("scripts/select_taxon_rank.R")
 
 source("scripts/identify_core_gene.R")
+source("scripts/analyze_distribution.R")
 
 source("scripts/fn_estimate_gene_age.R")
 
@@ -1770,6 +1771,147 @@ shinyServer(function(input, output, session) {
   # PLOT var1/var2 SCORE & % OF PRESENT SPECIES DISTRIBUTION ==================
   # ===========================================================================
 
+  # var1 / var2 distribution data ---------------------------------------------
+  distDf <- reactive({
+    if (v$doPlot == FALSE) return()
+    
+    dataOrig <- get_main_input()
+    if (ncol(dataOrig) < 4){
+      colnames(dataOrig) <- c("geneID",
+                              "ncbiID",
+                              "orthoID")
+      splitDt <- dataOrig[, c("orthoID")]
+    } else if (ncol(dataOrig) < 5){
+      colnames(dataOrig) <- c("geneID",
+                              "ncbiID",
+                              "orthoID",
+                              "var1")
+      splitDt <- dataOrig[, c("orthoID",
+                              "var1")]
+    } else {
+      colnames(dataOrig) <- c("geneID",
+                              "ncbiID",
+                              "orthoID",
+                              "var1",
+                              "var2")
+      splitDt <- dataOrig[, c("orthoID", "var1", "var2")]
+    }
+    
+    splitDt$orthoID[splitDt$orthoID == "NA" | is.na(splitDt$orthoID)] <- NA
+    splitDt <- splitDt[complete.cases(splitDt), ]
+    
+    if (length(levels(as.factor(splitDt$var2))) == 1){
+      if (levels(as.factor(splitDt$var2)) == ""){
+        splitDt$var2 <- 0
+      }
+    }
+    
+    # convert factor into numeric for "var1" & "var2" column
+    if ("var1" %in% colnames(splitDt)){
+      splitDt$var1 <- suppressWarnings(as.numeric(as.character(splitDt$var1)))
+      # filter splitDt based on selected var1 cutoff
+      splitDt <- splitDt[splitDt$var1 >= input$var1[1]
+                         & splitDt$var1 <= input$var1[2], ]
+    }
+    if ("var2" %in% colnames(splitDt)){
+      splitDt$var2 <- suppressWarnings(as.numeric(as.character(splitDt$var2)))
+      # filter splitDt based on selected var2 cutoff
+      splitDt <- splitDt[splitDt$var2 >= input$var2[1]
+                         & splitDt$var2 <= input$var2[2], ]
+    }
+    
+    # filter data base on customized plot (if chosen)
+    if (input$dataset.distribution == "Customized data"){
+      # get geneID and supertaxon name for splitDt
+      allData <- get_data_filtered()
+      splitDtName <- merge(splitDt, allData,
+                           by = "orthoID",
+                           all.x = TRUE)
+      splitDtName$supertaxonMod <- {
+        substr(splitDtName$supertaxon,
+               6,
+               nchar(as.character(splitDtName$supertaxon)))
+      }
+      splitDtName <- subset(splitDtName,
+                            select = c(orthoID,
+                                       var1.x,
+                                       var2.y,
+                                       supertaxonMod,
+                                       geneID))
+      colnames(splitDtName) <- c("orthoID",
+                                 "var1",
+                                 "var2",
+                                 "supertaxonMod",
+                                 "geneID")
+      
+      # filter
+      if (input$in_taxa[1] == "all" & input$in_seq[1] != "all"){
+        # select data from dataHeat for selected sequences only
+        splitDt <- subset(splitDtName, geneID %in% input$in_seq)
+      } else if (input$in_seq[1] == "all" & input$in_taxa[1] != "all"){
+        # select data from dataHeat for selected taxa only
+        splitDt <- subset(splitDtName, supertaxonMod %in% input$in_taxa)
+      } else {
+        # select data from dataHeat for selected sequences and taxa
+        splitDt <- subset(splitDtName,
+                          geneID %in% input$in_seq
+                          & supertaxonMod %in% input$in_taxa)
+      }
+    }
+    
+    # return dt
+    return(splitDt)
+  })
+  
+  # calculate % present species for input file --------------------------------
+  presSpecAllDt <- reactive({
+    # open main input file
+    mdData <- get_main_input()
+    if (ncol(mdData) < 4){
+      colnames(mdData) <- c("geneID",
+                            "ncbiID",
+                            "orthoID")
+    } else if (ncol(mdData) < 5){
+      colnames(mdData) <- c("geneID",
+                            "ncbiID",
+                            "orthoID",
+                            "var1")
+    } else {
+      colnames(mdData) <- c("geneID",
+                            "ncbiID",
+                            "orthoID",
+                            "var1",
+                            "var2")
+    }
+    
+    # count number of inparalogs
+    paralogCount <- plyr::count(mdData, c("geneID", "ncbiID"))
+    mdData <- merge(mdData, paralogCount, by = c("geneID", "ncbiID"))
+    colnames(mdData)[ncol(mdData)] <- "paralog"
+    
+    # (3) GET SORTED TAXONOMY LIST (3)
+    taxa_list <- sortedtaxa_list()
+    
+    # calculate frequency of all supertaxa
+    taxaCount <- plyr::count(taxa_list, "supertaxon")
+    
+    # merge mdData, mdDatavar2 and taxa_list to get taxonomy info
+    taxaMdData <- merge(mdData, taxa_list, by = "ncbiID")
+    if ("var1" %in% colnames(taxaMdData)){
+      taxaMdData$var1 <- {
+        suppressWarnings(as.numeric(as.character(taxaMdData$var1)))
+      }
+    }
+    if ("var2" %in% colnames(taxaMdData)){
+      taxaMdData$var2 <- {
+        suppressWarnings(as.numeric(as.character(taxaMdData$var2)))
+      }
+    }
+    # calculate % present species
+    finalPresSpecDt <- calc_pres_spec(taxaMdData, taxaCount)
+    finalPresSpecDt
+  })
+  
   # list of available variables for distribution plot -------------------------
   output$selected.distribution <- renderUI({
     if (nchar(input$var1_id) == 0 & nchar(input$var2_id) == 0){
@@ -1792,55 +1934,17 @@ shinyServer(function(input, output, session) {
   })
 
   output$var1DistPlot <- renderPlot(width = 512, height = 356, {
-    if (input$auto_update == FALSE){
-      # Add dependency on the update button
-      # (only update when button is clicked)
-      input$update_btn
-
-      # Add all the filters to the data based on the user inputs
-      # wrap in an isolate() so that the data won't update every time an input
-      # is changed
-      isolate({
-        var1_dist_plot(v, distDf(), input$dist_text_size, input$var1_id)
-      })
-    } else {
-      var1_dist_plot(v, distDf(), input$dist_text_size, input$var1_id)
-    }
+    var_dist_plot(distDf(), input$var1_id, "var1", input$percent, input$dist_text_size)
   })
 
   output$var2DistPlot <- renderPlot(width = 512, height = 356, {
-    if (input$auto_update == FALSE){
-      # Add dependency on the update button
-      # (only update when button is clicked)
-      input$update_btn
-
-      # Add all the filters to the data based on the user inputs
-      # wrap in an isolate() so that the data won't update every time an input
-      # is changed
-      isolate({
-        var2_dist_plot(v, distDf(), input$dist_text_size, input$var2_id)
-      })
-    } else {
-      var2_dist_plot(v, distDf(), input$dist_text_size, input$var2_id)
-    }
+    var_dist_plot(distDf(), input$var2_id, "var2", input$percent, input$dist_text_size)
+    
   })
 
   # % present species distribution plot =======================================
   output$presSpecPlot <- renderPlot(width = 512, height = 356, {
-    if (input$auto_update == FALSE){
-      # Add dependency on the update button
-      # (only update when button is clicked)
-      input$update_btn
-
-      # Add all the filters to the data based on the user inputs
-      # wrap in an isolate() so that the data won't update every time an input
-      # is changed
-      isolate({
-        pres_spec_plot(v, presSpecAllDt, input$percent, input$dist_text_size)
-      })
-    } else {
-      pres_spec_plot(v, presSpecAllDt, input$percent, input$dist_text_size)
-    }
+    var_dist_plot(presSpecAllDt(), "% present taxa", "presSpec", input$percent, input$dist_text_size)
   })
 
   # render dist_plot.ui -------------------------------------------------------
@@ -1868,8 +1972,15 @@ shinyServer(function(input, output, session) {
         }
       }
     }
-  })
+  })  #HERERERERERE
 
+  # callModule(analyze_distribution, "dist_plot",
+  #            get_main_input, get_data_filtered, sortedtaxa_list,
+  #            reactive(input$dataset.distribution), reactive(input$selected_var),
+  #            reactive(input$in_taxa), reactive(input$in_seq),
+  #            reactive(input$width), reactive(input$height), reactive(input$dist_text_size),
+  #            reactive(input$var1_id), reactive(input$var2_id), reactive(input$percent))
+  
   # Download distribution plot ------------------------------------------------
   output$plot_download_dist <- downloadHandler(
     filename = function() {
@@ -3847,147 +3958,6 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  # var1 / var2 distribution data ---------------------------------------------
-  distDf <- reactive({
-    if (v$doPlot == FALSE) return()
-    
-    dataOrig <- get_main_input()
-    if (ncol(dataOrig) < 4){
-      colnames(dataOrig) <- c("geneID",
-                              "ncbiID",
-                              "orthoID")
-      splitDt <- dataOrig[, c("orthoID")]
-    } else if (ncol(dataOrig) < 5){
-      colnames(dataOrig) <- c("geneID",
-                              "ncbiID",
-                              "orthoID",
-                              "var1")
-      splitDt <- dataOrig[, c("orthoID",
-                              "var1")]
-    } else {
-      colnames(dataOrig) <- c("geneID",
-                              "ncbiID",
-                              "orthoID",
-                              "var1",
-                              "var2")
-      splitDt <- dataOrig[, c("orthoID", "var1", "var2")]
-    }
-    
-    splitDt$orthoID[splitDt$orthoID == "NA" | is.na(splitDt$orthoID)] <- NA
-    splitDt <- splitDt[complete.cases(splitDt), ]
-    
-    if (length(levels(as.factor(splitDt$var2))) == 1){
-      if (levels(as.factor(splitDt$var2)) == ""){
-        splitDt$var2 <- 0
-      }
-    }
-    
-    # convert factor into numeric for "var1" & "var2" column
-    if ("var1" %in% colnames(splitDt)){
-      splitDt$var1 <- suppressWarnings(as.numeric(as.character(splitDt$var1)))
-      # filter splitDt based on selected var1 cutoff
-      splitDt <- splitDt[splitDt$var1 >= input$var1[1]
-                         & splitDt$var1 <= input$var1[2], ]
-    }
-    if ("var2" %in% colnames(splitDt)){
-      splitDt$var2 <- suppressWarnings(as.numeric(as.character(splitDt$var2)))
-      # filter splitDt based on selected var2 cutoff
-      splitDt <- splitDt[splitDt$var2 >= input$var2[1]
-                         & splitDt$var2 <= input$var2[2], ]
-    }
-    
-    # filter data base on customized plot (if chosen)
-    if (input$dataset.distribution == "Customized data"){
-      # get geneID and supertaxon name for splitDt
-      allData <- get_data_filtered()
-      splitDtName <- merge(splitDt, allData,
-                           by = "orthoID",
-                           all.x = TRUE)
-      splitDtName$supertaxonMod <- {
-        substr(splitDtName$supertaxon,
-               6,
-               nchar(as.character(splitDtName$supertaxon)))
-      }
-      splitDtName <- subset(splitDtName,
-                            select = c(orthoID,
-                                       var1.x,
-                                       var2.y,
-                                       supertaxonMod,
-                                       geneID))
-      colnames(splitDtName) <- c("orthoID",
-                                 "var1",
-                                 "var2",
-                                 "supertaxonMod",
-                                 "geneID")
-      
-      # filter
-      if (input$in_taxa[1] == "all" & input$in_seq[1] != "all"){
-        # select data from dataHeat for selected sequences only
-        splitDt <- subset(splitDtName, geneID %in% input$in_seq)
-      } else if (input$in_seq[1] == "all" & input$in_taxa[1] != "all"){
-        # select data from dataHeat for selected taxa only
-        splitDt <- subset(splitDtName, supertaxonMod %in% input$in_taxa)
-      } else {
-        # select data from dataHeat for selected sequences and taxa
-        splitDt <- subset(splitDtName,
-                          geneID %in% input$in_seq
-                          & supertaxonMod %in% input$in_taxa)
-      }
-    }
-    
-    # return dt
-    return(splitDt)
-  })
-  
-  # calculate % present species for input file --------------------------------
-  presSpecAllDt <- reactive({
-    # open main input file
-    mdData <- get_main_input()
-    if (ncol(mdData) < 4){
-      colnames(mdData) <- c("geneID",
-                            "ncbiID",
-                            "orthoID")
-    } else if (ncol(mdData) < 5){
-      colnames(mdData) <- c("geneID",
-                            "ncbiID",
-                            "orthoID",
-                            "var1")
-    } else {
-      colnames(mdData) <- c("geneID",
-                            "ncbiID",
-                            "orthoID",
-                            "var1",
-                            "var2")
-    }
-    
-    # count number of inparalogs
-    paralogCount <- plyr::count(mdData, c("geneID", "ncbiID"))
-    mdData <- merge(mdData, paralogCount, by = c("geneID", "ncbiID"))
-    colnames(mdData)[ncol(mdData)] <- "paralog"
-    
-    # (3) GET SORTED TAXONOMY LIST (3) 
-    taxa_list <- sortedtaxa_list()
-    
-    # calculate frequency of all supertaxa
-    taxaCount <- plyr::count(taxa_list, "supertaxon")
-    
-    # merge mdData, mdDatavar2 and taxa_list to get taxonomy info
-    taxaMdData <- merge(mdData, taxa_list, by = "ncbiID")
-    if ("var1" %in% colnames(taxaMdData)){
-      taxaMdData$var1 <- {
-        suppressWarnings(as.numeric(as.character(taxaMdData$var1)))
-      }
-    }
-    if ("var2" %in% colnames(taxaMdData)){
-      taxaMdData$var2 <- {
-        suppressWarnings(as.numeric(as.character(taxaMdData$var2)))
-      }
-    }
-    # calculate % present species
-    finalPresSpecDt <- calc_pres_spec(taxaMdData, taxaCount)
-    finalPresSpecDt
-  })
-  
   # get info of a clicked point on selected plot ------------------------------
   # (also the same as get info from main plot)
   selectedpoint_info <- reactive({
@@ -4353,5 +4323,4 @@ shinyServer(function(input, output, session) {
     }
     return(taxa_name_gc)
   })
-  
 })

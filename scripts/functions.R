@@ -413,104 +413,42 @@ detail_plot <- function(v, sel_df, detailed_text, var1_id, var2_id){
 }
 
 # DISTRIBUTION PLOT ===========================================================
-
-# var1 score distribution plot ------------------------------------------------
-# v, distDf(), input$dist_text_size
-var1_dist_plot <- function(v, split_dt, dist_text_size, var1_id){
-  if (v$doPlot == FALSE) return()
-
-  if (is.null(levels(as.factor(split_dt$var1)))) return()
-  else{
-    split_dt <- split_dt[!is.na(split_dt$var1), ]
-    split_dt$mean <- mean(split_dt$var1)
-
-    # plot var1 score distribution
-    p <- ggplot(split_dt, aes(x = var1)) +
-      geom_histogram(binwidth = .01, alpha = .5, position = "identity") +
-      geom_vline(data = split_dt,
-                 aes(xintercept = split_dt$mean, colour = "red"),
-                 linetype = "dashed",
-                 size = 1) +
-      #      ggtitle(paste("Mean",input$var1_id,"=",round(mean(split_dt$var1),3))) +
-      theme_minimal()
-    p <- p + theme(legend.position = "none",
-                   #                   plot.title = element_text(hjust = 0.5),
-                   axis.title = element_text(size = dist_text_size),
-                   axis.text = element_text(size = dist_text_size)) +
-      labs(x = paste0(var1_id,
-                      " (mean = ", round(mean(split_dt$var1), 3), ")"),
-           y = "Frequency")
-    p
-  }
-}
-
-# var2 score distribution plot ----------------------------------------------
-# v, distDf(), input$dist_text_size
-var2_dist_plot <- function(v, split_dt, dist_text_size, var2_id){
-  if (v$doPlot == FALSE) return()
-
-  if (is.null(levels(as.factor(split_dt$var2)))) return()
-  else{
-    split_dt <- split_dt[!is.na(split_dt$var2), ]
-    split_dt$mean <- mean(split_dt$var2)
-
-    # plot var1 score distribution
-    p <- ggplot(split_dt, aes(x = var2)) +
-      geom_histogram(binwidth = .01, alpha = .5, position = "identity") +
-      geom_vline(data = split_dt,
-                 aes(xintercept = split_dt$mean, colour = "red"),
-                 linetype = "dashed",
-                 size = 1) +
-      #      ggtitle(paste("Mean",input$var2_id,"=",round(mean(split_dt$var2),3))) +
-      theme_minimal()
-    p <- p + theme(legend.position = "none",
-                   # plot.title = element_text(size=input$legend_size),#hjust = 0.5,
-                   axis.title = element_text(size = dist_text_size),
-                   axis.text = element_text(size = dist_text_size)) +
-      labs(x = paste0(var2_id,
-                      " (mean = ",
-                      round(mean(split_dt$var2), 3),
-                      ")"),
-           y = "Frequency")
-    p
-  }
-}
-
-# % presSpec distribution plot ----------------------------------------------
-# v, presSpecAllDt,input$percent, input$dist_text_size
-pres_spec_plot <- function(v, dt, percent, dist_text_size){
-  if (v$doPlot == FALSE) return()
-
-  # data
-  # dt <- presSpecAllDt()
-
-  # remove presSpec < cutoff_min or > cutoff_max
-  if (percent[1] > 0){
-    dt <- dt[dt$presSpec >= percent[1] & dt$presSpec <= percent[2], ]
-  } else {
-    if (input$percent[2] > 0){
-      dt <- dt[dt$presSpec > 0 & dt$presSpec <= percent[2], ]
+# data = split_dt for var1 and var2 or presSpecAllDt for percentage
+var_dist_plot <- function(data, var_id, var_type, percent, dist_text_size){
+  if(var_type == "presSpec"){
+    # remove presSpec < cutoff_min or > cutoff_max
+    if (percent[1] > 0){
+      data <- data[data$presSpec >= percent[1] & data$presSpec <= percent[2], ]
     } else {
-      dt <- dt[dt$presSpec > 0, ]
+      if (percent[2] > 0){
+        data <- data[data$presSpec > 0 & data$presSpec <= percent[2], ]
+      } else {
+        data <- data[data$presSpec > 0, ]
+      }
     }
+  } else {
+    data <- data[!is.na(data[,var_type]), ]
   }
-
-  # calculate mean presSpec score
-  dt$mean <- mean(dt$presSpec)
-
-  # plot presSpec distribution
-  p <- ggplot(dt, aes(x = presSpec)) +
+  
+  data.mean <- mean(data[,var_type])
+  
+  # plot var1 score distribution
+  p <- ggplot(data, aes(x = data[,var_type])) +
     geom_histogram(binwidth = .01, alpha = .5, position = "identity") +
-    geom_vline(data = dt, aes(xintercept = dt$mean, colour = "red"),
-               linetype = "dashed", size = 1) +
-    #      ggtitle(paste("Mean % present taxa = ",round(mean(dt$presSpec),3))) +
+    geom_vline(data = data,
+               aes(xintercept = data.mean, colour = "red"),
+               linetype = "dashed",
+               size = 1) +
+    #      ggtitle(paste("Mean",input$var2_id,"=",round(mean(split_dt$var2),3))) +
     theme_minimal()
   p <- p + theme(legend.position = "none",
-                 #                   plot.title = element_text(hjust = 0.5),
+                 # plot.title = element_text(size=input$legend_size),#hjust = 0.5,
                  axis.title = element_text(size = dist_text_size),
                  axis.text = element_text(size = dist_text_size)) +
-    labs(x = paste0("% present taxa (mean = ",
-                    round(mean(dt$presSpec), 3), ")"),
+    labs(x = paste0(var_id,
+                    " (mean = ",
+                    round(mean(data[,var_type]), 3),
+                    ")"),
          y = "Frequency")
   p
 }

@@ -26,7 +26,7 @@ source("scripts/download_filtered_customized.R")
 source("scripts/select_taxon_rank.R")
 
 source("scripts/identify_core_gene.R")
-
+source("scripts/analyze_distribution.R")
 
 # MAIN UI =====================================================================
 
@@ -642,6 +642,7 @@ shinyUI(fluidPage(
         ),
         
         uiOutput("dist_plot.ui")
+        # analyze_distribution_ui("dist_plot")
       ),
       
       # Gene age estimation ---------------------------------------------------
