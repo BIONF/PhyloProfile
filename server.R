@@ -3281,7 +3281,7 @@ shinyServer(function(input, output, session) {
       }
     }
     
-    if(input$demo_data == "ampk-tor" | !input$anno_choose == "from file"){ ############## NEU (changed the if clause)
+    if(input$demo_data == "ampk-tor" | !input$anno_choose == "from file"){ 
       long_df <- get_long_matrix()
       genes <- unlist(long_df$geneID)
       genes <- unique(genes)
