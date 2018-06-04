@@ -198,13 +198,13 @@ shinyUI(fluidPage(
              uiOutput("demo_data_describe"),
              uiOutput("main_input_file.ui"),
              uiOutput("input_check.ui"),
-
+             
              fluidRow(
                column(6, uiOutput("select_oma_type")),
                column(6, uiOutput("button_oma"),
                       uiOutput("oma_download"))
              ),
-
+             
              fluidRow(
                column(4,
                       uiOutput("var1_id.ui")
@@ -834,7 +834,7 @@ shinyUI(fluidPage(
           target = "_blank")
       )
     )
-  ),
+               ),
   
   # LIST OF POP-UP WINDOWS =================================================
   
@@ -1370,4 +1370,4 @@ shinyUI(fluidPage(
     )
   )
 )
-  )
+)
