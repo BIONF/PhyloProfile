@@ -45,6 +45,7 @@ oma_ids_to_long <- function(oma_ids, output_type){
   row_nr <- 1
 
   for(id in oma_ids){
+
     if(check_oma_id(id)){
       start_id = Sys.time() 
       members <- get_members(id, output_type)
@@ -53,10 +54,12 @@ oma_ids_to_long <- function(oma_ids, output_type){
       oma_id <- getAttribute(getData("protein", id), "omaid")
       
       ncbi <- get_ncbi_id(oma_id)
+
       long_dataframe[row_nr,1] <- gene_id
       long_dataframe[row_nr,2] <- ncbi
       long_dataframe[row_nr,3] <- oma_id 
       row_nr <- row_nr +1
+
 
       if(!is.null(nrow(members))){ ############## NEU
         print(paste("There where", nrow(members), "members found for", id, sep = " ")) ############## NEU
@@ -241,8 +244,9 @@ long_to_domain <- function(long){
                              "feature",
                              "start",
                              "end")
-  
+
   domain_data$start <- as.integer(domain_data$start) 
   domain_data$end <- as.integer(domain_data$end) 
+
   return(domain_data)
 }
