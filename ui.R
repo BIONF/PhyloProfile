@@ -649,7 +649,6 @@ shinyUI(fluidPage(
                    bsButton("gene_age_prot_config", "Plot config")
             ),
             column(4,
-                   # downloadButton("gene_age_table_download", "Download gene list"),
                    checkboxInput("add_custom_profile",
                                  strong(em("Add to Customized profile")),
                                  value = FALSE,
