@@ -412,47 +412,6 @@ detail_plot <- function(v, sel_df, detailed_text, var1_id, var2_id){
   gp
 }
 
-# DISTRIBUTION PLOT ===========================================================
-# data = split_dt for var1 and var2 or presSpecAllDt for percentage
-var_dist_plot <- function(data, var_id, var_type, percent, dist_text_size){
-  if(var_type == "presSpec"){
-    # remove presSpec < cutoff_min or > cutoff_max
-    if (percent[1] > 0){
-      data <- data[data$presSpec >= percent[1] & data$presSpec <= percent[2], ]
-    } else {
-      if (percent[2] > 0){
-        data <- data[data$presSpec > 0 & data$presSpec <= percent[2], ]
-      } else {
-        data <- data[data$presSpec > 0, ]
-      }
-    }
-  } else {
-    data <- data[!is.na(data[,var_type]), ]
-  }
-  
-  data.mean <- mean(data[,var_type])
-  
-  # plot var1 score distribution
-  p <- ggplot(data, aes(x = data[,var_type])) +
-    geom_histogram(binwidth = .01, alpha = .5, position = "identity") +
-    geom_vline(data = data,
-               aes(xintercept = data.mean, colour = "red"),
-               linetype = "dashed",
-               size = 1) +
-    #      ggtitle(paste("Mean",input$var2_id,"=",round(mean(split_dt$var2),3))) +
-    theme_minimal()
-  p <- p + theme(legend.position = "none",
-                 # plot.title = element_text(size=input$legend_size),#hjust = 0.5,
-                 axis.title = element_text(size = dist_text_size),
-                 axis.text = element_text(size = dist_text_size)) +
-    labs(x = paste0(var_id,
-                    " (mean = ",
-                    round(mean(data[,var_type]), 3),
-                    ")"),
-         y = "Frequency")
-  p
-}
-
 # ARCHITECTURE PLOT ===========================================================
 
 # create domain plot ----------------------------------------------------------

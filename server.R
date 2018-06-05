@@ -96,6 +96,8 @@ source("scripts/analyze_distribution.R")
 
 source("scripts/fn_estimate_gene_age.R")
 
+source("scripts/analyze_distribution.R")
+
 # MAIN ========================================================================
 options(shiny.maxRequestSize = 99 * 1024 ^ 2)  # size limit for input 99mb
 
@@ -1772,7 +1774,7 @@ shinyServer(function(input, output, session) {
   # ===========================================================================
 
   # var1 / var2 distribution data ---------------------------------------------
-  distDf <- reactive({
+  distribution_df <- reactive({
     if (v$doPlot == FALSE) return()
     
     dataOrig <- get_main_input()
@@ -1933,80 +1935,39 @@ shinyServer(function(input, output, session) {
                 varList[1])
   })
 
-  output$var1DistPlot <- renderPlot(width = 512, height = 356, {
-    var_dist_plot(distDf(), input$var1_id, "var1", input$percent, input$dist_text_size)
-  })
-
-  output$var2DistPlot <- renderPlot(width = 512, height = 356, {
-    var_dist_plot(distDf(), input$var2_id, "var2", input$percent, input$dist_text_size)
+  # render distribution plots---------
+  observe({
+    if (v$doPlot == FALSE) return()
     
-  })
-
-  # % present species distribution plot =======================================
-  output$presSpecPlot <- renderPlot(width = 512, height = 356, {
-    var_dist_plot(presSpecAllDt(), "% present taxa", "presSpec", input$percent, input$dist_text_size)
-  })
-
-  # render dist_plot.ui -------------------------------------------------------
-  output$dist_plot.ui <- renderUI({
-    if (v$doPlot == FALSE){
+    if (is.null(input$selected_dist)){
       return()
-    } else{
-      if (is.null(input$selected_dist)){
-        return()
-      } else {
-        if (input$selected_dist == "% present taxa"){
-          withSpinner(plotOutput("presSpecPlot",
-                                 width = input$width,
-                                 height = input$height))
-        } else{
-          if (input$selected_dist == input$var1_id){
-            withSpinner(plotOutput("var1DistPlot",
-                                   width = input$width,
-                                   height = input$height))
-          } else if (input$selected_dist == input$var2_id){
-            withSpinner(plotOutput("var2DistPlot",
-                                   width = input$width,
-                                   height = input$height))
-          }
+    } else {
+      if (input$selected_dist == "% present taxa"){
+        callModule(analyze_distribution, "dist_plot",
+                   data = presSpecAllDt, 
+                   var_id = reactive(input$selected_dist),
+                   var_type = reactive("presSpec"),
+                   percent = reactive(input$percent), 
+                   dist_text_size = reactive(input$dist_text_size))
+      } else{
+        if (input$selected_dist == input$var1_id){
+          callModule(analyze_distribution, "dist_plot",
+                     data = distribution_df,
+                     var_id = reactive(input$selected_dist),
+                     var_type = reactive("var1"),
+                     percent = reactive(input$percent),
+                     dist_text_size = reactive(input$dist_text_size))
+        } else if (input$selected_dist == input$var2_id){
+          callModule(analyze_distribution, "dist_plot",
+                     data = distribution_df,
+                     var_id = reactive(input$selected_dist),
+                     var_type = reactive("var2"),
+                     percent = reactive(input$percent),
+                     dist_text_size = reactive(input$dist_text_size))
         }
       }
     }
-  })  #HERERERERERE
-
-  # callModule(analyze_distribution, "dist_plot",
-  #            get_main_input, get_data_filtered, sortedtaxa_list,
-  #            reactive(input$dataset.distribution), reactive(input$selected_var),
-  #            reactive(input$in_taxa), reactive(input$in_seq),
-  #            reactive(input$width), reactive(input$height), reactive(input$dist_text_size),
-  #            reactive(input$var1_id), reactive(input$var2_id), reactive(input$percent))
-  
-  # Download distribution plot ------------------------------------------------
-  output$plot_download_dist <- downloadHandler(
-    filename = function() {
-      paste0("distributionPlot.pdf")
-      },
-    content = function(file) {
-      if (input$selected_dist == input$var1_id){
-        ggsave(file, plot = var1_dist_plot(v, distDf(),
-                                         input$dist_text_size,
-                                         input$var1_id),
-               dpi = 300, device = "pdf", limitsize = FALSE)
-      }
-      if (input$selected_dist == input$var2_id){
-        ggsave(file, plot = var2_dist_plot(v, distDf(),
-                                         input$dist_text_size,
-                                         input$var2_id),
-               dpi = 300, device = "pdf", limitsize = FALSE)
-      }
-      if (input$selected_dist == "% present taxa"){
-        ggsave(file, plot = pres_spec_plot(v, presSpecAllDt,
-                                         input$percent,
-                                         input$dist_text_size),
-               dpi = 300, device = "pdf", limitsize = FALSE)
-      }
-    }
-  )
+  })
 
   # ===========================================================================
   # PLOT CUSTOMIZED PROFILE ===================================================

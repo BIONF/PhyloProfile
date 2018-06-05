@@ -629,20 +629,11 @@ shinyUI(fluidPage(
                                 step = 1,
                                 value = 12,
                                 width = 100)
-            ),
-            column(2,
-                   strong("Download"),
-                   tags$head(
-                     tags$style(HTML(
-                       "#plot_download_dist{background-color:#A9E2F3}"))
-                   ),
-                   downloadButton("plot_download_dist", "Download plot")
             )
           )
         ),
         
-        uiOutput("dist_plot.ui")
-        # analyze_distribution_ui("dist_plot")
+        analyze_distribution_ui("dist_plot")
       ),
       
       # Gene age estimation ---------------------------------------------------
