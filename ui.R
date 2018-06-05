@@ -1,12 +1,3 @@
-# pacman NOT YET WORK WITH shinyapp.io ========================================
-#if(!("pacman" %in% installed.packages())) install.packages("pacman")
-# library(pacman)
-# p_load(shiny, shinyBS, shinyjs, DT, colourpicker, install = T)
-# -----------------------------------------------------------------------------
-# packages <- c("shiny", "shinyBS", "shinyjs", "DT", "colourpicker")
-# sapply(packages, require, character.only = TRUE)
-# -----------------------------------------------------------------------------
-
 if (!require("shiny")) install.packages("shiny")
 if (!require("shinyBS")) install.packages("shinyBS")
 if (!require("DT")) install.packages("DT")
@@ -78,19 +69,22 @@ shinyUI(fluidPage(
                             value = 600,
                             width = 100)
         ),
+        #### HERE FOR MAIN
         column(2,
                uiOutput("var1_cutoff.ui")
-        ), column(2,
-                  uiOutput("var2_cutoff.ui")
+        ), 
+        column(2,
+               uiOutput("var2_cutoff.ui")
         ),
         column(2,
-               sliderInput("percent",
-                           "% of present taxa:",
-                           min = 0,
-                           max = 1,
-                           step = 0.025,
-                           value = c(0.0, 1.0),
-                           width = 200)
+               uiOutput("percent_cutoff.ui")
+               # sliderInput("percent",
+               #             "% of present taxa:",
+               #             min = 0,
+               #             max = 1,
+               #             step = 0.025,
+               #             value = c(0.0, 1.0),
+               #             width = 200)
         ),
         column(2,
                shinyBS::bsButton("reset_main",
@@ -143,6 +137,7 @@ shinyUI(fluidPage(
                             value = 600,
                             width = 100)
         ),
+        #### HERE FOR CUSTOM
         column(2,
                uiOutput("var1_filter.ui")
         ),

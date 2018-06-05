@@ -1,49 +1,3 @@
-# NOT WORK WITH shinyapp.io ===================================================
-# if(!("pacman" %in% installed.packages())) install.packages("pacman")
-# library(pacman)
-# p_load(shiny,
-#        shinyBS,
-#        ggplot2,
-#        reshape2,
-#        plyr,
-#        dplyr,
-#        tidyr,
-#        scales,
-#        grid,
-#        gridExtra,
-#        ape,
-#        stringr,
-#        gtable,
-#        dendextend,
-#        ggdendro,
-#        gplots,
-#        data.table,
-#        taxize,
-#        install = T)
-
- # packages <- c("shiny",
- #               "shinyBS",
- #               "ggplot2",
- #               "reshape2",
- #               "plyr",
- #               "dplyr",
- #               "tidyr",
- #               "scales",
- #               "grid",
- #               "gridExtra",
- #               "ape",
- #               "stringr",
- #               "gtable",
- #               "dendextend",
- #               "ggdendro",
- #               "gplots",
- #               "data.table",
- #               "taxize",
- #               "Biostrings",
- #               "zoo",
- #               "RCurl")
-# sapply(packages, require, character.only = TRUE)
-
 if (!require("shiny")) install.packages("shiny")
 if (!require("shinyBS")) install.packages("shinyBS")
 if (!require("ggplot2")) install.packages("ggplot2")
@@ -269,379 +223,179 @@ shinyServer(function(input, output, session) {
     }
   })
 
-  # variable 1 & 2 cutoff slidebar (main plot) --------------------------------
-  output$var1_cutoff.ui <- renderUI({
-    if (is.null(input$var1_id)) return()
-    if (input$var1_id == ""){
-      sliderInput("var1", paste(input$var1_id, "cutoff:"),
+  # variable 1 & 2 cutoff slidebar (main plot) -------------------------------- HERERERERERERE
+  
+  create_slider_cutoff <- function(id, title, start, stop, var_id){
+    if(var_id == ""){
+      sliderInput(id, title,
                   min = 1,
                   max = 1,
                   step = 0.025,
-                  value = c(1.0, 1.0),
+                  value = 1,
                   width = 200)
     } else {
-      sliderInput("var1", paste(input$var1_id, "cutoff:"),
+      sliderInput(id, title,
                   min = 0,
                   max = 1,
                   step = 0.025,
-                  value = c(0.0, 1.0),
+                  value = c(start, stop),
                   width = 200)
     }
+  }
+  
+  output$var1_cutoff.ui <- renderUI({
+    if (is.null(input$var1_id)) return()
+    create_slider_cutoff("var1", paste(input$var1_id, "cutoff:"), 0.0, 1.0, input$var1_id)
   })
 
   output$var2_cutoff.ui <- renderUI({
     if (is.null(input$var2_id)) return()
-    if (input$var2_id == ""){
-      sliderInput("var2", paste(input$var2_id, "cutoff:"),
-                  min = 1,
-                  max = 1,
-                  step = 0.025,
-                  value = c(1.0, 1.0),
-                  width = 200)
-    } else {
-      sliderInput("var2", paste(input$var2_id, "cutoff:"),
-                  min = 0,
-                  max = 1,
-                  step = 0.025,
-                  value = c(0.0, 1.0),
-                  width = 200)
-    }
+    create_slider_cutoff("var2", paste(input$var2_id, "cutoff:"), 0.0, 1.0, input$var2_id)
+  })
+  
+  output$percent_cutoff.ui <- renderUI({
+    create_slider_cutoff("percent", "% of present taxa:", 0.0, 1.0, "percent")
   })
 
   # render filter slidebars for Customized plot -------------------------------
   output$var1_filter.ui <- renderUI({
     if (is.null(input$var1_id)) return()
-    if (input$var1_id == ""){
-      sliderInput("var1cus", paste(input$var1_id, "cutoff:"),
-                  min = 1,
-                  max = 1,
-                  step = 0.025,
-                  value = c(1.0, 1.0),
-                  width = 200)
-    } else {
-      sliderInput("var1cus", paste(input$var1_id, "cutoff:"),
-                  min = 0,
-                  max = 1,
-                  step = 0.025,
-                  value = c(input$var1[1], input$var1[2]),
-                  width = 200)
-    }
+    create_slider_cutoff("var1cus", paste(input$var1_id, "cutoff:"), input$var1[1], input$var1[2], input$var1_id)
   })
 
   output$var2_filter.ui <- renderUI({
     if (is.null(input$var2_id)) return()
-    if (input$var2_id == ""){
-      sliderInput("var2cus", paste(input$var2_id, "cutoff:"),
-                  min = 1,
-                  max = 1,
-                  step = 0.025,
-                  value = c(1.0, 1.0),
-                  width = 200)
-    } else {
-      sliderInput("var2cus", paste(input$var2_id, "cutoff:"),
-                  min = 0,
-                  max = 1,
-                  step = 0.025,
-                  value = c(input$var2[1], input$var2[2]),
-                  width = 200)
-    }
+    create_slider_cutoff("var2cus", paste(input$var2_id, "cutoff:"), input$var2[1], input$var2[2], input$var2_id)
   })
 
   output$percent_filter.ui <- renderUI({
-    sliderInput("percent2",
-                "% of present taxa:",
-                min = 0,
-                max = 1,
-                step = 0.025,
-                value = input$percent,
-                width = 200)
+    create_slider_cutoff("percent2", "% of present taxa:", input$percent[1], input$percent[2], "percent")
   })
 
   # render filter slidebars for Distribution plot -----------------------------
   output$var1_dist.ui <- renderUI({
     if (is.null(input$var1_id)) return()
-    if (input$var1_id == ""){
-      sliderInput("var1_dist",
-                  paste(input$var1_id, "cutoff:"),
-                  min = 1,
-                  max = 1,
-                  step = 0.025,
-                  value = c(1.0, 1.0),
-                  width = 200)
-    } else {
-      sliderInput("var1_dist", paste(input$var1_id, "cutoff:"),
-                  min = 0,
-                  max = 1,
-                  step = 0.025,
-                  value = c(input$var1[1], input$var1[2]),
-                  width = 200)
-    }
+    create_slider_cutoff("var1_dist", paste(input$var1_id, "cutoff:"), input$var1[1], input$var1[2], input$var1_id)
   })
 
   output$var2_dist.ui <- renderUI({
     if (is.null(input$var2_id)) return()
-    if (input$var2_id == ""){
-      sliderInput("var2_dist", paste(input$var2_id, "cutoff:"),
-                  min = 1,
-                  max = 1,
-                  step = 0.025,
-                  value = c(1.0, 1.0),
-                  width = 200)
-    } else {
-      sliderInput("var2_dist", paste(input$var2_id, "cutoff:"),
-                  min = 0,
-                  max = 1,
-                  step = 0.025,
-                  value = c(input$var2[1], input$var2[2]),
-                  width = 200)
-    }
+    create_slider_cutoff("var2_dist", paste(input$var2_id, "cutoff:"), input$var2[1], input$var2[2], input$var2_id)
   })
 
   output$percent_dist.ui <- renderUI({
-    sliderInput("percent_dist",
-                "% of present taxa:",
-                min = 0,
-                max = 1,
-                step = 0.025,
-                value = input$percent,
-                width = 200)
+    create_slider_cutoff("percent_dist", "% of present taxa:", input$percent[1], input$percent[2], "percent")
   })
 
   # render filter slidebars for Gene age estimation plot ----------------------
   output$var1_age.ui <- renderUI({
     if (is.null(input$var1_id)) return()
-    if (input$var1_id == ""){
-      sliderInput("var1_age", paste(input$var1_id, "cutoff:"),
-                  min = 1,
-                  max = 1,
-                  step = 0.025,
-                  value = c(1.0, 1.0),
-                  width = 200)
-    } else {
-      sliderInput("var1_age",
-                  paste(input$var1_id, "cutoff:"),
-                  min = 0,
-                  max = 1,
-                  step = 0.025,
-                  value = c(input$var1[1], input$var1[2]),
-                  width = 200)
-    }
+    create_slider_cutoff("var1_age", paste(input$var1_id, "cutoff:"), input$var1[1], input$var1[2], input$var1_id)
   })
 
   output$var2_age.ui <- renderUI({
     if (is.null(input$var2_id)) return()
-    if (input$var2_id == ""){
-      sliderInput("var2_age", paste(input$var2_id, "cutoff:"),
-                  min = 1,
-                  max = 1,
-                  step = 0.025,
-                  value = c(1.0, 1.0),
-                  width = 200)
-    } else {
-      sliderInput("var2_age", paste(input$var2_id, "cutoff:"),
-                  min = 0,
-                  max = 1,
-                  step = 0.025,
-                  value = c(input$var2[1], input$var2[2]),
-                  width = 200)
-    }
+    create_slider_cutoff("var2_age", paste(input$var2_id, "cutoff:"), input$var2[1], input$var2[2], input$var2_id)
   })
 
   output$percent_age.ui <- renderUI({
-    sliderInput("percent_age", "% of present taxa:",
-                min = 0,
-                max = 1,
-                step = 0.025,
-                value = input$percent,
-                width = 200)
+    create_slider_cutoff("percent_age", "% of present taxa:", input$percent[1], input$percent[2], "percent")
   })
 
   # render filter slidebars for Core gene finding function --------------------
   output$var1_cons.ui <- renderUI({
     if (is.null(input$var1_id)) return()
-    if (input$var1_id == ""){
-      sliderInput("var1_cons", paste(input$var1_id, "cutoff:"),
-                  min = 1,
-                  max = 1,
-                  step = 0.025,
-                  value = c(1.0, 1.0),
-                  width = 200)
-    } else {
-      sliderInput("var1_cons",
-                  paste(input$var1_id, "cutoff:"),
-                  min = 0,
-                  max = 1,
-                  step = 0.025,
-                  value = c(input$var1[1], input$var1[2]),
-                  width = 200)
-    }
+    create_slider_cutoff("var1_cons", paste(input$var1_id, "cutoff:"), input$var1[1], input$var1[2], input$var1_id)
   })
 
   output$var2_cons.ui <- renderUI({
     if (is.null(input$var2_id)) return()
-    if (input$var2_id == ""){
-      sliderInput("var2_cons",
-                  paste(input$var2_id, "cutoff:"),
-                  min = 1,
-                  max = 1,
-                  step = 0.025,
-                  value = c(1.0, 1.0),
-                  width = 200)
-    } else {
-      sliderInput("var2_cons", paste(input$var2_id, "cutoff:"),
-                  min = 0,
-                  max = 1,
-                  step = 0.025,
-                  value = c(input$var2[1], input$var2[2]),
-                  width = 200)
-    }
+    create_slider_cutoff("var2_cons", paste(input$var2_id, "cutoff:"), input$var2[1], input$var2[2], input$var2_id)
   })
 
   output$percent_cons.ui <- renderUI({
-    sliderInput("percent_cons", "% of present taxa:",
-                min = 0,
-                max = 1,
-                step = 0.025,
-                value = 0.5,
-                width = 200)
+    create_slider_cutoff("percent_cons", "% of present taxa:", input$percent[1], input$percent[2], "percent")
   })
 
   # update value for "main" filter slidebars ----------------------------------
-  # based on "Customized", "Distribution", "Gene age estimation" slidebars
+  # based on "Customized"
+  update_slider_cutoff <- function(session, id, title, new_var){
+    updateSliderInput(session, id, title,
+                      value = new_var,
+                      min = 0,
+                      max = 1,
+                      step = 0.025)
+  }
+  
   observe({
     new_var1 <- input$var1cus
 
     if (is.null(input$var1_id)) return()
-    if (input$var1_id == ""){
-      updateSliderInput(session, "var1",
-                        value = new_var1,
-                        min = 1,
-                        max = 1,
-                        step = 0.025)
-    } else {
-      updateSliderInput(session,
-                        "var1",
-                        value = new_var1,
-                        min = 0,
-                        max = 1,
-                        step = 0.025)
+    if (input$var1_id != ""){
+      updateSliderInput(session, "var1", paste(input$var1_id, "cutoff:"), new_var1)
     }
   })
+  
   observe({
     new_var2 <- input$var2cus
 
     if (is.null(input$var2_id)) return()
-    if (input$var2_id == ""){
-      updateSliderInput(session, "var2",
-                        value = new_var2,
-                        min = 1,
-                        max = 1,
-                        step = 0.025)
-    } else {
-      updateSliderInput(session, "var2",
-                        value = new_var2,
-                        min = 0,
-                        max = 1,
-                        step = 0.025)
+    if (input$var2_id != ""){
+      updateSliderInput(session, "var2", paste(input$var2_id, "cutoff:"), new_var2)
     }
   })
+  
   observe({
     new_percent <- input$percent2
-    updateSliderInput(session, "percent",
-                      value = new_percent,
-                      min = 0,
-                      max = 1,
-                      step = 0.025)
+    updateSliderInput(session, "percent", "% of present taxa:", new_percent)
   })
 
+  # based on "Distribution analysis"
   observe({
     new_var1 <- input$var1_dist
-
+    
     if (is.null(input$var1_id)) return()
-    if (input$var1_id == ""){
-      updateSliderInput(session, "var1",
-                        value = new_var1,
-                        min = 1,
-                        max = 1,
-                        step = 0.025)
-    } else {
-      updateSliderInput(session, "var1",
-                        value = new_var1,
-                        min = 0,
-                        max = 1,
-                        step = 0.025)
+    if (input$var1_id != ""){
+      updateSliderInput(session, "var1", paste(input$var1_id, "cutoff:"), new_var1)
     }
   })
+  
   observe({
     new_var2 <- input$var2_dist
 
     if (is.null(input$var2_id)) return()
-    if (input$var2_id == ""){
-      updateSliderInput(session, "var2",
-                        value = new_var2,
-                        min = 1,
-                        max = 1,
-                        step = 0.025)
-    } else {
-      updateSliderInput(session, "var2",
-                        value = new_var2,
-                        min = 0,
-                        max = 1,
-                        step = 0.025)
+    if (input$var2_id != ""){
+      updateSliderInput(session, "var2", paste(input$var2_id, "cutoff:"), new_var2)
     }
   })
+  
   observe({
     new_percent <- input$percent_dist
-    updateSliderInput(session, "percent",
-                      value = new_percent,
-                      min = 0,
-                      max = 1,
-                      step = 0.025)
+    updateSliderInput(session, "percent", "% of present taxa:", new_percent)
   })
 
+  # based on "Gene age estimation"
   observe({
     new_var1 <- input$var1_age
 
     if (is.null(input$var1_id)) return()
-    if (input$var1_id == ""){
-      updateSliderInput(session, "var1",
-                        value = new_var1,
-                        min = 1,
-                        max = 1,
-                        step = 0.025)
-    } else {
-      updateSliderInput(session, "var1",
-                        value = new_var1,
-                        min = 0,
-                        max = 1,
-                        step = 0.025)
+    if (input$var1_id != ""){
+      updateSliderInput(session, "var1", paste(input$var1_id, "cutoff:"), new_var1)
     }
   })
+  
   observe({
     new_var2 <- input$var2_age
 
     if (is.null(input$var2_id)) return()
-    if (input$var2_id == ""){
-      updateSliderInput(session, "var2",
-                        value = new_var2,
-                        min = 1,
-                        max = 1,
-                        step = 0.025)
-    } else {
-      updateSliderInput(session, "var2",
-                        value = new_var2,
-                        min = 0,
-                        max = 1,
-                        step = 0.025)
+    if (input$var2_id != ""){
+      updateSliderInput(session, "var2", paste(input$var2_id, "cutoff:"), new_var2)
     }
   })
+  
   observe({
     new_percent <- input$percent_age
-    updateSliderInput(session, "percent",
-                      value = new_percent,
-                      min = 0,
-                      max = 1,
-                      step = 0.025)
+    updateSliderInput(session, "percent", "% of present taxa:", new_percent)
   })
 
   # render 2. variable relationship according to demo data --------------------
@@ -1771,205 +1525,7 @@ shinyServer(function(input, output, session) {
   #   pos <- info[7]
   # })
 
-  # ===========================================================================
-  # PLOT var1/var2 SCORE & % OF PRESENT SPECIES DISTRIBUTION ==================
-  # ===========================================================================
-
-  # var1 / var2 distribution data ---------------------------------------------
-  distribution_df <- reactive({
-    if (v$doPlot == FALSE) return()
-    
-    dataOrig <- get_main_input()
-    if (ncol(dataOrig) < 4){
-      colnames(dataOrig) <- c("geneID",
-                              "ncbiID",
-                              "orthoID")
-      splitDt <- dataOrig[, c("orthoID")]
-    } else if (ncol(dataOrig) < 5){
-      colnames(dataOrig) <- c("geneID",
-                              "ncbiID",
-                              "orthoID",
-                              "var1")
-      splitDt <- dataOrig[, c("orthoID",
-                              "var1")]
-    } else {
-      colnames(dataOrig) <- c("geneID",
-                              "ncbiID",
-                              "orthoID",
-                              "var1",
-                              "var2")
-      splitDt <- dataOrig[, c("orthoID", "var1", "var2")]
-    }
-    
-    splitDt$orthoID[splitDt$orthoID == "NA" | is.na(splitDt$orthoID)] <- NA
-    splitDt <- splitDt[complete.cases(splitDt), ]
-    
-    if (length(levels(as.factor(splitDt$var2))) == 1){
-      if (levels(as.factor(splitDt$var2)) == ""){
-        splitDt$var2 <- 0
-      }
-    }
-    
-    # convert factor into numeric for "var1" & "var2" column
-    if ("var1" %in% colnames(splitDt)){
-      splitDt$var1 <- suppressWarnings(as.numeric(as.character(splitDt$var1)))
-      # filter splitDt based on selected var1 cutoff
-      splitDt <- splitDt[splitDt$var1 >= input$var1[1]
-                         & splitDt$var1 <= input$var1[2], ]
-    }
-    if ("var2" %in% colnames(splitDt)){
-      splitDt$var2 <- suppressWarnings(as.numeric(as.character(splitDt$var2)))
-      # filter splitDt based on selected var2 cutoff
-      splitDt <- splitDt[splitDt$var2 >= input$var2[1]
-                         & splitDt$var2 <= input$var2[2], ]
-    }
-    
-    # filter data base on customized plot (if chosen)
-    if (input$dataset.distribution == "Customized data"){
-      # get geneID and supertaxon name for splitDt
-      allData <- get_data_filtered()
-      splitDtName <- merge(splitDt, allData,
-                           by = "orthoID",
-                           all.x = TRUE)
-      splitDtName$supertaxonMod <- {
-        substr(splitDtName$supertaxon,
-               6,
-               nchar(as.character(splitDtName$supertaxon)))
-      }
-      splitDtName <- subset(splitDtName,
-                            select = c(orthoID,
-                                       var1.x,
-                                       var2.y,
-                                       supertaxonMod,
-                                       geneID))
-      colnames(splitDtName) <- c("orthoID",
-                                 "var1",
-                                 "var2",
-                                 "supertaxonMod",
-                                 "geneID")
-      
-      # filter
-      if (input$in_taxa[1] == "all" & input$in_seq[1] != "all"){
-        # select data from dataHeat for selected sequences only
-        splitDt <- subset(splitDtName, geneID %in% input$in_seq)
-      } else if (input$in_seq[1] == "all" & input$in_taxa[1] != "all"){
-        # select data from dataHeat for selected taxa only
-        splitDt <- subset(splitDtName, supertaxonMod %in% input$in_taxa)
-      } else {
-        # select data from dataHeat for selected sequences and taxa
-        splitDt <- subset(splitDtName,
-                          geneID %in% input$in_seq
-                          & supertaxonMod %in% input$in_taxa)
-      }
-    }
-    
-    # return dt
-    return(splitDt)
-  })
   
-  # calculate % present species for input file --------------------------------
-  presSpecAllDt <- reactive({
-    # open main input file
-    mdData <- get_main_input()
-    if (ncol(mdData) < 4){
-      colnames(mdData) <- c("geneID",
-                            "ncbiID",
-                            "orthoID")
-    } else if (ncol(mdData) < 5){
-      colnames(mdData) <- c("geneID",
-                            "ncbiID",
-                            "orthoID",
-                            "var1")
-    } else {
-      colnames(mdData) <- c("geneID",
-                            "ncbiID",
-                            "orthoID",
-                            "var1",
-                            "var2")
-    }
-    
-    # count number of inparalogs
-    paralogCount <- plyr::count(mdData, c("geneID", "ncbiID"))
-    mdData <- merge(mdData, paralogCount, by = c("geneID", "ncbiID"))
-    colnames(mdData)[ncol(mdData)] <- "paralog"
-    
-    # (3) GET SORTED TAXONOMY LIST (3)
-    taxa_list <- sortedtaxa_list()
-    
-    # calculate frequency of all supertaxa
-    taxaCount <- plyr::count(taxa_list, "supertaxon")
-    
-    # merge mdData, mdDatavar2 and taxa_list to get taxonomy info
-    taxaMdData <- merge(mdData, taxa_list, by = "ncbiID")
-    if ("var1" %in% colnames(taxaMdData)){
-      taxaMdData$var1 <- {
-        suppressWarnings(as.numeric(as.character(taxaMdData$var1)))
-      }
-    }
-    if ("var2" %in% colnames(taxaMdData)){
-      taxaMdData$var2 <- {
-        suppressWarnings(as.numeric(as.character(taxaMdData$var2)))
-      }
-    }
-    # calculate % present species
-    finalPresSpecDt <- calc_pres_spec(taxaMdData, taxaCount)
-    finalPresSpecDt
-  })
-  
-  # list of available variables for distribution plot -------------------------
-  output$selected.distribution <- renderUI({
-    if (nchar(input$var1_id) == 0 & nchar(input$var2_id) == 0){
-      varList <- "% present taxa"
-    } else if (nchar(input$var1_id) == 0 & nchar(input$var2_id) > 0){
-      varList <- as.list(c(input$var2_id, "% present taxa"))
-    } else if (nchar(input$var1_id) > 0 & nchar(input$var2_id) == 0){
-      varList <- as.list(c(input$var1_id,
-                           "% present taxa"))
-    } else {
-      varList <- as.list(c(input$var1_id,
-                           input$var2_id,
-                           "% present taxa"))
-    }
-
-    selectInput("selected_dist",
-                "Choose variable to plot:",
-                varList,
-                varList[1])
-  })
-
-  # render distribution plots---------
-  observe({
-    if (v$doPlot == FALSE) return()
-    
-    if (is.null(input$selected_dist)){
-      return()
-    } else {
-      if (input$selected_dist == "% present taxa"){
-        callModule(analyze_distribution, "dist_plot",
-                   data = presSpecAllDt, 
-                   var_id = reactive(input$selected_dist),
-                   var_type = reactive("presSpec"),
-                   percent = reactive(input$percent), 
-                   dist_text_size = reactive(input$dist_text_size))
-      } else{
-        if (input$selected_dist == input$var1_id){
-          callModule(analyze_distribution, "dist_plot",
-                     data = distribution_df,
-                     var_id = reactive(input$selected_dist),
-                     var_type = reactive("var1"),
-                     percent = reactive(input$percent),
-                     dist_text_size = reactive(input$dist_text_size))
-        } else if (input$selected_dist == input$var2_id){
-          callModule(analyze_distribution, "dist_plot",
-                     data = distribution_df,
-                     var_id = reactive(input$selected_dist),
-                     var_type = reactive("var2"),
-                     percent = reactive(input$percent),
-                     dist_text_size = reactive(input$dist_text_size))
-        }
-      }
-    }
-  })
 
   # ===========================================================================
   # PLOT CUSTOMIZED PROFILE ===================================================
@@ -2348,174 +1904,6 @@ shinyServer(function(input, output, session) {
 
     }
   )
-
-  # ===========================================================================
-  # GENE AGE ==================================================================
-  # ===========================================================================
-  
-  # gene age estimation -------------------------------------------------------
-  gene_ageDf <- reactive({
-    if (v$doPlot == FALSE) return()
-    
-    gene_ageDf <- estimate_gene_age(subset_taxa(), get_data_filtered(),
-                                    input$rank_select, input$in_select,
-                                    input$var1, input$var2, input$percent)
-    return(gene_ageDf)
-  })
-
-  selectedgene_age <- callModule(plot_gene_age, "gene_age",
-                                 data = gene_ageDf,
-                                 gene_age_width = reactive(input$gene_age_width),
-                                 gene_age_height = reactive(input$gene_age_height),
-                                 gene_age_text = reactive(input$gene_age_text))
-
-  # check if anywhere elese genes are added to the custemized profile ---------
-  observe({
-    if (input$add_cluster_cutom_profile == TRUE
-       | input$add_cons_gene_custom_profile == TRUE
-       | input$add_gc_genes_custom_profile == TRUE ){
-      shinyjs::disable("add_custom_profile")
-    } else {
-      shinyjs::enable("add_custom_profile")
-    }
-  })
-
-  output$add_custom_profile_check.ui <- renderUI({
-    if (input$add_cluster_cutom_profile == TRUE
-       | input$add_cons_gene_custom_profile == TRUE
-       | input$add_gc_genes_custom_profile == TRUE){
-      HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Profile clustering</strong> or <strong>Core genes finding</strong> or <strong>Groupcomparison</strong> &nbsp;to enable this function)</em></p>')
-
-    }
-  })
-
-  # reset gene_age_prot_config ------------------------------------------------
-  observeEvent(input$reset_gene_age_prot_config, {
-    shinyjs::reset("gene_age_width")
-    shinyjs::reset("gene_age_height")
-    shinyjs::reset("gene_age_text")
-  })
-
-  # ===========================================================================
-  # CORE GENES ================================================================
-  # ===========================================================================
-
-  consTaxaName <- callModule(select_taxon_rank,
-                             "select_taxon_rank_cons",
-                             rank_select = reactive(input$rank_select),
-                             subset_taxa = subset_taxa)
-  
-  # render list of available taxa ---------------------------------------------
-  output$taxa_list_cons.ui <- renderUI({
-    filein <- input$main_input
-    # if(input$demo == TRUE){
-    if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor"){
-      filein <- 1
-    }
-    if (is.null(filein)){
-      return(selectInput("in_taxa",
-                         "Select taxa of interest:",
-                         "none"))
-      }
-    if (v$doPlot == FALSE){
-      return(selectInput("in_taxa",
-                         "Select taxa of interest:",
-                         "none"))
-      }
-    else{
-      choice <- alltaxa_list()
-      choice$fullName <- as.factor(choice$fullName)
-
-      out <- as.list(levels(choice$fullName))
-      out <- append("none", out)
-
-      if (input$apply_cons_taxa == TRUE){
-        out <- consTaxaName()
-        selectInput("taxaCons",
-                    "Select taxa of interest:",
-                    out,
-                    selected = out,
-                    multiple = TRUE)
-      } else {
-        selectInput("taxaCons",
-                    "Select taxa of interest:",
-                    out,
-                    selected = out[1],
-                    multiple = TRUE)
-      }
-    }
-  })
-
-  # output$cons_gene.table <- renderDataTable({
-  #   data <- cons_geneDf()
-  #   if (is.null(data)) return()
-  #   else {
-  #     data <- as.data.frame(data)
-  #     # data$number <- rownames(data)
-  #     # colnames(data) <- c("geneID","No.")
-  #     # data <- data[,c("No.","geneID")]
-  #     data
-  #   }
-  # })
-
-  # download gene list from cons_gene.table -----------------------------------
-  output$cons_gene_table_download <- downloadHandler(
-    filename = function(){
-      c("consensusGeneList.out")
-      },
-    content = function(file){
-      data_out <- cons_geneDf()
-      write.table(data_out, file, sep = "\t", row.names = FALSE, quote = FALSE)
-    }
-  )
-
-  # check if anywhere elese genes are added to the custemized profile ---------
-  observe({
-    if (input$add_cluster_cutom_profile == TRUE
-       | input$add_custom_profile == TRUE
-       | input$add_gc_genes_custom_profile == TRUE){
-      shinyjs::disable("add_cons_gene_custom_profile")
-    } else {
-      shinyjs::enable("add_cons_gene_custom_profile")
-    }
-  })
-
-  output$add_cons_gene_custom_profile_check.ui <- renderUI({
-    if (input$add_cluster_cutom_profile == TRUE
-       | input$add_custom_profile == TRUE
-       | input$add_gc_genes_custom_profile == TRUE){
-      HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Profiles clustering</strong> or <strong>Gene age estimating</strong> or r <strong>Group Comparioson</strong>&nbsp;to enable this function)</em></p>')
-    }
-  })
-
-  # ===========================================================================
-  # CLUSTERING PROFILES =======================================================
-  # ===========================================================================
-  brushed_clusterGene <- callModule(cluster_profile, "profile_clustering",
-                                    data = dataHeat,
-                                    dist_method = reactive(input$dist_method),
-                                    cluster_method = reactive(input$cluster_method),
-                                    cluster_plot.width = reactive(input$cluster_plot.width),
-                                    cluster_plot.height = reactive(input$cluster_plot.width))
-
-  # check if anywhere elese genes are added to the custemized profile ---------
-  observe({
-    if (input$add_custom_profile == TRUE
-       | input$add_cons_gene_custom_profile == TRUE
-       | input$add_gc_genes_custom_profile == TRUE){
-      shinyjs::disable("add_cluster_cutom_profile")
-    }else{
-      shinyjs::enable("add_cluster_cutom_profile")
-    }
-  })
-
-  output$add_cluster_cutom_profile_check.ui <- renderUI({
-    if (input$add_custom_profile == TRUE
-       | input$add_cons_gene_custom_profile == TRUE |
-       input$add_gc_genes_custom_profile == TRUE ){
-      HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Gene age estimation</strong> or <strong>Core genes finding</strong> or <strong>Group Comparison</strong> &nbsp;to enable this function)</em></p>')
-    }
-  })
 
   # ===========================================================================
   # FILTERED DATA FOR DOWNLOADING =============================================
@@ -4108,4 +3496,365 @@ shinyServer(function(input, output, session) {
     }
     return(taxa_name_gc)
   })
+  
+  #############################################################################
+  ########################## ANALYSIS FUNCTIONS ###############################
+  #############################################################################
+  
+  # ===========================================================================
+  # CLUSTERING PROFILES =======================================================
+  # ===========================================================================
+  brushed_clusterGene <- callModule(cluster_profile, "profile_clustering",
+                                    data = dataHeat,
+                                    dist_method = reactive(input$dist_method),
+                                    cluster_method = reactive(input$cluster_method),
+                                    cluster_plot.width = reactive(input$cluster_plot.width),
+                                    cluster_plot.height = reactive(input$cluster_plot.width))
+  
+  # check if anywhere elese genes are added to the custemized profile ---------
+  observe({
+    if (input$add_custom_profile == TRUE
+        | input$add_cons_gene_custom_profile == TRUE
+        | input$add_gc_genes_custom_profile == TRUE){
+      shinyjs::disable("add_cluster_cutom_profile")
+    }else{
+      shinyjs::enable("add_cluster_cutom_profile")
+    }
+  })
+  
+  output$add_cluster_cutom_profile_check.ui <- renderUI({
+    if (input$add_custom_profile == TRUE
+        | input$add_cons_gene_custom_profile == TRUE |
+        input$add_gc_genes_custom_profile == TRUE ){
+      HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Gene age estimation</strong> or <strong>Core genes finding</strong> or <strong>Group Comparison</strong> &nbsp;to enable this function)</em></p>')
+    }
+  })
+  
+  # ===========================================================================
+  # PLOT var1/var2 SCORE & % OF PRESENT SPECIES DISTRIBUTION ==================
+  # ===========================================================================
+  
+  # var1 / var2 distribution data ---------------------------------------------
+  distribution_df <- reactive({
+    if (v$doPlot == FALSE) return()
+    
+    dataOrig <- get_main_input()
+    if (ncol(dataOrig) < 4){
+      colnames(dataOrig) <- c("geneID",
+                              "ncbiID",
+                              "orthoID")
+      splitDt <- dataOrig[, c("orthoID")]
+    } else if (ncol(dataOrig) < 5){
+      colnames(dataOrig) <- c("geneID",
+                              "ncbiID",
+                              "orthoID",
+                              "var1")
+      splitDt <- dataOrig[, c("orthoID",
+                              "var1")]
+    } else {
+      colnames(dataOrig) <- c("geneID",
+                              "ncbiID",
+                              "orthoID",
+                              "var1",
+                              "var2")
+      splitDt <- dataOrig[, c("orthoID", "var1", "var2")]
+    }
+    
+    splitDt$orthoID[splitDt$orthoID == "NA" | is.na(splitDt$orthoID)] <- NA
+    splitDt <- splitDt[complete.cases(splitDt), ]
+    
+    if (length(levels(as.factor(splitDt$var2))) == 1){
+      if (levels(as.factor(splitDt$var2)) == ""){
+        splitDt$var2 <- 0
+      }
+    }
+    
+    # convert factor into numeric for "var1" & "var2" column
+    if ("var1" %in% colnames(splitDt)){
+      splitDt$var1 <- suppressWarnings(as.numeric(as.character(splitDt$var1)))
+      # filter splitDt based on selected var1 cutoff
+      splitDt <- splitDt[splitDt$var1 >= input$var1[1]
+                         & splitDt$var1 <= input$var1[2], ]
+    }
+    if ("var2" %in% colnames(splitDt)){
+      splitDt$var2 <- suppressWarnings(as.numeric(as.character(splitDt$var2)))
+      # filter splitDt based on selected var2 cutoff
+      splitDt <- splitDt[splitDt$var2 >= input$var2[1]
+                         & splitDt$var2 <= input$var2[2], ]
+    }
+    
+    # filter data base on customized plot (if chosen)
+    if (input$dataset.distribution == "Customized data"){
+      # get geneID and supertaxon name for splitDt
+      allData <- get_data_filtered()
+      splitDtName <- merge(splitDt, allData,
+                           by = "orthoID",
+                           all.x = TRUE)
+      splitDtName$supertaxonMod <- {
+        substr(splitDtName$supertaxon,
+               6,
+               nchar(as.character(splitDtName$supertaxon)))
+      }
+      splitDtName <- subset(splitDtName,
+                            select = c(orthoID,
+                                       var1.x,
+                                       var2.y,
+                                       supertaxonMod,
+                                       geneID))
+      colnames(splitDtName) <- c("orthoID",
+                                 "var1",
+                                 "var2",
+                                 "supertaxonMod",
+                                 "geneID")
+      
+      # filter
+      if (input$in_taxa[1] == "all" & input$in_seq[1] != "all"){
+        # select data from dataHeat for selected sequences only
+        splitDt <- subset(splitDtName, geneID %in% input$in_seq)
+      } else if (input$in_seq[1] == "all" & input$in_taxa[1] != "all"){
+        # select data from dataHeat for selected taxa only
+        splitDt <- subset(splitDtName, supertaxonMod %in% input$in_taxa)
+      } else {
+        # select data from dataHeat for selected sequences and taxa
+        splitDt <- subset(splitDtName,
+                          geneID %in% input$in_seq
+                          & supertaxonMod %in% input$in_taxa)
+      }
+    }
+    
+    # return dt
+    return(splitDt)
+  })
+  
+  # calculate % present species for input file --------------------------------
+  presSpecAllDt <- reactive({
+    # open main input file
+    mdData <- get_main_input()
+    if (ncol(mdData) < 4){
+      colnames(mdData) <- c("geneID",
+                            "ncbiID",
+                            "orthoID")
+    } else if (ncol(mdData) < 5){
+      colnames(mdData) <- c("geneID",
+                            "ncbiID",
+                            "orthoID",
+                            "var1")
+    } else {
+      colnames(mdData) <- c("geneID",
+                            "ncbiID",
+                            "orthoID",
+                            "var1",
+                            "var2")
+    }
+    
+    # count number of inparalogs
+    paralogCount <- plyr::count(mdData, c("geneID", "ncbiID"))
+    mdData <- merge(mdData, paralogCount, by = c("geneID", "ncbiID"))
+    colnames(mdData)[ncol(mdData)] <- "paralog"
+    
+    # (3) GET SORTED TAXONOMY LIST (3)
+    taxa_list <- sortedtaxa_list()
+    
+    # calculate frequency of all supertaxa
+    taxaCount <- plyr::count(taxa_list, "supertaxon")
+    
+    # merge mdData, mdDatavar2 and taxa_list to get taxonomy info
+    taxaMdData <- merge(mdData, taxa_list, by = "ncbiID")
+    if ("var1" %in% colnames(taxaMdData)){
+      taxaMdData$var1 <- {
+        suppressWarnings(as.numeric(as.character(taxaMdData$var1)))
+      }
+    }
+    if ("var2" %in% colnames(taxaMdData)){
+      taxaMdData$var2 <- {
+        suppressWarnings(as.numeric(as.character(taxaMdData$var2)))
+      }
+    }
+    # calculate % present species
+    finalPresSpecDt <- calc_pres_spec(taxaMdData, taxaCount)
+    finalPresSpecDt
+  })
+  
+  # list of available variables for distribution plot -------------------------
+  output$selected.distribution <- renderUI({
+    if (nchar(input$var1_id) == 0 & nchar(input$var2_id) == 0){
+      varList <- "% present taxa"
+    } else if (nchar(input$var1_id) == 0 & nchar(input$var2_id) > 0){
+      varList <- as.list(c(input$var2_id, "% present taxa"))
+    } else if (nchar(input$var1_id) > 0 & nchar(input$var2_id) == 0){
+      varList <- as.list(c(input$var1_id,
+                           "% present taxa"))
+    } else {
+      varList <- as.list(c(input$var1_id,
+                           input$var2_id,
+                           "% present taxa"))
+    }
+    
+    selectInput("selected_dist",
+                "Choose variable to plot:",
+                varList,
+                varList[1])
+  })
+  
+  # render distribution plots---------
+  observe({
+    if (v$doPlot == FALSE) return()
+    
+    if (is.null(input$selected_dist)){
+      return()
+    } else {
+      if (input$selected_dist == "% present taxa"){
+        callModule(analyze_distribution, "dist_plot",
+                   data = presSpecAllDt, 
+                   var_id = reactive(input$selected_dist),
+                   var_type = reactive("presSpec"),
+                   percent = reactive(input$percent), 
+                   dist_text_size = reactive(input$dist_text_size))
+      } else{
+        if (input$selected_dist == input$var1_id){
+          callModule(analyze_distribution, "dist_plot",
+                     data = distribution_df,
+                     var_id = reactive(input$selected_dist),
+                     var_type = reactive("var1"),
+                     percent = reactive(input$percent),
+                     dist_text_size = reactive(input$dist_text_size))
+        } else if (input$selected_dist == input$var2_id){
+          callModule(analyze_distribution, "dist_plot",
+                     data = distribution_df,
+                     var_id = reactive(input$selected_dist),
+                     var_type = reactive("var2"),
+                     percent = reactive(input$percent),
+                     dist_text_size = reactive(input$dist_text_size))
+        }
+      }
+    }
+  })
+  
+  # ===========================================================================
+  # GENE AGE ==================================================================
+  # ===========================================================================
+  
+  # gene age estimation -------------------------------------------------------
+  gene_ageDf <- reactive({
+    if (v$doPlot == FALSE) return()
+    
+    gene_ageDf <- estimate_gene_age(subset_taxa(), get_data_filtered(),
+                                    input$rank_select, input$in_select,
+                                    input$var1, input$var2, input$percent)
+    return(gene_ageDf)
+  })
+  
+  selectedgene_age <- callModule(plot_gene_age, "gene_age",
+                                 data = gene_ageDf,
+                                 gene_age_width = reactive(input$gene_age_width),
+                                 gene_age_height = reactive(input$gene_age_height),
+                                 gene_age_text = reactive(input$gene_age_text))
+  
+  # check if anywhere elese genes are added to the custemized profile ---------
+  observe({
+    if (input$add_cluster_cutom_profile == TRUE
+        | input$add_cons_gene_custom_profile == TRUE
+        | input$add_gc_genes_custom_profile == TRUE ){
+      shinyjs::disable("add_custom_profile")
+    } else {
+      shinyjs::enable("add_custom_profile")
+    }
+  })
+  
+  output$add_custom_profile_check.ui <- renderUI({
+    if (input$add_cluster_cutom_profile == TRUE
+        | input$add_cons_gene_custom_profile == TRUE
+        | input$add_gc_genes_custom_profile == TRUE){
+      HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Profile clustering</strong> or <strong>Core genes finding</strong> or <strong>Groupcomparison</strong> &nbsp;to enable this function)</em></p>')
+      
+    }
+  })
+  
+  # reset gene_age_prot_config ------------------------------------------------
+  observeEvent(input$reset_gene_age_prot_config, {
+    shinyjs::reset("gene_age_width")
+    shinyjs::reset("gene_age_height")
+    shinyjs::reset("gene_age_text")
+  })
+  
+  # ===========================================================================
+  # CORE GENES ================================================================
+  # ===========================================================================
+  
+  consTaxaName <- callModule(select_taxon_rank,
+                             "select_taxon_rank_cons",
+                             rank_select = reactive(input$rank_select),
+                             subset_taxa = subset_taxa)
+  
+  # render list of available taxa ---------------------------------------------
+  output$taxa_list_cons.ui <- renderUI({
+    filein <- input$main_input
+    # if(input$demo == TRUE){
+    if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor"){
+      filein <- 1
+    }
+    if (is.null(filein)){
+      return(selectInput("in_taxa",
+                         "Select taxa of interest:",
+                         "none"))
+    }
+    if (v$doPlot == FALSE){
+      return(selectInput("in_taxa",
+                         "Select taxa of interest:",
+                         "none"))
+    }
+    else{
+      choice <- alltaxa_list()
+      choice$fullName <- as.factor(choice$fullName)
+      
+      out <- as.list(levels(choice$fullName))
+      out <- append("none", out)
+      
+      if (input$apply_cons_taxa == TRUE){
+        out <- consTaxaName()
+        selectInput("taxaCons",
+                    "Select taxa of interest:",
+                    out,
+                    selected = out,
+                    multiple = TRUE)
+      } else {
+        selectInput("taxaCons",
+                    "Select taxa of interest:",
+                    out,
+                    selected = out[1],
+                    multiple = TRUE)
+      }
+    }
+  })
+  
+  # download gene list from cons_gene.table -----------------------------------
+  output$cons_gene_table_download <- downloadHandler(
+    filename = function(){
+      c("consensusGeneList.out")
+    },
+    content = function(file){
+      data_out <- cons_geneDf()
+      write.table(data_out, file, sep = "\t", row.names = FALSE, quote = FALSE)
+    }
+  )
+  
+  # check if anywhere elese genes are added to the custemized profile ---------
+  observe({
+    if (input$add_cluster_cutom_profile == TRUE
+        | input$add_custom_profile == TRUE
+        | input$add_gc_genes_custom_profile == TRUE){
+      shinyjs::disable("add_cons_gene_custom_profile")
+    } else {
+      shinyjs::enable("add_cons_gene_custom_profile")
+    }
+  })
+  
+  output$add_cons_gene_custom_profile_check.ui <- renderUI({
+    if (input$add_cluster_cutom_profile == TRUE
+        | input$add_custom_profile == TRUE
+        | input$add_gc_genes_custom_profile == TRUE){
+      HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Profiles clustering</strong> or <strong>Gene age estimating</strong> or r <strong>Group Comparioson</strong>&nbsp;to enable this function)</em></p>')
+    }
+  })
+  
 })
