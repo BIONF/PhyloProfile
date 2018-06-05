@@ -28,6 +28,8 @@ source("scripts/select_taxon_rank.R")
 source("scripts/identify_core_gene.R")
 source("scripts/analyze_distribution.R")
 
+source("scripts/cluster_profile.R")
+
 # MAIN UI =====================================================================
 
 shinyUI(fluidPage(
@@ -577,27 +579,16 @@ shinyUI(fluidPage(
                                  value = FALSE),
                    uiOutput("apply_cluster_check.ui"),
                    
-                   tags$head(
-                     tags$style(HTML(
-                       "#download_cluster{background-color:#A9E2F3}"))
-                   ),
-                   downloadButton("download_cluster", "Download plot")
+                   checkboxInput("add_cluster_cutom_profile",
+                                 strong(em("Add selected genes to Customized profile")),
+                                 value = FALSE,
+                                 width = NULL),
+                   uiOutput("add_cluster_cutom_profile_check.ui")
             )
           )
         ),
         
-        column(8,
-               uiOutput("cluster.ui")
-        ),
-        column(4,
-               downloadButton("download_cluster_genes", "Download gene list"),
-               checkboxInput("add_cluster_cutom_profile",
-                             strong(em("Add to Customized profile")),
-                             value = FALSE,
-                             width = NULL),
-               uiOutput("add_cluster_cutom_profile_check.ui"),
-               tableOutput("brushed_cluster.table")
-        )
+        cluster_profile_ui("profile_clustering")
       ),
       
       # Distribution analysis -------------------------------------------------

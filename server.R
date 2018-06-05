@@ -98,6 +98,8 @@ source("scripts/fn_estimate_gene_age.R")
 
 source("scripts/analyze_distribution.R")
 
+source("scripts/cluster_profile.R")
+
 # MAIN ========================================================================
 options(shiny.maxRequestSize = 99 * 1024 ^ 2)  # size limit for input 99mb
 
@@ -2582,58 +2584,30 @@ shinyServer(function(input, output, session) {
   # CLUSTERING PROFILES =======================================================
   # ===========================================================================
 
-  output$dendrogram <- renderPlot({
+  # cluster data --------------------------------------------------------------
+  clusterDataDend <- reactive({
     if (v$doPlot == FALSE) return()
-    dendrogram(clusterDataDend())
+    # dataframe for calculate distance matrix
+    dataHeat <- dataHeat()
+    
+    sub_data_heat <- subset(dataHeat, dataHeat$presSpec > 0)
+    sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", "presSpec")]
+    sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
+    
+    wide_data <- spread(sub_data_heat, supertaxon, presSpec)
+    dat <- wide_data[, 2:ncol(wide_data)]  # numerical columns
+    rownames(dat) <- wide_data[, 1]
+    dat[is.na(dat)] <- 0
+    
+    dd.col <- as.dendrogram(hclust(dist(dat, method = input$dist_method),
+                                   method = input$cluster_method))
   })
-
-  output$cluster.ui <- renderUI({
-    withSpinner(
-      plotOutput("dendrogram",
-                 width = input$cluster_plot.width,
-                 height = input$cluster_plot.height,
-                 brush = brushOpts(
-                   id = "plot_brush",
-                   delay = input$brush_delay,
-                   delayType = input$brush_policy,
-                   direction = input$brush_dir,
-                   resetOnNew = input$brush_reset)
-      )
-    )
-  })
-
-  # download clustered plot ---------------------------------------------------
-  output$download_cluster <- downloadHandler(
-    filename = function() {
-      "clustered_plot.pdf"
-      },
-    content = function(file) {
-      ggsave(file, plot = dendrogram(),
-             dpi = 300, device = "pdf",
-             limitsize = FALSE)
-    }
-  )
-
-  output$brushed_cluster.table <- renderTable({
-    if (is.null(input$plot_brush$ymin)) return()
-
-    data <- as.data.frame(brushed_clusterGene())
-    data$number <- rownames(data)
-    colnames(data) <- c("geneID", "No.")
-    data <- data[, c("No.", "geneID")]
-    data
-  })
-
-  # download gene list from brushed_cluster.table -----------------------------
-  output$download_cluster_genes <- downloadHandler(
-    filename = function(){
-      c("selectedClusteredGeneList.out")
-      },
-    content = function(file){
-      data_out <- brushed_clusterGene()
-      write.table(data_out, file, sep = "\t", row.names = FALSE, quote = FALSE)
-    }
-  )
+  
+  
+  brushed_clusterGene <- callModule(cluster_profile, "profile_clustering",
+                                    cluster_data = clusterDataDend,
+                                    cluster_plot.width = reactive(input$cluster_plot.width),
+                                    cluster_plot.height = reactive(input$cluster_plot.width))
 
   # check if anywhere elese genes are added to the custemized profile ---------
   observe({
@@ -4197,45 +4171,6 @@ shinyServer(function(input, output, session) {
                             taxaCons = reactive(input$taxaCons),
                             percent_cons = reactive(input$percent_cons))
   
-  # cluster data --------------------------------------------------------------
-  clusterDataDend <- reactive({
-    if (v$doPlot == FALSE) return()
-    # dataframe for calculate distance matrix
-    dataHeat <- dataHeat()
-    
-    sub_data_heat <- subset(dataHeat, dataHeat$presSpec > 0)
-    sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", "presSpec")]
-    sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
-    
-    wide_data <- spread(sub_data_heat, supertaxon, presSpec)
-    dat <- wide_data[, 2:ncol(wide_data)]  # numerical columns
-    rownames(dat) <- wide_data[, 1]
-    dat[is.na(dat)] <- 0
-    
-    dd.col <- as.dendrogram(hclust(dist(dat, method = input$dist_method),
-                                   method = input$cluster_method))
-  })
-  
-  # render brushed_cluster.table based on clicked point on dendrogram plot ----
-  brushed_clusterGene <- reactive({
-    if (v$doPlot == FALSE) return()
-    
-    dd.col <- clusterDataDend()
-    dt <- dendro_data(dd.col)
-    dt$labels$label <- levels(dt$labels$label)
-    
-    # get list of selected gene(s)
-    if (is.null(input$plot_brush)) return()
-    else{
-      top <- as.numeric(-round(input$plot_brush$ymin))
-      bottom <- as.numeric(-round(input$plot_brush$ymax))
-      
-      df <- dt$labels[bottom:top, ]
-    }
-    
-    # return list of genes
-    df <- df[complete.cases(df), 3]
-  })
 
   # Deciding which plots should be shown (Group Comparison) -------------------
   get_plots_gc <- reactive({
