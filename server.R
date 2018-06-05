@@ -94,7 +94,7 @@ source("scripts/select_taxon_rank.R")
 source("scripts/identify_core_gene.R")
 source("scripts/analyze_distribution.R")
 
-source("scripts/fn_estimate_gene_age.R")
+source("scripts/estimate_gene_age.R")
 
 source("scripts/analyze_distribution.R")
 
@@ -2363,103 +2363,75 @@ shinyServer(function(input, output, session) {
     return(gene_ageDf)
   })
 
-  output$gene_agePlot <- renderPlot({
-    if (input$auto_update == FALSE){
-      # Add dependency on the update button
-      # (only update when button is clicked)
-      input$update_btn
-
-      # Add all the filters to the data based on the user inputs
-      # wrap in an isolate() so that the data won't update every time an input
-      # is changed
-      isolate({
-        gene_age_plot(gene_age_plotDf(gene_ageDf()), input$gene_age_text)
-      })
-    } else {
-      gene_age_plot(gene_age_plotDf(gene_ageDf()), input$gene_age_text)
-    }
-  })
-
-  output$gene_age.ui <- renderUI({
-    if (v$doPlot == FALSE){
-      return()
-    } else{
-      ## if auto_update is NOT selected, use update_btn to trigger plot changing
-      if (input$auto_update == FALSE){
-        # Add dependency on the update button
-        # (only update when button is clicked)
-        input$update_btn
-
-        # Add all the filters to the data based on the user inputs
-        # wrap in an isolate() so that the data won't update every time an input
-        # is changed
-        isolate({
-          withSpinner(
-            plotOutput("gene_agePlot",
-                       width = 600 * input$gene_age_width,
-                       height = 150 * input$gene_age_height,
-                       click = "plot_click_gene_age")
-          )
-        })
-      }
-      ## if auto_update is true
-      else {
-        withSpinner(
-          plotOutput("gene_agePlot",
-                     width = 600 * input$gene_age_width,
-                     height = 150 * input$gene_age_height,
-                     click = "plot_click_gene_age")
-        )
-      }
-    }
-  })
-
-  # download gene age plot ----------------------------------------------------
-  output$gene_age_plot_download <- downloadHandler(
-    filename = function() {
-      "gene_age_plot.pdf"
-      },
-    content = function(file) {
-      ggsave(file, plot = gene_age_plot(gene_age_plotDf(gene_ageDf()),
-                                       input$gene_age_text),
-             width = 600 * input$gene_age_width * 0.056458333,
-             height = 150 * input$gene_age_height * 0.056458333,
-             units = "cm", dpi = 300, device = "pdf")
-    }
-  )
-
   
-  # render genAge.table based on clicked point on gene_agePlot ----------------
-  selectedgene_age <- reactive({
-    if (v$doPlot == FALSE) return()
-    
-    selected_gene <- get_selected_gene_age(gene_ageDf(), input$plot_click_gene_age$x)
-    return(selected_gene)
-  })
+  # selectedgene_age <- reactive({
+  #   if (v$doPlot == FALSE) return()
+    selectedgene_age <- callModule(plot_gene_age, "gene_age",
+                                   data = gene_ageDf,
+                                   gene_age_width = reactive(input$gene_age_width),
+                                   gene_age_height = reactive(input$gene_age_height),
+                                   gene_age_text = reactive(input$gene_age_text))
+  #   return(selectedgene_age)
+  # }) 
   
-  output$gene_age.table <- renderTable({
-    if (is.null(input$plot_click_gene_age$x)) return()
+  # output$gene_agePlot <- renderPlot({
+  #   gene_age_plot(gene_age_plotDf(gene_ageDf()), input$gene_age_text)
+  # })
+  # 
+  # output$gene_age.ui <- renderUI({
+  #   withSpinner(
+  #     plotOutput("gene_agePlot",
+  #                width = 600 * input$gene_age_width,
+  #                height = 150 * input$gene_age_height,
+  #                click = "plot_click_gene_age")
+  #   )
+  # })
+  # 
+  # # download gene age plot ----------------------------------------------------
+  # output$gene_age_plot_download <- downloadHandler(
+  #   filename = function() {
+  #     "gene_age_plot.pdf"
+  #     },
+  #   content = function(file) {
+  #     ggsave(file, plot = gene_age_plot(gene_age_plotDf(gene_ageDf()),
+  #                                      input$gene_age_text),
+  #            width = 600 * input$gene_age_width * 0.056458333,
+  #            height = 150 * input$gene_age_height * 0.056458333,
+  #            units = "cm", dpi = 300, device = "pdf")
+  #   }
+  # )
 
-    data <- as.data.frame(selectedgene_age())
-    data$number <- rownames(data)
-    colnames(data) <- c("geneID", "No.")
-    data <- data[, c("No.", "geneID")]
-    data
-  })
-
-  # download gene list from gene_ageTable -------------------------------------
-  output$gene_age_table_download <- downloadHandler(
-    filename = function(){
-      c("selectedGeneList.out")
-      },
-    content = function(file){
-      data_out <- selectedgene_age()
-      write.table(data_out, file,
-                  sep = "\t",
-                  row.names = FALSE,
-                  quote = FALSE)
-    }
-  )
+  # # render genAge.table based on clicked point on gene_agePlot ----------------
+  # selectedgene_age <- reactive({
+  #   if (v$doPlot == FALSE) return()
+  #   
+  #   selected_gene <- get_selected_gene_age(gene_ageDf(), input$plot_click_gene_age$x)
+  #   return(selected_gene)
+  # })
+  # 
+  # output$gene_age.table <- renderTable({
+  #   if (is.null(input$plot_click_gene_age$x)) return()
+  # 
+  #   data <- as.data.frame(selectedgene_age())
+  #   data$number <- rownames(data)
+  #   colnames(data) <- c("geneID", "No.")
+  #   data <- data[, c("No.", "geneID")]
+  #   data
+  # })
+  # 
+  # # download gene list from gene_ageTable -------------------------------------
+  # output$gene_age_table_download <- downloadHandler(
+  #   filename = function(){
+  #     c("selectedGeneList.out")
+  #     },
+  #   content = function(file){
+  #     data_out <- selectedgene_age()
+  #     write.table(data_out, file,
+  #                 sep = "\t",
+  #                 row.names = FALSE,
+  #                 quote = FALSE)
+  #   }
+  # )
 
   # check if anywhere elese genes are added to the custemized profile ---------
   observe({

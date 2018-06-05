@@ -1,7 +1,101 @@
-#' Functions for calculating gene age
+#' Gene age estimation plot
 #' 
 
 source("scripts/functions.R")
+
+plot_gene_age_ui <- function(id){
+  ns <- NS(id)
+  tagList(
+    column(
+      2,
+      downloadButton(ns("gene_age_plot_download"), "Download plot")
+    ),
+    column(
+      10,
+      uiOutput(ns("gene_age.ui")),
+      br(),
+      em(h6("01_Species; 02_Family; 03_Class; 04_Phylum;
+            05_Kingdom; 06_Superkingdom; 07_Last universal common ancestor;
+            Undef_Genes have been filtered out"))
+    ),
+    hr(),
+    column(
+      4,
+      downloadButton(ns("gene_age_table_download"), "Download gene list")
+    ),
+    column(
+      8,
+      tableOutput(ns("gene_age.table"))
+    )
+  )
+}
+
+plot_gene_age <- function(input, output, session,
+                          data,
+                          gene_age_width, gene_age_height, gene_age_text){
+  
+  output$gene_agePlot <- renderPlot({
+    gene_age_plot(gene_age_plotDf(data()), gene_age_text())
+  })
+  
+  output$gene_age.ui <- renderUI({
+    ns <- session$ns
+    withSpinner(
+      plotOutput(ns("gene_agePlot"),
+                 width = 600 * gene_age_width(),
+                 height = 150 * gene_age_height(),
+                 click = ns("plot_click_gene_age"))
+    )
+  })
+  
+  # download gene age plot ----------------------------------------------------
+  output$gene_age_plot_download <- downloadHandler(
+    filename = function() {
+      "gene_age_plot.pdf"
+    },
+    content = function(file) {
+      ggsave(file, plot = gene_age_plot(gene_age_plotDf(data()),
+                                        gene_age_text()),
+             width = 600 * gene_age_width() * 0.056458333,
+             height = 150 * gene_age_height() * 0.056458333,
+             units = "cm", dpi = 300, device = "pdf")
+    }
+  )
+  
+  # render genAge.table based on clicked point on gene_agePlot ----------------
+  selectedgene_age <- reactive({
+    # if (v$doPlot == FALSE) return()
+    
+    selected_gene <- get_selected_gene_age(data(), input$plot_click_gene_age$x)
+    return(selected_gene)
+  })
+  
+  output$gene_age.table <- renderTable({
+    if (is.null(input$plot_click_gene_age$x)) return()
+    
+    data <- as.data.frame(selectedgene_age())
+    data$number <- rownames(data)
+    colnames(data) <- c("geneID", "No.")
+    data <- data[, c("No.", "geneID")]
+    data
+  })
+  
+  # download gene list from gene_ageTable -------------------------------------
+  output$gene_age_table_download <- downloadHandler(
+    filename = function(){
+      c("selectedGeneList.out")
+    },
+    content = function(file){
+      data_out <- selectedgene_age()
+      write.table(data_out, file,
+                  sep = "\t",
+                  row.names = FALSE,
+                  quote = FALSE)
+    }
+  )
+  
+  return(selectedgene_age)
+}
 
 estimate_gene_age <- function(subset_taxa, filtered_data,
                               rank_select, in_select,
@@ -176,3 +270,4 @@ get_selected_gene_age <- function(gene_ageDf, clicked_x){
   
   return(geneList)
 }
+

@@ -29,6 +29,7 @@ source("scripts/identify_core_gene.R")
 source("scripts/analyze_distribution.R")
 
 source("scripts/cluster_profile.R")
+source("scripts/estimate_gene_age.R")
 
 # MAIN UI =====================================================================
 
@@ -647,35 +648,19 @@ shinyUI(fluidPage(
                    strong("Appearance"),
                    bsButton("gene_age_prot_config", "Plot config")
             ),
-            column(2,
-                   strong("Download"),
-                   tags$head(
-                     tags$style(HTML(
-                       "#gene_age_plot_download{background-color:#A9E2F3}"))
-                   ),
-                   downloadButton("gene_age_plot_download", "Download plot")
+            column(4,
+                   # downloadButton("gene_age_table_download", "Download gene list"),
+                   checkboxInput("add_custom_profile",
+                                 strong(em("Add to Customized profile")),
+                                 value = FALSE,
+                                 width = NULL),
+                   uiOutput("add_custom_profile_check.ui")
             )
           )
         ),
         
-        uiOutput("gene_age.ui"),
-        conditionalPanel(
-          condition = "input.do",
-          em(h6("01_Species; 02_Family; 03_Class; 04_Phylum;
-                05_Kingdom; 06_Superkingdom; 07_Last universal common ancestor;
-                Undef_Genes have been filtered out"))
-          ),
-        hr(),
-        column(4,
-               downloadButton("gene_age_table_download", "Download gene list"),
-               checkboxInput("add_custom_profile",
-                             strong(em("Add to Customized profile")),
-                             value = FALSE,
-                             width = NULL),
-               uiOutput("add_custom_profile_check.ui")
-        ),
-        tableOutput("gene_age.table")
-          ),
+        plot_gene_age_ui("gene_age")
+      ),
       
       # Core gene identification  -----------------------------------------
       tabPanel(
