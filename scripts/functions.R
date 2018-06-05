@@ -645,14 +645,6 @@ gene_age_plot <- function(count_df, gene_age_text){
   p
 }
 
-# # plot clustered profiles -----------------------------------------------------
-# dendrogram <- function(dd.col){
-#   py <- as.ggdend(dd.col)
-#   p <- ggplot(py, horiz = TRUE, theme = theme_minimal()) +
-#     theme(axis.title = element_blank(), axis.text.y = element_blank())
-#   p
-# }
-
 # GROUP COMPARISON ============================================================
 
 # print list of available taxa ------------------------------------------------

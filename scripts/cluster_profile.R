@@ -21,8 +21,14 @@ cluster_profile_ui <- function(id){
 }
 
 cluster_profile <- function(input, output, session,
-                            cluster_data,
+                            data,
+                            dist_method, cluster_method,
                             cluster_plot.width, cluster_plot.height){
+  
+  cluster_data <- reactive({
+    df <- clusterDataDend(data(), dist_method(), cluster_method())
+    return(df)
+  }) 
   
   output$dendrogram <- renderPlot({
     # if (v$doPlot == FALSE) return()
@@ -100,6 +106,27 @@ cluster_profile <- function(input, output, session,
   )
   
   return(brushed_clusterGene)
+}
+
+# cluster data --------------------------------------------------------------
+clusterDataDend <- function(data, dist_method, cluster_method){
+  # if (v$doPlot == FALSE) return()
+  # dataframe for calculate distance matrix
+  dataHeat <- data
+  
+  sub_data_heat <- subset(dataHeat, dataHeat$presSpec > 0)
+  sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", "presSpec")]
+  sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
+  
+  wide_data <- spread(sub_data_heat, supertaxon, presSpec)
+  dat <- wide_data[, 2:ncol(wide_data)]  # numerical columns
+  rownames(dat) <- wide_data[, 1]
+  dat[is.na(dat)] <- 0
+  
+  dd.col <- as.dendrogram(hclust(dist(dat, method = dist_method),
+                                 method = cluster_method))
+  
+  return(dd.col)
 }
 
 # plot clustered profiles -----------------------------------------------------

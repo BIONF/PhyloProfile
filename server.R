@@ -2583,29 +2583,10 @@ shinyServer(function(input, output, session) {
   # ===========================================================================
   # CLUSTERING PROFILES =======================================================
   # ===========================================================================
-
-  # cluster data --------------------------------------------------------------
-  clusterDataDend <- reactive({
-    if (v$doPlot == FALSE) return()
-    # dataframe for calculate distance matrix
-    dataHeat <- dataHeat()
-    
-    sub_data_heat <- subset(dataHeat, dataHeat$presSpec > 0)
-    sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", "presSpec")]
-    sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
-    
-    wide_data <- spread(sub_data_heat, supertaxon, presSpec)
-    dat <- wide_data[, 2:ncol(wide_data)]  # numerical columns
-    rownames(dat) <- wide_data[, 1]
-    dat[is.na(dat)] <- 0
-    
-    dd.col <- as.dendrogram(hclust(dist(dat, method = input$dist_method),
-                                   method = input$cluster_method))
-  })
-  
-  
   brushed_clusterGene <- callModule(cluster_profile, "profile_clustering",
-                                    cluster_data = clusterDataDend,
+                                    data = dataHeat,
+                                    dist_method = reactive(input$dist_method),
+                                    cluster_method = reactive(input$cluster_method),
                                     cluster_plot.width = reactive(input$cluster_plot.width),
                                     cluster_plot.height = reactive(input$cluster_plot.width))
 
