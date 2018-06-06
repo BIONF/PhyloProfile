@@ -1541,7 +1541,7 @@ update_slider_cutoff <- function(session, id, title, new_var, var_id){
                     step = 0.025)
 }
 
-create_numeric_plot_size <- function(id, title, value) {
+create_plot_size <- function(id, title, value) {
   numericInput(id,
                title,
                min = 100,
@@ -1551,7 +1551,7 @@ create_numeric_plot_size <- function(id, title, value) {
                width = 100)
 }
 
-create_numeric_text_size <- function(id, title, value, width) {
+create_text_size <- function(id, title, value, width) {
   numericInput(id,
                title,
                min = 3,
