@@ -78,13 +78,6 @@ shinyUI(fluidPage(
         ),
         column(2,
                uiOutput("percent_cutoff.ui")
-               # sliderInput("percent",
-               #             "% of present taxa:",
-               #             min = 0,
-               #             max = 1,
-               #             step = 0.025,
-               #             value = c(0.0, 1.0),
-               #             width = 200)
         ),
         column(2,
                shinyBS::bsButton("reset_main",

@@ -1509,3 +1509,34 @@ calc_pres_spec <- function(taxa_md_data, taxa_count){
   # return final_pres_spec_dt
   return(final_pres_spec_dt)
 }
+
+###################### FUNCTIONS FOR RENDER UI ELEMENTS #######################
+
+create_slider_cutoff <- function(id, title, start, stop, var_id){
+  if(is.null(var_id)) return()
+  if(var_id == ""){
+    sliderInput(id, title,
+                min = 1,
+                max = 1,
+                step = 0.025,
+                value = 1,
+                width = 200)
+  } else {
+    sliderInput(id, title,
+                min = 0,
+                max = 1,
+                step = 0.025,
+                value = c(start, stop),
+                width = 200)
+  }
+}
+
+update_slider_cutoff <- function(session, id, title, new_var, var_id){
+  if(is.null(var_id) || var_id == "") return()
+  
+  updateSliderInput(session, id, title,
+                    value = new_var,
+                    min = 0,
+                    max = 1,
+                    step = 0.025)
+}

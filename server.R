@@ -61,6 +61,140 @@ shinyServer(function(input, output, session) {
   # Automatically stop a Shiny app when closing the browser tab ---------------
   # session$onSessionEnded(stopApp)
   session$allowReconnect(TRUE)
+  
+  # ===========================================================================
+  # =========================== RENDER UI ELEMENTS ============================
+  # ===========================================================================
+  
+  # variable 1 & 2 cutoff slidebar (main plot) --------------------------------
+  output$var1_cutoff.ui <- renderUI({
+    create_slider_cutoff("var1", paste(input$var1_id, "cutoff:"), 0.0, 1.0, input$var1_id)
+  })
+  
+  output$var2_cutoff.ui <- renderUI({
+    create_slider_cutoff("var2", paste(input$var2_id, "cutoff:"), 0.0, 1.0, input$var2_id)
+  })
+  
+  output$percent_cutoff.ui <- renderUI({
+    create_slider_cutoff("percent", "% of present taxa:", 0.0, 1.0, "percent")
+  })
+  
+  # render filter slidebars for Customized plot -------------------------------
+  output$var1_filter.ui <- renderUI({
+    create_slider_cutoff("var1cus", paste(input$var1_id, "cutoff:"), input$var1[1], input$var1[2], input$var1_id)
+  })
+  
+  output$var2_filter.ui <- renderUI({
+    create_slider_cutoff("var2cus", paste(input$var2_id, "cutoff:"), input$var2[1], input$var2[2], input$var2_id)
+  })
+  
+  output$percent_filter.ui <- renderUI({
+    create_slider_cutoff("percent2", "% of present taxa:", input$percent[1], input$percent[2], "percent")
+  })
+  
+  # render filter slidebars for Distribution plot -----------------------------
+  output$var1_dist.ui <- renderUI({
+    create_slider_cutoff("var1_dist", paste(input$var1_id, "cutoff:"), input$var1[1], input$var1[2], input$var1_id)
+  })
+  
+  output$var2_dist.ui <- renderUI({
+    create_slider_cutoff("var2_dist", paste(input$var2_id, "cutoff:"), input$var2[1], input$var2[2], input$var2_id)
+  })
+  
+  output$percent_dist.ui <- renderUI({
+    create_slider_cutoff("percent_dist", "% of present taxa:", input$percent[1], input$percent[2], "percent")
+  })
+  
+  # render filter slidebars for Gene age estimation plot ----------------------
+  output$var1_age.ui <- renderUI({
+    create_slider_cutoff("var1_age", paste(input$var1_id, "cutoff:"), input$var1[1], input$var1[2], input$var1_id)
+  })
+  
+  output$var2_age.ui <- renderUI({
+    create_slider_cutoff("var2_age", paste(input$var2_id, "cutoff:"), input$var2[1], input$var2[2], input$var2_id)
+  })
+  
+  output$percent_age.ui <- renderUI({
+    create_slider_cutoff("percent_age", "% of present taxa:", input$percent[1], input$percent[2], "percent")
+  })
+  
+  # render filter slidebars for Core gene finding function --------------------
+  output$var1_cons.ui <- renderUI({
+    create_slider_cutoff("var1_cons", paste(input$var1_id, "cutoff:"), input$var1[1], input$var1[2], input$var1_id)
+  })
+  
+  output$var2_cons.ui <- renderUI({
+    create_slider_cutoff("var2_cons", paste(input$var2_id, "cutoff:"), input$var2[1], input$var2[2], input$var2_id)
+  })
+  
+  output$percent_cons.ui <- renderUI({
+    create_slider_cutoff("percent_cons", "% of present taxa:", input$percent[1], input$percent[2], "percent")
+  })
+  
+  # update value for "main" filter slidebars ----------------------------------
+  observe({
+    new_var1 <- input$var1cus
+    update_slider_cutoff(session, "var1", paste(input$var1_id, "cutoff:"), new_var1, input$var1_id)
+  })
+  
+  observe({
+    new_var2 <- input$var2cus
+    update_slider_cutoff(session, "var2", paste(input$var2_id, "cutoff:"), new_var2, input$var2_id)
+  })
+  
+  observe({
+    new_percent <- input$percent2
+    update_slider_cutoff(session, "percent", "% of present taxa:", new_percent, "percent")
+  })
+  
+  # based on "Distribution analysis"
+  observe({
+    new_var1 <- input$var1_dist
+    update_slider_cutoff(session, "var1", paste(input$var1_id, "cutoff:"), new_var1, input$var1_id)
+  })
+  
+  observe({
+    new_var2 <- input$var2_dist
+    update_slider_cutoff(session, "var2", paste(input$var2_id, "cutoff:"), new_var2, input$var2_id)
+  })
+  
+  observe({
+    new_percent <- input$percent_dist
+    update_slider_cutoff(session, "percent", "% of present taxa:", new_percent, "percent")
+  })
+  
+  # based on "Gene age estimation"
+  observe({
+    new_var1 <- input$var1_age
+    update_slider_cutoff(session, "var1", paste(input$var1_id, "cutoff:"), new_var1, input$var1_id)
+  })
+  
+  observe({
+    new_var2 <- input$var2_age
+    update_slider_cutoff(session, "var2", paste(input$var2_id, "cutoff:"), new_var2, input$var2_id)
+  })
+  
+  observe({
+    new_percent <- input$percent_age
+    update_slider_cutoff(session, "percent", "% of present taxa:", new_percent, "percent")
+  })
+  
+  # reset cutoffs of main plot ------------------------------------------------
+  observeEvent(input$reset_main, {
+    shinyjs::reset("var1")
+    shinyjs::reset("var2")
+    shinyjs::reset("percent")
+  })
+  
+  # reset cutoffs of Customized plot ------------------------------------------
+  observeEvent(input$reset_selected, {
+    shinyjs::reset("var1")
+    shinyjs::reset("var2")
+    shinyjs::reset("percent")
+  })
+  
+  
+  
 
   # ===========================================================================
   # PRE-PROCESSING  ===========================================================
@@ -223,180 +357,8 @@ shinyServer(function(input, output, session) {
     }
   })
 
-  # variable 1 & 2 cutoff slidebar (main plot) -------------------------------- HERERERERERERE
   
-  create_slider_cutoff <- function(id, title, start, stop, var_id){
-    if(var_id == ""){
-      sliderInput(id, title,
-                  min = 1,
-                  max = 1,
-                  step = 0.025,
-                  value = 1,
-                  width = 200)
-    } else {
-      sliderInput(id, title,
-                  min = 0,
-                  max = 1,
-                  step = 0.025,
-                  value = c(start, stop),
-                  width = 200)
-    }
-  }
   
-  output$var1_cutoff.ui <- renderUI({
-    if (is.null(input$var1_id)) return()
-    create_slider_cutoff("var1", paste(input$var1_id, "cutoff:"), 0.0, 1.0, input$var1_id)
-  })
-
-  output$var2_cutoff.ui <- renderUI({
-    if (is.null(input$var2_id)) return()
-    create_slider_cutoff("var2", paste(input$var2_id, "cutoff:"), 0.0, 1.0, input$var2_id)
-  })
-  
-  output$percent_cutoff.ui <- renderUI({
-    create_slider_cutoff("percent", "% of present taxa:", 0.0, 1.0, "percent")
-  })
-
-  # render filter slidebars for Customized plot -------------------------------
-  output$var1_filter.ui <- renderUI({
-    if (is.null(input$var1_id)) return()
-    create_slider_cutoff("var1cus", paste(input$var1_id, "cutoff:"), input$var1[1], input$var1[2], input$var1_id)
-  })
-
-  output$var2_filter.ui <- renderUI({
-    if (is.null(input$var2_id)) return()
-    create_slider_cutoff("var2cus", paste(input$var2_id, "cutoff:"), input$var2[1], input$var2[2], input$var2_id)
-  })
-
-  output$percent_filter.ui <- renderUI({
-    create_slider_cutoff("percent2", "% of present taxa:", input$percent[1], input$percent[2], "percent")
-  })
-
-  # render filter slidebars for Distribution plot -----------------------------
-  output$var1_dist.ui <- renderUI({
-    if (is.null(input$var1_id)) return()
-    create_slider_cutoff("var1_dist", paste(input$var1_id, "cutoff:"), input$var1[1], input$var1[2], input$var1_id)
-  })
-
-  output$var2_dist.ui <- renderUI({
-    if (is.null(input$var2_id)) return()
-    create_slider_cutoff("var2_dist", paste(input$var2_id, "cutoff:"), input$var2[1], input$var2[2], input$var2_id)
-  })
-
-  output$percent_dist.ui <- renderUI({
-    create_slider_cutoff("percent_dist", "% of present taxa:", input$percent[1], input$percent[2], "percent")
-  })
-
-  # render filter slidebars for Gene age estimation plot ----------------------
-  output$var1_age.ui <- renderUI({
-    if (is.null(input$var1_id)) return()
-    create_slider_cutoff("var1_age", paste(input$var1_id, "cutoff:"), input$var1[1], input$var1[2], input$var1_id)
-  })
-
-  output$var2_age.ui <- renderUI({
-    if (is.null(input$var2_id)) return()
-    create_slider_cutoff("var2_age", paste(input$var2_id, "cutoff:"), input$var2[1], input$var2[2], input$var2_id)
-  })
-
-  output$percent_age.ui <- renderUI({
-    create_slider_cutoff("percent_age", "% of present taxa:", input$percent[1], input$percent[2], "percent")
-  })
-
-  # render filter slidebars for Core gene finding function --------------------
-  output$var1_cons.ui <- renderUI({
-    if (is.null(input$var1_id)) return()
-    create_slider_cutoff("var1_cons", paste(input$var1_id, "cutoff:"), input$var1[1], input$var1[2], input$var1_id)
-  })
-
-  output$var2_cons.ui <- renderUI({
-    if (is.null(input$var2_id)) return()
-    create_slider_cutoff("var2_cons", paste(input$var2_id, "cutoff:"), input$var2[1], input$var2[2], input$var2_id)
-  })
-
-  output$percent_cons.ui <- renderUI({
-    create_slider_cutoff("percent_cons", "% of present taxa:", input$percent[1], input$percent[2], "percent")
-  })
-
-  # update value for "main" filter slidebars ----------------------------------
-  # based on "Customized"
-  update_slider_cutoff <- function(session, id, title, new_var){
-    updateSliderInput(session, id, title,
-                      value = new_var,
-                      min = 0,
-                      max = 1,
-                      step = 0.025)
-  }
-  
-  observe({
-    new_var1 <- input$var1cus
-
-    if (is.null(input$var1_id)) return()
-    if (input$var1_id != ""){
-      updateSliderInput(session, "var1", paste(input$var1_id, "cutoff:"), new_var1)
-    }
-  })
-  
-  observe({
-    new_var2 <- input$var2cus
-
-    if (is.null(input$var2_id)) return()
-    if (input$var2_id != ""){
-      updateSliderInput(session, "var2", paste(input$var2_id, "cutoff:"), new_var2)
-    }
-  })
-  
-  observe({
-    new_percent <- input$percent2
-    updateSliderInput(session, "percent", "% of present taxa:", new_percent)
-  })
-
-  # based on "Distribution analysis"
-  observe({
-    new_var1 <- input$var1_dist
-    
-    if (is.null(input$var1_id)) return()
-    if (input$var1_id != ""){
-      updateSliderInput(session, "var1", paste(input$var1_id, "cutoff:"), new_var1)
-    }
-  })
-  
-  observe({
-    new_var2 <- input$var2_dist
-
-    if (is.null(input$var2_id)) return()
-    if (input$var2_id != ""){
-      updateSliderInput(session, "var2", paste(input$var2_id, "cutoff:"), new_var2)
-    }
-  })
-  
-  observe({
-    new_percent <- input$percent_dist
-    updateSliderInput(session, "percent", "% of present taxa:", new_percent)
-  })
-
-  # based on "Gene age estimation"
-  observe({
-    new_var1 <- input$var1_age
-
-    if (is.null(input$var1_id)) return()
-    if (input$var1_id != ""){
-      updateSliderInput(session, "var1", paste(input$var1_id, "cutoff:"), new_var1)
-    }
-  })
-  
-  observe({
-    new_var2 <- input$var2_age
-
-    if (is.null(input$var2_id)) return()
-    if (input$var2_id != ""){
-      updateSliderInput(session, "var2", paste(input$var2_id, "cutoff:"), new_var2)
-    }
-  })
-  
-  observe({
-    new_percent <- input$percent_age
-    updateSliderInput(session, "percent", "% of present taxa:", new_percent)
-  })
 
   # render 2. variable relationship according to demo data --------------------
   output$var2_relation.ui <- renderUI({
@@ -442,12 +404,7 @@ shinyServer(function(input, output, session) {
     }
   })
 
-  # reset cutoffs of main plot ------------------------------------------------
-  observeEvent(input$reset_main, {
-    shinyjs::reset("var1")
-    shinyjs::reset("var2")
-    shinyjs::reset("percent")
-  })
+  
 
   # reset config of main plot -------------------------------------------------
   observeEvent(input$reset_main_config, {
@@ -463,12 +420,7 @@ shinyServer(function(input, output, session) {
     toggleModal(session, "main_plot_config_bs", toggle = "close")
   })
 
-  # reset cutoffs of Customized plot ------------------------------------------
-  observeEvent(input$reset_selected, {
-    shinyjs::reset("var1")
-    shinyjs::reset("var2")
-    shinyjs::reset("percent")
-  })
+
 
   # reset config of customized plot -------------------------------------------
   observeEvent(input$reset_selected_config, {
