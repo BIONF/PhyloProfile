@@ -10,6 +10,8 @@ if (!require("shinycssloaders")) {
   devtools::install_github("andrewsali/shinycssloaders")
 }
 
+source("scripts/functions.R")
+
 source("scripts/search_taxon_id.R")
 source("scripts/download_filtered_main.R")
 source("scripts/download_filtered_customized.R")
@@ -51,25 +53,13 @@ shinyUI(fluidPage(
                              width = NULL)
         ),
         column(1,
-               numericInput("width",
-                            "Width (px)",
-                            min = 600,
-                            max = 3200,
-                            step = 50,
-                            value = 600,
-                            width = 100),
+               create_numeric_plot_size("width", "Width (px)", 600),
                actionButton("main_plot_config", "Appearance")
         ),
         column(1,
-               numericInput("height",
-                            "Height (px)",
-                            min = 600,
-                            max = 1600,
-                            step = 50,
-                            value = 600,
-                            width = 100)
+               create_numeric_plot_size("height", "Height (px)", 600)
         ),
-        #### HERE FOR MAIN
+
         column(2,
                uiOutput("var1_cutoff.ui")
         ), 
@@ -112,25 +102,13 @@ shinyUI(fluidPage(
                              width = NULL)
         ),
         column(1,
-               numericInput("selected_width",
-                            "Width (px)",
-                            min = 100,
-                            max = 1000,
-                            step = 50,
-                            value = 600,
-                            width = 100),
+               create_numeric_plot_size("selected_width", "Width (px)", 600),
                actionButton("selected_plot_config", "Appearance")
         ),
         column(1,
-               numericInput("selected_height",
-                            "Height (px)",
-                            min = 100,
-                            max = 1600,
-                            step = 50,
-                            value = 600,
-                            width = 100)
+               create_numeric_plot_size("selected_height", "Height (px)", 600)
         ),
-        #### HERE FOR CUSTOM
+
         column(2,
                uiOutput("var1_filter.ui")
         ),
@@ -544,22 +522,10 @@ shinyUI(fluidPage(
                                selected = "complete")
             ),
             column(1,
-                   numericInput("cluster_plot.width",
-                                h5("Width (px)"),
-                                min = 200,
-                                max = 3200,
-                                step = 50,
-                                value = 600,
-                                width = 100)
+                   create_numeric_plot_size("cluster_plot.width", "Width (px)", 600)
             ),
             column(2,
-                   numericInput("cluster_plot.height",
-                                h5("Height (px)"),
-                                min = 200,
-                                max = 3200,
-                                step = 50,
-                                value = 400,
-                                width = 100)
+                   create_numeric_plot_size("cluster_plot.height", "Height (px)", 600)
             ),
             column(3,
                    checkboxInput("apply_cluster",
@@ -603,12 +569,7 @@ shinyUI(fluidPage(
                    uiOutput("percent_dist.ui")
             ),
             column(1,
-                   numericInput("dist_text_size", "Label size",
-                                min = 2,
-                                max = 99,
-                                step = 1,
-                                value = 12,
-                                width = 100)
+                   create_numeric_text_size("dist_text_size", "Label size", 12, 100)
             )
           )
         ),
@@ -916,33 +877,14 @@ shinyUI(fluidPage(
           "main_plot_config",
           size = "small",
           column(6,
-                 numericInput("x_size",
-                              "X-axis label size (px)",
-                              min = 8,
-                              max = 99,
-                              step = 1,
-                              value = 8,
-                              width = 100)
+                 create_numeric_text_size("x_size", "X-axis label size (px)", 8, 100)
           ),
           column(6,
-                 
-                 numericInput("y_size",
-                              "Y-axis label size (px)",
-                              min = 8,
-                              max = 99,
-                              step = 1,
-                              value = 8,
-                              width = 100)
+                 create_numeric_text_size("y_size", "Y-axis label size (px)", 8, 100)
           ),
           
           column(6,
-                 numericInput("legend_size",
-                              "Legend label size (px)",
-                              min = 8,
-                              max = 99,
-                              step = 1,
-                              value = 8,
-                              width = 150)
+                 create_numeric_text_size("legend_size", "Legend label size (px)", 8, 150)
           ),
           column(6,
                  selectInput("main_legend", label = "Legend position:",
@@ -1022,30 +964,14 @@ shinyUI(fluidPage(
           "selected_plot_config",
           size = "small",
           column(6,
-                 numericInput("x_size_select", "X-axis label size(px)",
-                              min = 8,
-                              max = 99,
-                              step = 1,
-                              value = 8,
-                              width = 150)
+                 create_numeric_text_size("x_size_select", "X-axis label size (px)", 8, 100)
           ),
           column(6,
-                 
-                 numericInput("y_size_select", "Y-axis label size (px)",
-                              min = 8,
-                              max = 99,
-                              step = 1,
-                              value = 8,
-                              width = 100)
+                 create_numeric_text_size("y_size_select", "Y-axis label size (px)", 8, 100)
           ),
           
           column(6,
-                 numericInput("legend_size_select", "Legend label size (px)",
-                              min = 8,
-                              max = 99,
-                              step = 1,
-                              value = 8,
-                              width = 150)
+                 create_numeric_text_size("legend_size_select", "Legend label size (px)", 8, 150)
           ),
           column(6,
                  selectInput("selected_legend", label = "Legend position:",
@@ -1094,30 +1020,13 @@ shinyUI(fluidPage(
           "gc_plot_config",
           size = "small",
           column(6,
-                 numericInput("x_size_gc", "X-axis label size (px)",
-                              min = 8,
-                              max = 99,
-                              step = 1,
-                              value = 10,
-                              width = 100)
+                 create_numeric_text_size("x_size_gc", "X-axis label size (px)", 10, 100)
           ),
           column(6,
-                 numericInput("y_size_gc", "Y-axis label size (px)",
-                              min = 8,
-                              max = 99,
-                              step = 1,
-                              value = 10,
-                              width = 100)
+                 create_numeric_text_size("y_size_gc", "Y-axis label size (px)", 10, 100)
           ),
-          
-          
           column(6,
-                 numericInput("legend_size_gc", "Legend label size (px)",
-                              min = 8,
-                              max = 99,
-                              step = 1,
-                              value = 10,
-                              width = 150)
+                 create_numeric_text_size("legend_size_gc", "Legend label size (px)", 10, 150)
           ),
           column(6,
                  selectInput("legend_gc", label = "Legend position:",
@@ -1197,23 +1106,11 @@ shinyUI(fluidPage(
           fluidRow(
             column(
               3,
-              numericInput("detailed_height",
-                           "Plot height (px)",
-                           min = 100,
-                           max = 1600,
-                           step = 50,
-                           value = 100,
-                           width = 150)
+              create_numeric_plot_size("detailed_height", "Plot height (px)", 100)
             ),
             column(
               3,
-              numericInput("detailed_text",
-                           "Text size (px)",
-                           min = 3,
-                           max = 30,
-                           step = 1,
-                           value = 12,
-                           width = 150)
+              create_numeric_text_size("detailed_text", "Text size (px)", 12, 150)
             ),
             column(
               3,
@@ -1243,40 +1140,16 @@ shinyUI(fluidPage(
           size = "large",
           fluidRow(
             column(2,
-                   numericInput("archi_height",
-                                "plot height(px)",
-                                min = 100,
-                                max = 1600,
-                                step = 50,
-                                value = 400,
-                                width = 100)
+                   create_numeric_plot_size("archi_height", "Plot height(px)", 400)
             ),
             column(2,
-                   numericInput("archi_width",
-                                "plot width(px)",
-                                min = 100,
-                                max = 1600,
-                                step = 50,
-                                value = 800,
-                                width = 100)
+                   create_numeric_plot_size("archi_width", "Plot width(px)", 800)
             ),
             column(2,
-                   numericInput("title_archi_size",
-                                "Title size(px)",
-                                min = 8,
-                                max = 99,
-                                step = 1,
-                                value = 11,
-                                width = 150)
+                   create_numeric_text_size("title_archi_size", "Title size(px)", 11, 150)
             ),
             column(2,
-                   numericInput("label_archi_size",
-                                "SeqID size(px)",
-                                min = 8,
-                                max = 99,
-                                step = 1,
-                                value = 11,
-                                width = 150)
+                   create_numeric_text_size("label_archi_size", "SeqID size(px)", 11, 150)
             )
           ),
           uiOutput("archi_plot.ui"),
