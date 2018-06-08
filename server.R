@@ -54,156 +54,18 @@ source("scripts/analyze_distribution.R")
 
 source("scripts/cluster_profile.R")
 
-# MAIN ========================================================================
 options(shiny.maxRequestSize = 99 * 1024 ^ 2)  # size limit for input 99mb
 
 shinyServer(function(input, output, session) {
-  # Automatically stop a Shiny app when closing the browser tab ---------------
+  # Automatically stop a Shiny app when closing the browser tab
   # session$onSessionEnded(stopApp)
   session$allowReconnect(TRUE)
   
-  # ===========================================================================
-  # =========================== RENDER UI ELEMENTS ============================
-  # ===========================================================================
+  # =========================== INITIAL CHECKING  =============================
   
-  # variable 1 & 2 cutoff slidebar (main plot) --------------------------------
-  output$var1_cutoff.ui <- renderUI({
-    create_slider_cutoff("var1", paste(input$var1_id, "cutoff:"), 0.0, 1.0, input$var1_id)
-  })
-  
-  output$var2_cutoff.ui <- renderUI({
-    create_slider_cutoff("var2", paste(input$var2_id, "cutoff:"), 0.0, 1.0, input$var2_id)
-  })
-  
-  output$percent_cutoff.ui <- renderUI({
-    create_slider_cutoff("percent", "% of present taxa:", 0.0, 1.0, "percent")
-  })
-  
-  # render filter slidebars for Customized plot -------------------------------
-  output$var1_filter.ui <- renderUI({
-    create_slider_cutoff("var1cus", paste(input$var1_id, "cutoff:"), input$var1[1], input$var1[2], input$var1_id)
-  })
-  
-  output$var2_filter.ui <- renderUI({
-    create_slider_cutoff("var2cus", paste(input$var2_id, "cutoff:"), input$var2[1], input$var2[2], input$var2_id)
-  })
-  
-  output$percent_filter.ui <- renderUI({
-    create_slider_cutoff("percent2", "% of present taxa:", input$percent[1], input$percent[2], "percent")
-  })
-  
-  # render filter slidebars for Distribution plot -----------------------------
-  output$var1_dist.ui <- renderUI({
-    create_slider_cutoff("var1_dist", paste(input$var1_id, "cutoff:"), input$var1[1], input$var1[2], input$var1_id)
-  })
-  
-  output$var2_dist.ui <- renderUI({
-    create_slider_cutoff("var2_dist", paste(input$var2_id, "cutoff:"), input$var2[1], input$var2[2], input$var2_id)
-  })
-  
-  output$percent_dist.ui <- renderUI({
-    create_slider_cutoff("percent_dist", "% of present taxa:", input$percent[1], input$percent[2], "percent")
-  })
-  
-  # render filter slidebars for Gene age estimation plot ----------------------
-  output$var1_age.ui <- renderUI({
-    create_slider_cutoff("var1_age", paste(input$var1_id, "cutoff:"), input$var1[1], input$var1[2], input$var1_id)
-  })
-  
-  output$var2_age.ui <- renderUI({
-    create_slider_cutoff("var2_age", paste(input$var2_id, "cutoff:"), input$var2[1], input$var2[2], input$var2_id)
-  })
-  
-  output$percent_age.ui <- renderUI({
-    create_slider_cutoff("percent_age", "% of present taxa:", input$percent[1], input$percent[2], "percent")
-  })
-  
-  # render filter slidebars for Core gene finding function --------------------
-  output$var1_cons.ui <- renderUI({
-    create_slider_cutoff("var1_cons", paste(input$var1_id, "cutoff:"), input$var1[1], input$var1[2], input$var1_id)
-  })
-  
-  output$var2_cons.ui <- renderUI({
-    create_slider_cutoff("var2_cons", paste(input$var2_id, "cutoff:"), input$var2[1], input$var2[2], input$var2_id)
-  })
-  
-  output$percent_cons.ui <- renderUI({
-    create_slider_cutoff("percent_cons", "% of present taxa:", input$percent[1], input$percent[2], "percent")
-  })
-  
-  # update value for "main" filter slidebars ----------------------------------
-  observe({
-    new_var1 <- input$var1cus
-    update_slider_cutoff(session, "var1", paste(input$var1_id, "cutoff:"), new_var1, input$var1_id)
-  })
-  
-  observe({
-    new_var2 <- input$var2cus
-    update_slider_cutoff(session, "var2", paste(input$var2_id, "cutoff:"), new_var2, input$var2_id)
-  })
-  
-  observe({
-    new_percent <- input$percent2
-    update_slider_cutoff(session, "percent", "% of present taxa:", new_percent, "percent")
-  })
-  
-  # based on "Distribution analysis"
-  observe({
-    new_var1 <- input$var1_dist
-    update_slider_cutoff(session, "var1", paste(input$var1_id, "cutoff:"), new_var1, input$var1_id)
-  })
-  
-  observe({
-    new_var2 <- input$var2_dist
-    update_slider_cutoff(session, "var2", paste(input$var2_id, "cutoff:"), new_var2, input$var2_id)
-  })
-  
-  observe({
-    new_percent <- input$percent_dist
-    update_slider_cutoff(session, "percent", "% of present taxa:", new_percent, "percent")
-  })
-  
-  # based on "Gene age estimation"
-  observe({
-    new_var1 <- input$var1_age
-    update_slider_cutoff(session, "var1", paste(input$var1_id, "cutoff:"), new_var1, input$var1_id)
-  })
-  
-  observe({
-    new_var2 <- input$var2_age
-    update_slider_cutoff(session, "var2", paste(input$var2_id, "cutoff:"), new_var2, input$var2_id)
-  })
-  
-  observe({
-    new_percent <- input$percent_age
-    update_slider_cutoff(session, "percent", "% of present taxa:", new_percent, "percent")
-  })
-  
-  # reset cutoffs of main plot ------------------------------------------------
-  observeEvent(input$reset_main, {
-    shinyjs::reset("var1")
-    shinyjs::reset("var2")
-    shinyjs::reset("percent")
-  })
-  
-  # reset cutoffs of Customized plot ------------------------------------------
-  observeEvent(input$reset_selected, {
-    shinyjs::reset("var1")
-    shinyjs::reset("var2")
-    shinyjs::reset("percent")
-  })
-  
-  
-  
-
-  # ===========================================================================
-  # PRE-PROCESSING  ===========================================================
-  # ===========================================================================
-
-  # check for internet connection ---------------------------------------------
+  # * check for internet connection ---------------------------------------------
   observe({
     if (has_internet() == FALSE){
-      # toggleState("lca-micros")
       toggleState("demo_data")
     }
   })
@@ -216,8 +78,8 @@ shinyServer(function(input, output, session) {
       return()
     }
   })
-
-  # check for the existence of taxonomy info file -----------------------------
+  
+  # * check for the existence of taxonomy files ---------------------------------
   observe({
     if (!file.exists(isolate("data/rankList.txt"))){
       if (has_internet() == TRUE){
@@ -318,166 +180,10 @@ shinyServer(function(input, output, session) {
       }
     }
   })
-
-  # GET TAXONOMY IDS FROM LIST OF TAXON NAMES  ==================================
-  callModule(search_taxon_id,"search_taxon_id")
-
-  # PARSING VARIABLE 1 AND 2 ==================================================
-  # render textinput for variable 1 & 2 ---------------------------------------
-  output$var1_id.ui <- renderUI({
-    long_dataframe <- get_main_input()
-
-    if (is.null(long_dataframe)){
-      textInput("var1_id",
-                h5("1st variable:"),
-                value = "Variable 1",
-                width = "100%",
-                placeholder = "Name of first variable")
-    } else{
-      textInput("var1_id", h5("1st variable:"),
-                value = colnames(long_dataframe)[4],
-                width = "100%",
-                placeholder = "Name of first variable")
-    }
-  })
-
-  output$var2_id.ui <- renderUI({
-    long_dataframe <- get_main_input()
-    if (is.null(long_dataframe)){
-      textInput("var2_id",
-                h5("1st variable:"),
-                value = "Variable 2",
-                width = "100%",
-                placeholder = "Name of first variable")
-    } else{
-      textInput("var2_id", h5("1st variable:"),
-                value = colnames(long_dataframe)[5],
-                width = "100%",
-                placeholder = "Name of first variable")
-    }
-  })
-
   
-  
+  # ======================== INPUT & SETTINGS TAB =============================
 
-  # render 2. variable relationship according to demo data --------------------
-  output$var2_relation.ui <- renderUI({
-    if (input$demo_data == "ampk-tor"){
-      selectInput("var2_relation", label = h5("Relationship:"),
-                  choices = list("Prot-Prot" = "protein",
-                                 "Prot-Spec" = "species"),
-                  selected = "protein",
-                  width = 130)
-    } else {
-      selectInput("var2_relation", label = h5("Relationship:"),
-                  choices = list("Prot-Prot" = "protein",
-                                 "Prot-Spec" = "species"),
-                  selected = "species",
-                  width = 130)
-    }
-  })
-
-  # ===========================================================================
-
-  # check oneseq fasta file exists --------------------------------------------
-  output$one_seq.exist_check <- renderUI({
-    #f <- toString(input$oneseq.file)
-
-    if (is.null(input$concat_fasta)) return()
-    else{
-      f <- input$concat_fasta$datapath
-      if (!file.exists(f)){
-        helpText("File not exists!!")
-      } else {
-        if (length(readLines(f, n = 1)) == 0){
-          helpText("is not a fasta file!!")
-        } else {
-          first_line <- readLines(f, n = 1)
-          a <- substr(first_line, 1, 1)
-          if (a == ">"){
-            HTML('<p><span style="color: #0000ff;"><strong>Please click CLOSE to comfirm!</strong></span></p>')
-          } else {
-            helpText("is not a fasta file!!")
-          }
-        }
-      }
-    }
-  })
-
-  
-
-  # reset config of main plot -------------------------------------------------
-  observeEvent(input$reset_main_config, {
-    shinyjs::reset("x_size")
-    shinyjs::reset("y_size")
-    shinyjs::reset("legend_size")
-    shinyjs::reset("x_angle")
-    shinyjs::reset("dot_zoom")
-  })
-
-  # close main config ---------------------------------------------------------
-  observeEvent(input$apply_main_config, {
-    toggleModal(session, "main_plot_config_bs", toggle = "close")
-  })
-
-
-
-  # reset config of customized plot -------------------------------------------
-  observeEvent(input$reset_selected_config, {
-    shinyjs::reset("x_size_select")
-    shinyjs::reset("y_size_select")
-    shinyjs::reset("legend_size_select")
-    shinyjs::reset("x_angle_select")
-    shinyjs::reset("dot_zoom_select")
-  })
-
-  # close customized config ---------------------------------------------------
-  observeEvent(input$apply_selected_config, {
-    toggleModal(session, "selected_plot_config_bs", toggle = "close")
-  })
-
-  # reset colors --------------------------------------------------------------
-  observeEvent(input$default_color_var2, {
-    shinyjs::reset("low_color_var2")
-    shinyjs::reset("high_color_var2")
-  })
-
-  observeEvent(input$default_color_var1, {
-    shinyjs::reset("low_color_var1")
-    shinyjs::reset("high_color_var1")
-  })
-
-  observeEvent(input$default_color_para, {
-    shinyjs::reset("para_color")
-  })
-
-  # ===========================================================================
-
-  # render checkNewick.ui -----------------------------------------------------
-  output$checkNewick.ui <- renderUI({
-    filein <- input$inputTree
-    if (is.null(filein)) return()
-
-    check_newick <- check_newick(filein, input$main_input, subset_taxa())
-    if (check_newick == 1){
-      updateButton(session, "do", disabled = TRUE)
-      HTML("<p><em><span style=\"color: #ff0000;\"><strong>ERROR: Parenthesis(-es) missing!</strong></span></em></p>")
-    } else if (check_newick == 2){
-      updateButton(session, "do", disabled = TRUE)
-      HTML("<p><em><span style=\"color: #ff0000;\"><strong>ERROR: Comma(s) missing!</strong></span></em></p>")
-    } else if (check_newick == 3){
-      updateButton(session, "do", disabled = TRUE)
-      HTML("<p><em><span style=\"color: #ff0000;\"><strong>ERROR: Tree contains singleton!</strong></span></em></p>")
-    } else if (check_newick == 0){
-      return()
-    } else {
-      updateButton(session, "do", disabled = TRUE)
-      strong(em(paste0(check_newick, " not exist in main input file!")),
-             style = "color:red")
-    }
-  })
-
-  # render input_check.ui -----------------------------------------------------
+  # * check the validity of input file and render input_check.ui ----------------
   output$input_check.ui <- renderUI({
     filein <- input$main_input
     if(is.null(filein)) return()
@@ -501,75 +207,7 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  
-  output$select_oma_type <- renderUI({
-    filein <- input$main_input
-    if(is.null(filein)) return()
-    input_type <- check_input_vadility(filein) #get_input_type()
-    
-    if (input_type == "oma"){
-      # Options to select the OMA type to generate the output
-      selectInput("selected_oma_type", label = "Select type of OMA orthologs:",
-
-                  choices = list("PAIR", "HOG", "OG"),
-                  selected = "PAIR")
-    } else {
-      return()
-    }
-
-  })
-  
-  output$button_oma <- renderUI({
-    filein <- input$main_input
-    if(is.null(filein)) return()
-    input_type <- check_input_vadility(filein) #get_input_type()
-    
-    if (input_type == "oma"){
-      shinyBS::bsButton("get_data_oma", "Get data")
-    }
-  })
-  
-  output$oma_download <- renderUI({
-    filein <- input$main_input
-    if(is.null(filein)) return()
-    input_type <- check_input_vadility(filein) #get_input_type()
-    
-    if (input_type == "oma"){
-      downloadButton("download_files_oma", "Download")
-    } 
-  })
-  
-  
-  output$download_files_oma <- downloadHandler(
-    filenname <- function(){
-      "oma_data_to_phyloprofile_input.zip"
-      },
-    content <- function(file){
-      write.table(get_main_input(), "long.txt",
-                  sep = "\t",
-                  row.names = FALSE,
-
-                  col.names = TRUE,
-                  quote = FALSE)
-      write.table(long_to_fasta(get_main_input()), "fasta.txt",
-                  sep = "\t",
-                  row.names = FALSE,
-                  col.names = FALSE,
-                  quote = FALSE)
-
-      write.table(get_domain_information (), "domain.txt",
-                  sep = "\t",
-                  row.names = FALSE,
-                  col.names = FALSE,
-                  quote = FALSE)
-  
-      zip(zipfile = file,
-          files = c("long.txt", "domain.txt", "fasta.txt")) 
-    },
-    contentType = "application/zip"
-  )
-
-  # render download link for demo online files --------------------------------
+  # * render download link for Demo online files --------------------------------
   output$main_input_file.ui <- renderUI({
     # if(input$demo == TRUE){
     if (input$demo_data == "lca-micros"){
@@ -618,8 +256,8 @@ shinyServer(function(input, output, session) {
                target = "_blank"))
     }
   })
-
-  # render description for demo data ------------------------------------------
+  
+  # * render description for Demo data ------------------------------------------
   output$demo_data_describe <- renderUI({
     if (input$demo_data == "none"){
       return()
@@ -633,16 +271,495 @@ shinyServer(function(input, output, session) {
            target = "_blank"))
     }
   })
+  
+  # * check OMA input -----------------------------------------------------------
+  output$select_oma_type <- renderUI({
+    filein <- input$main_input
+    if(is.null(filein)) return()
+    input_type <- check_input_vadility(filein) #get_input_type()
+    
+    if (input_type == "oma"){
+      # Options to select the OMA type to generate the output
+      selectInput("selected_oma_type", label = "Select type of OMA orthologs:",
 
-  # get status of unkTaxa for conditional panel -------------------------------
+                  choices = list("PAIR", "HOG", "OG"),
+                  selected = "PAIR")
+    } else {
+      return()
+    }
+  })
+  
+  output$button_oma <- renderUI({
+    filein <- input$main_input
+    if(is.null(filein)) return()
+    input_type <- check_input_vadility(filein) #get_input_type()
+    
+    if (input_type == "oma"){
+      shinyBS::bsButton("get_data_oma", "Get data")
+    }
+  })
+  
+  # * render link for download OMA files ----------------------------------------
+  output$oma_download <- renderUI({
+    filein <- input$main_input
+    if(is.null(filein)) return()
+    input_type <- check_input_vadility(filein) #get_input_type()
+    
+    if (input_type == "oma"){
+      downloadButton("download_files_oma", "Download")
+    } 
+  })
+  
+  output$download_files_oma <- downloadHandler(
+    filenname <- function(){
+      "oma_data_to_phyloprofile_input.zip"
+    },
+    content <- function(file){
+      write.table(get_main_input(), "long.txt",
+                  sep = "\t",
+                  row.names = FALSE,
+                  col.names = TRUE,
+                  quote = FALSE)
+      
+      write.table(long_to_fasta(get_main_input()), "fasta.txt",
+                  sep = "\t",
+                  row.names = FALSE,
+                  col.names = FALSE,
+                  quote = FALSE)
+
+      write.table(get_domain_information (), "domain.txt",
+                  sep = "\t",
+                  row.names = FALSE,
+                  col.names = FALSE,
+                  quote = FALSE)
+  
+      zip(zipfile = file,
+          files = c("long.txt", "domain.txt", "fasta.txt")) 
+    },
+    contentType = "application/zip"
+  )
+  
+  # * render textinput for Variable 1 & 2 ---------------------------------------
+  output$var1_id.ui <- renderUI({
+    long_dataframe <- get_main_input()
+
+    if (is.null(long_dataframe)){
+      textInput("var1_id",
+                h5("1st variable:"),
+                value = "Variable 1",
+                width = "100%",
+                placeholder = "Name of first variable")
+    } else{
+      textInput("var1_id", h5("1st variable:"),
+                value = colnames(long_dataframe)[4],
+                width = "100%",
+                placeholder = "Name of first variable")
+    }
+  })
+
+  output$var2_id.ui <- renderUI({
+    long_dataframe <- get_main_input()
+    if (is.null(long_dataframe)){
+      textInput("var2_id",
+                h5("1st variable:"),
+                value = "Variable 2",
+                width = "100%",
+                placeholder = "Name of first variable")
+    } else{
+      textInput("var2_id", h5("1st variable:"),
+                value = colnames(long_dataframe)[5],
+                width = "100%",
+                placeholder = "Name of first variable")
+    }
+  })
+  
+  # * render 2. variable relationship according to demo data --------------------
+  output$var2_relation.ui <- renderUI({
+    if (input$demo_data == "ampk-tor"){
+      selectInput("var2_relation", label = h5("Relationship:"),
+                  choices = list("Prot-Prot" = "protein",
+                                 "Prot-Spec" = "species"),
+                  selected = "protein",
+                  width = 130)
+    } else {
+      selectInput("var2_relation", label = h5("Relationship:"),
+                  choices = list("Prot-Prot" = "protein",
+                                 "Prot-Spec" = "species"),
+                  selected = "species",
+                  width = 130)
+    }
+  })
+  
+  # * check the existance of the input concatenate fasta file -------------------
+  output$concat_fasta.exist_check <- renderUI({
+    if (is.null(input$concat_fasta)) return()
+    else{
+      f <- input$concat_fasta$datapath
+      if (!file.exists(f)){
+        helpText("File not exists!!")
+      } else {
+        if (length(readLines(f, n = 1)) == 0){
+          helpText("is not a fasta file!!")
+        } else {
+          first_line <- readLines(f, n = 1)
+          a <- substr(first_line, 1, 1)
+          if (a == ">"){
+            HTML('<p><span style="color: #0000ff;"><strong>Please click CLOSE to comfirm!</strong></span></p>')
+          } else {
+            helpText("is not a fasta file!!")
+          }
+        }
+      }
+    }
+  })
+  
+  # * check the validity of input tree file and render checkNewick.ui -----------
+  output$checkNewick.ui <- renderUI({
+    filein <- input$inputTree
+    if (is.null(filein)) return()
+
+    check_newick <- check_newick(filein, input$main_input, subset_taxa())
+    if (check_newick == 1){
+      updateButton(session, "do", disabled = TRUE)
+      HTML("<p><em><span style=\"color: #ff0000;\"><strong>ERROR: Parenthesis(-es) missing!</strong></span></em></p>")
+    } else if (check_newick == 2){
+      updateButton(session, "do", disabled = TRUE)
+      HTML("<p><em><span style=\"color: #ff0000;\"><strong>ERROR: Comma(s) missing!</strong></span></em></p>")
+    } else if (check_newick == 3){
+      updateButton(session, "do", disabled = TRUE)
+      HTML("<p><em><span style=\"color: #ff0000;\"><strong>ERROR: Tree contains singleton!</strong></span></em></p>")
+    } else if (check_newick == 0){
+      return()
+    } else {
+      updateButton(session, "do", disabled = TRUE)
+      strong(em(paste0(check_newick, " not exist in main input file!")),
+             style = "color:red")
+    }
+  })
+  
+  # * reset profile plot colors -------------------------------------------------
+  observeEvent(input$default_color_var2, {
+    shinyjs::reset("low_color_var2")
+    shinyjs::reset("high_color_var2")
+  })
+
+  observeEvent(input$default_color_var1, {
+    shinyjs::reset("low_color_var1")
+    shinyjs::reset("high_color_var1")
+  })
+
+  observeEvent(input$default_color_para, {
+    shinyjs::reset("para_color")
+  })
+  
+  # * render list of taxonomy ranks ------------------------------------------
+  output$rank_select <- renderUI({
+    # if(input$demo == TRUE){
+    if (input$demo_data == "lca-micros"){
+      selectInput("rank_select", label = "",
+                  choices = get_taxonomy_ranks(),
+                  selected = "26_phylum")
+    } else if (input$demo_data == "ampk-tor"){
+      selectInput("rank_select", label = "",
+                  choices = get_taxonomy_ranks(),
+                  selected = "06_species")
+    } else {
+      selectInput("rank_select", label = "",
+                  choices = get_taxonomy_ranks(),
+                  selected = "06_species")
+    }
+  })
+
+  # * render list of (super)taxa ---------------------------------------------
+  output$select <- renderUI({
+    choice <- alltaxa_list()
+    choice$fullName <- as.factor(choice$fullName)
+
+    if (input$demo_data == "lca-micros"){
+      hellemDf <- data.frame("name" = c("Encephalitozoon hellem",
+                                        "Encephalitozoon hellem",
+                                        "Encephalitozoon",
+                                        "Unikaryonidae",
+                                        "Apansporoblastina",
+                                        "Apansporoblastina",
+                                        "Microsporidia",
+                                        "Fungi",
+                                        "Eukaryota"),
+                             "rank" = c("strain",
+                                        "species",
+                                        "genus",
+                                        "family",
+                                        "order",
+                                        "class",
+                                        "phylum",
+                                        "kingdom",
+                                        "superkingdom"))
+      rank_select <- input$rank_select
+      rankName <- substr(rank_select,
+                        4,
+                        nchar(rank_select))
+
+      selectInput("in_select", "",
+                  as.list(levels(choice$fullName)),
+                  hellemDf$name[hellemDf$rank == rankName])
+    } else if (input$demo_data == "ampk-tor"){
+      humanDf <- data.frame("name" = c("Homo sapiens",
+                                       "Homo sapiens",
+                                       "Homo",
+                                       "Hominidae",
+                                       "Primates",
+                                       "Mammalia",
+                                       "Chordata",
+                                       "Metazoa",
+                                       "Eukaryota"),
+                            "rank" = c("strain",
+                                       "species",
+                                       "genus",
+                                       "family",
+                                       "order",
+                                       "class",
+                                       "phylum",
+                                       "kingdom",
+                                       "superkingdom"))
+      rank_select <- input$rank_select
+      rankName <- substr(rank_select, 4, nchar(rank_select))
+
+      selectInput("in_select", "",
+                  as.list(levels(choice$fullName)),
+                  humanDf$name[humanDf$rank == rankName])
+    } else {
+      selectInput("in_select", "",
+                  as.list(levels(choice$fullName)),
+                  levels(choice$fullName)[1])
+    }
+  })
+  
+  # * enable "PLOT" button ------------------------------------------------------
+  observeEvent(input$rank_select,  ({
+    if (input$rank_select == ""){
+      updateButton(session, "do", disabled = TRUE)
+    } else{
+      unkTaxa <- unkTaxa()
+      if (length(unkTaxa) == 0){
+        updateButton(session, "do", disabled = FALSE)
+      }
+    }
+  }))
+
+  # * move to main tab when "PLOT" button has been clicked ----------------------
+  observe({
+    # use tabsetPanel "id" argument to change tabs
+    if (input$do > 0) {
+      updateTabsetPanel(session, "tabs", selected = "Main profile")
+    }
+  })
+
+  # * disable main input, genelist input and demo data checkbox --------------
+  observe({
+    if (input$do > 0) {
+      toggleState("main_input")
+      toggleState("gene_list_selected")
+      toggleState("demo_data")
+    }
+  })
+
+  # * update var2_aggregate_by to mean if using demo lca-micros data ---------
+  observe({
+    if (input$demo_data == "lca-micros") {
+      ### update var2_aggregate_by to mean
+      updateSelectInput(session, "var2_aggregate_by",
+                        choices = list("Max" = "max",
+                                       "Min" = "min",
+                                       "Mean" = "mean",
+                                       "Median" = "median"),
+                        selected = "mean")
+    }
+  })
+  
+  # =========================== RENDER FILTER SLIDEBARS =======================
+  
+  # * render filter slidebars for Main plot -------------------------------------
+  output$var1_cutoff.ui <- renderUI({
+    create_slider_cutoff("var1", paste(input$var1_id, "cutoff:"), 0.0, 1.0, input$var1_id)
+  })
+  
+  output$var2_cutoff.ui <- renderUI({
+    create_slider_cutoff("var2", paste(input$var2_id, "cutoff:"), 0.0, 1.0, input$var2_id)
+  })
+  
+  output$percent_cutoff.ui <- renderUI({
+    create_slider_cutoff("percent", "% of present taxa:", 0.0, 1.0, "percent")
+  })
+  
+  # * render filter slidebars for Customized plot -------------------------------
+  output$var1_filter.ui <- renderUI({
+    create_slider_cutoff("var1cus", paste(input$var1_id, "cutoff:"), input$var1[1], input$var1[2], input$var1_id)
+  })
+  
+  output$var2_filter.ui <- renderUI({
+    create_slider_cutoff("var2cus", paste(input$var2_id, "cutoff:"), input$var2[1], input$var2[2], input$var2_id)
+  })
+  
+  output$percent_filter.ui <- renderUI({
+    create_slider_cutoff("percent2", "% of present taxa:", input$percent[1], input$percent[2], "percent")
+  })
+  
+  # * render filter slidebars for Distribution plot -----------------------------
+  output$var1_dist.ui <- renderUI({
+    create_slider_cutoff("var1_dist", paste(input$var1_id, "cutoff:"), input$var1[1], input$var1[2], input$var1_id)
+  })
+  
+  output$var2_dist.ui <- renderUI({
+    create_slider_cutoff("var2_dist", paste(input$var2_id, "cutoff:"), input$var2[1], input$var2[2], input$var2_id)
+  })
+  
+  output$percent_dist.ui <- renderUI({
+    create_slider_cutoff("percent_dist", "% of present taxa:", input$percent[1], input$percent[2], "percent")
+  })
+  
+  # * render filter slidebars for Gene age estimation plot ----------------------
+  output$var1_age.ui <- renderUI({
+    create_slider_cutoff("var1_age", paste(input$var1_id, "cutoff:"), input$var1[1], input$var1[2], input$var1_id)
+  })
+  
+  output$var2_age.ui <- renderUI({
+    create_slider_cutoff("var2_age", paste(input$var2_id, "cutoff:"), input$var2[1], input$var2[2], input$var2_id)
+  })
+  
+  output$percent_age.ui <- renderUI({
+    create_slider_cutoff("percent_age", "% of present taxa:", input$percent[1], input$percent[2], "percent")
+  })
+  
+  # * render filter slidebars for Core gene finding function --------------------
+  output$var1_core.ui <- renderUI({
+    create_slider_cutoff("var1_core", paste(input$var1_id, "cutoff:"), input$var1[1], input$var1[2], input$var1_id)
+  })
+  
+  output$var2_core.ui <- renderUI({
+    create_slider_cutoff("var2_core", paste(input$var2_id, "cutoff:"), input$var2[1], input$var2[2], input$var2_id)
+  })
+  
+  output$percent_core.ui <- renderUI({
+    create_slider_cutoff("percent_core", "% of present taxa:", input$percent[1], input$percent[2], "percent")
+  })
+  
+  # * update value for filter slidebars of Main Plot --------------------------
+  # ** based on customized profile
+  observe({
+    new_var1 <- input$var1cus
+    update_slider_cutoff(session, "var1", paste(input$var1_id, "cutoff:"), new_var1, input$var1_id)
+  })
+  
+  observe({
+    new_var2 <- input$var2cus
+    update_slider_cutoff(session, "var2", paste(input$var2_id, "cutoff:"), new_var2, input$var2_id)
+  })
+  
+  observe({
+    new_percent <- input$percent2
+    update_slider_cutoff(session, "percent", "% of present taxa:", new_percent, "percent")
+  })
+  
+  # ** based on "Distribution analysis"
+  observe({
+    new_var1 <- input$var1_dist
+    update_slider_cutoff(session, "var1", paste(input$var1_id, "cutoff:"), new_var1, input$var1_id)
+  })
+  
+  observe({
+    new_var2 <- input$var2_dist
+    update_slider_cutoff(session, "var2", paste(input$var2_id, "cutoff:"), new_var2, input$var2_id)
+  })
+  
+  observe({
+    new_percent <- input$percent_dist
+    update_slider_cutoff(session, "percent", "% of present taxa:", new_percent, "percent")
+  })
+  
+  # ** based on "Gene age estimation"
+  observe({
+    new_var1 <- input$var1_age
+    update_slider_cutoff(session, "var1", paste(input$var1_id, "cutoff:"), new_var1, input$var1_id)
+  })
+  
+  observe({
+    new_var2 <- input$var2_age
+    update_slider_cutoff(session, "var2", paste(input$var2_id, "cutoff:"), new_var2, input$var2_id)
+  })
+  
+  observe({
+    new_percent <- input$percent_age
+    update_slider_cutoff(session, "percent", "% of present taxa:", new_percent, "percent")
+  })
+  
+  # * reset cutoffs of Main plot ------------------------------------------------
+  observeEvent(input$reset_main, {
+    shinyjs::reset("var1")
+    shinyjs::reset("var2")
+    shinyjs::reset("percent")
+  })
+  
+  # * reset cutoffs of Customized plot ------------------------------------------
+  observeEvent(input$reset_selected, {
+    shinyjs::reset("var1")
+    shinyjs::reset("var2")
+    shinyjs::reset("percent")
+  })
+  
+  # ========================= PARSING UNKNOWN TAXA ============================
+  
+  # * get list of "unknown" taxa in main input ---------------------
+  unkTaxa <- reactive({
+    long_dataframe <- get_main_input ()
+    if (is.null(long_dataframe)){
+      inputTaxa <- c("NA")
+    } else{
+      inputTaxa <- levels(long_dataframe$ncbiID)
+    }
+    
+    if (inputTaxa[1] == "NA"){
+      return()
+    } else {
+      inputTaxa <- unlist(strsplit(inputTaxa, split = "\t"))
+      if (inputTaxa[1] == "geneID"){
+        # remove "geneID" element from vector inputTaxa
+        inputTaxa <- inputTaxa[-1]
+      }
+      
+      if (!file.exists(isolate({
+        "data/rankList.txt"
+      }
+      ))){
+        return(inputTaxa)
+      } else {
+        info <- file.info("data/rankList.txt")
+        if (info$size == 0){
+          return(inputTaxa)
+        } else {
+          # get list of all available taxon (from /data/rankList.txt)
+          pipe_cmd <- paste0("cut -f 1 ", getwd(), "/data/rankList.txt")
+          allTaxa <- unlist( (read.table(pipe(pipe_cmd))))
+          
+          # list of unknown taxa
+          unkTaxa <- inputTaxa[!(inputTaxa %in% allTaxa)]
+          # return list of unkTaxa
+          return(unkTaxa)
+        }
+      }
+
+    }
+    # return input taxa
+    return(inputTaxa)
+  })
+  
+  # * check the status of unkTaxa ---------------------------------------------
   output$unk_taxa_status <- reactive({
     unkTaxa <- unkTaxa()
     length(unkTaxa) > 0
   })
-
   outputOptions(output, "unk_taxa_status", suspendWhenHidden = FALSE)
 
-  # show full list of unkTaxa -------------------------------------------------
+  # * render list of unkTaxa --------------------------------------------------
   output$unk_taxa_full <- renderDataTable(option = list(searching = FALSE,
                                                         pageLength = 10), {
     if (length(unkTaxa()) > 0){
@@ -651,9 +768,31 @@ shinyServer(function(input, output, session) {
       tb
     }
   })
+  
+  # * update the form for adding new taxa -------------------------------------
+  newTaxa <- reactiveValues()
+  newTaxa$Df <- data.frame("ncbiID" = numeric(),
+                           "fullName" = character(),
+                           "rank" = character(),
+                           "parentID" = numeric(),
+                           stringsAsFactors = FALSE)
+  newIndex <- reactiveValues()
+  newIndex$value <- 1
 
-  # check if data is loaded and "parse" button is clicked and confirmed -------
-  # (get info from input)
+  observeEvent(input$new_add, {
+    newTaxa$Df[newIndex$value, ] <- c(input$new_id,
+                                     input$new_name,
+                                     input$new_rank,
+                                     input$new_parent)
+    newIndex$value <- newIndex$value + 1
+    updateTextInput(session, "new_id",
+                    value = as.numeric(input$new_id) + 1)
+    updateTextInput(session, "new_name", value = "")
+    updateTextInput(session, "new_rank", value = "norank")
+    updateTextInput(session, "new_parent", value = "")
+  })
+  
+  # * check if data is loaded and "parse" button is clicked and confirmed -----
   v1 <- reactiveValues(parse = FALSE)
   observeEvent(input$but_parse, {
     toggleModal(session, "parse_confirm", toggle = "close")
@@ -663,10 +802,8 @@ shinyServer(function(input, output, session) {
     toggleState("main_input")
   })
 
-  # create rankList.txt, idList.txt, taxonNamesReduced.txt from input file ----
-  # (if confirmed by BUTyes).
-  # and also create a full taxonomy matrix for sorting taxa
-  # (taxonomyMatrix.txt)
+  # * create rankList.txt, idList.txt, taxonNamesReduced.txt from input file ----
+  # * and also create a full taxonomyMatrix.txt for sorting taxa
   invalidID <- {
     reactiveValues(df = data.frame("Invalid NCBI ID(s)" = as.character(),
                                    stringsAsFactors = F))
@@ -741,7 +878,7 @@ shinyServer(function(input, output, session) {
                   rank <- c(rank, refEntry$rank)
                 }
 
-                # create list of IDs for this taxon ---------------------------
+                # create list of IDs for this taxon
                 ids <- list(paste0(refEntry$fullName, "#name"))
                 if (refEntry$rank == "norank"){
                   ids <- c(ids,
@@ -757,7 +894,7 @@ shinyServer(function(input, output, session) {
                                   refEntry$rank))
                 }
 
-                # append info into rank and ids -------------------------------
+                # append info into rank and ids
                 while (lastID != 1){
                   nextEntry <- allTaxonInfo[allTaxonInfo$ncbiID == lastID, ]
 
@@ -902,7 +1039,7 @@ shinyServer(function(input, output, session) {
     
   })
 
-  # output invalid NCBI ID ----------------------------------------------------
+  # * output invalid NCBI ID --------------------------------------------------
   output$invalidID.output <- renderTable({
     if (nrow(invalidID$df) < 1) return()
     else{
@@ -912,6 +1049,7 @@ shinyServer(function(input, output, session) {
     }
   })
 
+  # * render final msg after taxon parsing ------------------------------------
   output$end_parsing_msg <- renderUI({
     if (nrow(invalidID$df) < 1) {
       strong(h4("PLEASE RELOAD THIS TOOL AFTER ADDING NEW TAXA!!!"),
@@ -920,91 +1058,616 @@ shinyServer(function(input, output, session) {
       HTML('<p><strong><span style="color: #e12525;">SOME INVALID TAXON IDs HAVE BEEN FOUND!!</span><br>Please check the validity of the following IDs in
            <a target="_blank" href="https://www.ncbi.nlm.nih.gov/taxonomy">NCBI taxonomy database</a>!</strong></p>')
     }
-    })
-
-  # list of taxonomy ranks for plotting ---------------------------------------
-  output$rank_select <- renderUI({
-    # if(input$demo == TRUE){
-    if (input$demo_data == "lca-micros"){
-      selectInput("rank_select", label = "",
-                  choices = get_taxonomy_ranks(),
-                  selected = "26_phylum")
-    } else if (input$demo_data == "ampk-tor"){
-      selectInput("rank_select", label = "",
-                  choices = get_taxonomy_ranks(),
-                  selected = "06_species")
-    } else {
-      selectInput("rank_select", label = "",
-                  choices = get_taxonomy_ranks(),
-                  selected = "06_species")
-    }
+  })
+  
+  # * close parsing windows ---------------------------------------------------
+  observeEvent(input$new_done, {
+    toggleModal(session, "add_taxa_windows", toggle = "close")
+    write.table(newTaxa$Df, "data/newTaxa.txt",
+                sep = "\t",
+                eol = "\n",
+                row.names = FALSE,
+                quote = FALSE)
   })
 
-  # then output list of (super)taxa onto UI
-  output$select <- renderUI({
-    choice <- alltaxa_list()
-    choice$fullName <- as.factor(choice$fullName)
+  
 
-    # if(input$demo == TRUE){
-    if (input$demo_data == "lca-micros"){
-      hellemDf <- data.frame("name" = c("Encephalitozoon hellem",
-                                        "Encephalitozoon hellem",
-                                        "Encephalitozoon",
-                                        "Unikaryonidae",
-                                        "Apansporoblastina",
-                                        "Apansporoblastina",
-                                        "Microsporidia",
-                                        "Fungi",
-                                        "Eukaryota"),
-                             "rank" = c("strain",
-                                        "species",
-                                        "genus",
-                                        "family",
-                                        "order",
-                                        "class",
-                                        "phylum",
-                                        "kingdom",
-                                        "superkingdom"))
-      rank_select <- input$rank_select
-      rankName <- substr(rank_select,
-                        4,
-                        nchar(rank_select))
 
-      selectInput("in_select", "",
-                  as.list(levels(choice$fullName)),
-                  hellemDf$name[hellemDf$rank == rankName])
-    } else if (input$demo_data == "ampk-tor"){
-      humanDf <- data.frame("name" = c("Homo sapiens",
-                                       "Homo sapiens",
-                                       "Homo",
-                                       "Hominidae",
-                                       "Primates",
-                                       "Mammalia",
-                                       "Chordata",
-                                       "Metazoa",
-                                       "Eukaryota"),
-                            "rank" = c("strain",
-                                       "species",
-                                       "genus",
-                                       "family",
-                                       "order",
-                                       "class",
-                                       "phylum",
-                                       "kingdom",
-                                       "superkingdom"))
-      rank_select <- input$rank_select
-      rankName <- substr(rank_select, 4, nchar(rank_select))
+  # ====================== PROCESSING INPUT DATA ===============================
 
-      selectInput("in_select", "",
-                  as.list(levels(choice$fullName)),
-                  humanDf$name[humanDf$rank == rankName])
-    } else {
-      selectInput("in_select", "",
-                  as.list(levels(choice$fullName)),
-                  levels(choice$fullName)[1])
+  # * check if data is loaded and "plot" button is clicked --------------------
+  v <- reactiveValues(doPlot = FALSE)
+  observeEvent(input$do, {
+    # 0 will be coerced to FALSE
+    # 1+ will be coerced to TRUE
+    v$doPlot <- input$do
+    filein <- input$main_input
+    # if(is.null(filein) & input$demo==FALSE){
+    if (is.null(filein) & input$demo_data == "none"){
+      v$doPlot <- FALSE
+      updateButton(session, "do", disabled = TRUE)
     }
   })
+  
+  # * check if "no ordering gene IDs" has been checked ------------------------
+  output$apply_cluster_check.ui <- renderUI({
+    if (input$ordering == FALSE){
+      HTML('<p><em>(Check "Ordering sequence IDs" check box in <strong>Input & settings tab</strong>&nbsp;to enable this function)</em></p>')
+    }
+  })
+  # * to enable clustering 
+  observe({
+    if (input$ordering == FALSE){
+      shinyjs::disable("apply_cluster")
+    } else {
+      shinyjs::enable("apply_cluster")
+    }
+  })
+  
+  # * get the type of the input file & return long format dataframe -----------
+  get_main_input <- reactive({
+    if(input$demo_data == "lca-micros"){
+      long_dataframe <- create_long_matrix("lca-micros")
+    } else if (input$demo_data == "ampk-tor"){
+      long_dataframe <- create_long_matrix("ampk-tor")
+    } else {
+      filein <- input$main_input
+      if(is.null(filein)) return()
+      long_dataframe <- create_long_matrix(filein)
+    }
+    
+    return(long_dataframe)
+  })
+  
+  # * parse domain info into data frame -------------------------------------
+  get_domain_information <- reactive({
+    filein <- input$main_input
+    if(is.null(filein)) return()
+    input_type <- check_input_vadility(filein)
+    main_input <- get_main_input()
 
+    domain_df <- parse_domain_input(main_input,
+                                    input_type,
+                                    input$demo_data,
+                                    input$anno_location,
+                                    input$file_domain_input,
+                                    input$domainPath,
+                                    session,
+                                    datapath)
+    return(domain_df)
+  })
+  
+  # * parse fasta sequences as a data frame -----------------------------------
+  # get_fasta_information <- reactive({
+  #   
+  # })
+  
+  # * get ID list of input taxa from main input -----------------------------
+  subset_taxa <- reactive({
+    if (input$demo_data == "lca-micros" |
+        input$demo_data == "ampk-tor" |
+        length(unkTaxa()) == 0){
+      long_dataframe <- get_main_input()
+      if (is.null(long_dataframe)) return()
+      inputTaxa <- levels(long_dataframe$ncbiID)
+    } else {
+      inputTaxa <- readLines(filein$datapath, n = 1)
+    }
+    
+    inputTaxa <- unlist(strsplit(inputTaxa, split = "\t"))
+    if (inputTaxa[1] == "geneID"){
+      # remove "geneID" element from vector inputTaxa
+      inputTaxa <- inputTaxa[-1]
+    }
+    # return input taxa
+    return(inputTaxa)
+  })
+  
+  # * get NAME list of all (super)taxa -----------------------------------------------
+  alltaxa_list <- reactive({
+    
+    filein <- input$main_input
+    
+    if (is.null(filein) & input$demo_data == "none") return()
+    
+    rank_select <- input$rank_select
+    
+    if (rank_select == "") return()
+    if (length(unkTaxa()) > 0) return()
+    
+    # load list of unsorted taxa
+    Dt <- get_taxa_list(TRUE, subset_taxa())
+    
+    # load list of taxon name
+    nameList <- get_name_list(TRUE, FALSE)
+    
+    # get rank name from rank_select
+    rankName <- substr(rank_select, 4, nchar(rank_select))
+    
+    # get rank number (number of column in unsorted taxa list - dataframe Dt)
+    #    rankNr = 0 + as.numeric(substr(rank_select,1,2))
+    
+    choice <- as.data.frame
+    choice <- rbind(Dt[rankName])
+    colnames(choice) <- "ncbiID"
+    choice <- merge(choice,
+                    nameList,
+                    by = "ncbiID",
+                    all = FALSE)
+  })
+  
+  # * sort input taxa ---------------------------------------------------------
+  sortedtaxa_list <- reactive({
+    if (v$doPlot == FALSE) return()
+    
+    # FIRST, GET REPRESENTATIVE TAXON
+    
+    # load list of unsorted taxa
+    Dt <- get_taxa_list(FALSE, subset_taxa())
+    
+    # load list of taxon name
+    nameList <- as.data.frame(read.table("data/taxonNamesReduced.txt",
+                                         sep = "\t",
+                                         header = T,
+                                         fill = TRUE))
+    nameList$fullName <- as.character(nameList$fullName)
+    
+    # input parameters
+    rank_select <- input$rank_select
+    
+    # get rank name from rank_select
+    rankName <- substr(rank_select, 4, nchar(rank_select))
+    
+    # get rank number (number of column in unsorted taxa list - dataframe Dt)
+    rankNr <- 0 + as.numeric(substr(rank_select, 1, 2))
+    
+    # get selected supertaxon ID
+    taxa_list <- as.data.frame(read.table("data/taxonNamesReduced.txt",
+                                          sep = "\t",
+                                          header = T))
+    allTaxa <- alltaxa_list()
+    rankNameTMP <- allTaxa$rank[allTaxa$fullName == input$in_select]
+    if (rankName == "strain"){
+      superID <- {
+        as.numeric(taxa_list$ncbiID[taxa_list$fullName == input$in_select
+                                    & taxa_list$rank == "norank"])
+      }
+    } else {
+      superID <- {
+        as.numeric(taxa_list$ncbiID[taxa_list$fullName == input$in_select
+                                    & taxa_list$rank == rankNameTMP[1]])
+      }
+    }
+    
+    # representative taxon
+    repTaxon <- Dt[Dt[, rankName] == superID, ][1, ]
+    
+    # THEN, SORT TAXON LIST BASED ON HCLUST TREE
+    
+    # prepare Df for calculating distance matrix
+    distDf <- subset(Dt, select = -c(ncbiID, fullName))
+    row.names(distDf) <- distDf$abbrName
+    distDf <- distDf[, -1]
+    
+    # get sorted taxon IDs & sort full taxonomy info dataframe
+    treeIn <- input$inputTree
+    
+    if (is.null(treeIn)){
+      taxaTree <- create_rooted_tree(distDf, as.character(repTaxon$abbrName))
+    } else {
+      taxaTree <- read.tree(file = treeIn$datapath)
+    }
+    taxonList <- sort_taxa_from_tree(taxaTree)
+    sortedDt <- Dt[match(taxonList, Dt$abbrName), ]
+    
+    # subset to get list of input taxa only
+    inputTaxa <- subset_taxa()
+    sortedDt <- subset(sortedDt, abbrName %in% inputTaxa)
+    
+    # get only taxonIDs list of selected rank and rename columns
+    sortedOut <- subset(sortedDt, select = c("abbrName",
+                                             "ncbiID",
+                                             "fullName",
+                                             as.character(rankName)))
+    colnames(sortedOut) <- c("abbrName",
+                             "species",
+                             "fullName",
+                             "ncbiID")
+    
+    # add name of supertaxa into sortedOut list
+    sortedOut <- merge(sortedOut, nameList,
+                       by = "ncbiID",
+                       all.x = TRUE,
+                       sort = FALSE)
+    sortedOut$species <- as.character(sortedOut$species)
+    
+    # add order_prefix to supertaxon name
+    # and add prefix "ncbi" to taxon_ncbiID (column "species")
+    prefix <- 1001
+    
+    ## create new column for sorted supertaxon
+    sortedOut$sortedSupertaxon <- 0 
+    sortedOut$sortedSupertaxon[1] <- paste0(prefix,
+                                            "_",
+                                            sortedOut$fullName.y[1])
+    sortedOut$species[1] <- paste0("ncbi",
+                                   sortedOut$species[1])
+    
+    for (i in 2:nrow(sortedOut)){
+      ## increase prefix if changing to another supertaxon
+      if (sortedOut$fullName.y[i] != sortedOut$fullName.y[i - 1]){
+        prefix <- prefix + 1
+      }
+      sortedOut$sortedSupertaxon[i] <- paste0(prefix,
+                                              "_",
+                                              sortedOut$fullName.y[i])
+      sortedOut$species[i] <- paste0("ncbi",
+                                     sortedOut$species[i])
+    }
+    
+    # final sorted supertaxa list
+    sortedOut$taxonID <- 0
+    sortedOut$category <- "cat"
+    sortedOut <- sortedOut[, c("abbrName",
+                               "taxonID",
+                               "fullName.x",
+                               "species",
+                               "ncbiID",
+                               "sortedSupertaxon",
+                               "rank",
+                               "category")]
+    colnames(sortedOut) <- c("abbrName",
+                             "taxonID",
+                             "fullName",
+                             "ncbiID",
+                             "supertaxonID",
+                             "supertaxon",
+                             "rank",
+                             "category")
+    
+    sortedOut$taxonID <- as.numeric(sortedOut$taxonID)
+    sortedOut$ncbiID <- as.factor(sortedOut$ncbiID)
+    sortedOut$supertaxon <- as.factor(sortedOut$supertaxon)
+    sortedOut$category <- as.factor(sortedOut$category)
+    
+    ### return data frame
+    return(sortedOut)
+  })
+  
+  # * get subset data (default: first 30 genes) for plotting ------------------
+  preData <- reactive({
+    # get list of gene of interest (from a separated file)
+    listGene <- list()
+    end_index <- input$end_index
+    if (is.na(input$end_index)) end_index <- 30
+    if (input$gene_list_selected == "from file"){
+      listIn <- input$list
+      if (!is.null(listIn)){
+        list <- as.data.frame(read.table(file = listIn$datapath,
+                                         header = FALSE))
+        listGeneOri <- list$V1
+        if (input$st_index <= length(listGeneOri)){
+          listGene <- listGeneOri[listGeneOri[input$st_index:end_index]]
+        } else {
+          listGene <- listGeneOri
+        }
+      }
+    }
+    
+    long_dataframe <- get_main_input()
+    if (is.null(long_dataframe)){
+      data <- data.frame("geneID" = character(),
+                         "ncbiID" = character(),
+                         "orthoID" = character(),
+                         "var1" = character(),
+                         "var2" = character(),
+                         stringsAsFactors = F)
+    } else{
+      long_dataframe <- unsort_id(long_dataframe, input$ordering)
+      
+      if (length(listGene) >= 1){
+        data <- long_dataframe[long_dataframe$geneID %in% listGene, ]
+      } else {
+        subsetID <- levels(long_dataframe$geneID)[input$st_index:end_index]
+        data <- long_dataframe[long_dataframe$geneID %in% subsetID, ]
+      }
+      
+      if (ncol(data) < 5){
+        for (i in 1:(5 - ncol(data))){
+          data[paste0("newVar", i)] <- 1
+        }
+      }
+      colnames(data) <- c("geneID", "ncbiID", "orthoID", "var1", "var2")
+    }
+    # return preData
+    return(data)
+  })
+  
+  # * creating main dataframe for subset taxa (in species/strain level) -------
+  # * get (super)taxa names (1)
+  # * calculate percentage of presence (2),
+  # * max/min/mean/median VAR1 (3) and VAR2 (4)
+  get_data_filtered <- reactive({
+    mdData <- preData()
+
+    # count number of inparalogs
+    paralogCount <- plyr::count(mdData, c("geneID", "ncbiID"))
+    mdData <- merge(mdData, paralogCount, by = c("geneID", "ncbiID"))
+    colnames(mdData)[ncol(mdData)] <- "paralog"
+    
+    # (1) GET SORTED TAXONOMY LIST (1)
+    taxa_list <- sortedtaxa_list()
+    
+    # calculate frequency of all supertaxa
+    taxaCount <- plyr::count(taxa_list, "supertaxon")
+    
+    # merge mdData, mdDataVar2 and taxa_list to get taxonomy info
+    taxaMdData <- merge(mdData, taxa_list, by = "ncbiID")
+    taxaMdData$var1 <- {
+      suppressWarnings(as.numeric(as.character(taxaMdData$var1)))
+    }
+    taxaMdData$var2 <- {
+      suppressWarnings(as.numeric(as.character(taxaMdData$var2)))
+    }
+    
+    # (2) calculate PERCENTAGE of PRESENT SPECIES (2)
+    finalPresSpecDt <- calc_pres_spec(taxaMdData, taxaCount)
+    
+    # (3) calculate max/min/mean/median VAR1 for every supertaxon of each gene (3)
+    # remove NA rows from taxaMdData
+    taxaMdDataNoNA <- taxaMdData[!is.na(taxaMdData$var1), ]
+    # calculate m var1
+    mVar1Dt <- aggregate(taxaMdDataNoNA[, "var1"],
+                         list(taxaMdDataNoNA$supertaxon,
+                              taxaMdDataNoNA$geneID),
+                         FUN = input$var1_aggregate_by)
+    colnames(mVar1Dt) <- c("supertaxon", "geneID", "mVar1")
+    
+    # (4) calculate max/min/mean/median VAR2 for each super taxon (4)
+    # remove NA rows from taxaMdData
+    taxaMdDataNoNA_var2 <- taxaMdData[!is.na(taxaMdData$var2), ]
+    # calculate max/min/mean/median VAR2
+    if (nrow(taxaMdDataNoNA_var2) > 0){
+      mVar2Dt <- aggregate(taxaMdDataNoNA_var2[, "var2"],
+                           list(taxaMdDataNoNA_var2$supertaxon,
+                                taxaMdDataNoNA_var2$geneID),
+                           FUN = input$var2_aggregate_by)
+      colnames(mVar2Dt) <- c("supertaxon", "geneID", "mVar2")
+    } else {
+      mVar2Dt <- taxaMdData[, c("supertaxon", "geneID")]
+      mVar2Dt$mVar2 <- 0
+    }
+    
+    # (3+4) & join mVar2 together with mVar1 scores into one df (3+4)
+    scoreDf <- merge(mVar1Dt,
+                     mVar2Dt,
+                     by = c("supertaxon", "geneID"),
+                     all = TRUE)
+    
+    # (2+3+4) add presSpec and mVar1 into taxaMdData (2+3+4)
+    presMdData <- merge(taxaMdData,
+                        finalPresSpecDt,
+                        by = c("geneID", "supertaxon"),
+                        all.x = TRUE)
+    fullMdData <- merge(presMdData,
+                        scoreDf,
+                        by = c("geneID", "supertaxon"),
+                        all.x = TRUE)
+    fullMdData <- merge(fullMdData,
+                        taxaCount, by = ("supertaxon"),
+                        all.x = TRUE)
+    # rename "freq" into "numberSpec"
+    names(fullMdData)[names(fullMdData) == "freq"] <- "numberSpec"
+    
+    fullMdData$fullName <- as.vector(fullMdData$fullName)
+    names(fullMdData)[names(fullMdData) == "orthoID.x"] <- "orthoID"
+    # parsed input data frame !!!
+    fullMdData <- fullMdData[!duplicated(fullMdData), ]
+    
+    return(fullMdData)
+  })
+  
+  # * reduce data from species/strain level to supertaxon (e.g. phylum) level -
+  # * This data set contain only supertaxa
+  # * and their value (%present, mVar1 & mVar2) for each gene
+  dataSupertaxa <- reactive({
+    fullMdData <- get_data_filtered()
+    
+    # to check if working with the lowest taxonomy rank; 1 for NO; 0 for YES
+    flag <- 1
+    if (length(unique(levels(as.factor(fullMdData$numberSpec)))) == 1){
+      if (unique(levels(as.factor(fullMdData$numberSpec))) == 1){
+        superDfExt <- fullMdData[, c("geneID",
+                                     "supertaxon",
+                                     "supertaxonID",
+                                     "var1",
+                                     "presSpec",
+                                     "category",
+                                     "orthoID",
+                                     "var2",
+                                     "paralog")]
+        flag <- 0
+      }
+    }
+    
+    if (flag == 1){
+      # get representative orthoID that has m VAR1 for each supertaxon
+      mOrthoID <- fullMdData[, c("geneID",
+                                 "supertaxon",
+                                 "var1",
+                                 "mVar1",
+                                 "orthoID")]
+      mOrthoID <- subset(mOrthoID,
+                         mOrthoID$var1 == mOrthoID$mVar1)
+      colnames(mOrthoID) <- c("geneID",
+                              "supertaxon",
+                              "var1",
+                              "mVar1",
+                              "orthoID")
+      mOrthoID <- mOrthoID[!is.na(mOrthoID$orthoID), ]
+      mOrthoID <- mOrthoID[, c("geneID", "supertaxon", "orthoID")]
+      mOrthoID <- mOrthoID[!duplicated(mOrthoID[, 1:2]), ]
+      
+      # get data set for phyloprofile plotting (contains only supertaxa info)
+      superDf <- subset(fullMdData, select = c("geneID",
+                                               "supertaxon",
+                                               "supertaxonID",
+                                               "mVar1",
+                                               "presSpec",
+                                               "category",
+                                               "mVar2",
+                                               "paralog"))
+      superDf$paralog <- 1
+      superDf <- superDf[!duplicated(superDf), ]
+      
+      superDfExt <- merge(superDf, mOrthoID, by = c("geneID", "supertaxon"),
+                          all.x = TRUE)
+      superDfExt <- superDfExt[, c("geneID",
+                                   "supertaxon",
+                                   "supertaxonID",
+                                   "mVar1",
+                                   "presSpec",
+                                   "category",
+                                   "orthoID",
+                                   "mVar2",
+                                   "paralog")]
+      
+      # rename mVar to var
+      names(superDfExt)[names(superDfExt) == "mVar1"] <- "var1"
+      names(superDfExt)[names(superDfExt) == "mVar2"] <- "var2"
+    }
+    
+    # print(superDfExt[superDfExt$geneID == "ampk_ACACB"
+    # & superDfExt$supertaxon == "1001_Chordata",])
+    # print("END2222")
+    return(superDfExt)
+  })
+  
+  # * heatmap data input --------------------------------------------------------
+  dataHeat <- reactive({
+    
+    # get all cutoffs
+    percent_cutoff_min <- input$percent[1]
+    percent_cutoff_max <- input$percent[2]
+    var1_cutoff_min <- input$var1[1]
+    var1_cutoff_max <- input$var1[2]
+    var2_cutoff_min <- input$var2[1]
+    var2_cutoff_max <- input$var2[2]
+    
+    # check input file
+    filein <- input$main_input
+    # if(input$demo == TRUE){
+    if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor"){
+      filein <- 1
+    }
+    if (is.null(filein)) return()
+    
+    dataHeat <- dataSupertaxa()
+    
+    # get selected supertaxon name
+    split <- strsplit(as.character(input$in_select), "_")
+    in_select <- as.character(split[[1]][1])
+    
+    ### replace insufficient values according to the thresholds by NA or 0
+    dataHeat$presSpec[dataHeat$supertaxon != in_select
+                      & dataHeat$presSpec < percent_cutoff_min] <- 0
+    dataHeat$presSpec[dataHeat$supertaxon != in_select
+                      & dataHeat$presSpec > percent_cutoff_max] <- 0
+    
+    dataHeat$presSpec[dataHeat$supertaxon != in_select
+                      & dataHeat$var1 < var1_cutoff_min] <- 0
+    dataHeat$presSpec[dataHeat$supertaxon != in_select
+                      & dataHeat$var1 > var1_cutoff_max] <- 0
+    
+    if (input$var1_relation == "protein"){
+      if (input$var2_relation == "protein"){
+        # prot-prot: remove complete cell if one variable not sufficient
+        dataHeat$presSpec[dataHeat$supertaxon != in_select
+                          & dataHeat$var2 < var2_cutoff_min] <- 0
+        dataHeat$presSpec[dataHeat$supertaxon != in_select
+                          & dataHeat$var2 > var2_cutoff_max] <- 0
+        dataHeat$var2[dataHeat$supertaxon != in_select
+                      & dataHeat$var1 < var1_cutoff_min] <- NA
+        dataHeat$var2[dataHeat$supertaxon != in_select
+                      & dataHeat$var1 > var1_cutoff_max] <- NA
+        dataHeat$var1[dataHeat$supertaxon != in_select
+                      & dataHeat$var2 < var2_cutoff_min] <- NA
+        dataHeat$var1[dataHeat$supertaxon != in_select
+                      & dataHeat$var2 > var2_cutoff_max] <- NA
+      } else {
+        # prot-spec: var1 depend on var2
+        dataHeat$presSpec[dataHeat$supertaxon != in_select
+                          & dataHeat$var2 < var2_cutoff_min] <- 0
+        dataHeat$presSpec[dataHeat$supertaxon != in_select
+                          & dataHeat$var2 > var2_cutoff_max] <- 0
+      }
+    } else {
+      if (input$var2_relation == "species"){
+        # # spec-spec: remove var1 and var2 independently
+        # dataHeat$presSpec[dataHeat$supertaxon != in_select & dataHeat$var1 < var1_cutoff_min] <- 0
+        # dataHeat$presSpec[dataHeat$supertaxon != in_select & dataHeat$var1 > var1_cutoff_max] <- 0
+      } else {
+        # spec-prot: var2 depend on var1
+        dataHeat$var2[dataHeat$supertaxon != in_select
+                      & dataHeat$var1 < var1_cutoff_min] <- NA
+        dataHeat$var2[dataHeat$supertaxon != in_select
+                      & dataHeat$var1 > var1_cutoff_max] <- NA
+      }
+    }
+    
+    dataHeat$var1[dataHeat$supertaxon != in_select
+                  & dataHeat$var1 < var1_cutoff_min] <- NA
+    dataHeat$var1[dataHeat$supertaxon != in_select
+                  & dataHeat$var1 > var1_cutoff_max] <- NA
+    dataHeat$var2[dataHeat$supertaxon != in_select
+                  & dataHeat$var2 < var2_cutoff_min] <- NA
+    dataHeat$var2[dataHeat$supertaxon != in_select
+                  & dataHeat$var2 > var2_cutoff_max] <- NA
+    dataHeat <- droplevels(dataHeat)  # delete unused levels
+    dataHeat$geneID <- as.factor(dataHeat$geneID)
+    return(dataHeat)
+  })
+  
+  # * clustered heatmap data -----------------------------------------------------
+  clusteredDataHeat <- reactive({
+    dataHeat <- dataHeat()
+    if (nrow(dataHeat) < 1) return()
+    
+    # dataframe for calculate distance matrix
+    sub_data_heat <- subset(dataHeat, dataHeat$presSpec > 0)
+    sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", "presSpec")]
+    sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
+    
+    wide_data <- spread(sub_data_heat, supertaxon, presSpec)
+    dat <- wide_data[, 2:ncol(wide_data)]  # numerical columns
+    rownames(dat) <- wide_data[, 1]
+    dat[is.na(dat)] <- 0
+
+    # get clustered gene ids
+    clusteredGeneIDs <- clustered_gene_list(dat,
+                                            input$dist_method,
+                                            input$cluster_method)
+    
+    # sort original data according to clusteredGeneIDs
+    dataHeat$geneID <- factor(dataHeat$geneID,
+                              levels = clusteredGeneIDs)
+    return(dataHeat)
+  })
+  
+  # =========================== MAIN PROFILE TAB ==============================
+  
+  # * get total number of genes -----------------------------------------------
+  output$total_gene_number.ui <- renderUI({
+    geneList <- preData()
+    geneList$geneID <- as.factor(geneList$geneID)
+    out <- as.list(levels(geneList$geneID))
+    if (length(out) > 0){
+      # em(paste0("Total number of genes:  ",length(out)))
+      strong(paste0("Total number of genes:  ", length(out)))
+    }
+  })
+  
+  # * get list of taxa for highlighting ---------------------------------------
   output$highlight_taxon_ui <- renderUI({
     choice <- alltaxa_list()
     choice$fullName <- as.factor(choice$fullName)
@@ -1016,7 +1679,7 @@ shinyServer(function(input, output, session) {
                 out, selected = out[1])
   })
 
-  # update highlight_taxon_ui based on double clicked dot ---------------------
+  # * update highlight_taxon_ui based on double clicked dot ---------------------
   observe({
     choice <- alltaxa_list()
     choice$fullName <- as.factor(choice$fullName)
@@ -1045,7 +1708,7 @@ shinyServer(function(input, output, session) {
     }
   })
 
-  # Get list of genes for highlighting ----------------------------------------
+  # * get list of genes for highlighting ----------------------------------------
   output$highlight_gene_ui <- renderUI({
     geneList <- dataHeat()
     geneList$geneID <- as.factor(geneList$geneID)
@@ -1056,7 +1719,7 @@ shinyServer(function(input, output, session) {
     selectInput("gene_highlight", "Highlight:", out, selected = out[1])
   })
 
-  # update highlight_gene_ui based on double clicked dot ----------------------
+  # * update highlight_gene_ui based on double clicked dot ----------------------
   observe({
     if (!is.null(input$plot_dblclick)){
       geneList <- dataHeat()
@@ -1086,287 +1749,47 @@ shinyServer(function(input, output, session) {
     } else return()
   })
 
-  # print total number of genes -----------------------------------------------
-  output$total_gene_number.ui <- renderUI({
-    geneList <- preData()
-    geneList$geneID <- as.factor(geneList$geneID)
-    out <- as.list(levels(geneList$geneID))
-    if (length(out) > 0){
-      # em(paste0("Total number of genes:  ",length(out)))
-      strong(paste0("Total number of genes:  ", length(out)))
-    }
+  # * reset configuration windows of Main plot ----------------------------------
+  observeEvent(input$reset_main_config, {
+    shinyjs::reset("x_size")
+    shinyjs::reset("y_size")
+    shinyjs::reset("legend_size")
+    shinyjs::reset("x_angle")
+    shinyjs::reset("dot_zoom")
   })
 
-  # enable "PLOT" button ------------------------------------------------------
-  observeEvent(input$rank_select,  ({
-    if (input$rank_select == ""){
-      updateButton(session, "do", disabled = TRUE)
-    } else{
-      unkTaxa <- unkTaxa()
-      if (length(unkTaxa) == 0){
-        updateButton(session, "do", disabled = FALSE)
-      }
-    }
-  }))
+  # * close configuration windows of Main plot ----------------------------------
+  observeEvent(input$apply_main_config, {
+    toggleModal(session, "main_plot_config_bs", toggle = "close")
+  })
+  
+  # * parameters for the main profile plot --------------------------------------
+  get_parameter_input_main <- reactive({
+    input_data <- list( "x_axis" = input$x_axis,
+                        "var1_id" = input$var1_id,
+                        "var2_id"  = input$var2_id,
+                        "low_color_var1" =  input$low_color_var1,
+                        "high_color_var1" = input$high_color_var1,
+                        "low_color_var2" = input$low_color_var2,
+                        "high_color_var2" = input$high_color_var2,
+                        "para_color" = input$para_color,
+                        "x_size" = input$x_size,
+                        "y_size" = input$y_size,
+                        "legend_size" = input$legend_size,
+                        "main_legend" = input$main_legend,
+                        "dot_zoom" = input$dot_zoom,
+                        "x_angle" = input$x_angle,
+                        "taxon_highlight" = input$taxon_highlight,
+                        "apply_cluster" = input$apply_cluster,
+                        "rank_select" = input$rank_select,
+                        "gene_highlight" = input$gene_highlight,
+                        "auto_update" = input$auto_update,
+                        "update_btn" = input$update_btn)
 
-  # move to main tab when "PLOT" button has been clicked ----------------------
-  observe({
-    # use tabsetPanel "id" argument to change tabs
-    if (input$do > 0) {
-      updateTabsetPanel(session, "tabs", selected = "Main profile")
-    }
+    return (input_data)
   })
 
-  # disable main input, genelist input and initial questions ------------------
-  observe({
-    # use tabsetPanel "id" argument to change tabs
-    if (input$do > 0) {
-      toggleState("main_input")
-      toggleState("gene_list_selected")
-      toggleState("demo_data")
-    }
-  })
-
-  # disable demo checkbox and update var2_aggregate_by to mean ----------------
-  # if using demo data
-  observe({
-    # if (input$demo == TRUE) {
-    if (input$demo_data == "lca-micros") {
-      ### update var2_aggregate_by to mean
-      updateSelectInput(session, "var2_aggregate_by",
-                        choices = list("Max" = "max",
-                                       "Min" = "min",
-                                       "Mean" = "mean",
-                                       "Median" = "median"),
-                        selected = "mean")
-    }
-  })
-
-  # ===========================================================================
-  # ADD NEW TAXA ==============================================================
-  # ===========================================================================
-  newTaxa <- reactiveValues()
-  newTaxa$Df <- data.frame("ncbiID" = numeric(),
-                           "fullName" = character(),
-                           "rank" = character(),
-                           "parentID" = numeric(),
-                           stringsAsFactors = FALSE)
-  newIndex <- reactiveValues()
-  newIndex$value <- 1
-
-  observeEvent(input$new_add, {
-    newTaxa$Df[newIndex$value, ] <- c(input$new_id,
-                                     input$new_name,
-                                     input$new_rank,
-                                     input$new_parent)
-    newIndex$value <- newIndex$value + 1
-    updateTextInput(session, "new_id",
-                    value = as.numeric(input$new_id) + 1)
-    updateTextInput(session, "new_name", value = "")
-    updateTextInput(session, "new_rank", value = "norank")
-    updateTextInput(session, "new_parent", value = "")
-  })
-
-  observeEvent(input$new_done, {
-    toggleModal(session, "add_taxa_windows", toggle = "close")
-    write.table(newTaxa$Df, "data/newTaxa.txt",
-                sep = "\t",
-                eol = "\n",
-                row.names = FALSE,
-                quote = FALSE)
-  })
-
-  # ===========================================================================
-  # PROCESSING INPUT DATA =====================================================
-  # ===========================================================================
-
-  # check if data is loaded and "plot" button is clicked ----------------------
-  v <- reactiveValues(doPlot = FALSE)
-  observeEvent(input$do, {
-    # 0 will be coerced to FALSE
-    # 1+ will be coerced to TRUE
-    v$doPlot <- input$do
-    filein <- input$main_input
-    # if(is.null(filein) & input$demo==FALSE){
-    if (is.null(filein) & input$demo_data == "none"){
-      v$doPlot <- FALSE
-      updateButton(session, "do", disabled = TRUE)
-    }
-  })
-
-  # PARSING DATA FROM INPUT MATRIX: ===========================================
-  # get (super)taxa names (3)
-  # calculate percentage of presence (4),
-  # max/min/mean/median VAR1 (5) and VAR2 (6)
-  # if group input taxa list into higher taxonomy rank
-
-  # check if "no ordering gene IDs" has been checked --------------------------
-  output$apply_cluster_check.ui <- renderUI({
-    if (input$ordering == FALSE){
-      HTML('<p><em>(Check "Ordering sequence IDs" check box in <strong>Input & settings tab</strong>&nbsp;to enable this function)</em></p>')
-    }
-  })
-
-  observe({
-    if (input$ordering == FALSE){
-      shinyjs::disable("apply_cluster")
-    } else {
-      shinyjs::enable("apply_cluster")
-    }
-  })
-
-  # ===========================================================================
-  # DATA & PLOT FOR MAIN PROFILE ==============================================
-  # ===========================================================================
-
-  # get list of all sequence IDs for selectize input (customized profile) -----
-  output$gene_in <- renderUI({
-    filein <- input$main_input
-    fileCustom <- input$custom_file
-
-    # if(input$demo == TRUE){
-    if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor"){
-      filein <- 1
-    }
-
-    if (is.null(filein) & is.null(fileCustom)){
-      return(selectInput("in_seq", "", "all"))
-      }
-    if (v$doPlot == FALSE){
-      return(selectInput("in_seq", "", "all"))
-      }
-
-    else{
-      # full list
-      data <- as.data.frame(get_data_filtered())
-      data$geneID <- as.character(data$geneID)
-      data$geneID <- as.factor(data$geneID)
-      outAll <- as.list(levels(data$geneID))
-      outAll <- append("all", outAll)
-      #selectInput("in_seq","",out,selected=out[1],multiple=TRUE)
-
-      if (input$add_custom_profile == TRUE){
-        out <- selectedgene_age()
-        if (length(out) > 0){
-          selectInput("in_seq",
-                      "",
-                      out,
-                      selected = as.list(out),
-                      multiple = TRUE,
-                      selectize = FALSE)
-        }
-        else {
-          selectInput("in_seq",
-                      "",
-                      outAll,
-                      selected = outAll[1],
-                      multiple = TRUE,
-                      selectize = FALSE)
-        }
-      } else if (input$add_cluster_cutom_profile == TRUE){
-        out <- brushed_clusterGene()
-        if (length(out) > 0){
-          selectInput("in_seq", "",
-                      out,
-                      selected = as.list(out),
-                      multiple = TRUE,
-                      selectize = FALSE)
-        }
-        else {
-          selectInput("in_seq", "",
-                      outAll,
-                      selected = outAll[1],
-                      multiple = TRUE,
-                      selectize = FALSE)
-        }
-      }
-      else if (input$add_cons_gene_custom_profile == TRUE){
-        out <- cons_geneDf()
-        if (length(out) > 0){
-          selectInput("in_seq", "",
-                      out,
-                      selected = as.list(out),
-                      multiple = TRUE,
-                      selectize = FALSE)
-        }
-        else {
-          selectInput("in_seq", "",
-                      outAll,
-                      selected = outAll[1],
-                      multiple = TRUE,
-                      selectize = FALSE)
-        }
-      }
-      else if(input$add_gc_genes_custom_profile == TRUE){
-        out <- significantGenesGroupCompairison$geneID
-        if(length(out)>0){
-          selectInput("in_seq","",out,selected=as.list(out),multiple=TRUE,selectize=FALSE)
-        }
-        else {
-          selectInput("in_seq","",outAll,selected=outAll[1],multiple=TRUE,selectize=FALSE)
-        }
-
-      }
-      else {
-        if (is.null(fileCustom)){
-          selectInput("in_seq", "",
-                      outAll,
-                      selected = outAll[1],
-                      multiple = TRUE,
-                      selectize = FALSE)
-        }
-
-        else {
-          customList <- as.data.frame(read.table(file = fileCustom$datapath,
-                                                 header = FALSE))
-          customList$V1 <- as.factor(customList$V1)
-          out <- as.list(levels(customList$V1))
-          selectInput("in_seq", "",
-                      out,
-                      selected = out,
-                      multiple = TRUE,
-                      selectize = FALSE)
-        }
-      }
-    }
-  })
-
-  # get list of all taxa for selectize input ----------------------------------
-  output$taxa_in <- renderUI({
-    filein <- input$main_input
-    # if(input$demo == TRUE){
-    if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor"){
-      filein <- 1
-    }
-
-    if (is.null(filein)) return(selectInput("in_taxa", "", "all"))
-    if (v$doPlot == FALSE) return(selectInput("in_taxa", "", "all"))
-    else{
-      choice <- alltaxa_list()
-      choice$fullName <- as.factor(choice$fullName)
-
-      out <- as.list(levels(choice$fullName))
-      out <- append("all", out)
-
-      if (input$apply_cus_taxa == TRUE){
-      # if(!is.null(cus_taxaName())){
-        out <- cus_taxaName()
-        selectInput("in_taxa", "",
-                    out,
-                    selected = out,
-                    multiple = TRUE,
-                    selectize = FALSE)
-      } else {
-        selectInput("in_taxa", "",
-                    out,
-                    selected = out[1],
-                    multiple = TRUE,
-                    selectize = FALSE)
-      }
-    }
-  })
-
-  # render dot size to dot_size_info ------------------------------------------
+  # * render dot size to dot_size_info ------------------------------------------
   output$dot_size_info <- renderUI({
     if (v$doPlot == FALSE) return()
 
@@ -1380,7 +1803,7 @@ shinyServer(function(input, output, session) {
     em(paste0("current point's size: ", minDot, " - ", maxDot))
   })
 
-  # plot profile into plot.ui -------------------------------------------------
+  # * plot main profile -------------------------------------------------
   output$mainPlot <- renderPlot({
     if (input$auto_update == FALSE){
       # Add dependency on the update button
@@ -1449,7 +1872,7 @@ shinyServer(function(input, output, session) {
     }
   })
 
-  # download main plot --------------------------------------------------------
+  # * download main profile --------------------------------------------------------
   output$plot_download <- downloadHandler(
     filename = function() {
       c("plot.pdf")
@@ -1467,23 +1890,242 @@ shinyServer(function(input, output, session) {
     }
   )
 
-  # # get list of same orthologs (hit_IDs) of a selected point
-  # sameOrthoIndex <- reactive({
-  #   # check input
-  #   if (v$doPlot == FALSE) return()
-  #
-  #   # info
-  #   info <- mainpoint_info()
-  #   pos <- info[7]
-  # })
+  # * get info of clicked point on main profile ------------------------------------
+  mainpoint_info <- reactive({
+    # check input
+    if (v$doPlot == FALSE) return()
+    
+    # get selected supertaxon name
+    taxa_list <- as.data.frame(read.table("data/taxonNamesReduced.txt",
+                                          sep = "\t",
+                                          header = T))
+    rank_select <- input$rank_select
+    rankName <- substr(rank_select, 4, nchar(rank_select))
+    in_select <- {
+      as.numeric(taxa_list$ncbiID[taxa_list$fullName == input$in_select])
+    }
+    
+    dataHeat <- dataHeat()
+    if (input$apply_cluster == TRUE){
+      dataHeat <- clusteredDataHeat()
+    }
+    
+    # get values
+    if (is.null(input$plot_click$x)) return()
+    else{
+      # get cooridiate point
+      if (input$x_axis == "genes"){
+        corX <- round(input$plot_click$y);
+        corY <- round(input$plot_click$x)
+      } else {
+        corX <- round(input$plot_click$x);
+        corY <- round(input$plot_click$y)
+      }
+      
+      # get geneID
+      genes <- levels(dataHeat$geneID)
+      geneID <- toString(genes[corY])
+      
+      # get supertaxon (spec)
+      supertaxa <- levels(dataHeat$supertaxon)
+      spec <- toString(supertaxa[corX])
+      
+      # get var1, percentage of present species and var2 score
+      var1 <- NA
+      if (!is.na(dataHeat$var1[dataHeat$geneID == geneID
+                               & dataHeat$supertaxon == spec][1])){
+        var1 <- max(na.omit(dataHeat$var1[dataHeat$geneID == geneID
+                                          & dataHeat$supertaxon == spec]))
+      }
+      Percent <- NA
+      if (!is.na(dataHeat$presSpec[dataHeat$geneID == geneID
+                                   & dataHeat$supertaxon == spec][1])){
+        Percent <- max(na.omit(dataHeat$presSpec[dataHeat$geneID == geneID
+                                                 & dataHeat$supertaxon == spec]))
+      }
+      var2 <- NA
+      if (!is.na(dataHeat$var2[dataHeat$geneID == geneID
+                               & dataHeat$supertaxon == spec][1])){
+        var2 <- max(na.omit(dataHeat$var2[dataHeat$geneID == geneID
+                                          & dataHeat$supertaxon == spec]))
+      }
+      
+      # get ortholog ID
+      orthoID <- dataHeat$orthoID[dataHeat$geneID == geneID
+                                  & dataHeat$supertaxon == spec]
+      if (length(orthoID) > 1){
+        orthoID <- paste0(orthoID[1], ",...")
+      }
 
+      # return info of clicked point
+      if (is.na(as.numeric(Percent))) return()
+      else{
+        info <- c(geneID,
+                  as.character(orthoID),
+                  as.character(spec),
+                  round(as.numeric(var1), 2),
+                  round(as.numeric(Percent), 2),
+                  round(as.numeric(var2), 2))
+        return(info)
+      }
+    }
+  })
   
+  # ======================== CUSTOMIZED PROFILE TAB ===========================
+  
+  # * get list of all sequence IDs for customized profile -----
+  output$gene_in <- renderUI({
+    filein <- input$main_input
+    fileCustom <- input$custom_file
 
-  # ===========================================================================
-  # PLOT CUSTOMIZED PROFILE ===================================================
-  # ===========================================================================
+    # if(input$demo == TRUE){
+    if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor"){
+      filein <- 1
+    }
 
-  # check if all genes and all species are selected ---------------------------
+    if (is.null(filein) & is.null(fileCustom)){
+      return(selectInput("in_seq", "", "all"))
+      }
+    if (v$doPlot == FALSE){
+      return(selectInput("in_seq", "", "all"))
+      }
+
+    else{
+      # full list
+      data <- as.data.frame(get_data_filtered())
+      data$geneID <- as.character(data$geneID)
+      data$geneID <- as.factor(data$geneID)
+      outAll <- as.list(levels(data$geneID))
+      outAll <- append("all", outAll)
+      #selectInput("in_seq","",out,selected=out[1],multiple=TRUE)
+
+      if (input$add_custom_profile == TRUE){
+        out <- selectedgene_age()
+        if (length(out) > 0){
+          selectInput("in_seq",
+                      "",
+                      out,
+                      selected = as.list(out),
+                      multiple = TRUE,
+                      selectize = FALSE)
+        }
+        else {
+          selectInput("in_seq",
+                      "",
+                      outAll,
+                      selected = outAll[1],
+                      multiple = TRUE,
+                      selectize = FALSE)
+        }
+      } else if (input$add_cluster_cutom_profile == TRUE){
+        out <- brushed_clusterGene()
+        if (length(out) > 0){
+          selectInput("in_seq", "",
+                      out,
+                      selected = as.list(out),
+                      multiple = TRUE,
+                      selectize = FALSE)
+        }
+        else {
+          selectInput("in_seq", "",
+                      outAll,
+                      selected = outAll[1],
+                      multiple = TRUE,
+                      selectize = FALSE)
+        }
+      }
+      else if (input$add_core_gene_custom_profile == TRUE){
+        out <- core_geneDf()
+        if (length(out) > 0){
+          selectInput("in_seq", "",
+                      out,
+                      selected = as.list(out),
+                      multiple = TRUE,
+                      selectize = FALSE)
+        }
+        else {
+          selectInput("in_seq", "",
+                      outAll,
+                      selected = outAll[1],
+                      multiple = TRUE,
+                      selectize = FALSE)
+        }
+      }
+      else if(input$add_gc_genes_custom_profile == TRUE){
+        out <- significantGenesGroupCompairison$geneID
+        if(length(out)>0){
+          selectInput("in_seq","",out,selected=as.list(out),multiple=TRUE,selectize=FALSE)
+        }
+        else {
+          selectInput("in_seq","",outAll,selected=outAll[1],multiple=TRUE,selectize=FALSE)
+        }
+
+      }
+      else {
+        if (is.null(fileCustom)){
+          selectInput("in_seq", "",
+                      outAll,
+                      selected = outAll[1],
+                      multiple = TRUE,
+                      selectize = FALSE)
+        }
+
+        else {
+          customList <- as.data.frame(read.table(file = fileCustom$datapath,
+                                                 header = FALSE))
+          customList$V1 <- as.factor(customList$V1)
+          out <- as.list(levels(customList$V1))
+          selectInput("in_seq", "",
+                      out,
+                      selected = out,
+                      multiple = TRUE,
+                      selectize = FALSE)
+        }
+      }
+    }
+  })
+
+  # * render popup for selecting taxon rank and return list of subset taxa ----
+  cus_taxaName <- callModule(select_taxon_rank,
+                             "select_taxon_rank",
+                             rank_select = reactive(input$rank_select),
+                             subset_taxa = subset_taxa)
+
+  # * get list of all taxa for customized profile ----------------------------------
+  output$taxa_in <- renderUI({
+    filein <- input$main_input
+    # if(input$demo == TRUE){
+    if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor"){
+      filein <- 1
+    }
+
+    if (is.null(filein)) return(selectInput("in_taxa", "", "all"))
+    if (v$doPlot == FALSE) return(selectInput("in_taxa", "", "all"))
+    else{
+      choice <- alltaxa_list()
+      choice$fullName <- as.factor(choice$fullName)
+
+      out <- as.list(levels(choice$fullName))
+      out <- append("all", out)
+
+      if (input$apply_cus_taxa == TRUE){
+        out <- cus_taxaName()
+        selectInput("in_taxa", "",
+                    out,
+                    selected = out,
+                    multiple = TRUE,
+                    selectize = FALSE)
+      } else {
+        selectInput("in_taxa", "",
+                    out,
+                    selected = out[1],
+                    multiple = TRUE,
+                    selectize = FALSE)
+      }
+    }
+  })
+  
+  # * check if all genes and all species are selected ---------------------------
   output$same_profile <- reactive({
     if (v$doPlot == FALSE) return(FALSE)
     if (length(input$in_seq[1]) == 0) return(FALSE)
@@ -1493,7 +2135,7 @@ shinyServer(function(input, output, session) {
   })
   outputOptions(output, "same_profile", suspendWhenHidden = FALSE)
 
-  # change label of plot_custom button if auto_update_selected is unchecked ----
+  # * change label of plot_custom button if auto_update_selected is unchecked ----
   output$plot_custom_btn <- renderUI({
     if (input$auto_update_selected == FALSE){
       shinyBS::bsButton("plot_custom",
@@ -1506,7 +2148,7 @@ shinyServer(function(input, output, session) {
     }
   })
 
-  # check if button is clicked ------------------------------------------------
+  # * check if button (custom)PLOT is clicked ------------------------------------------------
   vCt <- reactiveValues(doPlotCustom = FALSE)
   observeEvent(input$plot_custom, {
     # 0 will be coerced to FALSE
@@ -1517,13 +2159,47 @@ shinyServer(function(input, output, session) {
     if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor") filein <- 1
     if (is.null(filein)) vCt$doPlotCustom <- FALSE
   })
-
-  # print list of available customized taxonomy ranks -------------------------
-  cus_taxaName <- callModule(select_taxon_rank,
-                             "select_taxon_rank",
-                             rank_select = reactive(input$rank_select),
-                             subset_taxa = subset_taxa)
   
+   # * reset configuration windows of Customized plot ----------------------------
+  observeEvent(input$reset_selected_config, {
+    shinyjs::reset("x_size_select")
+    shinyjs::reset("y_size_select")
+    shinyjs::reset("legend_size_select")
+    shinyjs::reset("x_angle_select")
+    shinyjs::reset("dot_zoom_select")
+  })
+
+  # ** close configuration windows of Customized plot ----------------------------
+  observeEvent(input$apply_selected_config, {
+    toggleModal(session, "selected_plot_config_bs", toggle = "close")
+  })
+
+  # * parameters for the customized profile plot --------------------------------
+  get_parameter_input_customized <- reactive ({
+    input_data <- list ("x_axis_selected" = input$x_axis_selected,
+                        "var1_id" = input$var1_id,
+                        "var2_id" = input$var2_id,
+                        "low_color_var1" = input$low_color_var1,
+                        "high_color_var1" = input$high_color_var1,
+                        "low_color_var2" = input$low_color_var2,
+                        "high_color_var2" = input$high_color_var2,
+                        "para_color" = input$para_color,
+                        "x_size_select" = input$x_size_select,
+                        "y_size_select" = input$y_size_select,
+                        "legend_size_select" = input$legend_size_select,
+                        "selected_legend" = input$selected_legend,
+                        "dot_zoom_select" = input$dot_zoom_select,
+                        "x_angle_select" = input$x_angle_select,
+                        "in_taxa" = input$in_taxa,
+                        "in_seq" = input$in_seq,
+                        "auto_update_selected" = input$auto_update_selected,
+                        "plot_custom" = input$plot_custom,
+                        "apply_cluster" = input$apply_cluster
+    )
+    return(input_data)
+  })
+  
+  # * plot customized profile -------------------------------------------
   output$selected_plot <- renderPlot({
     if (input$auto_update_selected == FALSE){
       # Add dependency on the update button
@@ -1537,17 +2213,16 @@ shinyServer(function(input, output, session) {
         selected_plot(vCt,
                       dataHeat(),
                       clusteredDataHeat(),
-                      get_parameter_input_selected())
+                      get_parameter_input_customized())
       })
     } else {
       selected_plot(vCt,
                     dataHeat(),
                     clusteredDataHeat(),
-                    get_parameter_input_selected())
+                    get_parameter_input_customized())
     }
   })
-
-  # plot selected sequences heatmap -------------------------------------------
+  
   output$selected_plot.ui <- renderUI({
     if (is.null(input$in_seq[1]) | is.null(input$in_taxa[1]))  return()
     else if (input$in_seq[1] == "all" & input$in_taxa[1] == "all") return()
@@ -1593,7 +2268,7 @@ shinyServer(function(input, output, session) {
     }
   })
 
-  # download selected plot ----------------------------------------------------
+  # * download customized plot ----------------------------------------------------
   output$selected_download <- downloadHandler(
     filename = function() {
       c("selected_plot.pdf")
@@ -1602,18 +2277,116 @@ shinyServer(function(input, output, session) {
       ggsave(file, plot = selected_plot(vCt,
                                         dataHeat(),
                                         clusteredDataHeat(),
-                                        get_parameter_input_selected()),
+                                        get_parameter_input_customized()),
              width = input$selected_width * 0.056458333,
              height = input$selected_height * 0.056458333,
              units = "cm", dpi = 300, device = "pdf", limitsize = FALSE)
     }
   )
+  
+  # * get info of clicked point on customized profile ------------------------------
+  selectedpoint_info <- reactive({
+    # check input
+    if (vCt$doPlotCustom == FALSE) return()
+    
+    # get selected supertaxon name
+    taxa_list <- get_name_list(FALSE, FALSE)
+    rank_select <- input$rank_select
+    rankName <- substr(rank_select, 4, nchar(rank_select))
+    in_select <- {
+      as.numeric(taxa_list$ncbiID[taxa_list$fullName == input$in_select])
+    }
+    
+    dataHeat <- dataHeat()
+    
+    if (input$apply_cluster == TRUE){
+      dataHeat <- clusteredDataHeat()
+    }
+    
+    # get sub-dataframe of selected taxa and sequences
+    dataHeat$supertaxonMod <- substr(dataHeat$supertaxon,
+                                     6,
+                                     nchar(as.character(dataHeat$supertaxon)))
+    if (input$in_taxa[1] == "all" & input$in_seq[1] != "all"){
+      # select data from dataHeat for selected sequences only
+      dataHeat <- subset(dataHeat, geneID %in% input$in_seq)
+    } else if (input$in_seq[1] == "all" & input$in_taxa[1] != "all"){
+      # select data from dataHeat for selected taxa only
+      dataHeat <- subset(dataHeat, supertaxonMod %in% input$in_taxa)
+    } else {
+      # select data from dataHeat for selected sequences and taxa
+      dataHeat <- subset(dataHeat, geneID %in% input$in_seq
+                         & supertaxonMod %in% input$in_taxa)
+    }
+    
+    # drop all other supertaxon that are not in sub-dataframe
+    dataHeat$supertaxon <- factor(dataHeat$supertaxon)
+    dataHeat$geneID <- factor(dataHeat$geneID)
+    
+    # get values
+    if (is.null(input$plot_click_selected$x)) return()
+    else{
+      # get cooridiate point
+      if (input$x_axis_selected == "genes"){
+        corX <- round(input$plot_click_selected$y);
+        corY <- round(input$plot_click_selected$x)
+      } else {
+        corX <- round(input$plot_click_selected$x);
+        corY <- round(input$plot_click_selected$y)
+      }
+      
+      # get geneID
+      genes <- levels(dataHeat$geneID)
+      geneID <- toString(genes[corY])
+      # get supertaxon (spec)
+      supertaxa <- levels(dataHeat$supertaxon)
+      spec <- toString(supertaxa[corX])
+      # get var1, percentage of present species and var2 score
+      var1 <- NA
+      if (!is.na(dataHeat$var1[dataHeat$geneID == geneID
+                               & dataHeat$supertaxon == spec][1])){
+        var1 <- max(na.omit(dataHeat$var1[dataHeat$geneID == geneID
+                                          & dataHeat$supertaxon == spec]))
+      }
+      Percent <- NA
+      if (!is.na(dataHeat$presSpec[dataHeat$geneID == geneID
+                                   & dataHeat$supertaxon == spec][1])){
+        Percent <- {
+          max(na.omit(dataHeat$presSpec[dataHeat$geneID == geneID
+                                        & dataHeat$supertaxon == spec]))
+        }
+      }
+      var2 <- NA
+      if (!is.na(dataHeat$var2[dataHeat$geneID == geneID
+                               & dataHeat$supertaxon == spec][1])){
+        var2 <- {
+          max(na.omit(dataHeat$var2[dataHeat$geneID == geneID
+                                    & dataHeat$supertaxon == spec]))
+        }
+      }
+      
+      # get ortholog ID
+      orthoID <- dataHeat$orthoID[dataHeat$geneID == geneID
+                                  & dataHeat$supertaxon == spec]
+      if (length(orthoID) > 1){
+        orthoID <- paste0(orthoID[1], ",...")
+      }
+      
+      if (is.na(as.numeric(Percent))) return()
+      else{
+        info <- c(geneID,
+                  as.character(orthoID),
+                  as.character(spec),
+                  round(as.numeric(var1), 2),
+                  round(as.numeric(Percent), 2),
+                  round(as.numeric(var2), 2))
+      }
+    }
+  })
+  
+  # ============================== POINT INFO =================================
 
-  # ===========================================================================
-  # SHOW CLICKED POINT INFO ===================================================
-  # ===========================================================================
-
-  # get value of point_info for activating Detailed Plot button ---------------
+  # * get status of point_info for activating Detailed Plot button ---------------
   output$point_info_status <- reactive({
     if (input$tabs == "Main profile"){
       # info = groupID,orthoID,supertaxon,mVar1,%spec,var2
@@ -1627,7 +2400,7 @@ shinyServer(function(input, output, session) {
   })
   outputOptions(output, "point_info_status", suspendWhenHidden = FALSE)
 
-  # show info into "point's info" box -----------------------------------------
+  # * show info into "point's info" box -----------------------------------------
   output$point_info <- renderText({
     # GET INFO BASED ON CURRENT TAB
     if (input$tabs == "Main profile"){
@@ -1642,12 +2415,7 @@ shinyServer(function(input, output, session) {
     if (is.null(info)) return()
     else{
       orthoID <- info[2]
-      # ## parse orthoID for oneSeq
-      # if(input$input_type == "Concatenated fasta file"){
-      #   orthoIDTmp <- unlist(strsplit(toString(info[2]),"\\|"))
-      #   #orthoID = toString(paste0(orthoIDTmp[2],":",orthoIDTmp[3]))
-      #   orthoID = toString(orthoIDTmp[3])
-      # }
+      
       if (is.na(orthoID)) return()
       else{
         # if(orthoID=="NA"){orthoID <- info[2]}
@@ -1679,17 +2447,68 @@ shinyServer(function(input, output, session) {
     }
   })
 
-  # ===========================================================================
-  # DETAILED PLOT =============================================================
-  # ===========================================================================
+  # ============================= DETAILED PLOT ===============================
 
+  # * data for detailed plot ----------------------------------------------------
+  detail_plotDt <- reactive({
+    if (v$doPlot == FALSE) return()
+    
+    # GET INFO BASED ON CURRENT TAB
+    if (input$tabs == "Main profile"){
+      # info = groupID,orthoID,supertaxon,mVar1,%spec,var2
+      info <- mainpoint_info()
+    } else if (input$tabs == "Customized profile"){
+      info <- selectedpoint_info()
+    }
+    
+    if (is.null(info)) return()
+    else{
+      ### get info for present taxa in selected supertaxon (1)
+      plotTaxon <- info[3]
+      plotGeneID <- info[1]
+      fullDf <- get_data_filtered()
+      selDf <- as.data.frame(fullDf[fullDf$geneID == plotGeneID
+                                    & fullDf$supertaxon == plotTaxon, ])
+      
+      ### get all taxa of this supertaxon (2)
+      allTaxaDf <- sortedtaxa_list()
+      allTaxaDf <- allTaxaDf[allTaxaDf$supertaxon == plotTaxon, ]
+      allTaxaDf <- subset(allTaxaDf, select = c("abbrName", "fullName"))
+      
+      ### merge (1) and (2) together
+      joinedDf <- merge(selDf, allTaxaDf,
+                        by = c("abbrName"),
+                        all.y = TRUE)
+      joinedDf <- subset(joinedDf,
+                         select = c("abbrName",
+                                    "fullName.y",
+                                    "geneID",
+                                    "orthoID",
+                                    "var1",
+                                    "var2"))
+      names(joinedDf)[names(joinedDf) == "fullName.y"] <- "fullName"
+      
+      # replace var1/var2 as NA for all "NA orthologs"
+      joinedDf$var1[is.na(joinedDf$orthoID)] <- NA
+      joinedDf$var2[is.na(joinedDf$orthoID)] <- NA
+      
+      # remove NA orthologs if required
+      if (input$detailed_remove_na == TRUE){
+        joinedDf <- joinedDf[!is.na(joinedDf$orthoID), ]
+      }
+      
+      ### return data for detailed plot
+      return(joinedDf)
+    }
+  })
+  
+  # * plot detailed bar chart ---------------------------------------------------
   output$detail_plot <- renderPlot({
     p <- detail_plot(v, detail_plotDt(), input$detailed_text,
                      input$var1_id, input$var2_id)
     p
   })
-
-  # plot detailed bar chart ---------------------------------------------------
+  
   output$detail_plot.ui <- renderUI({
     withSpinner(
       plotOutput("detail_plot",
@@ -1706,7 +2525,7 @@ shinyServer(function(input, output, session) {
     )
   })
 
-  # download detailed plot ----------------------------------------------------
+  # * download detailed plot ----------------------------------------------------
   output$download_detailed <- downloadHandler(
     filename = function() {
       c("detailedPlot.pdf")
@@ -1725,7 +2544,43 @@ shinyServer(function(input, output, session) {
     }
   )
 
-  # SHOW info when clicking on detailed plot ----------------------------------
+  # * get info when clicking on detailed plot -----------------------------------
+  point_infoDetail <- reactive({
+    selDf <- detail_plotDt()
+    # selDf <- selDf[complete.cases(selDf),]
+    selDf$orthoID <- as.character(selDf$orthoID)
+    # allOrthoID <- sort(selDf$orthoID)
+    
+    ### get coordinates of plot_click_detail
+    if (is.null(input$plot_click_detail$x)) return()
+    else{
+      corX <- round(input$plot_click_detail$y)
+      corY <- round(input$plot_click_detail$x)
+    }
+    
+    ### get pair of sequence IDs & var1
+    seedID <- as.character(selDf$geneID[!is.na(selDf$geneID)][1])
+    orthoID <- as.character(selDf$orthoID[corX])
+    
+    var1 <- as.list(selDf$var1[selDf$orthoID == orthoID])
+    var1 <- as.character(var1[!is.na(var1)])
+    var2 <- as.list(selDf$var2[selDf$orthoID == orthoID])
+    var2 <- as.character(var2[!is.na(var2)])
+    # ncbiID <- as.character(selDf$abbrName[selDf$orthoID==orthoID])
+    ncbiID <- selDf[selDf$orthoID == orthoID, ]$abbrName
+    ncbiID <- as.character(ncbiID[!is.na(ncbiID)][1])
+    
+    ### return info
+    if (is.na(orthoID)){
+      return(NULL)
+    } else {
+      if (orthoID != "NA"){
+        info <- c(seedID, orthoID, var1, var2, ncbiID)
+      }
+    }
+  })
+  
+  # * show info when clicking on detailed plot ----------------------------------
   output$detail_click <- renderText({
     info <- point_infoDetail() # info = seedID, orthoID, var1
 
@@ -1745,7 +2600,7 @@ shinyServer(function(input, output, session) {
     }
   })
 
-  # FASTA sequence ------------------------------------------------------------
+  # * render FASTA sequence ------------------------------------------------------------
   output$fasta <- renderText({
     if (v$doPlot == FALSE) return()
 
@@ -1772,11 +2627,86 @@ shinyServer(function(input, output, session) {
     }
   })
 
-  # ===========================================================================
-  # FEATURE ARCHITECTURE PLOT =================================================
-  # ===========================================================================
+  # ======================== FEATURE ARCHITECTURE PLOT ========================
 
-  # check domain file ---------------------------------------------------------
+  # * get domain file/path ------------------------------------------------------
+  getDomainFile <- reactive({
+    # click info
+    info <- point_infoDetail() # info = seedID, orthoID, var1
+    group <- as.character(info[1])
+    ortho <- as.character(info[2])
+    var1 <- as.character(info[3])
+    
+    if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor"){
+      if (is.null(info)){
+        fileDomain <- "noSelectHit"
+        updateButton(session, "do_domain_plot", disabled = TRUE)
+      } else {
+        updateButton(session, "do_domain_plot", disabled = FALSE)
+        if (input$demo_data == "lca-micros"){
+          fileDomain <- {
+            suppressWarnings(paste0("https://github.com/BIONF/phyloprofile-data/blob/master/demo/domain_files/",
+                                    group,
+                                    ".domains?raw=true"))
+          }
+        } else if (input$demo_data == "ampk-tor") {
+          fileDomain <- {
+            suppressWarnings(paste0("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.domains_F"))
+          }
+        } 
+      }
+    } else {
+      filein <- input$main_input
+      if (check_input_vadility(filein) == "oma"){
+      # if (get_input_type() == "oma"){
+        fileDomain <- "oma_input"
+        updateButton(session, "do_domain_plot", disabled = FALSE)
+      } else if (input$anno_location == "from file"){
+        fileDomain <- input$file_domain_input
+        #print(fileDomain)
+        if (is.null(fileDomain)){
+          fileDomain <- "noFileInput"
+        } else {
+          if (is.null(info)){
+            fileDomain <- "noSelectHit"
+            updateButton(session, "do_domain_plot", disabled = TRUE)
+          } else {
+            updateButton(session, "do_domain_plot", disabled = FALSE)
+            fileDomain <- fileDomain$datapath
+          }
+        }
+      } else {
+        if (is.null(info)){
+          fileDomain <- "noSelectHit"
+          updateButton(session, "do_domain_plot", disabled = TRUE)
+        } else {
+          # check file extension
+          allExtension <- c("txt", "csv", "list", "domains", "architecture")
+          flag <- 0
+          for (i in 1:length(allExtension)){
+            fileDomain <- paste0(input$domainPath,
+                                 "/",
+                                 group,
+                                 ".",
+                                 allExtension[i])
+            if (file.exists(fileDomain) == TRUE){
+              updateButton(session, "do_domain_plot", disabled = FALSE)
+              flag <- 1
+              break ()
+            }
+          }
+          
+          if (flag == 0){
+            fileDomain <- "noFileInFolder"
+            updateButton(session, "do_domain_plot", disabled = TRUE)
+          }
+        }
+      }
+    }
+    return (fileDomain)
+  })
+  
+  # * check domain file ---------------------------------------------------------
   output$check_domain_files <- renderUI({
     fileDomain <- getDomainFile()
     if (fileDomain == "noFileInput"){
@@ -1795,7 +2725,7 @@ shinyServer(function(input, output, session) {
     }
   })
 
-  # check clicked -------------------------------------------------------------
+  # * check if PLOT button is clicked -------------------------------------------------------------
   v3 <- reactiveValues(doPlot3 = FALSE)
   observeEvent(input$do_domain_plot, {
     v3$doPlot3 <- input$do_domain_plot
@@ -1805,6 +2735,7 @@ shinyServer(function(input, output, session) {
     if (is.null(filein)) v3$doPlot3 <- FALSE
   })
 
+  # * render domain architecture plot -------------------------------------------
   output$archi_plot <- renderPlot({
     g <- archi_plot(v3,
                     point_infoDetail(),
@@ -1815,7 +2746,6 @@ shinyServer(function(input, output, session) {
     grid.draw(g)
   })
   
-  # render domain architecture plot -------------------------------------------
   output$archi_plot.ui <- renderUI({
     if (v3$doPlot3 == FALSE) {
       domainIN <- unlist(strsplit(toString(input$main_input), ","))
@@ -1835,8 +2765,8 @@ shinyServer(function(input, output, session) {
     }
   })
 
-  # download architecture plot ------------------------------------------------
-  # ***** something strange with archi_plot()
+  # * download architecture plot ------------------------------------------------
+  # *** something strange with archi_plot()
   output$archi_download <- downloadHandler(
     filename = function() {
       c("domains.pdf")
@@ -1856,12 +2786,10 @@ shinyServer(function(input, output, session) {
 
     }
   )
+  
+  # ======================== FILTERED DATA DOWNLOADING ========================
 
-  # ===========================================================================
-  # FILTERED DATA FOR DOWNLOADING =============================================
-  # ===========================================================================
-
-  # FOR MAIN PROFILE ==========================================================
+  # * for main profile ==========================================================
   main_fasta_download <- reactive({
     main_fasta_out <- get_fasta_seqs(as.data.frame(download_data()),
                                      input$main_input, input$demo_data,
@@ -1883,7 +2811,7 @@ shinyServer(function(input, output, session) {
                               var2 = reactive(input$var2),
                               percent = reactive(input$percent))
 
-  # FOR CUSTOMIZED PROFILE ==========================================================
+  # * for customized profile ===================================================
   customized_fasta_download <- reactive({
     fasta_out_df <- get_fasta_seqs(as.data.frame(download_custom_data()),
                                    input$main_input, input$demo_data,
@@ -1900,11 +2828,392 @@ shinyServer(function(input, output, session) {
                                      fasta = customized_fasta_download,
                                      in_seq = reactive(input$in_seq),
                                      in_taxa = reactive(input$in_taxa))
+  
+  # ============================ ANALYSIS FUNCTIONS ===========================
+  
+  # * PROFILE CLUSTERING ======================================================
+  
+  # ** check if anywhere elese genes are added to the custemized profile ---------
+  observe({
+    if (input$add_custom_profile == TRUE
+        | input$add_core_gene_custom_profile == TRUE
+        | input$add_gc_genes_custom_profile == TRUE){
+      shinyjs::disable("add_cluster_cutom_profile")
+    }else{
+      shinyjs::enable("add_cluster_cutom_profile")
+    }
+  })
+  
+  output$add_cluster_cutom_profile_check.ui <- renderUI({
+    if (input$add_custom_profile == TRUE
+        | input$add_core_gene_custom_profile == TRUE |
+        input$add_gc_genes_custom_profile == TRUE ){
+      HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Gene age estimation</strong> or <strong>Core genes finding</strong> or <strong>Group Comparison</strong> &nbsp;to enable this function)</em></p>')
+    }
+  })
+  
+  # ** render cluster tree ----------------------------------------------------
+  brushed_clusterGene <- callModule(cluster_profile, "profile_clustering",
+                                    data = dataHeat,
+                                    dist_method = reactive(input$dist_method),
+                                    cluster_method = reactive(input$cluster_method),
+                                    cluster_plot.width = reactive(input$cluster_plot.width),
+                                    cluster_plot.height = reactive(input$cluster_plot.width))
+  
+  # * DISTRIBUTION ANALYSIS =====================================================
+  
+  # ** list of available variables for distribution plot -------------------------
+  output$selected.distribution <- renderUI({
+    if (nchar(input$var1_id) == 0 & nchar(input$var2_id) == 0){
+      varList <- "% present taxa"
+    } else if (nchar(input$var1_id) == 0 & nchar(input$var2_id) > 0){
+      varList <- as.list(c(input$var2_id, "% present taxa"))
+    } else if (nchar(input$var1_id) > 0 & nchar(input$var2_id) == 0){
+      varList <- as.list(c(input$var1_id,
+                           "% present taxa"))
+    } else {
+      varList <- as.list(c(input$var1_id,
+                           input$var2_id,
+                           "% present taxa"))
+    }
+    
+    selectInput("selected_dist",
+                "Choose variable to plot:",
+                varList,
+                varList[1])
+  })
+  
+  # ** var1 / var2 distribution data ---------------------------------------------
+  distribution_df <- reactive({
+    if (v$doPlot == FALSE) return()
+    
+    dataOrig <- get_main_input()
+    if (ncol(dataOrig) < 4){
+      colnames(dataOrig) <- c("geneID",
+                              "ncbiID",
+                              "orthoID")
+      splitDt <- dataOrig[, c("orthoID")]
+    } else if (ncol(dataOrig) < 5){
+      colnames(dataOrig) <- c("geneID",
+                              "ncbiID",
+                              "orthoID",
+                              "var1")
+      splitDt <- dataOrig[, c("orthoID",
+                              "var1")]
+    } else {
+      colnames(dataOrig) <- c("geneID",
+                              "ncbiID",
+                              "orthoID",
+                              "var1",
+                              "var2")
+      splitDt <- dataOrig[, c("orthoID", "var1", "var2")]
+    }
+    
+    splitDt$orthoID[splitDt$orthoID == "NA" | is.na(splitDt$orthoID)] <- NA
+    splitDt <- splitDt[complete.cases(splitDt), ]
+    
+    if (length(levels(as.factor(splitDt$var2))) == 1){
+      if (levels(as.factor(splitDt$var2)) == ""){
+        splitDt$var2 <- 0
+      }
+    }
+    
+    # convert factor into numeric for "var1" & "var2" column
+    if ("var1" %in% colnames(splitDt)){
+      splitDt$var1 <- suppressWarnings(as.numeric(as.character(splitDt$var1)))
+      # filter splitDt based on selected var1 cutoff
+      splitDt <- splitDt[splitDt$var1 >= input$var1[1]
+                         & splitDt$var1 <= input$var1[2], ]
+    }
+    if ("var2" %in% colnames(splitDt)){
+      splitDt$var2 <- suppressWarnings(as.numeric(as.character(splitDt$var2)))
+      # filter splitDt based on selected var2 cutoff
+      splitDt <- splitDt[splitDt$var2 >= input$var2[1]
+                         & splitDt$var2 <= input$var2[2], ]
+    }
+    
+    # filter data base on customized plot (if chosen)
+    if (input$dataset.distribution == "Customized data"){
+      # get geneID and supertaxon name for splitDt
+      allData <- get_data_filtered()
+      splitDtName <- merge(splitDt, allData,
+                           by = "orthoID",
+                           all.x = TRUE)
+      splitDtName$supertaxonMod <- {
+        substr(splitDtName$supertaxon,
+               6,
+               nchar(as.character(splitDtName$supertaxon)))
+      }
+      splitDtName <- subset(splitDtName,
+                            select = c(orthoID,
+                                       var1.x,
+                                       var2.y,
+                                       supertaxonMod,
+                                       geneID))
+      colnames(splitDtName) <- c("orthoID",
+                                 "var1",
+                                 "var2",
+                                 "supertaxonMod",
+                                 "geneID")
+      
+      # filter
+      if (input$in_taxa[1] == "all" & input$in_seq[1] != "all"){
+        # select data from dataHeat for selected sequences only
+        splitDt <- subset(splitDtName, geneID %in% input$in_seq)
+      } else if (input$in_seq[1] == "all" & input$in_taxa[1] != "all"){
+        # select data from dataHeat for selected taxa only
+        splitDt <- subset(splitDtName, supertaxonMod %in% input$in_taxa)
+      } else {
+        # select data from dataHeat for selected sequences and taxa
+        splitDt <- subset(splitDtName,
+                          geneID %in% input$in_seq
+                          & supertaxonMod %in% input$in_taxa)
+      }
+    }
+    
+    # return dt
+    return(splitDt)
+  })
+  
+  # ** calculate % present species in supertaxa --------------------------------
+  presSpecAllDt <- reactive({
+    # open main input file
+    mdData <- get_main_input()
+    if (ncol(mdData) < 4){
+      colnames(mdData) <- c("geneID",
+                            "ncbiID",
+                            "orthoID")
+    } else if (ncol(mdData) < 5){
+      colnames(mdData) <- c("geneID",
+                            "ncbiID",
+                            "orthoID",
+                            "var1")
+    } else {
+      colnames(mdData) <- c("geneID",
+                            "ncbiID",
+                            "orthoID",
+                            "var1",
+                            "var2")
+    }
+    
+    # count number of inparalogs
+    paralogCount <- plyr::count(mdData, c("geneID", "ncbiID"))
+    mdData <- merge(mdData, paralogCount, by = c("geneID", "ncbiID"))
+    colnames(mdData)[ncol(mdData)] <- "paralog"
+    
+    # (3) GET SORTED TAXONOMY LIST (3)
+    taxa_list <- sortedtaxa_list()
+    
+    # calculate frequency of all supertaxa
+    taxaCount <- plyr::count(taxa_list, "supertaxon")
+    
+    # merge mdData, mdDatavar2 and taxa_list to get taxonomy info
+    taxaMdData <- merge(mdData, taxa_list, by = "ncbiID")
+    if ("var1" %in% colnames(taxaMdData)){
+      taxaMdData$var1 <- {
+        suppressWarnings(as.numeric(as.character(taxaMdData$var1)))
+      }
+    }
+    if ("var2" %in% colnames(taxaMdData)){
+      taxaMdData$var2 <- {
+        suppressWarnings(as.numeric(as.character(taxaMdData$var2)))
+      }
+    }
+    # calculate % present species
+    finalPresSpecDt <- calc_pres_spec(taxaMdData, taxaCount)
+    finalPresSpecDt
+  })
+  
+  
+  
+  # ** render distribution plots ----------------------------------------------
+  observe({
+    if (v$doPlot == FALSE) return()
+    
+    if (is.null(input$selected_dist)){
+      return()
+    } else {
+      if (input$selected_dist == "% present taxa"){
+        callModule(analyze_distribution, "dist_plot",
+                   data = presSpecAllDt, 
+                   var_id = reactive(input$selected_dist),
+                   var_type = reactive("presSpec"),
+                   percent = reactive(input$percent), 
+                   dist_text_size = reactive(input$dist_text_size))
+      } else{
+        if (input$selected_dist == input$var1_id){
+          callModule(analyze_distribution, "dist_plot",
+                     data = distribution_df,
+                     var_id = reactive(input$selected_dist),
+                     var_type = reactive("var1"),
+                     percent = reactive(input$percent),
+                     dist_text_size = reactive(input$dist_text_size))
+        } else if (input$selected_dist == input$var2_id){
+          callModule(analyze_distribution, "dist_plot",
+                     data = distribution_df,
+                     var_id = reactive(input$selected_dist),
+                     var_type = reactive("var2"),
+                     percent = reactive(input$percent),
+                     dist_text_size = reactive(input$dist_text_size))
+        }
+      }
+    }
+  })
+  
+  # * GENE AGE ESTIMATION =======================================================
+  
+  # ** check if anywhere elese genes are added to the custemized profile ---------
+  observe({
+    if (input$add_cluster_cutom_profile == TRUE
+        | input$add_core_gene_custom_profile == TRUE
+        | input$add_gc_genes_custom_profile == TRUE ){
+      shinyjs::disable("add_custom_profile")
+    } else {
+      shinyjs::enable("add_custom_profile")
+    }
+  })
+  
+  output$add_custom_profile_check.ui <- renderUI({
+    if (input$add_cluster_cutom_profile == TRUE
+        | input$add_core_gene_custom_profile == TRUE
+        | input$add_gc_genes_custom_profile == TRUE){
+      HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Profile clustering</strong> or <strong>Core genes finding</strong> or <strong>Groupcomparison</strong> &nbsp;to enable this function)</em></p>')
+      
+    }
+  })
+  
+  # ** reset gene_age_prot_config ------------------------------------------------
+  observeEvent(input$reset_gene_age_prot_config, {
+    shinyjs::reset("gene_age_width")
+    shinyjs::reset("gene_age_height")
+    shinyjs::reset("gene_age_text")
+  })
+  
+  # ** data for gene age estimation -------------------------------------------
+  gene_ageDf <- reactive({
+    if (v$doPlot == FALSE) return()
+    
+    gene_ageDf <- estimate_gene_age(subset_taxa(), get_data_filtered(),
+                                    input$rank_select, input$in_select,
+                                    input$var1, input$var2, input$percent)
+    return(gene_ageDf)
+  })
+  
+  # ** render age distribution plot -------------------------------------------
+  selectedgene_age <- callModule(plot_gene_age, "gene_age",
+                                 data = gene_ageDf,
+                                 gene_age_width = reactive(input$gene_age_width),
+                                 gene_age_height = reactive(input$gene_age_height),
+                                 gene_age_text = reactive(input$gene_age_text))
+  
+  # * CORE GENES IDENTIFICATION ===============================================
+  
+  # ** render list of available taxa ---------------------------------------------
+  output$taxa_list_core.ui <- renderUI({
+    filein <- input$main_input
+    # if(input$demo == TRUE){
+    if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor"){
+      filein <- 1
+    }
+    if (is.null(filein)){
+      return(selectInput("in_taxa",
+                         "Select taxa of interest:",
+                         "none"))
+    }
+    if (v$doPlot == FALSE){
+      return(selectInput("in_taxa",
+                         "Select taxa of interest:",
+                         "none"))
+    }
+    else{
+      choice <- alltaxa_list()
+      choice$fullName <- as.factor(choice$fullName)
+      
+      out <- as.list(levels(choice$fullName))
+      out <- append("none", out)
+      
+      if (input$apply_core_taxa == TRUE){
+        out <- core_taxa_name()
+        selectInput("taxa_core",
+                    "Select taxa of interest:",
+                    out,
+                    selected = out,
+                    multiple = TRUE)
+      } else {
+        selectInput("taxa_core",
+                    "Select taxa of interest:",
+                    out,
+                    selected = out[1],
+                    multiple = TRUE)
+      }
+    }
+  })
+  
+  # ** render popup for selecting group of taxa to find core genes ------------
+  core_taxa_name <- callModule(select_taxon_rank,
+                             "select_taxon_rank_core",
+                             rank_select = reactive(input$rank_select),
+                             subset_taxa = subset_taxa)
+  
+  # check if anywhere elese genes are added to the custemized profile ---------
+  observe({
+    if (input$add_cluster_cutom_profile == TRUE
+        | input$add_custom_profile == TRUE
+        | input$add_gc_genes_custom_profile == TRUE){
+      shinyjs::disable("add_core_gene_custom_profile")
+    } else {
+      shinyjs::enable("add_core_gene_custom_profile")
+    }
+  })
+  
+  output$add_core_gene_custom_profile_check.ui <- renderUI({
+    if (input$add_cluster_cutom_profile == TRUE
+        | input$add_custom_profile == TRUE
+        | input$add_gc_genes_custom_profile == TRUE){
+      HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Profiles clustering</strong> or <strong>Gene age estimating</strong> or r <strong>Group Comparioson</strong>&nbsp;to enable this function)</em></p>')
+    }
+  })
+  
+  # ** render table contains list of core genes -------------------------------
+  core_geneDf <- callModule(identify_core_gene,
+                            "core_gene",
+                            filtered_data = get_data_filtered,
+                            rank_select = reactive(input$rank_select),
+                            taxa_core = reactive(input$taxa_core),
+                            percent_core = reactive(input$percent_core))
+  
+  # ** download gene list from core_gene.table -----------------------------------
+  output$core_gene_table_download <- downloadHandler(
+    filename = function(){
+      c("coreGeneList.out")
+    },
+    content = function(file){
+      data_out <- core_geneDf()
+      write.table(data_out, file, sep = "\t", row.names = FALSE, quote = FALSE)
+    }
+  )
+  
+  # * GET NCBI TAXONOMY IDs FROM INPUT LIST OF TAXON NAMES ====================
+  callModule(search_taxon_id,"search_taxon_id")
 
-  # ===========================================================================
-  # GROUP COMPARISON ==========================================================
-  # ===========================================================================
+  # * GROUP COMPARISON ========================================================
 
+  # Parameters for the plots in Group Comparison ------------------------------
+  get_parameter_input_gc <- reactive ({
+    input_data <- list("show_p_value" = input$show_p_value,
+                       "highlight_significant" = input$highlight_significant,
+                       "significance" = input$significance,
+                       "var1_id" = input$var1_id,
+                       "var2_id" = input$var2_id,
+                       "x_size_gc" = input$x_size_gc,
+                       "y_size_gc" = input$y_size_gc,
+                       "interesting_features" = input$interesting_features,
+                       "angle_gc" = input$angle_gc,
+                       "legend_gc" = input$legend_gc,
+                       "legend_size_gc" = input$legend_size_gc)
+
+  })
+  
   # Dataframe with Information about the significant Genes --------------------
   # geneID | in_group| out_group | pvalues | features | databases | rank | var
   significant_genes_gc <- NULL
@@ -2284,7 +3593,7 @@ shinyServer(function(input, output, session) {
   # check if add_custom_profile (gene age plot) are being clicked
   observe({
     if (input$add_custom_profile == TRUE |
-        input$add_cons_gene_custom_profile == TRUE |
+        input$add_core_gene_custom_profile == TRUE |
         input$add_cluster_cutom_profile == TRUE){
       shinyjs::disable("add_gc_genes_custom_profile")
     }else{
@@ -2293,1114 +3602,12 @@ shinyServer(function(input, output, session) {
   })
   output$add_gc_custom_profile_check <- renderUI({
     if (input$add_custom_profile == TRUE |
-        input$add_cons_gene_custom_profile == TRUE |
+        input$add_core_gene_custom_profile == TRUE |
         input$add_cluster_cutom_profile == TRUE){
       HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Gene age estimation</strong>or <strong>Profile clustering</strong> or <strong>Core genes finding</strong>&nbsp;to enable this function)</em></p>')
     }
   })
-
-
-  # ===========================================================================
-  # REACTIVE FUCTIONS =========================================================
-  # ===========================================================================
   
-  # Working with the input file(s) ============================================
-  # # Get the type of the input file --------------------------------------------
-  get_main_input <- reactive({
-    if(input$demo_data == "lca-micros"){
-      long_dataframe <- create_long_matrix("lca-micros")
-    } else if (input$demo_data == "ampk-tor"){
-      long_dataframe <- create_long_matrix("ampk-tor")
-    } else {
-      filein <- input$main_input
-      if(is.null(filein)) return()
-      long_dataframe <- create_long_matrix(filein)
-    }
-    
-    return(long_dataframe)
-  })
-  
-  # Save the domain files as a data frame -------------------------------------
-  get_domain_information <- reactive({
-    filein <- input$main_input
-    if(is.null(filein)) return()
-    input_type <- check_input_vadility(filein)
-    main_input <- get_main_input()
-
-    domain_df <- parse_domain_input(main_input,
-                                    input_type,
-                                    input$demo_data,
-                                    input$anno_location,
-                                    input$file_domain_input,
-                                    input$domainPath,
-                                    session,
-                                    datapath)
-    return(domain_df)
-  })
-  
-  # # Save the fasta file(s) as a data frame ------------------------------------
-  # get_fasta_information <- reactive({
-  #   
-  # })
-  
-  # Parameters for the plots ==================================================
-  # Parameters for the main profile plot --------------------------------------
-  get_parameter_input_main <- reactive({
-    input_data <- list( "x_axis" = input$x_axis,
-                        "var1_id" = input$var1_id,
-                        "var2_id"  = input$var2_id,
-                        "low_color_var1" =  input$low_color_var1,
-                        "high_color_var1" = input$high_color_var1,
-                        "low_color_var2" = input$low_color_var2,
-                        "high_color_var2" = input$high_color_var2,
-                        "para_color" = input$para_color,
-                        "x_size" = input$x_size,
-                        "y_size" = input$y_size,
-                        "legend_size" = input$legend_size,
-                        "main_legend" = input$main_legend,
-                        "dot_zoom" = input$dot_zoom,
-                        "x_angle" = input$x_angle,
-                        "taxon_highlight" = input$taxon_highlight,
-                        "apply_cluster" = input$apply_cluster,
-                        "rank_select" = input$rank_select,
-                        "gene_highlight" = input$gene_highlight,
-                        "auto_update" = input$auto_update,
-                        "update_btn" = input$update_btn)
-
-    return (input_data)
-  })
-
-  # Parameters for the customized profile plot --------------------------------
-  get_parameter_input_selected <- reactive ({
-    input_data <- list ("x_axis_selected" = input$x_axis_selected,
-                        "var1_id" = input$var1_id,
-                        "var2_id" = input$var2_id,
-                        "low_color_var1" = input$low_color_var1,
-                        "high_color_var1" = input$high_color_var1,
-                        "low_color_var2" = input$low_color_var2,
-                        "high_color_var2" = input$high_color_var2,
-                        "para_color" = input$para_color,
-                        "x_size_select" = input$x_size_select,
-                        "y_size_select" = input$y_size_select,
-                        "legend_size_select" = input$legend_size_select,
-                        "selected_legend" = input$selected_legend,
-                        "dot_zoom_select" = input$dot_zoom_select,
-                        "x_angle_select" = input$x_angle_select,
-                        "in_taxa" = input$in_taxa,
-                        "in_seq" = input$in_seq,
-                        "auto_update_selected" = input$auto_update_selected,
-                        "plot_custom" = input$plot_custom,
-                        "apply_cluster" = input$apply_cluster
-    )
-  })
-
-  # Parameters for the plots in Group Comparison ------------------------------
-  get_parameter_input_gc <- reactive ({
-    input_data <- list("show_p_value" = input$show_p_value,
-                       "highlight_significant" = input$highlight_significant,
-                       "significance" = input$significance,
-                       "var1_id" = input$var1_id,
-                       "var2_id" = input$var2_id,
-                       "x_size_gc" = input$x_size_gc,
-                       "y_size_gc" = input$y_size_gc,
-                       "interesting_features" = input$interesting_features,
-                       "angle_gc" = input$angle_gc,
-                       "legend_gc" = input$legend_gc,
-                       "legend_size_gc" = input$legend_size_gc)
-
-  })
-  
-  # get ncbi taxa IDs ---------------------------------------------------------
-  # retrieve ID for list of taxa names
-  taxa_id <- reactive({
-    if (input$id_search > 0){
-      taxain <- input$taxa_list
-      if (is.null(taxain)) return()
-      
-      taxa_name_df <- as.data.frame(read.table(file = taxain$datapath,
-                                               sep = "\t",
-                                               header = F,
-                                               check.names = FALSE,
-                                               comment.char = ""))
-      
-      id_df <- data.frame("name" = character(),
-                          "new_name" = character(),
-                          "id" = character(),
-                          "type" = character(),
-                          stringsAsFactors = FALSE)
-      
-      withProgress(message = "Retrieving IDs...", value = 0, {
-        for (i in 1:nrow(taxa_name_df)){
-          id <- get_uid(sciname = taxa_name_df[i, ])[1]
-          if (is.na(id)){
-            temp <- gnr_resolve(names = as.character(taxa_name_df[i, ]))
-            if (nrow(temp) > 0){
-              new_id <- get_uid(sciname = temp[1, 3])[1]
-              if (is.na(new_id)){
-                id_df[i, ] <- c(as.character(taxa_name_df[i, ]),
-                                as.character(temp[1, 3]),
-                                paste0("NA"), "notfound")
-              } else {
-                id_df[i, ] <- c(as.character(taxa_name_df[i, ]),
-                                as.character(temp[1, 3]),
-                                paste0("ncbi", new_id),
-                                "notfound")
-              }
-            } else {
-              id_df[i, ] <- c(as.character(taxa_name_df[i, ]),
-                              paste0("no alternative"),
-                              paste0("NA"),
-                              "notfound")
-            }
-          } else {
-            id_df[i, ] <- c(as.character(taxa_name_df[i, ]),
-                            "NA",
-                            paste0("ncbi", id),
-                            "retrieved")
-          }
-          # Increment the progress bar, and update the detail text.
-          incProgress(1 / nrow(taxa_name_df),
-                      detail = paste(i, "/", nrow(taxa_name_df)))
-        }
-      })
-      # return
-      id_df
-    }
-  })
-  
-  # get input taxa ------------------------------------------------------------
-  subset_taxa <- reactive({
-    if (input$demo_data == "lca-micros" |
-        input$demo_data == "ampk-tor" |
-        length(unkTaxa()) == 0){
-      long_dataframe <- get_main_input()
-      if (is.null(long_dataframe)) return()
-      inputTaxa <- levels(long_dataframe$ncbiID)
-    } else {
-      inputTaxa <- readLines(filein$datapath, n = 1)
-    }
-    
-    inputTaxa <- unlist(strsplit(inputTaxa, split = "\t"))
-    if (inputTaxa[1] == "geneID"){
-      # remove "geneID" element from vector inputTaxa
-      inputTaxa <- inputTaxa[-1]
-    }
-    # return input taxa
-    return(inputTaxa)
-  })
-  
-  # check if there is any "unknown" taxon in input matrix ---------------------
-  unkTaxa <- reactive({
-    long_dataframe <- get_main_input ()
-    if (is.null(long_dataframe)){
-      inputTaxa <- c("NA")
-    } else{
-      inputTaxa <- levels(long_dataframe$ncbiID)
-    }
-    
-    if (inputTaxa[1] == "NA"){
-      return()
-    } else {
-      inputTaxa <- unlist(strsplit(inputTaxa, split = "\t"))
-      if (inputTaxa[1] == "geneID"){
-        # remove "geneID" element from vector inputTaxa
-        inputTaxa <- inputTaxa[-1]
-      }
-      
-      if (!file.exists(isolate({
-        "data/rankList.txt"
-      }
-      ))){
-        return(inputTaxa)
-      } else {
-        info <- file.info("data/rankList.txt")
-        if (info$size == 0){
-          return(inputTaxa)
-        } else {
-          # get list of all available taxon (from /data/rankList.txt)
-          pipe_cmd <- paste0("cut -f 1 ", getwd(), "/data/rankList.txt")
-          allTaxa <- unlist( (read.table(pipe(pipe_cmd))))
-          
-          # list of unknown taxa
-          unkTaxa <- inputTaxa[!(inputTaxa %in% allTaxa)]
-          # return list of unkTaxa
-          return(unkTaxa)
-        }
-      }
-
-    }
-    # return input taxa
-    return(inputTaxa)
-  })
-  
-
-  # Get list of all (super)taxa -----------------------------------------------
-  alltaxa_list <- reactive({
-    
-    filein <- input$main_input
-    
-    # if(is.null(filein) & input$demo == FALSE) return()
-    if (is.null(filein) & input$demo_data == "none") return()
-    
-    rank_select <- input$rank_select
-    
-    if (rank_select == "") return()
-    if (length(unkTaxa()) > 0) return()
-    
-    # load list of unsorted taxa ----------------------------------------------
-    Dt <- get_taxa_list(TRUE, subset_taxa())
-    
-    # load list of taxon name -------------------------------------------------
-    nameList <- get_name_list(TRUE, FALSE)
-    
-    # get rank name from rank_select
-    rankName <- substr(rank_select, 4, nchar(rank_select))
-    
-    # get rank number (number of column in unsorted taxa list - dataframe Dt)
-    #    rankNr = 0 + as.numeric(substr(rank_select,1,2))
-    
-    choice <- as.data.frame
-    choice <- rbind(Dt[rankName])
-    colnames(choice) <- "ncbiID"
-    choice <- merge(choice,
-                    nameList,
-                    by = "ncbiID",
-                    all = FALSE)
-  })
-  
-  sortedtaxa_list <- reactive({
-    if (v$doPlot == FALSE) return()
-    
-    # Get representative taxon ================================================
-    
-    # load list of unsorted taxa
-    Dt <- get_taxa_list(FALSE, subset_taxa())
-    
-    # load list of taxon name
-    nameList <- as.data.frame(read.table("data/taxonNamesReduced.txt",
-                                         sep = "\t",
-                                         header = T,
-                                         fill = TRUE))
-    nameList$fullName <- as.character(nameList$fullName)
-    
-    # input parameters
-    rank_select <- input$rank_select
-    
-    # get rank name from rank_select
-    rankName <- substr(rank_select, 4, nchar(rank_select))
-    
-    # get rank number (number of column in unsorted taxa list - dataframe Dt)
-    rankNr <- 0 + as.numeric(substr(rank_select, 1, 2))
-    
-    # get selected supertaxon ID
-    taxa_list <- as.data.frame(read.table("data/taxonNamesReduced.txt",
-                                          sep = "\t",
-                                          header = T))
-    allTaxa <- alltaxa_list()
-    rankNameTMP <- allTaxa$rank[allTaxa$fullName == input$in_select]
-    if (rankName == "strain"){
-      superID <- {
-        as.numeric(taxa_list$ncbiID[taxa_list$fullName == input$in_select
-                                    & taxa_list$rank == "norank"])
-      }
-    } else {
-      superID <- {
-        as.numeric(taxa_list$ncbiID[taxa_list$fullName == input$in_select
-                                    & taxa_list$rank == rankNameTMP[1]])
-      }
-    }
-    
-    # representative taxon
-    repTaxon <- Dt[Dt[, rankName] == superID, ][1, ]
-    
-    # Sort taxon list based on hclust tree ====================================
-    
-    # prepare Df for calculating distance matrix ------------------------------
-    distDf <- subset(Dt, select = -c(ncbiID, fullName))
-    row.names(distDf) <- distDf$abbrName
-    distDf <- distDf[, -1]
-    
-
-    # get sorted taxon IDs & sort full taxonomy info dataframe ----------------
-    treeIn <- input$inputTree
-    
-    if (is.null(treeIn)){
-      taxaTree <- create_rooted_tree(distDf, as.character(repTaxon$abbrName))
-    } else {
-      taxaTree <- read.tree(file = treeIn$datapath)
-    }
-    taxonList <- sort_taxa_from_tree(taxaTree)
-    sortedDt <- Dt[match(taxonList, Dt$abbrName), ]
-    
-    # subset to get list of input taxa only -----------------------------------
-    inputTaxa <- subset_taxa()
-    sortedDt <- subset(sortedDt, abbrName %in% inputTaxa)
-    
-    # get only taxonIDs list of selected rank and rename columns --------------
-    sortedOut <- subset(sortedDt, select = c("abbrName",
-                                             "ncbiID",
-                                             "fullName",
-                                             as.character(rankName)))
-    colnames(sortedOut) <- c("abbrName",
-                             "species",
-                             "fullName",
-                             "ncbiID")
-    
-    # add name of supertaxa into sortedOut list -------------------------------
-    sortedOut <- merge(sortedOut, nameList,
-                       by = "ncbiID",
-                       all.x = TRUE,
-                       sort = FALSE)
-    sortedOut$species <- as.character(sortedOut$species)
-    
-    # add order_prefix to supertaxon name -------------------------------------
-    # and add prefix "ncbi" to taxon_ncbiID (column "species")
-    prefix <- 1001
-    
-    ## create new column for sorted supertaxon
-    sortedOut$sortedSupertaxon <- 0 
-    sortedOut$sortedSupertaxon[1] <- paste0(prefix,
-                                            "_",
-                                            sortedOut$fullName.y[1])
-    sortedOut$species[1] <- paste0("ncbi",
-                                   sortedOut$species[1])
-    
-    for (i in 2:nrow(sortedOut)){
-      ## increase prefix if changing to another supertaxon
-      if (sortedOut$fullName.y[i] != sortedOut$fullName.y[i - 1]){
-        prefix <- prefix + 1
-      }
-      sortedOut$sortedSupertaxon[i] <- paste0(prefix,
-                                              "_",
-                                              sortedOut$fullName.y[i])
-      sortedOut$species[i] <- paste0("ncbi",
-                                     sortedOut$species[i])
-    }
-    
-    # final sorted supertaxa list
-    sortedOut$taxonID <- 0
-    sortedOut$category <- "cat"
-    sortedOut <- sortedOut[, c("abbrName",
-                               "taxonID",
-                               "fullName.x",
-                               "species",
-                               "ncbiID",
-                               "sortedSupertaxon",
-                               "rank",
-                               "category")]
-    colnames(sortedOut) <- c("abbrName",
-                             "taxonID",
-                             "fullName",
-                             "ncbiID",
-                             "supertaxonID",
-                             "supertaxon",
-                             "rank",
-                             "category")
-    
-    sortedOut$taxonID <- as.numeric(sortedOut$taxonID)
-    sortedOut$ncbiID <- as.factor(sortedOut$ncbiID)
-    sortedOut$supertaxon <- as.factor(sortedOut$supertaxon)
-    sortedOut$category <- as.factor(sortedOut$category)
-    
-    ### return data frame
-    return(sortedOut)
-  })
-  
-  # subset data ---------------------------------------------------------------
-  preData <- reactive({
-    # get list of gene of interest (from a separated file)
-    listGene <- list()
-    end_index <- input$end_index
-    if (is.na(input$end_index)) end_index <- 30
-    if (input$gene_list_selected == "from file"){
-      listIn <- input$list
-      if (!is.null(listIn)){
-        list <- as.data.frame(read.table(file = listIn$datapath,
-                                         header = FALSE))
-        listGeneOri <- list$V1
-        if (input$st_index <= length(listGeneOri)){
-          listGene <- listGeneOri[listGeneOri[input$st_index:end_index]]
-        } else {
-          listGene <- listGeneOri
-        }
-      }
-    }
-    
-    long_dataframe <- get_main_input()
-    if (is.null(long_dataframe)){
-      data <- data.frame("geneID" = character(),
-                         "ncbiID" = character(),
-                         "orthoID" = character(),
-                         "var1" = character(),
-                         "var2" = character(),
-                         stringsAsFactors = F)
-    } else{
-      long_dataframe <- unsort_id(long_dataframe, input$ordering)
-      
-      if (length(listGene) >= 1){
-        data <- long_dataframe[long_dataframe$geneID %in% listGene, ]
-      } else {
-        subsetID <- levels(long_dataframe$geneID)[input$st_index:end_index]
-        data <- long_dataframe[long_dataframe$geneID %in% subsetID, ]
-      }
-      
-      if (ncol(data) < 5){
-        for (i in 1:(5 - ncol(data))){
-          data[paste0("newVar", i)] <- 1
-        }
-      }
-      colnames(data) <- c("geneID", "ncbiID", "orthoID", "var1", "var2")
-    }
-    # return preData
-    return(data)
-  })
-  
-  # get all information for input data ----------------------------------------
-  get_data_filtered <- reactive({
-    mdData <- preData()
-
-    # count number of inparalogs
-    paralogCount <- plyr::count(mdData, c("geneID", "ncbiID"))
-    mdData <- merge(mdData, paralogCount, by = c("geneID", "ncbiID"))
-    colnames(mdData)[ncol(mdData)] <- "paralog"
-    
-    # (3) GET SORTED TAXONOMY LIST (3)
-    taxa_list <- sortedtaxa_list()
-    
-    # calculate frequency of all supertaxa
-    taxaCount <- plyr::count(taxa_list, "supertaxon")
-    
-    # merge mdData, mdDataVar2 and taxa_list to get taxonomy info
-    taxaMdData <- merge(mdData, taxa_list, by = "ncbiID")
-    taxaMdData$var1 <- {
-      suppressWarnings(as.numeric(as.character(taxaMdData$var1)))
-    }
-    taxaMdData$var2 <- {
-      suppressWarnings(as.numeric(as.character(taxaMdData$var2)))
-    }
-    
-    # (4) calculate PERCENTAGE of PRESENT SPECIES (4)
-    finalPresSpecDt <- calc_pres_spec(taxaMdData, taxaCount)
-    
-    # (5) calculate max/min/mean/median VAR1 for every supertaxon of each gene (5)
-    # remove NA rows from taxaMdData
-    taxaMdDataNoNA <- taxaMdData[!is.na(taxaMdData$var1), ]
-    # calculate m var1
-    mVar1Dt <- aggregate(taxaMdDataNoNA[, "var1"],
-                         list(taxaMdDataNoNA$supertaxon,
-                              taxaMdDataNoNA$geneID),
-                         FUN = input$var1_aggregate_by)
-    colnames(mVar1Dt) <- c("supertaxon", "geneID", "mVar1")
-    
-    # (6) calculate max/min/mean/median VAR2 for each super taxon (6)
-    # remove NA rows from taxaMdData
-    taxaMdDataNoNA_var2 <- taxaMdData[!is.na(taxaMdData$var2), ]
-    # calculate max/min/mean/median VAR2
-    if (nrow(taxaMdDataNoNA_var2) > 0){
-      mVar2Dt <- aggregate(taxaMdDataNoNA_var2[, "var2"],
-                           list(taxaMdDataNoNA_var2$supertaxon,
-                                taxaMdDataNoNA_var2$geneID),
-                           FUN = input$var2_aggregate_by)
-      colnames(mVar2Dt) <- c("supertaxon", "geneID", "mVar2")
-    } else {
-      mVar2Dt <- taxaMdData[, c("supertaxon", "geneID")]
-      mVar2Dt$mVar2 <- 0
-    }
-    
-    # (5+6) & join mVar2 together with mVar1 scores into one df (5+6)
-    scoreDf <- merge(mVar1Dt,
-                     mVar2Dt,
-                     by = c("supertaxon", "geneID"),
-                     all = TRUE)
-    
-    # (4+5+6) add presSpec and mVar1 into taxaMdData (4+5+6)
-    presMdData <- merge(taxaMdData,
-                        finalPresSpecDt,
-                        by = c("geneID", "supertaxon"),
-                        all.x = TRUE)
-    fullMdData <- merge(presMdData,
-                        scoreDf,
-                        by = c("geneID", "supertaxon"),
-                        all.x = TRUE)
-    fullMdData <- merge(fullMdData,
-                        taxaCount, by = ("supertaxon"),
-                        all.x = TRUE)
-    # rename "freq" into "numberSpec"
-    names(fullMdData)[names(fullMdData) == "freq"] <- "numberSpec"
-    
-    fullMdData$fullName <- as.vector(fullMdData$fullName)
-    names(fullMdData)[names(fullMdData) == "orthoID.x"] <- "orthoID"
-    # parsed input data frame !!!
-    fullMdData <- fullMdData[!duplicated(fullMdData), ]
-    
-    return(fullMdData)
-  })
-  
-  # REDUCE DATA FROM SPECIES LEVEL TO SUPERTAXA LEVEL -------------------------
-  # this data set contain only supertaxa
-  # and their value (%present, mVar1 & mVar2) for each gene
-  dataSupertaxa <- reactive({
-    fullMdData <- get_data_filtered()
-    
-    # to check if working with the lowest taxonomy rank; 1 for NO; 0 for YES
-    flag <- 1
-    if (length(unique(levels(as.factor(fullMdData$numberSpec)))) == 1){
-      if (unique(levels(as.factor(fullMdData$numberSpec))) == 1){
-        superDfExt <- fullMdData[, c("geneID",
-                                     "supertaxon",
-                                     "supertaxonID",
-                                     "var1",
-                                     "presSpec",
-                                     "category",
-                                     "orthoID",
-                                     "var2",
-                                     "paralog")]
-        flag <- 0
-      }
-    }
-    
-    if (flag == 1){
-      # get representative orthoID that has m VAR1 for each supertaxon
-      mOrthoID <- fullMdData[, c("geneID",
-                                 "supertaxon",
-                                 "var1",
-                                 "mVar1",
-                                 "orthoID")]
-      mOrthoID <- subset(mOrthoID,
-                         mOrthoID$var1 == mOrthoID$mVar1)
-      colnames(mOrthoID) <- c("geneID",
-                              "supertaxon",
-                              "var1",
-                              "mVar1",
-                              "orthoID")
-      mOrthoID <- mOrthoID[!is.na(mOrthoID$orthoID), ]
-      mOrthoID <- mOrthoID[, c("geneID", "supertaxon", "orthoID")]
-      mOrthoID <- mOrthoID[!duplicated(mOrthoID[, 1:2]), ]
-      
-      # get data set for phyloprofile plotting (contains only supertaxa info)
-      superDf <- subset(fullMdData, select = c("geneID",
-                                               "supertaxon",
-                                               "supertaxonID",
-                                               "mVar1",
-                                               "presSpec",
-                                               "category",
-                                               "mVar2",
-                                               "paralog"))
-      superDf$paralog <- 1
-      superDf <- superDf[!duplicated(superDf), ]
-      
-      superDfExt <- merge(superDf, mOrthoID, by = c("geneID", "supertaxon"),
-                          all.x = TRUE)
-      superDfExt <- superDfExt[, c("geneID",
-                                   "supertaxon",
-                                   "supertaxonID",
-                                   "mVar1",
-                                   "presSpec",
-                                   "category",
-                                   "orthoID",
-                                   "mVar2",
-                                   "paralog")]
-      
-      # rename mVar to var
-      names(superDfExt)[names(superDfExt) == "mVar1"] <- "var1"
-      names(superDfExt)[names(superDfExt) == "mVar2"] <- "var2"
-    }
-    
-    # print(superDfExt[superDfExt$geneID == "ampk_ACACB"
-    # & superDfExt$supertaxon == "1001_Chordata",])
-    # print("END2222")
-    return(superDfExt)
-  })
-  
-  # heatmap data input --------------------------------------------------------
-  dataHeat <- reactive({
-    
-    # get all cutoffs
-    percent_cutoff_min <- input$percent[1]
-    percent_cutoff_max <- input$percent[2]
-    var1_cutoff_min <- input$var1[1]
-    var1_cutoff_max <- input$var1[2]
-    var2_cutoff_min <- input$var2[1]
-    var2_cutoff_max <- input$var2[2]
-    
-    # check input file
-    filein <- input$main_input
-    # if(input$demo == TRUE){
-    if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor"){
-      filein <- 1
-    }
-    if (is.null(filein)) return()
-    
-    dataHeat <- dataSupertaxa()
-    
-    # get selected supertaxon name
-    split <- strsplit(as.character(input$in_select), "_")
-    in_select <- as.character(split[[1]][1])
-    
-    ### replace insufficient values according to the thresholds by NA or 0
-    dataHeat$presSpec[dataHeat$supertaxon != in_select
-                      & dataHeat$presSpec < percent_cutoff_min] <- 0
-    dataHeat$presSpec[dataHeat$supertaxon != in_select
-                      & dataHeat$presSpec > percent_cutoff_max] <- 0
-    
-    dataHeat$presSpec[dataHeat$supertaxon != in_select
-                      & dataHeat$var1 < var1_cutoff_min] <- 0
-    dataHeat$presSpec[dataHeat$supertaxon != in_select
-                      & dataHeat$var1 > var1_cutoff_max] <- 0
-    
-    if (input$var1_relation == "protein"){
-      if (input$var2_relation == "protein"){
-        # prot-prot: remove complete cell if one variable not sufficient
-        dataHeat$presSpec[dataHeat$supertaxon != in_select
-                          & dataHeat$var2 < var2_cutoff_min] <- 0
-        dataHeat$presSpec[dataHeat$supertaxon != in_select
-                          & dataHeat$var2 > var2_cutoff_max] <- 0
-        dataHeat$var2[dataHeat$supertaxon != in_select
-                      & dataHeat$var1 < var1_cutoff_min] <- NA
-        dataHeat$var2[dataHeat$supertaxon != in_select
-                      & dataHeat$var1 > var1_cutoff_max] <- NA
-        dataHeat$var1[dataHeat$supertaxon != in_select
-                      & dataHeat$var2 < var2_cutoff_min] <- NA
-        dataHeat$var1[dataHeat$supertaxon != in_select
-                      & dataHeat$var2 > var2_cutoff_max] <- NA
-      } else {
-        # prot-spec: var1 depend on var2
-        dataHeat$presSpec[dataHeat$supertaxon != in_select
-                          & dataHeat$var2 < var2_cutoff_min] <- 0
-        dataHeat$presSpec[dataHeat$supertaxon != in_select
-                          & dataHeat$var2 > var2_cutoff_max] <- 0
-      }
-    } else {
-      if (input$var2_relation == "species"){
-        # # spec-spec: remove var1 and var2 independently
-        # dataHeat$presSpec[dataHeat$supertaxon != in_select & dataHeat$var1 < var1_cutoff_min] <- 0
-        # dataHeat$presSpec[dataHeat$supertaxon != in_select & dataHeat$var1 > var1_cutoff_max] <- 0
-      } else {
-        # spec-prot: var2 depend on var1
-        dataHeat$var2[dataHeat$supertaxon != in_select
-                      & dataHeat$var1 < var1_cutoff_min] <- NA
-        dataHeat$var2[dataHeat$supertaxon != in_select
-                      & dataHeat$var1 > var1_cutoff_max] <- NA
-      }
-    }
-    
-    dataHeat$var1[dataHeat$supertaxon != in_select
-                  & dataHeat$var1 < var1_cutoff_min] <- NA
-    dataHeat$var1[dataHeat$supertaxon != in_select
-                  & dataHeat$var1 > var1_cutoff_max] <- NA
-    dataHeat$var2[dataHeat$supertaxon != in_select
-                  & dataHeat$var2 < var2_cutoff_min] <- NA
-    dataHeat$var2[dataHeat$supertaxon != in_select
-                  & dataHeat$var2 > var2_cutoff_max] <- NA
-    dataHeat <- droplevels(dataHeat)  # delete unused levels
-    dataHeat$geneID <- as.factor(dataHeat$geneID)
-    return(dataHeat)
-  })
-  
-  # cluster heatmap data -----------------------------------------------------
-  clusteredDataHeat <- reactive({
-    dataHeat <- dataHeat()
-    if (nrow(dataHeat) < 1) return()
-    
-    # dataframe for calculate distance matrix
-    sub_data_heat <- subset(dataHeat, dataHeat$presSpec > 0)
-    sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", "presSpec")]
-    sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
-    
-    wide_data <- spread(sub_data_heat, supertaxon, presSpec)
-    dat <- wide_data[, 2:ncol(wide_data)]  # numerical columns
-    rownames(dat) <- wide_data[, 1]
-    dat[is.na(dat)] <- 0
-
-    # get clustered gene ids
-    clusteredGeneIDs <- clustered_gene_list(dat,
-                                            input$dist_method,
-                                            input$cluster_method)
-    
-    # sort original data according to clusteredGeneIDs
-    dataHeat$geneID <- factor(dataHeat$geneID,
-                              levels = clusteredGeneIDs)
-    return(dataHeat)
-  })
-  
-  # get info clicked point on main heatmap ------------------------------------
-  mainpoint_info <- reactive({
-    # check input
-    if (v$doPlot == FALSE) return()
-    
-    # get selected supertaxon name
-    taxa_list <- as.data.frame(read.table("data/taxonNamesReduced.txt",
-                                          sep = "\t",
-                                          header = T))
-    rank_select <- input$rank_select
-    rankName <- substr(rank_select, 4, nchar(rank_select))
-    in_select <- {
-      as.numeric(taxa_list$ncbiID[taxa_list$fullName == input$in_select])
-    }
-    
-    dataHeat <- dataHeat()
-    if (input$apply_cluster == TRUE){
-      dataHeat <- clusteredDataHeat()
-    }
-    
-    # get values
-    if (is.null(input$plot_click$x)) return()
-    else{
-      # get cooridiate point
-      if (input$x_axis == "genes"){
-        corX <- round(input$plot_click$y);
-        corY <- round(input$plot_click$x)
-      } else {
-        corX <- round(input$plot_click$x);
-        corY <- round(input$plot_click$y)
-      }
-      
-      # get geneID
-      # genes <- as.matrix(dataHeat[dataHeat$supertaxonID == in_select
-      #                             & !is.na(dataHeat$presSpec),])
-      genes <- levels(dataHeat$geneID)
-      geneID <- toString(genes[corY])
-      
-      # get supertaxon (spec)
-      supertaxa <- levels(dataHeat$supertaxon)
-      spec <- toString(supertaxa[corX])
-      
-      # get var1, percentage of present species and var2 score
-      var1 <- NA
-      if (!is.na(dataHeat$var1[dataHeat$geneID == geneID
-                               & dataHeat$supertaxon == spec][1])){
-        var1 <- max(na.omit(dataHeat$var1[dataHeat$geneID == geneID
-                                          & dataHeat$supertaxon == spec]))
-      }
-      Percent <- NA
-      if (!is.na(dataHeat$presSpec[dataHeat$geneID == geneID
-                                   & dataHeat$supertaxon == spec][1])){
-        Percent <- max(na.omit(dataHeat$presSpec[dataHeat$geneID == geneID
-                                                 & dataHeat$supertaxon == spec]))
-      }
-      var2 <- NA
-      if (!is.na(dataHeat$var2[dataHeat$geneID == geneID
-                               & dataHeat$supertaxon == spec][1])){
-        var2 <- max(na.omit(dataHeat$var2[dataHeat$geneID == geneID
-                                          & dataHeat$supertaxon == spec]))
-      }
-      
-      # get ortholog ID
-      orthoID <- dataHeat$orthoID[dataHeat$geneID == geneID
-                                  & dataHeat$supertaxon == spec]
-      if (length(orthoID) > 1){
-        orthoID <- paste0(orthoID[1], ",...")
-      }
-      # # get list of all geneID that have the same ortholog
-      # geneMatch <- dataHeat$geneID[dataHeat$orthoID == toString(orthoID)]
-      # geneMatch <- geneMatch[!is.na(geneMatch)]
-      # # list of all available geneID
-      # geneList <- preData()
-      # geneList$geneID <- as.factor(geneList$geneID)
-      # allGenes <- as.list(levels(geneList$geneID))
-      # # get index of all matched genes (genes have the same ortholog)
-      # pos <- which(allGenes %in% geneMatch)
-      # pos <- paste(pos, collapse=",")
-      
-      # return info of clicked point
-      if (is.na(as.numeric(Percent))) return()
-      else{
-        # info <- c(geneID,
-        #           as.character(orthoID),
-        #           as.character(spec),
-        #           round(as.numeric(var1), 2),
-        #           round(as.numeric(Percent), 2),
-        #           round(as.numeric(var2), 2), pos)
-        info <- c(geneID,
-                  as.character(orthoID),
-                  as.character(spec),
-                  round(as.numeric(var1), 2),
-                  round(as.numeric(Percent), 2),
-                  round(as.numeric(var2), 2))
-        return(info)
-      }
-    }
-  })
-  
-  # get info of a clicked point on selected plot ------------------------------
-  # (also the same as get info from main plot)
-  selectedpoint_info <- reactive({
-    # check input
-    if (vCt$doPlotCustom == FALSE) return()
-    
-    # get selected supertaxon name
-    taxa_list <- get_name_list(FALSE, FALSE)
-    rank_select <- input$rank_select
-    rankName <- substr(rank_select, 4, nchar(rank_select))
-    in_select <- {
-      as.numeric(taxa_list$ncbiID[taxa_list$fullName == input$in_select])
-    }
-    
-    dataHeat <- dataHeat()
-    
-    if (input$apply_cluster == TRUE){
-      dataHeat <- clusteredDataHeat()
-    }
-    
-    # get sub-dataframe of selected taxa and sequences
-    dataHeat$supertaxonMod <- substr(dataHeat$supertaxon,
-                                     6,
-                                     nchar(as.character(dataHeat$supertaxon)))
-    if (input$in_taxa[1] == "all" & input$in_seq[1] != "all"){
-      # select data from dataHeat for selected sequences only
-      dataHeat <- subset(dataHeat, geneID %in% input$in_seq)
-    } else if (input$in_seq[1] == "all" & input$in_taxa[1] != "all"){
-      # select data from dataHeat for selected taxa only
-      dataHeat <- subset(dataHeat, supertaxonMod %in% input$in_taxa)
-    } else {
-      # select data from dataHeat for selected sequences and taxa
-      dataHeat <- subset(dataHeat, geneID %in% input$in_seq
-                         & supertaxonMod %in% input$in_taxa)
-    }
-    
-    # drop all other supertaxon that are not in sub-dataframe
-    dataHeat$supertaxon <- factor(dataHeat$supertaxon)
-    dataHeat$geneID <- factor(dataHeat$geneID)
-    
-    # get values
-    if (is.null(input$plot_click_selected$x)) return()
-    else{
-      # get cooridiate point
-      if (input$x_axis_selected == "genes"){
-        corX <- round(input$plot_click_selected$y);
-        corY <- round(input$plot_click_selected$x)
-      } else {
-        corX <- round(input$plot_click_selected$x);
-        corY <- round(input$plot_click_selected$y)
-      }
-      
-      # get geneID
-      genes <- levels(dataHeat$geneID)
-      geneID <- toString(genes[corY])
-      # get supertaxon (spec)
-      supertaxa <- levels(dataHeat$supertaxon)
-      spec <- toString(supertaxa[corX])
-      # get var1, percentage of present species and var2 score
-      var1 <- NA
-      if (!is.na(dataHeat$var1[dataHeat$geneID == geneID
-                               & dataHeat$supertaxon == spec][1])){
-        var1 <- max(na.omit(dataHeat$var1[dataHeat$geneID == geneID
-                                          & dataHeat$supertaxon == spec]))
-      }
-      Percent <- NA
-      if (!is.na(dataHeat$presSpec[dataHeat$geneID == geneID
-                                   & dataHeat$supertaxon == spec][1])){
-        Percent <- {
-          max(na.omit(dataHeat$presSpec[dataHeat$geneID == geneID
-                                        & dataHeat$supertaxon == spec]))
-        }
-      }
-      var2 <- NA
-      if (!is.na(dataHeat$var2[dataHeat$geneID == geneID
-                               & dataHeat$supertaxon == spec][1])){
-        var2 <- {
-          max(na.omit(dataHeat$var2[dataHeat$geneID == geneID
-                                    & dataHeat$supertaxon == spec]))
-        }
-      }
-      
-      # get ortholog ID
-      orthoID <- dataHeat$orthoID[dataHeat$geneID == geneID
-                                  & dataHeat$supertaxon == spec]
-      if (length(orthoID) > 1){
-        orthoID <- paste0(orthoID[1], ",...")
-      }
-      
-      if (is.na(as.numeric(Percent))) return()
-      else{
-        info <- c(geneID,
-                  as.character(orthoID),
-                  as.character(spec),
-                  round(as.numeric(var1), 2),
-                  round(as.numeric(Percent), 2),
-                  round(as.numeric(var2), 2))
-      }
-    }
-  })
-  
-  # data for detailed plot ----------------------------------------------------
-  detail_plotDt <- reactive({
-    if (v$doPlot == FALSE) return()
-    
-    # GET INFO BASED ON CURRENT TAB
-    if (input$tabs == "Main profile"){
-      # info = groupID,orthoID,supertaxon,mVar1,%spec,var2
-      info <- mainpoint_info()
-    } else if (input$tabs == "Customized profile"){
-      info <- selectedpoint_info()
-    }
-    
-    if (is.null(info)) return()
-    else{
-      ### get info for present taxa in selected supertaxon (1)
-      plotTaxon <- info[3]
-      plotGeneID <- info[1]
-      fullDf <- get_data_filtered()
-      selDf <- as.data.frame(fullDf[fullDf$geneID == plotGeneID
-                                    & fullDf$supertaxon == plotTaxon, ])
-      
-      ### get all taxa of this supertaxon (2)
-      allTaxaDf <- sortedtaxa_list()
-      allTaxaDf <- allTaxaDf[allTaxaDf$supertaxon == plotTaxon, ]
-      allTaxaDf <- subset(allTaxaDf, select = c("abbrName", "fullName"))
-      
-      ### merge (1) and (2) together
-      joinedDf <- merge(selDf, allTaxaDf,
-                        by = c("abbrName"),
-                        all.y = TRUE)
-      joinedDf <- subset(joinedDf,
-                         select = c("abbrName",
-                                    "fullName.y",
-                                    "geneID",
-                                    "orthoID",
-                                    "var1",
-                                    "var2"))
-      names(joinedDf)[names(joinedDf) == "fullName.y"] <- "fullName"
-      
-      # replace var1/var2 as NA for all "NA orthologs"
-      joinedDf$var1[is.na(joinedDf$orthoID)] <- NA
-      joinedDf$var2[is.na(joinedDf$orthoID)] <- NA
-      
-      # remove NA orthologs if required
-      if (input$detailed_remove_na == TRUE){
-        joinedDf <- joinedDf[!is.na(joinedDf$orthoID), ]
-      }
-      
-      ### return data for detailed plot
-      return(joinedDf)
-    }
-  })
-  
-  # GET info when clicking on detailed plot -----------------------------------
-  point_infoDetail <- reactive({
-    selDf <- detail_plotDt()
-    # selDf <- selDf[complete.cases(selDf),]
-    selDf$orthoID <- as.character(selDf$orthoID)
-    # allOrthoID <- sort(selDf$orthoID)
-    
-    ### get coordinates of plot_click_detail
-    if (is.null(input$plot_click_detail$x)) return()
-    else{
-      corX <- round(input$plot_click_detail$y)
-      corY <- round(input$plot_click_detail$x)
-    }
-    
-    ### get pair of sequence IDs & var1
-    seedID <- as.character(selDf$geneID[!is.na(selDf$geneID)][1])
-    orthoID <- as.character(selDf$orthoID[corX])
-    
-    var1 <- as.list(selDf$var1[selDf$orthoID == orthoID])
-    var1 <- as.character(var1[!is.na(var1)])
-    var2 <- as.list(selDf$var2[selDf$orthoID == orthoID])
-    var2 <- as.character(var2[!is.na(var2)])
-    # ncbiID <- as.character(selDf$abbrName[selDf$orthoID==orthoID])
-    ncbiID <- selDf[selDf$orthoID == orthoID, ]$abbrName
-    ncbiID <- as.character(ncbiID[!is.na(ncbiID)][1])
-    
-    ### return info
-    if (is.na(orthoID)){
-      return(NULL)
-    } else {
-      if (orthoID != "NA"){
-        info <- c(seedID, orthoID, var1, var2, ncbiID)
-      }
-    }
-  })
-  
-  # get domain file/path ------------------------------------------------------
-  getDomainFile <- reactive({
-    # click info
-    info <- point_infoDetail() # info = seedID, orthoID, var1
-    group <- as.character(info[1])
-    ortho <- as.character(info[2])
-    var1 <- as.character(info[3])
-    
-
-    # domain file
-    if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor"){
-      if (is.null(info)){
-        fileDomain <- "noSelectHit"
-        updateButton(session, "do_domain_plot", disabled = TRUE)
-      } else {
-        updateButton(session, "do_domain_plot", disabled = FALSE)
-        if (input$demo_data == "lca-micros"){
-          fileDomain <- {
-            suppressWarnings(paste0("https://github.com/BIONF/phyloprofile-data/blob/master/demo/domain_files/",
-                                    group,
-                                    ".domains?raw=true"))
-          }
-        } else if (input$demo_data == "ampk-tor") {
-          fileDomain <- {
-            suppressWarnings(paste0("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.domains_F"))
-          }
-        } 
-      }
-    } else {
-      filein <- input$main_input
-      if (check_input_vadility(filein) == "oma"){
-      # if (get_input_type() == "oma"){
-        fileDomain <- "oma_input"
-        updateButton(session, "do_domain_plot", disabled = FALSE)
-      } else if (input$anno_location == "from file"){
-        fileDomain <- input$file_domain_input
-        #print(fileDomain)
-        if (is.null(fileDomain)){
-          fileDomain <- "noFileInput"
-        } else {
-          if (is.null(info)){
-            fileDomain <- "noSelectHit"
-            updateButton(session, "do_domain_plot", disabled = TRUE)
-          } else {
-            updateButton(session, "do_domain_plot", disabled = FALSE)
-            fileDomain <- fileDomain$datapath
-          }
-        }
-      } else {
-        if (is.null(info)){
-          fileDomain <- "noSelectHit"
-          updateButton(session, "do_domain_plot", disabled = TRUE)
-        } else {
-          # check file extension
-          allExtension <- c("txt", "csv", "list", "domains", "architecture")
-          flag <- 0
-          for (i in 1:length(allExtension)){
-            fileDomain <- paste0(input$domainPath,
-                                 "/",
-                                 group,
-                                 ".",
-                                 allExtension[i])
-            if (file.exists(fileDomain) == TRUE){
-              updateButton(session, "do_domain_plot", disabled = FALSE)
-              flag <- 1
-              break ()
-            }
-          }
-          
-          if (flag == 0){
-            fileDomain <- "noFileInFolder"
-            updateButton(session, "do_domain_plot", disabled = TRUE)
-          }
-        }
-      }
-    }
-    return (fileDomain)
-  })
-  
-
-  
-  cons_geneDf <- callModule(identify_core_gene,
-                            "cons_gene",
-                            filtered_data = get_data_filtered,
-                            rank_select = reactive(input$rank_select),
-                            taxaCons = reactive(input$taxaCons),
-                            percent_cons = reactive(input$percent_cons))
-  
-
   # Deciding which plots should be shown (Group Comparison) -------------------
   get_plots_gc <- reactive({
     gene <- as.character(input$selected_gene_gc)
@@ -3448,365 +3655,4 @@ shinyServer(function(input, output, session) {
     }
     return(taxa_name_gc)
   })
-  
-  #############################################################################
-  ########################## ANALYSIS FUNCTIONS ###############################
-  #############################################################################
-  
-  # ===========================================================================
-  # CLUSTERING PROFILES =======================================================
-  # ===========================================================================
-  brushed_clusterGene <- callModule(cluster_profile, "profile_clustering",
-                                    data = dataHeat,
-                                    dist_method = reactive(input$dist_method),
-                                    cluster_method = reactive(input$cluster_method),
-                                    cluster_plot.width = reactive(input$cluster_plot.width),
-                                    cluster_plot.height = reactive(input$cluster_plot.width))
-  
-  # check if anywhere elese genes are added to the custemized profile ---------
-  observe({
-    if (input$add_custom_profile == TRUE
-        | input$add_cons_gene_custom_profile == TRUE
-        | input$add_gc_genes_custom_profile == TRUE){
-      shinyjs::disable("add_cluster_cutom_profile")
-    }else{
-      shinyjs::enable("add_cluster_cutom_profile")
-    }
-  })
-  
-  output$add_cluster_cutom_profile_check.ui <- renderUI({
-    if (input$add_custom_profile == TRUE
-        | input$add_cons_gene_custom_profile == TRUE |
-        input$add_gc_genes_custom_profile == TRUE ){
-      HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Gene age estimation</strong> or <strong>Core genes finding</strong> or <strong>Group Comparison</strong> &nbsp;to enable this function)</em></p>')
-    }
-  })
-  
-  # ===========================================================================
-  # PLOT var1/var2 SCORE & % OF PRESENT SPECIES DISTRIBUTION ==================
-  # ===========================================================================
-  
-  # var1 / var2 distribution data ---------------------------------------------
-  distribution_df <- reactive({
-    if (v$doPlot == FALSE) return()
-    
-    dataOrig <- get_main_input()
-    if (ncol(dataOrig) < 4){
-      colnames(dataOrig) <- c("geneID",
-                              "ncbiID",
-                              "orthoID")
-      splitDt <- dataOrig[, c("orthoID")]
-    } else if (ncol(dataOrig) < 5){
-      colnames(dataOrig) <- c("geneID",
-                              "ncbiID",
-                              "orthoID",
-                              "var1")
-      splitDt <- dataOrig[, c("orthoID",
-                              "var1")]
-    } else {
-      colnames(dataOrig) <- c("geneID",
-                              "ncbiID",
-                              "orthoID",
-                              "var1",
-                              "var2")
-      splitDt <- dataOrig[, c("orthoID", "var1", "var2")]
-    }
-    
-    splitDt$orthoID[splitDt$orthoID == "NA" | is.na(splitDt$orthoID)] <- NA
-    splitDt <- splitDt[complete.cases(splitDt), ]
-    
-    if (length(levels(as.factor(splitDt$var2))) == 1){
-      if (levels(as.factor(splitDt$var2)) == ""){
-        splitDt$var2 <- 0
-      }
-    }
-    
-    # convert factor into numeric for "var1" & "var2" column
-    if ("var1" %in% colnames(splitDt)){
-      splitDt$var1 <- suppressWarnings(as.numeric(as.character(splitDt$var1)))
-      # filter splitDt based on selected var1 cutoff
-      splitDt <- splitDt[splitDt$var1 >= input$var1[1]
-                         & splitDt$var1 <= input$var1[2], ]
-    }
-    if ("var2" %in% colnames(splitDt)){
-      splitDt$var2 <- suppressWarnings(as.numeric(as.character(splitDt$var2)))
-      # filter splitDt based on selected var2 cutoff
-      splitDt <- splitDt[splitDt$var2 >= input$var2[1]
-                         & splitDt$var2 <= input$var2[2], ]
-    }
-    
-    # filter data base on customized plot (if chosen)
-    if (input$dataset.distribution == "Customized data"){
-      # get geneID and supertaxon name for splitDt
-      allData <- get_data_filtered()
-      splitDtName <- merge(splitDt, allData,
-                           by = "orthoID",
-                           all.x = TRUE)
-      splitDtName$supertaxonMod <- {
-        substr(splitDtName$supertaxon,
-               6,
-               nchar(as.character(splitDtName$supertaxon)))
-      }
-      splitDtName <- subset(splitDtName,
-                            select = c(orthoID,
-                                       var1.x,
-                                       var2.y,
-                                       supertaxonMod,
-                                       geneID))
-      colnames(splitDtName) <- c("orthoID",
-                                 "var1",
-                                 "var2",
-                                 "supertaxonMod",
-                                 "geneID")
-      
-      # filter
-      if (input$in_taxa[1] == "all" & input$in_seq[1] != "all"){
-        # select data from dataHeat for selected sequences only
-        splitDt <- subset(splitDtName, geneID %in% input$in_seq)
-      } else if (input$in_seq[1] == "all" & input$in_taxa[1] != "all"){
-        # select data from dataHeat for selected taxa only
-        splitDt <- subset(splitDtName, supertaxonMod %in% input$in_taxa)
-      } else {
-        # select data from dataHeat for selected sequences and taxa
-        splitDt <- subset(splitDtName,
-                          geneID %in% input$in_seq
-                          & supertaxonMod %in% input$in_taxa)
-      }
-    }
-    
-    # return dt
-    return(splitDt)
-  })
-  
-  # calculate % present species for input file --------------------------------
-  presSpecAllDt <- reactive({
-    # open main input file
-    mdData <- get_main_input()
-    if (ncol(mdData) < 4){
-      colnames(mdData) <- c("geneID",
-                            "ncbiID",
-                            "orthoID")
-    } else if (ncol(mdData) < 5){
-      colnames(mdData) <- c("geneID",
-                            "ncbiID",
-                            "orthoID",
-                            "var1")
-    } else {
-      colnames(mdData) <- c("geneID",
-                            "ncbiID",
-                            "orthoID",
-                            "var1",
-                            "var2")
-    }
-    
-    # count number of inparalogs
-    paralogCount <- plyr::count(mdData, c("geneID", "ncbiID"))
-    mdData <- merge(mdData, paralogCount, by = c("geneID", "ncbiID"))
-    colnames(mdData)[ncol(mdData)] <- "paralog"
-    
-    # (3) GET SORTED TAXONOMY LIST (3)
-    taxa_list <- sortedtaxa_list()
-    
-    # calculate frequency of all supertaxa
-    taxaCount <- plyr::count(taxa_list, "supertaxon")
-    
-    # merge mdData, mdDatavar2 and taxa_list to get taxonomy info
-    taxaMdData <- merge(mdData, taxa_list, by = "ncbiID")
-    if ("var1" %in% colnames(taxaMdData)){
-      taxaMdData$var1 <- {
-        suppressWarnings(as.numeric(as.character(taxaMdData$var1)))
-      }
-    }
-    if ("var2" %in% colnames(taxaMdData)){
-      taxaMdData$var2 <- {
-        suppressWarnings(as.numeric(as.character(taxaMdData$var2)))
-      }
-    }
-    # calculate % present species
-    finalPresSpecDt <- calc_pres_spec(taxaMdData, taxaCount)
-    finalPresSpecDt
-  })
-  
-  # list of available variables for distribution plot -------------------------
-  output$selected.distribution <- renderUI({
-    if (nchar(input$var1_id) == 0 & nchar(input$var2_id) == 0){
-      varList <- "% present taxa"
-    } else if (nchar(input$var1_id) == 0 & nchar(input$var2_id) > 0){
-      varList <- as.list(c(input$var2_id, "% present taxa"))
-    } else if (nchar(input$var1_id) > 0 & nchar(input$var2_id) == 0){
-      varList <- as.list(c(input$var1_id,
-                           "% present taxa"))
-    } else {
-      varList <- as.list(c(input$var1_id,
-                           input$var2_id,
-                           "% present taxa"))
-    }
-    
-    selectInput("selected_dist",
-                "Choose variable to plot:",
-                varList,
-                varList[1])
-  })
-  
-  # render distribution plots---------
-  observe({
-    if (v$doPlot == FALSE) return()
-    
-    if (is.null(input$selected_dist)){
-      return()
-    } else {
-      if (input$selected_dist == "% present taxa"){
-        callModule(analyze_distribution, "dist_plot",
-                   data = presSpecAllDt, 
-                   var_id = reactive(input$selected_dist),
-                   var_type = reactive("presSpec"),
-                   percent = reactive(input$percent), 
-                   dist_text_size = reactive(input$dist_text_size))
-      } else{
-        if (input$selected_dist == input$var1_id){
-          callModule(analyze_distribution, "dist_plot",
-                     data = distribution_df,
-                     var_id = reactive(input$selected_dist),
-                     var_type = reactive("var1"),
-                     percent = reactive(input$percent),
-                     dist_text_size = reactive(input$dist_text_size))
-        } else if (input$selected_dist == input$var2_id){
-          callModule(analyze_distribution, "dist_plot",
-                     data = distribution_df,
-                     var_id = reactive(input$selected_dist),
-                     var_type = reactive("var2"),
-                     percent = reactive(input$percent),
-                     dist_text_size = reactive(input$dist_text_size))
-        }
-      }
-    }
-  })
-  
-  # ===========================================================================
-  # GENE AGE ==================================================================
-  # ===========================================================================
-  
-  # gene age estimation -------------------------------------------------------
-  gene_ageDf <- reactive({
-    if (v$doPlot == FALSE) return()
-    
-    gene_ageDf <- estimate_gene_age(subset_taxa(), get_data_filtered(),
-                                    input$rank_select, input$in_select,
-                                    input$var1, input$var2, input$percent)
-    return(gene_ageDf)
-  })
-  
-  selectedgene_age <- callModule(plot_gene_age, "gene_age",
-                                 data = gene_ageDf,
-                                 gene_age_width = reactive(input$gene_age_width),
-                                 gene_age_height = reactive(input$gene_age_height),
-                                 gene_age_text = reactive(input$gene_age_text))
-  
-  # check if anywhere elese genes are added to the custemized profile ---------
-  observe({
-    if (input$add_cluster_cutom_profile == TRUE
-        | input$add_cons_gene_custom_profile == TRUE
-        | input$add_gc_genes_custom_profile == TRUE ){
-      shinyjs::disable("add_custom_profile")
-    } else {
-      shinyjs::enable("add_custom_profile")
-    }
-  })
-  
-  output$add_custom_profile_check.ui <- renderUI({
-    if (input$add_cluster_cutom_profile == TRUE
-        | input$add_cons_gene_custom_profile == TRUE
-        | input$add_gc_genes_custom_profile == TRUE){
-      HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Profile clustering</strong> or <strong>Core genes finding</strong> or <strong>Groupcomparison</strong> &nbsp;to enable this function)</em></p>')
-      
-    }
-  })
-  
-  # reset gene_age_prot_config ------------------------------------------------
-  observeEvent(input$reset_gene_age_prot_config, {
-    shinyjs::reset("gene_age_width")
-    shinyjs::reset("gene_age_height")
-    shinyjs::reset("gene_age_text")
-  })
-  
-  # ===========================================================================
-  # CORE GENES ================================================================
-  # ===========================================================================
-  
-  consTaxaName <- callModule(select_taxon_rank,
-                             "select_taxon_rank_cons",
-                             rank_select = reactive(input$rank_select),
-                             subset_taxa = subset_taxa)
-  
-  # render list of available taxa ---------------------------------------------
-  output$taxa_list_cons.ui <- renderUI({
-    filein <- input$main_input
-    # if(input$demo == TRUE){
-    if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor"){
-      filein <- 1
-    }
-    if (is.null(filein)){
-      return(selectInput("in_taxa",
-                         "Select taxa of interest:",
-                         "none"))
-    }
-    if (v$doPlot == FALSE){
-      return(selectInput("in_taxa",
-                         "Select taxa of interest:",
-                         "none"))
-    }
-    else{
-      choice <- alltaxa_list()
-      choice$fullName <- as.factor(choice$fullName)
-      
-      out <- as.list(levels(choice$fullName))
-      out <- append("none", out)
-      
-      if (input$apply_cons_taxa == TRUE){
-        out <- consTaxaName()
-        selectInput("taxaCons",
-                    "Select taxa of interest:",
-                    out,
-                    selected = out,
-                    multiple = TRUE)
-      } else {
-        selectInput("taxaCons",
-                    "Select taxa of interest:",
-                    out,
-                    selected = out[1],
-                    multiple = TRUE)
-      }
-    }
-  })
-  
-  # download gene list from cons_gene.table -----------------------------------
-  output$cons_gene_table_download <- downloadHandler(
-    filename = function(){
-      c("consensusGeneList.out")
-    },
-    content = function(file){
-      data_out <- cons_geneDf()
-      write.table(data_out, file, sep = "\t", row.names = FALSE, quote = FALSE)
-    }
-  )
-  
-  # check if anywhere elese genes are added to the custemized profile ---------
-  observe({
-    if (input$add_cluster_cutom_profile == TRUE
-        | input$add_custom_profile == TRUE
-        | input$add_gc_genes_custom_profile == TRUE){
-      shinyjs::disable("add_cons_gene_custom_profile")
-    } else {
-      shinyjs::enable("add_cons_gene_custom_profile")
-    }
-  })
-  
-  output$add_cons_gene_custom_profile_check.ui <- renderUI({
-    if (input$add_cluster_cutom_profile == TRUE
-        | input$add_custom_profile == TRUE
-        | input$add_gc_genes_custom_profile == TRUE){
-      HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Profiles clustering</strong> or <strong>Gene age estimating</strong> or r <strong>Group Comparioson</strong>&nbsp;to enable this function)</em></p>')
-    }
-  })
-  
 })

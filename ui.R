@@ -452,7 +452,7 @@ shinyUI(
       tabPanel(
         "Main profile",
         sidebarLayout(
-          # sidebar panel for profile highlight -------------------------------
+          # * sidebar panel for profile highlight -----------------------------
           sidebarPanel(
             uiOutput("total_gene_number.ui"),
             
@@ -521,7 +521,7 @@ shinyUI(
             )
           ),
           
-          # main panel for profile plot ---------------------------------------
+          # * main panel for profile plot -------------------------------------
           mainPanel(
             uiOutput("plot.ui"),
             
@@ -547,7 +547,7 @@ shinyUI(
       tabPanel(
         "Customized profile",
         sidebarLayout(
-          # sidebar panel for subseting data ----------------------------------
+          # * sidebar panel for subseting data --------------------------------
           sidebarPanel(
             width = 4,
             column(
@@ -598,7 +598,7 @@ shinyUI(
             uiOutput("plot_custom_btn")
           ),
           
-          # main panel for customized profile plot ----------------------------
+          # * main panel for customized profile plot --------------------------
           mainPanel(
             conditionalPanel(
               condition = "output.same_profile == true",
@@ -616,7 +616,7 @@ shinyUI(
       navbarMenu(
         "Function",
         
-        # Profiles clustering -------------------------------------------------
+        # * Profiles clustering -----------------------------------------------
         tabPanel(
           "Profiles clustering",
           h4(strong("Profiles clustering")),
@@ -684,7 +684,7 @@ shinyUI(
           cluster_profile_ui("profile_clustering")
         ),
         
-        # Distribution analysis -----------------------------------------------
+        # * Distribution analysis ---------------------------------------------
         tabPanel(
           "Distribution analysis",
           h4(strong("Distribution analysis")),
@@ -722,7 +722,7 @@ shinyUI(
           analyze_distribution_ui("dist_plot")
         ),
         
-        # Gene age estimation -------------------------------------------------
+        # * Gene age estimation -----------------------------------------------
         tabPanel(
           "Gene age estimation",
           h4(strong("Gene age estimation")),
@@ -762,7 +762,7 @@ shinyUI(
           plot_gene_age_ui("gene_age")
         ),
         
-        # Core gene identification  -------------------------------------------
+        # * Core gene identification  -----------------------------------------
         tabPanel(
           "Core gene identification",
           h4(strong("Core gene identification")),
@@ -771,20 +771,20 @@ shinyUI(
             fluidRow(
               column(
                 2,
-                uiOutput("var1_cons.ui")
+                uiOutput("var1_core.ui")
               ),
               column(
                 2,
-                uiOutput("var2_cons.ui")
+                uiOutput("var2_core.ui")
               ),
               column(
                 2,
-                uiOutput("percent_cons.ui")
+                uiOutput("percent_core.ui")
               ),
               column(
                 6,
-                uiOutput("taxa_list_cons.ui"),
-                shinyBS::bsButton("browse_taxa_cons", "Browse")
+                uiOutput("taxa_list_core.ui"),
+                shinyBS::bsButton("browse_taxa_core", "Browse")
               )
             )
           ),
@@ -792,23 +792,23 @@ shinyUI(
           
           column(
             4,
-            downloadButton("cons_gene_table_download", "Download gene list"),
+            downloadButton("core_gene_table_download", "Download gene list"),
             checkboxInput(
-              "add_cons_gene_custom_profile",
+              "add_core_gene_custom_profile",
               strong(em("Add to Customized profile")),
               value = FALSE,
               width = NULL
             ),
-            uiOutput("add_cons_gene_custom_profile_check.ui")
+            uiOutput("add_core_gene_custom_profile_check.ui")
           ),
           
-          identify_core_gene_ui("cons_gene")
+          identify_core_gene_ui("core_gene")
         ),
         
-        # Search for NCBI taxonomy IDs  ---------------------------------------
+        # * Search for NCBI taxonomy IDs  -------------------------------------
         search_taxon_id_ui("search_taxon_id"),
         
-        # Group Comparison  ---------------------------------------------------
+        # * Group Comparison  -------------------------------------------------
         tabPanel(
           "Group Comparison",
           h4(strong("Group Comparison")),
@@ -934,7 +934,7 @@ shinyUI(
     
     # LIST OF POP-UP WINDOWS ==================================================
     
-    # popup for adding new taxa from input file -------------------------------
+    # * popup for adding new taxa from input file -----------------------------
     bsModal(
       
       "add_taxa_windows",
@@ -977,7 +977,7 @@ shinyUI(
       actionButton("new_done", "Done")
     ),
     
-    # popup for confirming parsing taxa from input file -----------------------
+    # * popup for confirming parsing taxa from input file ---------------------
     bsModal(
       "parse_confirm",
       "Get info from input",
@@ -996,7 +996,7 @@ shinyUI(
       dataTableOutput("invalidIDout")
     ),
     
-    # popup for plotting detailed plot ----------------------------------------
+    # * popup for plotting detailed plot --------------------------------------
     bsModal(
       "modal_bs",
       "Detailed plot",
@@ -1042,7 +1042,7 @@ shinyUI(
       verbatimTextOutput("fasta")
     ),
     
-    # popup for plotting domain architecture plot -----------------------------
+    # * popup for plotting domain architecture plot ---------------------------
     bsModal(
       "plot_archi",
       "Domain architecture",
@@ -1072,7 +1072,7 @@ shinyUI(
       downloadButton("archi_download", "Download plot")
     ),
     
-    # popup for setting plot colors -------------------------------------------
+    # * popup for setting plot colors (profiles) ------------------------------
     bsModal(
       "color",
       "Set colors for profile",
@@ -1125,7 +1125,7 @@ shinyUI(
       )
     ),
     
-    # popup for FASTA configurations ------------------------------------------
+    # * popup for FASTA configurations ----------------------------------------
     bsModal(
       "config",
       "FASTA config",
@@ -1143,7 +1143,7 @@ shinyUI(
       conditionalPanel(
         condition = "input.input_type == 'Concatenated fasta file'",
         fileInput("concat_fasta", ""),
-        uiOutput("one_seq.exist_check")
+        uiOutput("concat_fasta.exist_check")
       ),
       conditionalPanel(
         condition = "input.input_type == 'Fasta folder'",
@@ -1173,7 +1173,7 @@ shinyUI(
       )
     ),
     
-    # popup for setting Main plot configurations ------------------------------
+    # * popup for setting Main plot configurations ----------------------------
     bsModal(
       "main_plot_config_bs",
       "Plot appearance configuration",
@@ -1245,7 +1245,7 @@ shinyUI(
       shinyBS::bsButton("applyMainConfig", "Done", style = "warning")
     ),
     
-    # popup for setting Customized plot configurations ------------------------
+    # * popup for setting Customized plot configurations ----------------------
     bsModal(
       "selected_plot_config_bs",
       "Plot properties configuration",
@@ -1314,7 +1314,7 @@ shinyUI(
       shinyBS::bsButton("apply_selected_config", "Done", style = "warning")
     ),
     
-    # popup for setting Gene age plot configurations --------------------------
+    # * popup for setting Gene age plot configurations ------------------------
     bsModal(
       "gene_age_prot_config_bs",
       "Plot appearance configuration",
@@ -1355,7 +1355,7 @@ shinyUI(
       )
     ),
     
-    # popup for setting Group compariosn plot configurations ------------------
+    # * popup for setting Group compariosn plot configurations ----------------
     bsModal(
       "gc_plot_config_bs",
       "Plot appearance configuration",
@@ -1427,7 +1427,7 @@ shinyUI(
       shinyBS::bsButton("apply_config_gc", "Done", style = "warning")
     ),
     
-    # popup for select taxa on Customized Profile -----------------------------
+    # * popup for select taxa on Customized Profile ---------------------------
     bsModal(
       "cus_taxa_bs",
       "Select taxon/taxa of interest",
@@ -1443,22 +1443,22 @@ shinyUI(
       )
     ),
     
-    # popup for select taxa on Consensus gene finding -------------------------
+    # * popup for select taxa on Core gene finding ----------------------------
     bsModal(
-      "browse_taxa_cons_bs",
+      "browse_taxa_core_bs",
       "Select taxon/taxa of interest",
-      "browse_taxa_cons",
+      "browse_taxa_core",
       size = "small",
       
-      select_taxon_rank_ui("select_taxon_rank_cons"),
+      select_taxon_rank_ui("select_taxon_rank_core"),
       checkboxInput(
-        "apply_cons_taxa",
+        "apply_core_taxa",
         strong("Apply", style = "color:red"),
         value = FALSE
       )
     ),
     
-    # popup for changing the rank in the Group comparison function ------------
+    # * popup for changing the rank in the Group comparison function ----------
     bsModal(
       "taxa_gc_bs",
       "Select taxon/taxa of interest",
@@ -1475,7 +1475,7 @@ shinyUI(
       )
     ),
     
-    # popup for handling the downloads to the Group comparison function -------
+    # * popup for handling the downloads to the Group comparison function -----
     bsModal(
       "gc_downloadsBS",
       "Download",
