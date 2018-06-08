@@ -523,22 +523,22 @@ shinyUI(
           
           # * main panel for profile plot -------------------------------------
           mainPanel(
-            uiOutput("plot.ui"),
-            
-            conditionalPanel(
-              condition = "input.main_x_axis_guide == true |
-              input.main_y_axis_guide == true",
-              absolutePanel(
-                id = "absAxis",
-                bottom = 0, left = 0,
-                heigh = NULL, width = NULL,
-                fixed = TRUE,
-                draggable = TRUE,
-                style = "opacity: 0.80",
-                
-                uiOutput("mainAxisRender")
-              )
-            )
+            uiOutput("plot.ui")
+            # ,
+            # conditionalPanel(
+            #   condition = "input.main_x_axis_guide == true |
+            #   input.main_y_axis_guide == true",
+            #   absolutePanel(
+            #     id = "absAxis",
+            #     bottom = 0, left = 0,
+            #     heigh = NULL, width = NULL,
+            #     fixed = TRUE,
+            #     draggable = TRUE,
+            #     style = "opacity: 0.80",
+            #     
+            #     uiOutput("mainAxisRender")
+            #   )
+            # )
           )
         )
       ),

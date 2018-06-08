@@ -44,14 +44,12 @@ source("scripts/download_filtered_customized.R")
 
 source("scripts/parse_phylotree.R")
 source("scripts/select_taxon_rank.R")
+source("scripts/create_profile_heatmap.R")
 
 source("scripts/identify_core_gene.R")
 source("scripts/analyze_distribution.R")
-
 source("scripts/estimate_gene_age.R")
-
 source("scripts/analyze_distribution.R")
-
 source("scripts/cluster_profile.R")
 
 options(shiny.maxRequestSize = 99 * 1024 ^ 2)  # size limit for input 99mb
@@ -1765,7 +1763,7 @@ shinyServer(function(input, output, session) {
   
   # * parameters for the main profile plot --------------------------------------
   get_parameter_input_main <- reactive({
-    input_data <- list( "x_axis" = input$x_axis,
+    input_para <- list( "x_axis" = input$x_axis,
                         "var1_id" = input$var1_id,
                         "var2_id"  = input$var2_id,
                         "low_color_var1" =  input$low_color_var1,
@@ -1779,14 +1777,13 @@ shinyServer(function(input, output, session) {
                         "main_legend" = input$main_legend,
                         "dot_zoom" = input$dot_zoom,
                         "x_angle" = input$x_angle,
-                        "taxon_highlight" = input$taxon_highlight,
-                        "apply_cluster" = input$apply_cluster,
-                        "rank_select" = input$rank_select,
-                        "gene_highlight" = input$gene_highlight,
-                        "auto_update" = input$auto_update,
-                        "update_btn" = input$update_btn)
+                        # "taxon_highlight" = input$taxon_highlight,
+                        # "apply_cluster" = input$apply_cluster,
+                        # "rank_select" = input$rank_select,
+                        # "gene_highlight" = input$gene_highlight,
+                        "guideline" = 1)
 
-    return (input_data)
+    return(input_para)
   })
 
   # * render dot size to dot_size_info ------------------------------------------
@@ -1805,22 +1802,15 @@ shinyServer(function(input, output, session) {
 
   # * plot main profile -------------------------------------------------
   output$mainPlot <- renderPlot({
-    if (input$auto_update == FALSE){
-      # Add dependency on the update button
-      # (only update when button is clicked)
-      input$update_btn
-
-      # Add all the filters to the data based on the user inputs
-      # wrap in an isolate() so that the data won't update every time an input
-      # is changed
-      isolate({
-        main_plot(v, dataHeat(), clusteredDataHeat(), get_parameter_input_main ())
-      })
-    } else {
-      main_plot(v, dataHeat(), clusteredDataHeat(), get_parameter_input_main ())
+    data_heat <- data_main_plot(dataHeat())
+    # cluster dataHeat (if selected)
+    if (input$apply_cluster == TRUE) {
+      data_heat <- data_main_plot(clusteredDataHeat())
     }
+    
+    profile_plot(data_heat, get_parameter_input_main(), input$taxon_highlight, input$rank_select, input$gene_highlight)
   })
-
+  
   output$plot.ui <- renderUI({
     # show beschreibung file if no plot present
     if (v$doPlot == FALSE){
@@ -1828,13 +1818,7 @@ shinyServer(function(input, output, session) {
     } else{
       # if auto_update is NOT selected, use update_btn to trigger plot changing
       if (input$auto_update == FALSE){
-        # Add dependency on the update button
-        # (only update when button is clicked)
         input$update_btn
-
-        # Add all the filters to the data based on the user inputs
-        # wrap in an isolate() so that the data won't update
-        # every time an input is changed
         isolate({
           withSpinner(
             plotOutput("mainPlot",
@@ -2175,52 +2159,38 @@ shinyServer(function(input, output, session) {
   })
 
   # * parameters for the customized profile plot --------------------------------
-  get_parameter_input_customized <- reactive ({
-    input_data <- list ("x_axis_selected" = input$x_axis_selected,
+  get_parameter_input_customized <- reactive({
+    input_para <- list( "x_axis" = input$x_axis_selected,
                         "var1_id" = input$var1_id,
-                        "var2_id" = input$var2_id,
-                        "low_color_var1" = input$low_color_var1,
+                        "var2_id"  = input$var2_id,
+                        "low_color_var1" =  input$low_color_var1,
                         "high_color_var1" = input$high_color_var1,
                         "low_color_var2" = input$low_color_var2,
                         "high_color_var2" = input$high_color_var2,
                         "para_color" = input$para_color,
-                        "x_size_select" = input$x_size_select,
-                        "y_size_select" = input$y_size_select,
-                        "legend_size_select" = input$legend_size_select,
-                        "selected_legend" = input$selected_legend,
-                        "dot_zoom_select" = input$dot_zoom_select,
-                        "x_angle_select" = input$x_angle_select,
-                        "in_taxa" = input$in_taxa,
-                        "in_seq" = input$in_seq,
-                        "auto_update_selected" = input$auto_update_selected,
-                        "plot_custom" = input$plot_custom,
-                        "apply_cluster" = input$apply_cluster
-    )
-    return(input_data)
+                        "x_size" = input$x_size_select,
+                        "y_size" = input$y_size_select,
+                        "legend_size" = input$legend_size_select,
+                        "main_legend" = input$selected_legend,
+                        "dot_zoom" = input$dot_zoom_select,
+                        "x_angle" = input$x_angle_select,
+                        "guideline" = 0)
+
+    return(input_para)
   })
   
   # * plot customized profile -------------------------------------------
   output$selected_plot <- renderPlot({
-    if (input$auto_update_selected == FALSE){
-      # Add dependency on the update button
-      # (only update when button is clicked)
-      input$plot_custom
-
-      # Add all the filters to the data based on the user inputs
-      # wrap in an isolate() so that the data won't update every time an input
-      # is changed
-      isolate({
-        selected_plot(vCt,
-                      dataHeat(),
-                      clusteredDataHeat(),
-                      get_parameter_input_customized())
-      })
-    } else {
-      selected_plot(vCt,
-                    dataHeat(),
-                    clusteredDataHeat(),
-                    get_parameter_input_customized())
+    if (vCt$doPlotCustom == FALSE) return()
+    if (input$in_seq[1] == "all" & input$in_taxa[1] == "all") return()
+    
+    data_heat <- data_customized_plot(dataHeat(), input$in_taxa, input$in_seq)
+    # cluster dataHeat (if selected)
+    if (input$apply_cluster == TRUE) {
+      data_heat <- data_customized_plot(clusteredDataHeat(), input$in_taxa, input$in_seq)
     }
+    
+    profile_plot(data_heat, get_parameter_input_customized(), "none", input$rank_select, "none")
   })
   
   output$selected_plot.ui <- renderUI({
@@ -2228,13 +2198,7 @@ shinyServer(function(input, output, session) {
     else if (input$in_seq[1] == "all" & input$in_taxa[1] == "all") return()
     else{
       if (input$auto_update_selected == FALSE){
-        # Add dependency on the update button
-        # (only update when button is clicked)
         input$plot_custom
-
-        # Add all the filters to the data based on the user inputs
-        # wrap in an isolate() so that the data won't update every time an input
-        # is changed
         isolate({
           withSpinner(
             plotOutput("selected_plot",
