@@ -1,6 +1,7 @@
 #' Profile clustering
 #' 
-
+if (!require("bioDist")) install.packages("bioDist") # for the mutual information
+if (!require("energy")) install.packages("energy") # for the mutual information, pearson
 
 cluster_profile_ui <- function(id){
   ns <- NS(id)
@@ -123,7 +124,7 @@ clusterDataDend <- function(data, dist_method, cluster_method){
   rownames(dat) <- wide_data[, 1]
   dat[is.na(dat)] <- 0
   
-  dd.col <- as.dendrogram(hclust(dist(dat, method = dist_method),
+  dd.col <- as.dendrogram(hclust(get_distance_matrix(dat, dist_method),
                                  method = cluster_method))
   
   return(dd.col)
@@ -136,3 +137,61 @@ dendrogram <- function(dd.col){
     theme(axis.title = element_blank(), axis.text.y = element_blank())
   p
 }
+
+# Get the distance matrix depending on the distance method --------------------
+get_distance_matrix <- function(profiles, method){
+  dist_methods <- c("euclidean", "maximum", "manhattan", "canberra", "binary")
+  if(method %in% dist_methods){
+    distance_matrix <- dist(profiles, method = method)
+  } else if (method %in% c("fisher", "distance_correlation")){
+    matrix <- data.frame()
+    for(i in 1:nrow(profiles)){ # rows
+      for(j in 1:nrow(profiles)){ # columns
+        if (i == j){
+          matrix[i,i] = 1 # if this cell is NA as.dist does not work probably 
+          break
+        }
+        if(method == "fisher") {
+          contigency_table <- get_table(profiles[i,], profiles[j,])
+          dist <- fisher.test(contigency_table)
+        } else if(method == "distance_correlation"){
+          dist <- dcor(profiles[i,], profiles[j,], index = 1.0)
+        }
+        matrix[i,j] <- dist 
+      }
+    }
+    profile_names <- rownames(profiles)
+    colnames(matrix) <- profile_names[1:length(profile_names)-1]
+    rownames(matrix) <- profile_names
+    distance_matrix <- as.dist(matrix)
+  } else if (method == "mutual_information"){
+
+    distance_matrix <- mutualInfo(as.matrix(profiles))
+  } else if (method == "pearson"){
+    distance_matrix <-  cor.dist(as.matrix(profiles))
+  }
+  print(distance_matrix)
+  return(distance_matrix)
+}
+
+# Calculate the contigency table for the fisher exact test --------------------
+get_table <- function(profile_1, profile_2){
+  contigency_table <- data.frame(c(0,0), c(0,0))
+  for(i in 1:length(profile_1)){
+    if(profile_1[i] == 1){
+      if(profile_2[i] == 1) {
+        contigency_table[1,1] <- contigency_table[1,1] + 1
+      } else {
+        contigency_table[2,1] <- contigency_table[2,1] + 1
+      }
+    } else{
+      if(profile_2[i] == 1) {
+        contigency_table[1,2] <- contigency_table[1,2] + 1
+      } else {
+        contigency_table[2,2] <- contigency_table[2,2] + 1
+      }
+    }
+  }
+  contigency_table
+}
+

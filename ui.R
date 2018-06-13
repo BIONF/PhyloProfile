@@ -632,7 +632,11 @@ shinyUI(
                                  "maximum" = "maximum",
                                  "manhattan" = "manhattan",
                                  "canberra" = "canberra",
-                                 "binary" = "binary"),
+                                 "binary" = "binary",
+                                 "pearson correlation coefficient" = "pearson",
+                                 "fisher's exact test" = "fisher",
+                                 "mutual information" = "mutual_information",
+                                 "distance correlation" = "distance_correlation"),
                   selected = "euclidean"
                 )
               ),
