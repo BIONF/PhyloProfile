@@ -159,7 +159,7 @@ shinyUI(
     
     # MAIN NARVARPAGE TABS ----------------------------------------------------
     navbarPage(
-      em(strong("PhyloProfile v0.3.0-beta")),
+      em(strong("PhyloProfile v0.4.0-beta")),
       id = "tabs",
       collapsible = TRUE,
       inverse = TRUE,
@@ -243,7 +243,7 @@ shinyUI(
                 "top"
               )
             )
-          ),
+            ),
           
           fluidRow(
             column(
@@ -287,7 +287,7 @@ shinyUI(
               href = "https://github.com/BIONF/phyloprofile-data",
               target = "_blank")
           )
-        ),
+            ),
         
         column(
           3,
@@ -404,13 +404,13 @@ shinyUI(
                   list contains all taxonomy ranks and their
                   correspoding NCBI IDs"
                 )
-              ),
+                ),
               
               hr(),
               uiOutput("end_parsing_msg"),
               tableOutput("invalidID.output")
-            )
-          ),
+                )
+            ),
           
           conditionalPanel(
             condition = "output.unk_taxa_status == 0",
@@ -445,8 +445,8 @@ shinyUI(
             ),
             h5("")
           )
-        )
-      ),
+          )
+        ),
       
       # MAIN PROFILE TAB ======================================================
       tabPanel(
@@ -604,13 +604,13 @@ shinyUI(
               condition = "output.same_profile == true",
               h4(
                 "Please select subset of genes and/
-                 or taxa for customized profile!"
+                or taxa for customized profile!"
               )
-            ),
+              ),
             uiOutput("selected_plot.ui")
-          )
+            )
         )
-      ),
+        ),
       
       # FUNCTION TAB ==========================================================
       navbarMenu(
@@ -866,8 +866,8 @@ shinyUI(
                   "Change the appearance of the plots"
                 )
               )
-            )
-          ),
+              )
+            ),
           
           sidebarPanel(
             uiOutput("get_significant_genes"),
@@ -905,7 +905,7 @@ shinyUI(
             uiOutput("plots_gc"),
             width = 9
           )
-        )
+          )
       ),
       
       # DATA DOWNLOAD TAB =====================================================
@@ -934,7 +934,7 @@ shinyUI(
           )
         )
       )
-    ),
+      ),
     
     # LIST OF POP-UP WINDOWS ==================================================
     
@@ -969,17 +969,17 @@ shinyUI(
         order, etc.)",
         "norank",
         width = 500
-      ),
-      textInput(
-        "new_parent",
-        "Parent ID (NCBI taxonomy ID of the next higher rank,
-        e.g. 4932 (S.cerevisiae species))",
-        4932,
-        width = 500
-        ),
-      actionButton("new_add", "Add"),
-      actionButton("new_done", "Done")
     ),
+    textInput(
+      "new_parent",
+      "Parent ID (NCBI taxonomy ID of the next higher rank,
+      e.g. 4932 (S.cerevisiae species))",
+      4932,
+      width = 500
+      ),
+    actionButton("new_add", "Add"),
+    actionButton("new_done", "Done")
+        ),
     
     # * popup for confirming parsing taxa from input file ---------------------
     bsModal(
@@ -998,7 +998,7 @@ shinyUI(
              style = "color:red"),
       
       dataTableOutput("invalidIDout")
-    ),
+      ),
     
     # * popup for plotting detailed plot --------------------------------------
     bsModal(
@@ -1247,7 +1247,7 @@ shinyUI(
       hr(),
       shinyBS::bsButton("reset_main_config", "Reset", style = "danger"),
       shinyBS::bsButton("applyMainConfig", "Done", style = "warning")
-    ),
+      ),
     
     # * popup for setting Customized plot configurations ----------------------
     bsModal(
@@ -1516,5 +1516,5 @@ shinyUI(
         style = "opacity: 0.80"
       )
     )
-  )
+)
 )

@@ -16,36 +16,36 @@ unsort_id <- function(data, order){
 # v, detai_plotDt(), input$detailed_text
 detail_plot <- function(v, sel_df, detailed_text, var1_id, var2_id){
   if (v$doPlot == FALSE) return()
-
+  
   sel_df$x_label <- paste(sel_df$orthoID,
-                         " (",
-                         sel_df$fullName,
-                         ")",
-                         sep = "")
-
+                          " (",
+                          sel_df$fullName,
+                          ")",
+                          sep = "")
+  
   # if(input$detailed_remove_na == TRUE){
   #   sel_df <- sel_df[!is.na(sel_df$orthoID),]
   # }
-
+  
   # create joined DF for plotting var1 next to var2
   var1Df <- subset(sel_df, select = c("x_label", "var1"))
   var1Df$type <- var1_id
   colnames(var1Df) <- c("id", "score", "var")
-
+  
   var2Df <- subset(sel_df, select = c("x_label", "var2"))
   var2Df$type <- var2_id
   colnames(var2Df) <- c("id", "score", "var")
-
+  
   detailed_df <- rbind(var1Df, var2Df)
-
+  
   # remove ONE missing variable
   if (nlevels(as.factor(detailed_df$var)) > 1) {
     detailed_df <- detailed_df[nchar(detailed_df$var) > 0, ]
   }
-
+  
   # keep order of ID (x_label)
   detailed_df$id <- factor(detailed_df$id, levels = unique(detailed_df$id))
-
+  
   # create plot
   gp <- ggplot(detailed_df, aes(y = score, x = id, fill = var)) +
     geom_bar(stat = "identity", position = position_dodge(), na.rm = TRUE) +
@@ -55,16 +55,14 @@ detail_plot <- function(v, sel_df, detailed_text, var1_id, var2_id){
     theme_minimal()
   #geom_text(aes(label=var1), vjust=3)
   gp <- gp + theme(axis.text.x = element_text(angle = 90, hjust = 1),
-                axis.text = element_text(size = detailed_text),
-                axis.title = element_text(size = detailed_text),
-                legend.text = element_text(size = detailed_text)
+                   axis.text = element_text(size = detailed_text),
+                   axis.title = element_text(size = detailed_text),
+                   legend.text = element_text(size = detailed_text)
   )
   gp
 }
 
 # ARCHITECTURE PLOT ===========================================================
-
-# create domain plot ----------------------------------------------------------
 # v3, point_infoDetail(), getDomainFile(), input$demo_data,
 # input$one_seq_fasta, input$label_archi_size, input$title_archi_size
 archi_plot <- function(v3, 
@@ -75,29 +73,29 @@ archi_plot <- function(v3,
   group <- as.character(info[1])
   ortho <- as.character(info[2])
   var1 <- as.character(info[3])
-
+  
   # get sub dataframe based on selected group_id and orthoID
   ortho <- gsub("\\|", ":", ortho)
   grepID <- paste(group, "#", ortho, sep = "")
   
   subdomain_df <- domain_df[grep(grepID, domain_df$seedID), ]
   subdomain_df$feature <- as.character(subdomain_df$feature)
-
+  
   if (nrow(subdomain_df) < 1) {
     v3$doPlot3 <- FALSE
     return()
   } else {
-
+    
     # ortho domains df
     ortho_df <- filter(subdomain_df, orthoID == ortho)
-
+    
     # seed domains df
     seed_df <- filter(subdomain_df, orthoID != ortho)
-
+    
     if (nrow(seed_df) == 0) seed_df <- ortho_df
-
+    
     seed <- as.character(seed_df$orthoID[1])
-
+    
     # change order of one dataframe's features
     # based on order of other df's features
     if (length(ortho_df$feature) < length(seed_df$feature)) {
@@ -107,23 +105,23 @@ archi_plot <- function(v3,
       ordered_seed_df <- seed_df[order(seed_df$feature), ]
       ordered_ortho_df <- sort_domains(ordered_seed_df, ortho_df)
     }
-
+    
     # join weight values and feature names
     if ("weight" %in% colnames(ordered_ortho_df)) {
       ordered_ortho_df$yLabel <- paste0(ordered_ortho_df$feature,
-                                      " (",
-                                      round(ordered_ortho_df$weight, 2),
-                                      ")")
+                                        " (",
+                                        round(ordered_ortho_df$weight, 2),
+                                        ")")
       ordered_ortho_df$feature <- ordered_ortho_df$yLabel
     }
     if ("weight" %in% colnames(ordered_seed_df)) {
       ordered_seed_df$yLabel <- paste0(ordered_seed_df$feature,
-                                     " (",
-                                     round(ordered_seed_df$weight, 2),
-                                     ")")
+                                       " (",
+                                       round(ordered_seed_df$weight, 2),
+                                       ")")
       ordered_seed_df$feature <- ordered_seed_df$yLabel
     }
-
+    
     # plotting
     sep <- ":"
     if (!is.null(one_seq_fasta)) sep <- "|"
@@ -144,7 +142,7 @@ archi_plot <- function(v3,
                                    min(subdomain_df$start),
                                    max(c(subdomain_df$end,
                                          subdomain_df$length)))
-
+      
     } else{
       plot_ortho <- domain_plotting(ordered_ortho_df,
                                     ortho,
@@ -161,15 +159,15 @@ archi_plot <- function(v3,
                                    min(subdomain_df$start),
                                    max(subdomain_df$end))
     }
-
+    
     # grid.arrange(plot_seed,plot_ortho,ncol=1)
-
+    
     if (ortho == seed) {
       arrangeGrob(plot_seed, ncol = 1)
     } else {
       seed_height <- length(levels(as.factor(ordered_seed_df$feature)))
       ortho_height <- length(levels(as.factor(ordered_ortho_df$feature)))
-
+      
       arrangeGrob(plot_seed, plot_ortho, ncol = 1,
                   heights = c(seed_height, ortho_height))
     }
@@ -183,19 +181,19 @@ sort_domains <- function(seed_df, ortho_df){
   colnames(feature_list) <- c("feature")
   # and add order number to each feature
   feature_list$orderNo <- seq(length(feature_list$feature))
-
+  
   # merge those info to ortho_df
   ordered_ortho_df <- merge(ortho_df, feature_list, all.x = TRUE)
-
+  
   # sort ortho_df
   index <- with(ordered_ortho_df, order(orderNo))
   ordered_ortho_df <- ordered_ortho_df[index, ]
-
+  
   #turn feature column into a character vector
   ordered_ortho_df$feature <- as.character(ordered_ortho_df$feature)
   #then turn it back into an ordered factor (to keep this order while plotting)
   ordered_ortho_df$feature <- factor(ordered_ortho_df$feature,
-                                   levels = unique(ordered_ortho_df$feature))
+                                     levels = unique(ordered_ortho_df$feature))
   #return sorted df
   ordered_ortho_df
 }
@@ -214,14 +212,14 @@ domain_plotting <- function(df,
                      x = min_start, xend = max_end),
                  color = "white",
                  size = 0)
-
+  
   # draw lines for representing sequence length
   gg <- gg + geom_segment(data = df,
                           aes(x = 0, xend = length,
                               y = feature, yend = feature),
                           size = 1,
                           color = "#b2b2b2")
-
+  
   # draw line and points
   gg <- gg + geom_segment(data = df,
                           aes(x = start, xend = end,
@@ -237,14 +235,14 @@ domain_plotting <- function(df,
                         color = "#edae52",
                         size = 3,
                         shape = 5)
-
+  
   # draw dashed line for domain path
   gg <- gg + geom_segment(data = df[df$path == "Y", ],
                           aes(x = start, xend = end,
                               y = feature, yend = feature),
                           size = 3,
                           linetype = "dashed")
-
+  
   # # add text above
   # gg <- gg + geom_text(data = df,
   #                      aes(x = (start + end) / 2,
@@ -254,7 +252,7 @@ domain_plotting <- function(df,
   #                        vjust = -0.75,
   #                        fontface = "bold",
   #                        family = "serif")
-
+  
   # theme format
   title_mod <- gsub(":", sep, geneID)
   gg <- gg + scale_y_discrete(expand = c(0.075, 0))
@@ -273,43 +271,213 @@ domain_plotting <- function(df,
   return(gg)
 }
 
-# gene age plot ---------------------------------------------------------------
-# gene_ageDfMod(), input$gene_age_text
-gene_age_plot <- function(count_df, gene_age_text){
-  p <- ggplot(count_df, aes(fill = age, y = percentage, x = 1)) +
-    geom_bar(stat = "identity") +
-    scale_y_reverse() +
-    coord_flip() +
-    theme_minimal()
-  p <- p + geom_text(data = count_df,
-                     aes(x = 1, y = 100 - pos,
-                         label = paste0(freq, "\n", percentage, "%")),
-                     size = 4 * gene_age_text)
-  p <- p + theme(legend.position = "bottom",
-                 legend.title = element_blank(),
-                 legend.text = element_text(size = 12 * gene_age_text),
-                 axis.title = element_blank(), axis.text = element_blank()) +
-    scale_fill_brewer(palette = "Spectral") +
-    guides(fill = guide_legend(nrow = round(nrow(count_df) / 3, 0),
-                               byrow = TRUE))
-  p
+
+# Essential functions =========================================================
+
+# get list with all taxanomy ranks --------------------------------------------
+get_taxonomy_ranks <- function(){
+  all_ranks <- list("Strain " = "05_strain",
+                    "Species" = "06_species",
+                    "Genus" = "10_genus",
+                    "Family" = "14_family",
+                    "Order" = "19_order",
+                    "Class" = "23_class",
+                    "Phylum" = "26_phylum",
+                    "Kingdom" = "28_kingdom",
+                    "Superkingdom" = "29_superkingdom",
+                    "unselected" = "")
+  return(all_ranks)
 }
+
+# Get name list ("data/taxonNamesReduced.txt") --------------------------------
+get_name_list <- function (as_character, delete_duplicated) {
+  name_list <- as.data.frame(read.table("data/taxonNamesReduced.txt",
+                                        sep = "\t",
+                                        header = T,
+                                        fill = TRUE))
+  if (as_character) {
+    name_list$fullName <- as.character(name_list$fullName)
+    name_list$rank <- as.character(name_list$rank)
+  }
+  if (delete_duplicated) {
+    name_list <- name_list[!duplicated(name_list), ]
+  }
+  return(name_list)
+}
+
+# Get taxa list ("data/taxonomyMatrix.txt") -----------------------------------
+get_taxa_list <- function(subset_taxa_check, subset_taxa){
+  dt <- as.data.frame(read.table("data/taxonomyMatrix.txt",
+                                 sep = "\t",
+                                 header = T,
+                                 stringsAsFactors = T))
+  if (subset_taxa_check) {
+    dt <- dt[dt$abbrName  %in% subset_taxa, ]
+  }
+  return(dt)
+}
+
+# reverse string --------------------------------------------------------------
+str_reverse <- function(x)
+  sapply(lapply(strsplit(x, NULL), rev), paste, collapse = "")
+
+# get last n characters from string x  ----------------------------------------
+substr_right <- function(x, n){
+  substr(x, nchar(x) - n + 1, nchar(x))
+}
+
+# check internet connection  --------------------------------------------------
+has_internet <- function(){
+  !is.null(curl::nslookup("r-project.org", error = FALSE))
+}
+
+# FUNCTION FOR CLUSTERING PROFILES --------------------------------------------
+clustered_gene_list <- function(data, dist_method, cluster_method){
+  
+  # do clustering
+  row.order <- hclust(dist(data, method = dist_method),
+                      method = cluster_method)$order
+  col.order <- hclust(dist(t(data), method = dist_method),
+                      method = cluster_method)$order
+  
+  # re-order data accoring to clustering
+  dat_new <- data[row.order, col.order]
+  
+  # return clustered gene ID list
+  clustered_gene_ids <- as.factor(row.names(dat_new))
+  clustered_gene_ids
+}
+
+# calculate percentage of present species -------------------------------------
+calc_pres_spec <- function(taxa_md_data, taxa_count){
+  # taxa_md_data = df("geneID",
+  #                 "ncbiID",
+  #                 "orthoID",
+  #                 "var1",
+  #                 "var2",
+  #                 "paralog",
+  #                 ....,
+  #                 "supertaxon")
+  taxa_md_data <- taxa_md_data[taxa_md_data$orthoID != "NA", ]
+  
+  # get geneID and supertaxon
+  gene_id_supertaxon <- subset(taxa_md_data,
+                               select = c("geneID",
+                                          "supertaxon",
+                                          "paralog",
+                                          "abbrName"))
+  # remove duplicated rows
+  gene_id_supertaxon <- gene_id_supertaxon[!duplicated(gene_id_supertaxon), ]
+  
+  # remove NA rows from taxa_md_data
+  taxa_md_data_no_na <- taxa_md_data[taxa_md_data$orthoID != "NA", ]
+  
+  # count present frequency of supertaxon for each gene
+  gene_supertaxon_count <- plyr::count(taxa_md_data_no_na,
+                                       c("geneID", "supertaxon"))
+  
+  # merge with taxa_count to get total number of species of each supertaxon
+  # and calculate presSpec
+  pres_spec_dt <- merge(gene_supertaxon_count,
+                        taxa_count,
+                        by = "supertaxon",
+                        all.x = TRUE)
+  
+  spec_count <- plyr::count(gene_id_supertaxon, c("geneID",
+                                                  "supertaxon"))
+  pres_spec_dt <- merge(pres_spec_dt,
+                        spec_count, by = c("geneID",
+                                           "supertaxon"))
+  
+  pres_spec_dt$presSpec <- pres_spec_dt$freq / pres_spec_dt$freq.y
+  
+  pres_spec_dt <- pres_spec_dt[pres_spec_dt$presSpec <= 1, ]
+  pres_spec_dt <- pres_spec_dt[order(pres_spec_dt$geneID), ]
+  pres_spec_dt <- pres_spec_dt[, c("geneID", "supertaxon", "presSpec")]
+  
+  # add absent supertaxon into pres_spec_dt
+  gene_id_supertaxon <- subset(gene_id_supertaxon,
+                               select = -c(paralog, abbrName))
+  final_pres_spec_dt <- merge(pres_spec_dt,
+                              gene_id_supertaxon,
+                              by = c("geneID", "supertaxon"),
+                              all.y = TRUE)
+  final_pres_spec_dt$presSpec[is.na(final_pres_spec_dt$presSpec)] <- 0
+  
+  # remove duplicated rows
+  final_pres_spec_dt <- final_pres_spec_dt[!duplicated(final_pres_spec_dt), ]
+  
+  # return final_pres_spec_dt
+  return(final_pres_spec_dt)
+}
+
+###################### FUNCTIONS FOR RENDER UI ELEMENTS #######################
+
+create_slider_cutoff <- function(id, title, start, stop, var_id){
+  if (is.null(var_id)) return()
+  if (var_id == "") {
+    sliderInput(id, title,
+                min = 1,
+                max = 1,
+                step = 0.025,
+                value = 1,
+                width = 200)
+  } else {
+    sliderInput(id, title,
+                min = 0,
+                max = 1,
+                step = 0.025,
+                value = c(start, stop),
+                width = 200)
+  }
+}
+
+update_slider_cutoff <- function(session, id, title, new_var, var_id){
+  if (is.null(var_id) || var_id == "") return()
+  
+  updateSliderInput(session, id, title,
+                    value = new_var,
+                    min = 0,
+                    max = 1,
+                    step = 0.025)
+}
+
+create_plot_size <- function(id, title, value) {
+  numericInput(id,
+               title,
+               min = 100,
+               max = 3200,
+               step = 50,
+               value = value,
+               width = 100)
+}
+
+create_text_size <- function(id, title, value, width) {
+  numericInput(id,
+               title,
+               min = 3,
+               max = 99,
+               step = 1,
+               value = value,
+               width = width)
+}
+
 
 # GROUP COMPARISON ============================================================
 
 # print list of available taxa ------------------------------------------------
 taxa_select_gc <- function(rank_select_gc, subset_taxa){
-
+  
   # if there is no rank set, there can not be any available taxa
   if (length(rank_select_gc) == 0) return()
   else{
-
+    
     # load list of unsorted taxa
     dt <- get_taxa_list(TRUE, subset_taxa)
-
+    
     # load list of taxon name
     name_list <- get_name_list(TRUE, FALSE)
-
+    
     # get rank name from rank_select
     rank_name <- substr(rank_select_gc, 4, nchar(rank_select_gc))
     choice <- as.data.frame
@@ -325,21 +493,21 @@ get_plot_output_list <- function(genes, input, interesting_features) {
   # if we dont have parameters we can not generate plots
   if (is.null(genes)) return()
   # Insert plot output objects the list
-    plot_output_list <- lapply(1:nrow(genes), function(i) {
-      plotname <- paste(genes[i, 1])
-      plot_output_object <- renderPlot(get_multiplot(genes[i, ], input,
-                                                     interesting_features),
-                                       height = 650, width = 700)
-    })
-    do.call(tagList, plot_output_list) # needed to display properly.
-    return(plot_output_list)
-
+  plot_output_list <- lapply(1:nrow(genes), function(i) {
+    plotname <- paste(genes[i, 1])
+    plot_output_object <- renderPlot(get_multiplot(genes[i, ], input,
+                                                   interesting_features),
+                                     height = 650, width = 700)
+  })
+  do.call(tagList, plot_output_list) # needed to display properly.
+  return(plot_output_list)
+  
 }
 
 # Put the plots for one spicific gene in one multiplot ------------------------
 # get_input_gc
 get_multiplot <- function(gene_info, input, interesting_features){
-
+  
   # Sorting the information to the selected gene
   gene <- as.character(gene_info$geneID)
   in_group <- as.data.frame(gene_info$in_group)
@@ -347,7 +515,7 @@ get_multiplot <- function(gene_info, input, interesting_features){
   features <- as.data.frame(gene_info$features)
   pvalues <- gene_info$pvalues
   var <- gene_info$var
-
+  
   # the barplot does not depent on the selected variable(s)
   barplot <-  get_barplot_gc(gene,
                              in_group,
@@ -355,14 +523,14 @@ get_multiplot <- function(gene_info, input, interesting_features){
                              features,
                              input,
                              interesting_features)
-
+  
   if (is.null(barplot)) {
     barplot <- textGrob("The selected domains are not found in the gene")
   }
   # if both variables are selected there are going to be 2 boxplots
   if (var == "Both") {
     pvalues <- unlist(pvalues, recursive = FALSE)
-
+    
     p1 <- unlist(pvalues[1])
     p2 <- unlist(pvalues[2])
     # Check if the p_values should be printed
@@ -379,7 +547,7 @@ get_multiplot <- function(gene_info, input, interesting_features){
       if (is.null(p1[1])) c1 <- "grey"
       else if (p1[length(p1)] < input$significance) c1 <- "indianred2"
       else c1 <- "grey"
-
+      
       if (is.null(p2[1])) c2 <- "grey"
       else if (p2[length(p2)] < input$significance) c2 <- "indianred2"
       else c2 <- "grey"
@@ -388,21 +556,21 @@ get_multiplot <- function(gene_info, input, interesting_features){
       c1 <- "grey"
       c2 <- "grey"
     }
-
+    
     boxplot1 <- get_boxplot_gc(in_group,
                                out_group,
                                input$var1_id,
                                gene,
                                c1,
                                info_p1, input)
-
+    
     boxplot2 <- get_boxplot_gc(in_group,
                                out_group,
                                input$var2_id,
                                gene,
                                c2,
                                info_p2, input)
-
+    
     m <- grid.arrange(textGrob(gene),
                       arrangeGrob(boxplot1, boxplot2, ncol = 2),
                       barplot,
@@ -414,7 +582,7 @@ get_multiplot <- function(gene_info, input, interesting_features){
     }else{
       info <- " "
     }
-
+    
     boxplot <- get_boxplot_gc(in_group,
                               out_group,
                               var,
@@ -422,7 +590,7 @@ get_multiplot <- function(gene_info, input, interesting_features){
                               "grey",
                               info,
                               input)
-
+    
     m <- grid.arrange(textGrob(gene),
                       boxplot,
                       barplot,
@@ -434,13 +602,13 @@ get_multiplot <- function(gene_info, input, interesting_features){
 # Create a Boxplot ------------------------------------------------------------
 #
 get_boxplot_gc <- function(in_group_df,
-                            out_group_df,
-                            var,
-                            gene,
-                            colour,
-                            info,
-                            input){
-
+                           out_group_df,
+                           var,
+                           gene,
+                           colour,
+                           info,
+                           input){
+  
   if (var == input$var1_id) {
     in_g <- in_group_df$var1
     out_g <- out_group_df$var1
@@ -449,33 +617,33 @@ get_boxplot_gc <- function(in_group_df,
     in_g <- in_group_df$var2
     out_g <- out_group_df$var2
   }
-
+  
   a <- length(in_g)
   b <- length(out_g)
-
+  
   in_g <- as.data.frame(in_g)
   names(in_g)[1] <- paste("values")
   in_g$group <- "in_group"
-
+  
   out_g <- as.data.frame(out_g)
   names(out_g)[1] <- paste("values")
   out_g$group <- "Out-Group"
-
+  
   data_boxplot <- rbind(in_g, out_g)
   data_boxplot <- data_boxplot[complete.cases(data_boxplot), ]
-
+  
   names <- c(paste("In-Group \n n=", a, sep = ""),
              paste("Out-Group \n n=", b, sep = ""))
-
+  
   boxplot_gc <- ggplot(data_boxplot, aes(group, values)) +
     geom_boxplot(stat = "boxplot",
-                  position = position_dodge(),
-                  width = 0.5,
-                  fill = colour) +
+                 position = position_dodge(),
+                 width = 0.5,
+                 fill = colour) +
     labs(x = "", y = var, caption = paste(info)) +
     scale_x_discrete(labels = names) +
     theme_minimal()
-
+  
   boxplot_gc <- boxplot_gc +
     theme(axis.text.x = element_text(size = input$x_size_gc, hjust = 1),
           axis.text.y = element_text(size = input$y_size_gc),
@@ -489,7 +657,7 @@ get_barplot_gc <- function(selected_gene,
                            features, input, interesting_features){
   subdomain_df <- features
   subdomain_df$feature <- as.character(subdomain_df$feature)
-
+  
   # only show features that interest the user
   if (!("all" %in% input$interesting_features)) {
     ifeatures <- NULL
@@ -498,13 +666,13 @@ get_barplot_gc <- function(selected_gene,
                   startsWith(subdomain_df$feature, x))
       ifeatures <- append(ifeatures, f)
     }
-
+    
     if (is.null(ifeatures)) return()
     # only keep rows in which the feature begins with a element out of the
     # interesing Features
     subdomain_df <- subset(subdomain_df, subdomain_df$feature %in% ifeatures)
   }
-
+  
   # part in in_group and Out-Group
   in_group_domain_df  <-  {
     subset(subdomain_df, subdomain_df$orthoID %in% in_group$orthoID)
@@ -512,28 +680,28 @@ get_barplot_gc <- function(selected_gene,
   out_group_domain_df <- {
     subset(subdomain_df, subdomain_df$orthoID %in% out_group$orthoID)
   }
-
+  
   # Get list of all seeds
   seeds <- unique(subdomain_df$seedID)
   in_not_empty <- 0
   out_not_empty <- 0
-
+  
   if (nrow(in_group_domain_df) == 0) {
     data_in <- NULL
-    } else{
+  } else{
     feature <- unique(in_group_domain_df$feature)
     data_in <- as.data.frame(feature)
     data_in$amount <- 0
   }
-
+  
   if (nrow(out_group_domain_df) == 0) {
     data_out <- NULL
-    } else{
+  } else{
     feature <- unique(out_group_domain_df$feature)
     data_out <- as.data.frame(feature)
     data_out$amount <- 0
   }
-
+  
   for (seed in seeds) {
     if (!is.null(data_in)) {
       in_g <- subset(in_group_domain_df, in_group_domain_df$seedID == seed)
@@ -549,12 +717,12 @@ get_barplot_gc <- function(selected_gene,
         }
       }
     }
-
+    
     if (!is.null(data_out)) {
       out_g <- {
         subset(out_group_domain_df, out_group_domain_df$seedID == seed)
       }
-
+      
       if (!empty(out_g)) {
         out_not_empty <- out_not_empty + 1
         out_group_features <-  plyr::count(out_g, "feature")
@@ -568,27 +736,27 @@ get_barplot_gc <- function(selected_gene,
       }
     }
   }
-
+  
   if (!is.null(data_in)) {
     data_in$amount <- data_in$amount / in_not_empty
     data_in$type <- "in_group"
   }
-
+  
   if (!is.null(data_out)) {
     data_out$amount <- data_out$amount / out_not_empty
     data_out$type <- "Out-Group"
   }
-
+  
   if (is.null(data_in) & !is.null(data_out)) {
     data_barplot <- data_out
-    }  else if (is.null(data_out) & !is.null(data_in)) {
-      data_barplot <- data_in
-      } else if (!is.null(data_in) & !is.null(data_out)) {
+  }  else if (is.null(data_out) & !is.null(data_in)) {
+    data_barplot <- data_in
+  } else if (!is.null(data_in) & !is.null(data_out)) {
     data_barplot <- rbind(data_in, data_out)
   } else{
     data_barplot <- NULL
   }
-
+  
   if (!is.null(data_barplot)) {
     # generate Barplot
     barplot_gc <- ggplot(data_barplot,
@@ -598,7 +766,7 @@ get_barplot_gc <- function(selected_gene,
       scale_fill_grey() +
       labs(x = " ", y = "Average instances per protein", fill = "Group") +
       theme_minimal()
-
+    
     barplot_gc <- barplot_gc +
       theme(axis.text.x = element_text(size = input$x_size_gc,
                                        angle = input$angle_gc, hjust = 1),
@@ -613,7 +781,7 @@ get_barplot_gc <- function(selected_gene,
 
 # Get the p_values to print under the plot ----------------------------------
 get_info_p_values <- function(p) {
-
+  
   if (is.na(p[1])) info_p_values <- "not enough information"
   else if (length(p) == 1) {
     info_p_values <- paste("Kolmogorov-Smirnov-Test:",
@@ -626,7 +794,7 @@ get_info_p_values <- function(p) {
                             as.character(round(p[2], 6)), sep = " ")
     info_p_values <- paste(info_p_values1, info_p_values2, sep = "\n")
   }
-
+  
   info_p_values <- paste("p_values:", info_p_values, sep = "\n")
   info_p_values
 }
@@ -636,31 +804,31 @@ get_info_p_values <- function(p) {
 # input$rank_select, input$var_name_gc, input$use_common_anchestor,
 # input$inSelect
 get_significant_genes <- function(in_group,
-                                   list_selected_genes_gc,
-                                   rank,
-                                   var,
-                                   use_common_anchestor,
-                                   in_select,
-                                   input,
-                                   demo_data, anno_location, file_domain,
-                                   subset_taxa,
-                                   data_full,
-                                   session,
-                                   right_format_features,
-                                   domains){
+                                  list_selected_genes_gc,
+                                  rank,
+                                  var,
+                                  use_common_anchestor,
+                                  in_select,
+                                  input,
+                                  demo_data, anno_location, file_domain,
+                                  subset_taxa,
+                                  data_full,
+                                  session,
+                                  right_format_features,
+                                  domains){
   if (is.null(in_group)
       | length(list_selected_genes_gc) == 0) return()
-
+  
   # load name List
   name_list <- get_name_list(TRUE, TRUE)
-
+  
   # load list of unsorted taxa
   dt <- get_taxa_list(FALSE, subset_taxa)
-
+  
   # Updateing of the Input ==================================================
   # if there is more than one element in the in_group
   # we look at the next common anchstor
-
+  
   if (use_common_anchestor == TRUE) {
     ancestor <- get_common_ancestor(in_group, rank, name_list, dt)
     if (is.null(ancestor)) return()
@@ -669,7 +837,7 @@ get_significant_genes <- function(in_group,
   } else{
     rank <- substring(rank, 4)
   }
-
+  
   # List with all significant genes
   significantGenes <- data.frame(
     geneID = character(),
@@ -678,7 +846,7 @@ get_significant_genes <- function(in_group,
     pvalues = I(list()),
     features = I(list()),
     databases = I(list()))
-
+  
   # List of genes to look at
   if (is.element("all", list_selected_genes_gc)) {
     genes <- data_full$geneID
@@ -687,17 +855,17 @@ get_significant_genes <- function(in_group,
     genes <- list_selected_genes_gc
   }
   genes <- sort(genes)
-
+  
   # Subset depending on the rank and the in_group
   selected_subset <- get_selected_subset(rank, in_group, name_list, dt)
   selected_subset <- subset(selected_subset,
                             !selected_subset$fullName == in_select)
-
+  
   # Check for each of the selected genes if they are significant
   # If a gene is significant generate the plots
   # and save them in significantGenesGroupComparison
   for (gene in genes) {
-
+    
     # creates Substet only for current Gene
     selected_gene_df <- subset(data_full, data_full$geneID == gene)
     # In- and Out-Group depending on the Gene
@@ -707,15 +875,15 @@ get_significant_genes <- function(in_group,
     }
     out_group_df <- {
       subset(selected_gene_df,
-              !(selected_gene_df$abbrName %in% selected_subset$abbrName))
+             !(selected_gene_df$abbrName %in% selected_subset$abbrName))
     }
     out_group_df <- {
       subset(out_group_df, !out_group_df$fullName == in_select)
     }
-
+    
     # Generate the p_values for the gene
     pvalues <- get_significant(in_group_df, out_group_df, var, gene, input)
-
+    
     if (!is.null(pvalues)) {
       new_row <- data.frame(geneID = gene,
                             in_group = NA,
@@ -755,9 +923,9 @@ get_prefix_features <- function(f){
 get_selected_subset <- function(rank, in_group, name_list, dt){
   # Look if the fullName is in the in_group
   name_list$fullName <- as.character(name_list$fullName)
-
+  
   #rank <- substring(rank, 4)
-
+  
   name_list_rank <- subset(name_list, name_list$rank == rank)
   x <- subset(name_list, name_list$fullName %in% in_group)
   # Look if it has the right rank
@@ -775,38 +943,38 @@ get_common_ancestor <- function(in_group,
   all_selected_in_group_gc <- {
     all_selected_in_group_gc[!duplicated(all_selected_in_group_gc), ]
   }
-
+  
   # all ranks higher than the selected rank
   # ranks were all elements of the in_group might be in the same taxon
   possible_ranks <- all_ranks[all_ranks >= rank]
   i <-  1
   if (length(in_group) == 1) rank <- substring(rank, 4)
-
+  
   # find the common ancestor of all taxa in the in_group
   # and use it as in_group
   while (length(in_group) > 1 & i < length(possible_ranks)) {
     current_rank <- substring(possible_ranks[i], 4)
     next_rank <- substring(possible_ranks[i + 1], 4)
-
+    
     # dataframe with all elements with fitting rank
     in_g <- subset(name_list, name_list$rank == current_rank)
-
+    
     # subset of in_g with elements that belong to the in_group
     in_g <- subset(in_g, in_g$fullName %in% in_group)
-
+    
     # dataset with all elements that could belong to the in_group
     possible_in_group <- subset(all_selected_in_group_gc,
                                 select = c(current_rank, next_rank))
-
+    
     possible_in_group <- {
       possible_in_group[possible_in_group[, current_rank] %in% in_g$ncbiID, ]
     }
-
+    
     possible_in_group <- possible_in_group[!duplicated(possible_in_group), ]
     # only consider elements of the list that have the next higher rank
     x <- subset(name_list, name_list$rank == next_rank)
     x <- subset(x, x$ncbiID %in% possible_in_group[, next_rank] )
-
+    
     in_group <- x$fullName
     i <- i + 1
     rank <- next_rank
@@ -819,38 +987,38 @@ get_common_ancestor <- function(in_group,
 # Decide if the gene is significant -----------------------------------------
 # if the gene is significant return the pvalues
 get_significant <- function(in_g, out_g, var, gene, input){
-   significance_level <- input$significance
-
+  significance_level <- input$significance
+  
   if (var == "Both") {
     var1 <- input$var1
     var2 <- input$var2
-
+    
     significant <-  FALSE
     # get the pValues for both variables
     pvalues1 <- get_p_values(in_g$var1, out_g$var1, significance_level)
     pvalues2 <- get_p_values(in_g$var2, out_g$var2, significance_level)
-
+    
     # check if the gene has a significant difference
     # in the distribioution of In- and Out-Group
     # in at least one of the variables
     # If there is not enough data to calculate a p-value
     # consider the gene as not intereisting
     if (is.null(pvalues1)) {
-
+      
     }
     # check if the at last calculated p-value
     #is smaller than the significane level
     else if (pvalues1[length(pvalues1)] < significance_level) {
       significant <- TRUE
     }
-
+    
     # analog to pvalues in the first variable
     if (is.null(pvalues2)) {
-
+      
     } else if (pvalues2[length(pvalues2)] < significance_level) {
       significant <-  TRUE
     }
-
+    
     # if the gene is interisting return the p_values
     if (significant) {
       pvalues <- list(pvalues1, pvalues2)
@@ -858,7 +1026,7 @@ get_significant <- function(in_g, out_g, var, gene, input){
     }
     # if the gene is not interisting return NULL
     else return(NULL)
-
+    
   } else{
     # Check which variable is selected and get the p_values
     if (var == input$var1_id) {
@@ -867,7 +1035,7 @@ get_significant <- function(in_g, out_g, var, gene, input){
     else {
       pvalues <- get_p_values(in_g$var2, out_g$var2, significance_level)
     }
-
+    
     # Analog to getting the significance with both variables
     if (is.null(pvalues)) return(NULL)
     else if (is.nan(pvalues[length(pvalues)])) {
@@ -885,22 +1053,22 @@ get_significant <- function(in_g, out_g, var, gene, input){
 get_p_values <- function(var_in,
                          var_out,
                          significance_level){
-
+  
   # delete all entrys that are NA
   var_in <- var_in[!is.na(var_in)]
   var_out <- var_out[!is.na(var_out)]
-
+  
   # if there is no data in one of the groups the p-value is NA
   if (length(var_in) == 0) return(NULL)
   else if (length(var_out) == 0) return(NULL)
-
+  
   # if there is data the p-value is calculatet
   #with a combination of two non-parametric test
   else{
     # Kolmogorov-Smirnov Test
     # H0 : The two samples have the same distribution
     ks <- ks.boot(var_in, var_out, alternative = "two.sided")
-
+    
     # p-value = Probability(test statistic >= value for the samples)
     # probabilitiy to recet H0 if it is correct
     p.value <- ks$ks.boot.pvalue
@@ -908,7 +1076,7 @@ get_p_values <- function(var_in,
     # from the same distribution
     # if the p-value is less than your significance level
     if (p.value < significance_level) pvalue <- c(p.value)
-
+    
     # if we accept H0 it does not mean that the samples are uninteresting
     # they could still have different location values
     else{
@@ -930,7 +1098,7 @@ get_p_values <- function(var_in,
 get_features <- function(selected_gene,
                          domains,
                          session){
-
+  
   subdomain_df <- {
     subset(domain_df,
            substr(domain_df$seedID,
@@ -1019,194 +1187,4 @@ get_multiplot_download_gc <- function(gene, input, interesting_features){
   x <- subset(significant_genes_gc,
               significant_genes_gc$geneID == gene)
   get_multiplot(x, input, interesting_features)
-}
-
-# Essential functions =========================================================
-
-# get list with all taxanomy ranks --------------------------------------------
-get_taxonomy_ranks <- function(){
-  all_ranks <- list("Strain " = "05_strain",
-                    "Species" = "06_species",
-                    "Genus" = "10_genus",
-                    "Family" = "14_family",
-                    "Order" = "19_order",
-                    "Class" = "23_class",
-                    "Phylum" = "26_phylum",
-                    "Kingdom" = "28_kingdom",
-                    "Superkingdom" = "29_superkingdom",
-                    "unselected" = "")
-  return(all_ranks)
-}
-
-# Get name list ("data/taxonNamesReduced.txt") --------------------------------
-get_name_list <- function (as_character, delete_duplicated) {
-  name_list <- as.data.frame(read.table("data/taxonNamesReduced.txt",
-                                        sep = "\t",
-                                        header = T,
-                                        fill = TRUE))
-  if (as_character) {
-    name_list$fullName <- as.character(name_list$fullName)
-    name_list$rank <- as.character(name_list$rank)
-  }
-  if (delete_duplicated) {
-    name_list <- name_list[!duplicated(name_list), ]
-  }
-  return(name_list)
-}
-
-# Get taxa list ("data/taxonomyMatrix.txt") -----------------------------------
-get_taxa_list <- function(subset_taxa_check, subset_taxa){
-  dt <- as.data.frame(read.table("data/taxonomyMatrix.txt",
-                                 sep = "\t",
-                                 header = T,
-                                 stringsAsFactors = T))
-  if (subset_taxa_check) {
-    dt <- dt[dt$abbrName  %in% subset_taxa, ]
-  }
-  return(dt)
-}
-
-# reverse string --------------------------------------------------------------
-str_reverse <- function(x)
-  sapply(lapply(strsplit(x, NULL), rev), paste, collapse = "")
-
-# get last n characters from string x  ----------------------------------------
-substr_right <- function(x, n){
-  substr(x, nchar(x) - n + 1, nchar(x))
-}
-
-# check internet connection  --------------------------------------------------
-has_internet <- function(){
-  !is.null(curl::nslookup("r-project.org", error = FALSE))
-}
-
-# FUNCTION FOR CLUSTERING PROFILES --------------------------------------------
-clustered_gene_list <- function(data, dist_method, cluster_method){
-
-  # do clustering
-  row.order <- hclust(dist(data, method = dist_method),
-                      method = cluster_method)$order
-  col.order <- hclust(dist(t(data), method = dist_method),
-                      method = cluster_method)$order
-
-  # re-order data accoring to clustering
-  dat_new <- data[row.order, col.order]
-
-  # return clustered gene ID list
-  clustered_gene_ids <- as.factor(row.names(dat_new))
-  clustered_gene_ids
-}
-
-# calculate percentage of present species -------------------------------------
-calc_pres_spec <- function(taxa_md_data, taxa_count){
-   # taxa_md_data = df("geneID",
-   #                 "ncbiID",
-   #                 "orthoID",
-   #                 "var1",
-   #                 "var2",
-   #                 "paralog",
-   #                 ....,
-   #                 "supertaxon")
-  taxa_md_data <- taxa_md_data[taxa_md_data$orthoID != "NA", ]
-
-  # get geneID and supertaxon
-  gene_id_supertaxon <- subset(taxa_md_data,
-                             select = c("geneID",
-                                        "supertaxon",
-                                        "paralog",
-                                        "abbrName"))
-  # remove duplicated rows
-  gene_id_supertaxon <- gene_id_supertaxon[!duplicated(gene_id_supertaxon), ]
-
-  # remove NA rows from taxa_md_data
-  taxa_md_data_no_na <- taxa_md_data[taxa_md_data$orthoID != "NA", ]
-
-  # count present frequency of supertaxon for each gene
-  gene_supertaxon_count <- plyr::count(taxa_md_data_no_na,
-                                       c("geneID", "supertaxon"))
-
-  # merge with taxa_count to get total number of species of each supertaxon
-  # and calculate presSpec
-  pres_spec_dt <- merge(gene_supertaxon_count,
-                      taxa_count,
-                      by = "supertaxon",
-                      all.x = TRUE)
-
-  spec_count <- plyr::count(gene_id_supertaxon, c("geneID",
-                                              "supertaxon"))
-  pres_spec_dt <- merge(pres_spec_dt,
-                      spec_count, by = c("geneID",
-                                       "supertaxon"))
-
-  pres_spec_dt$presSpec <- pres_spec_dt$freq / pres_spec_dt$freq.y
-
-  pres_spec_dt <- pres_spec_dt[pres_spec_dt$presSpec <= 1, ]
-  pres_spec_dt <- pres_spec_dt[order(pres_spec_dt$geneID), ]
-  pres_spec_dt <- pres_spec_dt[, c("geneID", "supertaxon", "presSpec")]
-
-  # add absent supertaxon into pres_spec_dt
-  gene_id_supertaxon <- subset(gene_id_supertaxon,
-                             select = -c(paralog, abbrName))
-  final_pres_spec_dt <- merge(pres_spec_dt,
-                           gene_id_supertaxon,
-                           by = c("geneID", "supertaxon"),
-                           all.y = TRUE)
-  final_pres_spec_dt$presSpec[is.na(final_pres_spec_dt$presSpec)] <- 0
-
-  # remove duplicated rows
-  final_pres_spec_dt <- final_pres_spec_dt[!duplicated(final_pres_spec_dt), ]
-
-  # return final_pres_spec_dt
-  return(final_pres_spec_dt)
-}
-
-###################### FUNCTIONS FOR RENDER UI ELEMENTS #######################
-
-create_slider_cutoff <- function(id, title, start, stop, var_id){
-  if (is.null(var_id)) return()
-  if (var_id == "") {
-    sliderInput(id, title,
-                min = 1,
-                max = 1,
-                step = 0.025,
-                value = 1,
-                width = 200)
-  } else {
-    sliderInput(id, title,
-                min = 0,
-                max = 1,
-                step = 0.025,
-                value = c(start, stop),
-                width = 200)
-  }
-}
-
-update_slider_cutoff <- function(session, id, title, new_var, var_id){
-  if (is.null(var_id) || var_id == "") return()
-  
-  updateSliderInput(session, id, title,
-                    value = new_var,
-                    min = 0,
-                    max = 1,
-                    step = 0.025)
-}
-
-create_plot_size <- function(id, title, value) {
-  numericInput(id,
-               title,
-               min = 100,
-               max = 3200,
-               step = 50,
-               value = value,
-               width = 100)
-}
-
-create_text_size <- function(id, title, value, width) {
-  numericInput(id,
-               title,
-               min = 3,
-               max = 99,
-               step = 1,
-               value = value,
-               width = width)
 }
