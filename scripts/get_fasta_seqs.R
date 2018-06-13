@@ -65,7 +65,7 @@ get_fasta_seqs <- function(data_in, filein, demo_data,
         group_id <- as.character(data_in$geneID[j])
         
         seq <- as.character(fa_df$seq[fa_df$seqID == paste0(">", seq_id)])
-        fasta_out <- paste(paste0(">", group_id, "|", seq_id),
+        fasta_out <- paste(paste0(">", seq_id),
                            seq,
                            sep = "\n")
         fasta_out_df <- rbind(fasta_out_df, as.data.frame(fasta_out))
@@ -154,7 +154,7 @@ get_fasta_seqs <- function(data_in, filein, demo_data,
           } else{
             if (!is.na(seq[1])){
               if (flag == 1){
-                fasta_out <- paste(paste0(">", group_id, "|", seq_id),
+                fasta_out <- paste(paste0(">", seq_id),
                                    seq[1],
                                    sep = "\n")
               } else {
@@ -245,7 +245,7 @@ get_fasta_seqs <- function(data_in, filein, demo_data,
                        "! Please check id_format in FASTA config again!")
               }
             } else{
-              fasta_out <- paste(paste0(">", group_id, "|", seq_id),
+              fasta_out <- paste(paste0(">", seq_id),
                                  seq[1],
                                  sep = "\n")
             }

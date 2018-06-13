@@ -2530,16 +2530,18 @@ shinyServer(function(input, output, session) {
     var1 <- as.character(var1[!is.na(var1)])
     var2 <- as.list(selDf$var2[selDf$orthoID == orthoID])
     var2 <- as.character(var2[!is.na(var2)])
+    if (length(var2) == 0) var2 = "NA"
     # ncbiID <- as.character(selDf$abbrName[selDf$orthoID==orthoID])
     ncbiID <- selDf[selDf$orthoID == orthoID, ]$abbrName
     ncbiID <- as.character(ncbiID[!is.na(ncbiID)][1])
-    
+
     ### return info
     if (is.na(orthoID)){
       return(NULL)
     } else {
       if (orthoID != "NA"){
         info <- c(seedID, orthoID, var1, var2, ncbiID)
+        return(info)
       }
     }
   })

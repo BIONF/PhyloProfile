@@ -1,7 +1,6 @@
 #' Profile clustering
 #' 
 
-
 cluster_profile_ui <- function(id){
   ns <- NS(id)
   tagList(

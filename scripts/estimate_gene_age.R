@@ -36,7 +36,7 @@ plot_gene_age <- function(input, output, session,
                           gene_age_width, gene_age_height, gene_age_text){
   
   output$gene_agePlot <- renderPlot({
-    gene_age_plot(gene_age_plotDf(data()), gene_age_text())
+    create_gene_age_plot(gene_age_plotDf(data()), gene_age_text())
   })
   
   output$gene_age.ui <- renderUI({
@@ -55,7 +55,7 @@ plot_gene_age <- function(input, output, session,
       "gene_age_plot.pdf"
     },
     content = function(file) {
-      ggsave(file, plot = gene_age_plot(gene_age_plotDf(data()),
+      ggsave(file, plot = create_gene_age_plot(gene_age_plotDf(data()),
                                         gene_age_text()),
              width = 600 * gene_age_width() * 0.056458333,
              height = 150 * gene_age_height() * 0.056458333,
@@ -272,3 +272,22 @@ get_selected_gene_age <- function(gene_ageDf, clicked_x){
   return(geneList)
 }
 
+create_gene_age_plot <- function(count_df, gene_age_text){
+  p <- ggplot(count_df, aes(fill = age, y = percentage, x = 1)) +
+    geom_bar(stat = "identity") +
+    scale_y_reverse() +
+    coord_flip() +
+    theme_minimal()
+  p <- p + geom_text(data = count_df,
+                     aes(x = 1, y = 100 - pos,
+                         label = paste0(freq, "\n", percentage, "%")),
+                     size = 4 * gene_age_text)
+  p <- p + theme(legend.position = "bottom",
+                 legend.title = element_blank(),
+                 legend.text = element_text(size = 12 * gene_age_text),
+                 axis.title = element_blank(), axis.text = element_blank()) +
+    scale_fill_brewer(palette = "Spectral") +
+    guides(fill = guide_legend(nrow = round(nrow(count_df) / 3, 0),
+                               byrow = TRUE))
+  p
+}
