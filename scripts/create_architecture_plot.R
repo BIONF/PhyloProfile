@@ -1,0 +1,273 @@
+#' Plot protein domain architecture
+#' @param point_info() info of clicked point, from reactive function point_infoDetail()
+#' @param domain_info() domain information from function get_domain_information()
+
+create_architecture_plot_ui <- function(id){
+  ns <- NS(id)
+  tagList(
+    uiOutput(ns("archi_plot.ui")),
+    downloadButton(ns("archi_download"), "Download plot")
+  )
+}
+
+create_architecture_plot <- function(input, output, session,
+                                     point_info,
+                                     domain_info,
+                                     label_archi_size, title_archi_size,
+                                     archi_height, archi_width){
+  output$archi_plot <- renderPlot({
+    g <- archi_plot(point_info(),
+                    domain_info(),
+                    label_archi_size(),
+                    title_archi_size())
+    grid.draw(g)
+  })
+  
+  output$archi_plot.ui <- renderUI({
+    ns <- session$ns
+    # if (v3$doPlot3 == FALSE) {
+    #   domainIN <- unlist(strsplit(toString(input$main_input), ","))
+    #   fileName <- toString(domainIN[1])
+    #   msg <- paste0(
+    #     "<p><strong>No information about domain architecture! Please check:</strong></p>
+    #     <ul>
+    #     <li>if you uploaded the correct domain file/folder using <span style=\"color: #0000ff;\"><em>Upload additional input</em></span> option? (see input example in <span style=\"background-color: #999999; color: #ffffff;\">data/demo/domains/</span> folder); or</li>
+    #     <li>if&nbsp;the selected genes (seed &amp; ortholog) do exist in the uploaded file (please search for the corresponding&nbsp;<span style=\"text-decoration: underline;\"><em>seedID</em></span> and <span style=\"text-decoration: underline;\"><em>hitID</em></span>, which are&nbsp;shown in <span style=\"color: #ffffff; background-color: #999999;\">Detailed plot</span>)</li>
+    #     </ul>"
+    #     )
+    #   HTML(msg)
+    # } else {
+      withSpinner(plotOutput(ns("archi_plot"),
+                             height = archi_height(),
+                             width = archi_width()))
+    # }
+  })
+
+  # * download architecture plot ------------------------------------------------
+  # *** something strange with archi_plot()
+  output$archi_download <- downloadHandler(
+    filename = function() {
+      c("domains.pdf")
+      },
+    content = function(file) {
+      g <- archi_plot(point_info(),
+                      domain_info(),
+                      label_archi_size(),
+                      title_archi_size())
+      grid.draw(g)
+      ggsave(file, plot = g,
+             width = archi_width() * 0.056458333,
+             height = archi_height() * 0.056458333,
+             units = "cm", dpi = 300, device = "pdf", limitsize = FALSE)
+
+    }
+  )
+}
+
+
+# ARCHITECTURE PLOT ===========================================================
+# v3, point_infoDetail(), getDomainFile(), input$demo_data,
+# input$one_seq_fasta, input$label_archi_size, input$title_archi_size
+archi_plot <- function(info, domain_df, 
+                       label_archi_size, title_archi_size){
+  # info
+  group <- as.character(info[1])
+  ortho <- as.character(info[2])
+  var1 <- as.character(info[3])
+
+  # get sub dataframe based on selected group_id and orthoID
+  ortho <- gsub("\\|", ":", ortho)
+  grepID <- paste(group, "#", ortho, sep = "")
+  
+  subdomain_df <- domain_df[grep(grepID, domain_df$seedID), ]
+  subdomain_df$feature <- as.character(subdomain_df$feature)
+
+  if (nrow(subdomain_df) < 1) {
+    # v3$doPlot3 <- FALSE
+    return()
+  } else {
+
+    # ortho domains df
+    ortho_df <- filter(subdomain_df, orthoID == ortho)
+
+    # seed domains df
+    seed_df <- filter(subdomain_df, orthoID != ortho)
+
+    if (nrow(seed_df) == 0) seed_df <- ortho_df
+
+    seed <- as.character(seed_df$orthoID[1])
+
+    # change order of one dataframe's features
+    # based on order of other df's features
+    if (length(ortho_df$feature) < length(seed_df$feature)) {
+      ordered_ortho_df <- ortho_df[order(ortho_df$feature), ]
+      ordered_seed_df <- sort_domains(ordered_ortho_df, seed_df)
+    } else {
+      ordered_seed_df <- seed_df[order(seed_df$feature), ]
+      ordered_ortho_df <- sort_domains(ordered_seed_df, ortho_df)
+    }
+
+    # join weight values and feature names
+    if ("weight" %in% colnames(ordered_ortho_df)) {
+      ordered_ortho_df$yLabel <- paste0(ordered_ortho_df$feature,
+                                      " (",
+                                      round(ordered_ortho_df$weight, 2),
+                                      ")")
+      ordered_ortho_df$feature <- ordered_ortho_df$yLabel
+    }
+    if ("weight" %in% colnames(ordered_seed_df)) {
+      ordered_seed_df$yLabel <- paste0(ordered_seed_df$feature,
+                                     " (",
+                                     round(ordered_seed_df$weight, 2),
+                                     ")")
+      ordered_seed_df$feature <- ordered_seed_df$yLabel
+    }
+
+    # plotting
+    sep <- ":"
+    # if (!is.null(one_seq_fasta)) sep <- "|"
+    if ("length" %in% colnames(subdomain_df)) {
+      plot_ortho <- domain_plotting(ordered_ortho_df,
+                                    ortho,
+                                    sep,
+                                    label_archi_size,
+                                    title_archi_size,
+                                    min(subdomain_df$start),
+                                    max(c(subdomain_df$end,
+                                          subdomain_df$length)))
+      plot_seed <- domain_plotting(ordered_seed_df,
+                                   seed,
+                                   sep,
+                                   label_archi_size,
+                                   title_archi_size,
+                                   min(subdomain_df$start),
+                                   max(c(subdomain_df$end,
+                                         subdomain_df$length)))
+
+    } else{
+      plot_ortho <- domain_plotting(ordered_ortho_df,
+                                    ortho,
+                                    sep,
+                                    label_archi_size,
+                                    title_archi_size,
+                                    min(subdomain_df$start),
+                                    max(subdomain_df$end))
+      plot_seed <- domain_plotting(ordered_seed_df,
+                                   seed,
+                                   sep,
+                                   label_archi_size,
+                                   title_archi_size,
+                                   min(subdomain_df$start),
+                                   max(subdomain_df$end))
+    }
+
+    # grid.arrange(plot_seed,plot_ortho,ncol=1)
+
+    if (ortho == seed) {
+      arrangeGrob(plot_seed, ncol = 1)
+    } else {
+      seed_height <- length(levels(as.factor(ordered_seed_df$feature)))
+      ortho_height <- length(levels(as.factor(ordered_ortho_df$feature)))
+
+      arrangeGrob(plot_seed, plot_ortho, ncol = 1,
+                  heights = c(seed_height, ortho_height))
+    }
+  }
+}
+
+# plot domain architecture ----------------------------------------------------
+domain_plotting <- function(df,
+                            geneID,
+                            sep,
+                            label_size,
+                            title_size,
+                            min_start,
+                            max_end){
+  gg <- ggplot(df, aes(y = feature, x = end, color = feature)) +
+    geom_segment(data = df,
+                 aes(y = feature, yend = feature,
+                     x = min_start, xend = max_end),
+                 color = "white",
+                 size = 0)
+
+  # draw lines for representing sequence length
+  gg <- gg + geom_segment(data = df,
+                          aes(x = 0, xend = length,
+                              y = feature, yend = feature),
+                          size = 1,
+                          color = "#b2b2b2")
+
+  # draw line and points
+  gg <- gg + geom_segment(data = df,
+                          aes(x = start, xend = end,
+                              y = feature, yend = feature),
+                          size = 1.5)
+  gg <- gg + geom_point(data = df,
+                        aes(y = feature, x = start),
+                        color = "#b2b2b2",
+                        size = 3,
+                        shape = 3)
+  gg <- gg + geom_point(data = df,
+                        aes(y = feature, x = end),
+                        color = "#edae52",
+                        size = 3,
+                        shape = 5)
+
+  # draw dashed line for domain path
+  gg <- gg + geom_segment(data = df[df$path == "Y", ],
+                          aes(x = start, xend = end,
+                              y = feature, yend = feature),
+                          size = 3,
+                          linetype = "dashed")
+
+  # # add text above
+  # gg <- gg + geom_text(data = df,
+  #                      aes(x = (start + end) / 2,
+  #                          y = feature, label = round(weight,2)),
+  #                        color = "#9fb059",
+  #                        size = descSize,
+  #                        vjust = -0.75,
+  #                        fontface = "bold",
+  #                        family = "serif")
+
+  # theme format
+  title_mod <- gsub(":", sep, geneID)
+  gg <- gg + scale_y_discrete(expand = c(0.075, 0))
+  gg <- gg + labs(title = paste0(title_mod), y = "Feature")
+  gg <- gg + theme_minimal()
+  gg <- gg + theme(panel.border = element_blank())
+  gg <- gg + theme(axis.ticks = element_blank())
+  gg <- gg + theme(plot.title = element_text(face = "bold", size = title_size))
+  gg <- gg + theme(plot.title = element_text(hjust = 0.5))
+  gg <- gg + theme(legend.position = "none", axis.title.x = element_blank(),
+                   axis.text.y = element_text(size = label_size),
+                   axis.title.y = element_text(size = label_size),
+                   panel.grid.minor.x = element_blank(),
+                   panel.grid.major.x = element_blank())
+  # return plot
+  return(gg)
+}
+
+# sort one domain dataframe (ortho) based on the other domain Df (seed) -------
+sort_domains <- function(seed_df, ortho_df){
+  # get list of features in seed_df
+  feature_list <- as.data.frame(levels(as.factor(seed_df$feature)))
+  colnames(feature_list) <- c("feature")
+  # and add order number to each feature
+  feature_list$orderNo <- seq(length(feature_list$feature))
+
+  # merge those info to ortho_df
+  ordered_ortho_df <- merge(ortho_df, feature_list, all.x = TRUE)
+
+  # sort ortho_df
+  index <- with(ordered_ortho_df, order(orderNo))
+  ordered_ortho_df <- ordered_ortho_df[index, ]
+
+  #turn feature column into a character vector
+  ordered_ortho_df$feature <- as.character(ordered_ortho_df$feature)
+  #then turn it back into an ordered factor (to keep this order while plotting)
+  ordered_ortho_df$feature <- factor(ordered_ortho_df$feature,
+                                   levels = unique(ordered_ortho_df$feature))
+  #return sorted df
+  ordered_ortho_df
+}

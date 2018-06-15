@@ -52,6 +52,9 @@ source("scripts/estimate_gene_age.R")
 source("scripts/analyze_distribution.R")
 source("scripts/cluster_profile.R")
 
+source("scripts/create_architecture_plot.R")
+
+
 options(shiny.maxRequestSize = 99 * 1024 ^ 2)  # size limit for input 99mb
 
 shinyServer(function(input, output, session) {
@@ -2701,57 +2704,65 @@ shinyServer(function(input, output, session) {
     if (is.null(filein)) v3$doPlot3 <- FALSE
   })
 
-  # * render domain architecture plot -------------------------------------------
-  output$archi_plot <- renderPlot({
-    g <- archi_plot(v3,
-                    point_infoDetail(),
-                    get_domain_information(),
-                    input$concat_fasta,
-                    input$label_archi_size,
-                    input$title_archi_size)
-    grid.draw(g)
-  })
+  callModule(create_architecture_plot, "archi_plot",
+             point_info = point_infoDetail,
+             domain_info = get_domain_information,
+             label_archi_size = reactive(input$label_archi_size),
+             title_archi_size = reactive(input$title_archi_size),
+             archi_height = reactive(input$archi_height),
+             archi_width = reactive(input$archi_width))
   
-  output$archi_plot.ui <- renderUI({
-    if (v3$doPlot3 == FALSE) {
-      domainIN <- unlist(strsplit(toString(input$main_input), ","))
-      fileName <- toString(domainIN[1])
-      msg <- paste0(
-        "<p><strong>No information about domain architecture! Please check:</strong></p>
-        <ul>
-        <li>if you uploaded the correct domain file/folder using <span style=\"color: #0000ff;\"><em>Upload additional input</em></span> option? (see input example in <span style=\"background-color: #999999; color: #ffffff;\">data/demo/domains/</span> folder); or</li>
-        <li>if&nbsp;the selected genes (seed &amp; ortholog) do exist in the uploaded file (please search for the corresponding&nbsp;<span style=\"text-decoration: underline;\"><em>seedID</em></span> and <span style=\"text-decoration: underline;\"><em>hitID</em></span>, which are&nbsp;shown in <span style=\"color: #ffffff; background-color: #999999;\">Detailed plot</span>)</li>
-        </ul>"
-        )
-      HTML(msg)
-    } else {
-      withSpinner(plotOutput("archi_plot",
-                             height = input$archi_height,
-                             width = input$archi_width))
-    }
-  })
-
-  # * download architecture plot ------------------------------------------------
-  # *** something strange with archi_plot()
-  output$archi_download <- downloadHandler(
-    filename = function() {
-      c("domains.pdf")
-      },
-    content = function(file) {
-      g <- archi_plot(v3,
-                      point_infoDetail(),
-                      get_domain_information(),
-                      input$concat_fasta,
-                      input$label_archi_size,
-                      input$title_archi_size)
-      grid.draw(g)
-      ggsave(file, plot = g,
-             width = input$selected_width * 0.056458333,
-             height = input$selected_height * 0.056458333,
-             units = "cm", dpi = 300, device = "pdf", limitsize = FALSE)
-
-    }
-  )
+  # * render domain architecture plot -------------------------------------------
+  # output$archi_plot <- renderPlot({
+  #   g <- archi_plot(v3,
+  #                   point_infoDetail(),
+  #                   get_domain_information(),
+  #                   input$concat_fasta,
+  #                   input$label_archi_size,
+  #                   input$title_archi_size)
+  #   grid.draw(g)
+  # })
+  # 
+  # output$archi_plot.ui <- renderUI({
+  #   if (v3$doPlot3 == FALSE) {
+  #     domainIN <- unlist(strsplit(toString(input$main_input), ","))
+  #     fileName <- toString(domainIN[1])
+  #     msg <- paste0(
+  #       "<p><strong>No information about domain architecture! Please check:</strong></p>
+  #       <ul>
+  #       <li>if you uploaded the correct domain file/folder using <span style=\"color: #0000ff;\"><em>Upload additional input</em></span> option? (see input example in <span style=\"background-color: #999999; color: #ffffff;\">data/demo/domains/</span> folder); or</li>
+  #       <li>if&nbsp;the selected genes (seed &amp; ortholog) do exist in the uploaded file (please search for the corresponding&nbsp;<span style=\"text-decoration: underline;\"><em>seedID</em></span> and <span style=\"text-decoration: underline;\"><em>hitID</em></span>, which are&nbsp;shown in <span style=\"color: #ffffff; background-color: #999999;\">Detailed plot</span>)</li>
+  #       </ul>"
+  #       )
+  #     HTML(msg)
+  #   } else {
+  #     withSpinner(plotOutput("archi_plot",
+  #                            height = input$archi_height,
+  #                            width = input$archi_width))
+  #   }
+  # })
+  # 
+  # # * download architecture plot ------------------------------------------------
+  # # *** something strange with archi_plot()
+  # output$archi_download <- downloadHandler(
+  #   filename = function() {
+  #     c("domains.pdf")
+  #     },
+  #   content = function(file) {
+  #     g <- archi_plot(v3,
+  #                     point_infoDetail(),
+  #                     get_domain_information(),
+  #                     input$concat_fasta,
+  #                     input$label_archi_size,
+  #                     input$title_archi_size)
+  #     grid.draw(g)
+  #     ggsave(file, plot = g,
+  #            width = input$selected_width * 0.056458333,
+  #            height = input$selected_height * 0.056458333,
+  #            units = "cm", dpi = 300, device = "pdf", limitsize = FALSE)
+  # 
+  #   }
+  # )
   
   # ======================== FILTERED DATA DOWNLOADING ========================
 

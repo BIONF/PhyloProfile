@@ -24,6 +24,8 @@ source("scripts/analyze_distribution.R")
 source("scripts/cluster_profile.R")
 source("scripts/estimate_gene_age.R")
 
+source("scripts/create_architecture_plot.R")
+
 # MAIN UI ====================================================================-
 
 shinyUI(
@@ -1068,8 +1070,9 @@ shinyUI(
         )
       ),
       
-      uiOutput("archi_plot.ui"),
-      downloadButton("archi_download", "Download plot")
+      create_architecture_plot_ui("archi_plot")
+      # uiOutput("archi_plot.ui"),
+      # downloadButton("archi_download", "Download plot")
     ),
     
     # * popup for setting plot colors (profiles) ------------------------------
