@@ -335,9 +335,9 @@ has_internet <- function(){
 clustered_gene_list <- function(data, dist_method, cluster_method){
   
   # do clustering
-  row.order <- hclust(dist(data, method = dist_method),
+  row.order <- hclust(get_distance_matrix(data, dist_method),
                       method = cluster_method)$order
-  col.order <- hclust(dist(t(data), method = dist_method),
+  col.order <- hclust(get_distance_matrix(t(data), dist_method),
                       method = cluster_method)$order
   
   # re-order data accoring to clustering
@@ -346,6 +346,61 @@ clustered_gene_list <- function(data, dist_method, cluster_method){
   # return clustered gene ID list
   clustered_gene_ids <- as.factor(row.names(dat_new))
   clustered_gene_ids
+}
+
+# Get the distance matrix depending on the distance method --------------------
+get_distance_matrix <- function(profiles, method){
+  dist_methods <- c("euclidean", "maximum", "manhattan", "canberra", "binary")
+  if(method %in% dist_methods){
+    distance_matrix <- dist(profiles, method = method)
+  } else if (method %in% c("fisher", "distance_correlation")){
+    matrix <- data.frame()
+    for(i in 1:nrow(profiles)){ # rows
+      for(j in 1:nrow(profiles)){ # columns
+        if (i == j){
+          matrix[i,i] = 1 # if this cell is NA as.dist does not work probably 
+          break
+        }
+        if(method == "fisher") {
+          contigency_table <- get_table(profiles[i,], profiles[j,])
+          dist <- fisher.test(contigency_table)
+        } else if(method == "distance_correlation"){
+          dist <- dcor(unlist(profiles[i,]), unlist(profiles[j,]))
+        }
+        matrix[i,j] <- dist 
+      }
+    }
+    profile_names <- rownames(profiles)
+    colnames(matrix) <- profile_names[1:length(profile_names)-1]
+    rownames(matrix) <- profile_names
+    distance_matrix <- as.dist(matrix)
+  } else if (method == "mutual_information"){
+    distance_matrix <- mutualInfo(as.matrix(profiles))
+  } else if (method == "pearson"){
+    distance_matrix <-  cor.dist(as.matrix(profiles))
+  }
+  return(distance_matrix)
+}
+
+# Calculate the contigency table for the fisher exact test --------------------
+get_table <- function(profile_1, profile_2){
+  contigency_table <- data.frame(c(0,0), c(0,0))
+  for(i in 1:length(profile_1)){
+    if(profile_1[i] == 1){
+      if(profile_2[i] == 1) {
+        contigency_table[1,1] <- contigency_table[1,1] + 1
+      } else {
+        contigency_table[2,1] <- contigency_table[2,1] + 1
+      }
+    } else{
+      if(profile_2[i] == 1) {
+        contigency_table[1,2] <- contigency_table[1,2] + 1
+      } else {
+        contigency_table[2,2] <- contigency_table[2,2] + 1
+      }
+    }
+  }
+  contigency_table
 }
 
 # calculate percentage of present species -------------------------------------

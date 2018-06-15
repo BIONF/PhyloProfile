@@ -114,13 +114,11 @@ clusterDataDend <- function(data, dist_method, cluster_method){
   # if (v$doPlot == FALSE) return()
   # dataframe for calculate distance matrix
   dataHeat <- data
-  print(head(data))
   sub_data_heat <- subset(dataHeat, dataHeat$presSpec > 0)
   if (dist_method %in% c("mutual_information", "distance_correlation")){
     # Profiles with FAS scores
     sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", "var1")]
     sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
-    print(colnames(sub_data_heat))
     sub_data_heat <- sub_data_heat[order(sub_data_heat$geneID, -abs(sub_data_heat$var1)),]
     sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat[c("geneID", "supertaxon")]),]
     
@@ -138,7 +136,6 @@ clusterDataDend <- function(data, dist_method, cluster_method){
   
   dd.col <- as.dendrogram(hclust(get_distance_matrix(dat, dist_method),
                                  method = cluster_method))
-  
   return(dd.col)
 }
 
