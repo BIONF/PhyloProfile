@@ -1630,16 +1630,7 @@ shinyServer(function(input, output, session) {
   clusteredDataHeat <- reactive({
     dataHeat <- dataHeat()
     if (nrow(dataHeat) < 1) return()
-    
-    # dataframe for calculate distance matrix
-    sub_data_heat <- subset(dataHeat, dataHeat$presSpec > 0)
-    sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", "presSpec")]
-    sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
-    
-    wide_data <- spread(sub_data_heat, supertaxon, presSpec)
-    dat <- wide_data[, 2:ncol(wide_data)]  # numerical columns
-    rownames(dat) <- wide_data[, 1]
-    dat[is.na(dat)] <- 0
+    dat <- get_data_clustering(dataHeat, input$dist_method)
     
     # get clustered gene ids
     clusteredGeneIDs <- clustered_gene_list(dat,

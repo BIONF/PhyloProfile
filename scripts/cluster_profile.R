@@ -113,27 +113,7 @@ cluster_profile <- function(input, output, session,
 clusterDataDend <- function(data, dist_method, cluster_method){
   # if (v$doPlot == FALSE) return()
   # dataframe for calculate distance matrix
-  dataHeat <- data
-  sub_data_heat <- subset(dataHeat, dataHeat$presSpec > 0)
-  if (dist_method %in% c("mutual_information", "distance_correlation")){
-    # Profiles with FAS scores
-    sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", "var1")]
-    sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
-    sub_data_heat <- sub_data_heat[order(sub_data_heat$geneID, -abs(sub_data_heat$var1)),]
-    sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat[c("geneID", "supertaxon")]),]
-    
-    wide_data <- spread(sub_data_heat, supertaxon, var1)
-  }else {
-    # Binary Profiles 
-    sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", "presSpec")]
-    sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
-    wide_data <- spread(sub_data_heat, supertaxon, presSpec)
-  }
-  
-  dat <- wide_data[, 2:ncol(wide_data)]  # numerical columns
-  rownames(dat) <- wide_data[, 1]
-  dat[is.na(dat)] <- 0
-  
+  dat <- get_data_clustering(data, dist_method)
   dd.col <- as.dendrogram(hclust(get_distance_matrix(dat, dist_method),
                                  method = cluster_method))
   return(dd.col)
@@ -145,6 +125,31 @@ dendrogram <- function(dd.col){
   p <- ggplot(py, horiz = TRUE, theme = theme_minimal()) +
     theme(axis.title = element_blank(), axis.text.y = element_blank())
   p
+}
+
+# get the phylogenetic profiles -----------------------------------------------
+get_data_clustering <- function(data, dist_method){
+  sub_data_heat <- subset(data, data$presSpec > 0)
+  if (dist_method %in% c("mutual_information", "distance_correlation")){
+    # Profiles with FAS scores
+    sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", "var1")]
+    sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
+    sub_data_heat <- {
+      sub_data_heat[order(sub_data_heat$geneID, -abs(sub_data_heat$var1)),]}
+    sub_data_heat <- {
+      sub_data_heat[!duplicated(sub_data_heat[c("geneID", "supertaxon")]),]}
+    
+    wide_data <- spread(sub_data_heat, supertaxon, var1)
+  }else {
+    # Binary Profiles 
+    sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", "presSpec")]
+    sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
+    wide_data <- spread(sub_data_heat, supertaxon, presSpec)
+  }
+  dat <- wide_data[, 2:ncol(wide_data)]  # numerical columns
+  rownames(dat) <- wide_data[, 1]
+  dat[is.na(dat)] <- 0
+  return(dat)
 }
 
 # Get the distance matrix depending on the distance method --------------------
