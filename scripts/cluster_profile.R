@@ -114,12 +114,24 @@ clusterDataDend <- function(data, dist_method, cluster_method){
   # if (v$doPlot == FALSE) return()
   # dataframe for calculate distance matrix
   dataHeat <- data
-  
+  print(head(data))
   sub_data_heat <- subset(dataHeat, dataHeat$presSpec > 0)
-  sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", "presSpec")]
-  sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
+  if (dist_method %in% c("mutual_information", "distance_correlation")){
+    # Profiles with FAS scores
+    sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", "var1")]
+    sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
+    print(colnames(sub_data_heat))
+    sub_data_heat <- sub_data_heat[order(sub_data_heat$geneID, -abs(sub_data_heat$var1)),]
+    sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat[c("geneID", "supertaxon")]),]
+    
+    wide_data <- spread(sub_data_heat, supertaxon, var1)
+  }else {
+    # Binary Profiles 
+    sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", "presSpec")]
+    sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
+    wide_data <- spread(sub_data_heat, supertaxon, presSpec)
+  }
   
-  wide_data <- spread(sub_data_heat, supertaxon, presSpec)
   dat <- wide_data[, 2:ncol(wide_data)]  # numerical columns
   rownames(dat) <- wide_data[, 1]
   dat[is.na(dat)] <- 0
@@ -155,7 +167,7 @@ get_distance_matrix <- function(profiles, method){
           contigency_table <- get_table(profiles[i,], profiles[j,])
           dist <- fisher.test(contigency_table)
         } else if(method == "distance_correlation"){
-          dist <- dcor(profiles[i,], profiles[j,], index = 1.0)
+          dist <- dcor(unlist(profiles[i,]), unlist(profiles[j,]))
         }
         matrix[i,j] <- dist 
       }
@@ -165,12 +177,10 @@ get_distance_matrix <- function(profiles, method){
     rownames(matrix) <- profile_names
     distance_matrix <- as.dist(matrix)
   } else if (method == "mutual_information"){
-
     distance_matrix <- mutualInfo(as.matrix(profiles))
   } else if (method == "pearson"){
     distance_matrix <-  cor.dist(as.matrix(profiles))
   }
-  print(distance_matrix)
   return(distance_matrix)
 }
 
