@@ -261,33 +261,3 @@ data_main_plot <- function(data_heat){
   
   return(data_heat)
 }
-
-# create data for customized profile -------------------------------------------
-data_customized_plot <- function(data_heat, in_taxa, in_seq){
-  # process data
-    data_heat$supertaxonMod <- {
-      substr(data_heat$supertaxon,
-             6,
-             nchar(as.character(data_heat$supertaxon)))
-    }
-
-    if (in_taxa[1] == "all" & in_seq[1] != "all") {
-      # select data from dataHeat for selected sequences only
-      data_heat <- subset(data_heat, geneID %in% in_seq)
-    } else if (in_seq[1] == "all" & in_taxa[1] != "all") {
-      # select data from dataHeat for selected taxa only
-      data_heat <- subset(data_heat, supertaxonMod %in% in_taxa)
-    } else {
-      # select data from dataHeat for selected sequences and taxa
-      data_heat <- subset(data_heat,
-                         geneID %in% in_seq
-                         & supertaxonMod %in% in_taxa)
-    }
-
-    # remove unneeded dots
-    data_heat$presSpec[data_heat$presSpec == 0] <- NA
-    data_heat$paralog[data_heat$presSpec < 1] <- NA
-    data_heat$paralog[data_heat$paralog == 1] <- NA
-    
-    return(data_heat)
-}

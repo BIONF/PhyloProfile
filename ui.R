@@ -26,6 +26,7 @@ source("R/estimate_gene_age.R")
 
 source("R/create_architecture_plot.R")
 source("R/create_detailed_plot.R")
+source("R/create_customized_profile.R")
 
 # MAIN UI ====================================================================-
 
@@ -149,12 +150,13 @@ shinyUI(
               "Reset cutoffs",
               style = "danger"
             ),
-            hr(),
-            downloadButton("selected_download", "Download profile"),
-            tags$head(
-              tags$style(
-                HTML("#selected_download{background-color:#A9E2F3}"))
-            )
+            hr()
+            # ,
+            # downloadButton("selected_download", "Download profile"),
+            # tags$head(
+            #   tags$style(
+            #     HTML("#selected_download{background-color:#A9E2F3}"))
+            # )
           )
         )
       )
@@ -610,7 +612,8 @@ shinyUI(
                  or taxa for customized profile!"
               )
             ),
-            uiOutput("selected_plot.ui")
+            create_customized_profile_ui("customized_profile")
+            # uiOutput("selected_plot.ui")
           )
         )
       ),
