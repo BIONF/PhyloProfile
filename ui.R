@@ -494,6 +494,13 @@ shinyUI(
             ),
             
             bsPopover(
+              "highlight_gene_ui",
+              "",
+              "Select gene to highlight",
+              "bottom"
+            ),
+            
+            bsPopover(
               "st_index",
               "",
               "Set start index for sequence range",

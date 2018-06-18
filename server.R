@@ -1662,6 +1662,14 @@ shinyServer(function(input, output, session) {
     geneList <- preData()
     geneList$geneID <- as.factor(geneList$geneID)
     out <- as.list(levels(geneList$geneID))
+    
+    listIn <- input$list
+    if (!is.null(listIn)){
+      list <- as.data.frame(read.table(file = listIn$datapath,
+                                       header = FALSE))
+      out <- as.list(list$V1)
+    }
+    
     if (length(out) > 0){
       # em(paste0("Total number of genes:  ",length(out)))
       strong(paste0("Total number of genes:  ", length(out)))
