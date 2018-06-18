@@ -44,7 +44,6 @@ source("R/download_filtered_customized.R")
 
 source("R/parse_phylotree.R")
 source("R/select_taxon_rank.R")
-source("R/create_profile_heatmap.R")
 
 source("R/identify_core_gene.R")
 source("R/analyze_distribution.R")
@@ -53,7 +52,7 @@ source("R/cluster_profile.R")
 
 source("R/create_architecture_plot.R")
 source("R/create_detailed_plot.R")
-source("R/create_customized_profile.R")
+source("R/create_profile_plot.R")
 
 
 options(shiny.maxRequestSize = 9999 * 1024 ^ 2)  # size limit for input 9999mb
@@ -1805,159 +1804,21 @@ shinyServer(function(input, output, session) {
   })
 
   # * plot main profile -------------------------------------------------
-  output$mainPlot <- renderPlot({
-    data_heat <- data_main_plot(dataHeat())
-    # cluster dataHeat (if selected)
-    if (input$apply_cluster == TRUE) {
-      data_heat <- data_main_plot(clusteredDataHeat())
-    }
-    
-    profile_plot(data_heat, get_parameter_input_main(), input$taxon_highlight, input$rank_select, input$gene_highlight)
-  })
-  
-  output$plot.ui <- renderUI({
-    # show beschreibung file if no plot present
-    if (v$doPlot == FALSE){
-      return()
-    } else{
-      # if auto_update is NOT selected, use update_btn to trigger plot changing
-      if (input$auto_update == FALSE){
-        input$update_btn
-        isolate({
-          withSpinner(
-            plotOutput("mainPlot",
-                       width = input$width,
-                       height = input$height,
-                       click = "plot_click",
-                       dblclick = "plot_dblclick",
-                       hover = hoverOpts(
-                         id = "plot_hover",
-                         delay = input$hover_delay,
-                         delayType = input$hover_policy,
-                         nullOutside = input$hover_null_outside
-                       )
-            )
-          )
-        })
-      }
-      # if auto_update is true
-      else {
-        withSpinner(
-          plotOutput("mainPlot",
-                     width = input$width,
-                     height = input$height,
-                     click = "plot_click",
-                     dblclick = "plot_dblclick",
-                     hover = hoverOpts(
-                       id = "plot_hover",
-                       delay = input$hover_delay,
-                       delayType = input$hover_policy,
-                       nullOutside = input$hover_null_outside
-                     )
-          )
-        )
-      }
-    }
-  })
-
-  # * download main profile --------------------------------------------------------
-  output$plot_download <- downloadHandler(
-    filename = function() {
-      c("plot.pdf")
-      },
-    content = function(file) {
-      ggsave(file, plot = main_plot(v, dataHeat(),
-                                   clusteredDataHeat(),
-                                   get_parameter_input_main ()),
-             width = input$width * 0.056458333,
-             height = input$height * 0.056458333,
-             units = "cm",
-             dpi = 300,
-             device = "pdf",
-             limitsize = FALSE)
-    }
-  )
-
-  # * get info of clicked point on main profile ------------------------------------
-  mainpoint_info <- reactive({
-    # check input
-    if (v$doPlot == FALSE) return()
-    
-    # get selected supertaxon name
-    taxa_list <- as.data.frame(read.table("data/taxonNamesReduced.txt",
-                                          sep = "\t",
-                                          header = T))
-    rank_select <- input$rank_select
-    rankName <- substr(rank_select, 4, nchar(rank_select))
-    in_select <- {
-      as.numeric(taxa_list$ncbiID[taxa_list$fullName == input$in_select])
-    }
-    
-    dataHeat <- dataHeat()
-    if (input$apply_cluster == TRUE){
-      dataHeat <- clusteredDataHeat()
-    }
-    
-    # get values
-    if (is.null(input$plot_click$x)) return()
-    else{
-      # get cooridiate point
-      if (input$x_axis == "genes"){
-        corX <- round(input$plot_click$y);
-        corY <- round(input$plot_click$x)
-      } else {
-        corX <- round(input$plot_click$x);
-        corY <- round(input$plot_click$y)
-      }
-      
-      # get geneID
-      genes <- levels(dataHeat$geneID)
-      geneID <- toString(genes[corY])
-      
-      # get supertaxon (spec)
-      supertaxa <- levels(dataHeat$supertaxon)
-      spec <- toString(supertaxa[corX])
-      
-      # get var1, percentage of present species and var2 score
-      var1 <- NA
-      if (!is.na(dataHeat$var1[dataHeat$geneID == geneID
-                               & dataHeat$supertaxon == spec][1])){
-        var1 <- max(na.omit(dataHeat$var1[dataHeat$geneID == geneID
-                                          & dataHeat$supertaxon == spec]))
-      }
-      Percent <- NA
-      if (!is.na(dataHeat$presSpec[dataHeat$geneID == geneID
-                                   & dataHeat$supertaxon == spec][1])){
-        Percent <- max(na.omit(dataHeat$presSpec[dataHeat$geneID == geneID
-                                                 & dataHeat$supertaxon == spec]))
-      }
-      var2 <- NA
-      if (!is.na(dataHeat$var2[dataHeat$geneID == geneID
-                               & dataHeat$supertaxon == spec][1])){
-        var2 <- max(na.omit(dataHeat$var2[dataHeat$geneID == geneID
-                                          & dataHeat$supertaxon == spec]))
-      }
-      
-      # get ortholog ID
-      orthoID <- dataHeat$orthoID[dataHeat$geneID == geneID
-                                  & dataHeat$supertaxon == spec]
-      if (length(orthoID) > 1){
-        orthoID <- paste0(orthoID[1], ",...")
-      }
-
-      # return info of clicked point
-      if (is.na(as.numeric(Percent))) return()
-      else{
-        info <- c(geneID,
-                  as.character(orthoID),
-                  as.character(spec),
-                  round(as.numeric(var1), 2),
-                  round(as.numeric(Percent), 2),
-                  round(as.numeric(var2), 2))
-        return(info)
-      }
-    }
-  })
+  mainpoint_info <- callModule(create_profile_plot, "main_profile",
+                                   data = dataHeat,
+                                   clusteredDataHeat = clusteredDataHeat,
+                                   apply_cluster = reactive(input$apply_cluster),
+                                   parameters = get_parameter_input_main,
+                                   in_seq = reactive(input$in_seq),
+                                   in_taxa = reactive(input$in_taxa),
+                                   rank_select = reactive(input$rank_select),
+                                   in_select = reactive(input$in_select),
+                               taxon_highlight = reactive(input$taxon_highlight),
+                               gene_highlight = reactive(input$gene_highlight),
+                                   width = reactive(input$width),
+                                   height = reactive(input$height),
+                                   x_axis = reactive(input$x_axis),
+                               type_profile = reactive("main_profile"))
   
   # ======================== CUSTOMIZED PROFILE TAB ===========================
   
@@ -2126,7 +1987,7 @@ shinyServer(function(input, output, session) {
   })
   
   # * plot customized profile -------------------------------------------
-  selectedpoint_info <- callModule(create_customized_profile, "customized_profile",
+  selectedpoint_info <- callModule(create_profile_plot, "customized_profile",
                                    data = dataHeat,
                                    clusteredDataHeat = clusteredDataHeat,
                                    apply_cluster = reactive(input$apply_cluster),
@@ -2135,9 +1996,12 @@ shinyServer(function(input, output, session) {
                                    in_taxa = reactive(input$in_taxa),
                                    rank_select = reactive(input$rank_select),
                                    in_select = reactive(input$in_select),
-                                   selected_width = reactive(input$selected_width),
-                                   selected_height = reactive(input$selected_height),
-                                   x_axis_selected = reactive(input$x_axis_selected))
+                                   taxon_highlight = reactive("none"),
+                                   gene_highlight = reactive("none"),
+                                   width = reactive(input$selected_width),
+                                   height = reactive(input$selected_height),
+                                   x_axis = reactive(input$x_axis_selected),
+                                   type_profile = reactive("customized_profile"))
   
   # ============================== POINT INFO =================================
 

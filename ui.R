@@ -26,7 +26,7 @@ source("R/estimate_gene_age.R")
 
 source("R/create_architecture_plot.R")
 source("R/create_detailed_plot.R")
-source("R/create_customized_profile.R")
+source("R/create_profile_plot.R")
 
 # MAIN UI ====================================================================-
 
@@ -89,12 +89,13 @@ shinyUI(
               "reset_main",
               "Reset cutoffs",
               style = "danger"
-            ),
-            hr(),
-            downloadButton("plot_download", "Download profile"),
-            tags$head(
-              tags$style(HTML("#plot_download{background-color:#A9E2F3}"))
             )
+            # ,
+            # hr(),
+            # downloadButton("plot_download", "Download profile"),
+            # tags$head(
+            #   tags$style(HTML("#plot_download{background-color:#A9E2F3}"))
+            # )
           )
         )
       )
@@ -528,7 +529,9 @@ shinyUI(
           
           # * main panel for profile plot -------------------------------------
           mainPanel(
-            uiOutput("plot.ui")
+            create_profile_plot_ui("main_profile")
+            # uiOutput("plot.ui")
+            
             # ,
             # conditionalPanel(
             #   condition = "input.main_x_axis_guide == true |
@@ -612,7 +615,7 @@ shinyUI(
                  or taxa for customized profile!"
               )
             ),
-            create_customized_profile_ui("customized_profile")
+            create_profile_plot_ui("customized_profile")
             # uiOutput("selected_plot.ui")
           )
         )
