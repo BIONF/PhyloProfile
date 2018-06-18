@@ -1680,35 +1680,6 @@ shinyServer(function(input, output, session) {
                 out, selected = out[1])
   })
 
-  # * update highlight_taxon_ui based on double clicked dot ---------------------
-  observe({
-    choice <- alltaxa_list()
-    choice$fullName <- as.factor(choice$fullName)
-
-    out <- as.list(levels(choice$fullName))
-    out <- append("none", out)
-
-    if (!is.null(input$plot_dblclick)){
-      if (input$x_axis == "genes"){
-        corX <- round(input$plot_dblclick$y);
-        corY <- round(input$plot_dblclick$x)
-      } else {
-        corX <- round(input$plot_dblclick$x);
-        corY <- round(input$plot_dblclick$y)
-      }
-
-      dataHeat <- dataHeat()
-      supertaxa <- levels(dataHeat$supertaxon)
-      spec <- toString(supertaxa[corX])
-      selectedIndex <- match(substr(spec, 6, nchar(spec)), out)
-
-      updateSelectInput(session, "taxon_highlight",
-                        label = "Select (super)taxon to highlight:",
-                        choices = out,
-                        selected = out[selectedIndex])
-    }
-  })
-
   # * get list of genes for highlighting ----------------------------------------
   output$highlight_gene_ui <- renderUI({
     geneList <- dataHeat()
@@ -1718,36 +1689,6 @@ shinyServer(function(input, output, session) {
     out <- append("none", out)
 
     selectInput("gene_highlight", "Highlight:", out, selected = out[1])
-  })
-
-  # * update highlight_gene_ui based on double clicked dot ----------------------
-  observe({
-    if (!is.null(input$plot_dblclick)){
-      geneList <- dataHeat()
-      if (input$apply_cluster == TRUE){
-        geneList <- clusteredDataHeat()
-      }
-
-      geneList$geneID <- as.factor(geneList$geneID)
-
-      out <- as.list(levels(geneList$geneID))
-      out <- append("none", out)
-
-      clickedInfo <- mainpoint_info()
-
-      if (input$x_axis == "genes"){
-
-        corX <- round(input$plot_dblclick$y);
-        corY <- round(input$plot_dblclick$x)
-      } else {
-        corX <- round(input$plot_dblclick$x);
-        corY <- round(input$plot_dblclick$y)
-      }
-      updateSelectInput(session, "gene_highlight",
-                        label = "Highlight:",
-                        choices = out,
-                        selected = out[corY + 1])
-    } else return()
   })
 
   # * reset configuration windows of Main plot ----------------------------------
@@ -1805,19 +1746,19 @@ shinyServer(function(input, output, session) {
 
   # * plot main profile -------------------------------------------------
   mainpoint_info <- callModule(create_profile_plot, "main_profile",
-                                   data = dataHeat,
-                                   clusteredDataHeat = clusteredDataHeat,
-                                   apply_cluster = reactive(input$apply_cluster),
-                                   parameters = get_parameter_input_main,
-                                   in_seq = reactive(input$in_seq),
-                                   in_taxa = reactive(input$in_taxa),
-                                   rank_select = reactive(input$rank_select),
-                                   in_select = reactive(input$in_select),
+                               data = dataHeat,
+                               clusteredDataHeat = clusteredDataHeat,
+                               apply_cluster = reactive(input$apply_cluster),
+                               parameters = get_parameter_input_main,
+                               in_seq = reactive(input$in_seq),
+                               in_taxa = reactive(input$in_taxa),
+                               rank_select = reactive(input$rank_select),
+                               in_select = reactive(input$in_select),
                                taxon_highlight = reactive(input$taxon_highlight),
                                gene_highlight = reactive(input$gene_highlight),
-                                   width = reactive(input$width),
-                                   height = reactive(input$height),
-                                   x_axis = reactive(input$x_axis),
+                               width = reactive(input$width),
+                               height = reactive(input$height),
+                               x_axis = reactive(input$x_axis),
                                type_profile = reactive("main_profile"))
   
   # ======================== CUSTOMIZED PROFILE TAB ===========================

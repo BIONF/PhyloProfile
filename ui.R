@@ -510,12 +510,6 @@ shinyUI(
             br(),
             
             uiOutput("highlight_taxon_ui"),
-            bsPopover(
-              "highlight_taxon_ui",
-              "",
-              "OR double click on heatmap",
-              "right"
-            ),
             
             conditionalPanel(
               condition = "input.auto_update == false",
@@ -530,8 +524,6 @@ shinyUI(
           # * main panel for profile plot -------------------------------------
           mainPanel(
             create_profile_plot_ui("main_profile")
-            # uiOutput("plot.ui")
-            
             # ,
             # conditionalPanel(
             #   condition = "input.main_x_axis_guide == true |
