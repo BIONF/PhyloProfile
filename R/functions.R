@@ -199,6 +199,14 @@ create_text_size <- function(id, title, value, width) {
                width = width)
 }
 
+create_select_gene <- function(id, list, selected) {
+  selectInput(id,
+              "",
+              list,
+              selected = selected,
+              multiple = TRUE,
+              selectize = FALSE)
+}
 
 # GROUP COMPARISON ============================================================
 

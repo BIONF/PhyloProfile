@@ -1,8 +1,8 @@
 #' Gene age estimation plot
-#' 
-#' 
+#'
+#'
 
-source("scripts/functions.R")
+source("R/functions.R")
 
 plot_gene_age_ui <- function(id){
   ns <- NS(id)
@@ -34,11 +34,11 @@ plot_gene_age_ui <- function(id){
 plot_gene_age <- function(input, output, session,
                           data,
                           gene_age_width, gene_age_height, gene_age_text){
-  
+
   output$gene_agePlot <- renderPlot({
     create_gene_age_plot(gene_age_plotDf(data()), gene_age_text())
   })
-  
+
   output$gene_age.ui <- renderUI({
     ns <- session$ns
     withSpinner(
@@ -48,7 +48,7 @@ plot_gene_age <- function(input, output, session,
                  click = ns("plot_click_gene_age"))
     )
   })
-  
+
   # download gene age plot ----------------------------------------------------
   output$gene_age_plot_download <- downloadHandler(
     filename = function() {
@@ -62,25 +62,25 @@ plot_gene_age <- function(input, output, session,
              units = "cm", dpi = 300, device = "pdf")
     }
   )
-  
+
   # render genAge.table based on clicked point on gene_agePlot ----------------
   selectedgene_age <- reactive({
     # if (v$doPlot == FALSE) return()
-    
+
     selected_gene <- get_selected_gene_age(data(), input$plot_click_gene_age$x)
     return(selected_gene)
   })
-  
+
   output$gene_age.table <- renderTable({
     if (is.null(input$plot_click_gene_age$x)) return()
-    
+
     data <- as.data.frame(selectedgene_age())
     data$number <- rownames(data)
     colnames(data) <- c("geneID", "No.")
     data <- data[, c("No.", "geneID")]
     data
   })
-  
+
   # download gene list from gene_ageTable -------------------------------------
   output$gene_age_table_download <- downloadHandler(
     filename = function(){
@@ -94,7 +94,7 @@ plot_gene_age <- function(input, output, session,
                   quote = FALSE)
     }
   )
-  
+
   return(selectedgene_age)
 }
 
@@ -107,27 +107,27 @@ estimate_gene_age <- function(subset_taxa, filtered_data,
                 "kingdom",
                 "superkingdom",
                 "root")
-  
+
   # get selected (super)taxon ID
   rankName <- substr(rank_select, 4, nchar(rank_select))
-  
+
   taxa_list <- get_name_list(FALSE, FALSE)
   superID <- {
     as.numeric(taxa_list$ncbiID[taxa_list$fullName == in_select
                                 & taxa_list$rank == rankName])
   }
-  
+
   # full non-duplicated taxonomy data
   Dt <- get_taxa_list(FALSE, subset_taxa)
-  
+
   # subset of taxonomy data, containing only ranks from rankList
   subDt <- Dt[, c("abbrName", rankList)]
-  
+
   # get (super)taxa IDs for one of representative species
   # get all taxon info for 1 representative
   first_line <- Dt[Dt[, rankName] == superID, ][1, ]
   sub_first_line <- first_line[, c("abbrName", rankList)]
-  
+
   # compare each taxon ncbi IDs with selected taxon
   # and create a "category" data frame
   catDf <- data.frame("ncbiID" = character(),
@@ -140,7 +140,7 @@ estimate_gene_age <- function(subset_taxa, filtered_data,
     cat <- paste0(cat, collapse = "")
     catDf[i, ] <- c(as.character(subDt[i, ]$abbrName), cat)
   }
-  
+
   # get main input data
   mdData <- droplevels(filtered_data)
   mdData <- mdData[, c("geneID",
@@ -149,18 +149,18 @@ estimate_gene_age <- function(subset_taxa, filtered_data,
                        "var1",
                        "var2",
                        "presSpec")]
-  
+
   ### add "category" into mdData
   mdDataExtended <- merge(mdData,
                           catDf,
                           by = "ncbiID",
                           all.x = TRUE)
-  
+
   mdDataExtended$var1[mdDataExtended$var1 == "NA"
                       | is.na(mdDataExtended$var1)] <- 0
   mdDataExtended$var2[mdDataExtended$var2 == "NA"
                       | is.na(mdDataExtended$var2)] <- 0
-  
+
   # remove cat for "NA" orthologs
   # and also for orthologs that do not fit cutoffs
   if (nrow(mdDataExtended[mdDataExtended$orthoID == "NA"
@@ -168,9 +168,9 @@ estimate_gene_age <- function(subset_taxa, filtered_data,
     mdDataExtended[mdDataExtended$orthoID == "NA"
                    | is.na(mdDataExtended$orthoID), ]$cat <- NA
   }
-  
+
   mdDataExtended <- mdDataExtended[complete.cases(mdDataExtended), ]
-  
+
   # filter by %specpres, var1, var2 ..
   mdDataExtended$cat[mdDataExtended$var1 < var1_cutoff[1]] <- NA
   mdDataExtended$cat[mdDataExtended$var1 > var1_cutoff[2]] <- NA
@@ -178,18 +178,18 @@ estimate_gene_age <- function(subset_taxa, filtered_data,
   mdDataExtended$cat[mdDataExtended$var2 > var2_cutoff[2]] <- NA
   mdDataExtended$cat[mdDataExtended$presSpec < percent_cutoff[1]] <- NA
   mdDataExtended$cat[mdDataExtended$presSpec > percent_cutoff[2]] <- NA
-  
+
   mdDataExtended <- mdDataExtended[complete.cases(mdDataExtended), ]
-  
+
   ### get the furthest common taxon with selected taxon for each gene
   gene_ageDf <- as.data.frame(tapply(mdDataExtended$cat,
                                      mdDataExtended$geneID,
                                      min))
-  
+
   setDT(gene_ageDf, keep.rownames = TRUE)[]
   setnames(gene_ageDf, 1:2, c("geneID", "cat"))  # rename columns
   row.names(gene_ageDf) <- NULL   # remove row names
-  
+
   ### convert cat into gene_age
   gene_ageDf$age[gene_ageDf$cat == "0000001"] <- "07_LUCA"
   gene_ageDf$age[gene_ageDf$cat == "0000011" | gene_ageDf$cat == "0000010"] <- {
@@ -222,11 +222,11 @@ estimate_gene_age <- function(subset_taxa, filtered_data,
            as.character(taxa_list$fullName[taxa_list$fullName == in_select
                                            & taxa_list$rank == rankName]))
   }
-  
+
   # return gene_age data frame
   gene_ageDf <- gene_ageDf[, c("geneID", "cat", "age")]
   gene_ageDf$age[is.na(gene_ageDf$age)] <- "Undef"
-  
+
   return(gene_ageDf)
 }
 
@@ -240,10 +240,10 @@ gene_age_plotDf <- function(gene_ageDf){
 get_selected_gene_age <- function(gene_ageDf, clicked_x){
   # if (v$doPlot == FALSE) return()
   data <- gene_ageDf
-  
+
   # calculate the coordinate range for each age group
   rangeDf <- plyr::count(data, c("age"))
-  
+
   rangeDf$percentage <- round(rangeDf$freq / sum(rangeDf$freq) * 100)
   rangeDf$rangeStart[1] <- 0
   rangeDf$rangeEnd[1] <- rangeDf$percentage[1]
@@ -253,7 +253,7 @@ get_selected_gene_age <- function(gene_ageDf, clicked_x){
       rangeDf$rangeEnd[i] <- rangeDf$percentage[i] + rangeDf$rangeEnd[i - 1]
     }
   }
-  
+
   # get list of selected age group
   if (is.null(clicked_x)) return()
   else{
@@ -265,10 +265,10 @@ get_selected_gene_age <- function(gene_ageDf, clicked_x){
     subData <- subset(data, age == selectAge)
     data <- data[data$age == selectAge, ]
   }
-  
+
   # return list of genes
   geneList <- levels(as.factor(subData$geneID))
-  
+
   return(geneList)
 }
 

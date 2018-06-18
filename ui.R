@@ -10,22 +10,22 @@ if (!require("shinycssloaders")) {
   devtools::install_github("andrewsali/shinycssloaders")
 }
 
-source("scripts/functions.R")
+source("R/functions.R")
 
-source("scripts/search_taxon_id.R")
-source("scripts/download_filtered_main.R")
-source("scripts/download_filtered_customized.R")
+source("R/search_taxon_id.R")
+source("R/download_filtered_main.R")
+source("R/download_filtered_customized.R")
 
-source("scripts/select_taxon_rank.R")
+source("R/select_taxon_rank.R")
 
-source("scripts/identify_core_gene.R")
-source("scripts/analyze_distribution.R")
+source("R/identify_core_gene.R")
+source("R/analyze_distribution.R")
 
-source("scripts/cluster_profile.R")
-source("scripts/estimate_gene_age.R")
+source("R/cluster_profile.R")
+source("R/estimate_gene_age.R")
 
-source("scripts/create_architecture_plot.R")
-source("scripts/create_detailed_plot.R")
+source("R/create_architecture_plot.R")
+source("R/create_detailed_plot.R")
 
 # MAIN UI ====================================================================-
 
@@ -752,12 +752,12 @@ shinyUI(
               column(
                 4,
                 checkboxInput(
-                  "add_custom_profile",
+                  "add_gene_age_custom_profile",
                   strong(em("Add to Customized profile")),
                   value = FALSE,
                   width = NULL
                 ),
-                uiOutput("add_custom_profile_check.ui")
+                uiOutput("add_gene_age_custom_profile_check.ui")
               )
             )
           ),

@@ -30,33 +30,32 @@ if (!require("shinycssloaders")) {
 }
 if (!require("Matching")) install.packages("Matching")
 
-source("scripts/taxonomyProcessing.R")
-source("scripts/functions.R")
-source("scripts/get_oma_browser.R")
+source("R/taxonomyProcessing.R")
+source("R/functions.R")
+source("R/get_oma_browser.R")
 
-source("scripts/search_taxon_id.R")
-source("scripts/parse_main_input.R")
-source("scripts/parse_domain_input.R")
+source("R/search_taxon_id.R")
+source("R/parse_main_input.R")
+source("R/parse_domain_input.R")
 
-source("scripts/get_fasta_seqs.R")
-source("scripts/download_filtered_main.R")
-source("scripts/download_filtered_customized.R")
+source("R/get_fasta_seqs.R")
+source("R/download_filtered_main.R")
+source("R/download_filtered_customized.R")
 
-source("scripts/parse_phylotree.R")
-source("scripts/select_taxon_rank.R")
-source("scripts/create_profile_heatmap.R")
+source("R/parse_phylotree.R")
+source("R/select_taxon_rank.R")
+source("R/create_profile_heatmap.R")
 
-source("scripts/identify_core_gene.R")
-source("scripts/analyze_distribution.R")
-source("scripts/estimate_gene_age.R")
-source("scripts/analyze_distribution.R")
-source("scripts/cluster_profile.R")
+source("R/identify_core_gene.R")
+source("R/analyze_distribution.R")
+source("R/estimate_gene_age.R")
+source("R/cluster_profile.R")
 
-source("scripts/create_architecture_plot.R")
-source("scripts/create_detailed_plot.R")
+source("R/create_architecture_plot.R")
+source("R/create_detailed_plot.R")
 
 
-options(shiny.maxRequestSize = 99 * 1024 ^ 2)  # size limit for input 99mb
+options(shiny.maxRequestSize = 9999 * 1024 ^ 2)  # size limit for input 9999mb
 
 shinyServer(function(input, output, session) {
   # Automatically stop a Shiny app when closing the browser tab
@@ -1973,10 +1972,10 @@ shinyServer(function(input, output, session) {
 
     if (is.null(filein) & is.null(fileCustom)){
       return(selectInput("in_seq", "", "all"))
-      }
+    }
     if (v$doPlot == FALSE){
       return(selectInput("in_seq", "", "all"))
-      }
+    }
 
     else{
       # full list
@@ -1985,90 +1984,33 @@ shinyServer(function(input, output, session) {
       data$geneID <- as.factor(data$geneID)
       outAll <- as.list(levels(data$geneID))
       outAll <- append("all", outAll)
-      #selectInput("in_seq","",out,selected=out[1],multiple=TRUE)
 
-      if (input$add_custom_profile == TRUE){
-        out <- selectedgene_age()
-        if (length(out) > 0){
-          selectInput("in_seq",
-                      "",
-                      out,
-                      selected = as.list(out),
-                      multiple = TRUE,
-                      selectize = FALSE)
-        }
-        else {
-          selectInput("in_seq",
-                      "",
-                      outAll,
-                      selected = outAll[1],
-                      multiple = TRUE,
-                      selectize = FALSE)
-        }
+      out <- list()
+      if (input$add_gene_age_custom_profile == TRUE){
+        out <- as.list(selectedgene_age())
       } else if (input$add_cluster_cutom_profile == TRUE){
-        out <- brushed_clusterGene()
-        if (length(out) > 0){
-          selectInput("in_seq", "",
-                      out,
-                      selected = as.list(out),
-                      multiple = TRUE,
-                      selectize = FALSE)
-        }
-        else {
-          selectInput("in_seq", "",
-                      outAll,
-                      selected = outAll[1],
-                      multiple = TRUE,
-                      selectize = FALSE)
-        }
+        out <- as.list(brushed_clusterGene())
       }
       else if (input$add_core_gene_custom_profile == TRUE){
-        out <- core_geneDf()
-        if (length(out) > 0){
-          selectInput("in_seq", "",
-                      out,
-                      selected = as.list(out),
-                      multiple = TRUE,
-                      selectize = FALSE)
-        }
-        else {
-          selectInput("in_seq", "",
-                      outAll,
-                      selected = outAll[1],
-                      multiple = TRUE,
-                      selectize = FALSE)
-        }
+        out <- as.list(core_geneDf())
       }
       else if(input$add_gc_genes_custom_profile == TRUE){
-        out <- significantGenesGroupCompairison$geneID
-        if(length(out)>0){
-          selectInput("in_seq","",out,selected=as.list(out),multiple=TRUE,selectize=FALSE)
-        }
-        else {
-          selectInput("in_seq","",outAll,selected=outAll[1],multiple=TRUE,selectize=FALSE)
-        }
-
+        out <- as.list(significantGenesGroupCompairison$geneID)
       }
       else {
-        if (is.null(fileCustom)){
-          selectInput("in_seq", "",
-                      outAll,
-                      selected = outAll[1],
-                      multiple = TRUE,
-                      selectize = FALSE)
-        }
-
-        else {
+        if (!is.null(fileCustom)){
           customList <- as.data.frame(read.table(file = fileCustom$datapath,
                                                  header = FALSE))
           customList$V1 <- as.factor(customList$V1)
           out <- as.list(levels(customList$V1))
-          selectInput("in_seq", "",
-                      out,
-                      selected = out,
-                      multiple = TRUE,
-                      selectize = FALSE)
         }
+      }
+      
+      if(length(out)> 0){
+        create_select_gene("in_seq", out, out)
+      }
+      else {
+        create_select_gene("in_seq", outAll, outAll[1])
       }
     }
   })
@@ -2179,7 +2121,6 @@ shinyServer(function(input, output, session) {
                         "dot_zoom" = input$dot_zoom_select,
                         "x_angle" = input$x_angle_select,
                         "guideline" = 0)
-
     return(input_para)
   })
   
@@ -2208,13 +2149,7 @@ shinyServer(function(input, output, session) {
             plotOutput("selected_plot",
                        width = input$selected_width,
                        height = input$selected_height,
-                       click = "plot_click_selected",
-                       hover = hoverOpts(
-                         id = "plot_hover_selected",
-                         delay = input$hover_delay,
-                         delayType = input$hover_policy,
-                         nullOutside = input$hover_null_outside
-                       )
+                       click = "plot_click_selected"
             )
           )
         })
@@ -2223,13 +2158,7 @@ shinyServer(function(input, output, session) {
           plotOutput("selected_plot",
                      width = input$selected_width,
                      height = input$selected_height,
-                     click = "plot_click_selected",
-                     hover = hoverOpts(
-                       id = "plot_hover_selected",
-                       delay = input$hover_delay,
-                       delayType = input$hover_policy,
-                       nullOutside = input$hover_null_outside
-                     )
+                     click = "plot_click_selected"
           )
         )
       }
@@ -2470,6 +2399,7 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  # * render detailed plot ----------------------------------------------------
   point_infoDetail <- callModule(create_detailed_plot, "detailed_plot",
                                  data = detail_plotDt,
                                  var1_id = reactive(input$var1_id),
@@ -2612,6 +2542,7 @@ shinyServer(function(input, output, session) {
     if (is.null(filein)) v3$doPlot3 <- FALSE
   })
   
+  # * render domain plot ------------------------------------------------------
   observeEvent(input$do_domain_plot, {
     if (v3$doPlot3 == FALSE) {
       domainIN <- unlist(strsplit(toString(input$main_input), ","))
@@ -2683,7 +2614,7 @@ shinyServer(function(input, output, session) {
   
   # ** check if anywhere elese genes are added to the custemized profile ---------
   observe({
-    if (input$add_custom_profile == TRUE
+    if (input$add_gene_age_custom_profile == TRUE
         | input$add_core_gene_custom_profile == TRUE
         | input$add_gc_genes_custom_profile == TRUE){
       shinyjs::disable("add_cluster_cutom_profile")
@@ -2693,7 +2624,7 @@ shinyServer(function(input, output, session) {
   })
   
   output$add_cluster_cutom_profile_check.ui <- renderUI({
-    if (input$add_custom_profile == TRUE
+    if (input$add_gene_age_custom_profile == TRUE
         | input$add_core_gene_custom_profile == TRUE |
         input$add_gc_genes_custom_profile == TRUE ){
       HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Gene age estimation</strong> or <strong>Core genes finding</strong> or <strong>Group Comparison</strong> &nbsp;to enable this function)</em></p>')
@@ -2913,13 +2844,13 @@ shinyServer(function(input, output, session) {
     if (input$add_cluster_cutom_profile == TRUE
         | input$add_core_gene_custom_profile == TRUE
         | input$add_gc_genes_custom_profile == TRUE ){
-      shinyjs::disable("add_custom_profile")
+      shinyjs::disable("add_gene_age_custom_profile")
     } else {
-      shinyjs::enable("add_custom_profile")
+      shinyjs::enable("add_gene_age_custom_profile")
     }
   })
   
-  output$add_custom_profile_check.ui <- renderUI({
+  output$add_gene_age_custom_profile_check.ui <- renderUI({
     if (input$add_cluster_cutom_profile == TRUE
         | input$add_core_gene_custom_profile == TRUE
         | input$add_gc_genes_custom_profile == TRUE){
@@ -3004,7 +2935,7 @@ shinyServer(function(input, output, session) {
   # check if anywhere elese genes are added to the custemized profile ---------
   observe({
     if (input$add_cluster_cutom_profile == TRUE
-        | input$add_custom_profile == TRUE
+        | input$add_gene_age_custom_profile == TRUE
         | input$add_gc_genes_custom_profile == TRUE){
       shinyjs::disable("add_core_gene_custom_profile")
     } else {
@@ -3014,7 +2945,7 @@ shinyServer(function(input, output, session) {
   
   output$add_core_gene_custom_profile_check.ui <- renderUI({
     if (input$add_cluster_cutom_profile == TRUE
-        | input$add_custom_profile == TRUE
+        | input$add_gene_age_custom_profile == TRUE
         | input$add_gc_genes_custom_profile == TRUE){
       HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Profiles clustering</strong> or <strong>Gene age estimating</strong> or r <strong>Group Comparioson</strong>&nbsp;to enable this function)</em></p>')
     }
@@ -3436,9 +3367,9 @@ shinyServer(function(input, output, session) {
   })
 
   # add_custom_profile --------------------------------------------------------
-  # check if add_custom_profile (gene age plot) are being clicked
+  # check if add_gene_age_custom_profile (gene age plot) are being clicked
   observe({
-    if (input$add_custom_profile == TRUE |
+    if (input$add_gene_age_custom_profile == TRUE |
         input$add_core_gene_custom_profile == TRUE |
         input$add_cluster_cutom_profile == TRUE){
       shinyjs::disable("add_gc_genes_custom_profile")
@@ -3447,7 +3378,7 @@ shinyServer(function(input, output, session) {
     }
   })
   output$add_gc_custom_profile_check <- renderUI({
-    if (input$add_custom_profile == TRUE |
+    if (input$add_gene_age_custom_profile == TRUE |
         input$add_core_gene_custom_profile == TRUE |
         input$add_cluster_cutom_profile == TRUE){
       HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Gene age estimation</strong>or <strong>Profile clustering</strong> or <strong>Core genes finding</strong>&nbsp;to enable this function)</em></p>')
