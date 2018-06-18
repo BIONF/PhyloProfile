@@ -25,6 +25,7 @@ source("scripts/cluster_profile.R")
 source("scripts/estimate_gene_age.R")
 
 source("scripts/create_architecture_plot.R")
+source("scripts/create_detailed_plot.R")
 
 # MAIN UI ====================================================================-
 
@@ -1005,41 +1006,35 @@ shinyUI(
       "detailed_btn",
       size = "large",
       
-      uiOutput("detail_plot.ui"),
-      checkboxInput(
-        "detailed_remove_na",
-        strong("Hide taxa that have no ortholog (NAs)",
-               style = "color:red"),
-        value = FALSE
-      ),
-      
       fluidRow(
         column(
-          3,
-          create_plot_size("detailed_height", "Plot height (px)", 100)
+          2,
+          create_plot_size("detailed_height", "Height (px)", 100)
         ),
         column(
           3,
           create_text_size("detailed_text", "Text size (px)", 12, 150)
         ),
         column(
-          3,
-          strong("Download"),
-          tags$head(
-            tags$style(HTML(
-              "#plot_download_dist{background-color:#A9E2F3}"))
-          ),
-          downloadButton("download_detailed", "Download plot")
+          7,
+          checkboxInput(
+            "detailed_remove_na",
+            strong("Hide taxa that have no ortholog (NAs)",
+                   style = "color:red"),
+            value = FALSE
+          )
         )
       ),
       hr(),
       
-      verbatimTextOutput("detail_click"),
+      create_detailed_plot_ui("detailed_plot"),
+      
       shinyBS::bsButton("do_domain_plot",
                         "Show domain architecture",
                         disabled = TRUE),
       uiOutput("check_domain_files"),
       br(),
+      
       h4("Sequence:"),
       verbatimTextOutput("fasta")
     ),

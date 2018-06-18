@@ -53,6 +53,7 @@ source("scripts/analyze_distribution.R")
 source("scripts/cluster_profile.R")
 
 source("scripts/create_architecture_plot.R")
+source("scripts/create_detailed_plot.R")
 
 
 options(shiny.maxRequestSize = 99 * 1024 ^ 2)  # size limit for input 99mb
@@ -2469,111 +2470,19 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  # * plot detailed bar chart ---------------------------------------------------
-  output$detail_plot <- renderPlot({
-    p <- detail_plot(v, detail_plotDt(), input$detailed_text,
-                     input$var1_id, input$var2_id)
-    p
-  })
-  
-  output$detail_plot.ui <- renderUI({
-    withSpinner(
-      plotOutput("detail_plot",
-                 width = 800,
-                 height = input$detailed_height,
-                 click = "plot_click_detail",
-                 hover = hoverOpts(
-                   id = "plot_hover_2",
-                   delay = input$hover_delay,
-                   delayType = input$hover_policy,
-                   nullOutside = input$hover_null_outside
-                 )
-      )
-    )
-  })
-
-  # * download detailed plot ----------------------------------------------------
-  output$download_detailed <- downloadHandler(
-    filename = function() {
-      c("detailedPlot.pdf")
-      },
-    content = function(file) {
-      g <- detail_plot(v, detai_plotDt(), input$detailed_text,
-                       input$var1_id, input$var2_id)
-      ggsave(file,
-             plot = g,
-             width = 800 * 0.056458333,
-             height = input$detailed_height * 0.056458333,
-             units = "cm",
-             dpi = 300,
-             device = "pdf",
-             limitsize = FALSE)
-    }
-  )
-
-  # * get info when clicking on detailed plot -----------------------------------
-  point_infoDetail <- reactive({
-    selDf <- detail_plotDt()
-    # selDf <- selDf[complete.cases(selDf),]
-    selDf$orthoID <- as.character(selDf$orthoID)
-    # allOrthoID <- sort(selDf$orthoID)
-    
-    ### get coordinates of plot_click_detail
-    if (is.null(input$plot_click_detail$x)) return()
-    else{
-      corX <- round(input$plot_click_detail$y)
-      corY <- round(input$plot_click_detail$x)
-    }
-    
-    ### get pair of sequence IDs & var1
-    seedID <- as.character(selDf$geneID[!is.na(selDf$geneID)][1])
-    orthoID <- as.character(selDf$orthoID[corX])
-    
-    var1 <- as.list(selDf$var1[selDf$orthoID == orthoID])
-    var1 <- as.character(var1[!is.na(var1)])
-    var2 <- as.list(selDf$var2[selDf$orthoID == orthoID])
-    var2 <- as.character(var2[!is.na(var2)])
-    if (length(var2) == 0) var2 = "NA"
-    # ncbiID <- as.character(selDf$abbrName[selDf$orthoID==orthoID])
-    ncbiID <- selDf[selDf$orthoID == orthoID, ]$abbrName
-    ncbiID <- as.character(ncbiID[!is.na(ncbiID)][1])
-
-    ### return info
-    if (is.na(orthoID)){
-      return(NULL)
-    } else {
-      if (orthoID != "NA"){
-        info <- c(seedID, orthoID, var1, var2, ncbiID)
-        return(info)
-      }
-    }
-  })
-  
-  # * show info when clicking on detailed plot ----------------------------------
-  output$detail_click <- renderText({
-    info <- point_infoDetail() # info = seedID, orthoID, var1
-
-    if (is.null(info)) paste("select ortholog")
-    else{
-      a <- paste0("seedID = ", info[1])
-      b <- paste0("hitID = ", info[2])
-      c <- ""
-      if (input$var1_id != ""){
-        c <- paste0(input$var1_id, " = ", info[3])
-      }
-      d <- ""
-      if (input$var2_id != ""){
-        d <- paste0(input$var2_id, " = ", info[4])
-      }
-      paste(a, b, c, d, sep = "\n")
-    }
-  })
+  point_infoDetail <- callModule(create_detailed_plot, "detailed_plot",
+                                 data = detail_plotDt,
+                                 var1_id = reactive(input$var1_id),
+                                 var2_id = reactive(input$var2_id),
+                                 detailed_text = reactive(input$detailed_text),
+                                 detailed_height = reactive(input$detailed_height))
 
   # * render FASTA sequence ------------------------------------------------------------
   output$fasta <- renderText({
     if (v$doPlot == FALSE) return()
 
     info <- point_infoDetail() # info = seedID, orthoID, var1
+
     if (is.null(info)) return()
     else{
       data <- get_data_filtered()

@@ -8,55 +8,6 @@ unsort_id <- function(data, order){
   return(data)
 }
 
-# render detailed plot ------------------------------------------------------
-# v, detai_plotDt(), input$detailed_text
-detail_plot <- function(v, sel_df, detailed_text, var1_id, var2_id){
-  if (v$doPlot == FALSE) return()
-
-  sel_df$x_label <- paste(sel_df$orthoID,
-                         " (",
-                         sel_df$fullName,
-                         ")",
-                         sep = "")
-
-  # if(input$detailed_remove_na == TRUE){
-  #   sel_df <- sel_df[!is.na(sel_df$orthoID),]
-  # }
-
-  # create joined DF for plotting var1 next to var2
-  var1Df <- subset(sel_df, select = c("x_label", "var1"))
-  var1Df$type <- var1_id
-  colnames(var1Df) <- c("id", "score", "var")
-
-  var2Df <- subset(sel_df, select = c("x_label", "var2"))
-  var2Df$type <- var2_id
-  colnames(var2Df) <- c("id", "score", "var")
-
-  detailed_df <- rbind(var1Df, var2Df)
-
-  # remove ONE missing variable
-  if (nlevels(as.factor(detailed_df$var)) > 1) {
-    detailed_df <- detailed_df[nchar(detailed_df$var) > 0, ]
-  }
-
-  # keep order of ID (x_label)
-  detailed_df$id <- factor(detailed_df$id, levels = unique(detailed_df$id))
-
-  # create plot
-  gp <- ggplot(detailed_df, aes(y = score, x = id, fill = var)) +
-    geom_bar(stat = "identity", position = position_dodge(), na.rm = TRUE) +
-    coord_flip() +
-    labs(x = "") +
-    labs(fill = "") +
-    theme_minimal()
-  #geom_text(aes(label=var1), vjust=3)
-  gp <- gp + theme(axis.text.x = element_text(angle = 90, hjust = 1),
-                axis.text = element_text(size = detailed_text),
-                axis.title = element_text(size = detailed_text),
-                legend.text = element_text(size = detailed_text)
-  )
-  gp
-}
 
 # Essential functions =========================================================
 
