@@ -1071,8 +1071,6 @@ shinyUI(
       ),
       
       create_architecture_plot_ui("archi_plot")
-      # uiOutput("archi_plot.ui"),
-      # downloadButton("archi_download", "Download plot")
     ),
     
     # * popup for setting plot colors (profiles) ------------------------------

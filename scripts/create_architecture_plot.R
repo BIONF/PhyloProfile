@@ -6,7 +6,8 @@ create_architecture_plot_ui <- function(id){
   ns <- NS(id)
   tagList(
     uiOutput(ns("archi_plot.ui")),
-    downloadButton(ns("archi_download"), "Download plot")
+    downloadButton(ns("archi_download"), "Download plot"),
+    textOutput(ns("selected_domain"))
   )
 }
 
@@ -39,7 +40,8 @@ create_architecture_plot <- function(input, output, session,
     # } else {
       withSpinner(plotOutput(ns("archi_plot"),
                              height = archi_height(),
-                             width = archi_width()))
+                             width = archi_width(),
+                             click = ns("archi_click")))
     # }
   })
 
@@ -62,6 +64,11 @@ create_architecture_plot <- function(input, output, session,
 
     }
   )
+  
+  output$selected_domain <- renderText({
+    if (is.null(input$archi_click$y)) return()
+    convertY(unit(input$archi_click$y, "npc"), "native")
+  })
 }
 
 
@@ -269,5 +276,5 @@ sort_domains <- function(seed_df, ortho_df){
   ordered_ortho_df$feature <- factor(ordered_ortho_df$feature,
                                    levels = unique(ordered_ortho_df$feature))
   #return sorted df
-  ordered_ortho_df
+  return(ordered_ortho_df)
 }
