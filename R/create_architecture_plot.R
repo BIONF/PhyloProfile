@@ -1,8 +1,18 @@
-#' Plot protein domain architecture
-#' @param point_info() info of clicked point, from reactive function point_infoDetail()
-#' @param domain_info() domain information from function get_domain_information()
+#' Protein domain architecture plot
+#' 
+#' @export
+#' @param point_info() info of clicked point 
+#' (from reactive fn "point_infoDetail")
+#' @param domain_info() domain information 
+#' (from reactive fn "get_domain_information")
+#' @param label_archi_size lable size (from input$label_archi_size)
+#' @param title_archi_size title size (from input$title_archi_size)
+#' @param archi_height plot height (from input$archi_height)
+#' @param archi_width plot width (from input$archi_width)
+#' @return
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 
-create_architecture_plot_ui <- function(id){
+create_architecture_plot_ui <- function(id) {
   ns <- NS(id)
   tagList(
     uiOutput(ns("archi_plot.ui")),
@@ -26,27 +36,16 @@ create_architecture_plot <- function(input, output, session,
   
   output$archi_plot.ui <- renderUI({
     ns <- session$ns
-    # if (v3$doPlot3 == FALSE) {
-    #   domainIN <- unlist(strsplit(toString(input$main_input), ","))
-    #   fileName <- toString(domainIN[1])
-    #   msg <- paste0(
-    #     "<p><strong>No information about domain architecture! Please check:</strong></p>
-    #     <ul>
-    #     <li>if you uploaded the correct domain file/folder using <span style=\"color: #0000ff;\"><em>Upload additional input</em></span> option? (see input example in <span style=\"background-color: #999999; color: #ffffff;\">data/demo/domains/</span> folder); or</li>
-    #     <li>if&nbsp;the selected genes (seed &amp; ortholog) do exist in the uploaded file (please search for the corresponding&nbsp;<span style=\"text-decoration: underline;\"><em>seedID</em></span> and <span style=\"text-decoration: underline;\"><em>hitID</em></span>, which are&nbsp;shown in <span style=\"color: #ffffff; background-color: #999999;\">Detailed plot</span>)</li>
-    #     </ul>"
-    #     )
-    #   HTML(msg)
-    # } else {
-      withSpinner(plotOutput(ns("archi_plot"),
-                             height = archi_height(),
-                             width = archi_width(),
-                             click = ns("archi_click")))
-    # }
+    withSpinner(
+      plotOutput(
+        ns("archi_plot"),
+        height = archi_height(),
+        width = archi_width(),
+        click = ns("archi_click")
+      )
+    )
   })
 
-  # * download architecture plot ------------------------------------------------
-  # *** something strange with archi_plot()
   output$archi_download <- downloadHandler(
     filename = function() {
       c("domains.pdf")
@@ -57,11 +56,12 @@ create_architecture_plot <- function(input, output, session,
                       label_archi_size(),
                       title_archi_size())
       grid.draw(g)
-      ggsave(file, plot = g,
-             width = archi_width() * 0.056458333,
-             height = archi_height() * 0.056458333,
-             units = "cm", dpi = 300, device = "pdf", limitsize = FALSE)
-
+      ggsave(
+        file, plot = g,
+        width = archi_width() * 0.056458333,
+        height = archi_height() * 0.056458333,
+        units = "cm", dpi = 300, device = "pdf", limitsize = FALSE
+      )
     }
   )
   
@@ -72,10 +72,9 @@ create_architecture_plot <- function(input, output, session,
 }
 
 
-# ARCHITECTURE PLOT ===========================================================
-# v3, point_infoDetail(), getDomainFile(), input$demo_data,
-# input$one_seq_fasta, input$label_archi_size, input$title_archi_size
-archi_plot <- function(info, domain_df, 
+#' Create architecure plot for both seed and ortho protein
+archi_plot <- function(info,
+                       domain_df, 
                        label_archi_size, title_archi_size){
   # info
   group <- as.character(info[1])
@@ -90,7 +89,6 @@ archi_plot <- function(info, domain_df,
   subdomain_df$feature <- as.character(subdomain_df$feature)
 
   if (nrow(subdomain_df) < 1) {
-    # v3$doPlot3 <- FALSE
     return()
   } else {
 
@@ -182,14 +180,12 @@ archi_plot <- function(info, domain_df,
   }
 }
 
-# plot domain architecture ----------------------------------------------------
+#' Create architecure plot for single protein
 domain_plotting <- function(df,
                             geneID,
                             sep,
-                            label_size,
-                            title_size,
-                            min_start,
-                            max_end){
+                            label_size, title_size,
+                            min_start, max_end){
   gg <- ggplot(df, aes(y = feature, x = end, color = feature)) +
     geom_segment(data = df,
                  aes(y = feature, yend = feature,
@@ -255,7 +251,7 @@ domain_plotting <- function(df,
   return(gg)
 }
 
-# sort one domain dataframe (ortho) based on the other domain Df (seed) -------
+#' sort one domain dataframe (ortho) based on the other domain Df (seed)
 sort_domains <- function(seed_df, ortho_df){
   # get list of features in seed_df
   feature_list <- as.data.frame(levels(as.factor(seed_df$feature)))
@@ -274,7 +270,7 @@ sort_domains <- function(seed_df, ortho_df){
   ordered_ortho_df$feature <- as.character(ordered_ortho_df$feature)
   #then turn it back into an ordered factor (to keep this order while plotting)
   ordered_ortho_df$feature <- factor(ordered_ortho_df$feature,
-                                   levels = unique(ordered_ortho_df$feature))
+                                     levels = unique(ordered_ortho_df$feature))
   #return sorted df
   return(ordered_ortho_df)
 }

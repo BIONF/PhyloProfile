@@ -1,12 +1,20 @@
 #' Core gene identification
 #'
+#' @export
+#' @param filtered_data full processed main data
+#' (from reactive fn "get_data_filtered")
+#' @param rank_select selected taxonomy rank (input$rank_select)
+#' @param taxa_core selected list of taxa (input$taxa_core)
+#' @param percent_core cutoff of percentage taxa present in a supertaxon
+#' (input$percent_core)
+#' @return list of core genes
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 
 source("R/functions.R")
 
 identify_core_gene_ui <- function(id){
   ns <- NS(id)
-
-dataTableOutput(ns("core_gene.table"))
+  dataTableOutput(ns("core_gene.table"))
 }
 
 identify_core_gene <- function(input, output, session,
@@ -30,14 +38,13 @@ identify_core_gene <- function(input, output, session,
 
     if ("none" %in% taxa_core()) superID <- NA
     else{
-      superID <- {
+      superID <-
         taxa_list$ncbiID[taxa_list$fullName %in% taxa_core()
                          & taxa_list$rank %in% c(rankName, "norank")]
-      }
     }
 
     # get main input data
-    mdData <- filtered_data() # <--- get_data_filtered()
+    mdData <- filtered_data()
     mdData <- mdData[, c("geneID",
                          "ncbiID",
                          "fullName",
