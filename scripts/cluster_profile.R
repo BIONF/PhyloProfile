@@ -24,10 +24,10 @@ cluster_profile_ui <- function(id){
 cluster_profile <- function(input, output, session,
                             data,
                             dist_method, cluster_method,
-                            cluster_plot.width, cluster_plot.height){
+                            cluster_plot.width, cluster_plot.height, var1_aggregate_by){
   
   cluster_data <- reactive({
-    df <- clusterDataDend(data(), dist_method(), cluster_method())
+    df <- clusterDataDend(data(), dist_method(), cluster_method(), var1_aggregate_by())
     return(df)
   }) 
   
@@ -110,10 +110,10 @@ cluster_profile <- function(input, output, session,
 }
 
 # cluster data --------------------------------------------------------------
-clusterDataDend <- function(data, dist_method, cluster_method){
+clusterDataDend <- function(data, dist_method, cluster_method, var1_aggregate_by){
   # if (v$doPlot == FALSE) return()
   # dataframe for calculate distance matrix
-  dat <- get_data_clustering(data, dist_method)
+  dat <- get_data_clustering(data, dist_method, var1_aggregate_by)
   dd.col <- as.dendrogram(hclust(get_distance_matrix(dat, dist_method),
                                  method = cluster_method))
   return(dd.col)
@@ -128,16 +128,19 @@ dendrogram <- function(dd.col){
 }
 
 # get the phylogenetic profiles -----------------------------------------------
-get_data_clustering <- function(data, dist_method){
+get_data_clustering <- function(data, dist_method, var1_aggregate_by){
+  print(var1_aggregate_by)
   sub_data_heat <- subset(data, data$presSpec > 0)
   if (dist_method %in% c("mutual_information", "distance_correlation")){
     # Profiles with FAS scores
     sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", "var1")]
     sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
-    sub_data_heat <- {
-      sub_data_heat[order(sub_data_heat$geneID, -abs(sub_data_heat$var1)),]}
-    sub_data_heat <- {
-      sub_data_heat[!duplicated(sub_data_heat[c("geneID", "supertaxon")]),]}
+    
+    sub_data_heat <- aggregate(sub_data_heat[, "var1"],
+                               list(sub_data_heat$geneID,
+                                    sub_data_heat$supertaxon),
+                               FUN = var1_aggregate_by)
+    colnames(sub_data_heat) <- c("geneID", "supertaxon", "var1")
     
     wide_data <- spread(sub_data_heat, supertaxon, var1)
   }else {

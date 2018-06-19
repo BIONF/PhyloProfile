@@ -2815,7 +2815,8 @@ shinyServer(function(input, output, session) {
                                     dist_method = reactive(input$dist_method),
                                     cluster_method = reactive(input$cluster_method),
                                     cluster_plot.width = reactive(input$cluster_plot.width),
-                                    cluster_plot.height = reactive(input$cluster_plot.width))
+                                    cluster_plot.height = reactive(input$cluster_plot.width),
+                                    var1_aggregate_by = reactive(input$var1_aggregate_by))
   
   # * DISTRIBUTION ANALYSIS =====================================================
   

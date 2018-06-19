@@ -81,7 +81,7 @@ oma_ids_to_long <- function(oma_ids, output_type){
         }
         end_id <- Sys.time()
         time <- end_id - start_id
-        #print(paste("runtime for", id, "with", nrow(members),"members:", time, sep = " "  ))
+        print(paste("runtime for", id, "with", nrow(members),"members:", time, sep = " "  ))
       } else{ ############## NEU
         print(paste("There where no members found for", id, sep = " ")) ############## NEU
       } ############## NEU

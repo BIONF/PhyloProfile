@@ -347,16 +347,19 @@ clustered_gene_list <- function(data, dist_method, cluster_method){
   clustered_gene_ids
 }
 # get the phylogenetic profiles -----------------------------------------------
-get_data_clustering <- function(data, dist_method){
+get_data_clustering <- function(data, dist_method, var1_aggregate_by){
+  print(var1_aggregate_by)
   sub_data_heat <- subset(data, data$presSpec > 0)
   if (dist_method %in% c("mutual_information", "distance_correlation")){
     # Profiles with FAS scores
     sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", "var1")]
     sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
-    sub_data_heat <- {
-      sub_data_heat[order(sub_data_heat$geneID, -abs(sub_data_heat$var1)),]}
-    sub_data_heat <- {
-      sub_data_heat[!duplicated(sub_data_heat[c("geneID", "supertaxon")]),]}
+    
+    sub_data_heat <- aggregate(sub_data_heat[, "var1"],
+                               list(sub_data_heat$geneID,
+                                    sub_data_heat$supertaxon),
+                               FUN = var1_aggregate_by)
+    colnames(sub_data_heat) <- c("geneID", "supertaxon", "var1")
     
     wide_data <- spread(sub_data_heat, supertaxon, var1)
   }else {
