@@ -1069,7 +1069,7 @@ shinyUI(
           create_text_size("label_archi_size", "SeqID size(px)", 11, 150)
         )
       ),
-      
+      uiOutput("test.ui"),
       create_architecture_plot_ui("archi_plot")
     ),
     

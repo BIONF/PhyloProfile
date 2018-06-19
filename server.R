@@ -1122,13 +1122,14 @@ shinyServer(function(input, output, session) {
   
   # * parse domain info into data frame -------------------------------------
   get_domain_information <- reactive({
-    filein <- input$main_input
-    if(is.null(filein)) return()
-    input_type <- check_input_vadility(filein)
+    # if(input$demo_data == "none"){
+    #   filein <- input$main_input
+    #   input_type <- check_input_vadility(filein)
+    # }
     main_input <- get_main_input()
 
     domain_df <- parse_domain_input(main_input,
-                                    input_type,
+                                    # input_type,
                                     input$demo_data,
                                     input$anno_location,
                                     input$file_domain_input,

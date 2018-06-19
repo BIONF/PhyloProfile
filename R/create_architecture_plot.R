@@ -175,7 +175,6 @@ archi_plot <- function(info,
     }
 
     # grid.arrange(plot_seed,plot_ortho,ncol=1)
-
     if (ortho == seed) {
       arrangeGrob(plot_seed, ncol = 1)
     } else {
@@ -213,11 +212,13 @@ domain_plotting <- function(df,
                  size = 0)
 
   # draw lines for representing sequence length
-  gg <- gg + geom_segment(data = df,
-                          aes(x = 0, xend = length,
-                              y = feature, yend = feature),
-                          size = 1,
-                          color = "#b2b2b2")
+  if ("length" %in% colnames(df)) {
+    gg <- gg + geom_segment(data = df,
+                            aes(x = 0, xend = length,
+                                y = feature, yend = feature),
+                            size = 1,
+                            color = "#b2b2b2")
+  }
 
   # draw line and points
   gg <- gg + geom_segment(data = df,
