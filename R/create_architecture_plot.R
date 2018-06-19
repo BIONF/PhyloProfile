@@ -73,6 +73,14 @@ create_architecture_plot <- function(input, output, session,
 
 
 #' Create architecure plot for both seed and ortho protein
+#' @export
+#' @param info info of clicked point (from reactive fn "point_infoDetail")
+#' @param domain_df domain info (from reactive fn "get_domain_information")
+#' @param label_archi_size lable size (from input$label_archi_size)
+#' @param title_archi_size title size (from input$title_archi_size)
+#' @return plot as arrangeGrob object
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+
 archi_plot <- function(info,
                        domain_df, 
                        label_archi_size, title_archi_size){
@@ -180,7 +188,18 @@ archi_plot <- function(info,
   }
 }
 
-#' Create architecure plot for single protein
+#' Create architecure plot for single protein (seed/ortho)
+#' @export
+#' @param df data (seed/ortho) for ploting 
+#' @param geneID ID of seed or ortho protein
+#' @param sep separate indicator for title
+#' @param label_size lable size (from input$label_archi_size)
+#' @param title_size title size (from input$title_archi_size)
+#' @param min_start the smallest start position of all domains
+#' @param max_end the highest stop position of all domains
+#' @return plot as ggplot object
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+
 domain_plotting <- function(df,
                             geneID,
                             sep,
@@ -252,6 +271,12 @@ domain_plotting <- function(df,
 }
 
 #' sort one domain dataframe (ortho) based on the other domain Df (seed)
+#' @export
+#' @param seed_df data of seed protein
+#' @param ortho_df data of ortholog protein
+#' @return sorted domain list (dataframe)
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+
 sort_domains <- function(seed_df, ortho_df){
   # get list of features in seed_df
   feature_list <- as.data.frame(levels(as.factor(seed_df$feature)))

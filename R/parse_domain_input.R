@@ -4,14 +4,17 @@ source("R/get_oma_browser.R")
 #' Parse domain input file
 #' and return output as a data frame
 #'
-#' @main_input
-#' @input_type
-#' @demo_data
-#' @anno_location
-#' @file_domain_input
-#' @domainPath
-#' @session
-#' @datapath
+#' @export
+#' @param main_input
+#' @param input_type
+#' @param demo_data
+#' @param anno_location
+#' @param file_domain_input
+#' @param domainPath
+#' @param session
+#' @param datapath
+#' @return
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 
 parse_domain_input <- function(main_input,
                                input_type,
@@ -61,7 +64,7 @@ parse_domain_input <- function(main_input,
     for(file in files){
       domain_df <- as.data.frame(read.csv(file,
                                           sep = "\t",
-                                          header = F,
+                                          header = FALSE,
                                           comment.char = "",
                                           stringsAsFactors = FALSE,
                                           quote = ""))
@@ -139,8 +142,6 @@ parse_domain_input <- function(main_input,
                              "path")
     }
   }
-
-  print(head(domains))
 
   domains$seedID <- gsub("\\|",":",domains$seedID)
   domains$orthoID <- gsub("\\|",":",domains$orthoID)

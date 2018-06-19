@@ -1,7 +1,7 @@
 #' Download filtered data from main profile
 #'
 #' @export
-#' @param data full processed main data (from reactive fn "get_data_filtered")
+#' @param full processed main data (from reactive fn "get_data_filtered")
 #' @param fasta fasta sequences (from reactive fn "main_fasta_download")
 #' @param var1_id name of 1st variable (from input$var1_id)
 #' @param var2_id name of 2nd variable (from input$var2_id)
@@ -48,7 +48,7 @@ download_filtered_main_ui <- function(id) {
           },
           choices = list("max", "min"),
           selected = "max",
-          inline = T
+          inline = TRUE
         )
       )
     ),
@@ -141,7 +141,7 @@ download_filtered_main <- function(input, output, session,
                                          all.x = TRUE)
 
         if (input$ref_var_main == var1_id()) {
-          data_out <- 
+          data_out <-
             data_out_representative[
               data_out_representative$var1 == data_out_representative$var_best,
             ]

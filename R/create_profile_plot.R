@@ -1,5 +1,5 @@
 #' Profile plot
-#' 
+#'
 #' @export
 #' @param data data for heatmap plot (from reactive fn "dataHeat")
 #' @param clusteredDataHeat clustered data (from reactive fn "clusteredDataHeat"
@@ -42,10 +42,10 @@ create_profile_plot <- function(input, output, session,
   # data for heatmap -----------------------------------------------------------
   dataHeat <- reactive({
     if (is.null(data())) return()
-    
+
     if (type_profile() == "customized_profile") {
       if (is.null(in_taxa()) | is.null(in_seq())) return()
-      
+
       data_heat <- data_customized_plot(data(), in_taxa(), in_seq())
       if (apply_cluster() == TRUE) {
         data_heat <- data_customized_plot(clusteredDataHeat(),
@@ -57,18 +57,18 @@ create_profile_plot <- function(input, output, session,
         data_heat <- data_main_plot(clusteredDataHeat())
       }
     }
-    
+
     return(data_heat)
   })
-  
+
   # render heatmap profile -----------------------------------------------------
   output$plot <- renderPlot({
     if (is.null(data())) return()
     if (type_profile() == "customized_profile") {
       if (in_seq()[1] == "all" & in_taxa()[1] == "all") return()
     }
-    
-    profile_plot(
+
+    final_profile_plot(
       dataHeat(),
       parameters(),
       taxon_highlight(),
@@ -76,15 +76,15 @@ create_profile_plot <- function(input, output, session,
       gene_highlight()
     )
   })
-  
+
   output$plot.ui <- renderUI({
     ns <- session$ns
-    
+
     if (type_profile() == "customized_profile") {
       if (is.null(in_seq()[1]) | is.null(in_taxa()[1]))  return()
       else if (in_seq()[1] == "all" & in_taxa()[1] == "all") return()
     }
-    
+
     withSpinner(
       plotOutput(
         ns("plot"),
@@ -94,7 +94,7 @@ create_profile_plot <- function(input, output, session,
       )
     )
   })
-  
+
   output$profile_download <- downloadHandler(
     filename = function() {
       c("profile.pdf")
@@ -102,7 +102,7 @@ create_profile_plot <- function(input, output, session,
     content = function(file) {
       ggsave(
         file,
-        plot = profile_plot(dataHeat(),
+        plot = final_profile_plot(dataHeat(),
                             parameters(),
                             "none",
                             rank_select(),
@@ -113,10 +113,10 @@ create_profile_plot <- function(input, output, session,
       )
     }
   )
-  
+
   # get info of clicked point on heatmap plot ----------------------------------
   selectedpoint_info <- reactive({
-    
+
     # get selected supertaxon name
     taxa_list <- get_name_list(FALSE, FALSE)
     rank_select <- rank_select()
@@ -124,16 +124,16 @@ create_profile_plot <- function(input, output, session,
     in_select <- {
       as.numeric(taxa_list$ncbiID[taxa_list$fullName == in_select()])
     }
-    
+
     dataHeat <- dataHeat()
     if (is.null(dataHeat)) return()
-    
+
     if (type_profile() == "customized_profile") {
       # get sub-dataframe of selected taxa and sequences
       dataHeat$supertaxonMod <- substr(dataHeat$supertaxon,
                                        6,
                                        nchar(as.character(dataHeat$supertaxon)))
-      
+
       if (is.null(in_seq()[1]) | is.null(in_taxa()[1]))  return()
       if (in_taxa()[1] == "all" & in_seq()[1] != "all") {
         # select data from dataHeat for selected sequences only
@@ -146,12 +146,12 @@ create_profile_plot <- function(input, output, session,
         dataHeat <- subset(dataHeat, geneID %in% in_seq()
                            & supertaxonMod %in% in_taxa())
       }
-      
+
       # drop all other supertaxon that are not in sub-dataframe
       dataHeat$supertaxon <- factor(dataHeat$supertaxon)
       dataHeat$geneID <- factor(dataHeat$geneID)
     }
-    
+
     # get values
     if (is.null(input$plot_click$x)) return()
     else {
@@ -163,7 +163,7 @@ create_profile_plot <- function(input, output, session,
         corX <- round(input$plot_click$x);
         corY <- round(input$plot_click$y)
       }
-      
+
       # get geneID
       genes <- levels(dataHeat$geneID)
       geneID <- toString(genes[corY])
@@ -193,14 +193,14 @@ create_profile_plot <- function(input, output, session,
                                     & dataHeat$supertaxon == spec]))
         }
       }
-      
+
       # get ortholog ID
       orthoID <- dataHeat$orthoID[dataHeat$geneID == geneID
                                   & dataHeat$supertaxon == spec]
       if (length(orthoID) > 1) {
         orthoID <- paste0(orthoID[1], ",...")
       }
-      
+
       if (is.na(as.numeric(Percent))) return()
       else {
         info <- c(geneID,
@@ -213,7 +213,7 @@ create_profile_plot <- function(input, output, session,
       }
     }
   })
-  
+
   return(selectedpoint_info)
 }
 
@@ -226,18 +226,18 @@ data_main_plot <- function(data_heat){
   data_heat_tb <- data.frame(data_heat_tb[, c("geneID",
                                               "supertaxon",
                                               "paralogNew")])
-  
+
   data_heat <- merge(data_heat, data_heat_tb,
                      by = c("geneID", "supertaxon"),
                      all.x = TRUE)
   data_heat$paralog <- data_heat$paralogNew
   data_heat <- data_heat[!duplicated(data_heat), ]
-  
+
   # remove unneeded dots
   data_heat$presSpec[data_heat$presSpec == 0] <- NA
   data_heat$paralog[data_heat$presSpec < 1] <- NA
   data_heat$paralog[data_heat$paralog == 1] <- NA
-  
+
   return(data_heat)
 }
 
@@ -249,7 +249,7 @@ data_customized_plot <- function(data_heat, in_taxa, in_seq){
            6,
            nchar(as.character(data_heat$supertaxon)))
   }
-  
+
   if (in_taxa[1] == "all" & in_seq[1] != "all") {
     # select data from dataHeat for selected sequences only
     data_heat <- subset(data_heat, geneID %in% in_seq)
@@ -262,12 +262,12 @@ data_customized_plot <- function(data_heat, in_taxa, in_seq){
                         geneID %in% in_seq
                         & supertaxonMod %in% in_taxa)
   }
-  
+
   # remove unneeded dots
   data_heat$presSpec[data_heat$presSpec == 0] <- NA
   data_heat$paralog[data_heat$presSpec < 1] <- NA
   data_heat$paralog[data_heat$paralog == 1] <- NA
-  
+
   return(data_heat)
 }
 
@@ -285,18 +285,18 @@ heatmap_plotting <- function(data,
                              x_angle,
                              guideline){
   data_heat <- data
-  
+
   # rescale numbers of paralogs
   data_heat$paralog <- as.numeric(data_heat$paralog)
   if (length(unique(na.omit(data_heat$paralog))) > 0) {
     max_paralog <- max(na.omit(data_heat$paralog))
     data_heat$paralogSize <- (data_heat$paralog / max_paralog) * 3
   }
-  
+
   # remove prefix number of taxa names but keep the order
   data_heat$supertaxon <- {
     mapvalues(
-      warn_missing = F,
+      warn_missing = FALSE,
       data_heat$supertaxon,
       from = as.character(data_heat$supertaxon),
       to = substr(as.character(data_heat$supertaxon),
@@ -304,7 +304,7 @@ heatmap_plotting <- function(data,
                   nchar(as.character(data_heat$supertaxon)))
     )
   }
-  
+
   # format plot
   if (x_axis == "genes") {
     p <- ggplot(data_heat, aes(x = geneID, y = supertaxon))
@@ -323,7 +323,7 @@ heatmap_plotting <- function(data,
       # geom_point for circle illusion (var1 and presence/absence)
       p <- p + geom_point(aes(colour = var1),
                           size = data_heat$presSpec * 5 * (1 + dot_zoom),
-                          na.rm = TRUE, show.legend = F)
+                          na.rm = TRUE, show.legend = FALSE)
     } else {
       # geom_point for circle illusion (var1 and presence/absence)
       p <- p + geom_point(aes(colour = var1),
@@ -345,14 +345,14 @@ heatmap_plotting <- function(data,
       p <- p + geom_point(aes(colour = var1, size = presSpec),
                           na.rm = TRUE)
       # color of the corresponding aes (var1)
-      p <- p + 
+      p <- p +
         scale_color_gradient(
           low = low_color_var1, high = high_color_var1,
           limits = c(0, 1)
         )
     }
   }
-  
+
   # plot inparalogs (if available)
   if (length(unique(na.omit(data_heat$paralog))) > 0) {
     p <- p + geom_point(data = data_heat,
@@ -361,9 +361,9 @@ heatmap_plotting <- function(data,
                         na.rm = TRUE,
                         show.legend = TRUE)
     p <- p + guides(size = guide_legend(title = "# of co-orthologs"))
-    
+
     # to tune the size of circles
-    p <- p + 
+    p <- p +
       scale_size_continuous(
         range = c(min(na.omit(data_heat$paralogSize)) * (1 + dot_zoom),
                   max(na.omit(data_heat$paralogSize)) * (1 + dot_zoom))
@@ -371,7 +371,7 @@ heatmap_plotting <- function(data,
   } else {
     # remain the scale of point while filtering
     present_vl <- data_heat$presSpec[!is.na(data_heat$presSpec)]
-    
+
     # to tune the size of circles;
     # use "floor(value*10)/10" to round "down" the value with one decimal number
     p <- p +
@@ -383,7 +383,7 @@ heatmap_plotting <- function(data,
   p <- p + guides(fill = guide_colourbar(title = var2_id),
                   color = guide_colourbar(title = var1_id))
   base_size <- 9
-  
+
   # guideline for separating ref species
   if (guideline == 1) {
     if (x_axis == "genes") {
@@ -396,7 +396,7 @@ heatmap_plotting <- function(data,
       p <- p + geom_vline(xintercept = 1.5, colour = "dodgerblue4")
     }
   }
-  
+
   # format theme
   p <- p + theme_minimal()
   p <- p + theme(axis.text.x = element_text(angle = x_angle,
@@ -408,17 +408,17 @@ heatmap_plotting <- function(data,
                  legend.title = element_text(size = legend_size),
                  legend.text = element_text(size = legend_size),
                  legend.position = main_legend)
-  
+
   # return plot
   return(p)
 }
 
 # highlight gene and/or taxon of interest --------------------------------------
-profile_plot <- function(data_heat,
-                         plot_parameter,
-                         taxon_name,
-                         rank_select,
-                         gene_highlight){
+final_profile_plot <- function(data_heat,
+                               plot_parameter,
+                               taxon_name,
+                               rank_select,
+                               gene_highlight){
   # get heatmap
   p <- heatmap_plotting(data_heat,
                         plot_parameter$x_axis,
@@ -436,7 +436,7 @@ profile_plot <- function(data_heat,
                         plot_parameter$dot_zoom,
                         plot_parameter$x_angle,
                         plot_parameter$guideline)
-  
+
   # highlight taxon
   if (taxon_name != "none") {
     # get selected highlight taxon ID
@@ -447,26 +447,26 @@ profile_plot <- function(data_heat,
                         nchar(rank_select))
     taxa_list <- as.data.frame(read.table("data/taxonNamesReduced.txt",
                                           sep = "\t",
-                                          header = T))
+                                          header = TRUE))
     taxon_highlight_id <- {
       taxa_list$ncbiID[taxa_list$fullName == taxon_name
                        & taxa_list$rank == rank_rame]
     }
-    
+
     if (length(taxon_highlight_id) == 0L) {
       taxon_highlight_id <- {
         taxa_list$ncbiID[taxa_list$fullName == taxon_name]
       }
     }
-    
+
     # get taxonID together with it sorted index
     highlight_taxon <- {
       toString(data_heat[data_heat$supertaxonID == taxon_highlight_id, 2][1])
     }
-    
+
     # get index
     selected_index <- as.numeric(as.character(substr(highlight_taxon, 2, 4)))
-    
+
     # draw a rect to highlight this taxon's column
     if (plot_parameter$x_axis == "taxa") {
       rect <- data.frame(xmin = selected_index - 0.5,
@@ -479,7 +479,7 @@ profile_plot <- function(data_heat,
                          xmin = -Inf,
                          xmax = Inf)
     }
-    
+
     p <- p + geom_rect(data = rect,
                        aes(xmin = xmin, xmax = xmax,
                            ymin = ymin, ymax = ymax),
@@ -487,16 +487,16 @@ profile_plot <- function(data_heat,
                        alpha = 0.3,
                        inherit.aes = FALSE)
   }
-  
+
   # highlight gene
   if (gene_highlight != "none") {
     # get selected highlight gene ID
     gene_highlight <- gene_highlight
-    
+
     # get index
     all_genes <- levels(data_heat$geneID)
     selected_index <- match(gene_highlight, all_genes)
-    
+
     # draw a rect to highlight this taxon's column
     if (plot_parameter$x_axis == "taxa") {
       rect <- data.frame(ymin = selected_index - 0.5,
@@ -509,7 +509,7 @@ profile_plot <- function(data_heat,
                          ymin = -Inf,
                          ymax = Inf)
     }
-    
+
     p <- p + geom_rect(data = rect,
                        aes(xmin = xmin, xmax = xmax,
                            ymin = ymin, ymax = ymax),
@@ -517,6 +517,6 @@ profile_plot <- function(data_heat,
                        alpha = 0.3,
                        inherit.aes = FALSE)
   }
-  
+
   return(p)
 }

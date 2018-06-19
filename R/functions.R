@@ -171,7 +171,7 @@ create_slider_cutoff <- function(id, title, start, stop, var_id){
 
 update_slider_cutoff <- function(session, id, title, new_var, var_id){
   if (is.null(var_id) || var_id == "") return()
-  
+
   updateSliderInput(session, id, title,
                     value = new_var,
                     min = 0,
@@ -545,7 +545,7 @@ get_info_p_values <- function(p) {
 }
 
 # Get the list with all the significant genes and the dataset ---------------
-# input$selected_in_group_gc, input$list_selected_genes_gc, 
+# input$selected_in_group_gc, input$list_selected_genes_gc,
 # input$rank_select, input$var_name_gc, input$use_common_anchestor,
 # input$inSelect
 get_significant_genes <- function(in_group,
@@ -876,7 +876,7 @@ get_features <- function(selected_gene,
 #         suppressWarnings(paste0("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.domains_F"))
 #       }
 #     }
-# 
+#
 #   }else {
 #     if (anno_location == "from file"){
 #       # file_domain <- input$fileDomain_input
@@ -900,7 +900,7 @@ get_features <- function(selected_gene,
 #         all_extension <- c("txt", "csv", "list", "domains", "architecture")
 #         flag <- 0
 #         for (i in 1:length(all_extension)){
-# 
+#
 #           file_domain <- paste0(domain_path,
 #                                 "/",
 #                                 group,
@@ -914,7 +914,7 @@ get_features <- function(selected_gene,
 #             break ()
 #           }
 #         }
-# 
+#
 #         if (flag == 0){
 #           file_domain <- "noFileInFolder"
 #           updateButton(session,
@@ -924,7 +924,7 @@ get_features <- function(selected_gene,
 #       }
 #     }
 #   }
-# 
+#
 #   return (file_domain)
 # }
 
