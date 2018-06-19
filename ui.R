@@ -51,7 +51,7 @@ shinyUI(
               label = "Choose type of x-axis:",
               choices = list("taxa", "genes"),
               selected = "taxa",
-              inline = T
+              inline = TRUE
             ),
             hr(),
             checkboxInput(
@@ -112,7 +112,7 @@ shinyUI(
               label = "Choose type of x-axis:",
               choices = list("taxa", "genes"),
               selected = "taxa",
-              inline = T
+              inline = TRUE
             ),
             hr(),
             checkboxInput(
@@ -282,7 +282,7 @@ shinyUI(
             inputId = "anno_location", label = "",
             choices = list("from file", "from folder"),
             selected = "from file",
-            inline = T
+            inline = TRUE
           ),
           
           uiOutput("domain_input_file.ui"),
@@ -311,7 +311,7 @@ shinyUI(
               label = "",
               choices = list("all", "from file"),
               selected = "all",
-              inline = T
+              inline = TRUE
             ),
             
             conditionalPanel(
@@ -337,7 +337,7 @@ shinyUI(
               choices = list("automatically",
                              "by user defined tree"),
               selected = "automatically",
-              inline = T
+              inline = TRUE
             ),
             
             bsPopover("order_taxa", "", "in newick format", "bottom"),
@@ -379,7 +379,7 @@ shinyUI(
               "new_taxa_ask",
               "",
               c("Yes" = "Yes", "No" = "No"),
-              inline = T,
+              inline = TRUE,
               selected = "No"
             ),
             
