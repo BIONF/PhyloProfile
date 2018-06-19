@@ -10,19 +10,23 @@ if (!require("shinycssloaders")) {
   devtools::install_github("andrewsali/shinycssloaders")
 }
 
-source("scripts/functions.R")
+source("R/functions.R")
 
-source("scripts/search_taxon_id.R")
-source("scripts/download_filtered_main.R")
-source("scripts/download_filtered_customized.R")
+source("R/search_taxon_id.R")
+source("R/download_filtered_main.R")
+source("R/download_filtered_customized.R")
 
-source("scripts/select_taxon_rank.R")
+source("R/select_taxon_rank.R")
 
-source("scripts/identify_core_gene.R")
-source("scripts/analyze_distribution.R")
+source("R/identify_core_gene.R")
+source("R/analyze_distribution.R")
 
-source("scripts/cluster_profile.R")
-source("scripts/estimate_gene_age.R")
+source("R/cluster_profile.R")
+source("R/estimate_gene_age.R")
+
+source("R/create_architecture_plot.R")
+source("R/create_detailed_plot.R")
+source("R/create_profile_plot.R")
 
 # MAIN UI ====================================================================-
 
@@ -85,12 +89,13 @@ shinyUI(
               "reset_main",
               "Reset cutoffs",
               style = "danger"
-            ),
-            hr(),
-            downloadButton("plot_download", "Download profile"),
-            tags$head(
-              tags$style(HTML("#plot_download{background-color:#A9E2F3}"))
             )
+            # ,
+            # hr(),
+            # downloadButton("plot_download", "Download profile"),
+            # tags$head(
+            #   tags$style(HTML("#plot_download{background-color:#A9E2F3}"))
+            # )
           )
         )
       )
@@ -146,12 +151,13 @@ shinyUI(
               "Reset cutoffs",
               style = "danger"
             ),
-            hr(),
-            downloadButton("selected_download", "Download profile"),
-            tags$head(
-              tags$style(
-                HTML("#selected_download{background-color:#A9E2F3}"))
-            )
+            hr()
+            # ,
+            # downloadButton("selected_download", "Download profile"),
+            # tags$head(
+            #   tags$style(
+            #     HTML("#selected_download{background-color:#A9E2F3}"))
+            # )
           )
         )
       )
@@ -488,6 +494,13 @@ shinyUI(
             ),
             
             bsPopover(
+              "highlight_gene_ui",
+              "",
+              "Select gene to highlight",
+              "bottom"
+            ),
+            
+            bsPopover(
               "st_index",
               "",
               "Set start index for sequence range",
@@ -504,12 +517,6 @@ shinyUI(
             br(),
             
             uiOutput("highlight_taxon_ui"),
-            bsPopover(
-              "highlight_taxon_ui",
-              "",
-              "OR double click on heatmap",
-              "right"
-            ),
             
             conditionalPanel(
               condition = "input.auto_update == false",
@@ -523,7 +530,7 @@ shinyUI(
           
           # * main panel for profile plot -------------------------------------
           mainPanel(
-            uiOutput("plot.ui")
+            create_profile_plot_ui("main_profile")
             # ,
             # conditionalPanel(
             #   condition = "input.main_x_axis_guide == true |
@@ -606,9 +613,10 @@ shinyUI(
                 "Please select subset of genes and/
                 or taxa for customized profile!"
               )
-              ),
-            uiOutput("selected_plot.ui")
-            )
+            ),
+            create_profile_plot_ui("customized_profile")
+            # uiOutput("selected_plot.ui")
+          )
         )
         ),
       
@@ -753,12 +761,12 @@ shinyUI(
               column(
                 4,
                 checkboxInput(
-                  "add_custom_profile",
+                  "add_gene_age_custom_profile",
                   strong(em("Add to Customized profile")),
                   value = FALSE,
                   width = NULL
                 ),
-                uiOutput("add_custom_profile_check.ui")
+                uiOutput("add_gene_age_custom_profile_check.ui")
               )
             )
           ),
@@ -1007,41 +1015,35 @@ shinyUI(
       "detailed_btn",
       size = "large",
       
-      uiOutput("detail_plot.ui"),
-      checkboxInput(
-        "detailed_remove_na",
-        strong("Hide taxa that have no ortholog (NAs)",
-               style = "color:red"),
-        value = FALSE
-      ),
-      
       fluidRow(
         column(
-          3,
-          create_plot_size("detailed_height", "Plot height (px)", 100)
+          2,
+          create_plot_size("detailed_height", "Height (px)", 100)
         ),
         column(
           3,
           create_text_size("detailed_text", "Text size (px)", 12, 150)
         ),
         column(
-          3,
-          strong("Download"),
-          tags$head(
-            tags$style(HTML(
-              "#plot_download_dist{background-color:#A9E2F3}"))
-          ),
-          downloadButton("download_detailed", "Download plot")
+          7,
+          checkboxInput(
+            "detailed_remove_na",
+            strong("Hide taxa that have no ortholog (NAs)",
+                   style = "color:red"),
+            value = FALSE
+          )
         )
       ),
       hr(),
       
-      verbatimTextOutput("detail_click"),
+      create_detailed_plot_ui("detailed_plot"),
+      
       shinyBS::bsButton("do_domain_plot",
                         "Show domain architecture",
                         disabled = TRUE),
       uiOutput("check_domain_files"),
       br(),
+      
       h4("Sequence:"),
       verbatimTextOutput("fasta")
     ),
@@ -1072,8 +1074,7 @@ shinyUI(
         )
       ),
       
-      uiOutput("archi_plot.ui"),
-      downloadButton("archi_download", "Download plot")
+      create_architecture_plot_ui("archi_plot")
     ),
     
     # * popup for setting plot colors (profiles) ------------------------------

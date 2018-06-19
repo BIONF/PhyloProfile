@@ -1,7 +1,3 @@
-# =============================================================================
-# FUNCTIONS ===================================================================
-# =============================================================================
-
 # unsorting function to keep user defined geneID order ------------------------
 unsort_id <- function(data, order){
   data$geneID <- as.factor(data$geneID)
@@ -11,266 +7,6 @@ unsort_id <- function(data, order){
   }
   return(data)
 }
-
-# render detailed plot ------------------------------------------------------
-# v, detai_plotDt(), input$detailed_text
-detail_plot <- function(v, sel_df, detailed_text, var1_id, var2_id){
-  if (v$doPlot == FALSE) return()
-  
-  sel_df$x_label <- paste(sel_df$orthoID,
-                          " (",
-                          sel_df$fullName,
-                          ")",
-                          sep = "")
-  
-  # if(input$detailed_remove_na == TRUE){
-  #   sel_df <- sel_df[!is.na(sel_df$orthoID),]
-  # }
-  
-  # create joined DF for plotting var1 next to var2
-  var1Df <- subset(sel_df, select = c("x_label", "var1"))
-  var1Df$type <- var1_id
-  colnames(var1Df) <- c("id", "score", "var")
-  
-  var2Df <- subset(sel_df, select = c("x_label", "var2"))
-  var2Df$type <- var2_id
-  colnames(var2Df) <- c("id", "score", "var")
-  
-  detailed_df <- rbind(var1Df, var2Df)
-  
-  # remove ONE missing variable
-  if (nlevels(as.factor(detailed_df$var)) > 1) {
-    detailed_df <- detailed_df[nchar(detailed_df$var) > 0, ]
-  }
-  
-  # keep order of ID (x_label)
-  detailed_df$id <- factor(detailed_df$id, levels = unique(detailed_df$id))
-  
-  # create plot
-  gp <- ggplot(detailed_df, aes(y = score, x = id, fill = var)) +
-    geom_bar(stat = "identity", position = position_dodge(), na.rm = TRUE) +
-    coord_flip() +
-    labs(x = "") +
-    labs(fill = "") +
-    theme_minimal()
-  #geom_text(aes(label=var1), vjust=3)
-  gp <- gp + theme(axis.text.x = element_text(angle = 90, hjust = 1),
-                   axis.text = element_text(size = detailed_text),
-                   axis.title = element_text(size = detailed_text),
-                   legend.text = element_text(size = detailed_text)
-  )
-  gp
-}
-
-# ARCHITECTURE PLOT ===========================================================
-# v3, point_infoDetail(), getDomainFile(), input$demo_data,
-# input$one_seq_fasta, input$label_archi_size, input$title_archi_size
-archi_plot <- function(v3, 
-                       info, domain_df, 
-                       one_seq_fasta, label_archi_size, title_archi_size){
-  if (v3$doPlot3 == FALSE) return()
-  # info
-  group <- as.character(info[1])
-  ortho <- as.character(info[2])
-  var1 <- as.character(info[3])
-  
-  # get sub dataframe based on selected group_id and orthoID
-  ortho <- gsub("\\|", ":", ortho)
-  grepID <- paste(group, "#", ortho, sep = "")
-  
-  subdomain_df <- domain_df[grep(grepID, domain_df$seedID), ]
-  subdomain_df$feature <- as.character(subdomain_df$feature)
-  
-  if (nrow(subdomain_df) < 1) {
-    v3$doPlot3 <- FALSE
-    return()
-  } else {
-    
-    # ortho domains df
-    ortho_df <- filter(subdomain_df, orthoID == ortho)
-    
-    # seed domains df
-    seed_df <- filter(subdomain_df, orthoID != ortho)
-    
-    if (nrow(seed_df) == 0) seed_df <- ortho_df
-    
-    seed <- as.character(seed_df$orthoID[1])
-    
-    # change order of one dataframe's features
-    # based on order of other df's features
-    if (length(ortho_df$feature) < length(seed_df$feature)) {
-      ordered_ortho_df <- ortho_df[order(ortho_df$feature), ]
-      ordered_seed_df <- sort_domains(ordered_ortho_df, seed_df)
-    } else {
-      ordered_seed_df <- seed_df[order(seed_df$feature), ]
-      ordered_ortho_df <- sort_domains(ordered_seed_df, ortho_df)
-    }
-    
-    # join weight values and feature names
-    if ("weight" %in% colnames(ordered_ortho_df)) {
-      ordered_ortho_df$yLabel <- paste0(ordered_ortho_df$feature,
-                                        " (",
-                                        round(ordered_ortho_df$weight, 2),
-                                        ")")
-      ordered_ortho_df$feature <- ordered_ortho_df$yLabel
-    }
-    if ("weight" %in% colnames(ordered_seed_df)) {
-      ordered_seed_df$yLabel <- paste0(ordered_seed_df$feature,
-                                       " (",
-                                       round(ordered_seed_df$weight, 2),
-                                       ")")
-      ordered_seed_df$feature <- ordered_seed_df$yLabel
-    }
-    
-    # plotting
-    sep <- ":"
-    if (!is.null(one_seq_fasta)) sep <- "|"
-    if ("length" %in% colnames(subdomain_df)) {
-      plot_ortho <- domain_plotting(ordered_ortho_df,
-                                    ortho,
-                                    sep,
-                                    label_archi_size,
-                                    title_archi_size,
-                                    min(subdomain_df$start),
-                                    max(c(subdomain_df$end,
-                                          subdomain_df$length)))
-      plot_seed <- domain_plotting(ordered_seed_df,
-                                   seed,
-                                   sep,
-                                   label_archi_size,
-                                   title_archi_size,
-                                   min(subdomain_df$start),
-                                   max(c(subdomain_df$end,
-                                         subdomain_df$length)))
-      
-    } else{
-      plot_ortho <- domain_plotting(ordered_ortho_df,
-                                    ortho,
-                                    sep,
-                                    label_archi_size,
-                                    title_archi_size,
-                                    min(subdomain_df$start),
-                                    max(subdomain_df$end))
-      plot_seed <- domain_plotting(ordered_seed_df,
-                                   seed,
-                                   sep,
-                                   label_archi_size,
-                                   title_archi_size,
-                                   min(subdomain_df$start),
-                                   max(subdomain_df$end))
-    }
-    
-    # grid.arrange(plot_seed,plot_ortho,ncol=1)
-    
-    if (ortho == seed) {
-      arrangeGrob(plot_seed, ncol = 1)
-    } else {
-      seed_height <- length(levels(as.factor(ordered_seed_df$feature)))
-      ortho_height <- length(levels(as.factor(ordered_ortho_df$feature)))
-      
-      arrangeGrob(plot_seed, plot_ortho, ncol = 1,
-                  heights = c(seed_height, ortho_height))
-    }
-  }
-}
-
-# sort one domain dataframe (ortho) based on the other domain Df (seed) -------
-sort_domains <- function(seed_df, ortho_df){
-  # get list of features in seed_df
-  feature_list <- as.data.frame(levels(as.factor(seed_df$feature)))
-  colnames(feature_list) <- c("feature")
-  # and add order number to each feature
-  feature_list$orderNo <- seq(length(feature_list$feature))
-  
-  # merge those info to ortho_df
-  ordered_ortho_df <- merge(ortho_df, feature_list, all.x = TRUE)
-  
-  # sort ortho_df
-  index <- with(ordered_ortho_df, order(orderNo))
-  ordered_ortho_df <- ordered_ortho_df[index, ]
-  
-  #turn feature column into a character vector
-  ordered_ortho_df$feature <- as.character(ordered_ortho_df$feature)
-  #then turn it back into an ordered factor (to keep this order while plotting)
-  ordered_ortho_df$feature <- factor(ordered_ortho_df$feature,
-                                     levels = unique(ordered_ortho_df$feature))
-  #return sorted df
-  ordered_ortho_df
-}
-
-# plot domain architecture ----------------------------------------------------
-domain_plotting <- function(df,
-                            geneID,
-                            sep,
-                            label_size,
-                            title_size,
-                            min_start,
-                            max_end){
-  gg <- ggplot(df, aes(y = feature, x = end, color = feature)) +
-    geom_segment(data = df,
-                 aes(y = feature, yend = feature,
-                     x = min_start, xend = max_end),
-                 color = "white",
-                 size = 0)
-  
-  # draw lines for representing sequence length
-  gg <- gg + geom_segment(data = df,
-                          aes(x = 0, xend = length,
-                              y = feature, yend = feature),
-                          size = 1,
-                          color = "#b2b2b2")
-  
-  # draw line and points
-  gg <- gg + geom_segment(data = df,
-                          aes(x = start, xend = end,
-                              y = feature, yend = feature),
-                          size = 1.5)
-  gg <- gg + geom_point(data = df,
-                        aes(y = feature, x = start),
-                        color = "#b2b2b2",
-                        size = 3,
-                        shape = 3)
-  gg <- gg + geom_point(data = df,
-                        aes(y = feature, x = end),
-                        color = "#edae52",
-                        size = 3,
-                        shape = 5)
-  
-  # draw dashed line for domain path
-  gg <- gg + geom_segment(data = df[df$path == "Y", ],
-                          aes(x = start, xend = end,
-                              y = feature, yend = feature),
-                          size = 3,
-                          linetype = "dashed")
-  
-  # # add text above
-  # gg <- gg + geom_text(data = df,
-  #                      aes(x = (start + end) / 2,
-  #                          y = feature, label = round(weight,2)),
-  #                        color = "#9fb059",
-  #                        size = descSize,
-  #                        vjust = -0.75,
-  #                        fontface = "bold",
-  #                        family = "serif")
-  
-  # theme format
-  title_mod <- gsub(":", sep, geneID)
-  gg <- gg + scale_y_discrete(expand = c(0.075, 0))
-  gg <- gg + labs(title = paste0(title_mod), y = "Feature")
-  gg <- gg + theme_minimal()
-  gg <- gg + theme(panel.border = element_blank())
-  gg <- gg + theme(axis.ticks = element_blank())
-  gg <- gg + theme(plot.title = element_text(face = "bold", size = title_size))
-  gg <- gg + theme(plot.title = element_text(hjust = 0.5))
-  gg <- gg + theme(legend.position = "none", axis.title.x = element_blank(),
-                   axis.text.y = element_text(size = label_size),
-                   axis.title.y = element_text(size = label_size),
-                   panel.grid.minor.x = element_blank(),
-                   panel.grid.major.x = element_blank())
-  # return plot
-  return(gg)
-}
-
 
 # Essential functions =========================================================
 
@@ -333,79 +69,142 @@ has_internet <- function(){
 
 # FUNCTION FOR CLUSTERING PROFILES --------------------------------------------
 clustered_gene_list <- function(data, dist_method, cluster_method){
+
   # do clustering
-  row.order <- hclust(get_distance_matrix(data, dist_method),
+  row.order <- hclust(dist(data, method = dist_method),
                       method = cluster_method)$order
-  col.order <- hclust(get_distance_matrix(t(data), dist_method),
+  col.order <- hclust(dist(t(data), method = dist_method),
                       method = cluster_method)$order
-  
+
   # re-order data accoring to clustering
   dat_new <- data[row.order, col.order]
-  
+
   # return clustered gene ID list
   clustered_gene_ids <- as.factor(row.names(dat_new))
   clustered_gene_ids
 }
-# get the phylogenetic profiles -----------------------------------------------
-get_data_clustering <- function(data, dist_method, var1_aggregate_by){
-  print(var1_aggregate_by)
-  sub_data_heat <- subset(data, data$presSpec > 0)
-  if (dist_method %in% c("mutual_information", "distance_correlation")){
-    # Profiles with FAS scores
-    sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", "var1")]
-    sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
-    
-    sub_data_heat <- aggregate(sub_data_heat[, "var1"],
-                               list(sub_data_heat$geneID,
-                                    sub_data_heat$supertaxon),
-                               FUN = var1_aggregate_by)
-    colnames(sub_data_heat) <- c("geneID", "supertaxon", "var1")
-    
-    wide_data <- spread(sub_data_heat, supertaxon, var1)
-  }else {
-    # Binary Profiles 
-    sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", "presSpec")]
-    sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
-    wide_data <- spread(sub_data_heat, supertaxon, presSpec)
-  }
-  dat <- wide_data[, 2:ncol(wide_data)]  # numerical columns
-  rownames(dat) <- wide_data[, 1]
-  dat[is.na(dat)] <- 0
-  return(dat)
+
+# calculate percentage of present species -------------------------------------
+calc_pres_spec <- function(taxa_md_data, taxa_count){
+   # taxa_md_data = df("geneID",
+   #                 "ncbiID",
+   #                 "orthoID",
+   #                 "var1",
+   #                 "var2",
+   #                 "paralog",
+   #                 ....,
+   #                 "supertaxon")
+  taxa_md_data <- taxa_md_data[taxa_md_data$orthoID != "NA", ]
+
+  # get geneID and supertaxon
+  gene_id_supertaxon <- subset(taxa_md_data,
+                             select = c("geneID",
+                                        "supertaxon",
+                                        "paralog",
+                                        "abbrName"))
+  # remove duplicated rows
+  gene_id_supertaxon <- gene_id_supertaxon[!duplicated(gene_id_supertaxon), ]
+
+  # remove NA rows from taxa_md_data
+  taxa_md_data_no_na <- taxa_md_data[taxa_md_data$orthoID != "NA", ]
+
+  # count present frequency of supertaxon for each gene
+  gene_supertaxon_count <- plyr::count(taxa_md_data_no_na,
+                                       c("geneID", "supertaxon"))
+
+  # merge with taxa_count to get total number of species of each supertaxon
+  # and calculate presSpec
+  pres_spec_dt <- merge(gene_supertaxon_count,
+                      taxa_count,
+                      by = "supertaxon",
+                      all.x = TRUE)
+
+  spec_count <- plyr::count(gene_id_supertaxon, c("geneID",
+                                              "supertaxon"))
+  pres_spec_dt <- merge(pres_spec_dt,
+                      spec_count, by = c("geneID",
+                                       "supertaxon"))
+
+  pres_spec_dt$presSpec <- pres_spec_dt$freq / pres_spec_dt$freq.y
+
+  pres_spec_dt <- pres_spec_dt[pres_spec_dt$presSpec <= 1, ]
+  pres_spec_dt <- pres_spec_dt[order(pres_spec_dt$geneID), ]
+  pres_spec_dt <- pres_spec_dt[, c("geneID", "supertaxon", "presSpec")]
+
+  # add absent supertaxon into pres_spec_dt
+  gene_id_supertaxon <- subset(gene_id_supertaxon,
+                             select = -c(paralog, abbrName))
+  final_pres_spec_dt <- merge(pres_spec_dt,
+                           gene_id_supertaxon,
+                           by = c("geneID", "supertaxon"),
+                           all.y = TRUE)
+  final_pres_spec_dt$presSpec[is.na(final_pres_spec_dt$presSpec)] <- 0
+
+  # remove duplicated rows
+  final_pres_spec_dt <- final_pres_spec_dt[!duplicated(final_pres_spec_dt), ]
+
+  # return final_pres_spec_dt
+  return(final_pres_spec_dt)
 }
 
-# Get the distance matrix depending on the distance method --------------------
-get_distance_matrix <- function(profiles, method){
-  dist_methods <- c("euclidean", "maximum", "manhattan", "canberra", "binary")
-  if(method %in% dist_methods){
-    distance_matrix <- dist(profiles, method = method)
-  } else if (method %in% c("fisher", "distance_correlation")){
-    matrix <- data.frame()
-    for(i in 1:nrow(profiles)){ # rows
-      for(j in 1:nrow(profiles)){ # columns
-        if (i == j){
-          matrix[i,i] = 1 # if this cell is NA as.dist does not work probably 
-          break
-        }
-        if(method == "fisher") {
-          contigency_table <- get_table(profiles[i,], profiles[j,])
-          dist <- fisher.test(contigency_table)
-        } else if(method == "distance_correlation"){
-          dist <- dcor(unlist(profiles[i,]), unlist(profiles[j,]))
-        }
-        matrix[i,j] <- dist 
-      }
-    }
-    profile_names <- rownames(profiles)
-    colnames(matrix) <- profile_names[1:length(profile_names)-1]
-    rownames(matrix) <- profile_names
-    distance_matrix <- as.dist(matrix)
-  } else if (method == "mutual_information"){
-    distance_matrix <- mutualInfo(as.matrix(profiles))
-  } else if (method == "pearson"){
-    distance_matrix <-  cor.dist(as.matrix(profiles))
+###################### FUNCTIONS FOR RENDER UI ELEMENTS #######################
+
+create_slider_cutoff <- function(id, title, start, stop, var_id){
+  if (is.null(var_id)) return()
+  if (var_id == "") {
+    sliderInput(id, title,
+                min = 1,
+                max = 1,
+                step = 0.025,
+                value = 1,
+                width = 200)
+  } else {
+    sliderInput(id, title,
+                min = 0,
+                max = 1,
+                step = 0.025,
+                value = c(start, stop),
+                width = 200)
   }
-  return(distance_matrix)
+}
+
+update_slider_cutoff <- function(session, id, title, new_var, var_id){
+  if (is.null(var_id) || var_id == "") return()
+  
+  updateSliderInput(session, id, title,
+                    value = new_var,
+                    min = 0,
+                    max = 1,
+                    step = 0.025)
+}
+
+create_plot_size <- function(id, title, value) {
+  numericInput(id,
+               title,
+               min = 100,
+               max = 3200,
+               step = 50,
+               value = value,
+               width = 100)
+}
+
+create_text_size <- function(id, title, value, width) {
+  numericInput(id,
+               title,
+               min = 3,
+               max = 99,
+               step = 1,
+               value = value,
+               width = width)
+}
+
+create_select_gene <- function(id, list, selected) {
+  selectInput(id,
+              "",
+              list,
+              selected = selected,
+              multiple = TRUE,
+              selectize = FALSE)
 }
 
 # Calculate the contigency table for the fisher exact test --------------------

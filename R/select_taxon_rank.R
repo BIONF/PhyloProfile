@@ -1,7 +1,7 @@
 #' Windows for selecting rank & (super)taxon of interest
-#' 
+#'
 
-source("scripts/functions.R")
+source("R/functions.R")
 
 select_taxon_rank_ui <- function(id){
   ns <- NS(id)
@@ -13,7 +13,7 @@ select_taxon_rank_ui <- function(id){
 
 select_taxon_rank <- function(input, output, session,
                               rank_select, subset_taxa){
-  
+
   # print list of available customized taxonomy ranks -------------------------
   # (the lowest rank is the same as the chosen main rank)
   output$rank_select_cus <- renderUI({
@@ -26,7 +26,7 @@ select_taxon_rank <- function(input, output, session,
                 choices = as.list(cusChoices),
                 selected = mainRank)
   })
-  
+
   output$taxa_select_cus <- renderUI({
     ns <- session$ns
     choice <- taxa_select_cus()
@@ -36,7 +36,7 @@ select_taxon_rank <- function(input, output, session,
                 as.list(levels(choice$fullName)),
                 levels(choice$fullName)[1])
   })
-  
+
   # print list of available taxa for customized plot --------------------------
   # (based on rank from rank_select_cus)
   taxa_select_cus <- reactive({
@@ -49,7 +49,7 @@ select_taxon_rank <- function(input, output, session,
 
       ### load list of taxon name
       nameList <- get_name_list(TRUE, FALSE)
-      
+
       # get rank name from rank_select
       rankName <- substr(rank_select_cus, 4, nchar(rank_select_cus))
       choice <- as.data.frame
@@ -59,10 +59,10 @@ select_taxon_rank <- function(input, output, session,
       return(choice)
     }
   })
-  
+
   # get list of taxa based on selected taxa_select_cus ------------------------
   cus_taxaName <- reactive({
-    
+
     taxa_select_cus <- input$taxa_select_cus
     rankName <- substr(input$rank_select_cus, 4, nchar(input$rank_select_cus))
 
@@ -88,6 +88,6 @@ select_taxon_rank <- function(input, output, session,
     }
     return(cus_taxaName)
   })
-  
+
   return(cus_taxaName)
 }

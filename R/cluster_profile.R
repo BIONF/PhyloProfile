@@ -1,5 +1,6 @@
 #' Profile clustering
 #' 
+
 if (!require("bioDist")) install.packages("bioDist") # for the mutual information
 if (!require("energy")) install.packages("energy") # for the mutual information, pearson
 

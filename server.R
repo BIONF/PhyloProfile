@@ -30,29 +30,32 @@ if (!require("shinycssloaders")) {
 }
 if (!require("Matching")) install.packages("Matching")
 
-source("scripts/taxonomyProcessing.R")
-source("scripts/functions.R")
-source("scripts/get_oma_browser.R")
+source("R/taxonomyProcessing.R")
+source("R/functions.R")
+source("R/get_oma_browser.R")
 
-source("scripts/search_taxon_id.R")
-source("scripts/parse_main_input.R")
-source("scripts/parse_domain_input.R")
+source("R/search_taxon_id.R")
+source("R/parse_main_input.R")
+source("R/parse_domain_input.R")
 
-source("scripts/get_fasta_seqs.R")
-source("scripts/download_filtered_main.R")
-source("scripts/download_filtered_customized.R")
+source("R/get_fasta_seqs.R")
+source("R/download_filtered_main.R")
+source("R/download_filtered_customized.R")
 
-source("scripts/parse_phylotree.R")
-source("scripts/select_taxon_rank.R")
-source("scripts/create_profile_heatmap.R")
+source("R/parse_phylotree.R")
+source("R/select_taxon_rank.R")
 
-source("scripts/identify_core_gene.R")
-source("scripts/analyze_distribution.R")
-source("scripts/estimate_gene_age.R")
-source("scripts/analyze_distribution.R")
-source("scripts/cluster_profile.R")
+source("R/identify_core_gene.R")
+source("R/analyze_distribution.R")
+source("R/estimate_gene_age.R")
+source("R/cluster_profile.R")
 
-options(shiny.maxRequestSize = 99 * 1024 ^ 2)  # size limit for input 99mb
+source("R/create_architecture_plot.R")
+source("R/create_detailed_plot.R")
+source("R/create_profile_plot.R")
+
+
+options(shiny.maxRequestSize = 9999 * 1024 ^ 2)  # size limit for input 9999mb
 
 shinyServer(function(input, output, session) {
   # Automatically stop a Shiny app when closing the browser tab
@@ -1650,6 +1653,14 @@ shinyServer(function(input, output, session) {
     geneList <- preData()
     geneList$geneID <- as.factor(geneList$geneID)
     out <- as.list(levels(geneList$geneID))
+    
+    listIn <- input$list
+    if (!is.null(listIn)){
+      list <- as.data.frame(read.table(file = listIn$datapath,
+                                       header = FALSE))
+      out <- as.list(list$V1)
+    }
+    
     if (length(out) > 0){
       # em(paste0("Total number of genes:  ",length(out)))
       strong(paste0("Total number of genes:  ", length(out)))
@@ -1667,36 +1678,7 @@ shinyServer(function(input, output, session) {
     selectInput("taxon_highlight", "Select (super)taxon to highlight:",
                 out, selected = out[1])
   })
-  
-  # * update highlight_taxon_ui based on double clicked dot ---------------------
-  observe({
-    choice <- alltaxa_list()
-    choice$fullName <- as.factor(choice$fullName)
-    
-    out <- as.list(levels(choice$fullName))
-    out <- append("none", out)
-    
-    if (!is.null(input$plot_dblclick)){
-      if (input$x_axis == "genes"){
-        corX <- round(input$plot_dblclick$y);
-        corY <- round(input$plot_dblclick$x)
-      } else {
-        corX <- round(input$plot_dblclick$x);
-        corY <- round(input$plot_dblclick$y)
-      }
-      
-      dataHeat <- dataHeat()
-      supertaxa <- levels(dataHeat$supertaxon)
-      spec <- toString(supertaxa[corX])
-      selectedIndex <- match(substr(spec, 6, nchar(spec)), out)
-      
-      updateSelectInput(session, "taxon_highlight",
-                        label = "Select (super)taxon to highlight:",
-                        choices = out,
-                        selected = out[selectedIndex])
-    }
-  })
-  
+
   # * get list of genes for highlighting ----------------------------------------
   output$highlight_gene_ui <- renderUI({
     geneList <- dataHeat()
@@ -1707,37 +1689,7 @@ shinyServer(function(input, output, session) {
     
     selectInput("gene_highlight", "Highlight:", out, selected = out[1])
   })
-  
-  # * update highlight_gene_ui based on double clicked dot ----------------------
-  observe({
-    if (!is.null(input$plot_dblclick)){
-      geneList <- dataHeat()
-      if (input$apply_cluster == TRUE){
-        geneList <- clusteredDataHeat()
-      }
-      
-      geneList$geneID <- as.factor(geneList$geneID)
-      
-      out <- as.list(levels(geneList$geneID))
-      out <- append("none", out)
-      
-      clickedInfo <- mainpoint_info()
-      
-      if (input$x_axis == "genes"){
-        
-        corX <- round(input$plot_dblclick$y);
-        corY <- round(input$plot_dblclick$x)
-      } else {
-        corX <- round(input$plot_dblclick$x);
-        corY <- round(input$plot_dblclick$y)
-      }
-      updateSelectInput(session, "gene_highlight",
-                        label = "Highlight:",
-                        choices = out,
-                        selected = out[corY + 1])
-    } else return()
-  })
-  
+
   # * reset configuration windows of Main plot ----------------------------------
   observeEvent(input$reset_main_config, {
     shinyjs::reset("x_size")
@@ -1792,159 +1744,22 @@ shinyServer(function(input, output, session) {
   })
   
   # * plot main profile -------------------------------------------------
-  output$mainPlot <- renderPlot({
-    data_heat <- data_main_plot(dataHeat())
-    # cluster dataHeat (if selected)
-    if (input$apply_cluster == TRUE) {
-      data_heat <- data_main_plot(clusteredDataHeat())
-    }
-    
-    profile_plot(data_heat, get_parameter_input_main(), input$taxon_highlight, input$rank_select, input$gene_highlight)
-  })
-  
-  output$plot.ui <- renderUI({
-    # show beschreibung file if no plot present
-    if (v$doPlot == FALSE){
-      return()
-    } else{
-      # if auto_update is NOT selected, use update_btn to trigger plot changing
-      if (input$auto_update == FALSE){
-        input$update_btn
-        isolate({
-          withSpinner(
-            plotOutput("mainPlot",
-                       width = input$width,
-                       height = input$height,
-                       click = "plot_click",
-                       dblclick = "plot_dblclick",
-                       hover = hoverOpts(
-                         id = "plot_hover",
-                         delay = input$hover_delay,
-                         delayType = input$hover_policy,
-                         nullOutside = input$hover_null_outside
-                       )
-            )
-          )
-        })
-      }
-      # if auto_update is true
-      else {
-        withSpinner(
-          plotOutput("mainPlot",
-                     width = input$width,
-                     height = input$height,
-                     click = "plot_click",
-                     dblclick = "plot_dblclick",
-                     hover = hoverOpts(
-                       id = "plot_hover",
-                       delay = input$hover_delay,
-                       delayType = input$hover_policy,
-                       nullOutside = input$hover_null_outside
-                     )
-          )
-        )
-      }
-    }
-  })
-  
-  # * download main profile --------------------------------------------------------
-  output$plot_download <- downloadHandler(
-    filename = function() {
-      c("plot.pdf")
-    },
-    content = function(file) {
-      ggsave(file, plot = main_plot(v, dataHeat(),
-                                    clusteredDataHeat(),
-                                    get_parameter_input_main ()),
-             width = input$width * 0.056458333,
-             height = input$height * 0.056458333,
-             units = "cm",
-             dpi = 300,
-             device = "pdf",
-             limitsize = FALSE)
-    }
-  )
-  
-  # * get info of clicked point on main profile ------------------------------------
-  mainpoint_info <- reactive({
-    # check input
-    if (v$doPlot == FALSE) return()
-    
-    # get selected supertaxon name
-    taxa_list <- as.data.frame(read.table("data/taxonNamesReduced.txt",
-                                          sep = "\t",
-                                          header = T))
-    rank_select <- input$rank_select
-    rankName <- substr(rank_select, 4, nchar(rank_select))
-    in_select <- {
-      as.numeric(taxa_list$ncbiID[taxa_list$fullName == input$in_select])
-    }
-    
-    dataHeat <- dataHeat()
-    if (input$apply_cluster == TRUE){
-      dataHeat <- clusteredDataHeat()
-    }
-    
-    # get values
-    if (is.null(input$plot_click$x)) return()
-    else{
-      # get cooridiate point
-      if (input$x_axis == "genes"){
-        corX <- round(input$plot_click$y);
-        corY <- round(input$plot_click$x)
-      } else {
-        corX <- round(input$plot_click$x);
-        corY <- round(input$plot_click$y)
-      }
-      
-      # get geneID
-      genes <- levels(dataHeat$geneID)
-      geneID <- toString(genes[corY])
-      
-      # get supertaxon (spec)
-      supertaxa <- levels(dataHeat$supertaxon)
-      spec <- toString(supertaxa[corX])
-      
-      # get var1, percentage of present species and var2 score
-      var1 <- NA
-      if (!is.na(dataHeat$var1[dataHeat$geneID == geneID
-                               & dataHeat$supertaxon == spec][1])){
-        var1 <- max(na.omit(dataHeat$var1[dataHeat$geneID == geneID
-                                          & dataHeat$supertaxon == spec]))
-      }
-      Percent <- NA
-      if (!is.na(dataHeat$presSpec[dataHeat$geneID == geneID
-                                   & dataHeat$supertaxon == spec][1])){
-        Percent <- max(na.omit(dataHeat$presSpec[dataHeat$geneID == geneID
-                                                 & dataHeat$supertaxon == spec]))
-      }
-      var2 <- NA
-      if (!is.na(dataHeat$var2[dataHeat$geneID == geneID
-                               & dataHeat$supertaxon == spec][1])){
-        var2 <- max(na.omit(dataHeat$var2[dataHeat$geneID == geneID
-                                          & dataHeat$supertaxon == spec]))
-      }
-      
-      # get ortholog ID
-      orthoID <- dataHeat$orthoID[dataHeat$geneID == geneID
-                                  & dataHeat$supertaxon == spec]
-      if (length(orthoID) > 1){
-        orthoID <- paste0(orthoID[1], ",...")
-      }
-      
-      # return info of clicked point
-      if (is.na(as.numeric(Percent))) return()
-      else{
-        info <- c(geneID,
-                  as.character(orthoID),
-                  as.character(spec),
-                  round(as.numeric(var1), 2),
-                  round(as.numeric(Percent), 2),
-                  round(as.numeric(var2), 2))
-        return(info)
-      }
-    }
-  })
+
+  mainpoint_info <- callModule(create_profile_plot, "main_profile",
+                               data = dataHeat,
+                               clusteredDataHeat = clusteredDataHeat,
+                               apply_cluster = reactive(input$apply_cluster),
+                               parameters = get_parameter_input_main,
+                               in_seq = reactive(input$in_seq),
+                               in_taxa = reactive(input$in_taxa),
+                               rank_select = reactive(input$rank_select),
+                               in_select = reactive(input$in_select),
+                               taxon_highlight = reactive(input$taxon_highlight),
+                               gene_highlight = reactive(input$gene_highlight),
+                               width = reactive(input$width),
+                               height = reactive(input$height),
+                               x_axis = reactive(input$x_axis),
+                               type_profile = reactive("main_profile"))
   
   # ======================== CUSTOMIZED PROFILE TAB ===========================
   
@@ -1964,7 +1779,6 @@ shinyServer(function(input, output, session) {
     if (v$doPlot == FALSE){
       return(selectInput("in_seq", "", "all"))
     }
-    
     else{
       # full list
       data <- as.data.frame(get_data_filtered())
@@ -1972,90 +1786,32 @@ shinyServer(function(input, output, session) {
       data$geneID <- as.factor(data$geneID)
       outAll <- as.list(levels(data$geneID))
       outAll <- append("all", outAll)
-      #selectInput("in_seq","",out,selected=out[1],multiple=TRUE)
-      
-      if (input$add_custom_profile == TRUE){
-        out <- selectedgene_age()
-        if (length(out) > 0){
-          selectInput("in_seq",
-                      "",
-                      out,
-                      selected = as.list(out),
-                      multiple = TRUE,
-                      selectize = FALSE)
-        }
-        else {
-          selectInput("in_seq",
-                      "",
-                      outAll,
-                      selected = outAll[1],
-                      multiple = TRUE,
-                      selectize = FALSE)
-        }
+      out <- list()
+      if (input$add_gene_age_custom_profile == TRUE){
+        out <- as.list(selectedgene_age())
       } else if (input$add_cluster_cutom_profile == TRUE){
-        out <- brushed_clusterGene()
-        if (length(out) > 0){
-          selectInput("in_seq", "",
-                      out,
-                      selected = as.list(out),
-                      multiple = TRUE,
-                      selectize = FALSE)
-        }
-        else {
-          selectInput("in_seq", "",
-                      outAll,
-                      selected = outAll[1],
-                      multiple = TRUE,
-                      selectize = FALSE)
-        }
+        out <- as.list(brushed_clusterGene())
       }
       else if (input$add_core_gene_custom_profile == TRUE){
-        out <- core_geneDf()
-        if (length(out) > 0){
-          selectInput("in_seq", "",
-                      out,
-                      selected = as.list(out),
-                      multiple = TRUE,
-                      selectize = FALSE)
-        }
-        else {
-          selectInput("in_seq", "",
-                      outAll,
-                      selected = outAll[1],
-                      multiple = TRUE,
-                      selectize = FALSE)
-        }
+        out <- as.list(core_geneDf())
       }
       else if(input$add_gc_genes_custom_profile == TRUE){
-        out <- significantGenesGroupCompairison$geneID
-        if(length(out)>0){
-          selectInput("in_seq","",out,selected=as.list(out),multiple=TRUE,selectize=FALSE)
-        }
-        else {
-          selectInput("in_seq","",outAll,selected=outAll[1],multiple=TRUE,selectize=FALSE)
-        }
-        
+        out <- as.list(significantGenesGroupCompairison$geneID)
       }
       else {
-        if (is.null(fileCustom)){
-          selectInput("in_seq", "",
-                      outAll,
-                      selected = outAll[1],
-                      multiple = TRUE,
-                      selectize = FALSE)
-        }
-        
-        else {
+        if (!is.null(fileCustom)){
           customList <- as.data.frame(read.table(file = fileCustom$datapath,
                                                  header = FALSE))
           customList$V1 <- as.factor(customList$V1)
           out <- as.list(levels(customList$V1))
-          selectInput("in_seq", "",
-                      out,
-                      selected = out,
-                      multiple = TRUE,
-                      selectize = FALSE)
         }
+      }
+      
+      if(length(out)> 0){
+        create_select_gene("in_seq", out, out)
+      }
+      else {
+        create_select_gene("in_seq", outAll, outAll[1])
       }
     }
   })
@@ -2166,178 +1922,25 @@ shinyServer(function(input, output, session) {
                         "dot_zoom" = input$dot_zoom_select,
                         "x_angle" = input$x_angle_select,
                         "guideline" = 0)
-    
     return(input_para)
   })
   
   # * plot customized profile -------------------------------------------
-  output$selected_plot <- renderPlot({
-    if (vCt$doPlotCustom == FALSE) return()
-    if (input$in_seq[1] == "all" & input$in_taxa[1] == "all") return()
-    
-    data_heat <- data_customized_plot(dataHeat(), input$in_taxa, input$in_seq)
-    # cluster dataHeat (if selected)
-    if (input$apply_cluster == TRUE) {
-      data_heat <- data_customized_plot(clusteredDataHeat(), input$in_taxa, input$in_seq)
-    }
-    
-    profile_plot(data_heat, get_parameter_input_customized(), "none", input$rank_select, "none")
-  })
-  
-  output$selected_plot.ui <- renderUI({
-    if (is.null(input$in_seq[1]) | is.null(input$in_taxa[1]))  return()
-    else if (input$in_seq[1] == "all" & input$in_taxa[1] == "all") return()
-    else{
-      if (input$auto_update_selected == FALSE){
-        input$plot_custom
-        isolate({
-          withSpinner(
-            plotOutput("selected_plot",
-                       width = input$selected_width,
-                       height = input$selected_height,
-                       click = "plot_click_selected",
-                       hover = hoverOpts(
-                         id = "plot_hover_selected",
-                         delay = input$hover_delay,
-                         delayType = input$hover_policy,
-                         nullOutside = input$hover_null_outside
-                       )
-            )
-          )
-        })
-      } else {
-        withSpinner(
-          plotOutput("selected_plot",
-                     width = input$selected_width,
-                     height = input$selected_height,
-                     click = "plot_click_selected",
-                     hover = hoverOpts(
-                       id = "plot_hover_selected",
-                       delay = input$hover_delay,
-                       delayType = input$hover_policy,
-                       nullOutside = input$hover_null_outside
-                     )
-          )
-        )
-      }
-    }
-  })
-  
-  # * download customized plot ----------------------------------------------------
-  output$selected_download <- downloadHandler(
-    filename = function() {
-      c("selected_plot.pdf")
-    },
-    content = function(file) {
-      ggsave(file, plot = selected_plot(vCt,
-                                        dataHeat(),
-                                        clusteredDataHeat(),
-                                        get_parameter_input_customized()),
-             width = input$selected_width * 0.056458333,
-             height = input$selected_height * 0.056458333,
-             units = "cm", dpi = 300, device = "pdf", limitsize = FALSE)
-    }
-  )
-  
-  # * get info of clicked point on customized profile ------------------------------
-  selectedpoint_info <- reactive({
-    # check input
-    if (vCt$doPlotCustom == FALSE) return()
-    
-    # get selected supertaxon name
-    taxa_list <- get_name_list(FALSE, FALSE)
-    rank_select <- input$rank_select
-    rankName <- substr(rank_select, 4, nchar(rank_select))
-    in_select <- {
-      as.numeric(taxa_list$ncbiID[taxa_list$fullName == input$in_select])
-    }
-    
-    dataHeat <- dataHeat()
-    
-    if (input$apply_cluster == TRUE){
-      dataHeat <- clusteredDataHeat()
-    }
-    
-    # get sub-dataframe of selected taxa and sequences
-    dataHeat$supertaxonMod <- substr(dataHeat$supertaxon,
-                                     6,
-                                     nchar(as.character(dataHeat$supertaxon)))
-    if (input$in_taxa[1] == "all" & input$in_seq[1] != "all"){
-      # select data from dataHeat for selected sequences only
-      dataHeat <- subset(dataHeat, geneID %in% input$in_seq)
-    } else if (input$in_seq[1] == "all" & input$in_taxa[1] != "all"){
-      # select data from dataHeat for selected taxa only
-      dataHeat <- subset(dataHeat, supertaxonMod %in% input$in_taxa)
-    } else {
-      # select data from dataHeat for selected sequences and taxa
-      dataHeat <- subset(dataHeat, geneID %in% input$in_seq
-                         & supertaxonMod %in% input$in_taxa)
-    }
-    
-    # drop all other supertaxon that are not in sub-dataframe
-    dataHeat$supertaxon <- factor(dataHeat$supertaxon)
-    dataHeat$geneID <- factor(dataHeat$geneID)
-    
-    # get values
-    if (is.null(input$plot_click_selected$x)) return()
-    else{
-      # get cooridiate point
-      if (input$x_axis_selected == "genes"){
-        corX <- round(input$plot_click_selected$y);
-        corY <- round(input$plot_click_selected$x)
-      } else {
-        corX <- round(input$plot_click_selected$x);
-        corY <- round(input$plot_click_selected$y)
-      }
-      
-      # get geneID
-      genes <- levels(dataHeat$geneID)
-      geneID <- toString(genes[corY])
-      # get supertaxon (spec)
-      supertaxa <- levels(dataHeat$supertaxon)
-      spec <- toString(supertaxa[corX])
-      # get var1, percentage of present species and var2 score
-      var1 <- NA
-      if (!is.na(dataHeat$var1[dataHeat$geneID == geneID
-                               & dataHeat$supertaxon == spec][1])){
-        var1 <- max(na.omit(dataHeat$var1[dataHeat$geneID == geneID
-                                          & dataHeat$supertaxon == spec]))
-      }
-      Percent <- NA
-      if (!is.na(dataHeat$presSpec[dataHeat$geneID == geneID
-                                   & dataHeat$supertaxon == spec][1])){
-        Percent <- {
-          max(na.omit(dataHeat$presSpec[dataHeat$geneID == geneID
-                                        & dataHeat$supertaxon == spec]))
-        }
-      }
-      var2 <- NA
-      if (!is.na(dataHeat$var2[dataHeat$geneID == geneID
-                               & dataHeat$supertaxon == spec][1])){
-        var2 <- {
-          max(na.omit(dataHeat$var2[dataHeat$geneID == geneID
-                                    & dataHeat$supertaxon == spec]))
-        }
-      }
-      
-      # get ortholog ID
-      orthoID <- dataHeat$orthoID[dataHeat$geneID == geneID
-                                  & dataHeat$supertaxon == spec]
-      if (length(orthoID) > 1){
-        orthoID <- paste0(orthoID[1], ",...")
-      }
-      
-      if (is.na(as.numeric(Percent))) return()
-      else{
-        info <- c(geneID,
-                  as.character(orthoID),
-                  as.character(spec),
-                  round(as.numeric(var1), 2),
-                  round(as.numeric(Percent), 2),
-                  round(as.numeric(var2), 2))
-      }
-    }
-  })
+  selectedpoint_info <- callModule(create_profile_plot, "customized_profile",
+                                   data = dataHeat,
+                                   clusteredDataHeat = clusteredDataHeat,
+                                   apply_cluster = reactive(input$apply_cluster),
+                                   parameters = get_parameter_input_customized,
+                                   in_seq = reactive(input$in_seq),
+                                   in_taxa = reactive(input$in_taxa),
+                                   rank_select = reactive(input$rank_select),
+                                   in_select = reactive(input$in_select),
+                                   taxon_highlight = reactive("none"),
+                                   gene_highlight = reactive("none"),
+                                   width = reactive(input$selected_width),
+                                   height = reactive(input$selected_height),
+                                   x_axis = reactive(input$x_axis_selected),
+                                   type_profile = reactive("customized_profile"))
   
   # ============================== POINT INFO =================================
   
@@ -2457,111 +2060,20 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  # * plot detailed bar chart ---------------------------------------------------
-  output$detail_plot <- renderPlot({
-    p <- detail_plot(v, detail_plotDt(), input$detailed_text,
-                     input$var1_id, input$var2_id)
-    p
-  })
-  
-  output$detail_plot.ui <- renderUI({
-    withSpinner(
-      plotOutput("detail_plot",
-                 width = 800,
-                 height = input$detailed_height,
-                 click = "plot_click_detail",
-                 hover = hoverOpts(
-                   id = "plot_hover_2",
-                   delay = input$hover_delay,
-                   delayType = input$hover_policy,
-                   nullOutside = input$hover_null_outside
-                 )
-      )
-    )
-  })
-  
-  # * download detailed plot ----------------------------------------------------
-  output$download_detailed <- downloadHandler(
-    filename = function() {
-      c("detailedPlot.pdf")
-    },
-    content = function(file) {
-      g <- detail_plot(v, detai_plotDt(), input$detailed_text,
-                       input$var1_id, input$var2_id)
-      ggsave(file,
-             plot = g,
-             width = 800 * 0.056458333,
-             height = input$detailed_height * 0.056458333,
-             units = "cm",
-             dpi = 300,
-             device = "pdf",
-             limitsize = FALSE)
-    }
-  )
-  
-  # * get info when clicking on detailed plot -----------------------------------
-  point_infoDetail <- reactive({
-    selDf <- detail_plotDt()
-    # selDf <- selDf[complete.cases(selDf),]
-    selDf$orthoID <- as.character(selDf$orthoID)
-    # allOrthoID <- sort(selDf$orthoID)
-    
-    ### get coordinates of plot_click_detail
-    if (is.null(input$plot_click_detail$x)) return()
-    else{
-      corX <- round(input$plot_click_detail$y)
-      corY <- round(input$plot_click_detail$x)
-    }
-    
-    ### get pair of sequence IDs & var1
-    seedID <- as.character(selDf$geneID[!is.na(selDf$geneID)][1])
-    orthoID <- as.character(selDf$orthoID[corX])
-    
-    var1 <- as.list(selDf$var1[selDf$orthoID == orthoID])
-    var1 <- as.character(var1[!is.na(var1)])
-    var2 <- as.list(selDf$var2[selDf$orthoID == orthoID])
-    var2 <- as.character(var2[!is.na(var2)])
-    if (length(var2) == 0) var2 = "NA"
-    # ncbiID <- as.character(selDf$abbrName[selDf$orthoID==orthoID])
-    ncbiID <- selDf[selDf$orthoID == orthoID, ]$abbrName
-    ncbiID <- as.character(ncbiID[!is.na(ncbiID)][1])
-    
-    ### return info
-    if (is.na(orthoID)){
-      return(NULL)
-    } else {
-      if (orthoID != "NA"){
-        info <- c(seedID, orthoID, var1, var2, ncbiID)
-        return(info)
-      }
-    }
-  })
-  
-  # * show info when clicking on detailed plot ----------------------------------
-  output$detail_click <- renderText({
-    info <- point_infoDetail() # info = seedID, orthoID, var1
-    
-    if (is.null(info)) paste("select ortholog")
-    else{
-      a <- paste0("seedID = ", info[1])
-      b <- paste0("hitID = ", info[2])
-      c <- ""
-      if (input$var1_id != ""){
-        c <- paste0(input$var1_id, " = ", info[3])
-      }
-      d <- ""
-      if (input$var2_id != ""){
-        d <- paste0(input$var2_id, " = ", info[4])
-      }
-      paste(a, b, c, d, sep = "\n")
-    }
-  })
-  
+  # * render detailed plot ----------------------------------------------------
+  point_infoDetail <- callModule(create_detailed_plot, "detailed_plot",
+                                 data = detail_plotDt,
+                                 var1_id = reactive(input$var1_id),
+                                 var2_id = reactive(input$var2_id),
+                                 detailed_text = reactive(input$detailed_text),
+                                 detailed_height = reactive(input$detailed_height))
+
   # * render FASTA sequence ------------------------------------------------------------
   output$fasta <- renderText({
     if (v$doPlot == FALSE) return()
     
     info <- point_infoDetail() # info = seedID, orthoID, var1
+
     if (is.null(info)) return()
     else{
       data <- get_data_filtered()
@@ -2687,23 +2199,12 @@ shinyServer(function(input, output, session) {
   observeEvent(input$do_domain_plot, {
     v3$doPlot3 <- input$do_domain_plot
     filein <- input$main_input
-    # if(input$demo == TRUE){ filein = 1 }
     if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor") filein <- 1
     if (is.null(filein)) v3$doPlot3 <- FALSE
   })
   
-  # * render domain architecture plot -------------------------------------------
-  output$archi_plot <- renderPlot({
-    g <- archi_plot(v3,
-                    point_infoDetail(),
-                    get_domain_information(),
-                    input$concat_fasta,
-                    input$label_archi_size,
-                    input$title_archi_size)
-    grid.draw(g)
-  })
-  
-  output$archi_plot.ui <- renderUI({
+  # * render domain plot ------------------------------------------------------
+  observeEvent(input$do_domain_plot, {
     if (v3$doPlot3 == FALSE) {
       domainIN <- unlist(strsplit(toString(input$main_input), ","))
       fileName <- toString(domainIN[1])
@@ -2716,33 +2217,15 @@ shinyServer(function(input, output, session) {
         )
       HTML(msg)
     } else {
-      withSpinner(plotOutput("archi_plot",
-                             height = input$archi_height,
-                             width = input$archi_width))
+      callModule(create_architecture_plot, "archi_plot",
+             point_info = point_infoDetail,
+             domain_info = get_domain_information,
+             label_archi_size = reactive(input$label_archi_size),
+             title_archi_size = reactive(input$title_archi_size),
+             archi_height = reactive(input$archi_height),
+             archi_width = reactive(input$archi_width))
     }
   })
-  
-  # * download architecture plot ------------------------------------------------
-  # *** something strange with archi_plot()
-  output$archi_download <- downloadHandler(
-    filename = function() {
-      c("domains.pdf")
-    },
-    content = function(file) {
-      g <- archi_plot(v3,
-                      point_infoDetail(),
-                      get_domain_information(),
-                      input$concat_fasta,
-                      input$label_archi_size,
-                      input$title_archi_size)
-      grid.draw(g)
-      ggsave(file, plot = g,
-             width = input$selected_width * 0.056458333,
-             height = input$selected_height * 0.056458333,
-             units = "cm", dpi = 300, device = "pdf", limitsize = FALSE)
-      
-    }
-  )
   
   # ======================== FILTERED DATA DOWNLOADING ========================
   
@@ -2792,7 +2275,7 @@ shinyServer(function(input, output, session) {
   
   # ** check if anywhere elese genes are added to the custemized profile ---------
   observe({
-    if (input$add_custom_profile == TRUE
+    if (input$add_gene_age_custom_profile == TRUE
         | input$add_core_gene_custom_profile == TRUE
         | input$add_gc_genes_custom_profile == TRUE){
       shinyjs::disable("add_cluster_cutom_profile")
@@ -2802,7 +2285,7 @@ shinyServer(function(input, output, session) {
   })
   
   output$add_cluster_cutom_profile_check.ui <- renderUI({
-    if (input$add_custom_profile == TRUE
+    if (input$add_gene_age_custom_profile == TRUE
         | input$add_core_gene_custom_profile == TRUE |
         input$add_gc_genes_custom_profile == TRUE ){
       HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Gene age estimation</strong> or <strong>Core genes finding</strong> or <strong>Group Comparison</strong> &nbsp;to enable this function)</em></p>')
@@ -2982,8 +2465,6 @@ shinyServer(function(input, output, session) {
     finalPresSpecDt
   })
   
-  
-  
   # ** render distribution plots ----------------------------------------------
   observe({
     if (v$doPlot == FALSE) return()
@@ -3025,13 +2506,13 @@ shinyServer(function(input, output, session) {
     if (input$add_cluster_cutom_profile == TRUE
         | input$add_core_gene_custom_profile == TRUE
         | input$add_gc_genes_custom_profile == TRUE ){
-      shinyjs::disable("add_custom_profile")
+      shinyjs::disable("add_gene_age_custom_profile")
     } else {
-      shinyjs::enable("add_custom_profile")
+      shinyjs::enable("add_gene_age_custom_profile")
     }
   })
   
-  output$add_custom_profile_check.ui <- renderUI({
+  output$add_gene_age_custom_profile_check.ui <- renderUI({
     if (input$add_cluster_cutom_profile == TRUE
         | input$add_core_gene_custom_profile == TRUE
         | input$add_gc_genes_custom_profile == TRUE){
@@ -3116,7 +2597,7 @@ shinyServer(function(input, output, session) {
   # check if anywhere elese genes are added to the custemized profile ---------
   observe({
     if (input$add_cluster_cutom_profile == TRUE
-        | input$add_custom_profile == TRUE
+        | input$add_gene_age_custom_profile == TRUE
         | input$add_gc_genes_custom_profile == TRUE){
       shinyjs::disable("add_core_gene_custom_profile")
     } else {
@@ -3126,7 +2607,7 @@ shinyServer(function(input, output, session) {
   
   output$add_core_gene_custom_profile_check.ui <- renderUI({
     if (input$add_cluster_cutom_profile == TRUE
-        | input$add_custom_profile == TRUE
+        | input$add_gene_age_custom_profile == TRUE
         | input$add_gc_genes_custom_profile == TRUE){
       HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Profiles clustering</strong> or <strong>Gene age estimating</strong> or r <strong>Group Comparioson</strong>&nbsp;to enable this function)</em></p>')
     }
@@ -3548,9 +3029,9 @@ shinyServer(function(input, output, session) {
   })
   
   # add_custom_profile --------------------------------------------------------
-  # check if add_custom_profile (gene age plot) are being clicked
+  # check if add_gene_age_custom_profile (gene age plot) are being clicked
   observe({
-    if (input$add_custom_profile == TRUE |
+    if (input$add_gene_age_custom_profile == TRUE |
         input$add_core_gene_custom_profile == TRUE |
         input$add_cluster_cutom_profile == TRUE){
       shinyjs::disable("add_gc_genes_custom_profile")
@@ -3559,7 +3040,7 @@ shinyServer(function(input, output, session) {
     }
   })
   output$add_gc_custom_profile_check <- renderUI({
-    if (input$add_custom_profile == TRUE |
+    if (input$add_gene_age_custom_profile == TRUE |
         input$add_core_gene_custom_profile == TRUE |
         input$add_cluster_cutom_profile == TRUE){
       HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Gene age estimation</strong>or <strong>Profile clustering</strong> or <strong>Core genes finding</strong>&nbsp;to enable this function)</em></p>')
