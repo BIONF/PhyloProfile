@@ -1467,12 +1467,10 @@ shinyServer(function(input, output, session) {
     
     # merge mdData, mdDataVar2 and taxa_list to get taxonomy info
     taxaMdData <- merge(mdData, taxa_list, by = "ncbiID")
-    taxaMdData$var1 <- {
+    taxaMdData$var1 <-
       suppressWarnings(as.numeric(as.character(taxaMdData$var1)))
-    }
-    taxaMdData$var2 <- {
+    taxaMdData$var2 <-
       suppressWarnings(as.numeric(as.character(taxaMdData$var2)))
-    }
     
     # (2) calculate PERCENTAGE of PRESENT SPECIES (2)
     finalPresSpecDt <- calc_pres_spec(taxaMdData, taxaCount)
@@ -2186,15 +2184,13 @@ shinyServer(function(input, output, session) {
       } else {
         updateButton(session, "do_domain_plot", disabled = FALSE)
         if (input$demo_data == "lca-micros") {
-          fileDomain <- {
+          fileDomain <-
             suppressWarnings(paste0("https://github.com/BIONF/phyloprofile-data/blob/master/demo/domain_files/",
                                     group,
                                     ".domains?raw=true"))
-          }
         } else if (input$demo_data == "ampk-tor") {
-          fileDomain <- {
+          fileDomain <-
             suppressWarnings(paste0("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.domains_F"))
-          }
         } 
       }
     } else {
@@ -2452,11 +2448,10 @@ shinyServer(function(input, output, session) {
       splitDtName <- merge(splitDt, allData,
                            by = "orthoID",
                            all.x = TRUE)
-      splitDtName$supertaxonMod <- {
+      splitDtName$supertaxonMod <-
         substr(splitDtName$supertaxon,
                6,
                nchar(as.character(splitDtName$supertaxon)))
-      }
       splitDtName <- subset(splitDtName,
                             select = c(orthoID,
                                        var1.x,
@@ -2523,14 +2518,12 @@ shinyServer(function(input, output, session) {
     # merge mdData, mdDatavar2 and taxa_list to get taxonomy info
     taxaMdData <- merge(mdData, taxa_list, by = "ncbiID")
     if ("var1" %in% colnames(taxaMdData)) {
-      taxaMdData$var1 <- {
+      taxaMdData$var1 <-
         suppressWarnings(as.numeric(as.character(taxaMdData$var1)))
-      }
     }
     if ("var2" %in% colnames(taxaMdData)) {
-      taxaMdData$var2 <- {
+      taxaMdData$var2 <-
         suppressWarnings(as.numeric(as.character(taxaMdData$var2)))
-      }
     }
     # calculate % present species
     finalPresSpecDt <- calc_pres_spec(taxaMdData, taxaCount)
@@ -2779,17 +2772,14 @@ shinyServer(function(input, output, session) {
 
         # save the next higher rank
         reference_higher_rank <- reference_dt[higher_rank_name]
-        reference_higher_rank <- {
+        reference_higher_rank <-
           reference_higher_rank[!duplicated(reference_higher_rank), ]
-        }
 
         # get all the taxa with the same id in the next higher rank
-        selected_taxa_dt <- {
+        selected_taxa_dt <-
           subset(dt, dt[, higher_rank_name] %in% reference_higher_rank)
-        }
-        selected_taxa_dt <- {
+        selected_taxa_dt <-
           selected_taxa_dt[!duplicated(selected_taxa_dt[rank_name]), ]
-        }
 
         # get a list with all the ids with reference_higher_rank as parent
         selected_taxa_ids <- selected_taxa_dt[rank_name]
@@ -2798,9 +2788,8 @@ shinyServer(function(input, output, session) {
         }
 
         selected_taxa <- subset(name_list, name_list$rank == rank_name)
-        selected_taxa <- {
+        selected_taxa <-
           subset(selected_taxa, selected_taxa$ncbiID %in% selected_taxa_ids)
-        }
 
         default_select <- selected_taxa$fullName
 
@@ -2910,7 +2899,7 @@ shinyServer(function(input, output, session) {
     input$plot_gc
 
     isolate({
-      significant_genes_gc <<- {
+      significant_genes_gc <-
         get_significant_genes(input$selected_in_group_gc,
                               input$list_selected_genes_gc,
                               input$rank_select,
@@ -2926,7 +2915,7 @@ shinyServer(function(input, output, session) {
                               session,
                               input$right_format_features,
                               get_domain_information())
-      }
+      
       if (!is.null(significant_genes_gc)) {
         x <- as.vector(significant_genes_gc$geneID)
         choices <- c("all", x)
@@ -3129,9 +3118,7 @@ shinyServer(function(input, output, session) {
                            get_parameter_input_gc(),
                            input$interesting_features)
     }else{
-      x <- {
-        significant_genes_gc[significant_genes_gc$geneID == gene, ]
-      }
+      x <- significant_genes_gc[significant_genes_gc$geneID == gene, ]
       if (nrow(x) == 0) return()
       get_plot_output_list(x, get_parameter_input_gc(), input$interesting_features)
     }
@@ -3150,20 +3137,17 @@ shinyServer(function(input, output, session) {
     
     # get ID of customized (super)taxon
     taxa_list <- get_name_list(FALSE, FALSE)
-    super_id <- {
+    super_id <-
       taxa_list$ncbiID[taxa_list$fullName == taxa_select_gc
                        & taxa_list$rank %in% c(rank_name, "norank")]
-    }
     
     # from that ID, get list of all taxa for main selected taxon
     main_rank_name <- substr(input$rank_select, 4, nchar(input$rank_select))
-    taxa_id_gc <- {
+    taxa_id_gc <-
       levels(as.factor(dt[main_rank_name][dt[rank_name] == super_id, ]))
-    }
-    taxa_name_gc <- {
+    taxa_name_gc <-
       taxa_list$fullName[taxa_list$rank %in% c(main_rank_name, "norank")
                          & taxa_list$ncbiID %in% taxa_id_gc]
-    }
     return(taxa_name_gc)
   })
 })
