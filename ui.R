@@ -28,7 +28,7 @@ source("R/create_architecture_plot.R")
 source("R/create_detailed_plot.R")
 source("R/create_profile_plot.R")
 
-# MAIN UI ====================================================================-
+# MAIN UI =====================================================================
 
 shinyUI(
   fluidPage(
