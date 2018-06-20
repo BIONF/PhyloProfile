@@ -27,8 +27,8 @@ create_profile_plot_ui <- function(id) {
 		br(),
     downloadButton(ns("profile_download"),"Download profile", class = "butDL"),
 		tags$head(
-		  tags$style(
-		    ".butDL{background-color:#476ba3;} .butDL{color: white;}")
+		  tags$style(HTML(
+		    ".butDL{background-color:#476ba3;} .butDL{color: white;}"))
 		)
   )
 }

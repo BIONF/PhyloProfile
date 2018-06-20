@@ -1,9 +1,9 @@
 #' Protein domain architecture plot
-#' 
+#'
 #' @export
-#' @param point_info() info of clicked point 
+#' @param point_info() info of clicked point
 #' (from reactive fn "point_infoDetail")
-#' @param domain_info() domain information 
+#' @param domain_info() domain information
 #' (from reactive fn "get_domain_information")
 #' @param label_archi_size lable size (from input$label_archi_size)
 #' @param title_archi_size title size (from input$title_archi_size)
@@ -16,7 +16,11 @@ create_architecture_plot_ui <- function(id) {
   ns <- NS(id)
   tagList(
     uiOutput(ns("archi_plot.ui")),
-    downloadButton(ns("archi_download"), "Download plot"),
+    downloadButton(ns("archi_download"), "Download plot", class = "butDL"),
+		tags$head(
+      tags$style(HTML(
+        ".butDL{background-color:#476ba3;} .butDL{color: white;}"))
+    ),
     textOutput(ns("selected_domain"))
   )
 }
@@ -33,7 +37,7 @@ create_architecture_plot <- function(input, output, session,
                     title_archi_size())
     grid.draw(g)
   })
-  
+
   output$archi_plot.ui <- renderUI({
     ns <- session$ns
     withSpinner(
@@ -64,7 +68,7 @@ create_architecture_plot <- function(input, output, session,
       )
     }
   )
-  
+
   output$selected_domain <- renderText({
     if (is.null(input$archi_click$y)) return()
     convertY(unit(input$archi_click$y, "npc"), "native")
@@ -82,7 +86,7 @@ create_architecture_plot <- function(input, output, session,
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 
 archi_plot <- function(info,
-                       domain_df, 
+                       domain_df,
                        label_archi_size, title_archi_size){
   # info
   group <- as.character(info[1])
@@ -92,7 +96,7 @@ archi_plot <- function(info,
   # get sub dataframe based on selected group_id and orthoID
   ortho <- gsub("\\|", ":", ortho)
   grepID <- paste(group, "#", ortho, sep = "")
-  
+
   subdomain_df <- domain_df[grep(grepID, domain_df$seedID), ]
   subdomain_df$feature <- as.character(subdomain_df$feature)
 
@@ -189,7 +193,7 @@ archi_plot <- function(info,
 
 #' Create architecure plot for single protein (seed/ortho)
 #' @export
-#' @param df data (seed/ortho) for ploting 
+#' @param df data (seed/ortho) for ploting
 #' @param geneID ID of seed or ortho protein
 #' @param sep separate indicator for title
 #' @param label_size lable size (from input$label_archi_size)

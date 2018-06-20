@@ -13,12 +13,11 @@ create_detailed_plot_ui <- function(id) {
   ns <- NS(id)
   tagList(
     uiOutput(ns("detail_plot.ui")),
+    downloadButton(ns("download_detailed"), "Download plot", class = "butDL"),
     tags$head(
-      tags$style(
-        HTML("#plot_download_dist{background-color:#A9E2F3}")
-      )
+      tags$style(HTML(
+        ".butDL{background-color:#476ba3;} .butDL{color: white;}"))
     ),
-    downloadButton(ns("download_detailed"), "Download plot"),
     hr(),
     verbatimTextOutput(ns("detail_click"))
   )

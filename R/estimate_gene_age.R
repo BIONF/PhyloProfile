@@ -15,7 +15,12 @@ plot_gene_age_ui <- function(id) {
   tagList(
     column(
       2,
-      downloadButton(ns("gene_age_plot_download"), "Download plot")
+      downloadButton(ns("gene_age_plot_download"),
+                     "Download plot", class = "butDL"),
+      tags$head(
+        tags$style(HTML(
+          ".butDL{background-color:#476ba3;} .butDL{color: white;}"))
+      )
     ),
     column(
       10,

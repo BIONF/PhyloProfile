@@ -85,6 +85,7 @@ shinyUI(
           ),
           column(
             2,
+            h6("blabla", style = "color:transparent"),
             shinyBS::bsButton(
               "reset_main",
               "Reset cutoffs",
@@ -146,6 +147,7 @@ shinyUI(
           ),
           column(
             2,
+            h6("blabla", style = "color:transparent"),
             shinyBS::bsButton(
               "reset_selected",
               "Reset cutoffs",
