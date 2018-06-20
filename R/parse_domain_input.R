@@ -4,7 +4,7 @@ source("R/get_oma_browser.R")
 #' Parse domain input file
 #' @export
 #' @param main_input main phylogenetic profile input
-#' @param input_type type of main input (=> USED ONLY FOR OMA!!!!)
+#' @param input_type type of main input (only for checking OMA input)
 #' @param demo_data demo data name (either lca-micros or ampk-tor)
 #' @param anno_location location of anno file ("from file" or "from folder")
 #' @param file_domain_input concatenate domain file
@@ -15,7 +15,7 @@ source("R/get_oma_browser.R")
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 
 parse_domain_input <- function(main_input,
-                               # input_type,
+                               input_type,
                                demo_data,
                                anno_location,
                                file_domain_input,
@@ -24,10 +24,6 @@ parse_domain_input <- function(main_input,
                                datapath){
   domains <- data.frame()
   files <- c()
-
-  # if (input_type == "oma") {
-  #   domains <- long_to_domain(main_input)
-  # }
 
   # get domain file(s) from folder
   if (demo_data == "lca-micros" | anno_location == "from folder" ) {
@@ -92,53 +88,56 @@ parse_domain_input <- function(main_input,
                              "weight",
                              "path")
     }
-    # domains$length <- max(domains$end)
   } 
   # for user input data
   else {
-    for (file in files) {
-      if (file != FALSE) {
-        exeptions <- c("noFileInput", "noSelectHit", "noFileInFolder")
-        if (!(file %in% exeptions)) {
-          domain_df <- as.data.frame(read.table(file,
-                                                sep = "\t",
-                                                header = FALSE,
-                                                comment.char = ""))
-          domains <- rbind(domains, domain_df)
+    if (input_type == "oma") {
+      domains <- long_to_domain(main_input)
+    } else {
+      for (file in files) {
+        if (file != FALSE) {
+          exeptions <- c("noFileInput", "noSelectHit", "noFileInFolder")
+          if (!(file %in% exeptions)) {
+            domain_df <- as.data.frame(read.table(file,
+                                                  sep = "\t",
+                                                  header = FALSE,
+                                                  comment.char = ""))
+            domains <- rbind(domains, domain_df)
+          }
         }
       }
-    }
-
-    if (ncol(domains) == 5) {
-      colnames(domains) <- c("seedID",
-                             "orthoID",
-                             "feature",
-                             "start",
-                             "end")
-    } else if (ncol(domains) == 6) {
-      colnames(domains) <- c("seedID",
-                             "orthoID",
-                             "length",
-                             "feature",
-                             "start",
-                             "end")
-    } else if (ncol(domains) == 7) {
-      colnames(domains) <- c("seedID",
-                             "orthoID",
-                             "length",
-                             "feature",
-                             "start",
-                             "end",
-                             "weight")
-    } else if (ncol(domains) == 8) {
-      colnames(domains) <- c("seedID",
-                             "orthoID",
-                             "length",
-                             "feature",
-                             "start",
-                             "end",
-                             "weight",
-                             "path")
+      
+      if (ncol(domains) == 5) {
+        colnames(domains) <- c("seedID",
+                               "orthoID",
+                               "feature",
+                               "start",
+                               "end")
+      } else if (ncol(domains) == 6) {
+        colnames(domains) <- c("seedID",
+                               "orthoID",
+                               "length",
+                               "feature",
+                               "start",
+                               "end")
+      } else if (ncol(domains) == 7) {
+        colnames(domains) <- c("seedID",
+                               "orthoID",
+                               "length",
+                               "feature",
+                               "start",
+                               "end",
+                               "weight")
+      } else if (ncol(domains) == 8) {
+        colnames(domains) <- c("seedID",
+                               "orthoID",
+                               "length",
+                               "feature",
+                               "start",
+                               "end",
+                               "weight",
+                               "path")
+      }
     }
   }
 

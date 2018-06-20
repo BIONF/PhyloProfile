@@ -273,7 +273,8 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  # * check OMA input -----------------------------------------------------------
+  # * check OMA input ----------------------------------------------------------
+  
   output$select_oma_type <- renderUI({
     filein <- input$main_input
     if(is.null(filein)) return()
@@ -1122,14 +1123,16 @@ shinyServer(function(input, output, session) {
   
   # * parse domain info into data frame -------------------------------------
   get_domain_information <- reactive({
-    # if(input$demo_data == "none"){
-    #   filein <- input$main_input
-    #   input_type <- check_input_vadility(filein)
-    # }
+    if (input$demo_data == "none") {
+      filein <- input$main_input
+      input_type <- check_input_vadility(filein)
+    } else {
+      input_type <- "demo"
+    }
+    
     main_input <- get_main_input()
-
     domain_df <- parse_domain_input(main_input,
-                                    # input_type,
+                                    input_type,
                                     input$demo_data,
                                     input$anno_location,
                                     input$file_domain_input,
