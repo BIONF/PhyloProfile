@@ -1731,7 +1731,6 @@ shinyServer(function(input, output, session) {
     }
     
     if (length(out) > 0) {
-      # em(paste0("Total number of genes:  ",length(out)))
       strong(paste0("Total number of genes:  ", length(out)))
     }
   })
@@ -1748,7 +1747,7 @@ shinyServer(function(input, output, session) {
                 out, selected = out[1])
   })
 
-  # * get list of genes for highlighting ----------------------------------------
+  # * get list of genes for highlighting --------------------------------------
   output$highlight_gene_ui <- renderUI({
     geneList <- dataHeat()
     geneList$geneID <- as.factor(geneList$geneID)
@@ -1759,7 +1758,7 @@ shinyServer(function(input, output, session) {
     selectInput("gene_highlight", "Highlight:", out, selected = out[1])
   })
 
-  # * reset configuration windows of Main plot ----------------------------------
+  # * reset configuration windows of Main plot --------------------------------
   observeEvent(input$reset_main_config, {
     shinyjs::reset("x_size")
     shinyjs::reset("y_size")
@@ -1768,37 +1767,34 @@ shinyServer(function(input, output, session) {
     shinyjs::reset("dot_zoom")
   })
 
-  # * close configuration windows of Main plot ----------------------------------
+  # * close configuration windows of Main plot --------------------------------
   observeEvent(input$apply_main_config, {
     toggleModal(session, "main_plot_config_bs", toggle = "close")
   })
   
-  # * parameters for the main profile plot --------------------------------------
+  # * parameters for the main profile plot ------------------------------------
   get_parameter_input_main <- reactive({
-    input_para <- list( "x_axis" = input$x_axis,
-                        "var1_id" = input$var1_id,
-                        "var2_id"  = input$var2_id,
-                        "low_color_var1" =  input$low_color_var1,
-                        "high_color_var1" = input$high_color_var1,
-                        "low_color_var2" = input$low_color_var2,
-                        "high_color_var2" = input$high_color_var2,
-                        "para_color" = input$para_color,
-                        "x_size" = input$x_size,
-                        "y_size" = input$y_size,
-                        "legend_size" = input$legend_size,
-                        "main_legend" = input$main_legend,
-                        "dot_zoom" = input$dot_zoom,
-                        "x_angle" = input$x_angle,
-                        # "taxon_highlight" = input$taxon_highlight,
-                        # "apply_cluster" = input$apply_cluster,
-                        # "rank_select" = input$rank_select,
-                        # "gene_highlight" = input$gene_highlight,
-                        "guideline" = 1)
-
+    input_para <- list(
+      "x_axis" = input$x_axis,
+      "var1_id" = input$var1_id,
+      "var2_id"  = input$var2_id,
+      "low_color_var1" =  input$low_color_var1,
+      "high_color_var1" = input$high_color_var1,
+      "low_color_var2" = input$low_color_var2,
+      "high_color_var2" = input$high_color_var2,
+      "para_color" = input$para_color,
+      "x_size" = input$x_size,
+      "y_size" = input$y_size,
+      "legend_size" = input$legend_size,
+      "main_legend" = input$main_legend,
+      "dot_zoom" = input$dot_zoom,
+      "x_angle" = input$x_angle,
+      "guideline" = 1
+    )
     return(input_para)
   })
 
-  # * render dot size to dot_size_info ------------------------------------------
+  # * render dot size to dot_size_info ----------------------------------------
   output$dot_size_info <- renderUI({
     if (v$doPlot == FALSE) return()
 
@@ -1812,22 +1808,24 @@ shinyServer(function(input, output, session) {
     em(paste0("current point's size: ", minDot, " - ", maxDot))
   })
 
-  # * plot main profile -------------------------------------------------
-  mainpoint_info <- callModule(create_profile_plot, "main_profile",
-                               data = dataHeat,
-                               clusteredDataHeat = clusteredDataHeat,
-                               apply_cluster = reactive(input$apply_cluster),
-                               parameters = get_parameter_input_main,
-                               in_seq = reactive(input$in_seq),
-                               in_taxa = reactive(input$in_taxa),
-                               rank_select = reactive(input$rank_select),
-                               in_select = reactive(input$in_select),
-                               taxon_highlight = reactive(input$taxon_highlight),
-                               gene_highlight = reactive(input$gene_highlight),
-                               width = reactive(input$width),
-                               height = reactive(input$height),
-                               x_axis = reactive(input$x_axis),
-                               type_profile = reactive("main_profile"))
+  # * plot main profile -------------------------------------------------------
+  mainpoint_info <- callModule(
+    create_profile_plot, "main_profile",
+    data = dataHeat,
+    clusteredDataHeat = clusteredDataHeat,
+    apply_cluster = reactive(input$apply_cluster),
+    parameters = get_parameter_input_main,
+    in_seq = reactive(input$in_seq),
+    in_taxa = reactive(input$in_taxa),
+    rank_select = reactive(input$rank_select),
+    in_select = reactive(input$in_select),
+    taxon_highlight = reactive(input$taxon_highlight),
+    gene_highlight = reactive(input$gene_highlight),
+    width = reactive(input$width),
+    height = reactive(input$height),
+    x_axis = reactive(input$x_axis),
+    type_profile = reactive("main_profile")
+  )
   
   # ======================== CUSTOMIZED PROFILE TAB ===========================
   
@@ -1836,7 +1834,6 @@ shinyServer(function(input, output, session) {
     filein <- input$main_input
     fileCustom <- input$custom_file
 
-    # if (input$demo == TRUE) {
     if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor") {
       filein <- 1
     }
@@ -1877,7 +1874,7 @@ shinyServer(function(input, output, session) {
         }
       }
       
-      if (length(out)> 0) {
+      if (length(out) > 0) {
         create_select_gene("in_seq", out, out)
       }
       else {
@@ -1892,10 +1889,9 @@ shinyServer(function(input, output, session) {
                              rank_select = reactive(input$rank_select),
                              subset_taxa = subset_taxa)
 
-  # * get list of all taxa for customized profile ----------------------------------
+  # * get list of all taxa for customized profile -----------------------------
   output$taxa_in <- renderUI({
     filein <- input$main_input
-    # if (input$demo == TRUE) {
     if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor") {
       filein <- 1
     }
@@ -1926,7 +1922,7 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  # * check if all genes and all species are selected ---------------------------
+  # * check if all genes and all species are selected -------------------------
   output$same_profile <- reactive({
     if (v$doPlot == FALSE) return(FALSE)
     if (length(input$in_seq[1]) == 0) return(FALSE)
@@ -1936,7 +1932,7 @@ shinyServer(function(input, output, session) {
   })
   outputOptions(output, "same_profile", suspendWhenHidden = FALSE)
 
-  # * change label of plot_custom button if auto_update_selected is unchecked ----
+  # * change label of plot_custom button for not auto_update ------------------
   output$plot_custom_btn <- renderUI({
     if (input$auto_update_selected == FALSE) {
       shinyBS::bsButton("plot_custom",
@@ -1949,7 +1945,7 @@ shinyServer(function(input, output, session) {
     }
   })
 
-  # * check if button (custom)PLOT is clicked ------------------------------------------------
+  # * check if button (custom)PLOT is clicked ---------------------------------
   vCt <- reactiveValues(doPlotCustom = FALSE)
   observeEvent(input$plot_custom, {
     # 0 will be coerced to FALSE
@@ -1957,11 +1953,13 @@ shinyServer(function(input, output, session) {
     vCt$doPlotCustom <- input$plot_custom
     filein <- input$main_input
     # if (input$demo == TRUE) { filein = 1 }
-    if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor") filein <- 1
+    if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor") {
+      filein <- 1
+    }
     if (is.null(filein)) vCt$doPlotCustom <- FALSE
   })
   
-   # * reset configuration windows of Customized plot ----------------------------
+   # * reset configuration windows of Customized plot -------------------------
   observeEvent(input$reset_selected_config, {
     shinyjs::reset("x_size_select")
     shinyjs::reset("y_size_select")
@@ -1970,51 +1968,55 @@ shinyServer(function(input, output, session) {
     shinyjs::reset("dot_zoom_select")
   })
 
-  # ** close configuration windows of Customized plot ----------------------------
+  # ** close configuration windows of Customized plot -------------------------
   observeEvent(input$apply_selected_config, {
     toggleModal(session, "selected_plot_config_bs", toggle = "close")
   })
 
-  # * parameters for the customized profile plot --------------------------------
+  # * parameters for the customized profile plot ------------------------------
   get_parameter_input_customized <- reactive({
-    input_para <- list( "x_axis" = input$x_axis_selected,
-                        "var1_id" = input$var1_id,
-                        "var2_id"  = input$var2_id,
-                        "low_color_var1" =  input$low_color_var1,
-                        "high_color_var1" = input$high_color_var1,
-                        "low_color_var2" = input$low_color_var2,
-                        "high_color_var2" = input$high_color_var2,
-                        "para_color" = input$para_color,
-                        "x_size" = input$x_size_select,
-                        "y_size" = input$y_size_select,
-                        "legend_size" = input$legend_size_select,
-                        "main_legend" = input$selected_legend,
-                        "dot_zoom" = input$dot_zoom_select,
-                        "x_angle" = input$x_angle_select,
-                        "guideline" = 0)
+    input_para <- list(
+      "x_axis" = input$x_axis_selected,
+      "var1_id" = input$var1_id,
+      "var2_id"  = input$var2_id,
+      "low_color_var1" =  input$low_color_var1,
+      "high_color_var1" = input$high_color_var1,
+      "low_color_var2" = input$low_color_var2,
+      "high_color_var2" = input$high_color_var2,
+      "para_color" = input$para_color,
+      "x_size" = input$x_size_select,
+      "y_size" = input$y_size_select,
+      "legend_size" = input$legend_size_select,
+      "main_legend" = input$selected_legend,
+      "dot_zoom" = input$dot_zoom_select,
+      "x_angle" = input$x_angle_select,
+      "guideline" = 0
+    )
     return(input_para)
   })
   
-  # * plot customized profile -------------------------------------------
-  selectedpoint_info <- callModule(create_profile_plot, "customized_profile",
-                                   data = dataHeat,
-                                   clusteredDataHeat = clusteredDataHeat,
-                                   apply_cluster = reactive(input$apply_cluster),
-                                   parameters = get_parameter_input_customized,
-                                   in_seq = reactive(input$in_seq),
-                                   in_taxa = reactive(input$in_taxa),
-                                   rank_select = reactive(input$rank_select),
-                                   in_select = reactive(input$in_select),
-                                   taxon_highlight = reactive("none"),
-                                   gene_highlight = reactive("none"),
-                                   width = reactive(input$selected_width),
-                                   height = reactive(input$selected_height),
-                                   x_axis = reactive(input$x_axis_selected),
-                                   type_profile = reactive("customized_profile"))
+  # * plot customized profile -------------------------------------------------
+  selectedpoint_info <- callModule(
+    create_profile_plot, "customized_profile",
+    data = dataHeat,
+    clusteredDataHeat = clusteredDataHeat,
+    apply_cluster = reactive(input$apply_cluster),
+    parameters = get_parameter_input_customized,
+    in_seq = reactive(input$in_seq),
+    in_taxa = reactive(input$in_taxa),
+    rank_select = reactive(input$rank_select),
+    in_select = reactive(input$in_select),
+    taxon_highlight = reactive("none"),
+    gene_highlight = reactive("none"),
+    width = reactive(input$selected_width),
+    height = reactive(input$selected_height),
+    x_axis = reactive(input$x_axis_selected),
+    type_profile = reactive("customized_profile")
+  )
   
   # ============================== POINT INFO =================================
 
-  # * get status of point_info for activating Detailed Plot button ---------------
+  # * get status of point_info for activating Detailed Plot button ------------
   output$point_info_status <- reactive({
     if (input$tabs == "Main profile") {
       # info = groupID,orthoID,supertaxon,mVar1,%spec,var2
@@ -2028,7 +2030,7 @@ shinyServer(function(input, output, session) {
   })
   outputOptions(output, "point_info_status", suspendWhenHidden = FALSE)
 
-  # * show info into "point's info" box -----------------------------------------
+  # * show info into "point's info" box ---------------------------------------
   output$point_info <- renderText({
     # GET INFO BASED ON CURRENT TAB
     if (input$tabs == "Main profile") {
@@ -2077,7 +2079,7 @@ shinyServer(function(input, output, session) {
 
   # ============================= DETAILED PLOT ===============================
 
-  # * data for detailed plot ----------------------------------------------------
+  # * data for detailed plot --------------------------------------------------
   detail_plotDt <- reactive({
     if (v$doPlot == FALSE) return()
     
@@ -2131,14 +2133,16 @@ shinyServer(function(input, output, session) {
   })
   
   # * render detailed plot ----------------------------------------------------
-  point_infoDetail <- callModule(create_detailed_plot, "detailed_plot",
-                                 data = detail_plotDt,
-                                 var1_id = reactive(input$var1_id),
-                                 var2_id = reactive(input$var2_id),
-                                 detailed_text = reactive(input$detailed_text),
-                                 detailed_height = reactive(input$detailed_height))
+  point_infoDetail <- callModule(
+    create_detailed_plot, "detailed_plot",
+    data = detail_plotDt,
+    var1_id = reactive(input$var1_id),
+    var2_id = reactive(input$var2_id),
+    detailed_text = reactive(input$detailed_text),
+    detailed_height = reactive(input$detailed_height)
+  )
 
-  # * render FASTA sequence ------------------------------------------------------------
+  # * render FASTA sequence ---------------------------------------------------
   output$fasta <- renderText({
     if (v$doPlot == FALSE) return()
 
@@ -2168,7 +2172,7 @@ shinyServer(function(input, output, session) {
 
   # ======================== FEATURE ARCHITECTURE PLOT ========================
 
-  # * get domain file/path ------------------------------------------------------
+  # * get domain file/path ----------------------------------------------------
   getDomainFile <- reactive({
     # click info
     info <- point_infoDetail() # info = seedID, orthoID, var1
@@ -2184,23 +2188,29 @@ shinyServer(function(input, output, session) {
         updateButton(session, "do_domain_plot", disabled = FALSE)
         if (input$demo_data == "lca-micros") {
           fileDomain <-
-            suppressWarnings(paste0("https://github.com/BIONF/phyloprofile-data/blob/master/demo/domain_files/",
-                                    group,
-                                    ".domains?raw=true"))
+            suppressWarnings(
+              paste0(
+                "https://github.com/BIONF/phyloprofile-data/blob/master/demo/domain_files/",
+                group,
+                ".domains?raw=true"
+              )
+            )
         } else if (input$demo_data == "ampk-tor") {
           fileDomain <-
-            suppressWarnings(paste0("https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.domains_F"))
+            suppressWarnings(
+              paste0(
+                "https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.domains_F"
+              )
+            )
         } 
       }
     } else {
       filein <- input$main_input
       if (check_input_vadility(filein) == "oma") {
-      # if (get_input_type() == "oma") {
         fileDomain <- "oma_input"
         updateButton(session, "do_domain_plot", disabled = FALSE)
       } else if (input$anno_location == "from file") {
         fileDomain <- input$file_domain_input
-        #print(fileDomain)
         if (is.null(fileDomain)) {
           fileDomain <- "noFileInput"
         } else {
@@ -2240,10 +2250,10 @@ shinyServer(function(input, output, session) {
         }
       }
     }
-    return (fileDomain)
+    return(fileDomain)
   })
   
-  # * check domain file ---------------------------------------------------------
+  # * check domain file -------------------------------------------------------
   output$check_domain_files <- renderUI({
     fileDomain <- getDomainFile()
     if (fileDomain == "noFileInput") {
@@ -2252,8 +2262,9 @@ shinyServer(function(input, output, session) {
       msg <- paste0(
         "<p><em>Domain file not found!! </em></p>
         <p><em>Please make sure that file name has to be in this format:
-        <strong>&lt;seedID&gt;.extension</strong>, where extension is limited to
-        <strong>txt</strong>, <strong>csv</strong>, <strong>list</strong>, <strong>domains</strong> or <strong>architecture</strong>.
+        <strong>&lt;seedID&gt;.extension</strong>, where extension is limited
+         to <strong>txt</strong>, <strong>csv</strong>, <strong>list</strong>, 
+        <strong>domains</strong> or <strong>architecture</strong>.
         </em></p>"
       )
       HTML(msg)
@@ -2262,12 +2273,14 @@ shinyServer(function(input, output, session) {
     }
   })
 
-  # * check if PLOT button is clicked -------------------------------------------------------------
+  # * check if PLOT button is clicked -----------------------------------------
   v3 <- reactiveValues(doPlot3 = FALSE)
   observeEvent(input$do_domain_plot, {
     v3$doPlot3 <- input$do_domain_plot
     filein <- input$main_input
-    if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor") filein <- 1
+    if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor") {
+      filein <- 1
+    }
     if (is.null(filein)) v3$doPlot3 <- FALSE
   })
   
