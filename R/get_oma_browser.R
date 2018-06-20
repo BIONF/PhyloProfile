@@ -44,52 +44,71 @@ oma_ids_to_long <- function(oma_ids, output_type){
   long_dataframe <- data.frame()
   row_nr <- 1
 
-  for(id in oma_ids){
-
-    if(check_oma_id(id)){
-      start_id = Sys.time()
-      members <- get_members(id, output_type)
-
-      gene_id <- paste0("OG_", id)
-      oma_id <- getAttribute(getData("protein", id), "omaid")
-
-      ncbi <- get_ncbi_id(oma_id)
-
-      long_dataframe[row_nr,1] <- gene_id
-      long_dataframe[row_nr,2] <- ncbi
-      long_dataframe[row_nr,3] <- oma_id
-      row_nr <- row_nr +1
-
-
-      if(!is.null(nrow(members))){ ############## NEU
-        print(paste("There where", nrow(members), "members found for", id, sep = " ")) ############## NEU
-        # Get orthoID and ncbiID for each member of the hogs
-        for (i in 1:nrow(members)){
-          member <- members[i, ]
-          ortho_id <- member$omaid # use the oma ID as ortho ID
-
-          # Data for the current member (ortho ID)
-          member_data <- getData("protein", ortho_id)
-
-          ncbi_id <- get_ncbi_id(member_data$omaid)
-
-          # New line for the long format
-          long_dataframe[row_nr,1] <- gene_id
-          long_dataframe[row_nr,2] <- ncbi_id
-          long_dataframe[row_nr,3] <-ortho_id
-          row_nr <- row_nr + 1
+  withProgress(message = "Getting data for", value = 0, {
+    # id_count <- 1
+    # for(id in oma_ids){
+    for(j in 1:length(oma_ids)){
+      id <- oma_ids[j]
+      incProgress(1 / (length(oma_ids)),
+                  detail = paste( id,
+                                  (j),
+                                  "/",
+                                  length(oma_ids)))
+      
+      if(check_oma_id(id)){
+        start_id = Sys.time()
+        members <- get_members(id, output_type)
+  
+        gene_id <- paste0("OG_", id)
+        oma_id <- getAttribute(getData("protein", id), "omaid")
+  
+        ncbi <- get_ncbi_id(oma_id)
+  
+        long_dataframe[row_nr,1] <- gene_id
+        long_dataframe[row_nr,2] <- ncbi
+        long_dataframe[row_nr,3] <- oma_id
+        row_nr <- row_nr +1
+  
+  
+        if(!is.null(nrow(members))){
+          print(paste("There where", nrow(members), "members found for", id, sep = " "))
+          withProgress(message = "members", value = 0, { ############## NEU
+          # Get orthoID and ncbiID for each member of the hogs
+            for (i in 1:nrow(members)){
+              member <- members[i, ]
+              ortho_id <- member$omaid # use the oma ID as ortho ID
+    
+              # Data for the current member (ortho ID)
+              member_data <- getData("protein", ortho_id)
+    
+              ncbi_id <- get_ncbi_id(member_data$omaid)
+    
+              # New line for the long format
+              long_dataframe[row_nr,1] <- gene_id
+              long_dataframe[row_nr,2] <- ncbi_id
+              long_dataframe[row_nr,3] <-ortho_id
+              row_nr <- row_nr + 1
+              
+              # Increment the progress bar, and update the detail text.############## NEU
+              incProgress(1 / (nrow(members) - 1),
+                          detail = paste( (i - 1),
+                                          "/",
+                                          nrow(members) - 1))
+            }
+          })
+          end_id <- Sys.time()
+          time <- end_id - start_id
+          #print(paste("runtime for", id, "with", nrow(members),"members:", time, sep = " "  ))
+          
+        } else{ 
+          print(paste("There where no members found for", id, sep = " ")) 
         }
-        end_id <- Sys.time()
-        time <- end_id - start_id
-        #print(paste("runtime for", id, "with", nrow(members),"members:", time, sep = " "  ))
-      } else{ ############## NEU
-        print(paste("There where no members found for", id, sep = " ")) ############## NEU
-      } ############## NEU
-
-    } else {
-      print(paste0(id, " is not a valid oma or uniprot id"))
+  
+      } else {
+        print(paste0(id, " is not a valid oma or uniprot id"))
+      }
     }
-  }
+  })
   colnames(long_dataframe) <- c("geneID", "ncbiID", "orthoID")
   return(long_dataframe)
 }

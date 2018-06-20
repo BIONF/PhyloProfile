@@ -274,43 +274,50 @@ shinyServer(function(input, output, session) {
   })
   
   # * check OMA input ----------------------------------------------------------
-  
-  output$select_oma_type <- renderUI({
+  output$check_oma_input <- reactive({
     filein <- input$main_input
-    if(is.null(filein)) return()
-    input_type <- check_input_vadility(filein) #get_input_type()
-    
-    if (input_type == "oma"){
-      # Options to select the OMA type to generate the output
-      selectInput("selected_oma_type", label = "Select type of OMA orthologs:",
-
-                  choices = list("PAIR", "HOG", "OG"),
-                  selected = "PAIR")
-    } else {
-      return()
-    }
+    if (is.null(filein)) return()
+    input_type <- check_input_vadility(filein)
+    input_type == "oma"
   })
+  outputOptions(output, "check_oma_input", suspendWhenHidden = FALSE)
   
-  output$button_oma <- renderUI({
-    filein <- input$main_input
-    if(is.null(filein)) return()
-    input_type <- check_input_vadility(filein) #get_input_type()
-    
-    if (input_type == "oma"){
-      shinyBS::bsButton("get_data_oma", "Get data")
-    }
-  })
+  # output$select_oma_type <- renderUI({
+  #   filein <- input$main_input
+  #   if(is.null(filein)) return()
+  #   input_type <- check_input_vadility(filein) #get_input_type()
+  #   
+  #   if (input_type == "oma"){
+  #     # Options to select the OMA type to generate the output
+  #     selectInput("selected_oma_type", label = "Select type of OMA orthologs:",
+  # 
+  #                 choices = list("PAIR", "HOG", "OG"),
+  #                 selected = "PAIR")
+  #   } else {
+  #     return()
+  #   }
+  # })
   
-  # * render link for download OMA files ----------------------------------------
-  output$oma_download <- renderUI({
-    filein <- input$main_input
-    if(is.null(filein)) return()
-    input_type <- check_input_vadility(filein) #get_input_type()
-    
-    if (input_type == "oma"){
-      downloadButton("download_files_oma", "Download")
-    } 
-  })
+  # output$button_oma <- renderUI({
+  #   filein <- input$main_input
+  #   if(is.null(filein)) return()
+  #   input_type <- check_input_vadility(filein) #get_input_type()
+  #   
+  #   if (input_type == "oma"){
+  #     shinyBS::bsButton("get_data_oma", "Get data")
+  #   }
+  # })
+  
+  # # * render link for download OMA files ----------------------------------------
+  # output$oma_download <- renderUI({
+  #   filein <- input$main_input
+  #   if(is.null(filein)) return()
+  #   input_type <- check_input_vadility(filein) #get_input_type()
+  #   
+  #   if (input_type == "oma"){
+  #     downloadButton("download_files_oma", "Download")
+  #   } 
+  # })
   
   output$download_files_oma <- downloadHandler(
     filenname <- function(){
@@ -322,18 +329,18 @@ shinyServer(function(input, output, session) {
                   row.names = FALSE,
                   col.names = TRUE,
                   quote = FALSE)
-      
-      write.table(long_to_fasta(get_main_input()), "fasta.txt",
-                  sep = "\t",
-                  row.names = FALSE,
-                  col.names = FALSE,
-                  quote = FALSE)
-
-      write.table(get_domain_information (), "domain.txt",
-                  sep = "\t",
-                  row.names = FALSE,
-                  col.names = FALSE,
-                  quote = FALSE)
+      # 
+      # write.table(long_to_fasta(get_main_input()), "fasta.txt",
+      #             sep = "\t",
+      #             row.names = FALSE,
+      #             col.names = FALSE,
+      #             quote = FALSE)
+      # 
+      # write.table(get_domain_information (), "domain.txt",
+      #             sep = "\t",
+      #             row.names = FALSE,
+      #             col.names = FALSE,
+      #             quote = FALSE)
   
       zip(zipfile = file,
           files = c("long.txt", "domain.txt", "fasta.txt")) 
@@ -1106,7 +1113,7 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  # * get the type of the input file & return long format dataframe -----------
+  # ***** get the type of the input file & return long format dataframe -----------
   get_main_input <- reactive({
     if(input$demo_data == "lca-micros"){
       long_dataframe <- create_long_matrix("lca-micros")
@@ -1114,8 +1121,23 @@ shinyServer(function(input, output, session) {
       long_dataframe <- create_long_matrix("ampk-tor")
     } else {
       filein <- input$main_input
-      if(is.null(filein)) return()
-      long_dataframe <- create_long_matrix(filein)
+      if (is.null(filein)) return()
+      input_type <- check_input_vadility(filein)
+      if (input_type == "oma") {
+        if (input$get_data_oma[1] == 0) return()
+        oma_ids <- as.data.frame(read.table(file = filein$datapath,
+                                            sep = "\t",
+                                            header = FALSE,
+                                            check.names = FALSE,
+                                            comment.char = ""))
+        oma_ids[, 1] <- as.character(oma_ids[, 1])
+        long_dataframe <- oma_ids_to_long(oma_ids[, 1], input$selected_oma_type)
+        for (i in 1:ncol(long_dataframe)) {
+          long_dataframe[, i] <- as.factor(long_dataframe[, i])
+        }
+      } else {
+        long_dataframe <- create_long_matrix(filein)
+      }
     }
     
     return(long_dataframe)

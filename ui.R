@@ -195,7 +195,6 @@ shinyUI(
             width = "80%"
           ),
           
-          
           uiOutput("no_internet_msg"),
           uiOutput("demo_data_describe"),
           uiOutput("main_input_file.ui"),
@@ -204,12 +203,11 @@ shinyUI(
           fluidRow(
             column(
               6,
-              uiOutput("select_oma_type")
-            ),
-            column(
-              6,
-              uiOutput("button_oma"),
-              uiOutput("oma_download")
+              conditionalPanel(
+                condition = "output.check_oma_input",
+                shinyBS::bsButton("open_oma_windows", "Get data from OMA"),
+                br()
+              )
             )
           ),
           
@@ -942,9 +940,25 @@ shinyUI(
     
     # LIST OF POP-UP WINDOWS ==================================================
     
+    # * popup for getting taxa from OMA browser -------------------------------
+    bsModal(
+      "get_oma_data_windows",
+      "Get OMA data",
+      "open_oma_windows",
+      size = "small",
+      
+      selectInput(
+        "selected_oma_type",
+        label = "Select type of OMA orthologs:",
+        choices = list("PAIR", "HOG", "OG"),
+        selected = "PAIR"
+      ),
+      shinyBS::bsButton("get_data_oma", "Get data", style = "danger"),
+      downloadButton("download_files_oma", "Save data")
+    ),
+    
     # * popup for adding new taxa from input file -----------------------------
     bsModal(
-      
       "add_taxa_windows",
       "Add new taxa",
       "add_taxa",

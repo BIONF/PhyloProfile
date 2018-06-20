@@ -202,26 +202,27 @@ create_long_matrix <- function(input_file){
     else if (input_type == "wide") {
       long_dataframe <- wide_to_long(filein$datapath)
     }
-    # OMA
-    else if (input_type == "oma") {
-      # do not load the data before the button is loaded
-      if (is.null(input$get_data_oma)) return()
-
-      isolate({
-        # do not generate data befor the button was clicked
-        if (input$get_data_oma[1] == 0) return()
-        oma_type <- input$selected_oma_type
-        if (is.null(oma_type)) return()
-        oma_ids <- as.data.frame(read.table(file = filein$datapath,
-                                            sep = "\t",
-                                            header = FALSE,
-                                            check.names = FALSE,
-                                            comment.char = ""))
-
-        oma_ids[, 1] <- as.character(oma_ids[, 1])
-        long_dataframe <- oma_ids_to_long(oma_ids[, 1], oma_type)
-      })
-    } else {
+    # # OMA
+    # else if (input_type == "oma") {
+    #   # do not load the data before the button is loaded
+    #   if (is.null(input$get_data_oma)) return()
+    # 
+    #   isolate({
+    #     # do not generate data befor the button was clicked
+    #     if (input$get_data_oma[1] == 0) return()
+    #     oma_type <- input$selected_oma_type
+    #     if (is.null(oma_type)) return()
+    #     oma_ids <- as.data.frame(read.table(file = filein$datapath,
+    #                                         sep = "\t",
+    #                                         header = FALSE,
+    #                                         check.names = FALSE,
+    #                                         comment.char = ""))
+    # 
+    #     oma_ids[, 1] <- as.character(oma_ids[, 1])
+    #     long_dataframe <- oma_ids_to_long(oma_ids[, 1], oma_type)
+    #   })
+    # } 
+    else {
       return(NULL)
     }
   }
