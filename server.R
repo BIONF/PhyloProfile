@@ -851,7 +851,8 @@ shinyServer(function(input, output, session) {
     toggleState("main_input")
   })
 
-  # * create rankList.txt, idList.txt, taxonNamesReduced.txt from input file ----
+  # * create rankList.txt, idList.txt, ----------------------------------------
+  # * taxonNamesReduced.txt from input file
   # * and also create a full taxonomyMatrix.txt for sorting taxa
   invalidID <-
     reactiveValues(df = data.frame("Invalid NCBI ID(s)" = as.character(),
@@ -904,7 +905,10 @@ shinyServer(function(input, output, session) {
               if (nrow(refEntry) < 1) {
                 invalidIDtmp <- c(invalidIDtmp, refID)
               } else {
-                if (nrow(reducedInfoList[reducedInfoList$X1 == refEntry$ncbiID, ]) == 0) {
+                if (
+                  nrow(reducedInfoList[
+                    reducedInfoList$X1 == refEntry$ncbiID, ]) == 0
+                ) {
                   refInfoList <- data.frame(matrix(c(refEntry$ncbiID,
                                                      refEntry$fullName,
                                                      refEntry$rank,
@@ -946,7 +950,10 @@ shinyServer(function(input, output, session) {
                 while (lastID != 1) {
                   nextEntry <- allTaxonInfo[allTaxonInfo$ncbiID == lastID, ]
 
-                  if (nrow(reducedInfoList[reducedInfoList$X1 == nextEntry$ncbiID, ]) == 0) {
+                  if (
+                    nrow(reducedInfoList[
+                      reducedInfoList$X1 == nextEntry$ncbiID, ]) == 0
+                  ) {
                     nextEntryList <-
                       data.frame(matrix(c(nextEntry$ncbiID,
                                           nextEntry$fullName,
@@ -1008,9 +1015,8 @@ shinyServer(function(input, output, session) {
           invalidID$df <- as.data.frame(unlist(invalidIDtmp))
 
           if (nrow(invalidID$df) < 1) {
-            # open existing files (idList.txt, rankList.txt and taxonNamesReduced.txt)
+            # open existing files (idList, rankList and taxonNamesReduced.txt)
             ncol <- max(count.fields("data/rankList.txt", sep = "\t"))
-            # print(ncol)
             oldIDList <-
               as.data.frame(read.table("data/idList.txt",
                                        sep = "\t",
@@ -1103,8 +1109,11 @@ shinyServer(function(input, output, session) {
       strong(h4("PLEASE RELOAD THIS TOOL AFTER ADDING NEW TAXA!!!"),
              style = "color:red")
     }else{
-      HTML('<p><strong><span style="color: #e12525;">SOME INVALID TAXON IDs HAVE BEEN FOUND!!</span><br>Please check the validity of the following IDs in
-           <a target="_blank" href="https://www.ncbi.nlm.nih.gov/taxonomy">NCBI taxonomy database</a>!</strong></p>')
+      HTML('<p><strong><span style="color: #e12525;">
+           SOME INVALID TAXON IDs HAVE BEEN FOUND!!</span><br>
+           Please check the validity of the following IDs in
+           <a target="_blank" href="https://www.ncbi.nlm.nih.gov/taxonomy">
+           NCBI taxonomy database</a>!</strong></p>')
     }
   })
   
@@ -1117,9 +1126,6 @@ shinyServer(function(input, output, session) {
                 row.names = FALSE,
                 quote = FALSE)
   })
-
-  
-
 
   # ====================== PROCESSING INPUT DATA ===============================
 
