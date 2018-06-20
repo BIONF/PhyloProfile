@@ -1127,7 +1127,7 @@ shinyServer(function(input, output, session) {
                 quote = FALSE)
   })
 
-  # ====================== PROCESSING INPUT DATA ===============================
+  # ====================== PROCESSING INPUT DATA ==============================
 
   # * check if data is loaded and "plot" button is clicked --------------------
   v <- reactiveValues(doPlot = FALSE)
@@ -1146,7 +1146,9 @@ shinyServer(function(input, output, session) {
   # * check if "no ordering gene IDs" has been checked ------------------------
   output$apply_cluster_check.ui <- renderUI({
     if (input$ordering == FALSE) {
-      HTML('<p><em>(Check "Ordering sequence IDs" check box in <strong>Input & settings tab</strong>&nbsp;to enable this function)</em></p>')
+      HTML('<p><em>(Check "Ordering sequence IDs" check box in
+           <strong>Input & settings tab</strong>&nbsp;to enable this function)
+           </em></p>')
     }
   })
   # * to enable clustering 
@@ -1175,8 +1177,8 @@ shinyServer(function(input, output, session) {
                                             header = FALSE,
                                             check.names = FALSE,
                                             comment.char = ""))
-        oma_ids[, 1] <- as.character(oma_ids[, 1])
-        long_dataframe <- oma_ids_to_long(oma_ids[, 1], input$selected_oma_type)
+        oma_ids[,1] <- as.character(oma_ids[,1])
+        long_dataframe <- oma_ids_to_long(oma_ids[,1], input$selected_oma_type)
         for (i in 1:ncol(long_dataframe)) {
           long_dataframe[, i] <- as.factor(long_dataframe[, i])
         }
@@ -1188,7 +1190,7 @@ shinyServer(function(input, output, session) {
     return(long_dataframe)
   })
   
-  # * parse domain info into data frame -------------------------------------
+  # * parse domain info into data frame ---------------------------------------
   get_domain_information <- reactive({
     if (input$demo_data == "none") {
       filein <- input$main_input
@@ -1214,7 +1216,7 @@ shinyServer(function(input, output, session) {
   #   
   # })
   
-  # * get ID list of input taxa from main input -----------------------------
+  # * get ID list of input taxa from main input -------------------------------
   subset_taxa <- reactive({
     if (input$demo_data == "lca-micros" |
         input$demo_data == "ampk-tor" |
@@ -1235,15 +1237,12 @@ shinyServer(function(input, output, session) {
     return(inputTaxa)
   })
   
-  # * get NAME list of all (super)taxa -----------------------------------------------
+  # * get NAME list of all (super)taxa ----------------------------------------
   alltaxa_list <- reactive({
-    
     filein <- input$main_input
-    
     if (is.null(filein) & input$demo_data == "none") return()
     
     rank_select <- input$rank_select
-    
     if (rank_select == "") return()
     if (length(unkTaxa()) > 0) return()
     
@@ -1255,9 +1254,6 @@ shinyServer(function(input, output, session) {
     
     # get rank name from rank_select
     rankName <- substr(rank_select, 4, nchar(rank_select))
-    
-    # get rank number (number of column in unsorted taxa list - dataframe Dt)
-    #    rankNr = 0 + as.numeric(substr(rank_select,1,2))
     
     choice <- as.data.frame
     choice <- rbind(Dt[rankName])
@@ -1465,7 +1461,7 @@ shinyServer(function(input, output, session) {
     mdData <- merge(mdData, paralogCount, by = c("geneID", "ncbiID"))
     colnames(mdData)[ncol(mdData)] <- "paralog"
     
-    # (1) GET SORTED TAXONOMY LIST (1)
+    # (1) GET SORTED TAXONOMY LIST
     taxa_list <- sortedtaxa_list()
     
     # calculate frequency of all supertaxa
@@ -1478,10 +1474,10 @@ shinyServer(function(input, output, session) {
     taxaMdData$var2 <-
       suppressWarnings(as.numeric(as.character(taxaMdData$var2)))
     
-    # (2) calculate PERCENTAGE of PRESENT SPECIES (2)
+    # (2) calculate PERCENTAGE of PRESENT SPECIES
     finalPresSpecDt <- calc_pres_spec(taxaMdData, taxaCount)
     
-    # (3) calculate max/min/mean/median VAR1 for every supertaxon of each gene (3)
+    # (3) calculate max/min/mean/median VAR1 for every supertaxon of each gene
     # remove NA rows from taxaMdData
     taxaMdDataNoNA <- taxaMdData[!is.na(taxaMdData$var1), ]
     # calculate m var1
@@ -1491,7 +1487,7 @@ shinyServer(function(input, output, session) {
                          FUN = input$var1_aggregate_by)
     colnames(mVar1Dt) <- c("supertaxon", "geneID", "mVar1")
     
-    # (4) calculate max/min/mean/median VAR2 for each super taxon (4)
+    # (4) calculate max/min/mean/median VAR2 for each super taxon
     # remove NA rows from taxaMdData
     taxaMdDataNoNA_var2 <- taxaMdData[!is.na(taxaMdData$var2), ]
     # calculate max/min/mean/median VAR2
@@ -1506,13 +1502,13 @@ shinyServer(function(input, output, session) {
       mVar2Dt$mVar2 <- 0
     }
     
-    # (3+4) & join mVar2 together with mVar1 scores into one df (3+4)
+    # (3+4) & join mVar2 together with mVar1 scores into one df
     scoreDf <- merge(mVar1Dt,
                      mVar2Dt,
                      by = c("supertaxon", "geneID"),
                      all = TRUE)
     
-    # (2+3+4) add presSpec and mVar1 into taxaMdData (2+3+4)
+    # (2+3+4) add presSpec and mVar1 into taxaMdData
     presMdData <- merge(taxaMdData,
                         finalPresSpecDt,
                         by = c("geneID", "supertaxon"),
@@ -1535,7 +1531,7 @@ shinyServer(function(input, output, session) {
     return(fullMdData)
   })
   
-  # * reduce data from species/strain level to supertaxon (e.g. phylum) level -
+  # * reduce data from lowest level to supertaxon (e.g. phylum) ---------------
   # * This data set contain only supertaxa
   # * and their value (%present, mVar1 & mVar2) for each gene
   dataSupertaxa <- reactive({
@@ -1605,15 +1601,11 @@ shinyServer(function(input, output, session) {
       names(superDfExt)[names(superDfExt) == "mVar2"] <- "var2"
     }
     
-    # print(superDfExt[superDfExt$geneID == "ampk_ACACB"
-    # & superDfExt$supertaxon == "1001_Chordata",])
-    # print("END2222")
     return(superDfExt)
   })
   
-  # * heatmap data input --------------------------------------------------------
+  # * heatmap data input ------------------------------------------------------
   dataHeat <- reactive({
-    
     # get all cutoffs
     percent_cutoff_min <- input$percent[1]
     percent_cutoff_max <- input$percent[2]
@@ -1624,7 +1616,6 @@ shinyServer(function(input, output, session) {
     
     # check input file
     filein <- input$main_input
-    # if (input$demo == TRUE) {
     if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor") {
       filein <- 1
     }
@@ -1672,8 +1663,10 @@ shinyServer(function(input, output, session) {
     } else {
       if (input$var2_relation == "species") {
         # # spec-spec: remove var1 and var2 independently
-        # dataHeat$presSpec[dataHeat$supertaxon != in_select & dataHeat$var1 < var1_cutoff_min] <- 0
-        # dataHeat$presSpec[dataHeat$supertaxon != in_select & dataHeat$var1 > var1_cutoff_max] <- 0
+        # dataHeat$presSpec[dataHeat$supertaxon != in_select
+        #                   & dataHeat$var1 < var1_cutoff_min] <- 0
+        # dataHeat$presSpec[dataHeat$supertaxon != in_select
+        #                   & dataHeat$var1 > var1_cutoff_max] <- 0
       } else {
         # spec-prot: var2 depend on var1
         dataHeat$var2[dataHeat$supertaxon != in_select
@@ -1696,7 +1689,7 @@ shinyServer(function(input, output, session) {
     return(dataHeat)
   })
   
-  # * clustered heatmap data -----------------------------------------------------
+  # * clustered heatmap data --------------------------------------------------
   clusteredDataHeat <- reactive({
     dataHeat <- dataHeat()
     if (nrow(dataHeat) < 1) return()
