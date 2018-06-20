@@ -45,6 +45,7 @@ plot_gene_age <- function(input, output, session,
 
   # render gene age plot -------------------------------------------------------
   output$gene_agePlot <- renderPlot({
+    if (is.null(data())) return()
     create_gene_age_plot(gene_age_plotDf(data()), gene_age_text())
   })
 
@@ -77,11 +78,13 @@ plot_gene_age <- function(input, output, session,
 
   # render genAge.table based on clicked point on gene_agePlot ----------------
   selectedgene_age <- reactive({
+    if (is.null(data())) return()
     selected_gene <- get_selected_gene_age(data(), input$plot_click_gene_age$x)
     return(selected_gene)
   })
 
   output$gene_age.table <- renderTable({
+    if (is.null(data())) return()
     if (is.null(input$plot_click_gene_age$x)) return()
 
     data <- as.data.frame(selectedgene_age())

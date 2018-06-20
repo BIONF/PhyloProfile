@@ -75,5 +75,5 @@ identify_core_gene <- function(input, output, session,
     }
   })
 
-  return(core_geneDf)
+  if (!is.null(core_geneDf)) return(core_geneDf)
 }

@@ -75,7 +75,7 @@ download_filtered_main <- function(input, output, session,
                                    var1_id, var2_id,
                                    var1, var2, percent){
 
-  # render options for downloading ---------------------------------------------
+  # render options for downloading --------------------------------------------
   output$ref_var_main.ui <- renderUI({
     ns <- session$ns
     if (nchar(var2_id()) < 1 & nchar(var1_id()) < 1) {
@@ -103,6 +103,7 @@ download_filtered_main <- function(input, output, session,
 
   # filtered data for downloading (Main Profile ) -----------------------------
   download_data <- reactive({
+    if (is.null(data())) return()
     ### filtered data
     data_out <- data()
     data_out <- as.data.frame(data_out[data_out$presSpec > 0, ])

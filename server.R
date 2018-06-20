@@ -1418,6 +1418,8 @@ shinyServer(function(input, output, session) {
     }
     
     long_dataframe <- get_main_input()
+    if (is.null(long_dataframe)) return()
+    
     if (is.null(long_dataframe)) {
       data <- data.frame("geneID" = character(),
                          "ncbiID" = character(),
@@ -1451,6 +1453,8 @@ shinyServer(function(input, output, session) {
   # * calculate percentage of presence (2),
   # * max/min/mean/median VAR1 (3) and VAR2 (4)
   get_data_filtered <- reactive({
+    if (is.null(preData())) return()
+      
     mdData <- preData()
 
     # count number of inparalogs

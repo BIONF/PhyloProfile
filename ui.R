@@ -521,7 +521,10 @@ shinyUI(
           
           # * main panel for profile plot -------------------------------------
           mainPanel(
-            create_profile_plot_ui("main_profile")
+            conditionalPanel(
+              condition = "input.do > 0",
+              create_profile_plot_ui("main_profile")
+            )
             # ,
             # conditionalPanel(
             #   condition = "input.main_x_axis_guide == true |
@@ -605,8 +608,11 @@ shinyUI(
                  or taxa for customized profile!"
               )
             ),
-            create_profile_plot_ui("customized_profile")
-            # uiOutput("selected_plot.ui")
+            
+            conditionalPanel(
+              condition = "input.do > 0",
+              create_profile_plot_ui("customized_profile")
+            )
           )
         )
       ),
@@ -663,7 +669,7 @@ shinyUI(
                 checkboxInput(
                   "apply_cluster",
                   em(strong("Apply clustering to profile plot",
-                            style = "color:red")),
+                            style = "color:darkblue")),
                   value = FALSE
                 ),
                 
@@ -759,7 +765,6 @@ shinyUI(
               )
             )
           ),
-          
           plot_gene_age_ui("gene_age")
         ),
         
@@ -912,7 +917,6 @@ shinyUI(
         download_filtered_main_ui("filtered_main_download"),
         download_filtered_customized_ui("filtered_customized_download")
       ),
-      
       
       # HELP TAB ==============================================================
       navbarMenu(

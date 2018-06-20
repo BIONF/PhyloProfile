@@ -25,12 +25,13 @@ cluster_profile <- function(input, output, session,
                             cluster_plot.width, cluster_plot.height){
   
   cluster_data <- reactive({
+    if (is.null(data())) return()
     df <- clusterDataDend(data(), dist_method(), cluster_method())
     return(df)
   }) 
   
   output$dendrogram <- renderPlot({
-    # if (v$doPlot == FALSE) return()
+    if (is.null(data())) return()
     dendrogram(cluster_data())
   })
   
