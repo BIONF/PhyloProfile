@@ -150,14 +150,7 @@ shinyUI(
               "reset_selected",
               "Reset cutoffs",
               style = "danger"
-            ),
-            hr()
-            # ,
-            # downloadButton("selected_download", "Download profile"),
-            # tags$head(
-            #   tags$style(
-            #     HTML("#selected_download{background-color:#A9E2F3}"))
-            # )
+            )
           )
         )
       )
@@ -678,7 +671,8 @@ shinyUI(
                 
                 checkboxInput(
                   "add_cluster_cutom_profile",
-                  strong(em("Add selected genes to Customized profile")),
+                  strong(em("Add selected genes to Customized profile",
+                            style = "color:red")),
                   value = FALSE,
                   width = NULL
                 ),
@@ -756,7 +750,8 @@ shinyUI(
                 4,
                 checkboxInput(
                   "add_gene_age_custom_profile",
-                  strong(em("Add to Customized profile")),
+                  strong(em("Add selected genes to Customized profile",
+                            style = "color:red")),
                   value = FALSE,
                   width = NULL
                 ),
@@ -801,7 +796,8 @@ shinyUI(
             downloadButton("core_gene_table_download", "Download gene list"),
             checkboxInput(
               "add_core_gene_custom_profile",
-              strong(em("Add to Customized profile")),
+              strong(em("Add core genes to Customized profile",
+                        style = "color:red")),
               value = FALSE,
               width = NULL
             ),

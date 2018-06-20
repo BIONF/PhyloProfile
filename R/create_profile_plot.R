@@ -23,9 +23,13 @@ source("R/functions.R")
 create_profile_plot_ui <- function(id) {
   ns <- NS(id)
   tagList(
-    downloadButton(ns("profile_download"), "Download profile"),
-    br(),
-    uiOutput(ns("plot.ui"))
+		uiOutput(ns("plot.ui")),
+		br(),
+    downloadButton(ns("profile_download"),"Download profile", class = "butDL"),
+		tags$head(
+		  tags$style(
+		    ".butDL{background-color:#476ba3;} .butDL{color: white;}")
+		)
   )
 }
 
