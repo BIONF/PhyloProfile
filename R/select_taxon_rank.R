@@ -25,7 +25,16 @@ select_taxon_rank <- function(input, output, session,
   output$rank_select_cus.ui <- renderUI({
     ns <- session$ns
     mainRank <- rank_select()
-    mainChoices <- get_taxonomy_ranks()
+    mainChoices <- list("Strain " = "05_strain",
+                        "Species" = "06_species",
+                        "Genus" = "10_genus",
+                        "Family" = "14_family",
+                        "Order" = "19_order",
+                        "Class" = "23_class",
+                        "Phylum" = "26_phylum",
+                        "Kingdom" = "28_kingdom",
+                        "Superkingdom" = "29_superkingdom",
+                        "unselected" = "")
     cusChoices <- mainChoices[mainChoices >= mainRank]
     selectInput(
       ns("rank_select_cus"),

@@ -1,17 +1,71 @@
-# unsorting function to keep user defined geneID order ------------------------
-unsort_id <- function(data, order){
-  data$geneID <- as.factor(data$geneID)
-  if (order == FALSE) {
-    # keep user defined geneID order
-    data$geneID <- factor(data$geneID, levels = unique(data$geneID))
-  }
-  return(data)
+
+#' Calculate percentage of present species-------------------------------------
+#' @export
+#' @param taxa_md_data contains "geneID", "ncbiID", "orthoID",
+#' "var1", "var2", "paralog", ...., and "supertaxon"
+#' @return new data frame with % of present species
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+
+calc_pres_spec <- function(taxa_md_data, taxa_count){
+  taxa_md_data <- taxa_md_data[taxa_md_data$orthoID != "NA", ]
+  
+  # get geneID and supertaxon
+  gene_id_supertaxon <- subset(taxa_md_data,
+                               select = c("geneID",
+                                          "supertaxon",
+                                          "paralog",
+                                          "abbrName"))
+  # remove duplicated rows
+  gene_id_supertaxon <- gene_id_supertaxon[!duplicated(gene_id_supertaxon), ]
+  
+  # remove NA rows from taxa_md_data
+  taxa_md_data_no_na <- taxa_md_data[taxa_md_data$orthoID != "NA", ]
+  
+  # count present frequency of supertaxon for each gene
+  gene_supertaxon_count <- plyr::count(taxa_md_data_no_na,
+                                       c("geneID", "supertaxon"))
+  
+  # merge with taxa_count to get total number of species of each supertaxon
+  # and calculate presSpec
+  pres_spec_dt <- merge(gene_supertaxon_count,
+                        taxa_count,
+                        by = "supertaxon",
+                        all.x = TRUE)
+  
+  spec_count <- plyr::count(gene_id_supertaxon, c("geneID",
+                                                  "supertaxon"))
+  pres_spec_dt <- merge(pres_spec_dt,
+                        spec_count, by = c("geneID",
+                                           "supertaxon"))
+  
+  pres_spec_dt$presSpec <- pres_spec_dt$freq / pres_spec_dt$freq.y
+  
+  pres_spec_dt <- pres_spec_dt[pres_spec_dt$presSpec <= 1, ]
+  pres_spec_dt <- pres_spec_dt[order(pres_spec_dt$geneID), ]
+  pres_spec_dt <- pres_spec_dt[, c("geneID", "supertaxon", "presSpec")]
+  
+  # add absent supertaxon into pres_spec_dt
+  gene_id_supertaxon <- subset(gene_id_supertaxon,
+                               select = -c(paralog, abbrName))
+  final_pres_spec_dt <- merge(pres_spec_dt,
+                              gene_id_supertaxon,
+                              by = c("geneID", "supertaxon"),
+                              all.y = TRUE)
+  final_pres_spec_dt$presSpec[is.na(final_pres_spec_dt$presSpec)] <- 0
+  
+  # remove duplicated rows
+  final_pres_spec_dt <- final_pres_spec_dt[!duplicated(final_pres_spec_dt), ]
+  
+  # return final_pres_spec_dt
+  return(final_pres_spec_dt)
 }
 
+#' Get list with all main taxanomy ranks --------------------------------------
+#' @export
+#' @param none
+#' @return list of all main ranks
+#' @author Carla Mölbert (carla.moelbert@gmx.de)
 
-# Essential functions =========================================================
-
-# get list with all taxanomy ranks --------------------------------------------
 get_taxonomy_ranks <- function(){
   all_ranks <- list("Strain " = "05_strain",
                     "Species" = "06_species",
@@ -26,8 +80,13 @@ get_taxonomy_ranks <- function(){
   return(all_ranks)
 }
 
-# Get name list ("data/taxonNamesReduced.txt") --------------------------------
-get_name_list <- function (as_character, delete_duplicated) {
+#' Get name list (from "data/taxonNamesReduced.txt") --------------------------
+#' @export
+#' @param none
+#' @return list of all main ranks
+#' @author Carla Mölbert (carla.moelbert@gmx.de)
+
+get_name_list <- function(as_character, delete_duplicated) {
   name_list <- as.data.frame(read.table("data/taxonNamesReduced.txt",
                                         sep = "\t",
                                         header = T,
@@ -42,7 +101,12 @@ get_name_list <- function (as_character, delete_duplicated) {
   return(name_list)
 }
 
-# Get taxa list ("data/taxonomyMatrix.txt") -----------------------------------
+#' Get taxa list (from "data/taxonomyMatrix.txt") -----------------------------
+#' @export
+#' @param none
+#' @return list of all main ranks
+#' @author Carla Mölbert (carla.moelbert@gmx.de)
+
 get_taxa_list <- function(subset_taxa_check, subset_taxa){
   dt <- as.data.frame(read.table("data/taxonomyMatrix.txt",
                                  sep = "\t",
@@ -54,99 +118,34 @@ get_taxa_list <- function(subset_taxa_check, subset_taxa){
   return(dt)
 }
 
-# reverse string --------------------------------------------------------------
-str_reverse <- function(x)
-  sapply(lapply(strsplit(x, NULL), rev), paste, collapse = "")
+#' Function to keep user defined geneID order ---------------------------------
+#' @export
+#' @param data data frame contains gene ID column
+#' @param order TRUE or FALSE (from input$ordering)
+#' @return data either sorted or non-sorted
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 
-# get last n characters from string x  ----------------------------------------
-substr_right <- function(x, n){
-  substr(x, nchar(x) - n + 1, nchar(x))
+unsort_id <- function(data, order){
+  data$geneID <- as.factor(data$geneID)
+  if (order == FALSE) {
+    # keep user defined geneID order
+    data$geneID <- factor(data$geneID, levels = unique(data$geneID))
+  }
+  return(data)
 }
 
-# check internet connection  --------------------------------------------------
+#' Check internet connection --------------------------------------------------
+#' @return status of internet connection
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+
 has_internet <- function(){
   !is.null(curl::nslookup("r-project.org", error = FALSE))
 }
 
-# FUNCTION FOR CLUSTERING PROFILES --------------------------------------------
-clustered_gene_list <- function(data, dist_method, cluster_method){
-
-  # do clustering
-  row.order <- hclust(dist(data, method = dist_method),
-                      method = cluster_method)$order
-  col.order <- hclust(dist(t(data), method = dist_method),
-                      method = cluster_method)$order
-
-  # re-order data accoring to clustering
-  dat_new <- data[row.order, col.order]
-
-  # return clustered gene ID list
-  clustered_gene_ids <- as.factor(row.names(dat_new))
-  clustered_gene_ids
-}
-
-# calculate percentage of present species -------------------------------------
-calc_pres_spec <- function(taxa_md_data, taxa_count){
-   # taxa_md_data = df("geneID",
-   #                 "ncbiID",
-   #                 "orthoID",
-   #                 "var1",
-   #                 "var2",
-   #                 "paralog",
-   #                 ....,
-   #                 "supertaxon")
-  taxa_md_data <- taxa_md_data[taxa_md_data$orthoID != "NA", ]
-
-  # get geneID and supertaxon
-  gene_id_supertaxon <- subset(taxa_md_data,
-                             select = c("geneID",
-                                        "supertaxon",
-                                        "paralog",
-                                        "abbrName"))
-  # remove duplicated rows
-  gene_id_supertaxon <- gene_id_supertaxon[!duplicated(gene_id_supertaxon), ]
-
-  # remove NA rows from taxa_md_data
-  taxa_md_data_no_na <- taxa_md_data[taxa_md_data$orthoID != "NA", ]
-
-  # count present frequency of supertaxon for each gene
-  gene_supertaxon_count <- plyr::count(taxa_md_data_no_na,
-                                       c("geneID", "supertaxon"))
-
-  # merge with taxa_count to get total number of species of each supertaxon
-  # and calculate presSpec
-  pres_spec_dt <- merge(gene_supertaxon_count,
-                      taxa_count,
-                      by = "supertaxon",
-                      all.x = TRUE)
-
-  spec_count <- plyr::count(gene_id_supertaxon, c("geneID",
-                                              "supertaxon"))
-  pres_spec_dt <- merge(pres_spec_dt,
-                      spec_count, by = c("geneID",
-                                       "supertaxon"))
-
-  pres_spec_dt$presSpec <- pres_spec_dt$freq / pres_spec_dt$freq.y
-
-  pres_spec_dt <- pres_spec_dt[pres_spec_dt$presSpec <= 1, ]
-  pres_spec_dt <- pres_spec_dt[order(pres_spec_dt$geneID), ]
-  pres_spec_dt <- pres_spec_dt[, c("geneID", "supertaxon", "presSpec")]
-
-  # add absent supertaxon into pres_spec_dt
-  gene_id_supertaxon <- subset(gene_id_supertaxon,
-                             select = -c(paralog, abbrName))
-  final_pres_spec_dt <- merge(pres_spec_dt,
-                           gene_id_supertaxon,
-                           by = c("geneID", "supertaxon"),
-                           all.y = TRUE)
-  final_pres_spec_dt$presSpec[is.na(final_pres_spec_dt$presSpec)] <- 0
-
-  # remove duplicated rows
-  final_pres_spec_dt <- final_pres_spec_dt[!duplicated(final_pres_spec_dt), ]
-
-  # return final_pres_spec_dt
-  return(final_pres_spec_dt)
-}
+#' #' Get last n characters from string x
+#' substr_right <- function(x, n){
+#'   substr(x, nchar(x) - n + 1, nchar(x))
+#' }
 
 ###################### FUNCTIONS FOR RENDER UI ELEMENTS #######################
 

@@ -287,3 +287,8 @@ get_fasta_seqs <- function(data_in, filein, demo_data,
 
   return(fasta_out_df)
 }
+
+#' Reverse string -------------------------------------------------------------
+str_reverse <- function(x) {
+  sapply(lapply(strsplit(x, NULL), rev), paste, collapse = "")
+}

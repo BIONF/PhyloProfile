@@ -1701,14 +1701,21 @@ shinyServer(function(input, output, session) {
     rownames(dat) <- wide_data[, 1]
     dat[is.na(dat)] <- 0
 
-    # get clustered gene ids
-    clusteredGeneIDs <- clustered_gene_list(dat,
-                                            input$dist_method,
-                                            input$cluster_method)
+    # do clustering based on distance matrix
+    row.order <- hclust(dist(dat, method = input$dist_method),
+                        method = input$cluster_method)$order
+    col.order <- hclust(dist(t(dat), method = input$dist_method),
+                        method = input$cluster_method)$order
     
-    # sort original data according to clusteredGeneIDs
+    # re-order distance matrix accoring to clustering
+    dat_new <- dat[row.order, col.order]
+    
+    # return clustered gene ID list
+    clustered_gene_ids <- as.factor(row.names(dat_new))
+    
+    # sort original data according to clustered_gene_ids
     dataHeat$geneID <- factor(dataHeat$geneID,
-                              levels = clusteredGeneIDs)
+                              levels = clustered_gene_ids)
     return(dataHeat)
   })
   
