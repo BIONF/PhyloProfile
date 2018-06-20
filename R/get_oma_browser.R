@@ -44,9 +44,7 @@ oma_ids_to_long <- function(oma_ids, output_type){
   long_dataframe <- data.frame()
   row_nr <- 1
 
-  withProgress(message = "Getting data for", value = 0, {
-    # id_count <- 1
-    # for(id in oma_ids){
+  withProgress(message = "Getting orthologs for", value = 0, {
     for(j in 1:length(oma_ids)){
       id <- oma_ids[j]
       incProgress(1 / (length(oma_ids)),
@@ -71,7 +69,6 @@ oma_ids_to_long <- function(oma_ids, output_type){
   
   
         if(!is.null(nrow(members))){
-          print(paste("There where", nrow(members), "members found for", id, sep = " "))
           withProgress(message = "members", value = 0, { ############## NEU
           # Get orthoID and ncbiID for each member of the hogs
             for (i in 1:nrow(members)){
@@ -91,9 +88,9 @@ oma_ids_to_long <- function(oma_ids, output_type){
               
               # Increment the progress bar, and update the detail text.############## NEU
               incProgress(1 / (nrow(members) - 1),
-                          detail = paste( (i - 1),
+                          detail = paste( (i),
                                           "/",
-                                          nrow(members) - 1))
+                                          nrow(members)))
             }
           })
           end_id <- Sys.time()
