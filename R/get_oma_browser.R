@@ -43,7 +43,7 @@ oma_ids_to_long <- function(oma_ids, output_type){
   # "geneID ncbiID orthoID"
   long_dataframe <- data.frame()
   row_nr <- 1
-
+  
   withProgress(message = "Getting orthologs for", value = 0, {
     for(j in 1:length(oma_ids)){
       id <- oma_ids[j]
@@ -56,30 +56,30 @@ oma_ids_to_long <- function(oma_ids, output_type){
       if(check_oma_id(id)){
         start_id = Sys.time()
         members <- get_members(id, output_type)
-  
+        
         gene_id <- paste0("OG_", id)
         oma_id <- getAttribute(getData("protein", id), "omaid")
-  
+        
         ncbi <- get_ncbi_id(oma_id)
-  
+        
         long_dataframe[row_nr,1] <- gene_id
         long_dataframe[row_nr,2] <- ncbi
         long_dataframe[row_nr,3] <- oma_id
         row_nr <- row_nr +1
-  
-  
+        
+        
         if(!is.null(nrow(members))){
           withProgress(message = "members", value = 0, { ############## NEU
-          # Get orthoID and ncbiID for each member of the hogs
+            # Get orthoID and ncbiID for each member of the hogs
             for (i in 1:nrow(members)){
               member <- members[i, ]
               ortho_id <- member$omaid # use the oma ID as ortho ID
-    
+              
               # Data for the current member (ortho ID)
               member_data <- getData("protein", ortho_id)
-    
+              
               ncbi_id <- get_ncbi_id(member_data$omaid)
-    
+              
               # New line for the long format
               long_dataframe[row_nr,1] <- gene_id
               long_dataframe[row_nr,2] <- ncbi_id
@@ -100,7 +100,7 @@ oma_ids_to_long <- function(oma_ids, output_type){
         } else{ 
           print(paste("There where no members found for", id, sep = " ")) 
         }
-  
+        
       } else {
         print(paste0(id, " is not a valid oma or uniprot id"))
       }
@@ -116,22 +116,22 @@ oma_ids_to_fasta <- function(oma_ids, output_type){
   for (id in oma_ids){
     members <- get_members(id, output_type)
     gene_id <- paste0("OG_", id)
-
+    
     for (i in 1:nrow(members)){
       member <- members[i, ]
       ortho_id <- member$omaid # use the oma ID as ortho ID
-
+      
       # Data for the current member (ortho ID)
       member_data <- getData("protein", ortho_id)
       ncbi_id <- get_ncbi_id(member_data$omaid)
-
+      
       # New lines for the fasta format
       header_sequence <- paste0(">", gene_id, "|", ncbi_id, "|", ortho_id)
       sequence <- as.character(member_data$sequence)
       lines_fasta <- append(lines_fasta, header_sequence)
       lines_fasta <- append(lines_fasta, sequence)
     }
-
+    
   }
   return(lines_fasta)
   # fasta_file <- file("output.txt")
@@ -145,7 +145,7 @@ long_to_fasta <- function(long){
     gene_id <- long$geneID[row]
     ncbi_id <- long$ncbiID[row]
     ortho_id <- long$orthoID[row]
-
+    
     header_sequence <- paste0(">", gene_id, "|", ncbi_id, "|", ortho_id)
     sequence <- as.character(getData("protein", ortho_id)$sequence)
     lines_fasta <- append(lines_fasta, header_sequence)
@@ -171,35 +171,35 @@ get_fasta_oma <- function(seq_id, group_id, long_df){
 oma_ids_to_domain <- function(oma_ids, output_type){
   domain_data <- data.frame()
   row_nr <- 0
-
+  
   for (id in oma_ids){
     members <- get_members(id, output_type)
     gene_id <- paste0("OG_", id)
-
+    
     for (i in 1:nrow(members)){
       member <- members[i, ]
       ortho_id <- member$omaid # use the oma ID as ortho ID
-
+      
       # seedID = geneID#orthoID
       seed_id <- paste0(gene_id, "#", ortho_id)
-
+      
       # Data for the current member (ortho ID)
       member_data <- getData("protein", ortho_id)
-
+      
       # length of the sequence
       length <- member_data$sequence_length
-
+      
       # Informations about the domain
       domains <- resolveURL(member_data$domains)
       regions <- domains$regions
       regions$feature <- paste(regions$source, regions$name, sep = " ")
-
+      
       for (i in 1:nrow(regions)){
         row_nr <- row_nr + 1
         domain <- regions[i, ]
-
+        
         location <- unlist(strsplit(domain$location, ":"))
-
+        
         domain_data[row_nr,1] <- seed_id
         domain_data[row_nr,2] <- ortho_id
         domain_data[row_nr,3] <- length
@@ -224,16 +224,16 @@ long_to_domain <- function(long){
   for(row in 1:nrow(long)){
     gene_id <- long$geneID[row]
     ortho_id <- long$orthoID[row]
-
+    
     # seedID = geneID#orthoID
     seed_id <- paste0(gene_id, "#", ortho_id)
-
+    
     # Data for the current member (ortho ID)
     member_data <- getData("protein", ortho_id)
-
+    
     # length of the sequence
     length <- member_data$sequence_length
-
+    
     # Informations about the domain
     domains <- resolveURL(member_data$domains)
     regions <- domains$regions
@@ -242,9 +242,9 @@ long_to_domain <- function(long){
       for (i in 1:nrow(regions)){
         row_nr <- row_nr + 1
         domain <- regions[i, ]
-
+        
         location <- unlist(strsplit(domain$location, ":"))
-
+        
         domain_data[row_nr,1] <- seed_id
         domain_data[row_nr,2] <- ortho_id
         domain_data[row_nr,3] <- length
@@ -260,9 +260,9 @@ long_to_domain <- function(long){
                              "feature",
                              "start",
                              "end")
-
+  
   domain_data$start <- as.integer(domain_data$start)
   domain_data$end <- as.integer(domain_data$end)
-
+  
   return(domain_data)
 }

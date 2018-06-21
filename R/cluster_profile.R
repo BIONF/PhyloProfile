@@ -1,6 +1,9 @@
 #' Profile clustering
 #'
 
+if (!require("bioDist")) install.packages("bioDist") # for the mutual information
+if (!require("energy")) install.packages("energy") # for the mutual information, pearson
+
 cluster_profile_ui <- function(id){
   ns <- NS(id)
   tagList(
@@ -23,11 +26,11 @@ cluster_profile_ui <- function(id){
 cluster_profile <- function(input, output, session,
                             data,
                             dist_method, cluster_method,
-                            cluster_plot.width, cluster_plot.height){
-
+                            cluster_plot.width, cluster_plot.height, var1_aggregate_by){
+  
   cluster_data <- reactive({
-    if (is.null(data())) return()
-    df <- clusterDataDend(data(), dist_method(), cluster_method())
+    df <- clusterDataDend(data(), dist_method(), cluster_method(), var1_aggregate_by())
+
     return(df)
   })
 
@@ -110,23 +113,12 @@ cluster_profile <- function(input, output, session,
 }
 
 # cluster data --------------------------------------------------------------
-clusterDataDend <- function(data, dist_method, cluster_method){
+clusterDataDend <- function(data, dist_method, cluster_method, var1_aggregate_by){
   # if (v$doPlot == FALSE) return()
   # dataframe for calculate distance matrix
-  dataHeat <- data
-
-  sub_data_heat <- subset(dataHeat, dataHeat$presSpec > 0)
-  sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", "presSpec")]
-  sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
-
-  wide_data <- spread(sub_data_heat, supertaxon, presSpec)
-  dat <- wide_data[, 2:ncol(wide_data)]  # numerical columns
-  rownames(dat) <- wide_data[, 1]
-  dat[is.na(dat)] <- 0
-
-  dd.col <- as.dendrogram(hclust(dist(dat, method = dist_method),
+  dat <- get_data_clustering(data, dist_method, var1_aggregate_by)
+  dd.col <- as.dendrogram(hclust(get_distance_matrix(dat, dist_method),
                                  method = cluster_method))
-
   return(dd.col)
 }
 
@@ -137,3 +129,87 @@ dendrogram <- function(dd.col){
     theme(axis.title = element_blank(), axis.text.y = element_blank())
   p
 }
+
+# get the phylogenetic profiles -----------------------------------------------
+get_data_clustering <- function(data, dist_method, var1_aggregate_by){
+  print(var1_aggregate_by)
+  sub_data_heat <- subset(data, data$presSpec > 0)
+  if (dist_method %in% c("mutual_information", "distance_correlation")){
+    # Profiles with FAS scores
+    sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", "var1")]
+    sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
+    
+    sub_data_heat <- aggregate(sub_data_heat[, "var1"],
+                               list(sub_data_heat$geneID,
+                                    sub_data_heat$supertaxon),
+                               FUN = var1_aggregate_by)
+    colnames(sub_data_heat) <- c("geneID", "supertaxon", "var1")
+    
+    wide_data <- spread(sub_data_heat, supertaxon, var1)
+  }else {
+    # Binary Profiles 
+    sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", "presSpec")]
+    sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
+    wide_data <- spread(sub_data_heat, supertaxon, presSpec)
+  }
+  dat <- wide_data[, 2:ncol(wide_data)]  # numerical columns
+  rownames(dat) <- wide_data[, 1]
+  dat[is.na(dat)] <- 0
+  return(dat)
+}
+
+# Get the distance matrix depending on the distance method --------------------
+get_distance_matrix <- function(profiles, method){
+  dist_methods <- c("euclidean", "maximum", "manhattan", "canberra", "binary")
+  if(method %in% dist_methods){
+    distance_matrix <- dist(profiles, method = method)
+  } else if (method %in% c("fisher", "distance_correlation")){
+    matrix <- data.frame()
+    for(i in 1:nrow(profiles)){ # rows
+      for(j in 1:nrow(profiles)){ # columns
+        if (i == j){
+          matrix[i,i] = 1 # if this cell is NA as.dist does not work probably 
+          break
+        }
+        if(method == "fisher") {
+          contigency_table <- get_table(profiles[i,], profiles[j,])
+          dist <- fisher.test(contigency_table)
+        } else if(method == "distance_correlation"){
+          dist <- dcor(unlist(profiles[i,]), unlist(profiles[j,]))
+        }
+        matrix[i,j] <- dist 
+      }
+    }
+    profile_names <- rownames(profiles)
+    colnames(matrix) <- profile_names[1:length(profile_names)-1]
+    rownames(matrix) <- profile_names
+    distance_matrix <- as.dist(matrix)
+  } else if (method == "mutual_information"){
+    distance_matrix <- mutualInfo(as.matrix(profiles))
+  } else if (method == "pearson"){
+    distance_matrix <-  cor.dist(as.matrix(profiles))
+  }
+  return(distance_matrix)
+}
+
+# Calculate the contigency table for the fisher exact test --------------------
+get_table <- function(profile_1, profile_2){
+  contigency_table <- data.frame(c(0,0), c(0,0))
+  for(i in 1:length(profile_1)){
+    if(profile_1[i] == 1){
+      if(profile_2[i] == 1) {
+        contigency_table[1,1] <- contigency_table[1,1] + 1
+      } else {
+        contigency_table[2,1] <- contigency_table[2,1] + 1
+      }
+    } else{
+      if(profile_2[i] == 1) {
+        contigency_table[1,2] <- contigency_table[1,2] + 1
+      } else {
+        contigency_table[2,2] <- contigency_table[2,2] + 1
+      }
+    }
+  }
+  contigency_table
+}
+
