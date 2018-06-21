@@ -2067,7 +2067,6 @@ shinyServer(function(input, output, session) {
                                  var2_id = reactive(input$var2_id),
                                  detailed_text = reactive(input$detailed_text),
                                  detailed_height = reactive(input$detailed_height))
-
   # * render FASTA sequence ------------------------------------------------------------
   output$fasta <- renderText({
     if (v$doPlot == FALSE) return()
@@ -2636,27 +2635,6 @@ shinyServer(function(input, output, session) {
   callModule(search_taxon_id,"search_taxon_id")
   
   # * GROUP COMPARISON ========================================================
-  
-  # Parameters for the plots in Group Comparison ------------------------------
-  get_parameter_input_gc <- reactive ({
-    input_data <- list("show_p_value" = input$show_p_value,
-                       "highlight_significant" = input$highlight_significant,
-                       "significance" = input$significance,
-                       "var1_id" = input$var1_id,
-                       "var2_id" = input$var2_id,
-                       "x_size_gc" = input$x_size_gc,
-                       "y_size_gc" = input$y_size_gc,
-                       "interesting_features" = input$interesting_features,
-                       "angle_gc" = input$angle_gc,
-                       "legend_gc" = input$legend_gc,
-                       "legend_size_gc" = input$legend_size_gc)
-    
-  })
-  
-  # Dataframe with Information about the significant Genes --------------------
-  # geneID | in_group| out_group | pvalues | features | databases | rank | var
-  significant_genes_gc <- NULL
-  
   # Select in_group -----------------------------------------------------------
   output$taxa_list_gc <- renderUI({
     filein <- input$main_input
@@ -2833,132 +2811,8 @@ shinyServer(function(input, output, session) {
       "maximal probability to reject that in_group and Out-Group have no significant difference by mistake")
   })
   
-  # List with all significant Genes -------------------------------------------
-  output$get_significant_genes <- renderUI({
-    input$plot_gc
-    
-    isolate({
-      significant_genes_gc <<- {
-        get_significant_genes(input$selected_in_group_gc,
-                              input$list_selected_genes_gc,
-                              input$rank_select,
-                              input$var_name_gc,
-                              input$use_common_anchestor,
-                              input$in_select,
-                              get_parameter_input_gc(),
-                              input$demo_data,
-                              input$anno_location,
-                              input$file_domain_input,
-                              subset_taxa(),
-                              get_data_filtered(),
-                              session,
-                              input$right_format_features,
-                              get_domain_information())
-      }
-      if (!is.null(significant_genes_gc)){
-        x <- as.vector(significant_genes_gc$geneID)
-        choices <- c("all", x)
-        
-        # selected Gene
-        selectInput("selected_gene_gc", "Candidate gene(s):",
-                    choices,
-                    selected = choices[2],
-                    multiple = FALSE)
-        
-      } else{
-        # selected Gene
-        selectInput("selected_gene_gc", "Candidate gene(s):",
-                    NULL,
-                    selected = NULL,
-                    multiple = FALSE)
-      }
-    })
-  })
-  
-  # Generate output plots -----------------------------------------------------
-  output$plots_gc <- renderUI({
-    get_plots_gc()
-  })
-  
-  # Select Feaures you want to see in the barplots (default: All) -------------
-  output$features_of_interest_gc <- renderUI({
-    input$selected_gene_gc
-    isolate({
-      gene <- input$selected_gene_gc
-      if (!input$right_format_features){
-        selectInput("interesting_features", "Feature type(s) of interest:",
-                    NULL,
-                    selected = NULL,
-                    multiple = TRUE,
-                    selectize = FALSE)
-      } else if (is.null(gene)){
-        selectInput("interesting_features", "Feature type(s) of interest:",
-                    NULL,
-                    selected = NULL,
-                    multiple = TRUE,
-                    selectize = FALSE)
-      } else if (gene == ""){
-        selectInput("interesting_features", "Feature type(s) of interest:",
-                    NULL,
-                    selected = NULL,
-                    multiple = TRUE,
-                    selectize = FALSE)
-      }
-      else{
-        choices <- c("all")
-        if (gene == "all"){
-          for (g in significant_genes_gc$geneID){
-            x <- subset(significant_genes_gc,
-                        significant_genes_gc$geneID == g)
-            choices <- append(choices, unlist(x$databases))
-          }
-          # show each database only once
-          choices <- choices[!duplicated(choices)]
-        }
-        else {
-          
-          x <- subset(significant_genes_gc,
-                      significant_genes_gc$geneID == gene)
-          
-          choices <- append(choices, unlist(x$databases))
-          
-        }
-        selectInput("interesting_features", "Feature type(s) of interest:",
-                    choices,
-                    selected = choices[1],
-                    multiple = TRUE,
-                    selectize = FALSE)
-      }
-    })
-  })
-  
-  # Select Plots to download --------------------------------------------------
-  output$select_plots_to_download  <- renderUI({
-    input$plot_gc
-    isolate({
-      if (!is.null(significant_genes_gc)){
-        x <- as.vector(significant_genes_gc$geneID)
-        choice <- c("all", x)
-        gene <- subset(choice, choice == input$selected_gene_gc)
-        
-        selectInput("plots_to_download", "Select Plots to download:",
-                    choice,
-                    selected = gene,
-                    multiple = TRUE,
-                    selectize = FALSE)
-        
-      } else{
-        selectInput("plots_to_download", "Select Plots to download:",
-                    NULL,
-                    selected = NULL,
-                    multiple = TRUE,
-                    selectize = FALSE)
-      }
-    })
-  })
-  
   # observe Events for the Appearance of the plots ============================
-  # reset config of customized plot
+  # reset config of customized plot -------------------------------------------
   observeEvent(input$reset_config_gc, {
     shinyjs::reset("x_size_gc")
     shinyjs::reset("y_size_gc")
@@ -2966,66 +2820,9 @@ shinyServer(function(input, output, session) {
     shinyjs::reset("legend_size_gc")
   })
   
-  # close customized config
+  # close customized config ---------------------------------------------------
   observeEvent(input$apply_config_gc, {
     toggleModal(session, "gc_plot_config_bs", toggle = "close")
-  })
-  
-  # Downloads for GroupCompairison --------------------------------------------
-  # download list of significant genes
-  output$download_genes_gc <- downloadHandler(
-    filename = function(){
-      c("significantGenes.out")
-    },
-    content = function(file){
-      data_out <- significant_genes_gc$geneID
-      write.table(data_out, file, sep = "\t", row.names = FALSE, quote = FALSE)
-    }
-  )
-  
-  # download file with the shown plots
-  output$download_plots_gc <- downloadHandler(
-    filename = "plotSignificantGenes.zip",
-    content = function(file){
-      genes <- input$plots_to_download
-      
-      if ("all" %in% genes){
-        genes <- significant_genes_gc$geneID
-      }
-      
-      fs <- c()
-      #tmpdir <- tempdir()
-      setwd(tempdir())
-      
-      for (gene in genes){
-        path <- paste(gene, ".pdf", sep = "")
-        fs <- c(fs, path)
-        pdf(path)
-        get_multiplot_download_gc(gene, get_parameter_input_gc(),
-                                  input$interesting_features)
-        dev.off()
-      }
-      zip(zipfile = file, files = fs)
-    },
-    contentType = "application/zip"
-  )
-  
-  # observer for the download functions
-  observe({
-    if (is.null(input$selected_in_group_gc)
-        | length(input$list_selected_genes_gc) == 0){
-      shinyjs::disable("download_plots_gc")
-      shinyjs::disable("download_genes_gc")
-    }else if (input$plot_gc == FALSE){
-      shinyjs::disable("download_plots_gc")
-      shinyjs::disable("download_genes_gc")
-    }else if (input$selected_gene_gc == "") {
-      shinyjs::disable("download_plots_gc")
-      shinyjs::disable("download_genes_gc")
-    }else{
-      shinyjs::enable("download_plots_gc")
-      shinyjs::enable("download_genes_gc")
-    }
   })
   
   # add_custom_profile --------------------------------------------------------
@@ -3044,24 +2841,6 @@ shinyServer(function(input, output, session) {
         input$add_core_gene_custom_profile == TRUE |
         input$add_cluster_cutom_profile == TRUE){
       HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Gene age estimation</strong>or <strong>Profile clustering</strong> or <strong>Core genes finding</strong>&nbsp;to enable this function)</em></p>')
-    }
-  })
-  
-  # Deciding which plots should be shown (Group Comparison) -------------------
-  get_plots_gc <- reactive({
-    gene <- as.character(input$selected_gene_gc)
-    input$plot_gc
-    if (is.null(significant_genes_gc)) return()
-    else if (gene == "all"){
-      get_plot_output_list(significant_genes_gc,
-                           get_parameter_input_gc(),
-                           input$interesting_features)
-    }else{
-      x <- {
-        significant_genes_gc[significant_genes_gc$geneID == gene, ]
-      }
-      if (nrow(x) == 0) return()
-      get_plot_output_list(x, get_parameter_input_gc(), input$interesting_features)
     }
   })
   
@@ -3094,4 +2873,20 @@ shinyServer(function(input, output, session) {
     }
     return(taxa_name_gc)
   })
+  callModule(group_comparison, "group_comparison",
+             selected_in_group = reactive(input$selected_in_group_gc),
+             list_selected_genes = reactive(input$list_selected_genes_gc),
+             rank_select = reactive(input$rank_select),
+             var_name = reactive(input$var_name_gc),
+             use_common_anchestor = reactive(input$use_common_anchestor),
+             in_select = reactive(input$in_select),
+             demo_data = reactive(input$demo_data),
+             anno_location = reactive(input$anno_location),
+             file_domain_input = reactive(input$file_domain_input),
+             subset_taxa = subset_taxa(),
+             get_data_filtered = get_data_filtered(),
+             right_format_features = reactive(input$right_format_features),
+             get_domain_information = get_domain_information(),
+             plot_gc = reactive(input$plot_gc))
+  
   })

@@ -28,6 +28,8 @@ source("R/create_architecture_plot.R")
 source("R/create_detailed_plot.R")
 source("R/create_profile_plot.R")
 
+source("R/group_comparison.R")
+
 # MAIN UI ====================================================================-
 
 shinyUI(
@@ -867,52 +869,24 @@ shinyUI(
                   value = TRUE,
                   width = NULL
                 ),
+                checkboxInput(
+                  "add_gc_genes_custom_profile",
+                  strong(em("Add to Customized profile")),
+                  value = FALSE,
+                  width = NULL
+                ),
+                
                 actionButton("plot_gc", "Plot"),
                 popify(
                   actionButton("gc_plot_config", "Appearance"),
                   "",
                   "Change the appearance of the plots"
-                )
+                ),
+                uiOutput("add_gc_custom_profile_check")
               )
               )
             ),
-          
-          sidebarPanel(
-            uiOutput("get_significant_genes"),
-            bsPopover(
-              "get_significant_genes",
-              "",
-              "Select gene to show the plots",
-              "right"
-            ),
-            
-            checkboxInput(
-              "add_gc_genes_custom_profile",
-              strong(em("Add to Customized profile")),
-              value = FALSE,
-              width = NULL
-            ),
-            
-            uiOutput("add_gc_custom_profile_check"),
-            
-            popify(
-              uiOutput("features_of_interest_gc"),
-              "",
-              "This function is only use full if the features are
-              saved in the right format: featuretype_featurename"
-            ),
-            
-            actionButton("gc_downloads", "Download"),
-            width = 3
-            ),
-          
-          mainPanel(
-            tags$style(
-              HTML("#plots_gc { height:650px; overflow-y:scroll}")
-            ),
-            uiOutput("plots_gc"),
-            width = 9
-          )
+          group_comparison_ui("group_comparison")
           )
       ),
       
@@ -1480,19 +1454,7 @@ shinyUI(
       )
     ),
     
-    # * popup for handling the downloads to the Group comparison function -----
-    bsModal(
-      "gc_downloadsBS",
-      "Download",
-      "gc_downloads",
-      size = "small",
-      
-      h5(strong("Download the significant Genes")),
-      downloadButton("download_genes_gc", "Download"),
-      h5(""),
-      uiOutput("select_plots_to_download "),
-      downloadButton("download_plots_gc", "Download")
-    ),
+
     
     # POINT INFO BOX ==========================================================
     conditionalPanel(
