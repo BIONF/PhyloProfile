@@ -1403,6 +1403,7 @@ shinyServer(function(input, output, session) {
     listGene <- list()
     end_index <- input$end_index
     if (is.na(input$end_index)) end_index <- 30
+    print(end_index)
     if (input$gene_list_selected == "from file") {
       listIn <- input$list
       if (!is.null(listIn)) {
