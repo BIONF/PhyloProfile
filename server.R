@@ -30,7 +30,7 @@ if (!require("shinycssloaders")) {
 }
 if (!require("Matching")) install.packages("Matching")
 
-source("R/taxonomyProcessing.R")
+source("R/taxonomy_processing.R")
 source("R/functions.R")
 source("R/get_oma_browser.R")
 
