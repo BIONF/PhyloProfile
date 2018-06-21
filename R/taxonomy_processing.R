@@ -16,7 +16,7 @@ rankIndexing <- function(rankListFile){
       stringsAsFactors = TRUE, na.strings = c("","NA")
     )
   )
-  
+
   ### get all available ranks from input rankList
   uList <- unlist(rankList)
   # remove unique rank by replacing with NA (they are useless for sorting)
@@ -114,7 +114,7 @@ taxonomyTableCreator <- function(idListFile,rankListFile){
   )
   
   colnames(idList)[1] <- "tip"
-  
+
   ### get ordered rank list
   orderedRank <- factor(index2RankDf$rank, levels = index2RankDf$rank)
   
@@ -135,7 +135,7 @@ taxonomyTableCreator <- function(idListFile,rankListFile){
     )
     ### convert into long format
     mTaxonDf <- suppressWarnings(melt(taxonDf, id = "tip"))
-    
+
     ### get rank names and corresponding IDs
     splitCol <- data.frame(
       do.call(
@@ -154,7 +154,7 @@ taxonomyTableCreator <- function(idListFile,rankListFile){
                                    "X2" = index2RankDf$rank[1]),
                         mTaxonDf)
     }
-    
+  
     ### rename columns
     colnames(mTaxonDf) <- c(taxonName[1], "rank")
     
@@ -173,16 +173,16 @@ taxonomyTableCreator <- function(idListFile,rankListFile){
   
   ### transpose into wide format
   t_fullRankIDdf <- transpose(fullRankIDdf)
-  
+
   ### set first row to column names
   colnames(t_fullRankIDdf) = as.character(unlist(t_fullRankIDdf[1,]))
   t_fullRankIDdf <- t_fullRankIDdf[-1,]
-  
+
   ### replace NA values in the dataframe t_fullRankIDdf
   if (nrow(t_fullRankIDdf[is.na(t_fullRankIDdf),]) > 0) {
     t_fullRankIDdfTMP <- t_fullRankIDdf[complete.cases(t_fullRankIDdf),]
     t_fullRankIDdfEdit <- t_fullRankIDdf[is.na(t_fullRankIDdf),]
-    
+
     for (i in 1:nrow(t_fullRankIDdfEdit)) {
       for (j in 1:(ncol(t_fullRankIDdf)-1)) {
         if (is.na(t_fullRankIDdfEdit[i, j])) {
