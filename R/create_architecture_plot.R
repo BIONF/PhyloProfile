@@ -1,9 +1,9 @@
 #' Protein domain architecture plot
-#' 
+#'
 #' @export
-#' @param point_info() info of clicked point 
+#' @param point_info() info of clicked point
 #' (from reactive fn "point_infoDetail")
-#' @param domain_info() domain information 
+#' @param domain_info() domain information
 #' (from reactive fn "get_domain_information")
 #' @param label_archi_size lable size (from input$label_archi_size)
 #' @param title_archi_size title size (from input$title_archi_size)
@@ -16,7 +16,11 @@ create_architecture_plot_ui <- function(id) {
   ns <- NS(id)
   tagList(
     uiOutput(ns("archi_plot.ui")),
-    downloadButton(ns("archi_download"), "Download plot"),
+    downloadButton(ns("archi_download"), "Download plot", class = "butDL"),
+		tags$head(
+      tags$style(HTML(
+        ".butDL{background-color:#476ba3;} .butDL{color: white;}"))
+    ),
     textOutput(ns("selected_domain"))
   )
 }
@@ -33,7 +37,7 @@ create_architecture_plot <- function(input, output, session,
                     title_archi_size())
     grid.draw(g)
   })
-  
+
   output$archi_plot.ui <- renderUI({
     ns <- session$ns
     withSpinner(
@@ -64,7 +68,7 @@ create_architecture_plot <- function(input, output, session,
       )
     }
   )
-  
+
   output$selected_domain <- renderText({
     if (is.null(input$archi_click$y)) return()
     convertY(unit(input$archi_click$y, "npc"), "native")
@@ -73,8 +77,16 @@ create_architecture_plot <- function(input, output, session,
 
 
 #' Create architecure plot for both seed and ortho protein
+#' @export
+#' @param info info of clicked point (from reactive fn "point_infoDetail")
+#' @param domain_df domain info (from reactive fn "get_domain_information")
+#' @param label_archi_size lable size (from input$label_archi_size)
+#' @param title_archi_size title size (from input$title_archi_size)
+#' @return plot as arrangeGrob object
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+
 archi_plot <- function(info,
-                       domain_df, 
+                       domain_df,
                        label_archi_size, title_archi_size){
   # info
   group <- as.character(info[1])
@@ -84,7 +96,7 @@ archi_plot <- function(info,
   # get sub dataframe based on selected group_id and orthoID
   ortho <- gsub("\\|", ":", ortho)
   grepID <- paste(group, "#", ortho, sep = "")
-  
+
   subdomain_df <- domain_df[grep(grepID, domain_df$seedID), ]
   subdomain_df$feature <- as.character(subdomain_df$feature)
 
@@ -167,7 +179,6 @@ archi_plot <- function(info,
     }
 
     # grid.arrange(plot_seed,plot_ortho,ncol=1)
-
     if (ortho == seed) {
       arrangeGrob(plot_seed, ncol = 1)
     } else {
@@ -180,7 +191,18 @@ archi_plot <- function(info,
   }
 }
 
-#' Create architecure plot for single protein
+#' Create architecure plot for single protein (seed/ortho)
+#' @export
+#' @param df data (seed/ortho) for ploting
+#' @param geneID ID of seed or ortho protein
+#' @param sep separate indicator for title
+#' @param label_size lable size (from input$label_archi_size)
+#' @param title_size title size (from input$title_archi_size)
+#' @param min_start the smallest start position of all domains
+#' @param max_end the highest stop position of all domains
+#' @return plot as ggplot object
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+
 domain_plotting <- function(df,
                             geneID,
                             sep,
@@ -194,11 +216,13 @@ domain_plotting <- function(df,
                  size = 0)
 
   # draw lines for representing sequence length
-  gg <- gg + geom_segment(data = df,
-                          aes(x = 0, xend = length,
-                              y = feature, yend = feature),
-                          size = 1,
-                          color = "#b2b2b2")
+  if ("length" %in% colnames(df)) {
+    gg <- gg + geom_segment(data = df,
+                            aes(x = 0, xend = length,
+                                y = feature, yend = feature),
+                            size = 1,
+                            color = "#b2b2b2")
+  }
 
   # draw line and points
   gg <- gg + geom_segment(data = df,
@@ -252,6 +276,12 @@ domain_plotting <- function(df,
 }
 
 #' sort one domain dataframe (ortho) based on the other domain Df (seed)
+#' @export
+#' @param seed_df data of seed protein
+#' @param ortho_df data of ortholog protein
+#' @return sorted domain list (dataframe)
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+
 sort_domains <- function(seed_df, ortho_df){
   # get list of features in seed_df
   feature_list <- as.data.frame(levels(as.factor(seed_df$feature)))

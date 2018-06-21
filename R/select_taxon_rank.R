@@ -1,57 +1,62 @@
-#' Windows for selecting rank & (super)taxon of interest
+#' Popup windows for (sub-)selecting rank & (super)taxon of interest
 #'
+#' @export
+#' @param rank_select initial selected taxonomy rank (input$rank_select)
+#' @param subset_taxa list of all input taxon IDs (from reactive fn subset_taxa)
+#' @return list of all taxa in the initial taxonomy rank based on selected
+#' supertaxon from input$taxa_select_cus
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 
 source("R/functions.R")
 
-select_taxon_rank_ui <- function(id){
+select_taxon_rank_ui <- function(id) {
   ns <- NS(id)
   tagList(
-    uiOutput(ns("rank_select_cus")),
-    uiOutput(ns("taxa_select_cus"))
+    uiOutput(ns("rank_select_cus.ui")),
+    uiOutput(ns("taxa_select_cus.ui"))
   )
 }
 
 select_taxon_rank <- function(input, output, session,
-                              rank_select, subset_taxa){
+                              rank_select, subset_taxa) {
 
-  # print list of available customized taxonomy ranks -------------------------
-  # (the lowest rank is the same as the chosen main rank)
-  output$rank_select_cus <- renderUI({
+  # render list of available taxonomy ranks
+  # (where the lowest rank is the same as the chosen main rank)
+  output$rank_select_cus.ui <- renderUI({
     ns <- session$ns
     mainRank <- rank_select()
-    mainChoices <- get_taxonomy_ranks()
+    mainChoices <- list("Strain " = "05_strain",
+                        "Species" = "06_species",
+                        "Genus" = "10_genus",
+                        "Family" = "14_family",
+                        "Order" = "19_order",
+                        "Class" = "23_class",
+                        "Phylum" = "26_phylum",
+                        "Kingdom" = "28_kingdom",
+                        "Superkingdom" = "29_superkingdom",
+                        "unselected" = "")
     cusChoices <- mainChoices[mainChoices >= mainRank]
-    selectInput(ns("rank_select_cus"),
-                label = h5("Select taxonomy rank:"),
-                choices = as.list(cusChoices),
-                selected = mainRank)
+    selectInput(
+      ns("rank_select_cus"),
+      label = h5("Select taxonomy rank:"),
+      choices = as.list(cusChoices),
+      selected = mainRank
+    )
   })
 
-  output$taxa_select_cus <- renderUI({
-    ns <- session$ns
-    choice <- taxa_select_cus()
-    choice$fullName <- as.factor(choice$fullName)
-    selectInput(ns("taxa_select_cus"),
-                h5("Choose (super)taxon of interest:"),
-                as.list(levels(choice$fullName)),
-                levels(choice$fullName)[1])
-  })
-
-  # print list of available taxa for customized plot --------------------------
-  # (based on rank from rank_select_cus)
-  taxa_select_cus <- reactive({
+  # get list of possible taxon names for each selected rank from rank_select_cus
+  get_taxa_cus <- reactive({
     rank_select_cus <- input$rank_select_cus
 
     if (length(rank_select_cus) == 0) return()
-    else{
-      ### load list of unsorted taxa
+    else {
+      # load list of unsorted taxa
       Dt <- get_taxa_list(TRUE, subset_taxa())
-
-      ### load list of taxon name
+      # load list of taxon name
       nameList <- get_name_list(TRUE, FALSE)
-
       # get rank name from rank_select
       rankName <- substr(rank_select_cus, 4, nchar(rank_select_cus))
+      
       choice <- as.data.frame
       choice <- rbind(Dt[rankName])
       colnames(choice) <- "ncbiID"
@@ -59,33 +64,45 @@ select_taxon_rank <- function(input, output, session,
       return(choice)
     }
   })
+  
+  # render list of possible taxon names from get_taxa_cus()
+  output$taxa_select_cus.ui <- renderUI({
+    ns <- session$ns
+    choice <- get_taxa_cus()
+    choice$fullName <- as.factor(choice$fullName)
+    selectInput(
+      ns("taxa_select_cus"),
+      h5("Choose (super)taxon of interest:"),
+      as.list(levels(choice$fullName)),
+      levels(choice$fullName)[1]
+    )
+  })
 
-  # get list of taxa based on selected taxa_select_cus ------------------------
+  # get list of all taxa of the current taxonomy rank (from input$rank_select)
+  # based on selected supertaxon from input$taxa_select_cus
   cus_taxaName <- reactive({
 
     taxa_select_cus <- input$taxa_select_cus
     rankName <- substr(input$rank_select_cus, 4, nchar(input$rank_select_cus))
-
     if (taxa_select_cus == "") return()
 
     # load list of unsorted taxa
     Dt <- get_taxa_list(TRUE, subset_taxa())
 
-    # get ID of customized (super)taxon
+    # get ID of selected (super)taxon from input$taxa_select_cus
     taxa_list <- get_name_list(FALSE, FALSE)
     superID <- taxa_list$ncbiID[taxa_list$fullName == taxa_select_cus
                                 & taxa_list$rank %in% c(rankName, "norank")]
 
     # from that ID, get list of all taxa for main selected taxon
     mainRankName <- substr(rank_select(), 4, nchar(rank_select()))
-    customizedtaxa_id <- {
+    customizedtaxa_id <-
       levels(as.factor(Dt[mainRankName][Dt[rankName] == superID, ]))
-    }
 
-    cus_taxaName <- {
+    cus_taxaName <-
       taxa_list$fullName[taxa_list$rank %in% c(mainRankName, "norank")
                          & taxa_list$ncbiID %in% customizedtaxa_id]
-    }
+    
     return(cus_taxaName)
   })
 

@@ -32,6 +32,7 @@ source("R/group_comparison.R")
 
 # MAIN UI ====================================================================-
 
+
 shinyUI(
   fluidPage(
     
@@ -53,7 +54,7 @@ shinyUI(
               label = "Choose type of x-axis:",
               choices = list("taxa", "genes"),
               selected = "taxa",
-              inline = T
+              inline = TRUE
             ),
             hr(),
             checkboxInput(
@@ -87,6 +88,7 @@ shinyUI(
           ),
           column(
             2,
+            h6("blabla", style = "color:transparent"),
             shinyBS::bsButton(
               "reset_main",
               "Reset cutoffs",
@@ -114,7 +116,7 @@ shinyUI(
               label = "Choose type of x-axis:",
               choices = list("taxa", "genes"),
               selected = "taxa",
-              inline = T
+              inline = TRUE
             ),
             hr(),
             checkboxInput(
@@ -148,18 +150,12 @@ shinyUI(
           ),
           column(
             2,
+            h6("blabla", style = "color:transparent"),
             shinyBS::bsButton(
               "reset_selected",
               "Reset cutoffs",
               style = "danger"
-            ),
-            hr()
-            # ,
-            # downloadButton("selected_download", "Download profile"),
-            # tags$head(
-            #   tags$style(
-            #     HTML("#selected_download{background-color:#A9E2F3}"))
-            # )
+            )
           )
         )
       )
@@ -197,7 +193,6 @@ shinyUI(
             width = "80%"
           ),
           
-          
           uiOutput("no_internet_msg"),
           uiOutput("demo_data_describe"),
           uiOutput("main_input_file.ui"),
@@ -206,12 +201,11 @@ shinyUI(
           fluidRow(
             column(
               6,
-              uiOutput("select_oma_type")
-            ),
-            column(
-              6,
-              uiOutput("button_oma"),
-              uiOutput("oma_download")
+              conditionalPanel(
+                condition = "output.check_oma_input",
+                shinyBS::bsButton("open_oma_windows", "Get data from OMA"),
+                br()
+              )
             )
           ),
           
@@ -284,7 +278,7 @@ shinyUI(
             inputId = "anno_location", label = "",
             choices = list("from file", "from folder"),
             selected = "from file",
-            inline = T
+            inline = TRUE
           ),
           
           uiOutput("domain_input_file.ui"),
@@ -313,7 +307,7 @@ shinyUI(
               label = "",
               choices = list("all", "from file"),
               selected = "all",
-              inline = T
+              inline = TRUE
             ),
             
             conditionalPanel(
@@ -339,7 +333,7 @@ shinyUI(
               choices = list("automatically",
                              "by user defined tree"),
               selected = "automatically",
-              inline = T
+              inline = TRUE
             ),
             
             bsPopover("order_taxa", "", "in newick format", "bottom"),
@@ -381,7 +375,7 @@ shinyUI(
               "new_taxa_ask",
               "",
               c("Yes" = "Yes", "No" = "No"),
-              inline = T,
+              inline = TRUE,
               selected = "No"
             ),
             
@@ -532,7 +526,10 @@ shinyUI(
           
           # * main panel for profile plot -------------------------------------
           mainPanel(
-            create_profile_plot_ui("main_profile")
+            conditionalPanel(
+              condition = "input.do > 0",
+              create_profile_plot_ui("main_profile")
+            )
             # ,
             # conditionalPanel(
             #   condition = "input.main_x_axis_guide == true |
@@ -616,8 +613,11 @@ shinyUI(
                 or taxa for customized profile!"
               )
             ),
-            create_profile_plot_ui("customized_profile")
-            # uiOutput("selected_plot.ui")
+            
+            conditionalPanel(
+              condition = "input.do > 0",
+              create_profile_plot_ui("customized_profile")
+            )
           )
         )
         ),
@@ -678,7 +678,7 @@ shinyUI(
                 checkboxInput(
                   "apply_cluster",
                   em(strong("Apply clustering to profile plot",
-                            style = "color:red")),
+                            style = "color:darkblue")),
                   value = FALSE
                 ),
                 
@@ -686,7 +686,8 @@ shinyUI(
                 
                 checkboxInput(
                   "add_cluster_cutom_profile",
-                  strong(em("Add selected genes to Customized profile")),
+                  strong(em("Add selected genes to Customized profile",
+                            style = "color:red")),
                   value = FALSE,
                   width = NULL
                 ),
@@ -764,7 +765,8 @@ shinyUI(
                 4,
                 checkboxInput(
                   "add_gene_age_custom_profile",
-                  strong(em("Add to Customized profile")),
+                  strong(em("Add selected genes to Customized profile",
+                            style = "color:red")),
                   value = FALSE,
                   width = NULL
                 ),
@@ -772,7 +774,6 @@ shinyUI(
               )
             )
           ),
-          
           plot_gene_age_ui("gene_age")
         ),
         
@@ -809,7 +810,8 @@ shinyUI(
             downloadButton("core_gene_table_download", "Download gene list"),
             checkboxInput(
               "add_core_gene_custom_profile",
-              strong(em("Add to Customized profile")),
+              strong(em("Add core genes to Customized profile",
+                        style = "color:red")),
               value = FALSE,
               width = NULL
             ),
@@ -897,7 +899,6 @@ shinyUI(
         download_filtered_customized_ui("filtered_customized_download")
       ),
       
-      
       # HELP TAB ==============================================================
       navbarMenu(
         "Help",
@@ -920,9 +921,25 @@ shinyUI(
     
     # LIST OF POP-UP WINDOWS ==================================================
     
+    # * popup for getting taxa from OMA browser -------------------------------
+    bsModal(
+      "get_oma_data_windows",
+      "Get OMA data",
+      "open_oma_windows",
+      size = "small",
+      
+      selectInput(
+        "selected_oma_type",
+        label = "Select type of OMA orthologs:",
+        choices = list("PAIR", "HOG", "OG"),
+        selected = "PAIR"
+      ),
+      shinyBS::bsButton("get_data_oma", "Get data", style = "danger"),
+      downloadButton("download_files_oma", "Save data")
+    ),
+    
     # * popup for adding new taxa from input file -----------------------------
     bsModal(
-      
       "add_taxa_windows",
       "Add new taxa",
       "add_taxa",
@@ -1047,7 +1064,7 @@ shinyUI(
           create_text_size("label_archi_size", "SeqID size(px)", 11, 150)
         )
       ),
-      
+      uiOutput("test.ui"),
       create_architecture_plot_ui("archi_plot")
     ),
     

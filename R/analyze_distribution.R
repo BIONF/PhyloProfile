@@ -16,10 +16,6 @@ analyze_distribution_ui <- function(id) {
   tagList(
     column(
       2,
-      tags$head(
-        tags$style(HTML(
-          "#plot_download_dist{background-color:#A9E2F3}"))
-      ),
       downloadButton("plot_download_dist", "Download plot")
     ),
     column(
@@ -64,6 +60,18 @@ analyze_distribution <- function(input, output, session,
 
 
 #' Create distribution plot function
+#'
+#' @export
+#' @param data data for plotting (from reactive fn "presSpecAllDt")
+#' @param var_id name of variable (either input$var1_id, input$var2_id or
+#' "% present taxa"; from input$selected_dist)
+#' @param var_type type of variable (either var1, var2 or presSpec)
+#' @param percent percentage cutoff (from input$percent)
+#' @param dist_text_size text size of distribution plot
+#' (from input$dist_text_size)
+#' @return
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+
 var_dist_plot <- function(data, var_id, var_type, percent, dist_text_size){
   if (var_type == "presSpec") {
     # remove presSpec < cutoff_min or > cutoff_max
@@ -91,7 +99,7 @@ var_dist_plot <- function(data, var_id, var_type, percent, dist_text_size){
       size = 1
     ) +
     theme_minimal()
-  p <- p + 
+  p <- p +
     theme(
       legend.position = "none",
       axis.title = element_text(size = dist_text_size),

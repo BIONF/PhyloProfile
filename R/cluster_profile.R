@@ -1,5 +1,5 @@
 #' Profile clustering
-#' 
+#'
 
 if (!require("bioDist")) install.packages("bioDist") # for the mutual information
 if (!require("energy")) install.packages("energy") # for the mutual information, pearson
@@ -8,11 +8,12 @@ cluster_profile_ui <- function(id){
   ns <- NS(id)
   tagList(
     column(8,
+           downloadButton("download_cluster",
+                          "Download plot", class = "butDL"),
            tags$head(
              tags$style(HTML(
-               "#download_cluster{background-color:#A9E2F3}"))
+               ".butDL{background-color:#476ba3;} .butDL{color: white;}"))
            ),
-           downloadButton("download_cluster", "Download plot"),
            uiOutput(ns("cluster.ui"))
     ),
     column(4,
@@ -29,14 +30,15 @@ cluster_profile <- function(input, output, session,
   
   cluster_data <- reactive({
     df <- clusterDataDend(data(), dist_method(), cluster_method(), var1_aggregate_by())
+
     return(df)
-  }) 
-  
+  })
+
   output$dendrogram <- renderPlot({
-    # if (v$doPlot == FALSE) return()
+    if (is.null(data())) return()
     dendrogram(cluster_data())
   })
-  
+
   output$cluster.ui <- renderUI({
     ns <- session$ns
     withSpinner(
@@ -52,7 +54,7 @@ cluster_profile <- function(input, output, session,
       )
     )
   })
-  
+
   # download clustered plot ---------------------------------------------------
   output$download_cluster <- downloadHandler(
     filename = function() {
@@ -64,38 +66,38 @@ cluster_profile <- function(input, output, session,
              limitsize = FALSE)
     }
   )
-  
+
   # render brushed_cluster.table based on clicked point on dendrogram plot ----
   brushed_clusterGene <- reactive({
     # if (v$doPlot == FALSE) return()
-    
+
     dd.col <- cluster_data()
     dt <- dendro_data(dd.col)
     dt$labels$label <- levels(dt$labels$label)
-    
+
     # get list of selected gene(s)
     if (is.null(input$plot_brush)) return()
     else{
       top <- as.numeric(-round(input$plot_brush$ymin))
       bottom <- as.numeric(-round(input$plot_brush$ymax))
-      
+
       df <- dt$labels[bottom:top, ]
     }
-    
+
     # return list of genes
     df <- df[complete.cases(df), 3]
   })
-  
+
   output$brushed_cluster.table <- renderTable({
     if (is.null(input$plot_brush$ymin)) return()
-    
+
     data <- as.data.frame(brushed_clusterGene())
     data$number <- rownames(data)
     colnames(data) <- c("geneID", "No.")
     data <- data[, c("No.", "geneID")]
     data
   })
-  
+
   # download gene list from brushed_cluster.table -----------------------------
   output$download_cluster_genes <- downloadHandler(
     filename = function(){
@@ -106,7 +108,7 @@ cluster_profile <- function(input, output, session,
       write.table(data_out, file, sep = "\t", row.names = FALSE, quote = FALSE)
     }
   )
-  
+
   return(brushed_clusterGene)
 }
 

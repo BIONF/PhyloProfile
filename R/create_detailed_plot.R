@@ -13,12 +13,11 @@ create_detailed_plot_ui <- function(id) {
   ns <- NS(id)
   tagList(
     uiOutput(ns("detail_plot.ui")),
+    downloadButton(ns("download_detailed"), "Download plot", class = "butDL"),
     tags$head(
-      tags$style(
-        HTML("#plot_download_dist{background-color:#A9E2F3}")
-      )
+      tags$style(HTML(
+        ".butDL{background-color:#476ba3;} .butDL{color: white;}"))
     ),
-    downloadButton(ns("download_detailed"), "Download plot"),
     hr(),
     verbatimTextOutput(ns("detail_click"))
   )
@@ -125,6 +124,14 @@ create_detailed_plot <- function(input, output, session, data,
 
 
 #' create detailed plot
+#' @export
+#' @param sel_df data for plotting  (from reactive fn "detail_plotDt")
+#' @param detailed_text text size (input$detailed_text)
+#' @param var1_id name of variable 1 (input$var1_id)
+#' @param var2_id name of variable 2 (input$var2_id)
+#' @return detailed plot (ggplot object)
+#' @author  Vinh Tran {tran@bio.uni-frankfurt.de}
+
 detail_plot <- function(sel_df, detailed_text, var1_id, var2_id){
   sel_df$x_label <- paste(sel_df$orthoID,
                          " (",
