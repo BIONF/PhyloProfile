@@ -28,10 +28,7 @@ source("R/create_architecture_plot.R")
 source("R/create_detailed_plot.R")
 source("R/create_profile_plot.R")
 
-source("R/group_comparison.R")
-
-# MAIN UI ====================================================================-
-
+# MAIN UI =====================================================================
 
 shinyUI(
   fluidPage(
@@ -245,7 +242,7 @@ shinyUI(
                 "top"
               )
             )
-            ),
+          ),
           
           fluidRow(
             column(
@@ -289,7 +286,7 @@ shinyUI(
               href = "https://github.com/BIONF/phyloprofile-data",
               target = "_blank")
           )
-            ),
+        ),
         
         column(
           3,
@@ -406,13 +403,13 @@ shinyUI(
                   list contains all taxonomy ranks and their
                   correspoding NCBI IDs"
                 )
-                ),
+              ),
               
               hr(),
               uiOutput("end_parsing_msg"),
               tableOutput("invalidID.output")
-                )
-            ),
+            )
+          ),
           
           conditionalPanel(
             condition = "output.unk_taxa_status == 0",
@@ -447,8 +444,8 @@ shinyUI(
             ),
             h5("")
           )
-          )
-        ),
+        )
+      ),
       
       # MAIN PROFILE TAB ======================================================
       tabPanel(
@@ -610,7 +607,7 @@ shinyUI(
               condition = "output.same_profile == true",
               h4(
                 "Please select subset of genes and/
-                or taxa for customized profile!"
+                 or taxa for customized profile!"
               )
             ),
             
@@ -620,7 +617,7 @@ shinyUI(
             )
           )
         )
-        ),
+      ),
       
       # FUNCTION TAB ==========================================================
       navbarMenu(
@@ -642,11 +639,7 @@ shinyUI(
                                  "maximum" = "maximum",
                                  "manhattan" = "manhattan",
                                  "canberra" = "canberra",
-                                 "binary" = "binary",
-                                 "pearson correlation coefficient" = "pearson",
-                                 "fisher's exact test" = "fisher",
-                                 "mutual information" = "mutual_information",
-                                 "distance correlation" = "distance_correlation"),
+                                 "binary" = "binary"),
                   selected = "euclidean"
                 )
               ),
@@ -871,25 +864,53 @@ shinyUI(
                   value = TRUE,
                   width = NULL
                 ),
-                checkboxInput(
-                  "add_gc_genes_custom_profile",
-                  strong(em("Add to Customized profile")),
-                  value = FALSE,
-                  width = NULL
-                ),
-                
                 actionButton("plot_gc", "Plot"),
                 popify(
                   actionButton("gc_plot_config", "Appearance"),
                   "",
                   "Change the appearance of the plots"
-                ),
-                uiOutput("add_gc_custom_profile_check")
+                )
               )
-              )
+            )
+          ),
+          
+          sidebarPanel(
+            uiOutput("get_significant_genes"),
+            bsPopover(
+              "get_significant_genes",
+              "",
+              "Select gene to show the plots",
+              "right"
             ),
-          group_comparison_ui("group_comparison")
+            
+            checkboxInput(
+              "add_gc_genes_custom_profile",
+              strong(em("Add to Customized profile")),
+              value = FALSE,
+              width = NULL
+            ),
+            
+            uiOutput("add_gc_custom_profile_check"),
+            
+            popify(
+              uiOutput("features_of_interest_gc"),
+              "",
+              "This function is only use full if the features are
+              saved in the right format: featuretype_featurename"
+            ),
+            
+            actionButton("gc_downloads", "Download"),
+            width = 3
+            ),
+          
+          mainPanel(
+            tags$style(
+              HTML("#plots_gc { height:650px; overflow-y:scroll}")
+            ),
+            uiOutput("plots_gc"),
+            width = 9
           )
+        )
       ),
       
       # DATA DOWNLOAD TAB =====================================================
@@ -917,7 +938,7 @@ shinyUI(
           )
         )
       )
-      ),
+    ),
     
     # LIST OF POP-UP WINDOWS ==================================================
     
@@ -968,17 +989,17 @@ shinyUI(
         order, etc.)",
         "norank",
         width = 500
-    ),
-    textInput(
-      "new_parent",
-      "Parent ID (NCBI taxonomy ID of the next higher rank,
-      e.g. 4932 (S.cerevisiae species))",
-      4932,
-      width = 500
       ),
-    actionButton("new_add", "Add"),
-    actionButton("new_done", "Done")
+      textInput(
+        "new_parent",
+        "Parent ID (NCBI taxonomy ID of the next higher rank,
+        e.g. 4932 (S.cerevisiae species))",
+        4932,
+        width = 500
         ),
+      actionButton("new_add", "Add"),
+      actionButton("new_done", "Done")
+    ),
     
     # * popup for confirming parsing taxa from input file ---------------------
     bsModal(
@@ -997,7 +1018,7 @@ shinyUI(
              style = "color:red"),
       
       dataTableOutput("invalidIDout")
-      ),
+    ),
     
     # * popup for plotting detailed plot --------------------------------------
     bsModal(
@@ -1239,7 +1260,7 @@ shinyUI(
       hr(),
       shinyBS::bsButton("reset_main_config", "Reset", style = "danger"),
       shinyBS::bsButton("applyMainConfig", "Done", style = "warning")
-      ),
+    ),
     
     # * popup for setting Customized plot configurations ----------------------
     bsModal(
@@ -1471,7 +1492,19 @@ shinyUI(
       )
     ),
     
-
+    # * popup for handling the downloads to the Group comparison function -----
+    bsModal(
+      "gc_downloadsBS",
+      "Download",
+      "gc_downloads",
+      size = "small",
+      
+      h5(strong("Download the significant Genes")),
+      downloadButton("download_genes_gc", "Download"),
+      h5(""),
+      uiOutput("select_plots_to_download "),
+      downloadButton("download_plots_gc", "Download")
+    ),
     
     # POINT INFO BOX ==========================================================
     conditionalPanel(
@@ -1496,5 +1529,5 @@ shinyUI(
         style = "opacity: 0.80"
       )
     )
-)
+  )
 )
