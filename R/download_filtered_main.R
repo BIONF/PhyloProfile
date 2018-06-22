@@ -106,20 +106,29 @@ download_filtered_main <- function(input, output, session,
     if (is.null(data())) return()
     ### filtered data
     data_out <- data()
+    
     data_out <- as.data.frame(data_out[data_out$presSpec > 0, ])
     data_out <- data_out[!is.na(data_out$geneID), ]
 
     data_out <- as.data.frame(data_out[data_out$presSpec >= percent()[1], ])
-    data_out <- as.data.frame(data_out[data_out$var1 >= var1()[1]
-                                       & data_out$var1 <= var1()[2], ])
+    if (length(var1()) == 1) {
+      data_out <- as.data.frame(data_out[data_out$var1 >= var1()[1], ])
+    } else {
+      data_out <- as.data.frame(data_out[data_out$var1 >= var1()[1]
+                                         & data_out$var1 <= var1()[2], ])
+    }
 
     if (!all(is.na(data_out$var2))) {
-      data_out <- as.data.frame(data_out[data_out$var2 >= var2()[1]
-                                         & data_out$var2 <= var2()[2], ])
+      if (length(var2()) == 1) {
+        data_out <- as.data.frame(data_out[data_out$var2 >= var2()[1], ])
+      } else {
+        data_out <- as.data.frame(data_out[data_out$var2 >= var2()[1]
+                                           & data_out$var2 <= var2()[2], ])
+      }
     } else {
       data_out$var2 <- 0
     }
-
+    
     ### select only representative genes if chosen
     if (input$get_representative_main == TRUE) {
       if (is.null(input$ref_var_main)) return()
