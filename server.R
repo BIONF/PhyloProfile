@@ -48,7 +48,7 @@ source("R/select_taxon_rank.R")
 source("R/identify_core_gene.R")
 source("R/analyze_distribution.R")
 source("R/estimate_gene_age.R")
-source("R/cluster_profile.R")
+source("R/cluster_profile2.R")
 
 source("R/create_architecture_plot.R")
 source("R/create_detailed_plot.R")
@@ -1694,7 +1694,9 @@ shinyServer(function(input, output, session) {
   clusteredDataHeat <- reactive({
     dataHeat <- dataHeat()
     if (nrow(dataHeat) < 1) return()
-    dat <- get_data_clustering(dataHeat, input$dist_method)
+    dat <- get_data_clustering(dataHeat,
+                               input$dist_method,
+                               input$var1_aggregate_by)
     
     # dataframe for calculate distance matrix
     sub_data_heat <- subset(dataHeat, dataHeat$presSpec > 0)
@@ -3028,6 +3030,4 @@ shinyServer(function(input, output, session) {
                          & taxa_list$ncbiID %in% taxa_id_gc]
     return(taxa_name_gc)
   })
-  
-
   })

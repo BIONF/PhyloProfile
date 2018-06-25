@@ -206,8 +206,47 @@ create_select_gene <- function(id, list, selected) {
               selectize = FALSE)
 }
 
-# Calculate the contigency table for the fisher exact test --------------------
-get_table <- function(profile_1, profile_2){
+#' get the phylogenetic profiles -----------------------------------------------
+#' @export
+#' @param data
+#' @param dist_method
+#' @param var1_aggregate_by
+#' @return dataframe containing phylogenetic profiles
+#' @author Carla Mölbert (carla.moelbert@gmx.de)
+get_data_clustering <- function(data, dist_method, var1_aggregate_by){
+  sub_data_heat <- subset(data, data$presSpec > 0)
+  if (dist_method %in% c("mutual_information", "distance_correlation")) {
+    # Profiles with FAS scores
+    sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", "var1")]
+    sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
+    
+    sub_data_heat <- aggregate(sub_data_heat[, "var1"],
+                               list(sub_data_heat$geneID,
+                                    sub_data_heat$supertaxon),
+                               FUN = var1_aggregate_by)
+    colnames(sub_data_heat) <- c("geneID", "supertaxon", "var1")
+    
+    wide_data <- spread(sub_data_heat, supertaxon, var1)
+  }else {
+    # Binary Profiles 
+    sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", "presSpec")]
+    sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
+    wide_data <- spread(sub_data_heat, supertaxon, presSpec)
+  }
+  dat <- wide_data[, 2:ncol(wide_data)]  # numerical columns
+  rownames(dat) <- wide_data[, 1]
+  dat[is.na(dat)] <- 0
+  return(dat)
+}
+
+#' Calculate the contengency table for the fisher exact test -------------------
+#' @export
+#' @param profile1 vector with 0,1 as entrys
+#' @param profile2 vector with 0,1 as entrys
+#' @return contengency table countin the distribution of 0,1 in the different 
+#' profiles
+#' @author Carla Mölbert (carla.moelbert@gmx.de)
+get_contengency_table <- function(profile_1, profile_2){
   contigency_table <- data.frame(c(0,0), c(0,0))
   for (i in 1:length(profile_1)) {
     if (profile_1[i] == 1) {
@@ -226,8 +265,6 @@ get_table <- function(profile_1, profile_2){
   }
   contigency_table
 }
-
-
 
 create_slider_cutoff <- function(id, title, start, stop, var_id){
   if (is.null(var_id)) return()
@@ -281,9 +318,15 @@ create_text_size <- function(id, title, value, width) {
 
 # GROUP COMPARISON ============================================================
 
-# print list of available taxa ------------------------------------------------
+#' print list of available taxa ------------------------------------
+#' @export
+#' @param rank_select_gc rank selected for group compariosn
+#' @param subset_taxa contains "seedID",  "orthoID", "feature", "start",   "end"
+#' @return avilable taxa containing "ncbiID", "fullName", "rank", "parentID"
+#' @author Carla Mölbert (carla.moelbert@gmx.de)
 taxa_select_gc <- function(rank_select_gc, subset_taxa){
-  
+  print("subset taxa")
+  print(names(subset_taxa))
   # if there is no rank set, there can not be any available taxa
   if (length(rank_select_gc) == 0) return()
   else{
@@ -300,9 +343,8 @@ taxa_select_gc <- function(rank_select_gc, subset_taxa){
     choice <- rbind(dt[rank_name])
     colnames(choice) <- "ncbiID"
     choice <- merge(choice, name_list, by = "ncbiID", all = FALSE)
+
     return(choice)
   }
-  subdomain_df <- subdomain_df[!duplicated(subdomain_df), ]
-  subdomain_df
 }
 

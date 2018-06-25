@@ -21,7 +21,7 @@ source("R/select_taxon_rank.R")
 source("R/identify_core_gene.R")
 source("R/analyze_distribution.R")
 
-source("R/cluster_profile.R")
+source("R/cluster_profile2.R")
 source("R/estimate_gene_age.R")
 
 source("R/create_architecture_plot.R")
