@@ -1403,7 +1403,6 @@ shinyServer(function(input, output, session) {
     listGene <- list()
     end_index <- input$end_index
     if (is.na(input$end_index)) end_index <- 30
-    print(end_index)
     if (input$gene_list_selected == "from file") {
       listIn <- input$list
       if (!is.null(listIn)) {
@@ -1872,7 +1871,7 @@ shinyServer(function(input, output, session) {
         out <- as.list(core_geneDf())
       }
       else if (input$add_gc_genes_custom_profile == TRUE) {
-        out <- as.list(significantGenesGroupCompairison$geneID)
+        out <- as.list(gene_list_gc)
       }
       else {
         if (!is.null(fileCustom)) {
@@ -2741,6 +2740,8 @@ shinyServer(function(input, output, session) {
            &nbsp;to enable this function)</em></p>')
     }
   })
+
+  
   
   # ** render table contains list of core genes -------------------------------
   core_geneDf <- callModule(
@@ -2766,8 +2767,21 @@ shinyServer(function(input, output, session) {
   # * GET NCBI TAXONOMY IDs FROM INPUT LIST OF TAXON NAMES ====================
   callModule(search_taxon_id,"search_taxon_id")
 
-
   # * GROUP COMPARISON ========================================================
+  gene_list_gc <- callModule(
+    group_comparison, "group_comparison",
+    selected_in_group = reactive(input$selected_in_group_gc),
+    selected_genes_list = reactive(input$list_selected_genes_gc),
+    selected_rank = reactive(input$rank_select),
+    selected_variable = reactive(input$var_name_gc),
+    use_common_anchestor = reactive(input$use_common_anchestor),
+    reference_taxon = reactive(input$in_select),
+    ncbi_id_list = subset_taxa,
+    filtered_data = get_data_filtered,
+    right_format_features = reactive(input$right_format_features),
+    domain_information = get_domain_information,
+    plot = reactive(input$plot_gc),
+    parameter = get_parameter_input_gc)
 
   # Parameters for the plots in Group Comparison ------------------------------
   get_parameter_input_gc <- reactive({
@@ -2792,10 +2806,10 @@ shinyServer(function(input, output, session) {
     if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor") {
       filein <- 1
     }
-    if (is.null(filein)){
+    if (is.null(filein)) {
       return(selectInput("in_taxa", "Select in_group:", "none"))
     }
-    if (v$doPlot == FALSE){
+    if (v$doPlot == FALSE) {
       return(selectInput("in_taxa", "Select in_group:", "none"))
     }else{
       
@@ -2954,8 +2968,6 @@ shinyServer(function(input, output, session) {
       "maximal probability to reject that in_group and Out-Group have no significant difference by mistake")
   })
 
-  
-
   # observe Events for the Appearance of the plots ============================
   # reset config of customized plot -------------------------------------------
   observeEvent(input$reset_config_gc, {
@@ -3017,20 +3029,5 @@ shinyServer(function(input, output, session) {
     return(taxa_name_gc)
   })
   
-  callModule(group_comparison, "group_comparison",
-             selected_in_group = reactive(input$selected_in_group_gc),
-             list_selected_genes = reactive(input$list_selected_genes_gc),
-             rank_select = reactive(input$rank_select),
-             var_name = reactive(input$var_name_gc),
-             use_common_anchestor = reactive(input$use_common_anchestor),
-             in_select = reactive(input$in_select),
-             demo_data = reactive(input$demo_data),
-             anno_location = reactive(input$anno_location),
-             file_domain_input = reactive(input$file_domain_input),
-             subset_taxa = subset_taxa(),
-             get_data_filtered = get_data_filtered(),
-             right_format_features = reactive(input$right_format_features),
-             get_domain_information = get_domain_information(),
-             plot_gc = reactive(input$plot_gc))
-  
+
   })

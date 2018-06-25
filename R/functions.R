@@ -209,15 +209,15 @@ create_select_gene <- function(id, list, selected) {
 # Calculate the contigency table for the fisher exact test --------------------
 get_table <- function(profile_1, profile_2){
   contigency_table <- data.frame(c(0,0), c(0,0))
-  for(i in 1:length(profile_1)){
-    if(profile_1[i] == 1){
-      if(profile_2[i] == 1) {
+  for (i in 1:length(profile_1)) {
+    if (profile_1[i] == 1) {
+      if (profile_2[i] == 1) {
         contigency_table[1,1] <- contigency_table[1,1] + 1
       } else {
         contigency_table[2,1] <- contigency_table[2,1] + 1
       }
     } else{
-      if(profile_2[i] == 1) {
+      if (profile_2[i] == 1) {
         contigency_table[1,2] <- contigency_table[1,2] + 1
       } else {
         contigency_table[2,2] <- contigency_table[2,2] + 1
@@ -227,107 +227,7 @@ get_table <- function(profile_1, profile_2){
   contigency_table
 }
 
-# calculate percentage of present species -------------------------------------
-calc_pres_spec <- function(taxa_md_data, taxa_count){
-  # taxa_md_data = df("geneID",
-  #                 "ncbiID",
-  #                 "orthoID",
-  #                 "var1",
-  #                 "var2",
-  #                 "paralog",
-  #                 ....,
-  #                 "supertaxon")
-  taxa_md_data <- taxa_md_data[taxa_md_data$orthoID != "NA", ]
-  
-  # get geneID and supertaxon
-  gene_id_supertaxon <- subset(taxa_md_data,
-                               select = c("geneID",
-                                          "supertaxon",
-                                          "paralog",
-                                          "abbrName"))
-  # remove duplicated rows
-  gene_id_supertaxon <- gene_id_supertaxon[!duplicated(gene_id_supertaxon), ]
-  
-  # remove NA rows from taxa_md_data
-  taxa_md_data_no_na <- taxa_md_data[taxa_md_data$orthoID != "NA", ]
-  
-  # count present frequency of supertaxon for each gene
-  gene_supertaxon_count <- plyr::count(taxa_md_data_no_na,
-                                       c("geneID", "supertaxon"))
-  
-  # merge with taxa_count to get total number of species of each supertaxon
-  # and calculate presSpec
-  pres_spec_dt <- merge(gene_supertaxon_count,
-                        taxa_count,
-                        by = "supertaxon",
-                        all.x = TRUE)
-  
-  spec_count <- plyr::count(gene_id_supertaxon, c("geneID",
-                                                  "supertaxon"))
-  pres_spec_dt <- merge(pres_spec_dt,
-                        spec_count, by = c("geneID",
-                                           "supertaxon"))
-  
-  pres_spec_dt$presSpec <- pres_spec_dt$freq / pres_spec_dt$freq.y
-  
-  pres_spec_dt <- pres_spec_dt[pres_spec_dt$presSpec <= 1, ]
-  pres_spec_dt <- pres_spec_dt[order(pres_spec_dt$geneID), ]
-  pres_spec_dt <- pres_spec_dt[, c("geneID", "supertaxon", "presSpec")]
-  
-  # add absent supertaxon into pres_spec_dt
-  gene_id_supertaxon <- subset(gene_id_supertaxon,
-                               select = -c(paralog, abbrName))
-  final_pres_spec_dt <- merge(pres_spec_dt,
-                              gene_id_supertaxon,
-                              by = c("geneID", "supertaxon"),
-                              all.y = TRUE)
-  final_pres_spec_dt$presSpec[is.na(final_pres_spec_dt$presSpec)] <- 0
-  
-  # remove duplicated rows
-  final_pres_spec_dt <- final_pres_spec_dt[!duplicated(final_pres_spec_dt), ]
-  
-  # return final_pres_spec_dt
-  return(final_pres_spec_dt)
-}
 
-# Get the list with all the significant genes and the dataset ---------------
-# input$selected_in_group_gc, input$list_selected_genes_gc,
-# input$rank_select, input$var_name_gc, input$use_common_anchestor,
-# input$inSelect
-get_significant_genes <- function(in_group,
-                                   list_selected_genes_gc,
-                                   rank,
-                                   var,
-                                   use_common_anchestor,
-                                   in_select,
-                                   input,
-                                   demo_data, anno_location, file_domain,
-                                   subset_taxa,
-                                   data_full,
-                                   session,
-                                   right_format_features,
-                                   domains){
-  if (is.null(in_group)
-      | length(list_selected_genes_gc) == 0) return()
-
-  # load name List
-  name_list <- get_name_list(TRUE, TRUE)
-
-  # load list of unsorted taxa
-  dt <- get_taxa_list(FALSE, subset_taxa)
-
-  # Updateing of the Input ==================================================
-  # if there is more than one element in the in_group
-  # we look at the next common anchstor
-
-  if (use_common_anchestor == TRUE) {
-    ancestor <- get_common_ancestor(in_group, rank, name_list, dt)
-    if (is.null(ancestor)) return()
-    in_group <- ancestor[1]
-    rank <- ancestor[2]
-  } else{
-    rank <- substring(rank, 4)
-  }
 
 create_slider_cutoff <- function(id, title, start, stop, var_id){
   if (is.null(var_id)) return()
@@ -405,4 +305,4 @@ taxa_select_gc <- function(rank_select_gc, subset_taxa){
   subdomain_df <- subdomain_df[!duplicated(subdomain_df), ]
   subdomain_df
 }
-}
+

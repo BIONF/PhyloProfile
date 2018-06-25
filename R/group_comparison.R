@@ -1,57 +1,71 @@
 #' Group Comparison 
-#' 
+#'
+#' @export
+#' @param selected_in_group selected In-group (input$selected_in_group_gc)
+#' @param selected_genes_list list of genes to calculate the plots for
+#'  (input$list_selected_genes_gc)
+#' @param selected_rank selected taxonomy rank (input$rank_select)
+#' @param selected_variable variable(s) to claculate the plots for
+#'  (input$var_name_gc)
+#' @param use_common_anchestor boolean if the next common anchestor should be
+#'  used (input$use_common_anchestor)
+#' @param reference_taxon selected taxon name (input$in_select)
+#' @param ncbi_id_list list of ncbi ids (from reactive fn "subset_taxa")
+#' @param filtered_data full processed main data
+#' (from reactive fn "get_data_filtered")
+#' @param right_format_features boolean if the features have the right format
+#' (input$right_format_features)
+#' @param domain_information dataframe holding the domain input 
+#' (from reactive fn "get_domain_information)
+#' @param plot information if the plots should be generated (input$plot_gc)
+#' @param parameter list of parameters needed to generate the plots 
+#' (from reactive fn "get_parameter_input_gc")
+#' @return list of candidate genes
+#' @author Carla Mölbert {carla.moelbert@gmx.de}
+
 source("R/functions.R")
 
 group_comparison_ui <- function(id){
   ns <- NS(id)
   fluidPage(
     sidebarPanel(
-      uiOutput(ns("get_significant_genes")),
+      uiOutput(ns("candidate_genes")),
       bsPopover(
-        "get_significant_genes",
+        "candidate_genes",
         "",
         "Select gene to show the plots",
         "right"
       ),
       
-      # checkboxInput(
-      #   "add_gc_genes_custom_profile",
-      #   strong(em("Add to Customized profile")),
-      #   value = FALSE,
-      #   width = NULL
-      # ),
-      
-      
-      
       popify(
-        uiOutput(ns("features_of_interest_gc")),
+        uiOutput(ns("features_of_interest_ui")),
         "",
         "This function is only use full if the features are
               saved in the right format: featuretype_featurename"
       ),
       
-      actionButton(ns("gc_downloads"), "Download"),
+      actionButton(ns("download_options"), "Download"),
       width = 3
     ),
     mainPanel(
       tags$style(
-        HTML("#plots_gc { height:650px; overflow-y:scroll}")
+        HTML("#plots_ui { height:650px; overflow-y:scroll}")
       ),
-      uiOutput(ns("plots_gc")),
+      uiOutput(ns("plots_ui")),
       width = 9
     ),
     #* popup for handling the downloads to the Group comparison function -----
     bsModal(
-      ns("gc_downloadsBS"),
+      ns("download_options_bs"),
       "Download",
-      "gc_downloads",
+      "download_options",
       size = "small",
 
       h5(strong("Download the significant Genes")),
-      downloadButton(ns("download_genes_gc"), "Download"),
+      downloadButton(ns("download_genes"), "Download"),
       h5(""),
       uiOutput(ns("select_plots_to_download ")),
-      downloadButton(ns("download_plots_gc"), "Download")
+      downloadButton(ns("download_plots"), "Download")
     )
   )
   
@@ -61,63 +75,42 @@ group_comparison_ui <- function(id){
 
 group_comparison <- function(input, output, session,
                              selected_in_group,
-                             list_selected_genes,
-                             rank_select,
-                             var_name,
+                             selected_genes_list,
+                             selected_rank,
+                             selected_variable,
                              use_common_anchestor,
-                             in_select,
-                             demo_data,
-                             anno_location,
-                             file_domain_input,
-                             subset_taxa,
-                             get_data_filtered,
+                             reference_taxon,
+                             ncbi_id_list,
+                             filtered_data,
                              right_format_features,
-                             get_domain_information,
-                             plot_gc){
+                             domain_information,
+                             plot,
+                             parameter){
   # Dataframe with Information about the significant Genes --------------------
   # geneID | in_group| out_group | pvalues | features | databases | rank | var
   significant_genes <- NULL
   
-  # Parameters for the plots in Group Comparison ------------------------------
-  get_parameter_input_gc <- reactive ({
-    input_data <- list("show_p_value" = input$show_p_value,
-                       "highlight_significant" = input$highlight_significant,
-                       "significance" = input$significance,
-                       "var1_id" = input$var1_id,
-                       "var2_id" = input$var2_id,
-                       "x_size_gc" = input$x_size_gc,
-                       "y_size_gc" = input$y_size_gc,
-                       "interesting_features" = input$interesting_features,
-                       "angle_gc" = input$angle_gc,
-                       "legend_gc" = input$legend_gc,
-                       "legend_size_gc" = input$legend_size_gc)
-  })
-  
-  
   # List with all significant Genes -------------------------------------------
-  output$get_significant_genes <- renderUI({
+  output$candidate_genes <- renderUI({
     ns <- session$ns
-    plot_gc()
+    plot()
 
     isolate({
-      significant_genes_gc <<- {
+      significant_genes <<- {
         get_significant_genes(selected_in_group(),
-                              list_selected_genes(),
-                              rank_select(),
-                              var_name(),
+                              selected_genes_list(),
+                              selected_rank(),
+                              selected_variable(),
                               use_common_anchestor(),
-                              in_select(),
-                              get_parameter_input_gc(),
-                              demo_data(),
-                              anno_location(),
-                              file_domain_input(),
-                              subset_taxa(),
-                              get_data_filtered(),
+                              reference_taxon(),
+                              parameter(),
+                              ncbi_id_list(),
+                              filtered_data(),
                               right_format_features(),
-                              get_domain_information())
+                              domain_information())
       }
-      if (!is.null(significant_genes_gc)){
-        x <- as.vector(significant_genes_gc$geneID)
+      if (!is.null(significant_genes)) {
+        x <- as.vector(significant_genes$geneID)
         choices <- c("all", x)
 
         # selected Gene
@@ -137,29 +130,29 @@ group_comparison <- function(input, output, session,
   })
 
   # Generate output plots -----------------------------------------------------
-  output$plots_gc <- renderUI({
-    get_plots_gc()
+  output$plots_ui <- renderUI({
+    get_plots()
   })
   
   # Select Feaures you want to see in the barplots (default: All) -------------
-  output$features_of_interest_gc <- renderUI({
+  output$features_of_interest_ui <- renderUI({
     ns <- session$ns
     input$selected_gene
     isolate({
       gene <- input$selected_gene
-      if (!right_format_features()){
+      if (!right_format_features()) {
         selectInput(ns("interesting_features"), "Feature type(s) of interest:",
                     NULL,
                     selected = NULL,
                     multiple = TRUE,
                     selectize = FALSE)
-      } else if (is.null(gene)){
+      } else if (is.null(gene)) {
         selectInput(ns("interesting_features"), "Feature type(s) of interest:",
                     NULL,
                     selected = NULL,
                     multiple = TRUE,
                     selectize = FALSE)
-      } else if (gene == ""){
+      } else if (gene == "") {
         selectInput(ns("interesting_features"), "Feature type(s) of interest:",
                     NULL,
                     selected = NULL,
@@ -168,21 +161,21 @@ group_comparison <- function(input, output, session,
       }
       else{
         choices <- c("all")
-        if (gene == "all"){
-          for (g in significant_genes_gc$geneID){
-            x <- subset(significant_genes_gc,
-                        significant_genes_gc$geneID == g)
-            choices <- append(choices, unlist(x$databases))
+        if (gene == "all") {
+          for (current_gene in significant_genes$geneID) {
+            subset_current_gene <- subset(significant_genes,
+                        significant_genes$geneID == current_gene)
+            choices <- append(choices, unlist(subset_current_gene$databases))
           }
           # show each database only once
           choices <- choices[!duplicated(choices)]
         }
         else {
           
-          x <- subset(significant_genes_gc,
-                      significant_genes_gc$geneID == gene)
+          subset_gene <- subset(significant_genes,
+                      significant_genes$geneID == gene)
           
-          choices <- append(choices, unlist(x$databases))
+          choices <- append(choices, unlist(subset_gene$databases))
           
         }
         selectInput(ns("interesting_features"), "Feature type(s) of interest:",
@@ -197,12 +190,12 @@ group_comparison <- function(input, output, session,
   # Select Plots to download --------------------------------------------------
   output$select_plots_to_download  <- renderUI({
     ns <- session$ns
-    plot_gc()
+    plot()
     isolate({
-      if (!is.null(significant_genes_gc)){
-        x <- as.vector(significant_genes_gc$geneID)
-        choice <- c("all", x)
-        gene <- subset(choice, choice == input$selected_gene)
+      if (!is.null(significant_genes)) {
+        genes <- as.vector(significant_genes$geneID)
+        choice <- c("all", genes)
+        gene <- subset(choice, choice == selected_gene)
         
         selectInput(ns("plots_to_download"), "Select Plots to download:",
                     choice,
@@ -222,35 +215,35 @@ group_comparison <- function(input, output, session,
   
   # Downloads for GroupCompairison --------------------------------------------
   # download list of significant genes
-  output$download_genes_gc <- downloadHandler(
+  output$download_genes <- downloadHandler(
     filename = function(){
       c("significantGenes.out")
     },
     content = function(file){
-      data_out <- significant_genes_gc$geneID
+      data_out <- significant_genes$geneID
       write.table(data_out, file, sep = "\t", row.names = FALSE, quote = FALSE)
     }
   )
   
   # download file with the shown plots
-  output$download_plots_gc <- downloadHandler(
+  output$download_plots <- downloadHandler(
     filename = "plotSignificantGenes.zip",
     content = function(file){
       genes <- input$plots_to_download
       
-      if ("all" %in% genes){
-        genes <- significant_genes_gc$geneID
+      if ("all" %in% genes) {
+        genes <- significant_genes$geneID
       }
       
       fs <- c()
       #tmpdir <- tempdir()
       setwd(tempdir())
       
-      for (gene in genes){
+      for (gene in genes) {
         path <- paste(gene, ".pdf", sep = "")
         fs <- c(fs, path)
         pdf(path)
-        get_multiplot_download_gc(gene, get_parameter_input_gc(),
+        get_plots_to_download(gene, parameter(),
                                  input$interesting_features)
         dev.off()
       }
@@ -261,70 +254,90 @@ group_comparison <- function(input, output, session,
   
   # observer for the download functions
   observe({
-    if (is.null(selected_in_group())
-        | length(list_selected_genes()) == 0){
-      shinyjs::disable("download_plots_gc")
-      shinyjs::disable("download_genes_gc")
-    }else if (plot_gc() == FALSE){
-      shinyjs::disable("download_plots_gc")
-      shinyjs::disable("download_genes_gc")
-    }else if (input$selected_gene== "") {
-      shinyjs::disable("download_plots_gc")
-      shinyjs::disable("download_genes_gc")
+    if (is.null(input$selected_in_group)
+        | length(selected_genes_list()) == 0) {
+      shinyjs::disable("download_plots")
+      shinyjs::disable("download_genes")
+    }else if (plot() == FALSE) {
+      shinyjs::disable("download_plots")
+      shinyjs::disable("download_genes")
+    }else if (selected_gene == "") {
+      shinyjs::disable("download_plots")
+      shinyjs::disable("download_genes")
     }else{
-      shinyjs::enable("download_plots_gc")
-      shinyjs::enable("download_genes_gc")
+      shinyjs::enable("download_plots")
+      shinyjs::enable("download_genes")
     }
   })
   
   # Deciding which plots should be shown (Group Comparison) -------------------
-  get_plots_gc <- reactive({
+  get_plots <- reactive({
+    input$interesting_features
     gene <- as.character(input$selected_gene)
-    plot_gc()
+    plot()
     if (is.null(significant_genes)) return()
-    else if (gene == "all"){
-      get_plot_output_list(significant_genes,
-                           get_parameter_input_gc(),
+    if (gene == "all") {
+      plot_output_list <- get_plot_output_list(significant_genes,
+                           parameter(),
                            input$interesting_features)
     }else{
       x <- {
-        significant_genes_gc[significant_genes$geneID == gene, ]
+        significant_genes[significant_genes$geneID == gene, ]
       }
       if (nrow(x) == 0) return()
-      get_plot_output_list(x, get_parameter_input_gc(), input$interesting_features)
+      plot_output_list <- get_plot_output_list(x,
+                           parameter(),
+                           input$interesting_features)
     }
+    return(plot_output_list)
   })
+  
+  if (!is.null(nrow(significant_genes))) return(significant_genes$geneID)
 }
 
 
-
-# Get the list with all the significant genes and the dataset ---------------
+#' Get the dataframe with the significant genes --------------------------------
+#' @export
+#' @param in_group list of taxa 
+#' @param selected_genes_list list of genes
+#' @param rank selected taxonamy rank
+#' @param var variable for which to  calculate the significance
+#' @param use_common_anchestor boolean if the common anchestor should be used
+#' @param reference_taxon taxon which is used as reference
+#' @param parameters contains "show_p_value","highlight_significant",
+#' "significance", "var1_id", "var2_id", "x_size_gc", "y_size_gc",
+#'  "interesting_features", "angle_gc", "legend_gc", "legend_size_gc"
+#' @param ncbi_id_list list of nxbi ids 
+#' @param data_full full processed main data
+#' @param right_format_features boolean if the features have the right format
+#' @param  domains dataframe holding the domain input
+#' @return dataframe with the significant genes
+#' @author Carla Mölbert (carla.moelbert@gmx.de)
 get_significant_genes <- function(in_group,
-                                  list_selected_genes_gc,
+                                  selected_genes_list,
                                   rank,
                                   var,
                                   use_common_anchestor,
-                                  in_select,
-                                  input,
-                                  demo_data, anno_location, file_domain,
-                                  subset_taxa,
+                                  reference_taxon,
+                                  parameters,
+                                  ncbi_id_list,
                                   data_full,
                                   right_format_features,
                                   domains){
   if (is.null(in_group)
-      | length(list_selected_genes_gc) == 0) return()
+      | length(selected_genes_list) == 0) return()
   
   # load name List
   name_list <- get_name_list(TRUE, TRUE)
   
   # load list of unsorted taxa
-  dt <- get_taxa_list(FALSE, subset_taxa)
+  taxa_list <- get_taxa_list(FALSE, ncbi_id_list)
 
   # Updateing of the Input ----------------------------------------------------
   # if there is more than one element in the in_group
   # we look at the next common anchstor
   if (use_common_anchestor == TRUE) {
-    ancestor <- get_common_ancestor(in_group, rank, name_list, dt)
+    ancestor <- get_common_ancestor(in_group, rank, name_list, taxa_list)
     if (is.null(ancestor)) return()
     in_group <- ancestor[1]
     rank <- ancestor[2]
@@ -333,7 +346,7 @@ get_significant_genes <- function(in_group,
   }
   
   # List with all significant genes
-  significantGenes <- data.frame(
+  significant_genes_df <- data.frame(
     geneID = character(),
     in_group = I(list()),
     out_group = I(list()),
@@ -342,18 +355,18 @@ get_significant_genes <- function(in_group,
     databases = I(list()))
   
   # List of genes to look at
-  if (is.element("all", list_selected_genes_gc)) {
+  if (is.element("all", selected_genes_list)) {
     genes <- data_full$geneID
     genes <- genes[!duplicated(genes)]
   } else {
-    genes <- list_selected_genes_gc
+    genes <- selected_genes_list
   }
   genes <- sort(genes)
   
   # Subset depending on the rank and the in_group
-  selected_subset <- get_selected_subset(rank, in_group, name_list, dt)
+  selected_subset <- get_selected_subset(rank, in_group, name_list, taxa_list)
   selected_subset <- subset(selected_subset,
-                            !selected_subset$fullName == in_select)
+                            !selected_subset$fullName == reference_taxon)
   
   # Check for each of the selected genes if they are significant
   # If a gene is significant generate the plots
@@ -372,11 +385,11 @@ get_significant_genes <- function(in_group,
              !(selected_gene_df$abbrName %in% selected_subset$abbrName))
     }
     out_group_df <- {
-      subset(out_group_df, !out_group_df$fullName == in_select)
+      subset(out_group_df, !out_group_df$fullName == reference_taxon)
     }
     
     # Generate the p_values for the gene
-    pvalues <- get_significant(in_group_df, out_group_df, var, gene, input)
+    pvalues <- get_p_values(in_group_df, out_group_df, var, gene, parameters)
     
     if (!is.null(pvalues)) {
       new_row <- data.frame(geneID = gene,
@@ -387,109 +400,141 @@ get_significant_genes <- function(in_group,
       new_row$in_group <- list(in_group_df)
       new_row$out_group <- list(out_group_df)
       new_row$pvalues <- list(pvalues)
-      features  <- get_features(gene,
-                                domains)
+      features  <- get_features(gene, domains)
       new_row$features <- list(features)
       if (right_format_features) {
         new_row$databases <- list(get_prefix_features(features))
       }
-      significantGenes <- rbind(significantGenes, new_row)
+      significant_genes_df <- rbind(significant_genes_df, new_row)
     }
   }
-  if (nrow(significantGenes) != 0) {
-    significantGenes$var <- var
-    significantGenes$rank <- rank
-    return(significantGenes)
+  if (nrow(significant_genes_df) != 0) {
+    significant_genes_df$var <- var
+    significant_genes_df$rank <- rank
+    return(significant_genes_df)
   }
 }
 
-# Get the database for each feature in a specific gene ----------------------
-# f is dataframe in $features
-get_prefix_features <- function(f){
-  features <- f$feature
+#' Get the database for each feature in a specific gene-------------------------
+#' @export
+#' @param data contains "seedID", "orthoID", "feature", "start", "end"
+#' @return list of prefixes for the features
+#' @author Carla Mölbert (carla.moelbert@gmx.de)
+get_prefix_features <- function(data){
+  features <- data$feature
   choices <- gsub("_.*", "", features)
   choices <- choices[!duplicated(choices)]
-  choices
+  return(choices)
 }
 
-# Get the Subset depending on the choosen rank ------------------------------
-get_selected_subset <- function(rank, in_group, name_list, dt){
+
+#' Get the subset depending on the choosen rank ------------------------------
+#' @export
+#' @param rank selected rank
+#' @param in_group list of taxa
+#' @param name_list contains "ncbiID", "fullName", "rank", "parentID"
+#' @param taxa_list contains "abbrName, "ncbiID", fullName", "strain", "genus"..
+#' @return list of prefixes for the features
+#' @author Carla Mölbert (carla.moelbert@gmx.de)
+get_selected_subset <- function(rank, in_group, name_list, taxa_list){
   # Look if the fullName is in the in_group
   name_list$fullName <- as.character(name_list$fullName)
-  
-  #rank <- substring(rank, 4)
-  
   name_list_rank <- subset(name_list, name_list$rank == rank)
-  x <- subset(name_list, name_list$fullName %in% in_group)
+  in_group_subset <- subset(name_list, name_list$fullName %in% in_group)
   # Look if it has the right rank
-  x1 <- dt[dt[, rank] %in% x$ncbiID, ]
-  x1
+  selected_subset <- taxa_list[taxa_list[, rank] %in% in_group_subset$ncbiID, ]
+  return(selected_subset)
 }
 
-# Generate the in_group -----------------------------------------------------
+#' Generate the in_group -------------------------------------------------------
+#' @export
+#' @param in_group list of taxa 
+#' @param rank selected rank
+#' @param name_list contains "ncbiID", "fullName", "rank", "parentID"
+#' @param selected_in_group contains "abbrName, "ncbiID", fullName", "strain",
+#'  "genus"..
+#' @return common anchestor 
+#' @author Carla Mölbert (carla.moelbert@gmx.de)
 get_common_ancestor <- function(in_group,
                                 rank,
                                 name_list,
-                                all_selected_in_group_gc){
+                                selected_in_group){
   # Get the list with all taxonomy ranks
   all_ranks <- get_taxonomy_ranks()
-  all_selected_in_group_gc <- {
-    all_selected_in_group_gc[!duplicated(all_selected_in_group_gc), ]
+  selected_in_group <- {
+    selected_in_group[!duplicated(selected_in_group), ]
   }
   
   # all ranks higher than the selected rank
   # ranks were all elements of the in_group might be in the same taxon
   possible_ranks <- all_ranks[all_ranks >= rank]
-  i <-  1
+  position <-  1
   if (length(in_group) == 1) rank <- substring(rank, 4)
   
   # find the common ancestor of all taxa in the in_group
   # and use it as in_group
-  while (length(in_group) > 1 & i < length(possible_ranks)) {
-    current_rank <- substring(possible_ranks[i], 4)
-    next_rank <- substring(possible_ranks[i + 1], 4)
+  while (length(in_group) > 1 & position < length(possible_ranks)) {
+    current_rank <- substring(possible_ranks[position], 4)
+    next_rank <- substring(possible_ranks[position + 1], 4)
     
     # dataframe with all elements with fitting rank
-    in_g <- subset(name_list, name_list$rank == current_rank)
+    df_in_group <- subset(name_list, name_list$rank == current_rank)
     
     # subset of in_g with elements that belong to the in_group
-    in_g <- subset(in_g, in_g$fullName %in% in_group)
+    df_in_group <- subset(df_in_group, df_in_group$fullName %in% in_group)
     
     # dataset with all elements that could belong to the in_group
-    possible_in_group <- subset(all_selected_in_group_gc,
+    possible_in_group <- subset(selected_in_group,
                                 select = c(current_rank, next_rank))
     
     possible_in_group <- {
-      possible_in_group[possible_in_group[, current_rank] %in% in_g$ncbiID, ]
+      possible_in_group[possible_in_group[, current_rank] %in% df_in_group$ncbiID, ]
     }
     
     possible_in_group <- possible_in_group[!duplicated(possible_in_group), ]
     # only consider elements of the list that have the next higher rank
-    x <- subset(name_list, name_list$rank == next_rank)
-    x <- subset(x, x$ncbiID %in% possible_in_group[, next_rank] )
-    
-    in_group <- x$fullName
-    i <- i + 1
+    subset_next_rank <- subset(name_list, name_list$rank == next_rank)
+    subset_next_rank <- {
+      subset(subset_next_rank,
+             subset_next_rank$ncbiID %in% possible_in_group[, next_rank] )
+    }
+    in_group <- subset_next_rank$fullName
+    position <- position + 1
     rank <- next_rank
   }
   # If there is no common ancestor
-  if (i > length(possible_ranks)) return()
-  c(in_group, rank)
+  if (position > length(possible_ranks)) return()
+  return(c(in_group, rank))
 }
 
-# Decide if the gene is significant -----------------------------------------
-# if the gene is significant return the pvalues
-get_significant <- function(in_g, out_g, var, gene, input){
-  significance_level <- input$significance
-  
-  if (var == "Both") {
-    var1 <- input$var1
-    var2 <- input$var2
+#' Decide if the gene is significant -------------------------------------------
+#' @export
+#' @param in_group contains "supertaxon", "geneID", "ncbiID", "orthoID", "var1",
+#' "var2", "paralog", "abbrName", "taxonID", "fullname", "supertaxonID", "rank",
+#' "category", "presSpec", "mVar1", "mVar2" 
+#' @param out_group  as in-group but with information containing the out-group
+#' @param variable variable(s) to claculate the plots for
+#' @param gene gene to calculate the p-values for
+#' @param parameters contains "show_p_value","highlight_significant",
+#' "significance", "var1_id", "var2_id", "x_size_gc", "y_size_gc",
+#'  "interesting_features", "angle_gc", "legend_gc", "legend_size_gc"
+#' @return return the pvalues
+#' @author Carla Mölbert (carla.moelbert@gmx.de)
+get_p_values <- function(in_group, out_group, variable, gene, parameters){
+  significance_level <- parameters$significance
+
+  if (variable == "Both") {
+    var1 <- parameters$var1
+    var2 <- parameters$var2
     
     significant <-  FALSE
     # get the pValues for both variables
-    pvalues1 <- get_p_values(in_g$var1, out_g$var1, significance_level)
-    pvalues2 <- get_p_values(in_g$var2, out_g$var2, significance_level)
+    pvalues1 <- calculate_p_value(in_group$var1,
+                                  out_group$var1,
+                                  significance_level)
+    pvalues2 <- calculate_p_value(in_group$var2,
+                                  out_group$var2,
+                                  significance_level)
     
     # check if the gene has a significant difference
     # in the distribioution of In- and Out-Group
@@ -522,11 +567,15 @@ get_significant <- function(in_g, out_g, var, gene, input){
     
   } else{
     # Check which variable is selected and get the p_values
-    if (var == input$var1_id) {
-      pvalues <- get_p_values(in_g$var1, out_g$var1, significance_level)
+    if (variable == parameters$var1_id) {
+      pvalues <- calculate_p_value(in_group$var1,
+                                   out_group$var1,
+                                   significance_level)
     }
     else {
-      pvalues <- get_p_values(in_g$var2, out_g$var2, significance_level)
+      pvalues <- calculate_p_value(in_group$var2,
+                                   out_group$var2,
+                                   significance_level)
     }
     
     # Analog to getting the significance with both variables
@@ -542,8 +591,15 @@ get_significant <- function(in_g, out_g, var, gene, input){
   }
 }
 
-# calculate the p_values ----------------------------------------------------
-get_p_values <- function(var_in, var_out, significance_level){
+
+#' calculate the p_values ------------------------------------------------------
+#' @export
+#' @param var_in list of values for the variable concerning the in-group
+#' @param var_out list of values for the variable concerning the out-group
+#' @param significance_level 
+#' @return return the pvalues
+#' @author Carla Mölbert (carla.moelbert@gmx.de)
+calculate_p_value <- function(var_in, var_out, significance_level){
   
   # delete all entrys that are NA
   var_in <- var_in[!is.na(var_in)]
@@ -562,11 +618,11 @@ get_p_values <- function(var_in, var_out, significance_level){
     
     # p-value = Probability(test statistic >= value for the samples)
     # probabilitiy to recet H0 if it is correct
-    p.value <- ks$ks.boot.pvalue
+    p_value <- ks$ks.boot.pvalue
     # You reject the null hypothesis that the two samples were drawn
     # from the same distribution
     # if the p-value is less than your significance level
-    if (p.value < significance_level) pvalue <- c(p.value)
+    if (p_value < significance_level) pvalue <- c(p_value)
     
     # if we accept H0 it does not mean that the samples are uninteresting
     # they could still have different location values
@@ -578,34 +634,48 @@ get_p_values <- function(var_in, var_out, significance_level){
                             alternative = "two.sided",
                             exact = FALSE)
       p_value_wilcox <- wilcox$p.value
-      pvalue <- c(p.value, p_value_wilcox)
+      pvalue <- c(p_value, p_value_wilcox)
     }
-    pvalue
+    return(pvalue)
   }
 }
 
-# get the list with all the features in the gene ----------------------------
-# input$demo_data
+
+#' get the list with all the features in the gene ------------------------------
+#' @export
+#' @param selected_gene gene to get the feartures for
+#' @param domains contains "seedID", "orthoID", "feature", "start",   "end"
+#' @return dataframe for the specific gene containing "seedID",  "orthoID",
+#' "feature", "start",   "end"
+#' @author Carla Mölbert (carla.moelbert@gmx.de)
 get_features <- function(selected_gene, domains){
-  
-  subdomain_df <- {
-    subset(domain_df,
-           substr(domain_df$seedID,
+  subset_domains <- {
+    subset(domains,
+           substr(domains$seedID,
                   1,
                   nchar(as.character(selected_gene))) == selected_gene)
   }
-  subdomain_df <- subdomain_df[!duplicated(subdomain_df), ]
-  subdomain_df
+  subset_domains <- subset_domains[!duplicated(subset_domains), ]
+  return(subset_domains)
 }
 
-# Generate the list with all plots --------------------------------------------
-get_plot_output_list <- function(genes, input, interesting_features) {
+
+#' Generate the list with all plots --------------------------------------------
+#' @export
+#' @param genes list of genes
+#' @param parameters contains "show_p_value","highlight_significant",
+#' "significance", "var1_id", "var2_id", "x_size_gc", "y_size_gc",
+#' "interesting_features", "angle_gc", "legend_gc", "legend_size_gc"
+#' @param interesting_features list of databases to take the features from
+#' @return list with all plots
+#' @author Carla Mölbert (carla.moelbert@gmx.de)
+get_plot_output_list <- function(genes, parameters, interesting_features) {
   # if we dont have parameters we can not generate plots
   if (is.null(genes)) return()
   # Insert plot output objects the list
   plot_output_list <- lapply(1:nrow(genes), function(i) {
     plotname <- paste(genes[i, 1])
-    plot_output_object <- renderPlot(get_multiplot(genes[i, ], input,
+    plot_output_object <- renderPlot(get_multiplot(genes[i, ], parameters,
                                                    interesting_features),
                                      height = 650, width = 700)
   })
@@ -614,10 +684,17 @@ get_plot_output_list <- function(genes, input, interesting_features) {
   
 }
 
-# Put the plots for one spicific gene in one multiplot ------------------------
-# get_input_gc
-get_multiplot <- function(gene_info, input, interesting_features){
-  
+#' Put the plots for one spicific gene in one multiplot ------------------------
+#' @export
+#' @param gene_info contains "geneID",  "in_group",  "out_group", "pvalues",
+#' "features",  "databases", "var", "rank"
+#' @param parameters contains "show_p_value","highlight_significant",
+#' "significance", "var1_id", "var2_id", "x_size_gc", "y_size_gc",
+#' "interesting_features", "angle_gc", "legend_gc", "legend_size_gc"
+#' @param interesting_features list of databases to take the features from
+#' @return grid arrange with the plots that should be shown for this gene
+#' @author Carla Mölbert (carla.moelbert@gmx.de)
+get_multiplot <- function(gene_info, parameters, interesting_features){
   # Sorting the information to the selected gene
   gene <- as.character(gene_info$geneID)
   in_group <- as.data.frame(gene_info$in_group)
@@ -625,13 +702,12 @@ get_multiplot <- function(gene_info, input, interesting_features){
   features <- as.data.frame(gene_info$features)
   pvalues <- gene_info$pvalues
   var <- gene_info$var
-  
   # the barplot does not depent on the selected variable(s)
   barplot <-  get_barplot_gc(gene,
                              in_group,
                              out_group,
                              features,
-                             input,
+                             parameters,
                              interesting_features)
   
   if (is.null(barplot)) {
@@ -641,53 +717,57 @@ get_multiplot <- function(gene_info, input, interesting_features){
   if (var == "Both") {
     pvalues <- unlist(pvalues, recursive = FALSE)
     
-    p1 <- unlist(pvalues[1])
-    p2 <- unlist(pvalues[2])
+    p_value1 <- unlist(pvalues[1])
+    p_value2 <- unlist(pvalues[2])
     # Check if the p_values should be printed
-    if (input$show_p_value == TRUE) {
-      info_p1 <- get_info_p_values(p1)
-      info_p2 <- get_info_p_values(p2)
+    if (parameters$show_p_value == TRUE) {
+      info_p_value1 <- get_info_p_values(p_value1)
+      info_p_value2 <- get_info_p_values(p_value2)
     }
     else{
-      info_p1 <- " "
-      info_p2 <- " "
+      info_p_value1 <- " "
+      info_p_value2 <- " "
     }
     # check if the significant plot should be highlighted
-    if (input$highlight_significant == TRUE) {
-      if (is.null(p1[1])) c1 <- "grey"
-      else if (p1[length(p1)] < input$significance) c1 <- "indianred2"
-      else c1 <- "grey"
+    if (parameters$highlight_significant == TRUE) {
+      if (is.null(p_value1[1])) colour1 <- "grey"
+      else if (p_value1[length(p_value1)] < parameters$significance) {
+        colour1 <- "indianred2"
+        }
+      else colour1 <- "grey"
       
-      if (is.null(p2[1])) c2 <- "grey"
-      else if (p2[length(p2)] < input$significance) c2 <- "indianred2"
-      else c2 <- "grey"
+      if (is.null(p_value2[1])) colour2 <- "grey"
+      else if (p_value2[length(p_value2)] < parameters$significance) {
+      colour2 <- "indianred2"
+      }
+      else colour2 <- "grey"
     }
     else{
-      c1 <- "grey"
-      c2 <- "grey"
+      colour1 <- "grey"
+      colour2 <- "grey"
     }
     
     boxplot1 <- get_boxplot_gc(in_group,
                                out_group,
-                               input$var1_id,
+                               parameters$var1_id,
                                gene,
-                               c1,
-                               info_p1, input)
+                               colour1,
+                               info_p_value1, parameters)
     
     boxplot2 <- get_boxplot_gc(in_group,
                                out_group,
-                               input$var2_id,
+                               parameters$var2_id,
                                gene,
-                               c2,
-                               info_p2, input)
+                               colour2,
+                               info_p_value2, parameters)
     
-    m <- grid.arrange(textGrob(gene),
+    plots <- grid.arrange(textGrob(gene),
                       arrangeGrob(boxplot1, boxplot2, ncol = 2),
                       barplot,
                       heights = c(0.02, 0.45, 0.458), ncol = 1)
   }else {
     p <- unlist(pvalues)
-    if (input$show_p_value == TRUE) {
+    if (parameters$show_p_value == TRUE) {
       info <- get_info_p_values(p)
     }else{
       info <- " "
@@ -699,51 +779,66 @@ get_multiplot <- function(gene_info, input, interesting_features){
                               gene,
                               "grey",
                               info,
-                              input)
+                              parameters)
     
-    m <- grid.arrange(textGrob(gene),
+    plots <- grid.arrange(textGrob(gene),
                       boxplot,
                       barplot,
                       heights = c(0.02, 0.45, 0.458), ncol = 1)
   }
-  return(m)
+  return(plots)
 }
 
-# Create a Boxplot ------------------------------------------------------------
-#
+#' Create a Boxplot ------------------------------------------------------------
+#' @export
+#' @param in_group_df contains "supertaxon", "geneID", "ncbiID", "orthoID",
+#'  "var1", "var2", "paralog", "abbrName", "taxonID", "fullname",
+#'  "supertaxonID", "rank", "category", "presSpec", "mVar1", "mVar2" 
+#' @param out_group_df contains "supertaxon", "geneID", "ncbiID", "orthoID",
+#'  "var1", "var2", "paralog", "abbrName", "taxonID", "fullname",
+#' "supertaxonID", "rank", "category", "presSpec", "mVar1", "mVar2" 
+#' @param var variable to consider in the boxplot
+#' @param  gene gene for which the plot is generated
+#' @param  colour colour of the boxes
+#' @param  info info about the p-values
+#' @param parameters contains "show_p_value","highlight_significant",
+#' "significance", "var1_id", "var2_id", "x_size_gc", "y_size_gc",
+#' "interesting_features", "angle_gc", "legend_gc", "legend_size_gc"
+#' @return boxplot
+#' @author Carla Mölbert (carla.moelbert@gmx.de)
 get_boxplot_gc <- function(in_group_df,
                            out_group_df,
                            var,
                            gene,
                            colour,
                            info,
-                           input){
+                           parameters){
   
-  if (var == input$var1_id) {
-    in_g <- in_group_df$var1
-    out_g <- out_group_df$var1
+  if (var == parameters$var1_id) {
+    in_group <- in_group_df$var1
+    out_group <- out_group_df$var1
   }
-  else if (var == input$var2_id) {
-    in_g <- in_group_df$var2
-    out_g <- out_group_df$var2
+  else if (var == parameters$var2_id) {
+    in_group <- in_group_df$var2
+    out_group <- out_group_df$var2
   }
   
-  a <- length(in_g)
-  b <- length(out_g)
+  length_in_group <- length(in_group)
+  length_out_group <- length(out_group)
   
-  in_g <- as.data.frame(in_g)
-  names(in_g)[1] <- paste("values")
-  in_g$group <- "in_group"
+  in_group <- as.data.frame(in_group)
+  names(in_group)[1] <- paste("values")
+  in_group$group <- "in_group"
   
-  out_g <- as.data.frame(out_g)
-  names(out_g)[1] <- paste("values")
-  out_g$group <- "Out-Group"
+  out_group <- as.data.frame(out_group)
+  names(out_group)[1] <- paste("values")
+  out_group$group <- "Out-Group"
   
-  data_boxplot <- rbind(in_g, out_g)
+  data_boxplot <- rbind(in_group, out_group)
   data_boxplot <- data_boxplot[complete.cases(data_boxplot), ]
   
-  names <- c(paste("In-Group \n n=", a, sep = ""),
-             paste("Out-Group \n n=", b, sep = ""))
+  names <- c(paste("In-Group \n n=", length_in_group, sep = ""),
+             paste("Out-Group \n n=", length_out_group, sep = ""))
   
   boxplot_gc <- ggplot(data_boxplot, aes(group, values)) +
     geom_boxplot(stat = "boxplot",
@@ -755,44 +850,62 @@ get_boxplot_gc <- function(in_group_df,
     theme_minimal()
   
   boxplot_gc <- boxplot_gc +
-    theme(axis.text.x = element_text(size = input$x_size_gc, hjust = 1),
-          axis.text.y = element_text(size = input$y_size_gc),
-          axis.title.y = element_text(size = input$y_size_gc))
-  boxplot_gc
+    theme(axis.text.x = element_text(size = parameters$x_size_gc, hjust = 1),
+          axis.text.y = element_text(size = parameters$y_size_gc),
+          axis.title.y = element_text(size = parameters$y_size_gc))
+  return(boxplot_gc)
 }
 
-# Create Barplot ------------------------------------------------------------
+
+#' Create a Barplot ------------------------------------------------------------
+#' @export
+#' @param  selected_gene gene for which the plot is generated
+#' @param in_group_df contains "supertaxon", "geneID", "ncbiID", "orthoID",
+#'  "var1", "var2", "paralog", "abbrName", "taxonID", "fullname",
+#'  "supertaxonID", "rank", "category", "presSpec", "mVar1", "mVar2" 
+#' @param out_group_df contains "supertaxon", "geneID", "ncbiID", "orthoID",
+#'  "var1", "var2", "paralog", "abbrName", "taxonID", "fullname",
+#' "supertaxonID", "rank", "category", "presSpec", "mVar1", "mVar2" 
+#' @param features contains "seedID",  "orthoID", "feature", "start",   "end"
+#' @param parameters contains "show_p_value","highlight_significant",
+#' "significance", "var1_id", "var2_id", "x_size_gc", "y_size_gc",
+#' "interesting_features", "angle_gc", "legend_gc", "legend_size_gc"
+#' @param interesting_features list of databases for which the features should 
+#' be included
+#' @return barplot
+#' @author Carla Mölbert (carla.moelbert@gmx.de)
 get_barplot_gc <- function(selected_gene,
                            in_group, out_group,
-                           features, input, interesting_features){
-  subdomain_df <- features
-  subdomain_df$feature <- as.character(subdomain_df$feature)
-  
+                           features, parameters, interesting_features){
+  features$feature <- as.character(features$feature)
+  print(names(features))
   # only show features that interest the user
-  if (!("all" %in% input$interesting_features)) {
-    ifeatures <- NULL
-    for (x in input$interesting_features) {
-      f <- subset(subdomain_df$feature,
-                  startsWith(subdomain_df$feature, x))
-      ifeatures <- append(ifeatures, f)
+  if (!("all" %in% interesting_features)) {
+    features_list <- NULL
+    for (x in interesting_features) {
+      f <- subset(features$feature,
+                  startsWith(features$feature, x))
+      features_list <- append(features_list, f)
     }
     
-    if (is.null(ifeatures)) return()
+    if (is.null(features_list)) return()
     # only keep rows in which the feature begins with a element out of the
     # interesing Features
-    subdomain_df <- subset(subdomain_df, subdomain_df$feature %in% ifeatures)
+    features_list <- features_list[!duplicated(features_list)]
+
+    features <- subset(features, features$feature %in% features_list)
   }
   
   # part in in_group and Out-Group
   in_group_domain_df  <-  {
-    subset(subdomain_df, subdomain_df$orthoID %in% in_group$orthoID)
+    subset(features, features$orthoID %in% in_group$orthoID)
   }
   out_group_domain_df <- {
-    subset(subdomain_df, subdomain_df$orthoID %in% out_group$orthoID)
+    subset(features, features$orthoID %in% out_group$orthoID)
   }
   
   # Get list of all seeds
-  seeds <- unique(subdomain_df$seedID)
+  seeds <- unique(features$seedID)
   in_not_empty <- 0
   out_not_empty <- 0
   
@@ -803,7 +916,7 @@ get_barplot_gc <- function(selected_gene,
     data_in <- as.data.frame(feature)
     data_in$amount <- 0
   }
-  
+
   if (nrow(out_group_domain_df) == 0) {
     data_out <- NULL
   } else{
@@ -878,39 +991,55 @@ get_barplot_gc <- function(selected_gene,
       theme_minimal()
     
     barplot_gc <- barplot_gc +
-      theme(axis.text.x = element_text(size = input$x_size_gc,
-                                       angle = input$angle_gc, hjust = 1),
-            axis.text.y = element_text(size = input$y_size_gc),
-            axis.title.y = element_text(size = input$y_size_gc),
-            legend.position = input$legend_gc,
-            legend.text = element_text(size = input$legend_size_gc ),
-            legend.title = element_text(size = input$legend_size_gc))
-    barplot_gc
+      theme(axis.text.x = element_text(size = parameters$x_size_gc,
+                                       angle = parameters$angle_gc, hjust = 1),
+            axis.text.y = element_text(size = parameters$y_size_gc),
+            axis.title.y = element_text(size = parameters$y_size_gc),
+            legend.position = parameters$legend_gc,
+            legend.text = element_text(size = parameters$legend_size_gc ),
+            legend.title = element_text(size = parameters$legend_size_gc))
+    return(barplot_gc)
   } else (return(NULL))
 }
 
-# Get the p_values to print under the plot ----------------------------------
-get_info_p_values <- function(p) {
+
+
+#' Get the p_values to print under the plot ------------------------------------
+#' @export
+#' @param pvalues list contianing the p-values for a specific gene
+#' @return string containing the information about the p-values
+#' @author Carla Mölbert (carla.moelbert@gmx.de)
+get_info_p_values <- function(pvalues) {
   
-  if (is.na(p[1])) info_p_values <- "not enough information"
-  else if (length(p) == 1) {
+  if (is.na(pvalues[1])) info_p_values <- "not enough information"
+  else if (length(pvalues) == 1) {
     info_p_values <- paste("Kolmogorov-Smirnov-Test:",
-                           as.character(p[1]), sep = " " )
+                           as.character(pvalues[1]), sep = " " )
   }
   else{
     info_p_values1 <- paste("Kolmogorov-Smirnov-Test:",
-                            as.character(p[1]), sep = " " )
+                            as.character(pvalues[1]), sep = " " )
     info_p_values2 <- paste("Wilcoxon-Mann-Whitney-Test: ",
-                            as.character(round(p[2], 6)), sep = " ")
+                            as.character(round(pvalues[2], 6)), sep = " ")
     info_p_values <- paste(info_p_values1, info_p_values2, sep = "\n")
   }
   
   info_p_values <- paste("p_values:", info_p_values, sep = "\n")
-  info_p_values
+  return(info_p_values)
 }
 
-get_multiplot_download_gc <- function(gene, input, interesting_features){
-  x <- subset(significant_genes_gc,
-              significant_genes_gc$geneID == gene)
-  get_multiplot(x, input, interesting_features)
+#' get the plots to download ---------------------------------------------------
+#' @export
+#' @param  gene gene for which the plot is generated
+#' @param interesting_features list of databases for which the features should 
+#' be included
+#' @param parameters contains "show_p_value","highlight_significant",
+#' "significance", "var1_id", "var2_id", "x_size_gc", "y_size_gc",
+#' "interesting_features", "angle_gc", "legend_gc", "legend_size_gc"
+#' @return arrange grop containing the plots for this gene
+#' @author Carla Mölbert (carla.moelbert@gmx.de)
+get_plots_to_download <- function(gene, parameters, interesting_features){
+  info_gene <- subset(significant_genes,
+              significant_genes$geneID == gene)
+  return(get_multiplot(info_gene, parameters, interesting_features))
 }
