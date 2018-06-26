@@ -48,7 +48,7 @@ source("R/select_taxon_rank.R")
 source("R/identify_core_gene.R")
 source("R/analyze_distribution.R")
 source("R/estimate_gene_age.R")
-source("R/cluster_profile2.R")
+source("R/cluster_profile.R")
 
 source("R/create_architecture_plot.R")
 source("R/create_detailed_plot.R")
@@ -1873,7 +1873,7 @@ shinyServer(function(input, output, session) {
         out <- as.list(core_geneDf())
       }
       else if (input$add_gc_genes_custom_profile == TRUE) {
-        out <- as.list(gene_list_gc)
+        out <- as.list(gene_list_gc())
       }
       else {
         if (!is.null(fileCustom)) {
@@ -2801,7 +2801,6 @@ shinyServer(function(input, output, session) {
 
   })
   
-  # * GROUP COMPARISON ========================================================
   # Select in_group -----------------------------------------------------------
   output$taxa_list_gc <- renderUI({
     filein <- input$main_input

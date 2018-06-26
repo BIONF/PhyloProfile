@@ -29,46 +29,33 @@ group_comparison_ui <- function(id){
   ns <- NS(id)
   fluidPage(
     sidebarPanel(
-      uiOutput(ns("candidate_genes")),
+      withSpinner(uiOutput(ns("candidate_genes"))),
       bsPopover(
         "candidate_genes",
         "",
         "Select gene to show the plots",
         "right"
       ),
-      
-      popify(
-        uiOutput(ns("features_of_interest_ui")),
+      withSpinner(uiOutput(ns("features_of_interest_ui"))),
+      bsPopover(
+        "features_of_interest_ui",
         "",
         "This function is only use full if the features are
               saved in the right format: featuretype_featurename"
       ),
       
-      actionButton(ns("download_options"), "Download"),
+      downloadButton(ns("download_plots"), "Download plots"),
       width = 3
     ),
     mainPanel(
       tags$style(
         HTML("#plots_ui { height:650px; overflow-y:scroll}")
       ),
-      uiOutput(ns("plots_ui")),
+      withSpinner(uiOutput(ns("plots_ui"))),
       width = 9
-    ),
-    #* popup for handling the downloads to the Group comparison function -------
-    bsModal(
-      ns("download_options_bs"),
-      "Download",
-      "download_options",
-      size = "small",
-
-      h5(strong("Download the significant Genes")),
-      downloadButton(ns("download_genes"), "Download"),
-      h5(""),
-      uiOutput(ns("select_plots_to_download ")),
-      downloadButton(ns("download_plots"), "Download")
     )
   )
-  
+
 
 
 }
@@ -187,49 +174,13 @@ group_comparison <- function(input, output, session,
     })
   })
   
-  # Select Plots to download 
-  output$select_plots_to_download  <- renderUI({
-    ns <- session$ns
-    plot()
-    isolate({
-      if (!is.null(significant_genes)) {
-        genes <- as.vector(significant_genes$geneID)
-        choice <- c("all", genes)
-        gene <- subset(choice, choice == selected_gene)
-        
-        selectInput(ns("plots_to_download"), "Select Plots to download:",
-                    choice,
-                    selected = gene,
-                    multiple = TRUE,
-                    selectize = FALSE)
-        
-      } else{
-        selectInput(ns("plots_to_download"), "Select Plots to download:",
-                    NULL,
-                    selected = NULL,
-                    multiple = TRUE,
-                    selectize = FALSE)
-      }
-    })
-  })
-  
-  # Downloads for GroupCompairison =========================
-  # download list of significant genes
-  output$download_genes <- downloadHandler(
-    filename = function(){
-      c("significantGenes.out")
-    },
-    content = function(file){
-      data_out <- significant_genes$geneID
-      write.table(data_out, file, sep = "\t", row.names = FALSE, quote = FALSE)
-    }
-  )
+
   
   # download file with the shown plots
   output$download_plots <- downloadHandler(
     filename = "plotSignificantGenes.zip",
     content = function(file){
-      genes <- input$plots_to_download
+      genes <- input$selected_gene
       
       if ("all" %in% genes) {
         genes <- significant_genes$geneID
@@ -243,8 +194,10 @@ group_comparison <- function(input, output, session,
         path <- paste(gene, ".pdf", sep = "")
         fs <- c(fs, path)
         pdf(path)
-        get_plots_to_download(gene, parameter(),
-                                 input$interesting_features)
+        get_plots_to_download(gene,
+                              parameter(),
+                              input$interesting_features,
+                              significant_genes)
         dev.off()
       }
       zip(zipfile = file, files = fs)
@@ -254,19 +207,15 @@ group_comparison <- function(input, output, session,
   
   # observer for the download functions
   observe({
-    if (is.null(input$selected_in_group)
+    if (is.null(selected_in_group())
         | length(selected_genes_list()) == 0) {
       shinyjs::disable("download_plots")
-      shinyjs::disable("download_genes")
     }else if (plot() == FALSE) {
       shinyjs::disable("download_plots")
-      shinyjs::disable("download_genes")
-    }else if (selected_gene == "") {
+    }else if (input$selected_gene == "") {
       shinyjs::disable("download_plots")
-      shinyjs::disable("download_genes")
     }else{
       shinyjs::enable("download_plots")
-      shinyjs::enable("download_genes")
     }
   })
   
@@ -284,7 +233,7 @@ group_comparison <- function(input, output, session,
       gene_info <- {
         significant_genes[significant_genes$geneID == gene, ]
       }
-      if (nrow(x) == 0) return()
+      if (nrow(gene_info) == 0) return()
       plot_output_list <- get_plot_output_list(gene_info,
                            parameter(),
                            input$interesting_features)
@@ -292,9 +241,12 @@ group_comparison <- function(input, output, session,
     return(plot_output_list)
   })
   
-  if (!is.null(nrow(significant_genes))) {
-    return(reactive(significant_genes$geneID))
-  }
+  gene_list <- reactive({
+    if (!is.null(significant_genes)) return(significant_genes$geneID)
+  })
+  
+  return(gene_list)
+  
 }
 
 
@@ -896,11 +848,12 @@ get_barplot_gc <- function(selected_gene,
   if (!("all" %in% interesting_features)) {
     features_list <- NULL
     for (x in interesting_features) {
+ 
       f <- subset(features$feature,
                   startsWith(features$feature, x))
       features_list <- append(features_list, f)
     }
-    
+   
     if (is.null(features_list)) return()
     # only keep rows in which the feature begins with a element out of the
     # interesing Features
@@ -916,9 +869,7 @@ get_barplot_gc <- function(selected_gene,
   out_group_domain_df <- {
     subset(features, features$orthoID %in% out_group$orthoID)
   }
-  
-  
-  
+
   # * get the dataframes for in and out group ----------------------------------
   if (nrow(in_group_domain_df) == 0) {
     data_in <- NULL
@@ -1057,8 +1008,10 @@ get_info_p_values <- function(pvalues) {
 #' "interesting_features", "angle_gc", "legend_gc", "legend_size_gc"
 #' @return arrange grop containing the plots for this gene
 #' @author Carla Mölbert (carla.moelbert@gmx.de)
-get_plots_to_download <- function(gene, parameters, interesting_features){
+get_plots_to_download <- function(gene, parameters, interesting_features, significant_genes){
   info_gene <- subset(significant_genes,
               significant_genes$geneID == gene)
   return(get_multiplot(info_gene, parameters, interesting_features))
 }
+
+

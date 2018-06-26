@@ -325,8 +325,6 @@ create_text_size <- function(id, title, value, width) {
 #' @return avilable taxa containing "ncbiID", "fullName", "rank", "parentID"
 #' @author Carla Mölbert (carla.moelbert@gmx.de)
 taxa_select_gc <- function(rank_select_gc, subset_taxa){
-  print("subset taxa")
-  print(names(subset_taxa))
   # if there is no rank set, there can not be any available taxa
   if (length(rank_select_gc) == 0) return()
   else{
