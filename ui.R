@@ -21,7 +21,8 @@ source("R/select_taxon_rank.R")
 source("R/identify_core_gene.R")
 source("R/analyze_distribution.R")
 
-source("R/cluster_profile.R")
+#source("R/cluster_profile.R")
+source("R/cluster_profile2.R")
 source("R/estimate_gene_age.R")
 
 source("R/create_architecture_plot.R")
@@ -634,22 +635,12 @@ shinyUI(
           wellPanel(
             fluidRow(
               column(
+                2,
+                uiOutput("select_profile_type")
+              ),
+              column(
                 3,
-                selectInput(
-                  "dist_method",
-                  label = h5("Distance measure method:"),
-                  choices = list("euclidean" = "euclidean",
-                                 "maximum" = "maximum",
-                                 "manhattan" = "manhattan",
-                                 "canberra" = "canberra",
-                                 "binary" = "binary" #,
-                                 #"pearson correlation coefficient" = "pearson",
-                                 #"fisher's exact test" = "fisher",
-                                 #"mutual information" = "mutual_information",
-                                 #"distance correlation" = "distance_correlation"
-                                 ),
-                  selected = "euclidean"
-                )
+                uiOutput("select_dist_method")
               ),
               
               column(
@@ -671,11 +662,11 @@ shinyUI(
                 create_plot_size("cluster_plot.width", "Width (px)", 600)
               ),
               column(
-                2,
+                1,
                 create_plot_size("cluster_plot.height", "Height (px)", 600)
               ),
               column(
-                3,
+                2,
                 checkboxInput(
                   "apply_cluster",
                   em(strong("Apply clustering to profile plot",
