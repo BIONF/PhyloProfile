@@ -182,25 +182,34 @@ shinyServer(function(input, output, session) {
     if (is.null(filein)) return()
     input_type <- check_input_vadility(filein) #get_input_type()
     
-    if (input_type == "noGeneID") {
+    if (input_type[1] == "noGeneID") {
       updateButton(session, "do", disabled = TRUE)
       HTML(
         "<font color=\"red\"><em><strong>ERROR: Unsupported input format.
            <a href=\"https://github.com/BIONF/PhyloProfile/wiki/Input-Data\"
         target=\"_blank\">Click here for more info</a></em></strong></font>"
       )
-    } else if (input_type == "emptyCell") {
+    } else if (input_type[1] == "emptyCell") {
       updateButton(session, "do", disabled = TRUE)
       em(strong("ERROR: Rows have unequal length",
                 style = "color:red"))
     }
-    else if (input_type == "moreCol") {
+    else if (input_type[1] == "moreCol") {
       updateButton(session, "do", disabled = TRUE)
       em(strong("ERROR: More columns than column names",
                 style = "color:red"))
-    } else {
-      updateButton(session, "do", disabled = FALSE)
-      return()
+    }
+    else {
+      if (input_type[1] != "oma") {
+        updateButton(session, "do", disabled = TRUE)
+        invalid_oma <- paste(input_type, collapse = "; ")
+        msg <- paste0("ERROR: Invalid IDs found! ", invalid_oma)
+        em(strong(msg,
+                  style = "color:red"))
+      } else {
+        updateButton(session, "do", disabled = FALSE)
+        return()
+      }
     }
   })
   
@@ -229,9 +238,6 @@ shinyServer(function(input, output, session) {
                href = "https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/expTestData/ampk-tor/ampk-tor.domains_F",
                target = "_blank"))
     } else {
-      # filein <- input$main_input
-      # input_type <- check_input_vadility(filein) #get_input_type()
-      
       if (input$anno_location == "from file") {
         fileInput("file_domain_input", "")
       } else {
@@ -276,6 +282,7 @@ shinyServer(function(input, output, session) {
   })
   outputOptions(output, "check_oma_input", suspendWhenHidden = FALSE)
   
+  # * download OMA data after parsing -----------------------------------------
   output$download_files_oma <- downloadHandler(
     filenname <- function() {
       "oma_data_to_phyloprofile_input.zip"
@@ -287,7 +294,8 @@ shinyServer(function(input, output, session) {
                   col.names = TRUE,
                   quote = FALSE)
 
-      write.table(long_to_fasta(get_main_input()), "fasta.txt",
+      # write.table(long_to_fasta(get_main_input()), "fasta.txt",
+      write.table(get_all_fasta_oma(final_oma_df()), "fasta.txt",
                   sep = "\t",
                   row.names = FALSE,
                   col.names = FALSE,
@@ -304,6 +312,13 @@ shinyServer(function(input, output, session) {
     },
     contentType = "application/zip"
   )
+  
+  # * close OMA parsing popup windows -------------------------------------
+  observeEvent(input$get_data_oma, {
+    toggleModal(session, "get_oma_data_windows", toggle = "close")
+    updateButton(session, "get_data_oma", disabled = TRUE)
+    toggleState("main_input")
+  })
   
   # * render textinput for Variable 1 & 2 -------------------------------------
   output$var1_id.ui <- renderUI({
@@ -1087,7 +1102,6 @@ shinyServer(function(input, output, session) {
         }
       }
     }
-    
   })
   
   # * output invalid NCBI ID --------------------------------------------------
@@ -1148,7 +1162,8 @@ shinyServer(function(input, output, session) {
            </em></p>')
     }
   })
-  # * to enable clustering 
+  
+  # * to enable clustering ----------------------------------------------------
   observe({
     if (input$ordering == FALSE) {
       shinyjs::disable("apply_cluster")
@@ -1157,7 +1172,62 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  # * get the type of the input file & return long format dataframe -----------
+  # * get OMA data for input list ---------------------------------------------
+  get_oma_browser <- function(id_list, ortho_type) {
+    final_omaDf <- data.frame()
+    
+    withProgress(value = 0, {
+      i = 1
+      for (seed_id in id_list) {
+        incProgress(1 / length(id_list),
+                    message = paste0("Retrieving OMA for ", seed_id),
+                    detail = paste(i, "/", length(id_list)))
+        # get members
+        members <- get_members(seed_id, ortho_type)
+        oma_seed_id <- OmaDB::getData("protein",seed_id)$omaid
+        # get all data
+        withProgress(message = "Ortholog ", value = 0, {
+          j <- 1
+          for (ortho in members) {
+            orthoDf <- get_data_for_one_oma(ortho)
+            orthoDf$seed <- seed_id
+            if (ortho == oma_seed_id) {
+              orthoDf$ortho_id <- seed_id
+            }
+            final_omaDf <- rbind(final_omaDf, orthoDf)
+            incProgress(1 / length(members),
+                        detail = paste(j, "/", length(members)))
+            j <- j + 1
+          }
+        })
+        i <- i + 1
+      }
+    })
+    
+    return(final_omaDf)
+  }
+  
+  final_oma_df <- reactive({
+    filein <- input$main_input
+    if (is.null(filein)) return()
+    input_type <- check_input_vadility(filein)
+    
+    if (input_type == "oma") {
+      if (input$get_data_oma[1] == 0) return()
+      oma_ids <- as.data.frame(read.table(file = filein$datapath,
+                                          sep = "\t",
+                                          header = FALSE,
+                                          check.names = FALSE,
+                                          comment.char = ""))
+      oma_ids[,1] <- as.character(oma_ids[,1])
+      final_oma_df <- get_oma_browser(oma_ids[,1], input$selected_oma_type)
+      return(final_oma_df)
+    } else {
+      return()
+    }
+  })
+  
+  # * convert main input file in any format into long format dataframe --------
   get_main_input <- reactive({
     if (input$demo_data == "lca-micros") {
       long_dataframe <- create_long_matrix("lca-micros")
@@ -1169,13 +1239,7 @@ shinyServer(function(input, output, session) {
       input_type <- check_input_vadility(filein)
       if (input_type == "oma") {
         if (input$get_data_oma[1] == 0) return()
-        oma_ids <- as.data.frame(read.table(file = filein$datapath,
-                                            sep = "\t",
-                                            header = FALSE,
-                                            check.names = FALSE,
-                                            comment.char = ""))
-        oma_ids[,1] <- as.character(oma_ids[,1])
-        long_dataframe <- oma_ids_to_long(oma_ids[,1], input$selected_oma_type)
+        long_dataframe <- create_profile_from_oma(final_oma_df())
         for (i in 1:ncol(long_dataframe)) {
           long_dataframe[, i] <- as.factor(long_dataframe[, i])
         }
@@ -1183,7 +1247,6 @@ shinyServer(function(input, output, session) {
         long_dataframe <- create_long_matrix(filein)
       }
     }
-    
     return(long_dataframe)
   })
   
@@ -1196,22 +1259,22 @@ shinyServer(function(input, output, session) {
       input_type <- "demo"
     }
     
-    main_input <- get_main_input()
-    domain_df <- parse_domain_input(main_input,
-                                    input_type,
-                                    input$demo_data,
-                                    input$anno_location,
-                                    input$file_domain_input,
-                                    input$domainPath,
-                                    session,
-                                    datapath)
+    if (input_type == "oma") {
+      domain_df <- get_all_domains_oma(final_oma_df())
+    } else {
+      main_input <- get_main_input()
+      domain_df <- parse_domain_input(main_input,
+                                      # input_type,
+                                      input$demo_data,
+                                      input$anno_location,
+                                      input$file_domain_input,
+                                      input$domainPath,
+                                      session,
+                                      datapath)
+    }
+    
     return(domain_df)
   })
-  
-  # * parse fasta sequences as a data frame -----------------------------------
-  # get_fasta_information <- reactive({
-  #   
-  # })
   
   # * get ID list of input taxa from main input -------------------------------
   subset_taxa <- reactive({
@@ -2164,19 +2227,31 @@ shinyServer(function(input, output, session) {
       groupID <- toString(info[1])
       ncbiID <- gsub("ncbi", "", toString(info[5]))
       
-      seqDf <- data.frame("geneID" = groupID,
-                          "orthoID" = seqID,
-                          "ncbiID" = ncbiID)
-
-      fastaOut <- get_fasta_seqs(
-        seqDf, input$main_input, input$demo_data,
-        input$input_type, input$concat_fasta,
-        input$path,
-        input$dir_format,
-        input$file_ext,
-        input$id_format,
-        get_main_input()
-      )
+      if (input$demo_data == "none") {
+        filein <- input$main_input
+        input_type <- check_input_vadility(filein)
+      } else {
+        input_type <- "demo"
+      }
+      
+      if (input_type == "oma") {
+        fastaOut <- get_selected_fasta_oma(final_oma_df(), seqID)
+      } else {
+        seqDf <- data.frame("geneID" = groupID,
+                            "orthoID" = seqID,
+                            "ncbiID" = ncbiID)
+        
+        fastaOut <- get_fasta_seqs(
+          seqDf, input$main_input, input$demo_data,
+          input$input_type, input$concat_fasta,
+          input$path,
+          input$dir_format,
+          input$file_ext,
+          input$id_format,
+          get_main_input()
+        )
+      }
+      
       return(paste(fastaOut[1]))
     }
   })
@@ -2334,16 +2409,34 @@ shinyServer(function(input, output, session) {
 
   # * for main profile ========================================================
   main_fasta_download <- reactive({
-    main_fasta_out <- get_fasta_seqs(
-      as.data.frame(download_data()),
-      input$main_input, input$demo_data,
-      input$input_type, input$concat_fasta,
-      input$path,
-      input$dir_format,
-      input$file_ext,
-      input$id_format,
-      get_main_input()
-    )
+    if (input$demo_data == "none") {
+      filein <- input$main_input
+      input_type <- check_input_vadility(filein)
+    } else {
+      input_type <- "demo"
+    }
+    
+    if (input_type == "oma") {
+      all_oma_df <- final_oma_df()
+      filtered_download_df <- as.data.frame(download_data())
+      filtered_oma_df <- 
+        subset(all_oma_df,
+               all_oma_df$ortho_id %in% filtered_download_df$orthoID &
+               all_oma_df$seed %in% filtered_download_df$geneID)
+      main_fasta_out <- get_all_fasta_oma(filtered_oma_df)
+    } else {
+      main_fasta_out <- get_fasta_seqs(
+        as.data.frame(download_data()),
+        input$main_input, input$demo_data,
+        input$input_type, input$concat_fasta,
+        input$path,
+        input$dir_format,
+        input$file_ext,
+        input$id_format,
+        get_main_input()
+      )
+    }
+    
     return(main_fasta_out)
   })
 
@@ -2361,16 +2454,34 @@ shinyServer(function(input, output, session) {
 
   # * for customized profile ==================================================
   customized_fasta_download <- reactive({
-    fasta_out_df <- get_fasta_seqs(
-      as.data.frame(download_custom_data()),
-      input$main_input, input$demo_data,
-      input$input_type, input$concat_fasta,
-      input$path,
-      input$dir_format,
-      input$file_ext,
-      input$id_format,
-      get_main_input()
-    )
+    if (input$demo_data == "none") {
+      filein <- input$main_input
+      input_type <- check_input_vadility(filein)
+    } else {
+      input_type <- "demo"
+    }
+    
+    if (input_type == "oma") {
+      all_oma_df <- final_oma_df()
+      filtered_download_df <- as.data.frame(download_custom_data())
+      filtered_oma_df <- 
+        subset(all_oma_df,
+               all_oma_df$ortho_id %in% filtered_download_df$orthoID &
+               all_oma_df$seed %in% filtered_download_df$geneID)
+      fasta_out_df <- get_all_fasta_oma(filtered_oma_df)
+    } else {
+      fasta_out_df <- get_fasta_seqs(
+        as.data.frame(download_custom_data()),
+        input$main_input, input$demo_data,
+        input$input_type, input$concat_fasta,
+        input$path,
+        input$dir_format,
+        input$file_ext,
+        input$id_format,
+        get_main_input()
+      )
+    }
+    return(fasta_out_df)
   })
   download_custom_data <- callModule(
     download_filtered_customized,
@@ -2593,7 +2704,8 @@ shinyServer(function(input, output, session) {
           var_id = reactive(input$selected_dist),
           var_type = reactive("presSpec"),
           percent = reactive(input$percent), 
-          dist_text_size = reactive(input$dist_text_size)
+          dist_text_size = reactive(input$dist_text_size),
+          dist_width = reactive(input$dist_width)
         )
       } else{
         if (input$selected_dist == input$var1_id) {
@@ -2603,7 +2715,8 @@ shinyServer(function(input, output, session) {
             var_id = reactive(input$selected_dist),
             var_type = reactive("var1"),
             percent = reactive(input$percent),
-            dist_text_size = reactive(input$dist_text_size)
+            dist_text_size = reactive(input$dist_text_size),
+            dist_width = reactive(input$dist_width)
           )
         } else if (input$selected_dist == input$var2_id) {
           callModule(
@@ -2612,7 +2725,8 @@ shinyServer(function(input, output, session) {
             var_id = reactive(input$selected_dist),
             var_type = reactive("var2"),
             percent = reactive(input$percent),
-            dist_text_size = reactive(input$dist_text_size)
+            dist_text_size = reactive(input$dist_text_size),
+            dist_width = reactive(input$dist_width)
           )
         }
       }
@@ -3029,4 +3143,4 @@ shinyServer(function(input, output, session) {
                          & taxa_list$ncbiID %in% taxa_id_gc]
     return(taxa_name_gc)
   })
-  })
+})

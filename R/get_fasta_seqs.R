@@ -14,7 +14,7 @@
 #' @param file_ext fasta file extension (from input$file_ext,
 #' "fa", "fasta", "fas" or "txt")
 #' @param id_format fasta header format (from input$id_format,
-#' ">speciesID:seqID", ">speciesID@seqID" or ">speciesID|seqID")
+#' ">speciesID:seqID", ">speciesID@seqID", ">speciesID|seqID" or only "seqID")
 #' @param long_df main input in long-format (from function "get_main_input")
 #' @return dataframe contains fasta sequences
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
@@ -109,17 +109,7 @@ get_fasta_seqs <- function(data_in, filein, demo_data,
       fasta_out_df <- rbind(fasta_out_df, as.data.frame(fasta_out))
     }
   }
-
-  # get seqs for OMA main input ------------------------------------------------
-  if (input_type == "oma") {
-    for (j in 1:nrow(data_in)) {
-      seq_id <- as.character(data_in$orthoID[j])
-      group_id <- as.character(data_in$geneID[j])
-      fasta_out <- get_fasta_oma(seq_id, group_id, long_df)
-      fasta_out_df <- rbind(fasta_out_df, as.data.frame(fasta_out))
-    }
-  }
-
+	
   # get seqs for main input in other formats -----------------------------------
   else {
     # * get seqs from concatenated fasta file ----------------------------------
@@ -220,23 +210,35 @@ get_fasta_seqs <- function(data_in, filein, demo_data,
 
         # read all specices FASTA files at once
         fa <- data.frame()
-        for (i in 1:length(levels(as.factor(spec_df$specID)))) {
-          spec_id <- as.character(levels(as.factor(spec_df$specID))[i])
-
-          # full path fasta file
-          file <- paste0(path, "/", spec_id, ".", file_ext)
-          if (dir_format == 2) {
-            file <- paste0(path, "/", spec_id, "/", spec_id, ".", file_ext)
-          }
-
-          # read fasta file and save sequences into dataframe
-          if (file.exists(file)) {
-            fasta_file <- readAAStringSet(file)
+        if (id_format == 4) {
+          file_list <- list.files(path, pattern = file_ext)
+          for (file in file_list){
+            file_with_path = paste0(path, "/", file)
+            fasta_file <- readAAStringSet(file_with_path)
 
             seq_name <- names(fasta_file)
             sequence <- paste(fasta_file)
             # data frame contains all sequences from input file
             fa <- rbind(fa, data.frame(seq_name, sequence))
+          }
+        } else {
+          for (i in 1:length(levels(as.factor(spec_df$specID)))) {
+            spec_id <- as.character(levels(as.factor(spec_df$specID))[i])
+
+            # full path fasta file
+            file <- paste0(path, "/", spec_id, ".", file_ext)
+            if (dir_format == 2) {
+              file <- paste0(path, "/", spec_id, "/", spec_id, ".", file_ext)
+            }
+
+            # read fasta file and save sequences into dataframe
+            if (file.exists(file)) {
+              fasta_file <- readAAStringSet(file)
+              seq_name <- names(fasta_file)
+              sequence <- paste(fasta_file)
+              # data frame contains all sequences from input file
+              fa <- rbind(fa, data.frame(seq_name, sequence))
+            }
           }
         }
 

@@ -49,7 +49,7 @@ create_detailed_plot <- function(input, output, session, data,
       c("detailedPlot.pdf")
     },
     content = function(file) {
-      g <- detail_plot(detai_plotDt(), detailed_text(), var1_id(), var2_id())
+      g <- detail_plot(data(), detailed_text(), var1_id(), var2_id())
       ggsave(
         file,
         plot = g,
