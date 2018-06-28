@@ -2977,6 +2977,10 @@ shinyServer(function(input, output, session) {
     if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor") {
       filein <- 1
     }
+    
+    if (v$doPlot == FALSE){
+      return(selectInput("list_selected_genes_gc", "Select sequence:", "none"))
+    }
 
     if (is.null(filein) & is.null(file_gc)) {
       return(selectInput("list_selected_genes_gc", "Select sequence:", "none"))
