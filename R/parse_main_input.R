@@ -9,6 +9,8 @@
 #' @return input file format or type of error
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 
+source("R/get_oma_browser.R")
+
 check_input_vadility <- function(filein) {
   input_dt <- as.data.frame(read.table(file = filein$datapath,
                                        sep = "\t",
@@ -51,10 +53,11 @@ check_input_vadility <- function(filein) {
       }
       # OMA ids
       else {
-        if (check_oma_id(input_dt[1, 1])) {
+				invalid_oma <- check_oma_id(levels(input_dt[,1]))
+        if (length(invalid_oma) == 0) {
           return("oma")
-        } else{
-          return("noGeneID")
+        } else {
+          return(invalid_oma)
         }
       }
     }
@@ -206,7 +209,7 @@ create_long_matrix <- function(input_file){
     # else if (input_type == "oma") {
     #   # do not load the data before the button is loaded
     #   if (is.null(input$get_data_oma)) return()
-    # 
+    #
     #   isolate({
     #     # do not generate data befor the button was clicked
     #     if (input$get_data_oma[1] == 0) return()
@@ -217,11 +220,11 @@ create_long_matrix <- function(input_file){
     #                                         header = FALSE,
     #                                         check.names = FALSE,
     #                                         comment.char = ""))
-    # 
+    #
     #     oma_ids[, 1] <- as.character(oma_ids[, 1])
     #     long_dataframe <- oma_ids_to_long(oma_ids[, 1], oma_type)
     #   })
-    # } 
+    # }
     else {
       return(NULL)
     }

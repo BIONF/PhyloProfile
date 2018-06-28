@@ -31,7 +31,7 @@ source("R/create_profile_plot.R")
 
 source("R/group_comparison.R")
 
-# MAIN UI ====================================================================-
+# MAIN UI =====================================================================
 
 
 shinyUI(
@@ -641,6 +641,7 @@ shinyUI(
               column(
                 3,
                 uiOutput("select_dist_method")
+
               ),
               
               column(
@@ -720,8 +721,12 @@ shinyUI(
                 uiOutput("percent_dist.ui")
               ),
               column(
-                1,
+                2,
                 create_text_size("dist_text_size", "Label size", 12, 100)
+              ),
+              column(
+                2,
+                create_plot_size("dist_width", "Width (px)", 600)
               )
             )
           ),
@@ -878,10 +883,10 @@ shinyUI(
                 ),
                 uiOutput("add_gc_custom_profile_check")
               )
-              )
-            ),
+            )
+          ),
           group_comparison_ui("group_comparison")
-          )
+        )
       ),
       
       # DATA DOWNLOAD TAB =====================================================
@@ -923,11 +928,14 @@ shinyUI(
       selectInput(
         "selected_oma_type",
         label = "Select type of OMA orthologs:",
-        choices = list("PAIR", "HOG", "OG"),
-        selected = "PAIR"
+        choices = list("HOG", "OG", "PAIR"),
+        selected = "HOG"
       ),
       shinyBS::bsButton("get_data_oma", "Get data", style = "danger"),
-      downloadButton("download_files_oma", "Save data")
+      downloadButton("download_files_oma", "Save data"),
+      br(),
+      em("This windows will close automatically when eveything
+           is done!", style = "color:red")
     ),
     
     # * popup for adding new taxa from input file -----------------------------
@@ -968,9 +976,16 @@ shinyUI(
       4932,
       width = 500
       ),
-    actionButton("new_add", "Add"),
-    actionButton("new_done", "Done")
-        ),
+      textInput(
+        "new_parent",
+        "Parent ID (NCBI taxonomy ID of the next higher rank,
+        e.g. 4932 (S.cerevisiae species))",
+        4932,
+        width = 500
+      ),
+      actionButton("new_add", "Add"),
+      actionButton("new_done", "Done")
+    ),
     
     # * popup for confirming parsing taxa from input file ---------------------
     bsModal(
@@ -1155,8 +1170,9 @@ shinyUI(
           "ID format:",
           choices = list(">speciesID:seqID" = 1,
                          ">speciesID@seqID" = 2,
-                         ">speciesID|seqID" = 3),
-          selected = 1
+                         ">speciesID|seqID" = 3,
+                         ">seqID" = 4),
+          selected = 4
         )
       )
     ),
@@ -1225,7 +1241,7 @@ shinyUI(
              =[0:5]</em>"),
         uiOutput("dot_size_info"),
         br()
-        ),
+      ),
       
       br(),
       hr(),

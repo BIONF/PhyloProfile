@@ -15,7 +15,7 @@ source("R/get_oma_browser.R")
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 
 parse_domain_input <- function(main_input,
-                               input_type,
+                               # input_type,
                                demo_data,
                                anno_location,
                                file_domain_input,
@@ -91,9 +91,10 @@ parse_domain_input <- function(main_input,
   } 
   # for user input data
   else {
-    if (input_type == "oma") {
-      domains <- long_to_domain(main_input)
-    } else {
+    # if (input_type == "oma") {
+    #   # domains <- long_to_domain(main_input)
+    #   domains <- get_domains_from_oma(main_input)
+    # } else {
       for (file in files) {
         if (file != FALSE) {
           exeptions <- c("noFileInput", "noSelectHit", "noFileInFolder")
@@ -138,7 +139,7 @@ parse_domain_input <- function(main_input,
                                "weight",
                                "path")
       }
-    }
+    # }
   }
 
   domains$seedID <- gsub("\\|",":",domains$seedID)

@@ -362,7 +362,6 @@ get_distance_matrix <- function(profiles, method){
   return(distance_matrix)
 }
 
-
 # GROUP COMPARISON ============================================================
 
 #' print list of available taxa ------------------------------------

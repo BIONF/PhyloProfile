@@ -1,9 +1,8 @@
 #' Profile clustering
-#'
+#' 
 #' @param distance_matrix
 #' @param plot_width
 #' @param plot_height
-
 
 if (!require("bioDist")) install.packages("bioDist") # for the mutual information
 if (!require("energy")) install.packages("energy") # for the mutual information, pearson
@@ -123,7 +122,6 @@ cluster_profile <- function(input, output, session,
 #' @param distance_matrix 
 #' @return new data frame with % of present species
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
-
 clusterDataDend <- function(distance_matrix, cluster_method){
   # if (v$doPlot == FALSE) return()
   if (is.null(distance_matrix)) return() 
@@ -145,6 +143,3 @@ dendrogram <- function(dd.col){
     theme(axis.title = element_blank(), axis.text.y = element_blank())
   return(p) 
 }
-
-
-

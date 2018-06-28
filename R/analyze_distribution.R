@@ -7,6 +7,7 @@
 #' @param var_type type of variable (either var1, var2 or presSpec)
 #' @param percent percentage cutoff (from input$percent)
 #' @param dist_text_size text size of distribution plot
+#' @param dist_width width of distribution plot
 #' (from input$dist_text_size)
 #' @return
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
@@ -16,7 +17,7 @@ analyze_distribution_ui <- function(id) {
   tagList(
     column(
       2,
-      downloadButton("plot_download_dist", "Download plot")
+      downloadButton(ns("plot_download_dist"), "Download plot")
     ),
     column(
       10,
@@ -29,15 +30,15 @@ analyze_distribution <- function(input, output, session,
                                  data,
                                  var_id, var_type,
                                  percent,
-                                 dist_text_size){
+                                 dist_text_size, dist_width){
 
   # render dist_plot.ui -------------------------------------------------------
   output$dist_plot.ui <- renderUI({
     ns <- session$ns
-    withSpinner(plotOutput(ns("distribution_plot")))
+    withSpinner(plotOutput(ns("distribution_plot"),  width = dist_width()))
   })
 
-  output$distribution_plot <- renderPlot(width = 512, height = 356, {
+  output$distribution_plot <- renderPlot(width = dist_width(), height = 356, {
     var_dist_plot(data(), var_id(), var_type(), percent(), dist_text_size())
   })
 
@@ -53,6 +54,9 @@ analyze_distribution <- function(input, output, session,
           var_id(), var_type(),
           percent(), dist_text_size()
         ),
+        width = dist_width() * 0.056458333,
+        height = 356 * 0.056458333,
+        unit = "cm",
         dpi = 300, device = "pdf", limitsize = FALSE)
     }
   )
