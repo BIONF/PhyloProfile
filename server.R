@@ -48,7 +48,7 @@ source("R/select_taxon_rank.R")
 source("R/identify_core_gene.R")
 source("R/analyze_distribution.R")
 source("R/estimate_gene_age.R")
-# source("R/cluster_profile.R")
+source("R/cluster_profile.R")
 source("R/cluster_profile2.R")
 
 source("R/create_architecture_plot.R")
@@ -2525,9 +2525,10 @@ shinyServer(function(input, output, session) {
   })
  
   output$select_dist_method <- renderUI({
-    if (is.null(input$profile_type)) return()
+    #if (is.null(input$profile_type)) return()
+   
 
-    if (input$profile_type == "binary") {
+    #if (input$profile_type == "binary") {
       selectInput(
         "dist_method",
         label = h5("Distance measure method:"),
@@ -2535,25 +2536,25 @@ shinyServer(function(input, output, session) {
                        "maximum" = "maximum",
                        "manhattan" = "manhattan",
                        "canberra" = "canberra",
-                       "binary" = "binary",
-                       "pearson correlation coefficient" = "pearson",
-                       "fisher's exact test" = "fisher",
-                       "mutual information" = "mutual_information",
-                       "distance correlation" = "distance_correlation"
+                       "binary" = "binary"#,
+                       #"pearson correlation coefficient" = "pearson",
+                       #"fisher's exact test" = "fisher",
+                       #"mutual information" = "mutual_information",
+                       #"distance correlation" = "distance_correlation"
                        ),
         selected = "euclidean"
       )
-      }
-    else {
-      selectInput(
-        "dist_method",
-        label = h5("Distance measure method:"),
-        choices = list("mutual information" = "mutual_information",
-                       "distance correlation" = "distance_correlation"
-                       ),
-        selected = "euclidean"
-      )
-      }
+    #  }
+    # else {
+    #   selectInput(
+    #     "dist_method",
+    #     label = h5("Distance measure method:"),
+    #     choices = list("mutual information" = "mutual_information",
+    #                    "distance correlation" = "distance_correlation"
+    #                    ),
+    #     selected = "euclidean"
+    #   )
+    #   }
     })
   
   get_distance_matrix_profiles <- reactive({
@@ -2962,7 +2963,7 @@ shinyServer(function(input, output, session) {
     domain_information = get_domain_information,
     plot = reactive(input$plot_gc),
     parameter = get_parameter_input_gc,
-    changed_rank = input$rank_select_gc)
+    changed_rank = reactive(input$rank_select_gc))
 
   # Parameters for the plots in Group Comparison ------------------------------
   get_parameter_input_gc <- reactive({

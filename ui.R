@@ -634,14 +634,13 @@ shinyUI(
           
           wellPanel(
             fluidRow(
-              column(
-                2,
-                uiOutput("select_profile_type")
-              ),
+              # column(
+              #   2,
+              #   uiOutput("select_profile_type")
+              # ),
               column(
                 3,
                 uiOutput("select_dist_method")
-
               ),
               
               column(
@@ -663,11 +662,11 @@ shinyUI(
                 create_plot_size("cluster_plot.width", "Width (px)", 600)
               ),
               column(
-                1,
+                2, #1
                 create_plot_size("cluster_plot.height", "Height (px)", 600)
               ),
               column(
-                2,
+                3, #2
                 checkboxInput(
                   "apply_cluster",
                   em(strong("Apply clustering to profile plot",

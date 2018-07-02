@@ -252,6 +252,7 @@ group_comparison <- function(input, output, session,
   return(gene_list)
 }
 
+# FUNCTIONS ===================================================================
 
 #' Get the dataframe with the significant genes -------------------------------
 #' @export
@@ -288,10 +289,9 @@ get_significant_genes <- function(in_group,
   name_list <- get_name_list(TRUE, TRUE) # load name List
   taxa_list <- get_taxa_list(FALSE, ncbi_id_list) # load list of unsorted taxa
   
-  print(paste0("changed rank: ", changed_rank))
-  print(paste0("main rank: ", main_rank))
-  rank <- main_rank
-
+  if (is.null(changed_rank)) rank <- main_rank
+  else rank <- changed_rank
+  
   #' Get the rank and the in-group --------------------------------------------
   #' if there is more than one element in the in_group -> use common anchestor
   if (use_common_anchestor == TRUE) {

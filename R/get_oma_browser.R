@@ -1,6 +1,18 @@
 #' Get OMA information functions
 #' using OmaDB package (https://github.com/klarakaleb/OmaDB)
-#library(OmaDB)
+#' NOTE: this can be installed under R > 3.5.0 only
+# if (!require("OmaDB")) {
+#   source("https://bioconductor.org/biocLite.R")
+#   biocLite("OmaDB")
+# }
+
+#' In case an old version of R still being used (R < 3.5.0)
+if (!require("OmaDB")) {
+  if ("devtools" %in% installed.packages() == FALSE) {
+    install.packages("devtools")
+  }
+  devtools::install_github("trvinh/OmaDB", force = TRUE)
+}
 
 #' check OMA IDs or Uniprot IDs as valid Input --------------------------------
 #' @export
