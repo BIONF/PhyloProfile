@@ -1,3 +1,8 @@
+#' needed for:  mutual information, pearson 
+if (!require("bioDist")) install.packages("bioDist") 
+#' needed for: distance correlation 
+if (!require("energy")) install.packages("energy") 
+
 #' Calculate percentage of present species-------------------------------------
 #' @export
 #' @param taxa_md_data contains "geneID", "ncbiID", "orthoID",
@@ -169,7 +174,7 @@ create_slider_cutoff <- function(id, title, start, stop, var_id){
 
 update_slider_cutoff <- function(session, id, title, new_var, var_id){
   if (is.null(var_id) || var_id == "") return()
-
+  
   updateSliderInput(session, id, title,
                     value = new_var,
                     min = 0,
@@ -295,6 +300,7 @@ get_contengency_table <- function(profile_1, profile_2){
 #' @author Carla Mölbert (carla.moelbert@gmx.de)
 get_data_clustering <- function(data,
                                 dist_method,
+                                profile_type,
                                 var1_aggregate_by,
                                 var2_aggregate_by){
   sub_data_heat <- subset(data, data$presSpec > 0)
@@ -387,7 +393,7 @@ taxa_select_gc <- function(rank_select_gc, subset_taxa){
     choice <- rbind(dt[rank_name])
     colnames(choice) <- "ncbiID"
     choice <- merge(choice, name_list, by = "ncbiID", all = FALSE)
-
+    
     return(choice)
   }
 }

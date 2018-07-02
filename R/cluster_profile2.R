@@ -4,9 +4,6 @@
 #' @param plot_width
 #' @param plot_height
 
-if (!require("bioDist")) install.packages("bioDist") # mutual information, pearson 
-if (!require("energy")) install.packages("energy") # distance correlation
-
 source("R/functions.R")
 
 cluster_profile_ui <- function(id){

@@ -246,7 +246,7 @@ shinyUI(
                 "top"
               )
             )
-            ),
+          ),
           
           fluidRow(
             column(
@@ -290,7 +290,7 @@ shinyUI(
               href = "https://github.com/BIONF/phyloprofile-data",
               target = "_blank")
           )
-            ),
+        ),
         
         column(
           3,
@@ -407,13 +407,13 @@ shinyUI(
                   list contains all taxonomy ranks and their
                   correspoding NCBI IDs"
                 )
-                ),
+              ),
               
               hr(),
               uiOutput("end_parsing_msg"),
               tableOutput("invalidID.output")
-                )
-            ),
+            )
+          ),
           
           conditionalPanel(
             condition = "output.unk_taxa_status == 0",
@@ -448,8 +448,8 @@ shinyUI(
             ),
             h5("")
           )
-          )
-        ),
+        )
+      ),
       
       # MAIN PROFILE TAB ======================================================
       tabPanel(
@@ -621,7 +621,7 @@ shinyUI(
             )
           )
         )
-        ),
+      ),
       
       # FUNCTION TAB ==========================================================
       navbarMenu(
@@ -666,7 +666,7 @@ shinyUI(
                 create_plot_size("cluster_plot.height", "Height (px)", 600)
               ),
               column(
-                3, #2
+                3, #1
                 checkboxInput(
                   "apply_cluster",
                   em(strong("Apply clustering to profile plot",
@@ -913,7 +913,7 @@ shinyUI(
           )
         )
       )
-      ),
+    ),
     
     # LIST OF POP-UP WINDOWS ==================================================
     
@@ -967,13 +967,13 @@ shinyUI(
         order, etc.)",
         "norank",
         width = 500
-    ),
-    textInput(
-      "new_parent",
-      "Parent ID (NCBI taxonomy ID of the next higher rank,
+      ),
+      textInput(
+        "new_parent",
+        "Parent ID (NCBI taxonomy ID of the next higher rank,
       e.g. 4932 (S.cerevisiae species))",
-      4932,
-      width = 500
+        4932,
+        width = 500
       ),
       textInput(
         "new_parent",
@@ -1003,7 +1003,7 @@ shinyUI(
              style = "color:red"),
       
       dataTableOutput("invalidIDout")
-      ),
+    ),
     
     # * popup for plotting detailed plot --------------------------------------
     bsModal(
@@ -1246,7 +1246,7 @@ shinyUI(
       hr(),
       shinyBS::bsButton("reset_main_config", "Reset", style = "danger"),
       shinyBS::bsButton("applyMainConfig", "Done", style = "warning")
-      ),
+    ),
     
     # * popup for setting Customized plot configurations ----------------------
     bsModal(
@@ -1478,7 +1478,7 @@ shinyUI(
       )
     ),
     
-
+    
     
     # POINT INFO BOX ==========================================================
     conditionalPanel(
@@ -1503,5 +1503,5 @@ shinyUI(
         style = "opacity: 0.80"
       )
     )
-)
+  )
 )

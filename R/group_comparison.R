@@ -26,6 +26,8 @@
 #' @return list of candidate genes
 #' @author Carla Mölbert {carla.moelbert@gmx.de}
 
+if (!require("Matching")) install.packages("Matching") 
+
 source("R/functions.R")
 
 group_comparison_ui <- function(id){
