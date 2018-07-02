@@ -1,11 +1,14 @@
 #' Profile clustering
-#' 
-#' @param distance_matrix
-#' @param plot_width
-#' @param plot_height
+#'
+#' @param data
+#' @param dist_method
+#' @param cluster_method
+#' @param cluster_plot.width
+#' @param cluster_plot.height
+#' @param var1_aggregate_by
 
-if (!require("bioDist")) install.packages("bioDist") # mutual information, pearson 
-if (!require("energy")) install.packages("energy") # distance correlation
+if (!require("bioDist")) install.packages("bioDist") # for the mutual information
+if (!require("energy")) install.packages("energy") # for the mutual information, pearson
 
 source("R/functions.R")
 
@@ -29,17 +32,20 @@ cluster_profile_ui <- function(id){
 }
 
 cluster_profile <- function(input, output, session,
-                            distance_matrix,
-                            cluster_method,
-                            plot_width, plot_height
-                            ){
-  # Reactive function holding data for clustering =========================
+                            data,
+                            dist_method, cluster_method,
+                            cluster_plot.width, cluster_plot.height,
+                            var1_aggregate_by){
+  
   cluster_data <- reactive({
-    df <- clusterDataDend(distance_matrix(), cluster_method())
+    df <- clusterDataDend(data(),
+                          dist_method(),
+                          cluster_method(),
+                          var1_aggregate_by())
+
     return(df)
   })
 
-  # Dendrogram =========================
   output$dendrogram <- renderPlot({
     if (is.null(data())) return()
     dendrogram(cluster_data())
@@ -49,8 +55,8 @@ cluster_profile <- function(input, output, session,
     ns <- session$ns
     withSpinner(
       plotOutput(ns("dendrogram"),
-                 width = plot_width(),
-                 height = plot_height(),
+                 width = cluster_plot.width(),
+                 height = cluster_plot.height(),
                  brush = brushOpts(
                    id = ns("plot_brush"),
                    delay = input$brush_delay,
@@ -61,20 +67,19 @@ cluster_profile <- function(input, output, session,
     )
   })
 
-  # download clustered plot =========================
+  # download clustered plot ---------------------------------------------------
   output$download_cluster <- downloadHandler(
     filename = function() {
       "clustered_plot.pdf"
     },
     content = function(file) {
-      ggsave(file, plot = dendrogram(cluster_data()),
+      ggsave(file, plot = dendrogram(),
              dpi = 300, device = "pdf",
              limitsize = FALSE)
     }
   )
 
-  # Brushed cluster table =========================
-  #' render brushed_cluster.table based on clicked point on dendrogram plot 
+  # render brushed_cluster.table based on clicked point on dendrogram plot ----
   brushed_clusterGene <- reactive({
     # if (v$doPlot == FALSE) return()
 
@@ -105,7 +110,7 @@ cluster_profile <- function(input, output, session,
     data
   })
 
-  #' download gene list from brushed_cluster.table 
+  # download gene list from brushed_cluster.table -----------------------------
   output$download_cluster_genes <- downloadHandler(
     filename = function(){
       c("selectedClusteredGeneList.out")
@@ -115,36 +120,80 @@ cluster_profile <- function(input, output, session,
       write.table(data_out, file, sep = "\t", row.names = FALSE, quote = FALSE)
     }
   )
-  
-  #' Return the brushed genes 
   return(brushed_clusterGene)
 }
 
 
-#' cluster data ---------------------------------------------------------------
+#' cluster data ----------------------------------------------------------------
 #' @export
-#' @param distance_matrix 
+#' @param data
+#' @param dist_method
+#' @param cluster_method
+#' @param var1_aggregate_by
 #' @return new data frame with % of present species
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
-clusterDataDend <- function(distance_matrix, cluster_method){
+
+clusterDataDend <- function(data,
+                            dist_method,
+                            cluster_method,
+                            var1_aggregate_by){
   # if (v$doPlot == FALSE) return()
-  if (is.null(distance_matrix)) return() 
-  dd.col <- as.dendrogram(hclust(distance_matrix,
+  # dataframe for calculate distance matrix
+  dat <- get_data_clustering(data, dist_method, var1_aggregate_by)
+  dd.col <- as.dendrogram(hclust(get_distance_matrix(dat, dist_method),
                                  method = cluster_method))
   return(dd.col)
 }
 
-#' plot clustered profiles ----------------------------------------------------
+#' plot clustered profiles -----------------------------------------------------
 #' @export
 #' @param dd.col
 #' @return plot clustered profiles
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 
 dendrogram <- function(dd.col){
-  if (is.null(dd.col)) return()
   py <- as.ggdend(dd.col)
-  p <- ggplot(py, horiz = TRUE)
-  #, theme = theme_minimal()) +
-  #  theme(axis.title = element_blank(), axis.text.y = element_blank())
+  p <- ggplot(py, horiz = TRUE, theme = theme_minimal()) +
+    theme(axis.title = element_blank(), axis.text.y = element_blank())
   return(p) 
+}
+
+
+#' Get the distance matrix depending on the distance method---------------------
+#' @export
+#' @param profiles datafram containing phylogenetic profiles
+#' @param dist_method distance method
+#' @return distance matrix
+#' @author Carla Mölbert (carla.moelbert@gmx.de)
+get_distance_matrix <- function(profiles, method){
+  dist_methods <- c("euclidean", "maximum", "manhattan", "canberra", "binary")
+  if (method %in% dist_methods) {
+    distance_matrix <- dist(profiles, method = method)
+  } else if (method %in% c("fisher", "distance_correlation")) {
+    matrix <- data.frame()
+    for (i in 1:nrow(profiles)) { # rows
+      for (j in 1:nrow(profiles)) { # columns
+        if (i == j) {
+          matrix[i,i] = 1 # if this cell is NA as.dist does not work probably 
+          break
+        }
+        if (method == "fisher") {
+          contigency_table <- get_contengency_table(profiles[i,], profiles[j,])
+          dist <- fisher.test(contigency_table)
+        } else if (method == "distance_correlation") {
+          dist <- dcor(unlist(profiles[i,]), unlist(profiles[j,]))
+        }
+        matrix[i,j] <- dist 
+      }
+    }
+    profile_names <- rownames(profiles)
+    colnames(matrix) <- profile_names[1:length(profile_names) - 1]
+    rownames(matrix) <- profile_names
+    distance_matrix <- as.dist(matrix)
+  } else if (method == "mutual_information") {
+    distance_matrix <- mutualInfo(as.matrix(profiles))
+  } else if (method == "pearson") {
+    distance_matrix <-  cor.dist(as.matrix(profiles))
+  }
+  return(distance_matrix)
 }

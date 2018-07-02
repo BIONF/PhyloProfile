@@ -21,8 +21,7 @@ source("R/select_taxon_rank.R")
 source("R/identify_core_gene.R")
 source("R/analyze_distribution.R")
 
-#source("R/cluster_profile.R")
-source("R/cluster_profile2.R")
+source("R/cluster_profile.R")
 source("R/estimate_gene_age.R")
 
 source("R/create_architecture_plot.R")
@@ -246,7 +245,7 @@ shinyUI(
                 "top"
               )
             )
-            ),
+          ),
           
           fluidRow(
             column(
@@ -290,7 +289,7 @@ shinyUI(
               href = "https://github.com/BIONF/phyloprofile-data",
               target = "_blank")
           )
-            ),
+        ),
         
         column(
           3,
@@ -407,13 +406,13 @@ shinyUI(
                   list contains all taxonomy ranks and their
                   correspoding NCBI IDs"
                 )
-                ),
+              ),
               
               hr(),
               uiOutput("end_parsing_msg"),
               tableOutput("invalidID.output")
-                )
-            ),
+            )
+          ),
           
           conditionalPanel(
             condition = "output.unk_taxa_status == 0",
@@ -448,8 +447,8 @@ shinyUI(
             ),
             h5("")
           )
-          )
-        ),
+        )
+      ),
       
       # MAIN PROFILE TAB ======================================================
       tabPanel(
@@ -634,13 +633,23 @@ shinyUI(
           
           wellPanel(
             fluidRow(
-              # column(
-              #   2,
-              #   uiOutput("select_profile_type")
-              # ),
               column(
                 3,
-                uiOutput("select_dist_method")
+                selectInput(
+                  "dist_method",
+                  label = h5("Distance measure method:"),
+                  choices = list("euclidean" = "euclidean",
+                                 "maximum" = "maximum",
+                                 "manhattan" = "manhattan",
+                                 "canberra" = "canberra",
+                                 "binary" = "binary" #,
+                                 #"pearson correlation coefficient" = "pearson",
+                                 #"fisher's exact test" = "fisher",
+                                 #"mutual information" = "mutual_information",
+                                 #"distance correlation" = "distance_correlation"
+                                 ),
+                  selected = "euclidean"
+                )
               ),
               
               column(
@@ -662,11 +671,11 @@ shinyUI(
                 create_plot_size("cluster_plot.width", "Width (px)", 600)
               ),
               column(
-                2, #1
+                2,
                 create_plot_size("cluster_plot.height", "Height (px)", 600)
               ),
               column(
-                3, #2
+                3,
                 checkboxInput(
                   "apply_cluster",
                   em(strong("Apply clustering to profile plot",
@@ -913,7 +922,7 @@ shinyUI(
           )
         )
       )
-      ),
+    ),
     
     # LIST OF POP-UP WINDOWS ==================================================
     
@@ -967,13 +976,6 @@ shinyUI(
         order, etc.)",
         "norank",
         width = 500
-    ),
-    textInput(
-      "new_parent",
-      "Parent ID (NCBI taxonomy ID of the next higher rank,
-      e.g. 4932 (S.cerevisiae species))",
-      4932,
-      width = 500
       ),
       textInput(
         "new_parent",
@@ -1003,7 +1005,7 @@ shinyUI(
              style = "color:red"),
       
       dataTableOutput("invalidIDout")
-      ),
+    ),
     
     # * popup for plotting detailed plot --------------------------------------
     bsModal(
@@ -1246,7 +1248,7 @@ shinyUI(
       hr(),
       shinyBS::bsButton("reset_main_config", "Reset", style = "danger"),
       shinyBS::bsButton("applyMainConfig", "Done", style = "warning")
-      ),
+    ),
     
     # * popup for setting Customized plot configurations ----------------------
     bsModal(
@@ -1503,5 +1505,5 @@ shinyUI(
         style = "opacity: 0.80"
       )
     )
-)
+  )
 )
