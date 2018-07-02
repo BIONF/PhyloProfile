@@ -256,7 +256,7 @@ create_text_size <- function(id, title, value, width) {
 }
 
 
-# Profile Clustering ==========================================================
+# PROFILE CLUSTERING =========================
 
 #' Calculate the contengency table for the fisher exact test ------------------
 #' @export
@@ -282,10 +282,10 @@ get_contengency_table <- function(profile_1, profile_2){
       }
     }
   }
-  contigency_table
+  return(contigency_table)
 }
 
-#' get the phylogenetic profiles -----------------------------------------------
+#' get the phylogenetic profiles ----------------------------------------------
 #' @export
 #' @param data
 #' @param dist_method
@@ -323,7 +323,7 @@ get_data_clustering <- function(data,
   return(dat)
 }
 
-#' Get the distance matrix depending on the distance method---------------------
+#' Get the distance matrix depending on the distance method--------------------
 #' @export
 #' @param profiles datafram containing phylogenetic profiles
 #' @param dist_method distance method
@@ -362,12 +362,12 @@ get_distance_matrix <- function(profiles, method){
   return(distance_matrix)
 }
 
-# GROUP COMPARISON ============================================================
+# GROUP COMPARISON =========================
 
-#' print list of available taxa ------------------------------------
+#' print list of available taxa -----------------------------------------------
 #' @export
 #' @param rank_select_gc rank selected for group compariosn
-#' @param subset_taxa contains "seedID",  "orthoID", "feature", "start",   "end"
+#' @param subset_taxa contains "seedID",  "orthoID", "feature", "start",  "end"
 #' @return avilable taxa containing "ncbiID", "fullName", "rank", "parentID"
 #' @author Carla Mölbert (carla.moelbert@gmx.de)
 taxa_select_gc <- function(rank_select_gc, subset_taxa){

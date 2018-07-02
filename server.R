@@ -2952,7 +2952,7 @@ shinyServer(function(input, output, session) {
     group_comparison, "group_comparison",
     selected_in_group = reactive(input$selected_in_group_gc),
     selected_genes_list = reactive(input$list_selected_genes_gc),
-    selected_rank = reactive(input$rank_select),
+    main_rank = reactive(input$rank_select),
     selected_variable = reactive(input$var_name_gc),
     use_common_anchestor = reactive(input$use_common_anchestor),
     reference_taxon = reactive(input$in_select),
@@ -2961,7 +2961,8 @@ shinyServer(function(input, output, session) {
     right_format_features = reactive(input$right_format_features),
     domain_information = get_domain_information,
     plot = reactive(input$plot_gc),
-    parameter = get_parameter_input_gc)
+    parameter = get_parameter_input_gc,
+    changed_rank = input$rank_select_gc)
 
   # Parameters for the plots in Group Comparison ------------------------------
   get_parameter_input_gc <- reactive({

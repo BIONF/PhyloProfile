@@ -1,6 +1,6 @@
 #' Get OMA information functions
 #' using OmaDB package (https://github.com/klarakaleb/OmaDB)
-library(OmaDB)
+#library(OmaDB)
 
 #' check OMA IDs or Uniprot IDs as valid Input --------------------------------
 #' @export
