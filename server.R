@@ -49,7 +49,6 @@ source("R/identify_core_gene.R")
 source("R/analyze_distribution.R")
 source("R/estimate_gene_age.R")
 source("R/cluster_profile.R")
-source("R/cluster_profile2.R")
 
 source("R/create_architecture_plot.R")
 source("R/create_detailed_plot.R")
@@ -1757,12 +1756,25 @@ shinyServer(function(input, output, session) {
   # * clustered heatmap data --------------------------------------------------
   clusteredDataHeat <- reactive({
     dataHeat <- dataHeat()
-    dat <- get_profiles()
+    if (nrow(dataHeat) < 1) return()
+    dat <- get_data_clustering(dataHeat,
+                               input$dist_method,
+                               input$var1_aggregate_by)
     
+    # dataframe for calculate distance matrix
+    sub_data_heat <- subset(dataHeat, dataHeat$presSpec > 0)
+    sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", "presSpec")]
+    sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
+    
+    wide_data <- spread(sub_data_heat, supertaxon, presSpec)
+    dat <- wide_data[, 2:ncol(wide_data)]  # numerical columns
+    rownames(dat) <- wide_data[, 1]
+    dat[is.na(dat)] <- 0
+
     # do clustering based on distance matrix
-    row.order <- hclust(get_distance_matrix_profiles(),
+    row.order <- hclust(dist(dat, method = input$dist_method),
                         method = input$cluster_method)$order
-    col.order <- hclust(get_distance_matrix(t(dat), method = input$dist_method),
+    col.order <- hclust(dist(t(dat), method = input$dist_method),
                         method = input$cluster_method)$order
 
     # re-order distance matrix accoring to clustering
@@ -1770,7 +1782,7 @@ shinyServer(function(input, output, session) {
     
     # return clustered gene ID list
     clustered_gene_ids <- as.factor(row.names(dat_new))
-
+    
     # sort original data according to clustered_gene_ids
     dataHeat$geneID <- factor(dataHeat$geneID,
                               levels = clustered_gene_ids)
@@ -2507,92 +2519,15 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  output$select_profile_type <- renderUI({
-    variable1 <- paste0("profile using ", input$var1_id)
-    variable2 <- paste0("profile using ", input$var2_id)
-    radioButtons(
-      "profile_type",
-      label = h5("Select the profile type"),
-      choiceNames = list(
-        "binary profile",
-        variable1,
-        variable2),
-      choiceValues = list(
-        "binary", "var1", "var2"
-      ),
-      selected = "binary",
-      inline = FALSE)
-  })
- 
-  output$select_dist_method <- renderUI({
-    #if (is.null(input$profile_type)) return()
-   
-
-    #if (input$profile_type == "binary") {
-      selectInput(
-        "dist_method",
-        label = h5("Distance measure method:"),
-        choices = list("euclidean" = "euclidean",
-                       "maximum" = "maximum",
-                       "manhattan" = "manhattan",
-                       "canberra" = "canberra",
-                       "binary" = "binary"#,
-                       #"pearson correlation coefficient" = "pearson",
-                       #"fisher's exact test" = "fisher",
-                       #"mutual information" = "mutual_information",
-                       #"distance correlation" = "distance_correlation"
-                       ),
-        selected = "euclidean"
-      )
-    #  }
-    # else {
-    #   selectInput(
-    #     "dist_method",
-    #     label = h5("Distance measure method:"),
-    #     choices = list("mutual information" = "mutual_information",
-    #                    "distance correlation" = "distance_correlation"
-    #                    ),
-    #     selected = "euclidean"
-    #   )
-    #   }
-    })
-  
-  get_distance_matrix_profiles <- reactive({
-    if (is.null(input$dist_method)) return()
-    profiles <- get_profiles()
-    distance_matrix <- get_distance_matrix(profiles, input$dist_method)
-    return(distance_matrix)
-  })
-  
-  get_profiles <- reactive({
-    data_heat <- dataHeat()
-    if (nrow(data_heat) < 1) return()
-    if (is.null(input$dist_method)) return()
-    profiles <- get_data_clustering(data_heat,
-                                    input$dist_method,
-                                    input$var1_aggregate_by,
-                                    input$var2_aggregate_by)
-    return(profiles)
-  })
-
-
-  
   # ** render cluster tree ----------------------------------------------------
-  # brushed_clusterGene <- callModule(
-  #   cluster_profile, "profile_clustering",
-  #   data = dataHeat,
-  #   dist_method = reactive(input$dist_method),
-  #   cluster_method = reactive(input$cluster_method),
-  #   cluster_plot.width = reactive(input$cluster_plot.width),
-  #   cluster_plot.height = reactive(input$cluster_plot.width)
-  # )
   brushed_clusterGene <- callModule(
-      cluster_profile, "profile_clustering",
-      distance_matrix = get_distance_matrix_profiles,
-      cluster_method = reactive(input$cluster_method),
-      plot_width = reactive(input$cluster_plot.width),
-      plot_height = reactive(input$cluster_plot.width))
-
+    cluster_profile, "profile_clustering",
+    data = dataHeat,
+    dist_method = reactive(input$dist_method),
+    cluster_method = reactive(input$cluster_method),
+    cluster_plot.width = reactive(input$cluster_plot.width),
+    cluster_plot.height = reactive(input$cluster_plot.width)
+  )
   
   # * DISTRIBUTION ANALYSIS ===================================================
   
@@ -2953,7 +2888,7 @@ shinyServer(function(input, output, session) {
     group_comparison, "group_comparison",
     selected_in_group = reactive(input$selected_in_group_gc),
     selected_genes_list = reactive(input$list_selected_genes_gc),
-    main_rank = reactive(input$rank_select),
+    selected_rank = reactive(input$rank_select),
     selected_variable = reactive(input$var_name_gc),
     use_common_anchestor = reactive(input$use_common_anchestor),
     reference_taxon = reactive(input$in_select),
@@ -2962,8 +2897,7 @@ shinyServer(function(input, output, session) {
     right_format_features = reactive(input$right_format_features),
     domain_information = get_domain_information,
     plot = reactive(input$plot_gc),
-    parameter = get_parameter_input_gc,
-    changed_rank = reactive(input$rank_select_gc))
+    parameter = get_parameter_input_gc)
 
   # Parameters for the plots in Group Comparison ------------------------------
   get_parameter_input_gc <- reactive({
@@ -3093,10 +3027,6 @@ shinyServer(function(input, output, session) {
     if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor") {
       filein <- 1
     }
-    
-    if (v$doPlot == FALSE){
-      return(selectInput("list_selected_genes_gc", "Select sequence:", "none"))
-    }
 
     if (is.null(filein) & is.null(file_gc)) {
       return(selectInput("list_selected_genes_gc", "Select sequence:", "none"))
@@ -3213,4 +3143,4 @@ shinyServer(function(input, output, session) {
                          & taxa_list$ncbiID %in% taxa_id_gc]
     return(taxa_name_gc)
   })
-  })
+})
