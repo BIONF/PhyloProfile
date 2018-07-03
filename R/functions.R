@@ -1,5 +1,8 @@
 #' needed for:  mutual information, pearson 
-if (!require("bioDist")) install.packages("bioDist") 
+if (!require("bioDist")) {
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("bioDist")
+}
 #' needed for: distance correlation 
 if (!require("energy")) install.packages("energy") 
 
