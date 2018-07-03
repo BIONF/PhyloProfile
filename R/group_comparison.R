@@ -104,7 +104,7 @@ group_comparison <- function(input, output, session,
                               domain_information(),
                               changed_rank())
       }
-      if (!is.null(significant_genes)) {
+      if (is.data.frame(significant_genes)) {
         x <- as.vector(significant_genes$geneID)
         choices <- c("all", x)
 
@@ -124,6 +124,7 @@ group_comparison <- function(input, output, session,
 
   # Output of the plots for the selected gene(s) =========================
   output$plots_ui <- renderUI({
+    if (is.character(significant_genes)) return(significant_genes)
     get_plots()
   })
   
@@ -324,6 +325,10 @@ get_significant_genes <- function(in_group,
   genes <- sort(genes)
   
   #' Subset depending on the rank and the in_group ----------------------------
+  if (is.na(rank)) {
+    return("No common anchestor was found")
+    
+  }
   selected_subset <- get_selected_subset(rank, in_group, name_list, taxa_list)
   selected_subset <- subset(selected_subset,
                             !selected_subset$fullName == reference_taxon)
@@ -400,6 +405,7 @@ get_selected_subset <- function(rank, in_group, name_list, taxa_list){
   name_list$fullName <- as.character(name_list$fullName)
   name_list_rank <- subset(name_list, name_list$rank == rank)
   in_group_subset <- subset(name_list, name_list$fullName %in% in_group)
+  
 
   #' Look if it has the right rank
   selected_subset <- taxa_list[taxa_list[, rank] %in% in_group_subset$ncbiID, ]
@@ -425,6 +431,7 @@ get_common_ancestor <- function(in_group,
   selected_in_group <- {
     selected_in_group[!duplicated(selected_in_group), ]
   }
+  print(subset(name_list, name_list$rank == "kingdom"))
   
   #' ranks were all elements of the in_group might be in the same taxon
   possible_ranks <- all_ranks[all_ranks >= rank]
@@ -436,6 +443,8 @@ get_common_ancestor <- function(in_group,
 
     current_rank <- substring(possible_ranks[position], 4)
     next_rank <- substring(possible_ranks[position + 1], 4)
+    print(paste0("current rank: ", current_rank))
+    print(paste0("next rank: ", next_rank))
     
     #' dataframe with all elements with fitting rank
     df_in_group <- subset(name_list, name_list$rank == current_rank)
@@ -458,7 +467,6 @@ get_common_ancestor <- function(in_group,
       subset(subset_next_rank,
              subset_next_rank$ncbiID %in% possible_in_group[, next_rank] )
     }
-    
     in_group <- subset_next_rank$fullName
     position <- position + 1
     rank <- next_rank

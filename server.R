@@ -199,6 +199,10 @@ shinyServer(function(input, output, session) {
       em(strong("ERROR: More columns than column names",
                 style = "color:red"))
     }
+    else if (input_type[1] %in% c("long", "wide", "xml", "fasta")) {
+      updateButton(session, "do", disabled = FALSE)
+      return()
+    }
     else {
       if (input_type[1] != "oma") {
         updateButton(session, "do", disabled = TRUE)

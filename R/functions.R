@@ -380,7 +380,6 @@ taxa_select_gc <- function(rank_select_gc, subset_taxa){
   # if there is no rank set, there can not be any available taxa
   if (length(rank_select_gc) == 0) return()
   else{
-    
     # load list of unsorted taxa
     dt <- get_taxa_list(TRUE, subset_taxa)
     
@@ -393,7 +392,6 @@ taxa_select_gc <- function(rank_select_gc, subset_taxa){
     choice <- rbind(dt[rank_name])
     colnames(choice) <- "ncbiID"
     choice <- merge(choice, name_list, by = "ncbiID", all = FALSE)
-    
     return(choice)
   }
 }
