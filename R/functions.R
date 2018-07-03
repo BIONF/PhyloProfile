@@ -381,13 +381,18 @@ taxa_select_gc <- function(rank_select_gc, subset_taxa){
   if (length(rank_select_gc) == 0) return()
   else{
     # load list of unsorted taxa
-    dt <- get_taxa_list(TRUE, subset_taxa)
+    if (is.null(subset_taxa)) dt <- get_taxa_list(FALSE, subset_taxa)
+    else dt <- get_taxa_list(TRUE, subset_taxa)
     
     # load list of taxon name
     name_list <- get_name_list(TRUE, FALSE)
     
     # get rank name from rank_select
-    rank_name <- substr(rank_select_gc, 4, nchar(rank_select_gc))
+    if(substr(rank_select_gc,3,3) == "_") {
+      rank_name <- substr(rank_select_gc, 4, nchar(rank_select_gc))
+    }
+    else rank_name <- rank_select_gc
+    
     choice <- as.data.frame
     choice <- rbind(dt[rank_name])
     colnames(choice) <- "ncbiID"

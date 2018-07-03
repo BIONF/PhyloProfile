@@ -199,10 +199,6 @@ shinyServer(function(input, output, session) {
       em(strong("ERROR: More columns than column names",
                 style = "color:red"))
     }
-    else if (input_type[1] %in% c("long", "wide", "xml", "fasta")) {
-      updateButton(session, "do", disabled = FALSE)
-      return()
-    }
     else {
       valid_type = c("xml", "fasta", "wide", "long", "oma")
       if (!(input_type[1] %in% valid_type)) {
@@ -2532,22 +2528,22 @@ shinyServer(function(input, output, session) {
     #if (is.null(input$profile_type)) return()
     
     
-   # if (input$profile_type == "binary") {
-      selectInput(
-        "dist_method",
-        label = h5("Distance measure method:"),
-        choices = list("euclidean" = "euclidean",
-                       "maximum" = "maximum",
-                       "manhattan" = "manhattan",
-                       "canberra" = "canberra",
-                       "binary" = "binary"#,
-                       # "pearson correlation coefficient" = "pearson",
-                       # "fisher's exact test" = "fisher",
-                       # "mutual information" = "mutual_information",
-                       # "distance correlation" = "distance_correlation"
-        ),
-        selected = "euclidean"
-      )
+    # if (input$profile_type == "binary") {
+    selectInput(
+      "dist_method",
+      label = h5("Distance measure method:"),
+      choices = list("euclidean" = "euclidean",
+                     "maximum" = "maximum",
+                     "manhattan" = "manhattan",
+                     "canberra" = "canberra",
+                     "binary" = "binary"#,
+                     # "pearson correlation coefficient" = "pearson",
+                     # "fisher's exact test" = "fisher",
+                     # "mutual information" = "mutual_information",
+                     # "distance correlation" = "distance_correlation"
+      ),
+      selected = "euclidean"
+    )
     #}
     # else {
     #   selectInput(
