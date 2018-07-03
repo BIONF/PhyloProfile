@@ -204,7 +204,8 @@ shinyServer(function(input, output, session) {
       return()
     }
     else {
-      if (input_type[1] != "oma") {
+      valid_type = c("xml", "fasta", "wide", "long", "oma")
+      if (!(input_type[1] %in% valid_type)) {
         updateButton(session, "do", disabled = TRUE)
         invalid_oma <- paste(input_type, collapse = "; ")
         msg <- paste0("ERROR: Invalid IDs found! ", invalid_oma)
