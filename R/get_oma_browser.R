@@ -87,6 +87,7 @@ get_domain_from_url <- function(domainURL) {
   return(domains[, c("feature","start","end")])
 }
 
+
 #' get taxonomy ID, sequence and annotation for an OMA sequence ---------------
 #' @export
 #' @param id oma ID
@@ -216,7 +217,7 @@ get_all_domains_oma <- function(final_oma_df) {
                                       seed_line$length,
                                       seed_domains)
     oma_domain_df <- rbind(oma_domain_df, seed_domainDf)
-      
+    
     ortho_domains <- strsplit(as.character(final_oma_df[i,]$domains), "\t")[[1]]
     ortho_domainDf <- create_domain_df(domainID,
                                        final_oma_df[i,]$ortho_id,

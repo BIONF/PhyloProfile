@@ -234,6 +234,8 @@ create_long_matrix <- function(input_file){
   for (i in 1:ncol(long_dataframe)) {
     long_dataframe[, i] <- as.factor(long_dataframe[, i])
   }
+  
+  long_dataframe$orthoID <- gsub("\\|",":",long_dataframe$orthoID) 
 
   return(long_dataframe)
 }

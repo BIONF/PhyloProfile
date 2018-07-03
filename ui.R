@@ -21,7 +21,8 @@ source("R/select_taxon_rank.R")
 source("R/identify_core_gene.R")
 source("R/analyze_distribution.R")
 
-source("R/cluster_profile.R")
+#source("R/cluster_profile.R")
+source("R/cluster_profile2.R")
 source("R/estimate_gene_age.R")
 
 source("R/create_architecture_plot.R")
@@ -620,7 +621,7 @@ shinyUI(
             )
           )
         )
-        ),
+      ),
       
       # FUNCTION TAB ==========================================================
       navbarMenu(
@@ -633,23 +634,13 @@ shinyUI(
           
           wellPanel(
             fluidRow(
+              # column(
+              #   2,
+              #   uiOutput("select_profile_type")
+              # ),
               column(
                 3,
-                selectInput(
-                  "dist_method",
-                  label = h5("Distance measure method:"),
-                  choices = list("euclidean" = "euclidean",
-                                 "maximum" = "maximum",
-                                 "manhattan" = "manhattan",
-                                 "canberra" = "canberra",
-                                 "binary" = "binary" #,
-                                 #"pearson correlation coefficient" = "pearson",
-                                 #"fisher's exact test" = "fisher",
-                                 #"mutual information" = "mutual_information",
-                                 #"distance correlation" = "distance_correlation"
-                                 ),
-                  selected = "euclidean"
-                )
+                uiOutput("select_dist_method")
               ),
               
               column(
@@ -671,11 +662,11 @@ shinyUI(
                 create_plot_size("cluster_plot.width", "Width (px)", 600)
               ),
               column(
-                2,
+                2, #1
                 create_plot_size("cluster_plot.height", "Height (px)", 600)
               ),
               column(
-                3,
+                3, #1
                 checkboxInput(
                   "apply_cluster",
                   em(strong("Apply clustering to profile plot",
@@ -975,6 +966,13 @@ shinyUI(
         "Rank (e.g. \"norank\" (for strain),species,
         order, etc.)",
         "norank",
+        width = 500
+      ),
+      textInput(
+        "new_parent",
+        "Parent ID (NCBI taxonomy ID of the next higher rank,
+      e.g. 4932 (S.cerevisiae species))",
+        4932,
         width = 500
       ),
       textInput(
@@ -1480,7 +1478,7 @@ shinyUI(
       )
     ),
     
-
+    
     
     # POINT INFO BOX ==========================================================
     conditionalPanel(

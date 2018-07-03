@@ -1,3 +1,8 @@
+#' needed for:  mutual information, pearson 
+if (!require("bioDist")) install.packages("bioDist") 
+#' needed for: distance correlation 
+if (!require("energy")) install.packages("energy") 
+
 #' Calculate percentage of present species-------------------------------------
 #' @export
 #' @param taxa_md_data contains "geneID", "ncbiID", "orthoID",
@@ -169,7 +174,7 @@ create_slider_cutoff <- function(id, title, start, stop, var_id){
 
 update_slider_cutoff <- function(session, id, title, new_var, var_id){
   if (is.null(var_id) || var_id == "") return()
-
+  
   updateSliderInput(session, id, title,
                     value = new_var,
                     min = 0,
@@ -204,66 +209,6 @@ create_select_gene <- function(id, list, selected) {
               selected = selected,
               multiple = TRUE,
               selectize = FALSE)
-}
-
-#' get the phylogenetic profiles -----------------------------------------------
-#' @export
-#' @param data
-#' @param dist_method
-#' @param var1_aggregate_by
-#' @return dataframe containing phylogenetic profiles
-#' @author Carla Mölbert (carla.moelbert@gmx.de)
-get_data_clustering <- function(data, dist_method, var1_aggregate_by){
-  sub_data_heat <- subset(data, data$presSpec > 0)
-  if (dist_method %in% c("mutual_information", "distance_correlation")) {
-    # Profiles with FAS scores
-    sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", "var1")]
-    sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
-    
-    sub_data_heat <- aggregate(sub_data_heat[, "var1"],
-                               list(sub_data_heat$geneID,
-                                    sub_data_heat$supertaxon),
-                               FUN = var1_aggregate_by)
-    colnames(sub_data_heat) <- c("geneID", "supertaxon", "var1")
-    
-    wide_data <- spread(sub_data_heat, supertaxon, var1)
-  }else {
-    # Binary Profiles 
-    sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", "presSpec")]
-    sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
-    wide_data <- spread(sub_data_heat, supertaxon, presSpec)
-  }
-  dat <- wide_data[, 2:ncol(wide_data)]  # numerical columns
-  rownames(dat) <- wide_data[, 1]
-  dat[is.na(dat)] <- 0
-  return(dat)
-}
-
-#' Calculate the contengency table for the fisher exact test -------------------
-#' @export
-#' @param profile1 vector with 0,1 as entrys
-#' @param profile2 vector with 0,1 as entrys
-#' @return contengency table countin the distribution of 0,1 in the different 
-#' profiles
-#' @author Carla Mölbert (carla.moelbert@gmx.de)
-get_contengency_table <- function(profile_1, profile_2){
-  contigency_table <- data.frame(c(0,0), c(0,0))
-  for (i in 1:length(profile_1)) {
-    if (profile_1[i] == 1) {
-      if (profile_2[i] == 1) {
-        contigency_table[1,1] <- contigency_table[1,1] + 1
-      } else {
-        contigency_table[2,1] <- contigency_table[2,1] + 1
-      }
-    } else{
-      if (profile_2[i] == 1) {
-        contigency_table[1,2] <- contigency_table[1,2] + 1
-      } else {
-        contigency_table[2,2] <- contigency_table[2,2] + 1
-      }
-    }
-  }
-  contigency_table
 }
 
 create_slider_cutoff <- function(id, title, start, stop, var_id){
@@ -316,32 +261,142 @@ create_text_size <- function(id, title, value, width) {
 }
 
 
-# GROUP COMPARISON ============================================================
+# PROFILE CLUSTERING =========================
 
-#' print list of available taxa ------------------------------------
+#' Calculate the contengency table for the fisher exact test ------------------
+#' @export
+#' @param profile1 vector with 0,1 as entrys
+#' @param profile2 vector with 0,1 as entrys
+#' @return contengency table countin the distribution of 0,1 in the different 
+#' profiles
+#' @author Carla Mölbert (carla.moelbert@gmx.de)
+get_contengency_table <- function(profile_1, profile_2){
+  contigency_table <- data.frame(c(0,0), c(0,0))
+  for (i in 1:length(profile_1)) {
+    if (profile_1[i] == 1) {
+      if (profile_2[i] == 1) {
+        contigency_table[1,1] <- contigency_table[1,1] + 1
+      } else {
+        contigency_table[2,1] <- contigency_table[2,1] + 1
+      }
+    } else{
+      if (profile_2[i] == 1) {
+        contigency_table[1,2] <- contigency_table[1,2] + 1
+      } else {
+        contigency_table[2,2] <- contigency_table[2,2] + 1
+      }
+    }
+  }
+  return(contigency_table)
+}
+
+#' get the phylogenetic profiles ----------------------------------------------
+#' @export
+#' @param data
+#' @param dist_method
+#' @param var1_aggregate_by
+#' @param var2_aggregate_by
+#' @return dataframe containing phylogenetic profiles
+#' @author Carla Mölbert (carla.moelbert@gmx.de)
+get_data_clustering <- function(data,
+                                dist_method,
+                                profile_type,
+                                var1_aggregate_by,
+                                var2_aggregate_by){
+  sub_data_heat <- subset(data, data$presSpec > 0)
+  
+  if (dist_method %in% c("mutual_information", "distance_correlation")) {
+    # Profiles with FAS scores
+    sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", "var1")]
+    sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
+    
+    sub_data_heat <- aggregate(sub_data_heat[, "var1"],
+                               list(sub_data_heat$geneID,
+                                    sub_data_heat$supertaxon),
+                               FUN = var1_aggregate_by)
+    colnames(sub_data_heat) <- c("geneID", "supertaxon", "var1")
+    
+    wide_data <- spread(sub_data_heat, supertaxon, var1)
+  }else {
+    # Binary Profiles 
+    sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", "presSpec")]
+    sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
+    wide_data <- spread(sub_data_heat, supertaxon, presSpec)
+  }
+  dat <- wide_data[, 2:ncol(wide_data)]  # numerical columns
+  rownames(dat) <- wide_data[, 1]
+  dat[is.na(dat)] <- 0
+  return(dat)
+}
+
+#' Get the distance matrix depending on the distance method--------------------
+#' @export
+#' @param profiles datafram containing phylogenetic profiles
+#' @param dist_method distance method
+#' @return distance matrix
+#' @author Carla Mölbert (carla.moelbert@gmx.de)
+get_distance_matrix <- function(profiles, method){
+  dist_methods <- c("euclidean", "maximum", "manhattan", "canberra", "binary")
+  if (method %in% dist_methods) {
+    distance_matrix <- dist(profiles, method = method)
+  } else if (method %in% c("fisher", "distance_correlation")) {
+    matrix <- data.frame()
+    for (i in 1:nrow(profiles)) { # rows
+      for (j in 1:nrow(profiles)) { # columns
+        if (i == j) {
+          matrix[i,i] = 1 # if this cell is NA as.dist does not work probably 
+          break
+        }
+        if (method == "fisher") {
+          contigency_table <- get_contengency_table(profiles[i,], profiles[j,])
+          dist <- fisher.test(contigency_table)
+        } else if (method == "distance_correlation") {
+          dist <- dcor(unlist(profiles[i,]), unlist(profiles[j,]))
+        }
+        matrix[i,j] <- dist 
+      }
+    }
+    profile_names <- rownames(profiles)
+    colnames(matrix) <- profile_names[1:length(profile_names) - 1]
+    rownames(matrix) <- profile_names
+    distance_matrix <- as.dist(matrix)
+  } else if (method == "mutual_information") {
+    distance_matrix <- mutualInfo(as.matrix(profiles))
+  } else if (method == "pearson") {
+    distance_matrix <-  cor.dist(as.matrix(profiles))
+  }
+  return(distance_matrix)
+}
+
+# GROUP COMPARISON =========================
+
+#' print list of available taxa -----------------------------------------------
 #' @export
 #' @param rank_select_gc rank selected for group compariosn
-#' @param subset_taxa contains "seedID",  "orthoID", "feature", "start",   "end"
+#' @param subset_taxa contains "seedID",  "orthoID", "feature", "start",  "end"
 #' @return avilable taxa containing "ncbiID", "fullName", "rank", "parentID"
 #' @author Carla Mölbert (carla.moelbert@gmx.de)
 taxa_select_gc <- function(rank_select_gc, subset_taxa){
   # if there is no rank set, there can not be any available taxa
   if (length(rank_select_gc) == 0) return()
   else{
-    
     # load list of unsorted taxa
-    dt <- get_taxa_list(TRUE, subset_taxa)
+    if (is.null(subset_taxa)) dt <- get_taxa_list(FALSE, subset_taxa)
+    else dt <- get_taxa_list(TRUE, subset_taxa)
     
     # load list of taxon name
     name_list <- get_name_list(TRUE, FALSE)
     
     # get rank name from rank_select
-    rank_name <- substr(rank_select_gc, 4, nchar(rank_select_gc))
+    if(substr(rank_select_gc,3,3) == "_") {
+      rank_name <- substr(rank_select_gc, 4, nchar(rank_select_gc))
+    }
+    else rank_name <- rank_select_gc
+    
     choice <- as.data.frame
     choice <- rbind(dt[rank_name])
     colnames(choice) <- "ncbiID"
     choice <- merge(choice, name_list, by = "ncbiID", all = FALSE)
-
     return(choice)
   }
 }
