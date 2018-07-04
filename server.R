@@ -1945,10 +1945,12 @@ shinyServer(function(input, output, session) {
   })
   
   # * render popup for selecting taxon rank and return list of subset taxa ----
-  cus_taxaName <- callModule(select_taxon_rank,
-                             "select_taxon_rank",
-                             rank_select = reactive(input$rank_select),
-                             subset_taxa = subset_taxa)
+  cus_taxaName <- callModule(
+    select_taxon_rank,
+    "select_taxon_rank",
+    rank_select = reactive(input$rank_select),
+    subset_taxa = subset_taxa
+  )
   
   # * get list of all taxa for customized profile -----------------------------
   output$taxa_in <- renderUI({
@@ -2484,7 +2486,7 @@ shinyServer(function(input, output, session) {
   
   # * PROFILE CLUSTERING ======================================================
   
-  # ** check if anywhere elese genes are added to the custemized profile ------
+  # ** check if genes are added anywhere else to the customized profile -------
   observe({
     if (input$add_gene_age_custom_profile == TRUE
         | input$add_core_gene_custom_profile == TRUE
@@ -2502,7 +2504,7 @@ shinyServer(function(input, output, session) {
       HTML('<p><em>(Uncheck "Add to Customized profile" check box in 
            <strong>Gene age estimation</strong> or 
            <strong>Core genes finding</strong> or 
-           <strong>Group Comparison</strong> 
+           <strong>Group comparison</strong> 
            &nbsp;to enable this function)</em></p>')
     }
   })
@@ -2801,7 +2803,7 @@ shinyServer(function(input, output, session) {
   
   # * GENE AGE ESTIMATION =====================================================
   
-  # ** check if anywhere elese genes are added to the custemized profile ------
+  # ** check if genes are added anywhere else to the customized profile -------
   observe({
     if (input$add_cluster_cutom_profile == TRUE
         | input$add_core_gene_custom_profile == TRUE
@@ -2819,7 +2821,7 @@ shinyServer(function(input, output, session) {
       HTML('<p><em>(Uncheck "Add to Customized profile" check box in 
            <strong>Profile clustering</strong> or 
            <strong>Core genes finding</strong> or 
-           <strong>Groupcomparison</strong> 
+           <strong>Group comparison</strong> 
            &nbsp;to enable this function)</em></p>')
     }
   })
@@ -2900,7 +2902,7 @@ shinyServer(function(input, output, session) {
     subset_taxa = subset_taxa
   )
   
-  # check if anywhere elese genes are added to the custemized profile ---------
+  # ** check if genes are added anywhere else to the customized profile -------
   observe({
     if (input$add_cluster_cutom_profile == TRUE
         | input$add_gene_age_custom_profile == TRUE
@@ -2950,23 +2952,119 @@ shinyServer(function(input, output, session) {
   callModule(search_taxon_id,"search_taxon_id")
   
   # * GROUP COMPARISON ========================================================
-  gene_list_gc <- callModule(
-    group_comparison, "group_comparison",
-    selected_in_group = reactive(input$selected_in_group_gc),
-    selected_genes_list = reactive(input$list_selected_genes_gc),
-    main_rank = reactive(input$rank_select),
-    selected_variable = reactive(input$var_name_gc),
-    use_common_anchestor = reactive(input$use_common_anchestor),
-    reference_taxon = reactive(input$in_select),
-    ncbi_id_list = subset_taxa,
-    filtered_data = get_data_filtered,
-    right_format_features = reactive(input$right_format_features),
-    domain_information = get_domain_information,
-    plot = reactive(input$plot_gc),
-    parameter = get_parameter_input_gc,
-    changed_rank = reactive(input$rank_select_gc))
   
-  # Parameters for the plots in Group Comparison ------------------------------
+  # ** list of all available genes --------------------------------------------
+  output$list_genes_gc <- renderUI({
+    filein <- input$main_input
+    
+    file_gc <- input$gc_file
+    if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor") {
+      filein <- 1
+    }
+    
+    if (v$doPlot == FALSE) {
+      return(selectInput("list_selected_genes_gc", "Select sequence(s):", "none"))
+    }
+    
+    if (is.null(filein) & is.null(file_gc)) {
+      return(selectInput("list_selected_genes_gc", "Select sequence(s):", "none"))
+    } else {
+      # full list
+      data <- as.data.frame(get_data_filtered())
+      data$geneID <- as.character(data$geneID)
+      data$geneID <- as.factor(data$geneID)
+      out_all <- as.list(levels(data$geneID))
+      out_all <- append("all", out_all)
+      if (is.null(file_gc)) {
+        selectInput("list_selected_genes_gc", "Select sequence(s):",
+                    out_all,
+                    selected = out_all[1],
+                    multiple = TRUE,
+                    selectize = FALSE)
+      } else {
+        list_gc <- as.data.frame(read.table(file = file_gc$datapath,
+                                            header = FALSE))
+        list_gc$V1 <- as.factor(list_gc$V1)
+        out <- as.list(levels(list_gc$V1))
+        selectInput("list_selected_genes_gc", "Select sequence(s):",
+                    out,
+                    selected = NULL,
+                    multiple = FALSE,
+                    selectize = FALSE)
+      }
+    }
+  })
+  
+  
+  # ** buttons to choose the variable -----------------------------------------
+  output$variable_button_gc <- renderUI({
+    popify(
+      radioButtons(
+        inputId = "var_name_gc",
+        label = "Select variable(s) to compare:",
+        choices = list(input$var1_id, input$var2_id, "Both"),
+        selected = input$var1_id,
+        inline = FALSE),
+      "",
+      "Select variable(s) to generate plots for")
+  })
+  
+  # ** slider to set significance level ---------------------------------------
+  output$significance.ui <- renderUI({
+    msg <- paste0(
+      "P-value cut-off of the statistic test"
+    )
+    popify(
+      sliderInput(
+        "significance",
+        paste("Significance level:"),
+        min = 0,
+        max = 1,
+        step = 0.005,
+        value = c(0.05),
+        width = 200
+      ),
+      "",
+      msg
+    )
+  })
+  
+  # ** reset plots config -----------------------------------------------------
+  observeEvent(input$reset_config_gc, {
+    shinyjs::reset("x_size_gc")
+    shinyjs::reset("y_size_gc")
+    shinyjs::reset("angle_gc")
+    shinyjs::reset("legend_size_gc")
+  })
+  
+  observeEvent(input$apply_config_gc, {
+    toggleModal(session, "gc_plot_config_bs", toggle = "close")
+  })
+  
+  # ** check if genes are added anywhere else to the customized profile -------
+  observe({
+    if (input$add_gene_age_custom_profile == TRUE |
+        input$add_core_gene_custom_profile == TRUE |
+        input$add_cluster_cutom_profile == TRUE) {
+      shinyjs::disable("add_gc_genes_custom_profile")
+    }else{
+      shinyjs::enable("add_gc_genes_custom_profile")
+    }
+  })
+  
+  output$add_gc_custom_profile_check <- renderUI({
+    if (input$add_gene_age_custom_profile == TRUE |
+        input$add_core_gene_custom_profile == TRUE |
+        input$add_cluster_cutom_profile == TRUE) {
+      HTML('<p><em>(Uncheck "Add to Customized profile" check box in 
+           <strong>Gene age estimation</strong> or 
+           <strong>Profile clustering</strong> or 
+           <strong>Core genes finding</strong>&nbsp;to enable this function)
+           </em></p>')
+    }
+  })
+  
+  # ** parameters for the plots in Group Comparison ---------------------------
   get_parameter_input_gc <- reactive({
     input_data <- list("show_p_value" = input$show_p_value,
                        "highlight_significant" = input$highlight_significant,
@@ -2982,35 +3080,107 @@ shinyServer(function(input, output, session) {
     
   })
   
-  # Select in_group -----------------------------------------------------------
+  # ** render plots for group comparison --------------------------------------
+  gene_list_gc <- callModule(
+    group_comparison, "group_comparison",
+    selected_in_group = reactive(input$selected_in_group_gc),
+    selected_genes_list = reactive(input$list_selected_genes_gc),
+    main_rank = reactive(input$rank_select),
+    selected_variable = reactive(input$var_name_gc),
+    use_common_ancestor = reactive(input$use_common_ancestor),
+    reference_taxon = reactive(input$in_select),
+    ncbi_id_list = subset_taxa,
+    filtered_data = get_data_filtered,
+    right_format_features = reactive(input$right_format_features),
+    domain_information = get_domain_information,
+    plot = reactive(input$plot_gc),
+    parameter = get_parameter_input_gc,
+    changed_rank = reactive(input$rank_select_gc))
+  
+  # Functions: Popup Window Select Rank ---------------------------------------
+  # print list of available taxonomy ranks
+  #(the lowest rank is the same as the chosen main rank)
+  output$rank_select_gc <- renderUI({
+    main_rank <- input$rank_select
+    main_choices <- get_taxonomy_ranks()
+    choices_gc <- main_choices[main_choices >= main_rank]
+
+    selectInput("rank_select_gc", label = h5("Select taxonomy rank:"),
+                choices = as.list(choices_gc),
+                selected = main_rank)
+  })
+
+  # Supertaxon of intrest in the popup window for the rank
+  output$taxa_select_gc <- renderUI({
+    choice <- taxa_select_gc(input$rank_select_gc, subset_taxa())
+    choice$fullName <- as.factor(choice$fullName)
+    selectInput("taxa_select_gc", h5("Choose (super)taxon of interest:"),
+                as.list(levels(choice$fullName)),
+                levels(choice$fullName)[1])
+  })
+  
+  # gc_taxa_name <- callModule(
+  #   select_taxon_rank,
+  #   "select_taxon_rank_gc",
+  #   rank_select = reactive(input$rank_select),
+  #   subset_taxa = subset_taxa
+  # )
+  
+  # ** list of selected taxa based on selected taxa_select_gc (Group Comparison) ------
+  taxa_name_gc <- reactive({
+    
+    taxa_select_gc <- input$taxa_select_gc #gc_taxa_name()
+    rank_name <- substr(input$rank_select_gc, 4, nchar(input$rank_select_gc))
+    
+    if (taxa_select_gc == "") return()
+    
+    # load list of unsorted taxa
+    dt <- get_taxa_list(TRUE, subset_taxa())
+    
+    # get ID of customized (super)taxon
+    taxa_list <- get_name_list(FALSE, FALSE)
+    super_id <-
+      taxa_list$ncbiID[taxa_list$fullName == taxa_select_gc
+                       & taxa_list$rank %in% c(rank_name, "norank")]
+    
+    # from that ID, get list of all taxa for main selected taxon
+    main_rank_name <- substr(input$rank_select, 4, nchar(input$rank_select))
+    taxa_id_gc <-
+      levels(as.factor(dt[main_rank_name][dt[rank_name] == super_id, ]))
+    taxa_name_gc <-
+      taxa_list$fullName[taxa_list$rank %in% c(main_rank_name, "norank")
+                         & taxa_list$ncbiID %in% taxa_id_gc]
+    return(taxa_name_gc)
+  })
+  
+  # ** list of available taxa (for selecting as in_group) ---------------------
   output$taxa_list_gc <- renderUI({
     filein <- input$main_input
     if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor") {
       filein <- 1
     }
     if (is.null(filein)) {
-      return(selectInput("in_taxa", "Select in_group:", "none"))
+      return(selectInput("in_taxa", "Select in_group taxa:", "none"))
     }
     if (v$doPlot == FALSE) {
-      return(selectInput("in_taxa", "Select in_group:", "none"))
-    }else{
+      return(selectInput("in_taxa", "Select in_group taxa:", "none"))
+    } else {
       
-      # When the taxonomy rank was changed ------------------------------------
+      #' when the taxonomy rank was changed -----------------------------------
       if (input$apply_taxa_gc == TRUE) {
         choice <- taxa_select_gc(input$rank_select_gc, subset_taxa())
         choice$fullName <- as.factor(choice$fullName)
         out <- as.list(levels(choice$fullName))
         
-        x <- out[out == input$taxa_select_gc]
-        selectInput("selected_in_group_gc", "Select in_group:",
+        x <- out[out == input$taxa_select_gc] #gc_taxa_name()]
+        selectInput("selected_in_group_gc", "Select in_group taxa:",
                     out,
                     selected = x,
                     multiple = TRUE,
                     selectize = FALSE)
-        
-        # When the taxonomy is the same as in input and settings ----------------
-      } else {
-        
+      }
+      #' when the taxonomy is the same as the initially chosen one ------------
+      else {
         # check for the rank of the rank in the input
         ranks <- get_taxonomy_ranks()
         pos <- which(ranks == input$rank_select) # position in the list
@@ -3055,163 +3225,12 @@ shinyServer(function(input, output, session) {
         choice$fullName <- as.factor(choice$fullName)
         out <- as.list(levels(choice$fullName))
         
-        selectInput("selected_in_group_gc", "Select in_group:",
+        selectInput("selected_in_group_gc", "Select in_group taxa:",
                     out,
                     selected = default_select,
                     multiple = TRUE,
                     selectize = FALSE)
       }
     }
-  })
-  
-  # Functions: Popup Window Select Rank ---------------------------------------
-  # print list of available taxonomy ranks
-  #(the lowest rank is the same as the chosen main rank)
-  output$rank_select_gc <- renderUI({
-    main_rank <- input$rank_select
-    main_choices <- get_taxonomy_ranks()
-    choices_gc <- main_choices[main_choices >= main_rank]
-    
-    selectInput("rank_select_gc", label = h5("Select taxonomy rank:"),
-                choices = as.list(choices_gc),
-                selected = main_rank)
-  })
-  
-  # Supertaxon of intrest in the popup window for the rank
-  output$taxa_select_gc <- renderUI({
-    choice <- taxa_select_gc(input$rank_select_gc, subset_taxa())
-    choice$fullName <- as.factor(choice$fullName)
-    selectInput("taxa_select_gc", h5("Choose (super)taxon of interest:"),
-                as.list(levels(choice$fullName)),
-                levels(choice$fullName)[1])
-  })
-  
-  # Select Gene ---------------------------------------------------------------
-  output$list_genes_gc <- renderUI({
-    filein <- input$main_input
-    
-    file_gc <- input$gc_file
-    if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor") {
-      filein <- 1
-    }
-    
-    if (v$doPlot == FALSE){
-      return(selectInput("list_selected_genes_gc", "Select sequence:", "none"))
-    }
-    
-    if (is.null(filein) & is.null(file_gc)) {
-      return(selectInput("list_selected_genes_gc", "Select sequence:", "none"))
-    }else{
-      # full list
-      data <- as.data.frame(get_data_filtered())
-      data$geneID <- as.character(data$geneID)
-      data$geneID <- as.factor(data$geneID)
-      out_all <- as.list(levels(data$geneID))
-      out_all <- append("all", out_all)
-      if (is.null(file_gc)) {
-        selectInput("list_selected_genes_gc", "Select genes:",
-                    out_all,
-                    selected = out_all[1],
-                    multiple = TRUE,
-                    selectize = FALSE)
-      }else {
-        list_gc <- as.data.frame(read.table(file = file_gc$datapath,
-                                            header = FALSE))
-        list_gc$V1 <- as.factor(list_gc$V1)
-        out <- as.list(levels(list_gc$V1))
-        selectInput("list_selected_genes_gc", "Select genes:",
-                    out,
-                    selected = NULL,
-                    multiple = FALSE,
-                    selectize = FALSE)
-      }
-    }
-  })
-  
-  # Buttons to choose the variable --------------------------------------------
-  output$variable_button_gc <- renderUI({
-    popify(
-      radioButtons(
-        inputId = "var_name_gc",
-        label = "Select Variable:",
-        choices = list(input$var1_id, input$var2_id, "Both"),
-        selected = input$var1_id,
-        inline = FALSE),
-      "",
-      "Select variable(s) to generate plots for")
-  })
-  
-  # Slider to choose significance ---------------------------------------------
-  output$significance.ui <- renderUI({
-    popify(
-      sliderInput("significance", paste("Significance level:"),
-                  min = 0,
-                  max = 1,
-                  step = 0.005,
-                  value = c(0.05),
-                  width = 200),
-      "",
-      "maximal probability to reject that in_group and Out-Group have no significant difference by mistake")
-  })
-  
-  # observe Events for the Appearance of the plots ============================
-  # reset config of customized plot -------------------------------------------
-  observeEvent(input$reset_config_gc, {
-    shinyjs::reset("x_size_gc")
-    shinyjs::reset("y_size_gc")
-    shinyjs::reset("angle_gc")
-    shinyjs::reset("legend_size_gc")
-  })
-  
-  # close customized config ---------------------------------------------------
-  observeEvent(input$apply_config_gc, {
-    toggleModal(session, "gc_plot_config_bs", toggle = "close")
-  })
-  
-  # add_custom_profile --------------------------------------------------------
-  # check if add_gene_age_custom_profile (gene age plot) are being clicked
-  observe({
-    if (input$add_gene_age_custom_profile == TRUE |
-        input$add_core_gene_custom_profile == TRUE |
-        input$add_cluster_cutom_profile == TRUE) {
-      shinyjs::disable("add_gc_genes_custom_profile")
-    }else{
-      shinyjs::enable("add_gc_genes_custom_profile")
-    }
-  })
-  
-  output$add_gc_custom_profile_check <- renderUI({
-    if (input$add_gene_age_custom_profile == TRUE |
-        input$add_core_gene_custom_profile == TRUE |
-        input$add_cluster_cutom_profile == TRUE) {
-      HTML('<p><em>(Uncheck "Add to Customized profile" check box in <strong>Gene age estimation</strong>or <strong>Profile clustering</strong> or <strong>Core genes finding</strong>&nbsp;to enable this function)</em></p>')
-    }
-  })
-  
-  # get list of taxa based on selected taxa_select_gc (Group Comparison) ------
-  taxa_name_gc <- reactive({
-    
-    taxa_select_gc <- input$taxa_select_gc
-    rank_name <- substr(input$rank_select_gc, 4, nchar(input$rank_select_gc))
-    
-    if (taxa_select_gc == "") return()
-    
-    # load list of unsorted taxa
-    dt <- get_taxa_list(TRUE, subset_taxa())
-    
-    # get ID of customized (super)taxon
-    taxa_list <- get_name_list(FALSE, FALSE)
-    super_id <-
-      taxa_list$ncbiID[taxa_list$fullName == taxa_select_gc
-                       & taxa_list$rank %in% c(rank_name, "norank")]
-    
-    # from that ID, get list of all taxa for main selected taxon
-    main_rank_name <- substr(input$rank_select, 4, nchar(input$rank_select))
-    taxa_id_gc <-
-      levels(as.factor(dt[main_rank_name][dt[rank_name] == super_id, ]))
-    taxa_name_gc <-
-      taxa_list$fullName[taxa_list$rank %in% c(main_rank_name, "norank")
-                         & taxa_list$ncbiID %in% taxa_id_gc]
-    return(taxa_name_gc)
   })
 })

@@ -164,7 +164,7 @@ shinyUI(
     
     # MAIN NARVARPAGE TABS ----------------------------------------------------
     navbarPage(
-      em(strong("PhyloProfile v0.4.0-beta")),
+      em(strong("PhyloProfile v0.3.0")),
       id = "tabs",
       collapsible = TRUE,
       inverse = TRUE,
@@ -822,65 +822,74 @@ shinyUI(
         
         # * Group Comparison  -------------------------------------------------
         tabPanel(
-          "Group Comparison",
-          h4(strong("Group Comparison")),
+          "Group comparison",
+          h4(strong("Group comparison")),
           wellPanel(
             fluidRow(
               column(
                 3,
-                uiOutput("variable_button_gc")
+                uiOutput("variable_button_gc"),
+                popify(
+                  checkboxInput(
+                    "right_format_features",
+                    "Annotation format:
+                    ’Type_Name’",
+                    value = TRUE,
+                    width = NULL
+                  ),
+                  "",
+                  "E.g.: pfam_ApbA, smart_SRP54"
+                )
+                
               ),
               column(
-                3,
+                2,
                 uiOutput("list_genes_gc"),
                 popify(
                   fileInput("gc_file", NULL, width = "100%"),
                   "",
-                  "Select file of sequences"
+                  "Upload list of genes of interest"
                 )
               ),
               column(
-                3,
+                2,
                 uiOutput("taxa_list_gc"), # Select In-Group
+                shinyBS::bsButton("taxa_gc", "Browse"),
                 checkboxInput(
-                  "use_common_anchestor",
-                  "Use common anchestor",
+                  "use_common_ancestor",
+                  "Use common ancestor",
                   value = TRUE,
                   width = NULL
                 ),
                 bsPopover(
-                  "use_common_anchestor",
+                  "use_common_ancestor",
                   "",
-                  "The common anchestor of the selected taxa
-                  is used as the in-group",
+                  "All taxa that have the same common ancestor with 
+                  the selected taxa above will be considered as the in-group",
                   "top" 
-                ),
-                shinyBS::bsButton("taxa_gc", "Change rank")
+                )
               ),
               column(
                 3,
                 uiOutput("significance.ui"),
                 checkboxInput(
-                  "right_format_features",
-                  "feature format:
-                  ’featuretype_featurename’",
-                  value = TRUE,
-                  width = NULL
-                ),
-                checkboxInput(
                   "add_gc_genes_custom_profile",
-                  strong(em("Add to Customized profile")),
+                  strong(em("Add candidate gene(s) to Customized profile",
+                            style = "color:red")),
                   value = FALSE,
                   width = NULL
                 ),
-                
-                actionButton("plot_gc", "Plot"),
+                uiOutput("add_gc_custom_profile_check")
+              ),
+              column(
+                2,
                 popify(
-                  actionButton("gc_plot_config", "Appearance"),
+                  actionButton("gc_plot_config", "Plot config"),
                   "",
                   "Change the appearance of the plots"
                 ),
-                uiOutput("add_gc_custom_profile_check")
+                hr(),
+                bsButton("plot_gc", "COMPARE!", style = "warning")
               )
             )
           ),
@@ -1468,17 +1477,16 @@ shinyUI(
       "taxa_gc",
       size = "small",
       
+      # select_taxon_rank_ui("select_taxon_rank_gc"),
       uiOutput("rank_select_gc"),
       uiOutput("taxa_select_gc"),
       checkboxInput(
         "apply_taxa_gc",
-        strong("Apply to group comparison",
+        strong("Apply",
                style = "color:red"),
         value = FALSE
       )
     ),
-    
-    
     
     # POINT INFO BOX ==========================================================
     conditionalPanel(

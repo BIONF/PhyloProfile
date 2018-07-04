@@ -87,7 +87,6 @@ get_domain_from_url <- function(domainURL) {
   return(domains[, c("feature","start","end")])
 }
 
-
 #' get taxonomy ID, sequence and annotation for an OMA sequence ---------------
 #' @export
 #' @param id oma ID
