@@ -395,7 +395,7 @@ get_distance_matrix <- function(profiles, method){
 #' print list of available taxa -----------------------------------------------
 #' @export
 #' @param rank_select_gc rank selected for group compariosn
-#' @param subset_taxa contains "seedID",  "orthoID", "feature", "start",  "end"
+#' @param subset_taxa contains "seedID",  "orthoID", "feature", "start", "end"
 #' @return avilable taxa containing "ncbiID", "fullName", "rank", "parentID"
 #' @author Carla Mölbert (carla.moelbert@gmx.de)
 taxa_select_gc <- function(rank_select_gc, subset_taxa){
@@ -410,7 +410,7 @@ taxa_select_gc <- function(rank_select_gc, subset_taxa){
     name_list <- get_name_list(TRUE, FALSE)
     
     # get rank name from rank_select
-    if(substr(rank_select_gc,3,3) == "_") {
+    if (substr(rank_select_gc,3,3) == "_") {
       rank_name <- substr(rank_select_gc, 4, nchar(rank_select_gc))
     }
     else rank_name <- rank_select_gc
@@ -422,4 +422,3 @@ taxa_select_gc <- function(rank_select_gc, subset_taxa){
     return(choice)
   }
 }
-

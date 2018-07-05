@@ -5,6 +5,7 @@
 #' @param plot_width Width of the generated plot (input$cluster_plot.width)
 #' @param plot_height Height of the generated plot (input$cluster_plot.height)
 
+
 source("R/functions.R")
 
 cluster_profile_ui <- function(id){
@@ -31,7 +32,6 @@ cluster_profile <- function(input, output, session,
                             cluster_method,
                             plot_width, plot_height
                             ){
-  
   # Reactive function holding data for clustering =========================
   cluster_data <- reactive({
     df <- clusterDataDend(distance_matrix(), cluster_method())

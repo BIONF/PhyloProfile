@@ -8,8 +8,8 @@
 #'  (input$rank_select)
 #' @param selected_variable variable(s) to claculate the plots for
 #'  (input$var_name_gc)
-#' @param use_common_anchestor boolean if the next common anchestor should be
-#'  used (input$use_common_anchestor)
+#' @param use_common_ancestor boolean if the next common anchestor should be
+#'  used (input$use_common_ancestor)
 #' @param reference_taxon selected taxon name (input$in_select)
 #' @param ncbi_id_list list of ncbi ids (from reactive fn "subset_taxa")
 #' @param filtered_data full processed main data
@@ -27,7 +27,6 @@
 #' @author Carla Mölbert {carla.moelbert@gmx.de}
 
 if (!require("Matching")) install.packages("Matching") 
-
 source("R/functions.R")
 
 group_comparison_ui <- function(id){
@@ -46,12 +45,12 @@ group_comparison_ui <- function(id){
         "features_of_interest_ui",
         "",
         "This function is only use full if the features are
-              saved in the right format: featuretype_featurename"
+        saved in the right format: featuretype_featurename"
       ),
       
       downloadButton(ns("download_plots"), "Download plots"),
       width = 3
-    ),
+      ),
     mainPanel(
       tags$style(
         HTML("#plots_ui { height:650px; overflow-y:scroll}")
@@ -70,7 +69,7 @@ group_comparison <- function(input, output, session,
                              selected_genes_list,
                              main_rank,
                              selected_variable,
-                             use_common_anchestor,
+                             use_common_ancestor,
                              reference_taxon,
                              ncbi_id_list,
                              filtered_data,
@@ -95,7 +94,7 @@ group_comparison <- function(input, output, session,
                               selected_genes_list(),
                               main_rank(),
                               selected_variable(),
-                              use_common_anchestor(),
+                              use_common_ancestor(),
                               reference_taxon(),
                               parameter(),
                               ncbi_id_list(),
@@ -253,7 +252,7 @@ group_comparison <- function(input, output, session,
   
   # List of genes for the customized profile =========================
   gene_list <- reactive({
-    if (!is.null(candidate_genes$plots)){
+    if (!is.null(candidate_genes$plots)) {
       significant_genes <- candidate_genes$plots
       return(significant_genes$geneID)
     } 
@@ -270,7 +269,7 @@ group_comparison <- function(input, output, session,
 #' @param selected_genes_list list of genes
 #' @param rank selected taxonamy rank
 #' @param var variable for which to  calculate the significance
-#' @param use_common_anchestor boolean if the common anchestor should be used
+#' @param use_common_ancestor boolean if the common anchestor should be used
 #' @param reference_taxon taxon which is used as reference
 #' @param parameters contains "show_p_value","highlight_significant",
 #' "significance", "var1_id", "var2_id", "x_size_gc", "y_size_gc",
@@ -285,7 +284,7 @@ get_significant_genes <- function(in_group,
                                   selected_genes_list,
                                   main_rank,
                                   var,
-                                  use_common_anchestor,
+                                  use_common_ancestor,
                                   reference_taxon,
                                   parameters,
                                   ncbi_id_list,
@@ -304,7 +303,7 @@ get_significant_genes <- function(in_group,
   
   #' Get the rank and the in-group --------------------------------------------
   #' if there is more than one element in the in_group -> use common anchestor
-  if (use_common_anchestor == TRUE) {
+  if (use_common_ancestor == TRUE) {
     ancestor <- get_common_ancestor(in_group, rank,
                                     name_list, taxa_list, ncbi_id_list)
     if (is.null(ancestor)) return("No common anchestor found")
@@ -589,7 +588,7 @@ calculate_p_value <- function(var_in, var_out, significance_level){
   if (length(var_in) == 0) return(NULL)
   else if (length(var_out) == 0) return(NULL)
   else{
-    # * Kolmogorov-Smirnov Test -----------------------------------------------
+    #' * Kolmogorov-Smirnov Test ----------------------------------------------
     #' H0 : The two samples have the same distribution
     #' package "Matching" is required 
     ks <- ks.boot(var_in, var_out, alternative = "two.sided")
@@ -597,8 +596,8 @@ calculate_p_value <- function(var_in, var_out, significance_level){
     
     if (p_value < significance_level) pvalue <- c(p_value)
     
-    else{
-      # * Wilcoxon-Mann-Whitney Test --------------------------------------------
+    else {
+      #' * Wilcoxon-Mann-Whitney Test -----------------------------------------
       #' H0: the samples have the same location parameters
       wilcox <- wilcox.test(var_in,
                             var_out,
@@ -611,7 +610,6 @@ calculate_p_value <- function(var_in, var_out, significance_level){
     return(pvalue)
   }
 }
-
 
 #' get the list with all the features in the gene -----------------------------
 #' @export
