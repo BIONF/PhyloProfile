@@ -1,5 +1,8 @@
 #' needed for:  mutual information, pearson 
-if (!require("bioDist")) install.packages("bioDist") 
+if (!require("bioDist")) {
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("bioDist")
+}
 #' needed for: distance correlation 
 if (!require("energy")) install.packages("energy") 
 
@@ -267,7 +270,7 @@ create_text_size <- function(id, title, value, width) {
 #' @export
 #' @param profile1 vector with 0,1 as entrys
 #' @param profile2 vector with 0,1 as entrys
-#' @return contengency table countin the distribution of 0,1 in the different 
+#' @return contengency table counting the distribution of 0,1 in the different 
 #' profiles
 #' @author Carla Mölbert (carla.moelbert@gmx.de)
 get_contengency_table <- function(profile_1, profile_2){
@@ -299,33 +302,52 @@ get_contengency_table <- function(profile_1, profile_2){
 #' @return dataframe containing phylogenetic profiles
 #' @author Carla Mölbert (carla.moelbert@gmx.de)
 get_data_clustering <- function(data,
-                                dist_method,
                                 profile_type,
                                 var1_aggregate_by,
                                 var2_aggregate_by){
-  sub_data_heat <- subset(data, data$presSpec > 0)
   
-  if (dist_method %in% c("mutual_information", "distance_correlation")) {
-    # Profiles with FAS scores
-    sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", "var1")]
-    sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
-    
-    sub_data_heat <- aggregate(sub_data_heat[, "var1"],
-                               list(sub_data_heat$geneID,
-                                    sub_data_heat$supertaxon),
-                               FUN = var1_aggregate_by)
-    colnames(sub_data_heat) <- c("geneID", "supertaxon", "var1")
-    
-    wide_data <- spread(sub_data_heat, supertaxon, var1)
-  }else {
-    # Binary Profiles 
+  sub_data_heat <- subset(data, data$presSpec > 0)
+
+  if (profile_type == "binary") {
+    #' Binary Profiles --------------------------------------------------------
     sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", "presSpec")]
     sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
     wide_data <- spread(sub_data_heat, supertaxon, presSpec)
+    
+    
+  }else {
+    #' Profiles with FAS scores ----------------------------------------------
+    var <- profile_type
+
+    sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", var)]
+    sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
+    
+    #' aggreagte the values by the selected method
+    if (var == "var1") aggregate_by <- var1_aggregate_by
+    else aggregate_by <- var2_aggregate_by
+    
+    sub_data_heat <- aggregate(sub_data_heat[, var],
+                               list(sub_data_heat$geneID,
+                                    sub_data_heat$supertaxon),
+                               FUN = aggregate_by)
+    
+    colnames(sub_data_heat) <- c("geneID", "supertaxon", var)
+    
+    wide_data <- spread(sub_data_heat, supertaxon, var)
+
   }
+  
   dat <- wide_data[, 2:ncol(wide_data)]  # numerical columns
   rownames(dat) <- wide_data[, 1]
   dat[is.na(dat)] <- 0
+  
+  #' Set all values smaller than a set cut off to 0 
+  #' Add cut off as input variable if it improves the prediction
+  if (!profile_type == "binary") {
+    cutoff <- 0 
+    dat[dat < cutoff] <- 0
+  }
+  
   return(dat)
 }
 
@@ -373,7 +395,7 @@ get_distance_matrix <- function(profiles, method){
 #' print list of available taxa -----------------------------------------------
 #' @export
 #' @param rank_select_gc rank selected for group compariosn
-#' @param subset_taxa contains "seedID",  "orthoID", "feature", "start",  "end"
+#' @param subset_taxa contains "seedID",  "orthoID", "feature", "start", "end"
 #' @return avilable taxa containing "ncbiID", "fullName", "rank", "parentID"
 #' @author Carla Mölbert (carla.moelbert@gmx.de)
 taxa_select_gc <- function(rank_select_gc, subset_taxa){
@@ -388,7 +410,7 @@ taxa_select_gc <- function(rank_select_gc, subset_taxa){
     name_list <- get_name_list(TRUE, FALSE)
     
     # get rank name from rank_select
-    if(substr(rank_select_gc,3,3) == "_") {
+    if (substr(rank_select_gc,3,3) == "_") {
       rank_name <- substr(rank_select_gc, 4, nchar(rank_select_gc))
     }
     else rank_name <- rank_select_gc
@@ -400,4 +422,3 @@ taxa_select_gc <- function(rank_select_gc, subset_taxa){
     return(choice)
   }
 }
-
