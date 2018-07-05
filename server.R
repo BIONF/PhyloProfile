@@ -2507,6 +2507,7 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  # ** List of possible profile types -----------------------------------------
   output$select_profile_type <- renderUI({
     variable1 <- paste0("profile using ", input$var1_id)
     variable2 <- paste0("profile using ", input$var2_id)
@@ -2524,11 +2525,12 @@ shinyServer(function(input, output, session) {
       inline = FALSE)
   })
   
+  # ** List of possible distance methods --------------------------------------
   output$select_dist_method <- renderUI({
     #if (is.null(input$profile_type)) return()
     
     
-    # if (input$profile_type == "binary") {
+     #if (input$profile_type == "binary") {
     selectInput(
       "dist_method",
       label = h5("Distance measure method:"),
@@ -2536,11 +2538,11 @@ shinyServer(function(input, output, session) {
                      "maximum" = "maximum",
                      "manhattan" = "manhattan",
                      "canberra" = "canberra",
-                     "binary" = "binary"#,
-                     # "pearson correlation coefficient" = "pearson",
-                     # "fisher's exact test" = "fisher",
-                     # "mutual information" = "mutual_information",
-                     # "distance correlation" = "distance_correlation"
+                     "binary" = "binary",
+                     "pearson correlation coefficient" = "pearson",
+                     "fisher's exact test" = "fisher",
+                     "mutual information" = "mutual_information",
+                     "distance correlation" = "distance_correlation"
       ),
       selected = "euclidean"
     )
@@ -2557,6 +2559,7 @@ shinyServer(function(input, output, session) {
     # }
   })
   
+  # ** Distance matrix --------------------------------------------------------
   get_distance_matrix_profiles <- reactive({
     if (is.null(input$dist_method)) return()
     profiles <- get_profiles()
@@ -2564,13 +2567,14 @@ shinyServer(function(input, output, session) {
     return(distance_matrix)
   })
   
+  # ** Phylogenetic profiles --------------------------------------------------
   get_profiles <- reactive({
     data_heat <- dataHeat()
     if (nrow(data_heat) < 1) return()
     if (is.null(input$dist_method)) return()
     profiles <- get_data_clustering(data_heat,
-                                    input$dist_method,
-                                    input$profile_type,
+                                    #input$profile_type,
+                                    "binary", # Till the second profile type is added
                                     input$var1_aggregate_by,
                                     input$var2_aggregate_by)
     return(profiles)
@@ -2579,14 +2583,6 @@ shinyServer(function(input, output, session) {
   
   
   # ** render cluster tree ----------------------------------------------------
-  # brushed_clusterGene <- callModule(
-  #   cluster_profile, "profile_clustering",
-  #   data = dataHeat,
-  #   dist_method = reactive(input$dist_method),
-  #   cluster_method = reactive(input$cluster_method),
-  #   cluster_plot.width = reactive(input$cluster_plot.width),
-  #   cluster_plot.height = reactive(input$cluster_plot.width)
-  # )
   brushed_clusterGene <- callModule(
     cluster_profile, "profile_clustering",
     distance_matrix = get_distance_matrix_profiles,

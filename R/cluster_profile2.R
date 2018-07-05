@@ -1,8 +1,9 @@
 #' Profile clustering
 #' 
-#' @param distance_matrix
-#' @param plot_width
-#' @param plot_height
+#' @param distance_matrix 
+#' @param cluster_method Method to cluster the distances (input$cluster_method)
+#' @param plot_width Width of the generated plot (input$cluster_plot.width)
+#' @param plot_height Height of the generated plot (input$cluster_plot.height)
 
 source("R/functions.R")
 
@@ -30,6 +31,7 @@ cluster_profile <- function(input, output, session,
                             cluster_method,
                             plot_width, plot_height
                             ){
+  
   # Reactive function holding data for clustering =========================
   cluster_data <- reactive({
     df <- clusterDataDend(distance_matrix(), cluster_method())
@@ -140,8 +142,7 @@ clusterDataDend <- function(distance_matrix, cluster_method){
 dendrogram <- function(dd.col){
   if (is.null(dd.col)) return()
   py <- as.ggdend(dd.col)
-  p <- ggplot(py, horiz = TRUE)
-  #, theme = theme_minimal()) +
-  #  theme(axis.title = element_blank(), axis.text.y = element_blank())
+  p <- ggplot(py, horiz = TRUE, theme = theme_minimal()) +
+   theme(axis.title = element_blank(), axis.text.y = element_blank())
   return(p) 
 }

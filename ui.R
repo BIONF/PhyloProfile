@@ -662,11 +662,11 @@ shinyUI(
                 create_plot_size("cluster_plot.width", "Width (px)", 600)
               ),
               column(
-                2, #1
+                1, #2
                 create_plot_size("cluster_plot.height", "Height (px)", 600)
               ),
               column(
-                3, #1
+                2, #3
                 checkboxInput(
                   "apply_cluster",
                   em(strong("Apply clustering to profile plot",
