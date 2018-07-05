@@ -3080,7 +3080,8 @@ shinyServer(function(input, output, session) {
                        "interesting_features" = input$interesting_features,
                        "angle_gc" = input$angle_gc,
                        "legend_gc" = input$legend_gc,
-                       "legend_size_gc" = input$legend_size_gc)
+                       "legend_size_gc" = input$legend_size_gc,
+                       "p_values_size" = input$p_values_size_gc)
     
   })
   
@@ -3098,42 +3099,43 @@ shinyServer(function(input, output, session) {
     right_format_features = reactive(input$right_format_features),
     domain_information = get_domain_information,
     plot = reactive(input$plot_gc),
-    parameter = get_parameter_input_gc,
-    changed_rank = reactive(input$rank_select_gc))
+    parameter = get_parameter_input_gc
+    )
   
-  # Functions: Popup Window Select Rank ---------------------------------------
-  # print list of available taxonomy ranks
-  #(the lowest rank is the same as the chosen main rank)
-  output$rank_select_gc <- renderUI({
-    main_rank <- input$rank_select
-    main_choices <- get_taxonomy_ranks()
-    choices_gc <- main_choices[main_choices >= main_rank]
-
-    selectInput("rank_select_gc", label = h5("Select taxonomy rank:"),
-                choices = as.list(choices_gc),
-                selected = main_rank)
-  })
-
-  # Supertaxon of intrest in the popup window for the rank
-  output$taxa_select_gc <- renderUI({
-    choice <- taxa_select_gc(input$rank_select_gc, subset_taxa())
-    choice$fullName <- as.factor(choice$fullName)
-    selectInput("taxa_select_gc", h5("Choose (super)taxon of interest:"),
-                as.list(levels(choice$fullName)),
-                levels(choice$fullName)[1])
-  })
+  # # Functions: Popup Window Select Rank ---------------------------------------
+  # # print list of available taxonomy ranks
+  # #(the lowest rank is the same as the chosen main rank)
+  # output$rank_select_gc <- renderUI({
+  #   main_rank <- input$rank_select
+  #   main_choices <- get_taxonomy_ranks()
+  #   choices_gc <- main_choices[main_choices >= main_rank]
+  # 
+  #   selectInput("rank_select_gc", label = h5("Select taxonomy rank:"),
+  #               choices = as.list(choices_gc),
+  #               selected = main_rank)
+  # })
+  # 
+  # # Supertaxon of intrest in the popup window for the rank
+  # output$taxa_select_gc <- renderUI({
+  #   choice <- taxa_select_gc(input$rank_select_gc, subset_taxa())
+  #   choice$fullName <- as.factor(choice$fullName)
+  #   selectInput("taxa_select_gc", h5("Choose (super)taxon of interest:"),
+  #               as.list(levels(choice$fullName)),
+  #               levels(choice$fullName)[1])
+  # })
   
-  # gc_taxa_name <- callModule(
-  #   select_taxon_rank,
-  #   "select_taxon_rank_gc",
-  #   rank_select = reactive(input$rank_select),
-  #   subset_taxa = subset_taxa
-  # )
+  gc_taxa_name <- callModule(
+    select_taxon_rank,
+    "select_taxon_rank_gc",
+    rank_select = reactive(input$rank_select),
+    subset_taxa = subset_taxa
+  )
   
   # ** list of selected taxa based on selected taxa_select_gc (Group Comparison) ------
   taxa_name_gc <- reactive({
     
-    taxa_select_gc <- input$taxa_select_gc #gc_taxa_name()
+    #taxa_select_gc <- input$taxa_select_gc #gc_taxa_name()
+    
     rank_name <- substr(input$rank_select_gc, 4, nchar(input$rank_select_gc))
     
     if (taxa_select_gc == "") return()
@@ -3169,23 +3171,30 @@ shinyServer(function(input, output, session) {
     if (v$doPlot == FALSE) {
       return(selectInput("in_taxa", "Select in_group taxa:", "none"))
     } else {
+      choice <- alltaxa_list()
+      choice$fullName <- as.factor(choice$fullName)
+      
+      out <- as.list(levels(choice$fullName))
+      out <- append("all", out)
       
       #' when the taxonomy rank was changed -----------------------------------
       if (input$apply_taxa_gc == TRUE) {
-        choice <- taxa_select_gc(input$rank_select_gc, subset_taxa())
-        choice$fullName <- as.factor(choice$fullName)
-        out <- as.list(levels(choice$fullName))
+        # choice <- taxa_select_gc(input$rank_select_gc, subset_taxa())
+        # choice$fullName <- as.factor(choice$fullName)
+        # out <- as.list(levels(choice$fullName))
         
-        x <- out[out == input$taxa_select_gc] #gc_taxa_name()]
+        out <- gc_taxa_name()
+        
+        #x <- out[out == input$taxa_select_gc] #gc_taxa_name()]
         selectInput("selected_in_group_gc", "Select in_group taxa:",
                     out,
-                    selected = x,
+                    selected = out,
                     multiple = TRUE,
                     selectize = FALSE)
       }
       #' when the taxonomy is the same as the initially chosen one ------------
       else {
-        # check for the rank of the rank in the input
+        #' check for the rank of the rank in the input
         ranks <- get_taxonomy_ranks()
         pos <- which(ranks == input$rank_select) # position in the list
         higher_rank <- ranks[pos + 1] # take the next higher rank
@@ -3194,26 +3203,25 @@ shinyServer(function(input, output, session) {
         name_list <- get_name_list(TRUE, TRUE) # get the taxon names
         dt <- get_taxa_list(FALSE, subset_taxa) # get the taxa
         
-        # get the info for the reference protein from the namelist
-        reference <- subset(name_list,
-                            name_list$fullName == input$in_select)
+        #' get the info for the reference protein from the namelist
+        reference <- subset(name_list, name_list$fullName == input$in_select)
         
-        # get the id for every rank for the reference protein
+        #' get the id for every rank for the reference protein
         rank_name <- substr(input$rank_select, 4, nchar(input$rank_select))
         reference_dt <- dt[dt[, rank_name] == reference$ncbiID, ]
         
-        # save the next higher rank
+        #' save the next higher rank
         reference_higher_rank <- reference_dt[higher_rank_name]
         reference_higher_rank <-
           reference_higher_rank[!duplicated(reference_higher_rank), ]
         
-        # get all the taxa with the same id in the next higher rank
+        #' get all the taxa with the same id in the next higher rank
         selected_taxa_dt <-
           subset(dt, dt[, higher_rank_name] %in% reference_higher_rank)
         selected_taxa_dt <-
           selected_taxa_dt[!duplicated(selected_taxa_dt[rank_name]), ]
         
-        # get a list with all the ids with reference_higher_rank as parent
+        #' get a list with all the ids with reference_higher_rank as parent
         selected_taxa_ids <- selected_taxa_dt[rank_name]
         if (length(selected_taxa_ids[[1]]) >= 1) {
           selected_taxa_ids <- selected_taxa_ids[[1]]
@@ -3224,10 +3232,6 @@ shinyServer(function(input, output, session) {
           subset(selected_taxa, selected_taxa$ncbiID %in% selected_taxa_ids)
         
         default_select <- selected_taxa$fullName
-        
-        choice <- taxa_select_gc(input$rank_select, subset_taxa())
-        choice$fullName <- as.factor(choice$fullName)
-        out <- as.list(levels(choice$fullName))
         
         selectInput("selected_in_group_gc", "Select in_group taxa:",
                     out,

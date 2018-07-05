@@ -21,12 +21,9 @@
 #' @param plot information if the plots should be generated (input$plot_gc)
 #' @param parameter list of parameters needed to generate the plots 
 #' (from reactive fn "get_parameter_input_gc")
-#' @param changed_rank rank changed for the group comparison function
-#'  (input$rank_select_gc)
 #' @return list of candidate genes
 #' @author Carla Mölbert {carla.moelbert@gmx.de}
 
-if (!require("Matching")) install.packages("Matching") 
 source("R/functions.R")
 
 group_comparison_ui <- function(id){
@@ -76,8 +73,7 @@ group_comparison <- function(input, output, session,
                              right_format_features,
                              domain_information,
                              plot,
-                             parameter,
-                             changed_rank){
+                             parameter){
   # Dataframe for the significant Genes =========================
   #' contains geneID, in_group, out_group, pvalues, features, databases,
   #' rank, var
@@ -100,8 +96,7 @@ group_comparison <- function(input, output, session,
                               ncbi_id_list(),
                               filtered_data(),
                               right_format_features(),
-                              domain_information(),
-                              changed_rank())
+                              domain_information())
       }
       
       if (is.data.frame(candidate_genes$plots)) {
@@ -282,7 +277,7 @@ group_comparison <- function(input, output, session,
 #' @author Carla Mölbert (carla.moelbert@gmx.de)
 get_significant_genes <- function(in_group,
                                   selected_genes_list,
-                                  main_rank,
+                                  rank,
                                   var,
                                   use_common_ancestor,
                                   reference_taxon,
@@ -290,16 +285,12 @@ get_significant_genes <- function(in_group,
                                   ncbi_id_list,
                                   data_full,
                                   right_format_features,
-                                  domains,
-                                  changed_rank){
+                                  domains){
   if (is.null(in_group) | length(selected_genes_list) == 0) return()
   
   
   name_list <- get_name_list(TRUE, TRUE) # load name List
   taxa_list <- get_taxa_list(FALSE, ncbi_id_list) # load list of unsorted taxa
-  
-  if (is.null(changed_rank)) rank <- main_rank
-  else rank <- changed_rank
   
   #' Get the rank and the in-group --------------------------------------------
   #' if there is more than one element in the in_group -> use common anchestor
@@ -496,7 +487,6 @@ get_common_ancestor <- function(in_group,
 #' @return return the pvalues
 #' @author Carla Mölbert (carla.moelbert@gmx.de)
 get_p_values <- function(in_group, out_group, variable, gene, parameters){
-  
   significance_level <- parameters$significance
   
   #' get the p-values for both variables --------------------------------------
@@ -590,10 +580,8 @@ calculate_p_value <- function(var_in, var_out, significance_level){
   else{
     #' * Kolmogorov-Smirnov Test ----------------------------------------------
     #' H0 : The two samples have the same distribution
-    #' package "Matching" is required 
-    ks <- ks.boot(var_in, var_out, alternative = "two.sided")
-    p_value <- ks$ks.boot.pvalue # probabilitiy to recet H0 if it is correct
-    
+    ks <- ks.test(var_in, var_out, exact = FALSE)
+    p_value <- ks$p.value # probabilitiy to recet H0 if it is correct
     if (p_value < significance_level) pvalue <- c(p_value)
     
     else {
@@ -802,7 +790,9 @@ get_boxplot_gc <- function(in_group_df,
     in_group <- in_group_df$var2
     out_group <- out_group_df$var2
   }
-  
+  in_group <- in_group[!is.na(in_group)]
+  out_group <- out_group[!is.na(out_group)]
+
   length_in_group <- length(in_group)
   length_out_group <- length(out_group)
   
@@ -833,7 +823,8 @@ get_boxplot_gc <- function(in_group_df,
   boxplot_gc <- boxplot_gc +
     theme(axis.text.x = element_text(size = parameters$x_size_gc, hjust = 1),
           axis.text.y = element_text(size = parameters$y_size_gc),
-          axis.title.y = element_text(size = parameters$y_size_gc))
+          axis.title.y = element_text(size = parameters$y_size_gc),
+          plot.caption = element_text(size = parameters$p_values_size))
   #' return the boxplot -------------------------------------------------------
   return(boxplot_gc)
 }

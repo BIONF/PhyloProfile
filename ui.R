@@ -1416,9 +1416,10 @@ shinyUI(
         checkboxInput(
           "show_p_value",
           strong("Show P-Values"),
-          value = FALSE,
+          value = TRUE,
           width = 250
-        )
+        ),
+        create_text_size("p_values_size_gc", "P-value label size (px)", 10, 100)
       ),
       column(
         12,
@@ -1477,10 +1478,8 @@ shinyUI(
       "Select taxon/taxa of interest",
       "taxa_gc",
       size = "small",
-      
-      # select_taxon_rank_ui("select_taxon_rank_gc"),
-      uiOutput("rank_select_gc"),
-      uiOutput("taxa_select_gc"),
+
+      select_taxon_rank_ui("select_taxon_rank_gc"),
       checkboxInput(
         "apply_taxa_gc",
         strong("Apply",
