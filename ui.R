@@ -1402,6 +1402,10 @@ shinyUI(
       ),
       column(
         12,
+        create_text_size("p_values_size_gc", "P-value label size (px)", 10, 100)
+      ),
+      column(
+        12,
         sliderInput(
           "angle_gc", "Angle of the X-axis label",
           min = 0,
@@ -1418,8 +1422,7 @@ shinyUI(
           strong("Show P-Values"),
           value = TRUE,
           width = 250
-        ),
-        create_text_size("p_values_size_gc", "P-value label size (px)", 10, 100)
+        )
       ),
       column(
         12,
@@ -1472,7 +1475,7 @@ shinyUI(
       )
     ),
     
-    # * popup for changing the rank in the Group comparison function ----------
+    # * popup for select taxa on Group comparison -----------------------------
     bsModal(
       "taxa_gc_bs",
       "Select taxon/taxa of interest",
