@@ -31,23 +31,38 @@ create_architecture_plot <- function(input, output, session,
                                      label_archi_size, title_archi_size,
                                      archi_height, archi_width){
   output$archi_plot <- renderPlot({
+    if (any(domain_info() == "ERR")) return()
     g <- archi_plot(point_info(),
                     domain_info(),
                     label_archi_size(),
                     title_archi_size())
-    grid.draw(g)
+    if (any(g == "ERR_0")) {
+      msg_plot()
+    } else {
+      grid.draw(g)
+    }
   })
 
   output$archi_plot.ui <- renderUI({
     ns <- session$ns
-    withSpinner(
-      plotOutput(
-        ns("archi_plot"),
-        height = archi_height(),
-        width = archi_width(),
-        click = ns("archi_click")
+    if (any(domain_info() == "ERR")) {
+      msg <- paste0(
+        "<p><em>Wrong domain file has been uploaded! 
+        Please check the correct format in 
+        <a href=\"https://github.com/BIONF/PhyloProfile/wiki/Input-Data#ortholog-annotations-eg-domains\"
+        target=\"_blank\" rel=\"noopener\">our PhyloProfile wiki</a>.</em></p>"
       )
-    )
+      HTML(msg)
+    } else {
+      withSpinner(
+        plotOutput(
+          ns("archi_plot"),
+          height = archi_height(),
+          width = archi_width(),
+          click = ns("archi_click")
+        )
+      )
+    }
   })
 
   output$archi_download <- downloadHandler(
@@ -101,7 +116,7 @@ archi_plot <- function(info,
   subdomain_df$feature <- as.character(subdomain_df$feature)
 
   if (nrow(subdomain_df) < 1) {
-    return()
+    return(paste0("ERR_0"))
   } else {
 
     # ortho domains df
@@ -113,6 +128,9 @@ archi_plot <- function(info,
     if (nrow(seed_df) == 0) seed_df <- ortho_df
 
     seed <- as.character(seed_df$orthoID[1])
+    
+    # return ERR_0 if seed_df and ortho_df are empty
+    if (nrow(seed_df) == 0) return(paste0("ERR_0"))
 
     # change order of one dataframe's features
     # based on order of other df's features
@@ -142,7 +160,7 @@ archi_plot <- function(info,
 
     # plotting
     sep <- ":"
-    # if (!is.null(one_seq_fasta)) sep <- "|"
+    
     if ("length" %in% colnames(subdomain_df)) {
       plot_ortho <- domain_plotting(ordered_ortho_df,
                                     ortho,
@@ -303,4 +321,33 @@ sort_domains <- function(seed_df, ortho_df){
                                      levels = unique(ordered_ortho_df$feature))
   #return sorted df
   return(ordered_ortho_df)
+}
+
+#' plot error message
+#' @export
+#' @param 
+#' @return error message in a ggplot object
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+
+msg_plot <- function() {
+  msg <- paste(
+    "No information about domain architecture!",
+    "Please check:","if you uploaded the correct domain file/folder; or ",
+    "if the selected genes (seed & ortholog) do exist in the uploaded file",
+    "(please search for the corresponding seedID and hitID)",
+    sep = "\n"
+  )
+  x <- c(1,2,3,4,5)
+  y <- c(1,2,3,4,5)
+  g <- ggplot(data.frame(x, y), aes(x,y)) + 
+    geom_point(color = "white") +
+    annotate("text", label = msg, x = 3.5, y = 0.5, size = 5, colour = "red") +
+    theme(axis.line = element_blank(), axis.text = element_blank(),
+          axis.ticks = element_blank(), axis.title = element_blank(),
+          panel.background = element_blank(),
+          panel.border = element_blank(),
+          panel.grid = element_blank(),
+          plot.background = element_blank()) + 
+    ylim(0,1)
+  return(g)
 }

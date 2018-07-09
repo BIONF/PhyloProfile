@@ -1237,7 +1237,6 @@ shinyServer(function(input, output, session) {
                                       session,
                                       datapath)
     }
-    
     return(domain_df)
   })
   
@@ -2312,51 +2311,18 @@ shinyServer(function(input, output, session) {
       em("Please select one ortholog sequence!!")
     }
   })
-  
-  # * check if PLOT button is clicked -----------------------------------------
-  v3 <- reactiveValues(doPlot3 = FALSE)
-  observeEvent(input$do_domain_plot, {
-    v3$doPlot3 <- input$do_domain_plot
-    filein <- input$main_input
-    if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor") {
-      filein <- 1
-    }
-    if (is.null(filein)) v3$doPlot3 <- FALSE
-  })
-  
+
   # * render domain plot ------------------------------------------------------
   observeEvent(input$do_domain_plot, {
-    if (v3$doPlot3 == FALSE) {
-      domainIN <- unlist(strsplit(toString(input$main_input), ","))
-      fileName <- toString(domainIN[1])
-      msg <- paste0(
-        "<p><strong>No information about domain architecture! 
-        Please check:</strong></p>
-        <ul>
-        <li>if you uploaded the correct domain file/folder using 
-        <span style=\"color: #0000ff;\"><em>Upload additional input</em></span>
-         option? (see input example in <span style=\"background-color: #999999;
-         color: #ffffff;\">data/demo/domains/</span> folder); or</li>
-        <li>if&nbsp;the selected genes (seed &amp; ortholog) do exist in the
-         uploaded file (please search for the corresponding&nbsp;
-        <span style=\"text-decoration: underline;\"><em>seedID</em></span>
-         and <span style=\"text-decoration: underline;\"><em>hitID</em></span>,
-         which are&nbsp;shown in <span style=\"color: #ffffff; 
-        background-color: #999999;\">Detailed plot</span>)</li>
-        </ul>"
-      )
-      HTML(msg)
-    } else {
-      callModule(
-        create_architecture_plot, "archi_plot",
-        point_info = point_infoDetail,
-        domain_info = get_domain_information,
-        label_archi_size = reactive(input$label_archi_size),
-        title_archi_size = reactive(input$title_archi_size),
-        archi_height = reactive(input$archi_height),
-        archi_width = reactive(input$archi_width)
-      )
-    }
+    callModule(
+      create_architecture_plot, "archi_plot",
+      point_info = point_infoDetail,
+      domain_info = get_domain_information,
+      label_archi_size = reactive(input$label_archi_size),
+      title_archi_size = reactive(input$title_archi_size),
+      archi_height = reactive(input$archi_height),
+      archi_width = reactive(input$archi_width)
+    )
   })
   
   # ======================== FILTERED DATA DOWNLOADING ========================
