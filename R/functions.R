@@ -1,11 +1,3 @@
-#' needed for:  mutual information, pearson 
-if (!require("bioDist")) {
-  source("https://bioconductor.org/biocLite.R")
-  biocLite("bioDist")
-}
-#' needed for: distance correlation 
-if (!require("energy")) install.packages("energy") 
-
 #' Calculate percentage of present species-------------------------------------
 #' @export
 #' @param taxa_md_data contains "geneID", "ncbiID", "orthoID",
@@ -141,6 +133,23 @@ unsort_id <- function(data, order){
   return(data)
 }
 
+#' Check installed packages
+#' and install missing packages automatically
+#' @param packages list of packages need to be checked
+#' @return none
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+
+install_packages <- function(packages){
+  missing_packages <- 
+    packages[!(packages %in% installed.packages()[, "Package"])]
+  if (length(missing_packages)) 
+    install.packages(
+      missing_packages,
+      dependencies = TRUE,
+      repos = "http://cran.us.r-project.org"
+    )
+}
+
 #' Check internet connection --------------------------------------------------
 #' @return status of internet connection
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
@@ -265,6 +274,14 @@ create_text_size <- function(id, title, value, width) {
 
 
 # PROFILE CLUSTERING =========================
+
+#' needed for:  mutual information, pearson 
+if (!require("bioDist")) {
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("bioDist")
+}
+#' needed for: distance correlation 
+if (!require("energy")) install.packages("energy") 
 
 #' Calculate the contengency table for the fisher exact test ------------------
 #' @export

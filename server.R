@@ -1,64 +1,28 @@
-if (!require("shiny")) install.packages("shiny")
-if (!require("shinyBS")) install.packages("shinyBS")
-if (!require("ggplot2")) install.packages("ggplot2")
-if (!require("reshape2")) install.packages("reshape2")
-if (!require("plyr")) install.packages("plyr")
-if (!require("dplyr")) install.packages("dplyr")
-if (!require("tidyr")) install.packages("tidyr")
-if (!require("scales")) install.packages("scales")
-if (!require("grid")) install.packages("grid")
-if (!require("gridExtra")) install.packages("gridExtra")
-if (!require("ape")) install.packages("ape")
-if (!require("stringr")) install.packages("stringr")
-if (!require("gtable")) install.packages("gtable")
-if (!require("dendextend")) install.packages("dendextend")
-if (!require("ggdendro")) install.packages("ggdendro")
-if (!require("gplots")) install.packages("gplots")
-if (!require("data.table")) install.packages("data.table")
+#' Load packages
+packages <- c("ggplot2", "reshape2", 
+              "plyr", "dplyr", "tidyr", "scales", "grid", 
+              "gridExtra", "ape", "stringr", "gtable", 
+              "dendextend", "ggdendro", "gplots", "data.table", 
+              "taxize", "zoo", "RCurl")
+source("R/functions.R")
+install_packages(packages)
+lapply(packages, library, character.only = TRUE)
+
 if (!require("Biostrings")) {
   source("https://bioconductor.org/biocLite.R")
   biocLite("Biostrings")
 }
-if (!require("taxize")) install.packages("taxize")
-if (!require("zoo")) install.packages("zoo")
-if (!require("RCurl")) install.packages("RCurl")
-if (!require("shinycssloaders")) {
-  if ("devtools" %in% installed.packages() == FALSE) {
-    install.packages("devtools")
-  }
-  devtools::install_github("andrewsali/shinycssloaders", force = TRUE)
-}
 
-source("R/taxonomy_processing.R")
-source("R/functions.R")
-source("R/get_oma_browser.R")
+#' Import function files
+source_files = list.files(path = "R",
+                          pattern = "*.R$",
+                          full.names = TRUE)
+lapply(source_files, source, .GlobalEnv)
 
-source("R/search_taxon_id.R")
-source("R/parse_main_input.R")
-source("R/parse_domain_input.R")
-
-source("R/get_fasta_seqs.R")
-source("R/download_filtered_main.R")
-source("R/download_filtered_customized.R")
-
-source("R/parse_phylotree.R")
-source("R/select_taxon_rank.R")
-
-source("R/identify_core_gene.R")
-source("R/analyze_distribution.R")
-source("R/estimate_gene_age.R")
-source("R/cluster_profile.R")
-source("R/cluster_profile2.R")
-
-source("R/create_architecture_plot.R")
-source("R/create_detailed_plot.R")
-source("R/create_profile_plot.R")
-
-source("R/group_comparison.R")
-
-
+#' set size limit for input (9999mb)
 options(shiny.maxRequestSize = 9999 * 1024 ^ 2)  # size limit for input 9999mb
 
+#' MAIN SERVER ================================================================
 shinyServer(function(input, output, session) {
   # Automatically stop a Shiny app when closing the browser tab
   # session$onSessionEnded(stopApp)
@@ -822,14 +786,14 @@ shinyServer(function(input, output, session) {
   outputOptions(output, "unk_taxa_status", suspendWhenHidden = FALSE)
   
   # * render list of unkTaxa --------------------------------------------------
-  output$unk_taxa_full <- renderDataTable(option = list(searching = FALSE,
-                                                        pageLength = 10), {
-                                                          if (length(unkTaxa()) > 0) {
-                                                            tb <- as.data.frame(unkTaxa())
-                                                            names(tb)[1] <- "New taxon"
-                                                            tb
-                                                          }
-                                                        })
+  output$unk_taxa_full <- 
+    renderDataTable(options = list(searching = FALSE, pageLength = 10),{
+      if (length(unkTaxa()) > 0) {
+        tb <- as.data.frame(unkTaxa())
+        names(tb)[1] <- "New taxon"
+        tb
+      }
+    })
   
   # * update the form for adding new taxa -------------------------------------
   newTaxa <- reactiveValues()
@@ -2955,7 +2919,6 @@ shinyServer(function(input, output, session) {
   callModule(search_taxon_id,"search_taxon_id")
   
   # * GROUP COMPARISON ========================================================
-  
   # ** list of all available genes --------------------------------------------
   output$list_genes_gc <- renderUI({
     filein <- input$main_input

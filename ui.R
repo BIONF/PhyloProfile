@@ -1,8 +1,10 @@
-if (!require("shiny")) install.packages("shiny")
-if (!require("shinyBS")) install.packages("shinyBS")
-if (!require("DT")) install.packages("DT")
-if (!require("colourpicker")) install.packages("colourpicker")
-if (!require("shinyjs")) install.packages("shinyjs")
+#' Load packages
+packages <- c("shiny", "shinyBS", "shinyjs", "colourpicker", "DT")
+
+source("R/functions.R")
+install_packages(packages)
+lapply(packages, library, character.only = TRUE)
+
 if (!require("shinycssloaders")) {
   if ("devtools" %in% installed.packages() == FALSE) {
     install.packages("devtools")
@@ -10,30 +12,13 @@ if (!require("shinycssloaders")) {
   devtools::install_github("andrewsali/shinycssloaders")
 }
 
-source("R/functions.R")
+#' Import function files
+source_files = list.files(path = "R",
+                          pattern = "*.R$",
+                          full.names = TRUE)
+lapply(source_files, source, .GlobalEnv)
 
-source("R/search_taxon_id.R")
-source("R/download_filtered_main.R")
-source("R/download_filtered_customized.R")
-
-source("R/select_taxon_rank.R")
-
-source("R/identify_core_gene.R")
-source("R/analyze_distribution.R")
-
-#source("R/cluster_profile.R")
-source("R/cluster_profile2.R")
-source("R/estimate_gene_age.R")
-
-source("R/create_architecture_plot.R")
-source("R/create_detailed_plot.R")
-source("R/create_profile_plot.R")
-
-source("R/group_comparison.R")
-
-# MAIN UI =====================================================================
-
-
+#' MAIN UI ====================================================================
 shinyUI(
   fluidPage(
     
@@ -626,7 +611,6 @@ shinyUI(
       # FUNCTION TAB ==========================================================
       navbarMenu(
         "Function",
-        
         # * Profiles clustering -----------------------------------------------
         tabPanel(
           "Profiles clustering",
@@ -818,9 +802,6 @@ shinyUI(
           identify_core_gene_ui("core_gene")
         ),
         
-        # * Search for NCBI taxonomy IDs  -------------------------------------
-        search_taxon_id_ui("search_taxon_id"),
-        
         # * Group Comparison  -------------------------------------------------
         tabPanel(
           "Group comparison",
@@ -895,7 +876,10 @@ shinyUI(
             )
           ),
           group_comparison_ui("group_comparison")
-        )
+        ),
+        
+        # * Search for NCBI taxonomy IDs  -------------------------------------
+        search_taxon_id_ui("search_taxon_id")
       ),
       
       # DATA DOWNLOAD TAB =====================================================
