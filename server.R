@@ -360,11 +360,19 @@ shinyServer(function(input, output, session) {
   })
   
   # * check the validity of input tree file and render checkNewick.ui ---------
-  output$checkNewick.ui <- renderUI({
+  check_newick_id <- reactive({
     filein <- input$inputTree
-    if (is.null(filein)) return()
+    req(input$main_input)
     
     check_newick <- check_newick(filein, input$main_input, subset_taxa())
+    if (check_newick == 0) {
+      updateButton(session, "do", disabled = FALSE)
+    }
+    return(check_newick)
+  })
+  
+  output$checkNewick.ui <- renderUI({
+    check_newick <- check_newick_id()
     if (check_newick == 1) {
       updateButton(session, "do", disabled = TRUE)
       HTML("<p><em><span style=\"color: #ff0000;\"><strong>
