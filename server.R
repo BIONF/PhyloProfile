@@ -361,10 +361,10 @@ shinyServer(function(input, output, session) {
   
   # * check the validity of input tree file and render checkNewick.ui ---------
   check_newick_id <- reactive({
-    filein <- input$inputTree
+    req(input$inputTree)
     req(input$main_input)
     
-    check_newick <- check_newick(filein, input$main_input, subset_taxa())
+    check_newick <- check_newick(input$inputTree, input$main_input, subset_taxa())
     if (check_newick == 0) {
       updateButton(session, "do", disabled = FALSE)
     }
@@ -748,6 +748,8 @@ shinyServer(function(input, output, session) {
   # * get list of "unknown" taxa in main input --------------------------------
   unkTaxa <- reactive({
     long_dataframe <- get_main_input()
+    req(long_dataframe)
+    
     if (is.null(long_dataframe)) {
       inputTaxa <- c("NA")
     } else{
@@ -772,15 +774,41 @@ shinyServer(function(input, output, session) {
         } else {
           # get list of all available taxon (from /data/rankList.txt)
           pipe_cmd <- paste0("cut -f 1 ", getwd(), "/data/rankList.txt")
-          allTaxa <- unlist( (read.table(pipe(pipe_cmd))))
+          allTaxa <- unlist((read.table(pipe(pipe_cmd))))
           
           # list of unknown taxa
           unkTaxa <- inputTaxa[!(inputTaxa %in% allTaxa)]
+          if (identical(unkTaxa, character(0))) return()
+          
+          # get non-ncbi taxa
+          unkTaxa <- data.frame("TaxonID" = unkTaxa)
+          unkTaxa$id <- substring(unkTaxa$TaxonID, 5)
+          unkTaxa$Source <- "ncbi"
+          
+          pipe_ncbi <- paste0("cut -f 1 ", getwd(), "/data/taxonNamesFull.txt")
+          ncbiTaxa <- unlist((read.table(pipe(pipe_ncbi))))
+          pipe_new <- paste0("cut -f 1 ", getwd(), "/data/newTaxa.txt")
+          newTaxa <- unlist((read.table(pipe(pipe_new))))
+
+          ncbiID <- levels(ncbiTaxa)
+          maxNCBI <- max(sort(as.numeric(ncbiID[ncbiID != "ncbiID"])))
+          
+          if (nrow(unkTaxa[!(unkTaxa$id %in% ncbiTaxa),]) > 0) {
+            unkTaxa[!(unkTaxa$id %in% ncbiTaxa),]$Source <- "unknown"
+          }
+          
+          if (nrow(unkTaxa[unkTaxa$id %in% newTaxa,]) > 0) {
+            unkTaxa[unkTaxa$id %in% newTaxa,]$Source <- "new"
+          }
+          
+          if (nrow(unkTaxa[unkTaxa$id < maxNCBI,]) > 0) {
+            unkTaxa[unkTaxa$id < maxNCBI,]$Source <- "invalid"
+          }
+          
           # return list of unkTaxa
           return(unkTaxa)
         }
       }
-      
     }
     # return input taxa
     return(inputTaxa)
@@ -789,7 +817,13 @@ shinyServer(function(input, output, session) {
   # * check the status of unkTaxa ---------------------------------------------
   output$unk_taxa_status <- reactive({
     unkTaxa <- unkTaxa()
-    length(unkTaxa) > 0
+    if (length(unkTaxa) > 0) {
+      if ("unknown" %in% unkTaxa$Source) return("unknown")
+      if ("invalid" %in% unkTaxa$Source) return("invalid")
+      else return("ncbi")
+    } else {
+      return(0)
+    }
   })
   outputOptions(output, "unk_taxa_status", suspendWhenHidden = FALSE)
   
@@ -797,9 +831,8 @@ shinyServer(function(input, output, session) {
   output$unk_taxa_full <- 
     renderDataTable(options = list(searching = FALSE, pageLength = 10),{
       if (length(unkTaxa()) > 0) {
-        tb <- as.data.frame(unkTaxa())
-        names(tb)[1] <- "New taxon"
-        tb
+        tb <- unkTaxa()
+        tb[, c("TaxonID", "Source")]
       }
     })
   
@@ -826,6 +859,16 @@ shinyServer(function(input, output, session) {
     updateTextInput(session, "new_parent", value = "")
   })
   
+  # * close adding taxa windows -----------------------------------------------
+  observeEvent(input$new_done, {
+    toggleModal(session, "add_taxa_windows", toggle = "close")
+    write.table(newTaxa$Df, "data/newTaxa.txt",
+                sep = "\t",
+                eol = "\n",
+                row.names = FALSE,
+                quote = FALSE)
+  })
+  
   # * check if data is loaded and "parse" button is clicked and confirmed -----
   v1 <- reactiveValues(parse = FALSE)
   observeEvent(input$but_parse, {
@@ -837,13 +880,11 @@ shinyServer(function(input, output, session) {
   })
   
   # * create rankList.txt, idList.txt, ----------------------------------------
-  # * taxonNamesReduced.txt from input file
-  # * and also create a full taxonomyMatrix.txt for sorting taxa
-  invalidID <-
-    reactiveValues(df = data.frame("Invalid NCBI ID(s)" = as.character(),
-                                   stringsAsFactors = FALSE))
-  
-  observe({
+  invalidID <- reactive({
+    invalidID <- data.frame("id" = as.character(),
+                            "type" = as.character(),
+                            stringsAsFactors = FALSE)
+    
     filein <- input$main_input
     if (is.null(filein)) return()
     input_type <- check_input_vadility(filein) #get_input_type()
@@ -859,135 +900,174 @@ shinyServer(function(input, output, session) {
                                           comment.char = ""))
       
       if (v1$parse == FALSE) return()
-      else{
-        # get list of taxa need to be parsed
-        #(the one mising taxonomy information)
+      else {
+        # get list of taxa need to be parsed (the one mising taxonomy info)
         if (v1$parse == TRUE) {
-          unkTaxa <- unkTaxa()
+          unkTaxaDf <- unkTaxa()
+          unkTaxa <- as.character(substring(unkTaxaDf$TaxonID, 5))
           titleline <- c("geneID", unkTaxa)
         }
+        # invalidIDtmp <- list()
         
-        invalidIDtmp <- list()
+        ncbiTaxonInfo <- fread("data/taxonNamesFull.txt")
+        newTaxaFromFile <- fread("data/newTaxa.txt",
+                                 colClasses = c("ncbiID" = "character"))
+        
+        ## join all ncbi taxa and new taxa together
+        allTaxonInfo <- rbind(newTaxaFromFile, ncbiTaxonInfo)
+        
+        ## check missing ids
+        if (any(!(unkTaxa %in% allTaxonInfo$ncbiID))) {
+          invalid_missing <-
+            unkTaxa[!(unkTaxa %in% allTaxonInfo$ncbiID)]
+          invalidID_tmp <- data.frame(
+            "id" = invalid_missing,
+            "type" = rep("missing", length(invalid_missing))
+          )
+          invalidID <- rbind(invalidID, invalidID_tmp)
+        }
+        
+        ## check IDs & names from newTaxa that are present in taxonNamesFull
+        if (nrow(newTaxaFromFile[newTaxaFromFile$ncbiID 
+                                 %in% ncbiTaxonInfo$ncbiID,]) > 0) {
+          invalid_id <- newTaxaFromFile[newTaxaFromFile$ncbiID
+                                        %in% ncbiTaxonInfo$ncbiID,]$ncbiID
+          invalidID_tmp <- data.frame(
+            "id" = invalid_id,
+            "type" = rep("id", length(invalid_id))
+          )
+          invalidID <- rbind(invalidID, invalidID_tmp)
+          
+          newTaxaFromFile <- newTaxaFromFile[!(newTaxaFromFile$ncbiID 
+                                               %in% ncbiTaxonInfo$ncbiID),]
+        }
+
+        if (nrow(newTaxaFromFile[newTaxaFromFile$fullName 
+                                 %in% ncbiTaxonInfo$fullName,]) > 0) {
+          invalid_name <- newTaxaFromFile[newTaxaFromFile$fullName 
+                                          %in% ncbiTaxonInfo$fullName,]$ncbiID
+          invalidID_tmp <- data.frame(
+            "id" = invalid_name,
+            "type" = rep("name", length(invalid_name))
+          )
+          invalidID <- rbind(invalidID, invalidID_tmp)
+        }
+        
+        if (nrow(invalidID) > 0) {
+          return(invalidID)
+        }
+        
+        ## parse taxonomy info
+        rankList <- data.frame()
+        idList <- data.frame()
+        reducedInfoList <- data.frame()
+        
         # Create 0-row data frame which will be used to store data
         withProgress(message = "Parsing input file", value = 0, {
-          allTaxonInfo <- fread("data/taxonNamesFull.txt")
-          newTaxaFromFile <- fread("data/newTaxa.txt",
-                                   colClasses = c("ncbiID" = "character"))
-          
-          allTaxonInfo <- rbind(newTaxaFromFile, allTaxonInfo)
-          
-          rankList <- data.frame()
-          idList <- data.frame()
-          reducedInfoList <- data.frame()
-          
           for (i in 2:length(titleline)) {
             ## taxon ID
-            refID <- gsub("ncbi", "", titleline[i])
+            refID <- titleline[i]
             
             ## get info for this taxon
             refEntry <- allTaxonInfo[allTaxonInfo$ncbiID == refID, ]
             
-            if (nrow(refEntry) < 1) {
-              invalidIDtmp <- c(invalidIDtmp, refID)
+            if (
+              nrow(reducedInfoList[
+                reducedInfoList$X1 == refEntry$ncbiID, ]) == 0
+            ) {
+              refInfoList <- data.frame(matrix(c(refEntry$ncbiID,
+                                                 refEntry$fullName,
+                                                 refEntry$rank,
+                                                 refEntry$parentID),
+                                               nrow = 1,
+                                               byrow = TRUE),
+                                        stringsAsFactors = FALSE)
+              reducedInfoList <- rbind(reducedInfoList, refInfoList)
+            }
+            
+            # parentID (used to check if hitting last rank, i.e. norank_1)
+            lastID <- refEntry$parentID
+            
+            # create list of rank for this taxon
+            rank <- c(paste0("ncbi", refID), refEntry$fullName)
+            if (refEntry$rank == "norank") {
+              rank <- c(rank, paste0("strain"))
             } else {
+              rank <- c(rank, refEntry$rank)
+            }
+            
+            # create list of IDs for this taxon
+            ids <- list(paste0(refEntry$fullName, "#name"))
+            if (refEntry$rank == "norank") {
+              ids <- c(ids,
+                       paste0(refEntry$ncbiID,
+                              "#",
+                              "strain",
+                              "_",
+                              refEntry$ncbiID))
+            } else {
+              ids <- c(ids,
+                       paste0(refEntry$ncbiID,
+                              "#",
+                              refEntry$rank))
+            }
+            
+            # append info into rank and ids
+            while (lastID != 1) {
+              nextEntry <- allTaxonInfo[allTaxonInfo$ncbiID == lastID, ]
+              
               if (
                 nrow(reducedInfoList[
-                  reducedInfoList$X1 == refEntry$ncbiID, ]) == 0
+                  reducedInfoList$X1 == nextEntry$ncbiID, ]) == 0
               ) {
-                refInfoList <- data.frame(matrix(c(refEntry$ncbiID,
-                                                   refEntry$fullName,
-                                                   refEntry$rank,
-                                                   refEntry$parentID),
-                                                 nrow = 1,
-                                                 byrow = TRUE),
-                                          stringsAsFactors = FALSE)
-                reducedInfoList <- rbind(reducedInfoList, refInfoList)
+                nextEntryList <-
+                  data.frame(matrix(c(nextEntry$ncbiID,
+                                      nextEntry$fullName,
+                                      nextEntry$rank,
+                                      nextEntry$parentID),
+                                    nrow = 1, byrow = TRUE),
+                             stringsAsFactors = FALSE)
+                
+                reducedInfoList <- rbind(reducedInfoList,
+                                         nextEntryList)
               }
               
-              # parentID (used to check if hitting last rank, i.e. norank_1)
-              lastID <- refEntry$parentID
+              lastID <- nextEntry$parentID
               
-              # create list of rank for this taxon
-              rank <- c(paste0("ncbi", refID), refEntry$fullName)
-              if (refEntry$rank == "norank") {
-                rank <- c(rank, paste0("strain"))
-              } else {
-                rank <- c(rank, refEntry$rank)
-              }
-              
-              # create list of IDs for this taxon
-              ids <- list(paste0(refEntry$fullName, "#name"))
-              if (refEntry$rank == "norank") {
+              if ("norank" %in% nextEntry$rank) {
+                rank <- c(rank,
+                          paste0(nextEntry$rank,
+                                 "_",
+                                 nextEntry$ncbiID))
                 ids <- c(ids,
-                         paste0(refEntry$ncbiID,
+                         paste0(nextEntry$ncbiID,
                                 "#",
-                                "strain",
+                                nextEntry$rank,
                                 "_",
-                                refEntry$ncbiID))
+                                nextEntry$ncbiID))
               } else {
+                rank <- c(rank, nextEntry$rank)
                 ids <- c(ids,
-                         paste0(refEntry$ncbiID,
+                         paste0(nextEntry$ncbiID,
                                 "#",
-                                refEntry$rank))
+                                nextEntry$rank))
               }
-              
-              # append info into rank and ids
-              while (lastID != 1) {
-                nextEntry <- allTaxonInfo[allTaxonInfo$ncbiID == lastID, ]
-                
-                if (
-                  nrow(reducedInfoList[
-                    reducedInfoList$X1 == nextEntry$ncbiID, ]) == 0
-                ) {
-                  nextEntryList <-
-                    data.frame(matrix(c(nextEntry$ncbiID,
-                                        nextEntry$fullName,
-                                        nextEntry$rank,
-                                        nextEntry$parentID),
-                                      nrow = 1, byrow = TRUE),
-                               stringsAsFactors = FALSE)
-                  
-                  reducedInfoList <- rbind(reducedInfoList,
-                                           nextEntryList)
-                }
-                
-                lastID <- nextEntry$parentID
-                
-                if ("norank" %in% nextEntry$rank) {
-                  rank <- c(rank,
-                            paste0(nextEntry$rank,
-                                   "_",
-                                   nextEntry$ncbiID))
-                  ids <- c(ids,
-                           paste0(nextEntry$ncbiID,
-                                  "#",
-                                  nextEntry$rank,
-                                  "_",
-                                  nextEntry$ncbiID))
-                } else {
-                  rank <- c(rank, nextEntry$rank)
-                  ids <- c(ids,
-                           paste0(nextEntry$ncbiID,
-                                  "#",
-                                  nextEntry$rank))
-                }
-              }
-              
-              # last rank and id
-              rank <- c(rank, "norank_1")
-              ids <- c(ids, "1#norank_1")
-              
-              # append into rankList and idList files
-              rankListTMP <- data.frame(matrix(unlist(rank),
-                                               nrow = 1, byrow = TRUE),
-                                        stringsAsFactors = FALSE)
-              rankList <- rbind.fill(rankList, rankListTMP)
-              idListTMP <- data.frame(matrix(unlist(ids),
-                                             nrow = 1,
-                                             byrow = TRUE),
-                                      stringsAsFactors = FALSE)
-              idList <- rbind.fill(idList, idListTMP)
             }
+            
+            # last rank and id
+            rank <- c(rank, "norank_1")
+            ids <- c(ids, "1#norank_1")
+            
+            # append into rankList and idList files
+            rankListTMP <- data.frame(matrix(unlist(rank),
+                                             nrow = 1, byrow = TRUE),
+                                      stringsAsFactors = FALSE)
+            rankList <- rbind.fill(rankList, rankListTMP)
+            idListTMP <- data.frame(matrix(unlist(ids),
+                                           nrow = 1,
+                                           byrow = TRUE),
+                                    stringsAsFactors = FALSE)
+            idList <- rbind.fill(idList, idListTMP)
             
             # Increment the progress bar, and update the detail text.
             incProgress(1 / (length(titleline) - 1),
@@ -996,10 +1076,8 @@ shinyServer(function(input, output, session) {
                                         length(titleline) - 1))
           }
         })
-        # save invalid IDs to invalidID$df
-        invalidID$df <- as.data.frame(unlist(invalidIDtmp))
         
-        if (nrow(invalidID$df) < 1) {
+        withProgress(message = "Generating taxonomy file...", value = 0, {
           # open existing files (idList, rankList and taxonNamesReduced.txt)
           ncol <- max(count.fields("data/rankList.txt", sep = "\t"))
           oldIDList <-
@@ -1072,43 +1150,46 @@ shinyServer(function(input, output, session) {
                       eol = "\n",
                       row.names = FALSE,
                       quote = FALSE)
-        }
+        })
       }
     }
+    return()
   })
   
   # * output invalid NCBI ID --------------------------------------------------
   output$invalidID.output <- renderTable({
-    if (nrow(invalidID$df) < 1) return()
+    # invalidID$df <- invalidID()
+    if (is.null(invalidID())) return()
     else{
-      outDf <- invalidID$df
-      colnames(outDf) <- c("Invalid NCBI ID(s)")
+      outDf <- invalidID()
+      colnames(outDf) <- c("Invalid ID(s)", "Type")
       return(outDf)
     }
   })
   
   # * render final msg after taxon parsing ------------------------------------
   output$end_parsing_msg <- renderUI({
-    if (nrow(invalidID$df) < 1) {
-      strong(h4("PLEASE RELOAD THIS TOOL AFTER ADDING NEW TAXA!!!"),
+    # invalidID$df <- invalidID()
+    if (is.null(invalidID())) {
+      strong(h4("PLEASE RELOAD THIS TOOL WHEN FINISHED!!!"),
              style = "color:red")
-    }else{
-      HTML('<p><strong><span style="color: #e12525;">
-           SOME INVALID TAXON IDs HAVE BEEN FOUND!!</span><br>
-           Please check the validity of the following IDs in
-           <a target="_blank" href="https://www.ncbi.nlm.nih.gov/taxonomy">
-           NCBI taxonomy database</a>!</strong></p>')
+    } else {
+      HTML('<p><strong><span style="color: #e12525;"> SOME INVALID TAXON 
+            IDs HAVE BEEN FOUND!!</span><br /> </strong></p>
+            <p><em>Type="<span style="color: #0000ff;">id</span>"/
+            <span style="color: #0000ff;">name</span>: 
+            IDs/names already exist in NCBI!</em></p>
+            <p><em>Type="<span style="color: #0000ff;">missing</span>": IDs 
+            cannot be found in both NCBI and newTaxa.txt file.</em></p>
+            <p>For IDs with type of <em><span style="color: #0000ff;">"id"
+            </span></em> and <em><span style="color: #0000ff;">"name"</span>
+            </em>, please remove them from newTaxa.txt file or 
+            renamed their IDs and names.</p>
+            <p>For IDs with type of <em><span style="color: #0000ff;">"missing"
+            </span></em>, please check the validity of them&nbsp;in 
+            <a href="https://www.ncbi.nlm.nih.gov/taxonomy" target="_blank" 
+            rel="noopener"> NCBI taxonomy database</a>!</p>')
     }
-  })
-  
-  # * close parsing windows ---------------------------------------------------
-  observeEvent(input$new_done, {
-    toggleModal(session, "add_taxa_windows", toggle = "close")
-    write.table(newTaxa$Df, "data/newTaxa.txt",
-                sep = "\t",
-                eol = "\n",
-                row.names = FALSE,
-                quote = FALSE)
   })
   
   # ====================== PROCESSING INPUT DATA ==============================

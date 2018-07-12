@@ -280,7 +280,9 @@ shinyUI(
         column(
           3,
           conditionalPanel(
-            condition = "output.unk_taxa_status == 1",
+            condition = "output.unk_taxa_status == 'unknown' || 
+                        output.unk_taxa_status == 'ncbi' || 
+                        output.unk_taxa_status == 'invalid'",
             strong(h4("New taxa were found:")),
             dataTableOutput("unk_taxa_full")
           ),
@@ -348,50 +350,66 @@ shinyUI(
         column(
           4,
           conditionalPanel(
+            condition = "output.unk_taxa_status == 'unknown' || 
+                        output.unk_taxa_status == 'ncbi' || 
+                        output.unk_taxa_status == 'invalid'",
             
-            condition = "output.unk_taxa_status",
-            strong(h4("PLEASE CHECK:")),
-            
-            em(
-              "Do you have any taxon,
-              which doesn't exist in the NCBI taxonomy database?"
-            ),
-            
-            radioButtons(
-              "new_taxa_ask",
-              "",
-              c("Yes" = "Yes", "No" = "No"),
-              inline = TRUE,
-              selected = "No"
+            conditionalPanel(
+              condition = "output.unk_taxa_status == 'invalid'",
+              HTML(
+                "<p><em>Some new taxa have <span style=\"color: #ff0000;\">
+                invalid IDs</span>. IDs of non-NCBI taxa have to be greater 
+                than 2077091.</em></p>
+                <p><em>Please replace those IDs before continuing!</em></p>"
+              )
             ),
             
             conditionalPanel(
-              condition = "input.new_taxa_ask == 'Yes'",
+              condition = "output.unk_taxa_status == 'unknown'",
+              HTML(
+                '<p><em>NCBI taxonomy information of some taxa can neither 
+                </em></p>
+                <ul>
+                <li><em>be retrieved from NCBI (<span style="color: #0000ff;
+                ">Source="ncbi"</span>) nor </em></li>
+                <li><em>be found in <span style="color: #ff0000;">
+                phyloprofile/data/newTaxa.txt</span>&nbsp;(<span 
+                style="color: #0000ff;">Source="new"</span>) file</em></li>
+                </ul>
+                <p><strong><em>Please add taxonomy information for those 
+                unknown taxa and <span style="color: #ff0000;">
+                reload the tool</span> to continue!</em></strong></p>'
+              ),
+              h5(""),
               shinyBS::bsButton(
                 "add_taxa",
-                "Add info for new taxa",
+                "Add taxonomy info",
                 disabled = FALSE,
                 style = "warning"
               )
             ),
             
             conditionalPanel(
-              condition = "input.new_taxa_ask == 'No'",
-              
+              condition = "output.unk_taxa_status == 'ncbi'",
+              HTML(
+                '<p><em>NCBI taxonomy information of some taxa can either 
+                </em></p>
+                <ul>
+                <li><em>be retrieved from NCBI (<span style="color: #0000ff;
+                ">Source="ncbi"</span>) or </em></li>
+                <li><em>be found in <span style="color: #ff0000;">
+                phyloprofile/data/newTaxa.txt</span>&nbsp;(<span 
+                style="color: #0000ff;">Source="new"</span>) file</em></li>
+                </ul>
+                <p><strong><em>Click here to get required taxonomy information 
+                for those taxa!</em></strong></p>'
+              ),
+              h5(""),
               shinyBS::bsButton(
                 "but_parse",
-                "Get taxonomy info
-                from NCBI *",
+                "Get taxonomy info",
                 disabled = FALSE,
                 style = "warning"
-              ),
-              
-              helpText(
-                em(
-                  "(*) Taxonomy information for a given taxa
-                  list contains all taxonomy ranks and their
-                  correspoding NCBI IDs"
-                )
               ),
               
               hr(),
@@ -938,10 +956,19 @@ shinyUI(
       "add_taxa",
       size = "medium",
       
-      helpText(em(
-        "Use this form to add taxon that does not exist in NCBI taxonomy
-        database (or alternatively you can prepare the data/newTaxa.txt
-        file with the following description for each field).")),
+      HTML(
+        "<p><em>Use this form to add taxon that does not exist in NCBI taxonomy
+         database (or alternatively you can manually prepare the 
+        <span style=\"text-decoration: underline;\">
+        <span style=\"color: #ff0000; text-decoration: underline;\">
+        phyloprofile/data/newTaxa.txt file with the following description 
+        for each field).</em></p>
+        <p><span style=\"color: #ff0000;\"><em><strong>
+        NOTE: ID and name of new taxon must be 
+        <span style=\"text-decoration: underline;\">
+        different</span> from any existing NCBI taxa.</strong></em></span></p>"
+      ),
+      
       textInput(
         "new_id",
         "ID (must be a number and greater than 2077091,
@@ -969,34 +996,24 @@ shinyUI(
         4932,
         width = 500
       ),
-      textInput(
-        "new_parent",
-        "Parent ID (NCBI taxonomy ID of the next higher rank,
-        e.g. 4932 (S.cerevisiae species))",
-        4932,
-        width = 500
-      ),
-      actionButton("new_add", "Add"),
-      actionButton("new_done", "Done")
+      actionButton("new_add", "Add new taxon"),
+      actionButton("new_done", "Finish adding")
     ),
     
     # * popup for confirming parsing taxa from input file ---------------------
     bsModal(
       "parse_confirm",
-      "Get info from input",
+      "Get taxonomy info",
       "but_parse",
       size = "small",
       
-      HTML("Fetching Missing Taxonomy Information from NCBI and
-           Post-processing...<br><br>"),
-      em("This windows will close automatically when eveything
-         is done!"),
-      
-      br(),
-      strong("PLEASE RELOAD THIS TOOL WHEN FINISHED!!!",
-             style = "color:red"),
-      
-      dataTableOutput("invalidIDout")
+      HTML(
+        '<p>Fetching Missing Taxonomy Information and Post-processing.</p>
+        <p><em>This windows will close automatically when eveything is done. 
+        Please wait...</em></p>
+        <p><strong><span style="color: #ff0000;">PLEASE RELOAD THIS TOOL WHEN 
+        FINISHED!!!</span></strong></p>'
+      )
     ),
     
     # * popup for plotting detailed plot --------------------------------------
