@@ -373,7 +373,7 @@ shinyUI(
               HTML(
                 "<p><em>Some new taxa have <span style=\"color: #ff0000;\">
                 invalid IDs</span>. IDs of non-NCBI taxa have to be greater 
-                than 2077091.</em></p>
+                than 2268208.</em></p>
                 <p><em>Please replace those IDs before continuing!</em></p>"
               )
             ),
@@ -988,7 +988,7 @@ shinyUI(
       
       textInput(
         "new_id",
-        "ID (must be a number and greater than 2077091,
+        "ID (must be a number and greater than 2268208,
         e.g. 9000001)",
         9000001,
         width = 500
