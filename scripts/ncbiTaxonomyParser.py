@@ -37,7 +37,7 @@ def get_new_line (node, names_dict):
 	return(new_line)
 
 ########################################
-output = "taxonNamefull.txt"
+output = "taxonNamesFull.txt"
 file = open(output,"w")
 file.write("ncbiID\tfullName\trank\tparentID\n") # header
 
@@ -60,5 +60,5 @@ print("Write taxonNamesFull.txt")
 for node in nodes:
 	new_line = get_new_line(node, names_dict)
 	file.write(new_line)
-	
+
 print("Finished! Please replace phyloprofile/data/taxonNamesFull.txt by the new taxonNamesFull.txt file!")
