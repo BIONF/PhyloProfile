@@ -836,6 +836,21 @@ shinyServer(function(input, output, session) {
       }
     })
   
+  # * download list of unkTaxa ------------------------------------------------
+  output$unk_taxa.download <- downloadHandler(
+    filename = function() {
+      c("unknown_taxa.txt")
+    },
+    content = function(file) {
+      data_out <- unkTaxa()
+      data_out <- data_out[, c("TaxonID", "Source")]
+      write.table(data_out, file,
+                  sep = "\t",
+                  row.names = FALSE,
+                  quote = FALSE)
+    }
+  )
+  
   # * update the form for adding new taxa -------------------------------------
   newTaxa <- reactiveValues()
   newTaxa$Df <- data.frame("ncbiID" = numeric(),
@@ -1158,7 +1173,6 @@ shinyServer(function(input, output, session) {
   
   # * output invalid NCBI ID --------------------------------------------------
   output$invalidID.output <- renderTable({
-    # invalidID$df <- invalidID()
     if (is.null(invalidID())) return()
     else{
       outDf <- invalidID()
@@ -1167,9 +1181,23 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  # * download list of invalidID ----------------------------------------------
+  output$invalidID.download <- downloadHandler(
+    filename = function() {
+      c("invalid_ids.txt")
+    },
+    content = function(file) {
+      data_out <- invalidID()
+      colnames(data_out) <- c("Invalid ID(s)", "Type")
+      write.table(data_out, file,
+                  sep = "\t",
+                  row.names = FALSE,
+                  quote = FALSE)
+    }
+  )
+  
   # * render final msg after taxon parsing ------------------------------------
   output$end_parsing_msg <- renderUI({
-    # invalidID$df <- invalidID()
     if (is.null(invalidID())) {
       strong(h4("PLEASE RELOAD THIS TOOL WHEN FINISHED!!!"),
              style = "color:red")

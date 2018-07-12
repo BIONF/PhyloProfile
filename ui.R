@@ -159,8 +159,10 @@ shinyUI(
       # INPUT TAB -------------------------------------------------------------
       tabPanel(
         "Input & settings",
+        # * 1st column --------------------------------------------------------
         column(
           4,
+          # ** Main input -----------------------------------------------------
           strong(h4("Main input:")),
           conditionalPanel(
             condition = "input.do",
@@ -195,6 +197,7 @@ shinyUI(
             )
           ),
           
+          # ** Variable 1 -----------------------------------------------------
           fluidRow(
             column(
               4,
@@ -233,6 +236,7 @@ shinyUI(
             )
           ),
           
+          # ** Variable 2 -----------------------------------------------------
           fluidRow(
             column(
               4,
@@ -259,6 +263,7 @@ shinyUI(
           
           hr(),
           
+          # ** Domain input ---------------------------------------------------
           strong(h4("Additional annotation input:")),
           radioButtons(
             inputId = "anno_location", label = "",
@@ -277,16 +282,22 @@ shinyUI(
           )
         ),
         
+        # * 2nd column --------------------------------------------------------
         column(
           3,
+          
+          # ** List of new taxa -----------------------------------------------
           conditionalPanel(
             condition = "output.unk_taxa_status == 'unknown' || 
                         output.unk_taxa_status == 'ncbi' || 
                         output.unk_taxa_status == 'invalid'",
             strong(h4("New taxa were found:")),
-            dataTableOutput("unk_taxa_full")
+            dataTableOutput("unk_taxa_full"),
+            br(),
+            downloadButton("unk_taxa.download", "Download ID list")
           ),
           
+          # ** Other input options --------------------------------------------
           conditionalPanel(
             condition = "output.unk_taxa_status == 0",
             strong(h4("Choose genes of interest:")),
@@ -347,8 +358,11 @@ shinyUI(
           )
         ),
         
+        # * 3rd column --------------------------------------------------------
         column(
           4,
+          
+          # ** Msg for parsing new taxa ---------------------------------------
           conditionalPanel(
             condition = "output.unk_taxa_status == 'unknown' || 
                         output.unk_taxa_status == 'ncbi' || 
@@ -414,10 +428,13 @@ shinyUI(
               
               hr(),
               uiOutput("end_parsing_msg"),
-              tableOutput("invalidID.output")
+              tableOutput("invalidID.output"),
+              hr(),
+              downloadButton("invalidID.download", "Download invalid IDs")
             )
           ),
           
+          # ** List of ranks & available taxa ---------------------------------
           conditionalPanel(
             condition = "output.unk_taxa_status == 0",
             strong(h4("Seed (super)taxon:")),
