@@ -1,15 +1,16 @@
-#####################################
-### 1) install and load packages  ###
-### 2) start the PhyloProfile app ###
-#####################################
+#' Startup script for PhyloProfile
+#' 1) install and load packages
+#' 2) start the PhyloProfile app
 
-### list of dependent packages
-packages <- c("shiny","shinyBS","shinyjs","colourpicker","ggplot2","reshape2",
-              "DT","plyr","dplyr","tidyr","scales","grid","gridExtra","ape",
-              "stringr","gtable","dendextend","ggdendro","gplots","data.table",
-              "taxize","zoo","RCurl","devtools","Matching")
+# List of dependent packages --------------------------------------------------
+packages <- c("shiny", "shinyBS", "shinyjs", "colourpicker", "DT",
+              "devtools", "ggplot2", "reshape2", 
+              "plyr", "dplyr", "tidyr", "scales", "grid", 
+              "gridExtra", "ape", "stringr", "gtable", 
+              "dendextend", "ggdendro", "gplots", "data.table", 
+              "taxize", "zoo", "RCurl")
 
-### find missing packages and install them
+# Find & install missing packages ---------------------------------------------
 missingPkg <- packages[!packages %in% rownames(installed.packages())]
 if (length(missingPkg)) {
 	install.packages(
@@ -19,7 +20,7 @@ if (length(missingPkg)) {
 	)
 }
 
-### check version and install ggplot2 (gplot2 v2.1 and below has some issues with the ordering)
+# Check version and install ggplot2 (require v >= 2.2.0) ----------------------
 version_above <- function(pkg, than) {
   compareVersion(as.character(packageVersion(pkg)), than)
 }
@@ -34,20 +35,21 @@ if ("ggplot2" %in% rownames(installed.packages())) {
   biocLite("ggplot2")
 }
 
-### install biostrings from bioconductor
+# Install biostrings from bioconductor ----------------------------------------
 if (!("Biostrings" %in% rownames(installed.packages()))) {
 	source("https://bioconductor.org/biocLite.R")
 	biocLite("Biostrings")
+	library(Biostrings)
 }
 
-### install shinycssloaders using devtools
+# Install shinycssloaders from github -----------------------------------------
 if (!("shinycssloaders" %in% rownames(installed.packages()))) {
 	devtools::install_github('andrewsali/shinycssloaders', force = TRUE)
+  library(shinycssloaders)
 }
 
 ### load require packages
-sapply(packages, require, character.only = TRUE)
-require(Biostrings)
+lapply(packages, library, character.only = TRUE)
 
 ### run phyloprofile shiny app
-shiny::runApp(,launch.browser=TRUE)
+shiny::runApp(appDir = getwd(), launch.browser = TRUE)

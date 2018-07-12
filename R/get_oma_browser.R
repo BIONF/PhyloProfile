@@ -4,6 +4,7 @@
 # if (!require("OmaDB")) {
 #   source("https://bioconductor.org/biocLite.R")
 #   biocLite("OmaDB")
+#   library(OmaDB)
 # }
 
 #' In case an old version of R still being used (R < 3.5.0)
@@ -12,6 +13,7 @@ if (!require("OmaDB")) {
     install.packages("devtools")
   }
   devtools::install_github("trvinh/OmaDB", force = TRUE)
+	library(OmaDB)
 }
 
 #' check OMA IDs or Uniprot IDs as valid Input --------------------------------
@@ -43,12 +45,12 @@ get_members <- function(id, ortho_type) {
     members <- OmaDB::getHOG(id = id,
                              level = "root",
                              members = TRUE)$members$omaid
-  } 
+  }
   # get the members of the Ortholoug group
   else if (ortho_type == "OG") {
     members <- OmaDB::getData(type = "group",
                               id = id)$members$omaid
-  } 
+  }
   # get the members of the Orthologous Pair
   else if (ortho_type == "PAIR") {
     members <- OmaDB::resolveURL(OmaDB::getData(type = "protein",
@@ -57,7 +59,7 @@ get_members <- function(id, ortho_type) {
     seed <- OmaDB::getData("protein",id)$omaid
     members <- c(seed,members)
   }
-  
+
   return(members)
 }
 
@@ -76,7 +78,7 @@ get_domain_from_url <- function(domainURL) {
     pos <- unlist(strsplit(domains$location[i], ":"))
     domains[i,]$start <- pos[1]
     domains[i,]$end <- pos[2]
-    
+
     if (nchar(domains$name[i]) > 0) {
       domains[i,]$feature <- paste0(domains$source[i],"_",domains$domainid[i]," (",domains$name[i],")")
     } else {
@@ -103,7 +105,7 @@ get_data_for_one_oma <- function(id) {
     "domains" = character(),
     stringsAsFactors = FALSE
   )
-  
+
   # get ncbi taxonomy id
   spec_name <- substr(id, 1, 5)
   taxon_id <- paste0("ncbi",
@@ -111,18 +113,18 @@ get_data_for_one_oma <- function(id) {
                                         newick = FALSE)$id)
   # get raw data
   raw <- OmaDB::getData("protein",id)
-  
+
   # get sequence
   seq <- as.character(raw$sequence)
-  
+
   # get sequence length
   length <- raw$sequence_length
-  
+
   # get annotation
   domainDf <- get_domain_from_url(raw$domains)
   domainDf_join <- c(domainDf, sep = "#")
   domains <- paste(unlist(do.call(paste, domainDf_join)), collapse = "\t")
-  
+
   # return data frame contains all info
   omaDf[1,] <- c(id, taxon_id, seq, length, domains)
   return(omaDf)
@@ -137,7 +139,7 @@ get_data_for_one_oma <- function(id) {
 
 # get_oma_browser <- function(id_list, ortho_type) {
 #   final_omaDf <- data.frame()
-#   
+#
 #   for (seed_id in id_list) {
 #     # get members
 #     members <- get_members(seed_id, ortho_type)
@@ -152,7 +154,7 @@ get_data_for_one_oma <- function(id) {
 #       final_omaDf <- rbind(final_omaDf, orthoDf)
 #     }
 #   }
-#   
+#
 #   return(final_omaDf)
 # }
 
@@ -170,7 +172,7 @@ create_profile_from_oma <- function(final_oma_df) {
 
 #' create domain annotation dataframe for ONE protein
 #' @export
-#' @param domain_id 
+#' @param domain_id
 #' @param ortho_id
 #' @param length
 #' @param domain_list list of all domains and their positions for this protein
@@ -187,7 +189,7 @@ create_domain_df <- function(domain_id, ortho_id, length, domain_list) {
     end = numeric(),
     stringsAsFactors = FALSE
   )
-  
+
   for (i in 1:length(domain_list)) {
     anno_info <- strsplit(domain_list[i], "#")[[1]]
     domain_df[i,] <- c(domain_id,
@@ -195,7 +197,7 @@ create_domain_df <- function(domain_id, ortho_id, length, domain_list) {
                        length,
                        anno_info)
   }
-  
+
   return(domain_df)
 }
 
@@ -209,7 +211,7 @@ get_all_domains_oma <- function(final_oma_df) {
   oma_domain_df <- data.frame()
   for (i in 1:nrow(final_oma_df)) {
     domainID <- paste0(final_oma_df[i,]$seed, "#", final_oma_df[i,]$ortho_id)
-    
+
     seed_line <- final_oma_df[final_oma_df$ortho_id == final_oma_df[i,]$seed, ]
     seed_domains <- strsplit(as.character(seed_line$domains), "\t")[[1]]
     seed_domainDf <- create_domain_df(domainID,
@@ -217,7 +219,7 @@ get_all_domains_oma <- function(final_oma_df) {
                                       seed_line$length,
                                       seed_domains)
     oma_domain_df <- rbind(oma_domain_df, seed_domainDf)
-    
+
     ortho_domains <- strsplit(as.character(final_oma_df[i,]$domains), "\t")[[1]]
     ortho_domainDf <- create_domain_df(domainID,
                                        final_oma_df[i,]$ortho_id,
@@ -225,7 +227,7 @@ get_all_domains_oma <- function(final_oma_df) {
                                        ortho_domains)
     oma_domain_df <- rbind(oma_domain_df, ortho_domainDf)
   }
-  
+
   oma_domain_df$length <- as.numeric(oma_domain_df$length)
   oma_domain_df$start <- as.numeric(oma_domain_df$start)
   oma_domain_df$end <- as.numeric(oma_domain_df$end)
@@ -240,7 +242,7 @@ get_all_domains_oma <- function(final_oma_df) {
 
 get_all_fasta_oma <- function(final_oma_df) {
   oma_fasta_df <- data.frame()
-  
+
   fasta_df <- final_oma_df[, c("ortho_id", "seq")]
   for (i in 1:nrow(fasta_df)) {
     seq_id <- as.character(fasta_df$ortho_id[i])
@@ -250,7 +252,7 @@ get_all_fasta_oma <- function(final_oma_df) {
                        sep = "\n")
     oma_fasta_df <- rbind(oma_fasta_df, as.data.frame(fasta_out))
   }
-  
+
   return(oma_fasta_df[!duplicated(oma_fasta_df), ])
 }
 

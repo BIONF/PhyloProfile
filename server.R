@@ -11,6 +11,7 @@ lapply(packages, library, character.only = TRUE)
 if (!require("Biostrings")) {
   source("https://bioconductor.org/biocLite.R")
   biocLite("Biostrings")
+  library(Biostrings)
 }
 
 #' Import function files

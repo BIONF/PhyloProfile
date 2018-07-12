@@ -1,15 +1,13 @@
 #' Load packages
-packages <- c("shiny", "shinyBS", "shinyjs", "colourpicker", "DT")
+packages <- c("shiny", "shinyBS", "shinyjs", "colourpicker", "DT", "devtools")
 
 source("R/functions.R")
 install_packages(packages)
 lapply(packages, library, character.only = TRUE)
 
 if (!require("shinycssloaders")) {
-  if ("devtools" %in% installed.packages() == FALSE) {
-    install.packages("devtools")
-  }
   devtools::install_github("andrewsali/shinycssloaders")
+  library(shinycssloaders)
 }
 
 #' Import function files
