@@ -150,6 +150,15 @@ install_packages <- function(packages){
     )
 }
 
+install_packages_bioconductor <- function(packages){
+  missing_packages <- 
+    packages[!(packages %in% installed.packages()[, "Package"])]
+  if (length(missing_packages)) {
+    source("https://bioconductor.org/biocLite.R")
+    biocLite(missing_packages)
+  }
+}
+
 #' Check internet connection --------------------------------------------------
 #' @return status of internet connection
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
@@ -275,13 +284,13 @@ create_text_size <- function(id, title, value, width) {
 
 # PROFILE CLUSTERING =========================
 
-#' needed for:  mutual information, pearson 
-if (!require("bioDist")) {
-  source("https://bioconductor.org/biocLite.R")
-  biocLite("bioDist")
-}
+#' needed for:  mutual information, pearson
+install_packages_bioconductor("bioDist")
+library(bioDist)
+
 #' needed for: distance correlation 
-if (!require("energy")) install.packages("energy") 
+install_packages("energy")
+library(energy)
 
 #' Calculate the contengency table for the fisher exact test ------------------
 #' @export

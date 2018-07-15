@@ -8,13 +8,22 @@
 # }
 
 #' In case an old version of R still being used (R < 3.5.0)
+
+oma_pkgs <- c("GO.db", "GenomeInfoDbData")
+missing_packages <- 
+  oma_pkgs[!(oma_pkgs %in% installed.packages()[, "Package"])]
+if (length(missing_packages)) {
+  source("https://bioconductor.org/biocLite.R")
+  biocLite(missing_packages)
+}
+
 if (!require("OmaDB")) {
   if ("devtools" %in% installed.packages() == FALSE) {
     install.packages("devtools")
   }
   devtools::install_github("trvinh/OmaDB", force = TRUE)
-	library(OmaDB)
 }
+library(OmaDB)
 
 #' check OMA IDs or Uniprot IDs as valid Input --------------------------------
 #' @export

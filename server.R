@@ -8,11 +8,10 @@ source("R/functions.R")
 install_packages(packages)
 lapply(packages, library, character.only = TRUE)
 
-if (!require("Biostrings")) {
-  source("https://bioconductor.org/biocLite.R")
-  biocLite("Biostrings")
-  library(Biostrings)
-}
+#' Install bioconductor packages
+bioconductor_pkgs <- c("Biostrings")
+install_packages_bioconductor(bioconductor_pkgs)
+lapply(bioconductor_pkgs, library, character.only = TRUE)
 
 #' Import function files
 source_files = list.files(path = "R",
