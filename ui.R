@@ -462,7 +462,7 @@ shinyUI(
               type = "action",
               style = "danger",
               size = "large",
-              disabled = TRUE
+              disabled = FALSE
             ),
             h5("")
           )

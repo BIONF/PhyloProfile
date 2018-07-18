@@ -794,15 +794,20 @@ shinyServer(function(input, output, session) {
           maxNCBI <- max(sort(as.numeric(ncbiID[ncbiID != "ncbiID"])))
 
           if (nrow(unkTaxa[!(unkTaxa$id %in% ncbiTaxa),]) > 0) {
-            unkTaxa[!(unkTaxa$id %in% ncbiTaxa),]$Source <- "unknown"
+            unk_taxa <- unkTaxa[!(unkTaxa$id %in% ncbiTaxa),]$id
+            unkTaxa[unkTaxa$id %in% unk_taxa,]$Source <- "unknown"
+            if (any(unk_taxa < maxNCBI)) {
+              unkTaxa[unkTaxa$id %in% unk_taxa &
+                      unkTaxa$id < maxNCBI,]$Source <- "invalid"
+            }
           }
 
           if (nrow(unkTaxa[unkTaxa$id %in% newTaxa,]) > 0) {
             unkTaxa[unkTaxa$id %in% newTaxa,]$Source <- "new"
-          }
-
-          if (nrow(unkTaxa[unkTaxa$id < maxNCBI,]) > 0) {
-            unkTaxa[unkTaxa$id < maxNCBI,]$Source <- "invalid"
+            if (any(as.numeric(newTaxa) < maxNCBI)) {
+              unkTaxa[unkTaxa$id %in% newTaxa &
+                      unkTaxa$id < maxNCBI,]$Source <- "invalid"
+            }
           }
 
           # return list of unkTaxa
@@ -818,8 +823,8 @@ shinyServer(function(input, output, session) {
   output$unk_taxa_status <- reactive({
     unkTaxa <- unkTaxa()
     if (length(unkTaxa) > 0) {
-      if ("unknown" %in% unkTaxa$Source) return("unknown")
       if ("invalid" %in% unkTaxa$Source) return("invalid")
+      if ("unknown" %in% unkTaxa$Source) return("unknown")
       else return("ncbi")
     } else {
       return(0)
@@ -1229,7 +1234,6 @@ shinyServer(function(input, output, session) {
     # 1+ will be coerced to TRUE
     v$doPlot <- input$do
     filein <- input$main_input
-    # if (is.null(filein) & input$demo==FALSE) {
     if (is.null(filein) & input$demo_data == "none") {
       v$doPlot <- FALSE
       updateButton(session, "do", disabled = TRUE)
