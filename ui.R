@@ -1419,7 +1419,6 @@ shinyUI(
           value = TRUE,
           width = 250
         ),
-        create_text_size("p_values_size_gc", "P-value label size (px)", 10, 100)
       ),
       column(
         12,

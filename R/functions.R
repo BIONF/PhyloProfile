@@ -301,7 +301,7 @@ get_contengency_table <- function(profile_1, profile_2){
 #' @param var2_aggregate_by
 #' @return dataframe containing phylogenetic profiles
 #' @author Carla Mölbert (carla.moelbert@gmx.de)
-get_data_clustering <- function(data,
+get_phylogenetic_profiles <- function(data,
                                 profile_type,
                                 var1_aggregate_by,
                                 var2_aggregate_by){
@@ -358,6 +358,7 @@ get_data_clustering <- function(data,
 #' @return distance matrix
 #' @author Carla Mölbert (carla.moelbert@gmx.de)
 get_distance_matrix <- function(profiles, method){
+  #start_time <- Sys.time()
   dist_methods <- c("euclidean", "maximum", "manhattan", "canberra", "binary")
   if (method %in% dist_methods) {
     distance_matrix <- dist(profiles, method = method)
@@ -387,6 +388,9 @@ get_distance_matrix <- function(profiles, method){
   } else if (method == "pearson") {
     distance_matrix <-  cor.dist(as.matrix(profiles))
   }
+  #end_time <- Sys.time()
+  #print(end_time - start_time)
+  #write.table(as.matrix(distance_matrix), paste0("distance_matrix_",method))
   return(distance_matrix)
 }
 

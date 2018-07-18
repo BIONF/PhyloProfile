@@ -2573,7 +2573,7 @@ shinyServer(function(input, output, session) {
     data_heat <- dataHeat()
     if (nrow(data_heat) < 1) return()
     if (is.null(input$dist_method)) return()
-    profiles <- get_data_clustering(data_heat,
+    profiles <- get_phylogenetic_profiles(data_heat,
                                     #input$profile_type,
                                     "binary", # Till the second profile type is added
                                     input$var1_aggregate_by,
