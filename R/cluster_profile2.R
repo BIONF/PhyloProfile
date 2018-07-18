@@ -8,7 +8,7 @@
 
 source("R/functions.R")
 
-cluster_profile_ui <- function(id){
+cluster_profile_2_ui <- function(id){
   ns <- NS(id)
   tagList(
     column(8,
@@ -27,21 +27,21 @@ cluster_profile_ui <- function(id){
   )
 }
 
-cluster_profile <- function(input, output, session,
+cluster_profile_2 <- function(input, output, session,
                             distance_matrix,
                             cluster_method,
                             plot_width, plot_height
                             ){
   # Reactive function holding data for clustering =========================
   cluster_data <- reactive({
-    df <- clusterDataDend(distance_matrix(), cluster_method())
+    df <- cluster_data_dend(distance_matrix(), cluster_method())
     return(df)
   })
 
   # Dendrogram =========================
   output$dendrogram <- renderPlot({
     if (is.null(data())) return()
-    dendrogram(cluster_data())
+    get_dendrogram(cluster_data())
   })
 
   output$cluster.ui <- renderUI({
@@ -66,7 +66,7 @@ cluster_profile <- function(input, output, session,
       "clustered_plot.pdf"
     },
     content = function(file) {
-      ggsave(file, plot = dendrogram(cluster_data()),
+      ggsave(file, plot = get_dendrogram(cluster_data()),
              dpi = 300, device = "pdf",
              limitsize = FALSE)
     }
@@ -125,7 +125,7 @@ cluster_profile <- function(input, output, session,
 #' @param distance_matrix 
 #' @return new data frame with % of present species
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
-clusterDataDend <- function(distance_matrix, cluster_method){
+cluster_data_dend <- function(distance_matrix, cluster_method){
   # if (v$doPlot == FALSE) return()
   if (is.null(distance_matrix)) return() 
   dd.col <- as.dendrogram(hclust(distance_matrix,
@@ -139,7 +139,7 @@ clusterDataDend <- function(distance_matrix, cluster_method){
 #' @return plot clustered profiles
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 
-dendrogram <- function(dd.col){
+get_dendrogram <- function(dd.col){
   if (is.null(dd.col)) return()
   py <- as.ggdend(dd.col)
   p <- ggplot(py, horiz = TRUE, theme = theme_minimal()) +

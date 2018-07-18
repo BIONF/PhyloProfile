@@ -1025,3 +1025,34 @@ get_plots_to_download <- function(gene,
                       significant_genes$geneID == gene)
   return(get_multiplot(info_gene, parameters, interesting_features))
 }
+
+#' print list of available taxa -----------------------------------------------
+#' @export
+#' @param rank_select_gc rank selected for group compariosn
+#' @param subset_taxa contains "seedID",  "orthoID", "feature", "start", "end"
+#' @return avilable taxa containing "ncbiID", "fullName", "rank", "parentID"
+#' @author Carla Mölbert (carla.moelbert@gmx.de)
+taxa_select_gc <- function(rank_select_gc, subset_taxa){
+  # if there is no rank set, there can not be any available taxa
+  if (length(rank_select_gc) == 0) return()
+  else{
+    # load list of unsorted taxa
+    if (is.null(subset_taxa)) dt <- get_taxa_list(FALSE, subset_taxa)
+    else dt <- get_taxa_list(TRUE, subset_taxa)
+    
+    # load list of taxon name
+    name_list <- get_name_list(TRUE, FALSE)
+    
+    # get rank name from rank_select
+    if (substr(rank_select_gc,3,3) == "_") {
+      rank_name <- substr(rank_select_gc, 4, nchar(rank_select_gc))
+    }
+    else rank_name <- rank_select_gc
+    
+    choice <- as.data.frame
+    choice <- rbind(dt[rank_name])
+    colnames(choice) <- "ncbiID"
+    choice <- merge(choice, name_list, by = "ncbiID", all = FALSE)
+    return(choice)
+  }
+}

@@ -65,7 +65,7 @@ parse_domain_input <- function(main_input,
                                           quote = ""))
       domains <- rbind(domains, domain_df)
     }
-
+    
     if (ncol(domains) == 5) {
       colnames(domains) <- c("seedID",
                              "orthoID",
@@ -88,7 +88,7 @@ parse_domain_input <- function(main_input,
                              "weight",
                              "path")
     }
-  } 
+  }
   # for user input data
   else {
     # if (input_type == "oma") {
@@ -138,10 +138,13 @@ parse_domain_input <- function(main_input,
                                "end",
                                "weight",
                                "path")
+      } else {
+        return("ERR")
       }
-    # }
   }
 
+  if (nrow(domains) == 0) return("ERR_0")
+  
   domains$seedID <- gsub("\\|",":",domains$seedID)
   domains$orthoID <- gsub("\\|",":",domains$orthoID)
 

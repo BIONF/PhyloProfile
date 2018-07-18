@@ -1,11 +1,3 @@
-#' needed for:  mutual information, pearson 
-if (!require("bioDist")) {
-  source("https://bioconductor.org/biocLite.R")
-  biocLite("bioDist")
-}
-#' needed for: distance correlation 
-if (!require("energy")) install.packages("energy") 
-
 #' Calculate percentage of present species-------------------------------------
 #' @export
 #' @param taxa_md_data contains "geneID", "ncbiID", "orthoID",
@@ -141,6 +133,32 @@ unsort_id <- function(data, order){
   return(data)
 }
 
+#' Check installed packages
+#' and install missing packages automatically
+#' @param packages list of packages need to be checked
+#' @return none
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+
+install_packages <- function(packages){
+  missing_packages <- 
+    packages[!(packages %in% installed.packages()[, "Package"])]
+  if (length(missing_packages)) 
+    install.packages(
+      missing_packages,
+      dependencies = TRUE,
+      repos = "http://cran.us.r-project.org"
+    )
+}
+
+install_packages_bioconductor <- function(packages){
+  missing_packages <- 
+    packages[!(packages %in% installed.packages()[, "Package"])]
+  if (length(missing_packages)) {
+    source("https://bioconductor.org/biocLite.R")
+    biocLite(missing_packages)
+  }
+}
+
 #' Check internet connection --------------------------------------------------
 #' @return status of internet connection
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
@@ -266,6 +284,14 @@ create_text_size <- function(id, title, value, width) {
 
 # PROFILE CLUSTERING =========================
 
+#' needed for:  mutual information, pearson
+install_packages_bioconductor("bioDist")
+library(bioDist)
+
+#' needed for: distance correlation 
+install_packages("energy")
+library(energy)
+
 #' Calculate the contengency table for the fisher exact test ------------------
 #' @export
 #' @param profile1 vector with 0,1 as entrys
@@ -301,13 +327,13 @@ get_contengency_table <- function(profile_1, profile_2){
 #' @param var2_aggregate_by
 #' @return dataframe containing phylogenetic profiles
 #' @author Carla Mölbert (carla.moelbert@gmx.de)
-get_phylogenetic_profiles <- function(data,
+get_data_clustering <- function(data,
                                 profile_type,
                                 var1_aggregate_by,
                                 var2_aggregate_by){
   
   sub_data_heat <- subset(data, data$presSpec > 0)
-
+  
   if (profile_type == "binary") {
     #' Binary Profiles --------------------------------------------------------
     sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", "presSpec")]
@@ -318,7 +344,7 @@ get_phylogenetic_profiles <- function(data,
   }else {
     #' Profiles with FAS scores ----------------------------------------------
     var <- profile_type
-
+    
     sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", var)]
     sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
     
@@ -334,7 +360,7 @@ get_phylogenetic_profiles <- function(data,
     colnames(sub_data_heat) <- c("geneID", "supertaxon", var)
     
     wide_data <- spread(sub_data_heat, supertaxon, var)
-
+    
   }
   
   dat <- wide_data[, 2:ncol(wide_data)]  # numerical columns
@@ -358,7 +384,7 @@ get_phylogenetic_profiles <- function(data,
 #' @return distance matrix
 #' @author Carla Mölbert (carla.moelbert@gmx.de)
 get_distance_matrix <- function(profiles, method){
-  #start_time <- Sys.time()
+  start_time <- Sys.time()
   dist_methods <- c("euclidean", "maximum", "manhattan", "canberra", "binary")
   if (method %in% dist_methods) {
     distance_matrix <- dist(profiles, method = method)
@@ -388,41 +414,9 @@ get_distance_matrix <- function(profiles, method){
   } else if (method == "pearson") {
     distance_matrix <-  cor.dist(as.matrix(profiles))
   }
-  #end_time <- Sys.time()
-  #print(end_time - start_time)
-  #write.table(as.matrix(distance_matrix), paste0("distance_matrix_",method))
+  end_time <- Sys.time()
+  print(paste("Runtime", method, ":", end_time - start_time, sep = " "))
+  write.table(as.matrix(distance_matrix), paste0("../distance_matrix_", method),
+              col.names = TRUE, row.names = TRUE)
   return(distance_matrix)
-}
-
-# GROUP COMPARISON =========================
-
-#' print list of available taxa -----------------------------------------------
-#' @export
-#' @param rank_select_gc rank selected for group compariosn
-#' @param subset_taxa contains "seedID",  "orthoID", "feature", "start", "end"
-#' @return avilable taxa containing "ncbiID", "fullName", "rank", "parentID"
-#' @author Carla Mölbert (carla.moelbert@gmx.de)
-taxa_select_gc <- function(rank_select_gc, subset_taxa){
-  # if there is no rank set, there can not be any available taxa
-  if (length(rank_select_gc) == 0) return()
-  else{
-    # load list of unsorted taxa
-    if (is.null(subset_taxa)) dt <- get_taxa_list(FALSE, subset_taxa)
-    else dt <- get_taxa_list(TRUE, subset_taxa)
-    
-    # load list of taxon name
-    name_list <- get_name_list(TRUE, FALSE)
-    
-    # get rank name from rank_select
-    if (substr(rank_select_gc,3,3) == "_") {
-      rank_name <- substr(rank_select_gc, 4, nchar(rank_select_gc))
-    }
-    else rank_name <- rank_select_gc
-    
-    choice <- as.data.frame
-    choice <- rbind(dt[rank_name])
-    colnames(choice) <- "ncbiID"
-    choice <- merge(choice, name_list, by = "ncbiID", all = FALSE)
-    return(choice)
-  }
 }

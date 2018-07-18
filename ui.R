@@ -1,48 +1,31 @@
-if (!require("shiny")) install.packages("shiny")
-if (!require("shinyBS")) install.packages("shinyBS")
-if (!require("DT")) install.packages("DT")
-if (!require("colourpicker")) install.packages("colourpicker")
-if (!require("shinyjs")) install.packages("shinyjs")
-if (!require("shinycssloaders")) {
-  if ("devtools" %in% installed.packages() == FALSE) {
-    install.packages("devtools")
-  }
-  devtools::install_github("andrewsali/shinycssloaders")
-}
+#' Load packages
+packages <- c("shiny", "shinyBS", "shinyjs", "colourpicker", "DT", "devtools")
 
 source("R/functions.R")
+install_packages(packages)
+lapply(packages, library, character.only = TRUE)
 
-source("R/search_taxon_id.R")
-source("R/download_filtered_main.R")
-source("R/download_filtered_customized.R")
+if (!require("shinycssloaders")) {
+  devtools::install_github("andrewsali/shinycssloaders")
+  library(shinycssloaders)
+}
 
-source("R/select_taxon_rank.R")
+#' Import function files
+source_files = list.files(path = "R",
+                          pattern = "*.R$",
+                          full.names = TRUE)
+lapply(source_files, source, .GlobalEnv)
 
-source("R/identify_core_gene.R")
-source("R/analyze_distribution.R")
-
-#source("R/cluster_profile.R")
-source("R/cluster_profile2.R")
-source("R/estimate_gene_age.R")
-
-source("R/create_architecture_plot.R")
-source("R/create_detailed_plot.R")
-source("R/create_profile_plot.R")
-
-source("R/group_comparison.R")
-
-# MAIN UI =====================================================================
-
-
+#' MAIN UI ====================================================================
 shinyUI(
   fluidPage(
-    
+
     tags$style(type = "text/css", "body {padding-top: 80px;}"),
-    
+
     # Application title
     titlePanel("", windowTitle = "PhyloProfile"),
     useShinyjs(),
-    
+
     # TOP WELLPANEL FOR PLOT CONFIGURATION ------------------------------------
     conditionalPanel(
       condition = "input.tabs=='Main profile'",
@@ -74,11 +57,11 @@ shinyUI(
             1,
             create_plot_size("height", "Height (px)", 600)
           ),
-          
+
           column(
             2,
             uiOutput("var1_cutoff.ui")
-          ), 
+          ),
           column(
             2,
             uiOutput("var2_cutoff.ui")
@@ -105,7 +88,7 @@ shinyUI(
         )
       )
     ),
-    
+
     conditionalPanel(
       condition = "input.tabs=='Customized profile'",
       wellPanel(
@@ -136,7 +119,7 @@ shinyUI(
             1,
             create_plot_size("selected_height", "Height (px)", 600)
           ),
-          
+
           column(
             2,
             uiOutput("var1_filter.ui")
@@ -161,7 +144,7 @@ shinyUI(
         )
       )
     ),
-    
+
     # MAIN NARVARPAGE TABS ----------------------------------------------------
     navbarPage(
       em(strong("PhyloProfile v0.3.0")),
@@ -170,12 +153,14 @@ shinyUI(
       inverse = TRUE,
       fluid = TRUE,
       position = "fixed-top",
-      
+
       # INPUT TAB -------------------------------------------------------------
       tabPanel(
         "Input & settings",
+        # * 1st column --------------------------------------------------------
         column(
           4,
+          # ** Main input -----------------------------------------------------
           strong(h4("Main input:")),
           conditionalPanel(
             condition = "input.do",
@@ -184,7 +169,7 @@ shinyUI(
                      style = "color:red")
             )
           ),
-          
+
           selectInput(
             "demo_data", label = h5("Use online demo data:"),
             choices = list("None" = "none",
@@ -193,12 +178,12 @@ shinyUI(
             selected = "none",
             width = "80%"
           ),
-          
+
           uiOutput("no_internet_msg"),
           uiOutput("demo_data_describe"),
           uiOutput("main_input_file.ui"),
           uiOutput("input_check.ui"),
-          
+
           fluidRow(
             column(
               6,
@@ -209,7 +194,8 @@ shinyUI(
               )
             )
           ),
-          
+
+          # ** Variable 1 -----------------------------------------------------
           fluidRow(
             column(
               4,
@@ -247,7 +233,8 @@ shinyUI(
               )
             )
           ),
-          
+
+          # ** Variable 2 -----------------------------------------------------
           fluidRow(
             column(
               4,
@@ -271,9 +258,10 @@ shinyUI(
               uiOutput("var2_relation.ui")
             )
           ),
-          
+
           hr(),
-          
+
+          # ** Domain input ---------------------------------------------------
           strong(h4("Additional annotation input:")),
           radioButtons(
             inputId = "anno_location", label = "",
@@ -281,9 +269,9 @@ shinyUI(
             selected = "from file",
             inline = TRUE
           ),
-          
+
           uiOutput("domain_input_file.ui"),
-          
+
           hr(),
           em(
             a("Click here to download demo files",
@@ -291,15 +279,23 @@ shinyUI(
               target = "_blank")
           )
         ),
-        
+
+        # * 2nd column --------------------------------------------------------
         column(
           3,
+
+          # ** List of new taxa -----------------------------------------------
           conditionalPanel(
-            condition = "output.unk_taxa_status == 1",
+            condition = "output.unk_taxa_status == 'unknown' ||
+                        output.unk_taxa_status == 'ncbi' ||
+                        output.unk_taxa_status == 'invalid'",
             strong(h4("New taxa were found:")),
-            dataTableOutput("unk_taxa_full")
+            dataTableOutput("unk_taxa_full"),
+            br(),
+            downloadButton("unk_taxa.download", "Download ID list")
           ),
-          
+
+          # ** Other input options --------------------------------------------
           conditionalPanel(
             condition = "output.unk_taxa_status == 0",
             strong(h4("Choose genes of interest:")),
@@ -310,24 +306,24 @@ shinyUI(
               selected = "all",
               inline = TRUE
             ),
-            
+
             conditionalPanel(
               condition = "input.gene_list_selected == 'from file'",
               fileInput("list", "")
             ),
-            
+
             hr(),
-            
+
             checkboxInput(
               "ordering",
               strong("Order sequence IDs"),
               value = TRUE
             ),
-            
+
             hr(),
-            
+
             HTML("<b>Order taxa</b>"),
-            
+
             radioButtons(
               inputId = "order_taxa",
               label = "",
@@ -336,18 +332,18 @@ shinyUI(
               selected = "automatically",
               inline = TRUE
             ),
-            
+
             bsPopover("order_taxa", "", "in newick format", "bottom"),
-            
+
             conditionalPanel(
               condition = "input.order_taxa == 'by user defined tree'",
               fileInput("inputTree", "")
             ),
-            
+
             uiOutput("checkNewick.ui"),
-            
+
             hr(),
-            
+
             shinyBS::bsButton("get_config", "FASTA config"),
             h5(""),
             actionButton(
@@ -355,71 +351,93 @@ shinyUI(
               "COLORS config",
               style = "padding:4px; font-size:100%"
             ),
-            
+
             hr()
           )
         ),
-        
+
+        # * 3rd column --------------------------------------------------------
         column(
           4,
+
+          # ** Msg for parsing new taxa ---------------------------------------
           conditionalPanel(
-            
-            condition = "output.unk_taxa_status",
-            strong(h4("PLEASE CHECK:")),
-            
-            em(
-              "Do you have any taxon,
-              which doesn't exist in the NCBI taxonomy database?"
-            ),
-            
-            radioButtons(
-              "new_taxa_ask",
-              "",
-              c("Yes" = "Yes", "No" = "No"),
-              inline = TRUE,
-              selected = "No"
-            ),
-            
+            condition = "output.unk_taxa_status == 'unknown' ||
+                        output.unk_taxa_status == 'ncbi' ||
+                        output.unk_taxa_status == 'invalid'",
+
             conditionalPanel(
-              condition = "input.new_taxa_ask == 'Yes'",
+              condition = "output.unk_taxa_status == 'invalid'",
+              HTML(
+                "<p><em>Some new taxa have <span style=\"color: #ff0000;\">
+                invalid IDs</span>. IDs of non-NCBI taxa have to be greater
+                than 2268208.</em></p>
+                <p><em>Please replace those IDs before continuing!</em></p>"
+              )
+            ),
+
+            conditionalPanel(
+              condition = "output.unk_taxa_status == 'unknown'",
+              HTML(
+                '<p><em>NCBI taxonomy information of some taxa can neither
+                </em></p>
+                <ul>
+                <li><em>be retrieved from NCBI (<span style="color: #0000ff;
+                ">Source="ncbi"</span>) nor </em></li>
+                <li><em>be found in <span style="color: #ff0000;">
+                phyloprofile/data/newTaxa.txt</span>&nbsp;(<span
+                style="color: #0000ff;">Source="new"</span>) file</em></li>
+                </ul>
+                <p><strong><em>Please add taxonomy information for those
+                unknown taxa and <span style="color: #ff0000;">
+                reload the tool</span> to continue!</em></strong></p>'
+              ),
+              h5(""),
               shinyBS::bsButton(
                 "add_taxa",
-                "Add info for new taxa",
+                "Add taxonomy info",
                 disabled = FALSE,
                 style = "warning"
               )
             ),
-            
+
             conditionalPanel(
-              condition = "input.new_taxa_ask == 'No'",
-              
+              condition = "output.unk_taxa_status == 'ncbi'",
+              HTML(
+                '<p><em>NCBI taxonomy information of some taxa can either
+                </em></p>
+                <ul>
+                <li><em>be retrieved from NCBI (<span style="color: #0000ff;
+                ">Source="ncbi"</span>) or </em></li>
+                <li><em>be found in <span style="color: #ff0000;">
+                phyloprofile/data/newTaxa.txt</span>&nbsp;(<span
+                style="color: #0000ff;">Source="new"</span>) file</em></li>
+                </ul>
+                <p><strong><em>Click here to get required taxonomy information
+                for those taxa!</em></strong></p>'
+              ),
+              h5(""),
               shinyBS::bsButton(
                 "but_parse",
-                "Get taxonomy info
-                from NCBI *",
+                "Get taxonomy info",
                 disabled = FALSE,
                 style = "warning"
               ),
-              
-              helpText(
-                em(
-                  "(*) Taxonomy information for a given taxa
-                  list contains all taxonomy ranks and their
-                  correspoding NCBI IDs"
-                )
-              ),
-              
+
               hr(),
               uiOutput("end_parsing_msg"),
-              tableOutput("invalidID.output")
+              tableOutput("invalidID.output"),
+              hr(),
+              downloadButton("invalidID.download", "Download invalid IDs")
             )
           ),
-          
+
+          # ** List of ranks & available taxa ---------------------------------
           conditionalPanel(
             condition = "output.unk_taxa_status == 0",
             strong(h4("Seed (super)taxon:")),
             br(),
-            
+
             strong(h5("Select taxonomy rank:")),
             withSpinner(
               uiOutput("rank_select"),
@@ -428,7 +446,7 @@ shinyUI(
               size = 0.5
             ),
             br(),
-            
+
             strong(h5("Choose (super)taxon of interest:")),
             withSpinner(
               uiOutput("select"),
@@ -437,7 +455,7 @@ shinyUI(
               size = 0.5
             ),
             br(),
-            
+
             shinyBS::bsButton(
               "do",
               "PLOT",
@@ -450,7 +468,7 @@ shinyUI(
           )
         )
       ),
-      
+
       # MAIN PROFILE TAB ======================================================
       tabPanel(
         "Main profile",
@@ -458,7 +476,7 @@ shinyUI(
           # * sidebar panel for profile highlight -----------------------------
           sidebarPanel(
             uiOutput("total_gene_number.ui"),
-            
+
             column(
               4,
               numericInput(
@@ -471,7 +489,7 @@ shinyUI(
               ),
               style = "padding:0px;"
             ),
-            
+
             column(
               4,
               numericInput(
@@ -484,37 +502,37 @@ shinyUI(
               ),
               style = "padding:0px;"
             ),
-            
+
             column(
               4,
               uiOutput("highlight_gene_ui")
             ),
-            
+
             bsPopover(
               "highlight_gene_ui",
               "",
               "Select gene to highlight",
               "bottom"
             ),
-            
+
             bsPopover(
               "st_index",
               "",
               "Set start index for sequence range",
               "bottom"
             ),
-            
+
             bsPopover(
               "end_index",
               "",
               "Set end index for sequence range",
               "bottom"
             ),
-            
+
             br(),
-            
+
             uiOutput("highlight_taxon_ui"),
-            
+
             conditionalPanel(
               condition = "input.auto_update == false",
               shinyBS::bsButton(
@@ -524,7 +542,7 @@ shinyUI(
               )
             )
           ),
-          
+
           # * main panel for profile plot -------------------------------------
           mainPanel(
             conditionalPanel(
@@ -542,14 +560,14 @@ shinyUI(
             #     fixed = TRUE,
             #     draggable = TRUE,
             #     style = "opacity: 0.80",
-            #     
+            #
             #     uiOutput("mainAxisRender")
             #   )
             # )
           )
         )
       ),
-      
+
       # CUSTOMIZED PROFILE TAB ================================================
       tabPanel(
         "Customized profile",
@@ -562,7 +580,7 @@ shinyUI(
               style = "padding:0px;",
               strong("Select sequence(s) of interest:")
             ),
-            
+
             column(
               12,
               fluidRow(
@@ -577,13 +595,12 @@ shinyUI(
                 )
               )
             ),
-            
+
             column(
               12,
               style = "padding:0px;",
               strong("Select (super)taxon/(super)taxa of interest:")
             ),
-            
             column(
               12,
               fluidRow(
@@ -600,11 +617,11 @@ shinyUI(
                 )
               )
             ),
-            
+
             h5(""),
             uiOutput("plot_custom_btn")
           ),
-          
+
           # * main panel for customized profile plot --------------------------
           mainPanel(
             conditionalPanel(
@@ -614,7 +631,7 @@ shinyUI(
                 or taxa for customized profile!"
               )
             ),
-            
+
             conditionalPanel(
               condition = "input.do > 0",
               create_profile_plot_ui("customized_profile")
@@ -622,27 +639,26 @@ shinyUI(
           )
         )
       ),
-      
+
       # FUNCTION TAB ==========================================================
       navbarMenu(
         "Function",
-        
         # * Profiles clustering -----------------------------------------------
         tabPanel(
           "Profiles clustering",
           h4(strong("Profiles clustering")),
-          
+
           wellPanel(
             fluidRow(
-              # column(
-              #   2,
-              #   uiOutput("select_profile_type")
-              # ),
+              column(
+                2,
+                uiOutput("select_profile_type")
+              ),
               column(
                 3,
                 uiOutput("select_dist_method")
               ),
-              
+
               column(
                 3,
                 selectInput(
@@ -656,27 +672,27 @@ shinyUI(
                   selected = "complete"
                 )
               ),
-              
+
               column(
                 1,
                 create_plot_size("cluster_plot.width", "Width (px)", 600)
               ),
               column(
 
-                2, #1
+                1, #2
                 create_plot_size("cluster_plot.height", "Height (px)", 600)
               ),
               column(
-                3, #1
+                2, #3
                 checkboxInput(
                   "apply_cluster",
                   em(strong("Apply clustering to profile plot",
                             style = "color:darkblue")),
                   value = FALSE
                 ),
-                
+
                 uiOutput("apply_cluster_check.ui"),
-                
+
                 checkboxInput(
                   "add_cluster_cutom_profile",
                   strong(em("Add selected genes to Customized profile",
@@ -688,15 +704,15 @@ shinyUI(
               )
             )
           ),
-          
-          cluster_profile_ui("profile_clustering")
+
+          cluster_profile_2_ui("profile_clustering")
         ),
-        
+
         # * Distribution analysis ---------------------------------------------
         tabPanel(
           "Distribution analysis",
           h4(strong("Distribution analysis")),
-          
+
           wellPanel(
             fluidRow(
               column(
@@ -730,15 +746,15 @@ shinyUI(
               )
             )
           ),
-          
+
           analyze_distribution_ui("dist_plot")
         ),
-        
+
         # * Gene age estimation -----------------------------------------------
         tabPanel(
           "Gene age estimation",
           h4(strong("Gene age estimation")),
-          
+
           wellPanel(
             fluidRow(
               column(
@@ -773,12 +789,12 @@ shinyUI(
           ),
           plot_gene_age_ui("gene_age")
         ),
-        
+
         # * Core gene identification  -----------------------------------------
         tabPanel(
           "Core gene identification",
           h4(strong("Core gene identification")),
-          
+
           wellPanel(
             fluidRow(
               column(
@@ -801,7 +817,7 @@ shinyUI(
             )
           ),
           hr(),
-          
+
           column(
             4,
             downloadButton("core_gene_table_download", "Download gene list"),
@@ -814,13 +830,10 @@ shinyUI(
             ),
             uiOutput("add_core_gene_custom_profile_check.ui")
           ),
-          
+
           identify_core_gene_ui("core_gene")
         ),
-        
-        # * Search for NCBI taxonomy IDs  -------------------------------------
-        search_taxon_id_ui("search_taxon_id"),
-        
+
         # * Group Comparison  -------------------------------------------------
         tabPanel(
           "Group comparison",
@@ -841,7 +854,7 @@ shinyUI(
                   "",
                   "E.g.: pfam_ApbA, smart_SRP54"
                 )
-                
+
               ),
               column(
                 2,
@@ -865,9 +878,9 @@ shinyUI(
                 bsPopover(
                   "use_common_ancestor",
                   "",
-                  "All taxa that have the same common ancestor with 
+                  "All taxa that have the same common ancestor with
                   the selected taxa above will be considered as the in-group",
-                  "top" 
+                  "top"
                 )
               ),
               column(
@@ -895,16 +908,19 @@ shinyUI(
             )
           ),
           group_comparison_ui("group_comparison")
-        )
+        ),
+
+        # * Search for NCBI taxonomy IDs  -------------------------------------
+        search_taxon_id_ui("search_taxon_id")
       ),
-      
+
       # DATA DOWNLOAD TAB =====================================================
       navbarMenu(
         "Download filtered data",
         download_filtered_main_ui("filtered_main_download"),
         download_filtered_customized_ui("filtered_customized_download")
       ),
-      
+
       # HELP TAB ==============================================================
       navbarMenu(
         "Help",
@@ -924,16 +940,16 @@ shinyUI(
         )
       )
     ),
-    
+
     # LIST OF POP-UP WINDOWS ==================================================
-    
+
     # * popup for getting taxa from OMA browser -------------------------------
     bsModal(
       "get_oma_data_windows",
       "Get OMA data",
       "open_oma_windows",
       size = "small",
-      
+
       selectInput(
         "selected_oma_type",
         label = "Select type of OMA orthologs:",
@@ -946,21 +962,29 @@ shinyUI(
       em("This windows will close automatically when eveything
            is done!", style = "color:red")
     ),
-    
     # * popup for adding new taxa from input file -----------------------------
     bsModal(
       "add_taxa_windows",
       "Add new taxa",
       "add_taxa",
       size = "medium",
-      
-      helpText(em(
-        "Use this form to add taxon that does not exist in NCBI taxonomy
-        database (or alternatively you can prepare the data/newTaxa.txt
-        file with the following description for each field).")),
+
+      HTML(
+        "<p><em>Use this form to add taxon that does not exist in NCBI taxonomy
+         database (or alternatively you can manually prepare the
+        <span style=\"text-decoration: underline;\">
+        <span style=\"color: #ff0000; text-decoration: underline;\">
+        phyloprofile/data/newTaxa.txt file with the following description
+        for each field).</em></p>
+        <p><span style=\"color: #ff0000;\"><em><strong>
+        NOTE: ID and name of new taxon must be
+        <span style=\"text-decoration: underline;\">
+        different</span> from any existing NCBI taxa.</strong></em></span></p>"
+      ),
+
       textInput(
         "new_id",
-        "ID (must be a number and greater than 2077091,
+        "ID (must be a number and greater than 2268208,
         e.g. 9000001)",
         9000001,
         width = 500
@@ -985,43 +1009,33 @@ shinyUI(
         4932,
         width = 500
       ),
-      textInput(
-        "new_parent",
-        "Parent ID (NCBI taxonomy ID of the next higher rank,
-        e.g. 4932 (S.cerevisiae species))",
-        4932,
-        width = 500
-      ),
-      actionButton("new_add", "Add"),
-      actionButton("new_done", "Done")
+      actionButton("new_add", "Add new taxon"),
+      actionButton("new_done", "Finish adding")
     ),
-    
+
     # * popup for confirming parsing taxa from input file ---------------------
     bsModal(
       "parse_confirm",
-      "Get info from input",
+      "Get taxonomy info",
       "but_parse",
       size = "small",
-      
-      HTML("Fetching Missing Taxonomy Information from NCBI and
-           Post-processing...<br><br>"),
-      em("This windows will close automatically when eveything
-         is done!"),
-      
-      br(),
-      strong("PLEASE RELOAD THIS TOOL WHEN FINISHED!!!",
-             style = "color:red"),
-      
-      dataTableOutput("invalidIDout")
+
+      HTML(
+        '<p>Fetching Missing Taxonomy Information and Post-processing.</p>
+        <p><em>This windows will close automatically when eveything is done.
+        Please wait...</em></p>
+        <p><strong><span style="color: #ff0000;">PLEASE RELOAD THIS TOOL WHEN
+        FINISHED!!!</span></strong></p>'
+      )
     ),
-    
+
     # * popup for plotting detailed plot --------------------------------------
     bsModal(
       "modal_bs",
       "Detailed plot",
       "detailed_btn",
       size = "large",
-      
+
       fluidRow(
         column(
           2,
@@ -1042,26 +1056,26 @@ shinyUI(
         )
       ),
       hr(),
-      
+
       create_detailed_plot_ui("detailed_plot"),
-      
+
       shinyBS::bsButton("do_domain_plot",
                         "Show domain architecture",
                         disabled = TRUE),
       uiOutput("check_domain_files"),
       br(),
-      
+
       h4("Sequence:"),
       verbatimTextOutput("fasta")
     ),
-    
+
     # * popup for plotting domain architecture plot ---------------------------
     bsModal(
       "plot_archi",
       "Domain architecture",
       "do_domain_plot",
       size = "large",
-      
+
       fluidRow(
         column(
           2,
@@ -1083,14 +1097,14 @@ shinyUI(
       uiOutput("test.ui"),
       create_architecture_plot_ui("archi_plot")
     ),
-    
+
     # * popup for setting plot colors (profiles) ------------------------------
     bsModal(
       "color",
       "Set colors for profile",
       "set_color",
       size = "small",
-      
+
       colourpicker::colourInput(
         "low_color_var1",
         "Low variable 1",
@@ -1107,7 +1121,7 @@ shinyUI(
         style = "padding:4px; font-size:100%"
       ),
       hr(),
-      
+
       colourpicker::colourInput(
         "low_color_var2",
         "Low variable 2",
@@ -1124,7 +1138,7 @@ shinyUI(
         style = "padding:4px; font-size:100%"
       ),
       hr(),
-      
+
       colourpicker::colourInput(
         "para_color",
         "Color for inparalogs",
@@ -1136,22 +1150,22 @@ shinyUI(
         style = "padding:4px; font-size:100%"
       )
     ),
-    
+
     # * popup for FASTA configurations ----------------------------------------
     bsModal(
       "config",
       "FASTA config",
       "get_config",
       size = "small",
-      
+
       selectInput(
         "input_type", "Choose location for:",
         c("Concatenated fasta file", "Fasta folder")
       ),
       hr(),
-      
+
       uiOutput("default_color_para.ui"),
-      
+
       conditionalPanel(
         condition = "input.input_type == 'Concatenated fasta file'",
         fileInput("concat_fasta", ""),
@@ -1185,14 +1199,14 @@ shinyUI(
         )
       )
     ),
-    
+
     # * popup for setting Main plot configurations ----------------------------
     bsModal(
       "main_plot_config_bs",
       "Plot appearance configuration",
       "main_plot_config",
       size = "small",
-      
+
       column(
         6,
         create_text_size("x_size", "X-axis label size (px)", 8, 100)
@@ -1201,7 +1215,7 @@ shinyUI(
         6,
         create_text_size("y_size", "Y-axis label size (px)", 8, 100)
       ),
-      
+
       column(
         6,
         create_text_size("legend_size", "Legend label size (px)", 8, 150)
@@ -1233,7 +1247,7 @@ shinyUI(
         ),
         br()
       ),
-      
+
       column(
         12,
         HTML("<strong>Zooming factor (α) for dots on
@@ -1251,20 +1265,20 @@ shinyUI(
         uiOutput("dot_size_info"),
         br()
       ),
-      
+
       br(),
       hr(),
       shinyBS::bsButton("reset_main_config", "Reset", style = "danger"),
       shinyBS::bsButton("applyMainConfig", "Done", style = "warning")
     ),
-    
+
     # * popup for setting Customized plot configurations ----------------------
     bsModal(
       "selected_plot_config_bs",
       "Plot properties configuration",
       "selected_plot_config",
       size = "small",
-      
+
       column(
         6,
         create_text_size("x_size_select", "X-axis label size (px)", 8, 100)
@@ -1273,7 +1287,7 @@ shinyUI(
         6,
         create_text_size("y_size_select", "Y-axis label size (px)", 8, 100)
       ),
-      
+
       column(
         6,
         create_text_size("legend_size_select", "Legend label size (px)", 8, 150)
@@ -1304,7 +1318,7 @@ shinyUI(
         ),
         br()
       ),
-      
+
       column(
         12,
         HTML("<strong>Zooming factor (α) for dots on profile</strong>:<br>"),
@@ -1320,20 +1334,20 @@ shinyUI(
         uiOutput("dot_size_infoSelect"),
         br()
       ),
-      
+
       br(),
       hr(),
       shinyBS::bsButton("reset_selected_config", "Reset", style = "danger"),
       shinyBS::bsButton("apply_selected_config", "Done", style = "warning")
     ),
-    
+
     # * popup for setting Gene age plot configurations ------------------------
     bsModal(
       "gene_age_prot_config_bs",
       "Plot appearance configuration",
       "gene_age_prot_config",
       size = "small",
-      
+
       sliderInput(
         "gene_age_width",
         "Width zoom (*600px)",
@@ -1367,14 +1381,14 @@ shinyUI(
         style = "danger"
       )
     ),
-    
+
     # * popup for setting Group compariosn plot configurations ----------------
     bsModal(
       "gc_plot_config_bs",
       "Plot appearance configuration",
       "gc_plot_config",
       size = "small",
-      
+
       column(
         6,
         create_text_size("x_size_gc", "X-axis label size (px)", 10, 100)
@@ -1402,6 +1416,10 @@ shinyUI(
       ),
       column(
         12,
+        create_text_size("p_values_size_gc", "P-value label size (px)", 10, 100)
+      ),
+      column(
+        12,
         sliderInput(
           "angle_gc", "Angle of the X-axis label",
           min = 0,
@@ -1418,7 +1436,7 @@ shinyUI(
           strong("Show P-Values"),
           value = TRUE,
           width = 250
-        ),
+        )
       ),
       column(
         12,
@@ -1433,20 +1451,20 @@ shinyUI(
           "If both variables are selected the significant Plot is colored"
         )
       ),
-      
+
       br(),
       hr(),
       shinyBS::bsButton("reset_config_gc", "Reset", style = "danger"),
       shinyBS::bsButton("apply_config_gc", "Done", style = "warning")
     ),
-    
+
     # * popup for select taxa on Customized Profile ---------------------------
     bsModal(
       "cus_taxa_bs",
       "Select taxon/taxa of interest",
       "cus_taxa",
       size = "small",
-      
+
       select_taxon_rank_ui("select_taxon_rank"),
       checkboxInput(
         "apply_cus_taxa",
@@ -1455,14 +1473,14 @@ shinyUI(
         value = FALSE
       )
     ),
-    
+
     # * popup for select taxa on Core gene finding ----------------------------
     bsModal(
       "browse_taxa_core_bs",
       "Select taxon/taxa of interest",
       "browse_taxa_core",
       size = "small",
-      
+
       select_taxon_rank_ui("select_taxon_rank_core"),
       checkboxInput(
         "apply_core_taxa",
@@ -1470,8 +1488,8 @@ shinyUI(
         value = FALSE
       )
     ),
-    
-    # * popup for changing the rank in the Group comparison function ----------
+
+    # * popup for select taxa on Group comparison -----------------------------
     bsModal(
       "taxa_gc_bs",
       "Select taxon/taxa of interest",
@@ -1486,12 +1504,12 @@ shinyUI(
         value = FALSE
       )
     ),
-    
+
     # POINT INFO BOX ==========================================================
     conditionalPanel(
-      condition = 
+      condition =
         "input.tabs=='Main profile' || input.tabs=='Customized profile'",
-      
+
       absolutePanel(
         bottom = 5, left = 30,
         fixed = TRUE,
