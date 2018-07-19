@@ -1,7 +1,8 @@
 # PhyloProfile
 [![language: R](https://img.shields.io/badge/language-R-blue.svg?style=flat)](https://www.r-project.org/)
 [![presented at: BOSC2017](https://img.shields.io/badge/presented%20at-BOSC2017-green.svg?style=flat)](https://f1000research.com/posters/6-1782)
-[![GitHub release](https://img.shields.io/badge/stable%20release-v0.2.1-orange.svg)](https://github.com/BIONF/PhyloProfile/releases/tag/v0.2.1)
+[![published in: Bioinformatics](https://img.shields.io/badge/published%20in-Bioinformatics-ff69b4.svg?style=flat)](https://doi.org/10.1093/bioinformatics/bty225)
+[![GitHub release](https://img.shields.io/badge/stable%20release-v0.3.0-orange.svg)](https://github.com/BIONF/PhyloProfile/releases/tag/v0.3.0)
 [![license: MIT](https://img.shields.io/badge/license-MIT-lightgrey.svg)](https://opensource.org/licenses/MIT)
 
 [![](www/posterSub.png)](https://f1000research.com/posters/6-1782)
@@ -29,7 +30,9 @@ Take a look at [the functionality](https://github.com/BIONF/PhyloProfile/wiki/Fu
 # Installation & Usage
 *PhyloProfile* is based on the *R*-package *Shiny*, as such a recent version of *R* is needed. Once that is out of the way you can just clone this repository to get a copy of *PhyloProfile*.
 
-`git clone https://github.com/BIONF/phyloprofile`
+```
+git clone https://github.com/BIONF/phyloprofile
+```
 
 To start PhyloProfile simply move into the PhyloProfile directory and run the main script
 
@@ -58,6 +61,11 @@ Any bug reports or comments, suggestions are highly appreciated. Please open an 
 We would like to thank
 1) [Bastian](https://github.com/gedankenstuecke) for the great initial idea and his kind support,
 2) Members of [Ebersberger group](http://www.bio.uni-frankfurt.de/43045195/ak-ebersberger) for many valuable suggestions and ...bug reports :)
+
+# Contributors
+* [Vinh](https://github.com/trvinh)
+* [Bastian](https://github.com/gedankenstuecke)
+* [Carla](https://github.com/CarlaMoelbert)
 
 # Code of Conduct & License
 This tool is released with a [Contributor Code of Conduct](https://github.com/BIONF/PhyloProfile/blob/master/CODE_OF_CONDUCT.md) & under [MIT license](https://github.com/BIONF/PhyloProfile/blob/master/LICENSE).
