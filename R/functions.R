@@ -155,7 +155,7 @@ install_packages_bioconductor <- function(packages){
     packages[!(packages %in% installed.packages()[, "Package"])]
   if (length(missing_packages)) {
     source("https://bioconductor.org/biocLite.R")
-    biocLite(missing_packages)
+    biocLite(missing_packages, ask = FALSE)
   }
 }
 
