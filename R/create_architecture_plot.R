@@ -31,7 +31,7 @@ create_architecture_plot <- function(input, output, session,
                                      label_archi_size, title_archi_size,
                                      archi_height, archi_width){
   output$archi_plot <- renderPlot({
-    if (any(domain_info() == "ERR")) return()
+    if (is.null(nrow(domain_info()))) return()
     g <- archi_plot(point_info(),
                     domain_info(),
                     label_archi_size(),
@@ -45,7 +45,7 @@ create_architecture_plot <- function(input, output, session,
 
   output$archi_plot.ui <- renderUI({
     ns <- session$ns
-    if (any(domain_info() == "ERR")) {
+    if (is.null(nrow(domain_info()))) {
       msg <- paste0(
         "<p><em>Wrong domain file has been uploaded! 
         Please check the correct format in 

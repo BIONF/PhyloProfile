@@ -370,7 +370,8 @@ shinyUI(
               condition = "output.unk_taxa_status == 'invalid'",
               HTML(
                 "<p><em>Some new taxa have <span style=\"color: #ff0000;\">
-                invalid IDs</span>. IDs of non-NCBI taxa have to be greater
+                invalid IDs</span> (either in newTaxa.txt or in the main 
+                profile input or both). IDs of non-NCBI taxa have to be greater
                 than 2268208.</em></p>
                 <p><em>Please replace those IDs before continuing!</em></p>"
               )
@@ -428,7 +429,10 @@ shinyUI(
               uiOutput("end_parsing_msg"),
               tableOutput("invalidID.output"),
               hr(),
-              downloadButton("invalidID.download", "Download invalid IDs")
+              conditionalPanel(
+                condition = "output.unk_taxa_status == 'invalid'",
+                downloadButton("invalidID.download", "Download invalid IDs")
+              )
             )
           ),
 

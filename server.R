@@ -804,10 +804,17 @@ shinyServer(function(input, output, session) {
 
           if (nrow(unkTaxa[unkTaxa$id %in% newTaxa,]) > 0) {
             unkTaxa[unkTaxa$id %in% newTaxa,]$Source <- "new"
-            if (any(as.numeric(newTaxa) < maxNCBI)) {
-              unkTaxa[unkTaxa$id %in% newTaxa &
-                      unkTaxa$id < maxNCBI,]$Source <- "invalid"
-            }
+          }
+          
+          # check for invalid newly generated IDs in newTaxa.txt file
+          newTaxaList <- levels(newTaxa)
+          newTaxaList <- as.integer(newTaxaList[newTaxaList != "ncbiID"])
+          if (min(newTaxaList) < maxNCBI) {
+            invalidList <- as.data.frame(newTaxaList[newTaxaList < maxNCBI])
+            colnames(invalidList) <- c("id")
+            invalidList$TaxonID <- "newTaxa.txt"
+            invalidList$Source <- "invalid"
+            unkTaxa <- rbind(invalidList, unkTaxa)
           }
 
           # return list of unkTaxa
