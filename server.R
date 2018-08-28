@@ -247,7 +247,6 @@ shinyServer(function(input, output, session) {
     input_type == "oma"
   })
   outputOptions(output, "check_oma_input", suspendWhenHidden = FALSE)
-  
   # * download OMA data after parsing -----------------------------------------
   output$download_files_oma <- downloadHandler(
     filenname <- function() {
@@ -795,15 +794,20 @@ shinyServer(function(input, output, session) {
           maxNCBI <- max(sort(as.numeric(ncbiID[ncbiID != "ncbiID"])))
           
           if (nrow(unkTaxa[!(unkTaxa$id %in% ncbiTaxa),]) > 0) {
-            unkTaxa[!(unkTaxa$id %in% ncbiTaxa),]$Source <- "unknown"
+            unk_taxa <- unkTaxa[!(unkTaxa$id %in% ncbiTaxa),]$id
+            unkTaxa[unkTaxa$id %in% unk_taxa,]$Source <- "unknown"
+            if (any(unk_taxa < maxNCBI)) {
+              unkTaxa[unkTaxa$id %in% unk_taxa &
+                      unkTaxa$id < maxNCBI,]$Source <- "invalid"
+            }
           }
           
           if (nrow(unkTaxa[unkTaxa$id %in% newTaxa,]) > 0) {
             unkTaxa[unkTaxa$id %in% newTaxa,]$Source <- "new"
-          }
-          
-          if (nrow(unkTaxa[unkTaxa$id < maxNCBI,]) > 0) {
-            unkTaxa[unkTaxa$id < maxNCBI,]$Source <- "invalid"
+            if (any(as.numeric(newTaxa) < maxNCBI)) {
+              unkTaxa[unkTaxa$id %in% newTaxa &
+                      unkTaxa$id < maxNCBI,]$Source <- "invalid"
+            }
           }
           
           # return list of unkTaxa
@@ -819,8 +823,8 @@ shinyServer(function(input, output, session) {
   output$unk_taxa_status <- reactive({
     unkTaxa <- unkTaxa()
     if (length(unkTaxa) > 0) {
-      if ("unknown" %in% unkTaxa$Source) return("unknown")
       if ("invalid" %in% unkTaxa$Source) return("invalid")
+      if ("unknown" %in% unkTaxa$Source) return("unknown")
       else return("ncbi")
     } else {
       return(0)
@@ -1230,7 +1234,6 @@ shinyServer(function(input, output, session) {
     # 1+ will be coerced to TRUE
     v$doPlot <- input$do
     filein <- input$main_input
-    # if (is.null(filein) & input$demo==FALSE) {
     if (is.null(filein) & input$demo_data == "none") {
       v$doPlot <- FALSE
       updateButton(session, "do", disabled = TRUE)
@@ -1601,7 +1604,7 @@ shinyServer(function(input, output, session) {
     if (is.null(preData())) return()
     
     mdData <- preData()
-    
+
     # count number of inparalogs
     paralogCount <- plyr::count(mdData, c("geneID", "ncbiID"))
     mdData <- merge(mdData, paralogCount, by = c("geneID", "ncbiID"))
@@ -1682,7 +1685,7 @@ shinyServer(function(input, output, session) {
   # * and their value (%present, mVar1 & mVar2) for each gene
   dataSupertaxa <- reactive({
     fullMdData <- get_data_filtered()
-    
+
     # to check if working with the lowest taxonomy rank; 1 for NO; 0 for YES
     flag <- 1
     if (length(unique(levels(as.factor(fullMdData$numberSpec)))) == 1) {
@@ -1768,7 +1771,7 @@ shinyServer(function(input, output, session) {
     if (is.null(filein)) return()
     
     dataHeat <- dataSupertaxa()
-    
+
     # get selected supertaxon name
     split <- strsplit(as.character(input$in_select), "_")
     in_select <- as.character(split[[1]][1])
@@ -1832,6 +1835,7 @@ shinyServer(function(input, output, session) {
                   & dataHeat$var2 > var2_cutoff_max] <- NA
     dataHeat <- droplevels(dataHeat)  # delete unused levels
     dataHeat$geneID <- as.factor(dataHeat$geneID)
+
     return(dataHeat)
   })
   
@@ -1843,12 +1847,17 @@ shinyServer(function(input, output, session) {
     # do clustering based on distance matrix
     row.order <- hclust(get_distance_matrix_profiles(),
                         method = input$cluster_method)$order
-    col.order <- hclust(get_distance_matrix(t(dat), method = input$dist_method),
+
+    col.order <- hclust(get_distance_matrix(t(dat), method = input$dist_method,input$var1),
                         method = input$cluster_method)$order
+    
     
     # re-order distance matrix accoring to clustering
     dat_new <- dat[row.order, col.order]
-    
+    write.table(rownames(dat_new),
+                paste0("../",input$dist_method, "_",
+                       input$profile_type ,"_gene_order"),
+                row.names = FALSE, col.names = FALSE, quote = FALSE)
     # return clustered gene ID list
     clustered_gene_ids <- as.factor(row.names(dat_new))
     
@@ -1967,7 +1976,8 @@ shinyServer(function(input, output, session) {
     width = reactive(input$width),
     height = reactive(input$height),
     x_axis = reactive(input$x_axis),
-    type_profile = reactive("main_profile")
+    type_profile = reactive("main_profile"),
+    visulize_annotation = reactive(input$visulize_annotation)
   )
   
   
@@ -2153,7 +2163,8 @@ shinyServer(function(input, output, session) {
     width = reactive(input$selected_width),
     height = reactive(input$selected_height),
     x_axis = reactive(input$x_axis_selected),
-    type_profile = reactive("customized_profile")
+    type_profile = reactive("customized_profile"),
+    visulize_annotation = reactive(input$visulize_annotation)
   )
   
   # ============================== POINT INFO =================================
@@ -2587,11 +2598,9 @@ shinyServer(function(input, output, session) {
                      "maximum" = "maximum",
                      "manhattan" = "manhattan",
                      "canberra" = "canberra",
-                     "binary" = "binary"#,
-                     # "pearson correlation coefficient" = "pearson",
-                     # "fisher's exact test" = "fisher",
-                     # "mutual information" = "mutual_information",
-                     # "distance correlation" = "distance_correlation"
+                     "binary" = "binary",
+                     "pearson correlation coefficient" = "pearson",
+                     "mutual information" = "mutual_information"
       ),
       selected = "euclidean"
     )
@@ -2612,7 +2621,7 @@ shinyServer(function(input, output, session) {
   get_distance_matrix_profiles <- reactive({
     if (is.null(input$dist_method)) return()
     profiles <- get_profiles()
-    distance_matrix <- get_distance_matrix(profiles, input$dist_method)
+    distance_matrix <- get_distance_matrix(profiles, input$dist_method, input$var1)
     return(distance_matrix)
   })
   
@@ -2621,9 +2630,9 @@ shinyServer(function(input, output, session) {
     data_heat <- dataHeat()
     if (nrow(data_heat) < 1) return()
     if (is.null(input$dist_method)) return()
+    
     profiles <- get_data_clustering(data_heat,
-                                    #input$profile_type,
-                                    "binary", # Till the second profile type is added
+                                    input$profile_type,
                                     input$var1_aggregate_by,
                                     input$var2_aggregate_by)
     return(profiles)

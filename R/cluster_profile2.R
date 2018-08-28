@@ -66,7 +66,7 @@ cluster_profile_2 <- function(input, output, session,
       "clustered_plot.pdf"
     },
     content = function(file) {
-      ggsave(file, plot = get_dendrogram(cluster_data()),
+      ggsave(file, plot = get_dendrogram(cluster_data()), 
              dpi = 300, device = "pdf",
              limitsize = FALSE)
     }

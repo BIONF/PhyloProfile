@@ -462,7 +462,7 @@ shinyUI(
               type = "action",
               style = "danger",
               size = "large",
-              disabled = TRUE
+              disabled = FALSE
             ),
             h5("")
           )
@@ -532,6 +532,10 @@ shinyUI(
             br(),
 
             uiOutput("highlight_taxon_ui"),
+            
+            radioButtons("visulize_annotation", "Visulize Annotations",
+                         choices = c("citrate", "glycolysis", "both pathways")
+                         ),
 
             conditionalPanel(
               condition = "input.auto_update == false",
