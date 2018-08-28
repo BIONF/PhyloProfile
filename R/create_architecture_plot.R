@@ -17,7 +17,7 @@ create_architecture_plot_ui <- function(id) {
   tagList(
     uiOutput(ns("archi_plot.ui")),
     downloadButton(ns("archi_download"), "Download plot", class = "butDL"),
-		tags$head(
+    tags$head(
       tags$style(HTML(
         ".butDL{background-color:#476ba3;} .butDL{color: white;}"))
     ),
@@ -31,7 +31,7 @@ create_architecture_plot <- function(input, output, session,
                                      label_archi_size, title_archi_size,
                                      archi_height, archi_width){
   output$archi_plot <- renderPlot({
-    if (any(domain_info() == "ERR")) return()
+    if (is.null(nrow(domain_info()))) return()
     g <- archi_plot(point_info(),
                     domain_info(),
                     label_archi_size(),
@@ -42,10 +42,10 @@ create_architecture_plot <- function(input, output, session,
       grid.draw(g)
     }
   })
-
+  
   output$archi_plot.ui <- renderUI({
     ns <- session$ns
-    if (any(domain_info() == "ERR")) {
+    if (is.null(nrow(domain_info()))) {
       msg <- paste0(
         "<p><em>Wrong domain file has been uploaded! 
         Please check the correct format in 
@@ -64,11 +64,11 @@ create_architecture_plot <- function(input, output, session,
       )
     }
   })
-
+  
   output$archi_download <- downloadHandler(
     filename = function() {
       c("domains.pdf")
-      },
+    },
     content = function(file) {
       g <- archi_plot(point_info(),
                       domain_info(),
@@ -83,7 +83,7 @@ create_architecture_plot <- function(input, output, session,
       )
     }
   )
-
+  
   output$selected_domain <- renderText({
     if (is.null(input$archi_click$y)) return()
     convertY(unit(input$archi_click$y, "npc"), "native")
@@ -107,31 +107,31 @@ archi_plot <- function(info,
   group <- as.character(info[1])
   ortho <- as.character(info[2])
   var1 <- as.character(info[3])
-
+  
   # get sub dataframe based on selected group_id and orthoID
   ortho <- gsub("\\|", ":", ortho)
   grepID <- paste(group, "#", ortho, sep = "")
-
+  
   subdomain_df <- domain_df[grep(grepID, domain_df$seedID), ]
   subdomain_df$feature <- as.character(subdomain_df$feature)
-
+  
   if (nrow(subdomain_df) < 1) {
     return(paste0("ERR_0"))
   } else {
-
+    
     # ortho domains df
     ortho_df <- filter(subdomain_df, orthoID == ortho)
-
+    
     # seed domains df
     seed_df <- filter(subdomain_df, orthoID != ortho)
-
+    
     if (nrow(seed_df) == 0) seed_df <- ortho_df
-
+    
     seed <- as.character(seed_df$orthoID[1])
     
     # return ERR_0 if seed_df and ortho_df are empty
     if (nrow(seed_df) == 0) return(paste0("ERR_0"))
-
+    
     # change order of one dataframe's features
     # based on order of other df's features
     if (length(ortho_df$feature) < length(seed_df$feature)) {
@@ -141,23 +141,23 @@ archi_plot <- function(info,
       ordered_seed_df <- seed_df[order(seed_df$feature), ]
       ordered_ortho_df <- sort_domains(ordered_seed_df, ortho_df)
     }
-
+    
     # join weight values and feature names
     if ("weight" %in% colnames(ordered_ortho_df)) {
       ordered_ortho_df$yLabel <- paste0(ordered_ortho_df$feature,
-                                      " (",
-                                      round(ordered_ortho_df$weight, 2),
-                                      ")")
+                                        " (",
+                                        round(ordered_ortho_df$weight, 2),
+                                        ")")
       ordered_ortho_df$feature <- ordered_ortho_df$yLabel
     }
     if ("weight" %in% colnames(ordered_seed_df)) {
       ordered_seed_df$yLabel <- paste0(ordered_seed_df$feature,
-                                     " (",
-                                     round(ordered_seed_df$weight, 2),
-                                     ")")
+                                       " (",
+                                       round(ordered_seed_df$weight, 2),
+                                       ")")
       ordered_seed_df$feature <- ordered_seed_df$yLabel
     }
-
+    
     # plotting
     sep <- ":"
     
@@ -178,7 +178,7 @@ archi_plot <- function(info,
                                    min(subdomain_df$start),
                                    max(c(subdomain_df$end,
                                          subdomain_df$length)))
-
+      
     } else{
       plot_ortho <- domain_plotting(ordered_ortho_df,
                                     ortho,
@@ -195,14 +195,14 @@ archi_plot <- function(info,
                                    min(subdomain_df$start),
                                    max(subdomain_df$end))
     }
-
+    
     # grid.arrange(plot_seed,plot_ortho,ncol=1)
     if (ortho == seed) {
       arrangeGrob(plot_seed, ncol = 1)
     } else {
       seed_height <- length(levels(as.factor(ordered_seed_df$feature)))
       ortho_height <- length(levels(as.factor(ordered_ortho_df$feature)))
-
+      
       arrangeGrob(plot_seed, plot_ortho, ncol = 1,
                   heights = c(seed_height, ortho_height))
     }
@@ -232,7 +232,7 @@ domain_plotting <- function(df,
                      x = min_start, xend = max_end),
                  color = "white",
                  size = 0)
-
+  
   # draw lines for representing sequence length
   if ("length" %in% colnames(df)) {
     gg <- gg + geom_segment(data = df,
@@ -241,7 +241,7 @@ domain_plotting <- function(df,
                             size = 1,
                             color = "#b2b2b2")
   }
-
+  
   # draw line and points
   gg <- gg + geom_segment(data = df,
                           aes(x = start, xend = end,
@@ -257,14 +257,14 @@ domain_plotting <- function(df,
                         color = "#edae52",
                         size = 3,
                         shape = 5)
-
+  
   # draw dashed line for domain path
   gg <- gg + geom_segment(data = df[df$path == "Y", ],
                           aes(x = start, xend = end,
                               y = feature, yend = feature),
                           size = 3,
                           linetype = "dashed")
-
+  
   # # add text above
   # gg <- gg + geom_text(data = df,
   #                      aes(x = (start + end) / 2,
@@ -274,7 +274,7 @@ domain_plotting <- function(df,
   #                        vjust = -0.75,
   #                        fontface = "bold",
   #                        family = "serif")
-
+  
   # theme format
   title_mod <- gsub(":", sep, geneID)
   gg <- gg + scale_y_discrete(expand = c(0.075, 0))
@@ -306,14 +306,14 @@ sort_domains <- function(seed_df, ortho_df){
   colnames(feature_list) <- c("feature")
   # and add order number to each feature
   feature_list$orderNo <- seq(length(feature_list$feature))
-
+  
   # merge those info to ortho_df
   ordered_ortho_df <- merge(ortho_df, feature_list, all.x = TRUE)
-
+  
   # sort ortho_df
   index <- with(ordered_ortho_df, order(orderNo))
   ordered_ortho_df <- ordered_ortho_df[index, ]
-
+  
   #turn feature column into a character vector
   ordered_ortho_df$feature <- as.character(ordered_ortho_df$feature)
   #then turn it back into an ordered factor (to keep this order while plotting)

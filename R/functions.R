@@ -1,5 +1,3 @@
-require(tictoc)
-
 #' Calculate percentage of present species-------------------------------------
 #' @export
 #' @param taxa_md_data contains "geneID", "ncbiID", "orthoID",
@@ -157,7 +155,7 @@ install_packages_bioconductor <- function(packages){
     packages[!(packages %in% installed.packages()[, "Package"])]
   if (length(missing_packages)) {
     source("https://bioconductor.org/biocLite.R")
-    biocLite(missing_packages)
+    biocLite(missing_packages, ask = FALSE)
   }
 }
 
@@ -306,14 +304,14 @@ library(energy)
 get_data_clustering <- function(data,
                                 profile_type,
                                 var1_aggregate_by,
-                                var2_aggregate_by){
+                                var2_aggregate_by)
+  {
+
   sub_data_heat <- subset(data, data$presSpec > 0)
   if (profile_type == "binary") {
     #' Binary Profiles --------------------------------------------------------
     sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", "presSpec")]
-    print(head(sub_data_heat,20))
     sub_data_heat$presSpec[sub_data_heat$presSpec > 0] <- 1
-    print(head(sub_data_heat,20))
     sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
     wide_data <- spread(sub_data_heat, supertaxon, presSpec)
   
@@ -321,7 +319,7 @@ get_data_clustering <- function(data,
   }else {
     #' Profiles with FAS scores ----------------------------------------------
     var <- profile_type
-    
+
     sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", var)]
     sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
     
@@ -337,6 +335,7 @@ get_data_clustering <- function(data,
     colnames(sub_data_heat) <- c("geneID", "supertaxon", var)
     
     wide_data <- spread(sub_data_heat, supertaxon, var)
+
   }
   
   dat <- wide_data[, 2:ncol(wide_data)]  # numerical columns

@@ -147,7 +147,7 @@ shinyUI(
 
     # MAIN NARVARPAGE TABS ----------------------------------------------------
     navbarPage(
-      em(strong("PhyloProfile v0.3.0")),
+      em(strong("PhyloProfile v0.3.2")),
       id = "tabs",
       collapsible = TRUE,
       inverse = TRUE,
@@ -370,7 +370,8 @@ shinyUI(
               condition = "output.unk_taxa_status == 'invalid'",
               HTML(
                 "<p><em>Some new taxa have <span style=\"color: #ff0000;\">
-                invalid IDs</span>. IDs of non-NCBI taxa have to be greater
+                invalid IDs</span> (either in newTaxa.txt or in the main 
+                profile input or both). IDs of non-NCBI taxa have to be greater
                 than 2268208.</em></p>
                 <p><em>Please replace those IDs before continuing!</em></p>"
               )
@@ -428,7 +429,10 @@ shinyUI(
               uiOutput("end_parsing_msg"),
               tableOutput("invalidID.output"),
               hr(),
-              downloadButton("invalidID.download", "Download invalid IDs")
+              conditionalPanel(
+                condition = "output.unk_taxa_status == 'invalid'",
+                downloadButton("invalidID.download", "Download invalid IDs")
+              )
             )
           ),
 
@@ -532,10 +536,6 @@ shinyUI(
             br(),
 
             uiOutput("highlight_taxon_ui"),
-            
-            radioButtons("visulize_annotation", "Visulize Annotations",
-                         choices = c("citrate", "glycolysis", "both pathways")
-                         ),
 
             conditionalPanel(
               condition = "input.auto_update == false",
@@ -546,7 +546,6 @@ shinyUI(
               )
             )
           ),
-
           # * main panel for profile plot -------------------------------------
           mainPanel(
             conditionalPanel(
@@ -683,11 +682,11 @@ shinyUI(
               ),
               column(
 
-                1, #2
+                1, 
                 create_plot_size("cluster_plot.height", "Height (px)", 600)
               ),
               column(
-                2, #3
+                2,
                 checkboxInput(
                   "apply_cluster",
                   em(strong("Apply clustering to profile plot",
@@ -709,7 +708,7 @@ shinyUI(
             )
           ),
 
-          cluster_profile_2_ui("profile_clustering")
+          cluster_profile_ui("profile_clustering")
         ),
 
         # * Distribution analysis ---------------------------------------------
@@ -753,6 +752,7 @@ shinyUI(
 
           analyze_distribution_ui("dist_plot")
         ),
+
 
         # * Gene age estimation -----------------------------------------------
         tabPanel(
@@ -966,6 +966,7 @@ shinyUI(
       em("This windows will close automatically when eveything
            is done!", style = "color:red")
     ),
+
     # * popup for adding new taxa from input file -----------------------------
     bsModal(
       "add_taxa_windows",

@@ -17,7 +17,6 @@ lapply(bioconductor_pkgs, library, character.only = TRUE)
 source_files = list.files(path = "R",
                           pattern = "*.R$",
                           full.names = TRUE)
-
 lapply(source_files, source, .GlobalEnv)
 
 #' set size limit for input (9999mb)
@@ -247,6 +246,7 @@ shinyServer(function(input, output, session) {
     input_type == "oma"
   })
   outputOptions(output, "check_oma_input", suspendWhenHidden = FALSE)
+  
   # * download OMA data after parsing -----------------------------------------
   output$download_files_oma <- downloadHandler(
     filenname <- function() {
@@ -798,16 +798,23 @@ shinyServer(function(input, output, session) {
             unkTaxa[unkTaxa$id %in% unk_taxa,]$Source <- "unknown"
             if (any(unk_taxa < maxNCBI)) {
               unkTaxa[unkTaxa$id %in% unk_taxa &
-                      unkTaxa$id < maxNCBI,]$Source <- "invalid"
+                        unkTaxa$id < maxNCBI,]$Source <- "invalid"
             }
           }
           
           if (nrow(unkTaxa[unkTaxa$id %in% newTaxa,]) > 0) {
             unkTaxa[unkTaxa$id %in% newTaxa,]$Source <- "new"
-            if (any(as.numeric(newTaxa) < maxNCBI)) {
-              unkTaxa[unkTaxa$id %in% newTaxa &
-                      unkTaxa$id < maxNCBI,]$Source <- "invalid"
-            }
+          }
+          
+          # check for invalid newly generated IDs in newTaxa.txt file
+          newTaxaList <- levels(newTaxa)
+          newTaxaList <- as.integer(newTaxaList[newTaxaList != "ncbiID"])
+          if (min(newTaxaList) < maxNCBI) {
+            invalidList <- as.data.frame(newTaxaList[newTaxaList < maxNCBI])
+            colnames(invalidList) <- c("id")
+            invalidList$TaxonID <- "newTaxa.txt"
+            invalidList$Source <- "invalid"
+            unkTaxa <- rbind(invalidList, unkTaxa)
           }
           
           # return list of unkTaxa
@@ -1604,7 +1611,7 @@ shinyServer(function(input, output, session) {
     if (is.null(preData())) return()
     
     mdData <- preData()
-
+    
     # count number of inparalogs
     paralogCount <- plyr::count(mdData, c("geneID", "ncbiID"))
     mdData <- merge(mdData, paralogCount, by = c("geneID", "ncbiID"))
@@ -1685,7 +1692,7 @@ shinyServer(function(input, output, session) {
   # * and their value (%present, mVar1 & mVar2) for each gene
   dataSupertaxa <- reactive({
     fullMdData <- get_data_filtered()
-
+    
     # to check if working with the lowest taxonomy rank; 1 for NO; 0 for YES
     flag <- 1
     if (length(unique(levels(as.factor(fullMdData$numberSpec)))) == 1) {
@@ -1771,7 +1778,7 @@ shinyServer(function(input, output, session) {
     if (is.null(filein)) return()
     
     dataHeat <- dataSupertaxa()
-
+    
     # get selected supertaxon name
     split <- strsplit(as.character(input$in_select), "_")
     in_select <- as.character(split[[1]][1])
@@ -1835,7 +1842,6 @@ shinyServer(function(input, output, session) {
                   & dataHeat$var2 > var2_cutoff_max] <- NA
     dataHeat <- droplevels(dataHeat)  # delete unused levels
     dataHeat$geneID <- as.factor(dataHeat$geneID)
-
     return(dataHeat)
   })
   
@@ -1847,17 +1853,12 @@ shinyServer(function(input, output, session) {
     # do clustering based on distance matrix
     row.order <- hclust(get_distance_matrix_profiles(),
                         method = input$cluster_method)$order
-
-    col.order <- hclust(get_distance_matrix(t(dat), method = input$dist_method,input$var1),
+    col.order <- hclust(get_distance_matrix(t(dat), method = input$dist_method),
                         method = input$cluster_method)$order
-    
     
     # re-order distance matrix accoring to clustering
     dat_new <- dat[row.order, col.order]
-    write.table(rownames(dat_new),
-                paste0("../",input$dist_method, "_",
-                       input$profile_type ,"_gene_order"),
-                row.names = FALSE, col.names = FALSE, quote = FALSE)
+    
     # return clustered gene ID list
     clustered_gene_ids <- as.factor(row.names(dat_new))
     
@@ -1976,8 +1977,7 @@ shinyServer(function(input, output, session) {
     width = reactive(input$width),
     height = reactive(input$height),
     x_axis = reactive(input$x_axis),
-    type_profile = reactive("main_profile"),
-    visulize_annotation = reactive(input$visulize_annotation)
+    type_profile = reactive("main_profile")
   )
   
   
@@ -2163,8 +2163,7 @@ shinyServer(function(input, output, session) {
     width = reactive(input$selected_width),
     height = reactive(input$selected_height),
     x_axis = reactive(input$x_axis_selected),
-    type_profile = reactive("customized_profile"),
-    visulize_annotation = reactive(input$visulize_annotation)
+    type_profile = reactive("customized_profile")
   )
   
   # ============================== POINT INFO =================================
@@ -2571,19 +2570,35 @@ shinyServer(function(input, output, session) {
   # ** List of possible profile types -----------------------------------------
   output$select_profile_type <- renderUI({
     variable1 <- paste0("profile using ", input$var1_id)
-    variable2 <- paste0("profile using ", input$var2_id)
-    radioButtons(
-      "profile_type",
-      label = h5("Select the profile type"),
-      choiceNames = list(
-        "binary profile",
-        variable1,
-        variable2),
-      choiceValues = list(
-        "binary", "var1", "var2"
-      ),
-      selected = "binary",
-      inline = FALSE)
+    if(input$var2_id != "") {
+      variable2 <- paste0("profile using ", input$var2_id)
+      radioButtons(
+        "profile_type",
+        label = h5("Select the profile type"),
+        choiceNames = list(
+          "binary profile",
+          variable1,
+          variable2),
+        choiceValues = list(
+          "binary", "var1", "var2"
+        ),
+        selected = "binary",
+        inline = FALSE)
+    }
+    else {
+      radioButtons(
+        "profile_type",
+        label = h5("Select the profile type"),
+        choiceNames = list(
+          "binary profile",
+          variable1),
+        choiceValues = list(
+          "binary", "var1"
+        ),
+        selected = "binary",
+        inline = FALSE)
+    }
+
   })
   
   # ** List of possible distance methods --------------------------------------
@@ -2600,7 +2615,8 @@ shinyServer(function(input, output, session) {
                      "canberra" = "canberra",
                      "binary" = "binary",
                      "pearson correlation coefficient" = "pearson",
-                     "mutual information" = "mutual_information"
+                     "mutual information" = "mutual_information",
+                     "distance correlation" = "distance_correlation"
       ),
       selected = "euclidean"
     )
@@ -2612,7 +2628,7 @@ shinyServer(function(input, output, session) {
         choices = list("mutual information" = "mutual_information",
                        "distance correlation" = "distance_correlation"
         ),
-        selected = "euclidean"
+        selected = "mutual_information"
       )
     }
   })
@@ -2621,7 +2637,7 @@ shinyServer(function(input, output, session) {
   get_distance_matrix_profiles <- reactive({
     if (is.null(input$dist_method)) return()
     profiles <- get_profiles()
-    distance_matrix <- get_distance_matrix(profiles, input$dist_method, input$var1)
+    distance_matrix <- get_distance_matrix (profiles, input$dist_method)
     return(distance_matrix)
   })
   
@@ -2630,30 +2646,24 @@ shinyServer(function(input, output, session) {
     data_heat <- dataHeat()
     if (nrow(data_heat) < 1) return()
     if (is.null(input$dist_method)) return()
-    
     profiles <- get_data_clustering(data_heat,
-                                    input$profile_type,
+                                    #input$profile_type,
+                                    "binary", # Till the second profile type is added
                                     input$var1_aggregate_by,
                                     input$var2_aggregate_by)
     return(profiles)
   })
   
-  # ** render cluster tree ----------------------------------------------------
-  # brushed_clusterGene <- callModule(
-  #   cluster_profile, "profile_clustering",
-  #   data = dataHeat,
-  #   dist_method = reactive(input$dist_method),
-  #   cluster_method = reactive(input$cluster_method),
-  #   cluster_plot.width = reactive(input$cluster_plot.width),
-  #   cluster_plot.height = reactive(input$cluster_plot.width)
-  # )
+  
+  
+  # ** render cluster tree ---------------------------------------------------
   brushed_clusterGene <- callModule(
-    cluster_profile_2, "profile_clustering",
+    cluster_profile, "profile_clustering",
     distance_matrix = get_distance_matrix_profiles,
     cluster_method = reactive(input$cluster_method),
     plot_width = reactive(input$cluster_plot.width),
     plot_height = reactive(input$cluster_plot.width))
-
+  
   
   # * DISTRIBUTION ANALYSIS ===================================================
   
@@ -3201,7 +3211,7 @@ shinyServer(function(input, output, session) {
            <strong>Core genes finding</strong>&nbsp;to enable this function)
            </em></p>')
     }
-    })
+  })
   
   # ** parameters for the plots in Group Comparison ---------------------------
   get_parameter_input_gc <- reactive({
