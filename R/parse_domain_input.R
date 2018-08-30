@@ -65,7 +65,7 @@ parse_domain_input <- function(main_input,
                                           quote = ""))
       domains <- rbind(domains, domain_df)
     }
-    
+
     if (ncol(domains) == 5) {
       colnames(domains) <- c("seedID",
                              "orthoID",
@@ -107,7 +107,7 @@ parse_domain_input <- function(main_input,
           }
         }
       }
-      
+
       if (ncol(domains) == 5) {
         colnames(domains) <- c("seedID",
                                "orthoID",
@@ -144,7 +144,7 @@ parse_domain_input <- function(main_input,
   }
 
   if (nrow(domains) == 0) return("ERR_0")
-  
+
   domains$seedID <- gsub("\\|",":",domains$seedID)
   domains$orthoID <- gsub("\\|",":",domains$orthoID)
 
@@ -153,7 +153,7 @@ parse_domain_input <- function(main_input,
 
 #' Get domain file
 #' @export
-#' @param seed seed ID 
+#' @param seed seed ID
 #' @param demo_data demo data name (either lca-micros or ampk-tor)
 #' @param anno_location location of anno file ("from file" or "from folder")
 #' @param file_domain concatenate domain file
@@ -216,7 +216,7 @@ get_domain_file <- function(seed,
         # check file extension
         all_extension <- c("txt", "csv", "list", "domains", "architecture")
         flag <- 0
-        
+
         for (i in 1:length(all_extension)) {
           file_domain <- paste0(domain_path,
                                 "/",
@@ -237,6 +237,6 @@ get_domain_file <- function(seed,
       }
     }
   }
-  
+
   return(file_domain)
 }
