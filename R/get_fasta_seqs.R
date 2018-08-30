@@ -61,7 +61,8 @@ get_fasta_seqs <- function(data_in, filein, demo_data,
       fa_df <- data.frame("seqID" = fa_file$V1[grepl(">", fa_file$V1)],
                           "seq" = fa_file$V1[!grepl(">", fa_file$V1)],
                           stringsAsFactors = FALSE)
-
+# print(head(fa_df))
+      fa_df$seqID <- gsub("\\|",":",fa_df$seqID)
       # get sequences
       for (j in 1:nrow(data_in)) {
         seq_id <- as.character(data_in$orthoID[j])
@@ -122,6 +123,7 @@ get_fasta_seqs <- function(data_in, filein, demo_data,
         fasta_file <- readAAStringSet(file)
 
         seq_name <- names(fasta_file)
+        seq_name <- gsub("\\|",":",seq_name)
         sequence <- paste(fasta_file)
         # data frame contains all sequences from input file
         fa <- data.frame(seq_name, sequence)
