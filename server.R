@@ -1355,6 +1355,7 @@ shinyServer(function(input, output, session) {
     if (input_type == "oma") {
       domain_df <- get_all_domains_oma(final_oma_df())
     } else {
+      print("Getting the domains...")
       main_input <- get_main_input()
       domain_df <- parse_domain_input(main_input,
                                       # input_type,
