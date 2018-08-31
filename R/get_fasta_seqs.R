@@ -61,7 +61,6 @@ get_fasta_seqs <- function(data_in, filein, demo_data,
       fa_df <- data.frame("seqID" = fa_file$V1[grepl(">", fa_file$V1)],
                           "seq" = fa_file$V1[!grepl(">", fa_file$V1)],
                           stringsAsFactors = FALSE)
-
       # get sequences
       for (j in 1:nrow(data_in)) {
         seq_id <- as.character(data_in$orthoID[j])
