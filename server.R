@@ -3,7 +3,7 @@ packages <- c("ggplot2", "reshape2",
               "plyr", "dplyr", "tidyr", "scales", "grid",
               "gridExtra", "ape", "stringr", "gtable",
               "dendextend", "ggdendro", "gplots", "data.table",
-              "taxize", "zoo", "RCurl")
+              "taxize", "zoo", "RCurl", "svMisc")
 source("R/functions.R")
 install_packages(packages)
 lapply(packages, library, character.only = TRUE)
@@ -983,6 +983,44 @@ shinyServer(function(input, output, session) {
         if (nrow(invalidID) > 0) {
           return(invalidID)
         }
+        
+        ## get unique norank IDs and unique rank
+        ## (which are uninformative for sorting taxa)
+        allNorankIDs <- list()
+        allRanks <- list()
+        
+        for (i in 2:length(titleline)) {
+          # taxon ID
+          refID <- titleline[i]
+          # get info for this taxon
+          refEntry <- allTaxonInfo[allTaxonInfo$ncbiID == refID, ]
+          # parent ID
+          lastID <- refEntry$parentID
+          
+          # 
+          if (refEntry$rank == "norank") {
+            allNorankIDs <- c(allNorankIDs, refEntry$ncbiID)
+          }
+          allRanks <- c(allRanks, refEntry$rank)
+          
+          while (lastID != 1) {
+            nextEntry <- allTaxonInfo[allTaxonInfo$ncbiID == lastID, ]
+            if (nextEntry$rank == "norank") {
+              allNorankIDs <- c(allNorankIDs, nextEntry$ncbiID)
+            }
+            allRanks <- c(allRanks, nextEntry$rank)
+            lastID <- nextEntry$parentID
+          }
+          
+          # print progress
+          p <- (i - 1) / (length(titleline) - 1) * 100
+          progress(p)
+        }
+        uniqueRank <- names(which(table(as.character(allRanks)) == 1))
+        uniqueID <- names(which(table(as.character(allNorankIDs)) == 1))
+        overID <- names(which(table(as.character(allNorankIDs)) == 
+                                (length(titleline) - 1)))
+        uniqueID <- c(uniqueID, overID)
 
         ## parse taxonomy info
         rankList <- data.frame()
@@ -1084,6 +1122,13 @@ shinyServer(function(input, output, session) {
             # last rank and id
             rank <- c(rank, "norank_1")
             ids <- c(ids, "1#norank_1")
+            
+            # change "no_rank" before species into "strain"
+            if (rank[3] == "norank" & any(rank == "species")) {
+              rank[3] = "strain"
+              tmpID <- unlist(strsplit(as.character(ids[2]), split = "#"))
+              ids[2] <- paste0(tmpID[1],"#","strain")
+            }
 
             # append into rankList and idList files
             rankListTMP <- data.frame(matrix(unlist(rank),
@@ -1149,6 +1194,7 @@ shinyServer(function(input, output, session) {
           new_nameList <- rbind.fill(oldNameList,
                                      reducedInfoList)
 
+          # write output files (idList, rankList and taxonNamesReduced)
           write.table(new_idList[!duplicated(new_idList), ],
                       file  = "data/idList.txt",
                       col.names = FALSE,
@@ -1167,12 +1213,12 @@ shinyServer(function(input, output, session) {
                       row.names = FALSE,
                       quote = FALSE,
                       sep = "\t")
-
-          # create taxonomy matrix
+          
+          # create taxonomy matrix (taxonomyMatrix.txt)
           taxMatrix <- taxonomyTableCreator("data/idList.txt",
                                             "data/rankList.txt")
           write.table(taxMatrix,
-                      "data/taxonomyMatrix.txt",
+                      file = "data/taxonomyMatrix.txt",
                       sep = "\t",
                       eol = "\n",
                       row.names = FALSE,
