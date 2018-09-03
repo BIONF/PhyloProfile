@@ -588,6 +588,9 @@ calculate_p_value <- function(var_in, var_out, significance_level){
   var_in <- var_in[!is.na(var_in)]
   var_out <- var_out[!is.na(var_out)]
   
+  # var_in <- jitter(var_in, factor = 1)
+  # var_out <- jitter(var_out, factor = 1)
+  
   #' if there is no data in one of the groups the p-value is NULL
   if (length(var_in) == 0) return(NULL)
   else if (length(var_out) == 0) return(NULL)
@@ -595,6 +598,7 @@ calculate_p_value <- function(var_in, var_out, significance_level){
     #' * Kolmogorov-Smirnov Test ----------------------------------------------
     #' H0 : The two samples have the same distribution
     ks <- ks.test(var_in, var_out, exact = FALSE)
+    print(ks)
     p_value <- ks$p.value # probabilitiy to recet H0, if it is correct
     if (p_value < significance_level) pvalue <- c(p_value)
     
@@ -900,10 +904,15 @@ get_barplot_gc <- function(selected_gene,
     data_out$proteins <- 0
   }
   
+  seeds <- features$seedID
+  #seeds <- sapply(strsplit(seeds,"#"), `[`, 2)
+  seeds <- unique(seeds)
+
+  
   #' Get the values for the boxplot ------------------ ------------------------ 
-  seeds <- unique(features$seedID)
   in_not_empty <- 0
   out_not_empty <- 0
+  
 
   #' Count for each feature how often it is present in each seed --------------
   for (seed in seeds) {
@@ -911,6 +920,8 @@ get_barplot_gc <- function(selected_gene,
     #' count the features in the in-group  
     if (!is.null(data_in)) {
       in_g <- subset(in_group_domain_df, in_group_domain_df$seedID == seed)
+      in_g <- in_g[str_detect(in_g$seedID, in_g$orthoID),]
+      #in_g <- subset(in_group_domain_df, str_detect(in_group_domain_df$seedID, seed))
       if (!empty(in_g)) {
         in_not_empty <- in_not_empty + 1 
         in_group_features <-  plyr::count(in_g, "feature")
@@ -927,10 +938,9 @@ get_barplot_gc <- function(selected_gene,
     
     #' count the featueres in the out-group 
     if (!is.null(data_out)) {
-      out_g <- {
-        subset(out_group_domain_df, out_group_domain_df$seedID == seed)
-      }
-      
+      out_g <- subset(out_group_domain_df, out_group_domain_df$seedID == seed)
+      out_g <- out_g[str_detect(out_g$seedID, out_g$orthoID),]
+      # out_g <- subset(out_group_domain_df, str_detect(out_group_domain_df$seedID, seed))
       if (!empty(out_g)) {
         out_not_empty <- out_not_empty + 1
         out_group_features <-  plyr::count(out_g, "feature")
@@ -945,7 +955,6 @@ get_barplot_gc <- function(selected_gene,
       }
     }
   }
-  
   
   if (domains_threshold > 0) {
     threshold_in  <- as.numeric((domains_threshold / 100) * in_not_empty)
@@ -1028,6 +1037,8 @@ get_barplot_gc <- function(selected_gene,
     data_barplot <- subset(data_barplot, data_barplot$feature %in% features_list)
   }
   
+  
+  data_barplot <- data_barplot[sort(data_barplot$feature),]
   #' generate the barplot -----------------------------------------------------
   if (!is.null(data_barplot)) {
     barplot_gc <- ggplot(data_barplot,
