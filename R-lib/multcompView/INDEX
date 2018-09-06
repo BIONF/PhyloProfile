@@ -1,0 +1,12 @@
+extract_p               Extracts p-values
+multcompBoxplot         boxplot with multcomp graphics
+multcompLetters         Letter summary of similarities and differences
+multcompTs              "T" depiction of undiffentiated classes
+multcompView-package    Summarize multiple paired comparisons
+plot.multcompLetters    plot multcomp graphics
+plot.multcompTs         plot multcomp graphics
+print.multcompLetters   print a multcompLetters object
+vec2mat                 Convert a vector with hyphenated names into a
+                        matrix.
+vec2mat2                Convert a vector of hyphenated names into a
+                        character matrix.

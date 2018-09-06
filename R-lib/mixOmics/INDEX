@@ -1,0 +1,119 @@
+Koren.16S               16S microbiome atherosclerosis study
+auroc                   Area Under the Curve (AUC) and Receiver
+                        Operating Characteristic (ROC) curves for
+                        supervised classification
+background.predict      Calculate prediction areas
+block.pls               N-integration with Projection to Latent
+                        Structures models (PLS)
+block.plsda             N-integration with Projection to Latent
+                        Structures models (PLS) with Discriminant
+                        Analysis
+block.spls              N-integration and feature selection with sparse
+                        Projection to Latent Structures models (sPLS)
+block.splsda            N-integration and feature selection with
+                        Projection to Latent Structures models (PLS)
+                        with sparse Discriminant Analysis
+breast.TCGA             Breast Cancer multi omics data from TCGA
+breast.tumors           Human Breast Tumors Data
+cim                     Clustered Image Maps (CIMs) ("heat maps")
+cimDiablo               Clustered Image Maps (CIMs) ("heat maps") for
+                        DIABLO
+circosPlot              circosPlot for DIABLO
+color.jet               Color Palette for mixOmics
+diverse.16S             16S microbiome data: most diverse bodysites
+                        from HMP
+estim.regul             Estimate the parameters of regularization for
+                        Regularized CCA
+explained_variance      Calculation of explained variance
+get.confusion_matrix    Create confusion table and calculate the
+                        Balanced Error Rate
+image.estim.regul       Plot the cross-validation score.
+image.tune.rcc          Plot the cross-validation score.
+imgCor                  Image Maps of Correlation Matrices between two
+                        Data Sets
+ipca                    Independent Principal Component Analysis
+linnerud                Linnerud Dataset
+liver.toxicity          Liver Toxicity Data
+logratio.transfo        Log-ratio transformation
+map                     Classification given Probabilities
+mat.rank                Matrix Rank
+mint.block.pls          NP-integration
+mint.block.plsda        NP-integration with Discriminant Analysis
+mint.block.spls         NP-integration for integration with variable
+                        selection
+mint.block.splsda       NP-integration with Discriminant Analysis and
+                        variable selection
+mint.pca                P-integration with Principal Component Analysis
+mint.pls                P-integration
+mint.plsda              P-integration with Projection to Latent
+                        Structures models (PLS) with Discriminant
+                        Analysis
+mint.spls               P-integration with variable selection
+mint.splsda             P-integration with Discriminant Analysis and
+                        variable selection
+mixOmics                PLS-derived methods: one function to rule them
+                        all!
+multidrug               Multidrug Resistence Data
+nearZeroVar             Identification of zero- or near-zero variance
+                        predictors
+network                 Relevance Network for (r)CCA and (s)PLS
+                        regression
+nipals                  Non-linear Iterative Partial Least Squares
+                        (NIPALS) algorithm
+nutrimouse              Nutrimouse Dataset
+pca                     Principal Components Analysis
+pcatune                 Tune the number of principal components in PCA
+perf                    Compute evaluation criteria for PLS, sPLS,
+                        PLS-DA, sPLS-DA, MINT and DIABLO
+plot.perf               Plot for model performance
+plot.rcc                Canonical Correlations Plot
+plot.tune               Plot for model performance
+plotArrow               Arrow sample plot
+plotDiablo              Graphical output for the DIABLO framework
+plotIndiv               Plot of Individuals (Experimental Units)
+plotLoadings            Plot of Loading vectors
+plotVar                 Plot of Variables
+pls                     Partial Least Squares (PLS) Regression
+plsda                   Partial Least Squares Discriminant Analysis
+                        (PLS-DA).
+predict.pls             Predict Method for (mint).(block).(s)pls(da)
+                        methods
+print                   Print Methods for CCA, (s)PLS, PCA and Summary
+                        objects
+rcc                     Regularized Canonical Correlation Analysis
+selectVar               Output of selected variables
+sipca                   Independent Principal Component Analysis
+spca                    Sparse Principal Components Analysis
+spls                    Sparse Partial Least Squares (sPLS)
+splsda                  Sparse Partial Least Squares Discriminant
+                        Analysis (sPLS-DA)
+srbct                   Small version of the small round blue cell
+                        tumors of childhood data
+stemcells               Human Stem Cells Data
+study_split             divides a data matrix in a list of matrices
+                        defined by a factor
+summary                 Summary Methods for CCA and PLS objects
+tune                    Generic function to choose the parameters in
+                        the different methods in mixOmics
+tune.block.splsda       Tuning function for block.splsda method
+                        (N-integration with sparse Discriminant
+                        Analysis)
+tune.mint.splsda        Estimate the parameters of mint.splsda method
+tune.pca                Tune the number of principal components in PCA
+tune.rcc                Estimate the parameters of regularization for
+                        Regularized CCA
+tune.spls               Tuning functions for sPLS method
+tune.splsda             Tuning functions for sPLS-DA method
+tune.splslevel          Tuning functions for multilevel sPLS method
+unmap                   Dummy matrix for an outcome factor
+vac18                   Vaccine study Data
+vac18.simulated         Simulated data based on the vac18 study for
+                        multilevel analysis
+vip                     Variable Importance in the Projection (VIP)
+withinVariation         Within matrix decomposition for repeated
+                        measurements (cross-over design)
+wrapper.rgcca           mixOmics wrapper for Regularised Generalised
+                        Canonical Correlation Analysis (rgcca)
+wrapper.sgcca           mixOmics wrapper for Sparse Generalised
+                        Canonical Correlation Analysis (sgcca)
+yeast                   Yeast metabolomic study

@@ -1,0 +1,2 @@
+export(pspearman, spearman.test)
+

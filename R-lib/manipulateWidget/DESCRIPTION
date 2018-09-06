@@ -1,0 +1,42 @@
+Package: manipulateWidget
+Type: Package
+Title: Add Even More Interactivity to Interactive Charts
+Version: 0.10.0
+Date: 2018-06-07
+Authors@R: c(
+    person("Jalal-Edine", "ZAWAM", email = "jalal-edine.zawam@rte-france.com", role = c("aut", "cre")),
+    person("Francois", "Guillem", email = "francois.guillem@rte-france.com", role = c("aut")),
+    person("RTE", role = "cph"),
+    person("JJ", "Allaire", role = "ctb"),
+	  person("Marion", "Praz", email="mnpraz@gmail.com", role = "ctb", comment = "New user interface"),
+	  person("Benoit", "Thieurmel", role = "ctb", email = "benoit.thieurmel@datastorm.fr"),
+	  person(given = "Titouan", family = "Robert", email = "titouan.robert@datastorm.fr", role = "ctb"),
+	  person("Duncan", "Murdoch", email = "murdoch.duncan@gmail.com", role = "ctb")
+    )
+Description: Like package 'manipulate' does for static graphics, this package
+    helps to easily add controls like sliders, pickers, checkboxes, etc. that 
+    can be used to modify the input data or the parameters of an interactive 
+    chart created with package 'htmlwidgets'.
+URL: https://github.com/rte-antares-rpackage/manipulateWidget
+License: GPL (>= 2) | file LICENSE
+Imports: shiny (>= 1.0.3), miniUI, htmltools, htmlwidgets, knitr,
+        methods, tools, base64enc, grDevices, codetools, webshot
+Suggests: dygraphs, leaflet, plotly, xts, rmarkdown, testthat, covr
+LazyData: TRUE
+RoxygenNote: 6.0.1
+VignetteBuilder: knitr
+Encoding: UTF-8
+NeedsCompilation: no
+Packaged: 2018-06-11 12:40:39 UTC; jalazawa
+Author: Jalal-Edine ZAWAM [aut, cre],
+  Francois Guillem [aut],
+  RTE [cph],
+  JJ Allaire [ctb],
+  Marion Praz [ctb] (New user interface),
+  Benoit Thieurmel [ctb],
+  Titouan Robert [ctb],
+  Duncan Murdoch [ctb]
+Maintainer: Jalal-Edine ZAWAM <jalal-edine.zawam@rte-france.com>
+Repository: CRAN
+Date/Publication: 2018-06-11 13:13:27 UTC
+Built: R 3.4.3; ; 2018-09-03 07:36:55 UTC; unix

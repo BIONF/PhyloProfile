@@ -1,0 +1,16 @@
+eigs	eigs
+eigs.dgCMatrix	eigs
+eigs.dgeMatrix	eigs
+eigs.dgRMatrix	eigs
+eigs.dsyMatrix	eigs
+eigs.function	eigs
+eigs.matrix	eigs
+eigs_sym	eigs
+eigs_sym.function	eigs
+svds	svds
+svds.dgCMatrix	svds
+svds.dgeMatrix	svds
+svds.dgRMatrix	svds
+svds.dsyMatrix	svds
+svds.function	svds
+svds.matrix	svds

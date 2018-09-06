@@ -1,0 +1,168 @@
+Anova.clm               Anova Tables for Cumulative Link (Mixed) Models
+CDA.cv                  Cross validation
+CDA.test                Significance test for CDA
+CvM.test                Two-sample Cramer-von Mises test
+DIABLO.cv               Cross validation
+DIABLO.test             Significance test based on cross-validation
+G.bintest               G-test for binary variables
+G.multcomp              Pairwise comparisons after a G-test
+G.test                  G-test
+G.theo.multcomp         Pairwise comparisons after a G-test for given
+                        probabilities
+GPA.test                Significance test for GPA
+MVA.anova               Type II permutation test for constrained
+                        multivariate analyses
+MVA.biplot              Biplot of multivariate analyses
+MVA.cmv                 Cross model validation
+MVA.cor                 Correlations of multivariate analyses
+MVA.corplot             Correlation circle of multivariate analyses
+MVA.cv                  Cross validation
+MVA.load                Loadings of multivariate analyses
+MVA.loadplot            Loading plot of multivariate analyses
+MVA.pairplot            Paired plot of multivariate analyses
+MVA.plot                Plotting of multivariate analyses
+MVA.scoreplot           Score plot of multivariate analyses
+MVA.scores              Scores of multivariate analyses
+MVA.synt                Synthesis quality of multivariate analyses
+MVA.test                Significance test based on cross (model)
+                        validation
+MVA.trajplot            Trajectory plot of multivariate analyses
+OR.multinom             Odds-ratio (multinomial regression)
+PLSDA.VIP               Variable Importance in the Projection (VIP)
+RVAideMemoire-package   Testing and Plotting Procedures for
+                        Biostatistics
+adonis.II               Type II permutation MANOVA using distance
+                        matrices
+back.emmeans            Back-transformation of EMMeans
+back.lsmeans            Deprecated functions in RVAideMemoire package
+bootstrap               Bootstrap
+byf.hist                Histogram for factor levels
+byf.mqqnorm             QQ-plot for factor levels
+byf.mshapiro            Shapiro-Wilk test for factor levels
+byf.qqnorm              QQ-plot for factor levels
+byf.shapiro             Shapiro-Wilk test for factor levels
+cdf.discrete            Cumulative Distribution Function of a known
+                        discrete distribution
+chisq.bin.exp           Expected counts for comparison of response
+                        probabilities to given values
+chisq.bintest           Pearson's Chi-squared test for binary variables
+chisq.exp               Expected counts for comparison of proportions
+                        to given values
+chisq.multcomp          Pairwise comparisons after a chi-squared
+                        goodness-of-fit test
+chisq.theo.bintest      Pearson's Chi-squared test for comparison of
+                        response probabilities to given values
+chisq.theo.multcomp     Pairwise comparisons after a chi-squared test
+                        for given probabilities
+cochran.qtest           Cochran's Q test
+cond.multinom           Condition number of the Hessian matrix of a
+                        multinomial log-linear model
+coord.proj              Coordinates of projected points
+cor.2comp               Comparison of 2 Pearson's linear correlation
+                        coefficients
+cor.conf                Equality of a Pearson's linear correlation
+                        coefficient to a given value
+cor.multcomp            Comparison of several Pearson's linear
+                        correlation coefficients
+cov.test                Significance test for the covariance between
+                        two datasets
+cox.resid               Martingale residuals of a Cox model
+cramer                  Cramer's association coefficient
+cramer.test             Cramer's association coefficient
+cv                      Coefficient of variation
+dendro.gp               Dendrogram and number of groups to be chosen
+dummy                   Dummy responses
+dunn.test               Dunn's test
+fisher.bintest          Fisher's exact test for binary variables
+fisher.multcomp         Pairwise comparisons using Fisher's exact test
+fp.test                 Fligner-Policello test
+ind.contrib             Individual contributions in regression
+least.rect              Least rectangles linear regression
+loc.slp                 Slope of a hand-defined line
+logis.fit               Graphical adujstment of a simple binary
+                        logistic regression to data
+logis.noise             Creating a nls model for logistic regression
+                        from fitted values of a glm model
+mod                     Mode
+mood.medtest            Mood's median test
+mqqnorm                 Multivariate normality QQ-Plot
+mshapiro.test           Shapiro-Wilk multivariate normality test
+multinomial.multcomp    Pairwise comparisons after an exact multinomial
+                        test
+multinomial.test        Exact multinomial test
+multinomial.theo.multcomp
+                        Pairwise comparisons after an exact multinomial
+                        test for given probabilities
+multtest.cor            Univariate correlation test for multiple
+                        variables
+multtest.gp             Univariate comparison of groups for multiple
+                        variables
+ord.rw                  Re-computation of an ordination using given row
+                        weights
+overdisp.glmer          Estimation of overdispersion with 'glmer'
+                        models
+pairwise.CDA.test       Pairwise comparisons for CDA
+pairwise.G.test         Pairwise comparisons for proportions using
+                        G-tests
+pairwise.MVA.test       Pairwise permutation tests based on cross
+                        (model) validation
+pairwise.factorfit      Pairwise comparisons of groups displayed on a
+                        factorial map
+pairwise.mood.medtest   Pairwise Mood's median tests
+pairwise.perm.manova    Pairwise permutation MANOVAs
+pairwise.perm.t.test    Pairwise permutation t tests
+pairwise.perm.var.test
+                        Pairwise permutation F tests
+pairwise.to.groups      Letter summary of similarities and differences
+pairwise.var.test       Pairwise F tests
+pcor                    (Semi-)Partial correlation
+pcor.test               Tests for (semi-)partial
+                        association/correlation between paired samples
+perm.anova              Permutation Analysis of Variance
+perm.bartlett.test      Permutation Bartlett's test of homogeneity of
+                        variances
+perm.cor.test           Permutation Pearson's correlation test
+perm.t.test             Permutation Student's t-test
+perm.var.test           Permutation F test to compare two variances
+plotresid               Simple analysis of model residuals
+plotsurvivors           Survivor curve
+predict.CDA.cv          Predict method for cross-validated CDA
+                        submodels
+predict.MVA.cv          Predict method for cross-validated submodels
+predict.coadisc         Predict method for CDA
+prop.bin.multcomp       Pairwise comparisons after a test for given
+                        probabilities
+prop.multcomp           Pairwise comparisons after a test for given
+                        proportions
+prop.multinom           Proportions and standard errors
+prop.multinom.test      Wald tests for comparison of proportions
+rating.emmeans          EMMeans for Cumulative Link (Mixed) Models
+rating.prob             Observed rating frequencies
+reg.ci                  Confidence intervals of a simple linear
+                        regression
+scat.cr                 "Correlation" of variables to axes in MCA or
+                        mix analyses
+se                      Standard error
+seq2                    Sequence generation
+spearman.ci             Confidence interval of a Spearman's rank
+                        correlation coefficient
+spearman.cor.multcomp   Comparison of several Spearman's rank
+                        correlation coefficients
+splitf                  Divide into groups respecting relative
+                        proportions
+stand                   Standardization of a data frame based on
+                        another data frame
+test.multinom           Significance tests of coefficients (multinomial
+                        regression)
+to.dudi                 Synthesis quality of multivariate analyses
+user.cont               User defined contrasts for EMMeans
+wald.ptheo.multinom.test
+                        Wald tests for comparison of proportions to
+                        theoretical values
+wald.ptheo.test         Wald test for comparison of a proportion to a
+                        theoretical value
+wilcox.paired.multcomp
+                        Non parametric pairwise comparisons for paired
+                        data
+wilcox.signtest         Wilcoxon sign test
+wmean                   Weighted arithmetic mean

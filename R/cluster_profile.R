@@ -34,6 +34,7 @@ cluster_profile <- function(input, output, session,
                             plot_width, plot_height) {
   # Reactive function holding data for clustering =========================
   cluster_data <- reactive({
+
     df <- cluster_data_dend(distance_matrix(), cluster_method())
     return(df)
   })
@@ -98,6 +99,9 @@ cluster_profile <- function(input, output, session,
     
     # return list of genes
     df <- df[complete.cases(df), 3]
+  
+
+    df
   })
   
   output$brushed_cluster.table <- renderTable({
@@ -129,6 +133,7 @@ cluster_profile <- function(input, output, session,
   )
   
   #' Return the brushed genes
+
   return(brushed_clusterGene)
 }
 

@@ -351,7 +351,7 @@ get_data_clustering <- function(data,
 #' @param dist_method distance method
 #' @return distance matrix
 #' @author Carla Mölbert (carla.moelbert@gmx.de)
-get_distance_matrix <- function(profiles, method, cutoff){
+get_distance_matrix <- function(profiles, method){
 
   dist_methods <- c("euclidean", "maximum", "manhattan", "canberra", "binary")
   if (method %in% dist_methods) {

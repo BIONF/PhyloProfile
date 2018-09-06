@@ -1,0 +1,41 @@
+MSEP                    MSEP, RMSEP and R2 of PLSR and PCR models
+biplot.mvr              Biplots of PLSR and PCR Models.
+coef.mvr                Extract Information From a Fitted PLSR or PCR
+                        Model
+coefplot                Plot Regression Coefficients of PLSR and PCR
+                        models
+cppls.fit               CPPLS (Indahl et al.)
+crossval                Cross-validation of PLSR and PCR models
+cvsegments              Generate segments for cross-validation
+gasoline                Octane numbers and NIR spectra of gasoline
+jack.test               Jackknife approximate t tests of regression
+                        coefficients
+kernelpls.fit           Kernel PLS (Dayal and MacGregor)
+mayonnaise              NIR measurements and oil types of mayonnaise
+msc                     Multiplicative Scatter Correction
+mvr                     Partial Least Squares and Principal Component
+                        Regression
+mvrCv                   Cross-validation
+oliveoil                Sensory and physico-chemical data of olive oils
+oscorespls.fit          Orthogonal scores PLSR
+plot.mvr                Plot Method for MVR objects
+pls.options             Set or return options for the pls package
+predict.mvr             Predict Method for PLSR and PCR
+predplot                Prediction Plots
+scoreplot               Plots of Scores, Loadings and Correlation
+                        Loadings
+scores                  Extract Scores and Loadings from PLSR and PCR
+                        Models
+selectNcomp             Suggestions for the optimal number of
+                        components in PCR and PLSR models
+simpls.fit              Sijmen de Jong's SIMPLS
+stdize                  Standardization of Data Matrices
+summary.mvr             Summary and Print Methods for PLSR and PCR
+                        objects
+svdpc.fit               Principal Component Regression
+validationplot          Validation Plots
+var.jack                Jackknife Variance Estimates of Regression
+                        Coefficients
+widekernelpls.fit       Wide Kernel PLS (Rännar et al.)
+yarn                    NIR spectra and density measurements of PET
+                        yarns

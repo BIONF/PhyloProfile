@@ -1,0 +1,61 @@
+AsymptNullDistribution
+                        Computation of the Reference Distribution
+CWD                     Coarse Woody Debris
+ExpectCovar-class       Class '"ExpectCovar"'
+ExpectCovarInfluence-class
+                        Class '"ExpectCovarInfluence"'
+GTSG                    Gastrointestinal Tumor Study Group
+IndependenceLinearStatistic-class
+                        Class '"IndependenceLinearStatistic"'
+IndependenceProblem-class
+                        Class '"IndependenceProblem"'
+IndependenceTest-class
+                        Class '"IndependenceTest"' and its subclasses
+IndependenceTestProblem-class
+                        Class '"IndependenceTestProblem"'
+IndependenceTestStatistic-class
+                        Class '"IndependenceTestStatistic"' and its
+                        subclasses
+NullDistribution-class
+                        Class '"NullDistribution"' and its subclasses
+PValue-class            Class '"PValue"'
+SymmetryProblem-class   Class '"SymmetryProblem"'
+VarCovar-class          Class '"VarCovar"' and its subclasses
+alpha                   Genetic Components of Alcoholism
+alzheimer               Smoking and Alzheimer's Disease
+asat                    Toxicological Study on Female Wistar Rats
+asymptotic              Specification of the Reference Distribution
+chisq_test              Tests of Independence in Two- or Three-Way
+                        Contingency Tables
+coin-package            General Information on the 'coin' Package
+dperm                   Computation of the Permutation Distribution
+expectation-methods     Extraction of the Expectation, Variance and
+                        Covariance of the Linear Statistic
+glioma                  Malignant Glioma Pilot Study
+hohnloser               Left Ventricular Ejection Fraction
+id_trafo                Functions for Data Transformation
+independence_test       General Independence Test
+jobsatisfaction         Income and Job Satisfaction
+malformations           Maternal Drinking and Congenital Sex Organ
+                        Malformation
+maxstat_test            Generalized Maximally Selected Statistics
+mercuryfish             Chromosomal Effects of Mercury-Contaminated
+                        Fish Consumption
+mh_test                 Marginal Homogeneity Tests
+neuropathy              Acute Painful Diabetic Neuropathy
+ocarcinoma              Ovarian Carcinoma
+oneway_test             Two- and K-Sample Location Tests
+photocar                Multiple Dosing Photococarcinogenicity
+                        Experiment
+pvalue-methods          Computation of the p-Value, Mid-p-Value and
+                        p-Value Interval
+rotarod                 Rotating Rats
+sign_test               Symmetry Tests
+spearman_test           Correlation Tests
+statistic-methods       Extraction of the Test Statistic and Linear
+                        Statistic
+surv_test               Two- and K-Sample Tests for Censored Data
+symmetry_test           General Symmetry Test
+taha_test               Two- and K-Sample Scale Tests
+treepipit               Tree Pipits in Franconian Oak Forests
+vision                  Unaided Distance Vision

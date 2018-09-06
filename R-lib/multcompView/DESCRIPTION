@@ -1,0 +1,24 @@
+Package: multcompView
+Type: Package
+Title: Visualizations of Paired Comparisons
+Version: 0.1-7
+Date: 2015-07-25
+Author: Spencer Graves, Hans-Peter Piepho and Luciano Selzer with
+    help from Sundar Dorai-Raj
+Maintainer: Luciano Selzer <luciano.selzer@gmail.com>
+Description: Convert a logical vector or a vector of
+    p-values or a correlation, difference, or distance
+    matrix into a display identifying the pairs for
+    which the differences were not significantly
+    different.  Designed for use in conjunction with
+    the output of functions like TukeyHSD, dist{stats},
+    simint, simtest, csimint, csimtest{multcomp},
+    friedmanmc, kruskalmc{pgirmess}.
+License: GPL
+Imports: grid
+Suggests: multcomp, pgirmess, MASS
+Packaged: 2015-07-31 15:43:44 UTC; Luciano
+NeedsCompilation: no
+Repository: CRAN
+Date/Publication: 2015-07-31 18:40:25
+Built: R 3.4.3; ; 2018-09-03 07:38:48 UTC; unix

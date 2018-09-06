@@ -1,0 +1,3 @@
+pspearman               Distribution function of Spearman's rho
+spearman.test           Spearman's rank correlation test with
+                        precomputed null distribution

@@ -1,0 +1,20 @@
+Package: cramer
+Version: 0.9-1
+Date: 2014/08/11
+Title: Multivariate nonparametric Cramer-Test for the
+        two-sample-problem
+Author: Carsten Franz <carsten.franz@gmail.com>
+Maintainer: Carsten Franz <carsten.franz@gmail.com>
+Depends: R (>= 0.65), boot
+Description: Provides R routine for the so called two-sample
+        Cramer-Test.  This nonparametric two-sample-test on equality
+        of the underlying distributions can be applied to 
+        multivariate data as well as univariate data. It offers two 
+        possibilities to approximate the critical value both of which 
+        are included in this package.
+License: GPL (>= 2)
+Packaged: 2014-08-11 21:41:55 UTC; carsten
+Repository: CRAN
+Date/Publication: 2014-08-12 06:53:32
+NeedsCompilation: no
+Built: R 3.4.3; ; 2018-09-03 07:38:47 UTC; unix

@@ -1,0 +1,2 @@
+import(boot)
+export(cramer.test,phiBahr,phiCramer,phiFracA,phiFracB,phiLog,print.cramertest)

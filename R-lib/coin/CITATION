@@ -1,0 +1,43 @@
+citHeader("To cite coin in publications use:")
+
+citEntry(entry="Article",
+  title        = "A Lego System for Conditional Inference",
+  author       = personList(as.person("Torsten Hothorn"),
+                            as.person("Kurt Hornik"),
+                            as.person("Mark A. van de Wiel"),
+                            as.person("Achim Zeileis")),
+  journal      = "The American Statistician",
+  year         = "2006",
+  volume       = "60",
+  number       = "3",
+  pages        = "257--263",
+
+  textVersion  =
+  paste("Torsten Hothorn, Kurt Hornik, Mark A. van de Wiel and Achim Zeileis (2006).",
+        "A Lego System for Conditional Inference.",
+        "The American Statistician 60(3), 257-263."),
+
+  header = "The main reference for the framework implemented in coin is:"
+)
+
+citEntry(entry = "Article",
+  title        = "Implementing a Class of Permutation Tests: The {coin} Package",
+  author       = personList(as.person("Torsten Hothorn"),
+                            as.person("Kurt Hornik"),
+                            as.person("Mark A. van de Wiel"),
+                            as.person("Achim Zeileis")),
+  journal      = "Journal of Statistical Software",
+  year         = "2008",
+  volume       = "28",
+  number       = "8",
+  pages        = "1--23",
+  url          = "http://www.jstatsoft.org/v28/i08/",
+
+  textVersion  =
+  paste("Torsten Hothorn, Kurt Hornik, Mark A. van de Wiel, Achim Zeileis (2008).",
+        "Implementing a Class of Permutation Tests:  The coin Package.",
+        "Journal of Statistical Software 28(8), 1-23.",
+        "URL http://www.jstatsoft.org/v28/i08/."),
+
+  header = "The reference for the implementation approach in coin is:"
+)

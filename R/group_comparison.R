@@ -26,6 +26,11 @@
 
 source("R/functions.R")
 
+if ("coin" %in% installed.packages() == FALSE) {
+  install.packages("coin")
+}
+
+
 group_comparison_ui <- function(id){
   ns <- NS(id)
   fluidPage(
@@ -294,7 +299,7 @@ get_significant_genes <- function(in_group,
                                   right_format_features,
                                   domains){
   if (is.null(in_group) | length(selected_genes_list) == 0) return()
-  
+  significance_level <- parameters$significance
   
   name_list <- get_name_list(TRUE, TRUE) # load name List
   taxa_list <- get_taxa_list(FALSE, ncbi_id_list) # load list of unsorted taxa
@@ -313,13 +318,25 @@ get_significant_genes <- function(in_group,
   if (is.na(rank)) { return("No common anchestor found")}
   
   #' provide the empty data frame ---------------------------------------------
-  significant_genes_df <- data.frame(
-    geneID = character(),
-    in_group = I(list()),
-    out_group = I(list()),
-    pvalues = I(list()),
-    features = I(list()),
-    databases = I(list()))
+  if(var == "Both") {
+    significant_genes_df <- data.frame(
+      geneID = character(),
+      in_group = I(list()),
+      out_group = I(list()),
+      pvalues_1 = I(list()),
+      pvalues_2 = I(list()),
+      features = I(list()),
+      databases = I(list()))
+  } else {
+    significant_genes_df <- data.frame(
+      geneID = character(),
+      in_group = I(list()),
+      out_group = I(list()),
+      pvalues = I(list()),
+      features = I(list()),
+      databases = I(list()))
+  }
+
   
   #' Get the list of genes to look at ----------------------------------------- 
   if (is.element("all", selected_genes_list)) {
@@ -332,9 +349,9 @@ get_significant_genes <- function(in_group,
   
   #' Subset depending on the rank and the in_group ----------------------------
   selected_subset <- get_selected_subset(rank, in_group, name_list, taxa_list)
-  # selected_subset <- subset(selected_subset,
-  #                           !selected_subset$fullName == reference_taxon)
-  
+  selected_subset <- subset(selected_subset,
+                            !selected_subset$fullName == reference_taxon)
+
   #' Check for each gene if it is significant ---------------------------------
   for (gene in genes) {
     print(paste("Looking at gene", gene, "..."))
@@ -353,26 +370,66 @@ get_significant_genes <- function(in_group,
       subset(out_group_df, !out_group_df$fullName == reference_taxon)
     }
     
-    #' Generate and check the p_values for the gene ---------------------------
-    pvalues <- get_p_values(in_group_df, out_group_df, var, gene, parameters)
     
-    if (!is.null(pvalues)) {
-      new_row <- data.frame(geneID = gene,
+    #' Generate and check the p_values for the gene ---------------------------
+    pvalue <- get_p_values(in_group_df, out_group_df, var, gene, parameters)
+    
+    new_row <- data.frame(geneID = gene,
                             in_group = NA,
                             out_group = NA,
                             pvalues = NA,
                             features = NA)
       new_row$in_group <- list(in_group_df)
       new_row$out_group <- list(out_group_df)
-      new_row$pvalues <- list(pvalues)
+
+      if(var == "Both") {
+        new_row$pvalues_1 <- pvalue[1]
+        new_row$pvalues_2 <- pvalue[2]
+      } 
+      else{
+        new_row$pvalues <- pvalue
+      }
+      
       features  <- get_features(gene, domains)
       new_row$features <- list(features)
       if (right_format_features) {
         new_row$databases <- list(get_prefix_features(features))
       }
       significant_genes_df <- rbind(significant_genes_df, new_row)
+    
+  }
+
+  if (var == "Both"){
+    significant_genes_df$pvalues_1 <- {
+      p.adjust(significant_genes_df$pvalues_1, method = "holm",
+               n = length(significant_genes_df$pvalues_1))
+    }
+    
+    significant_genes_df$pvalues_2 <- {
+      p.adjust(significant_genes_df$pvalues_2, method = "holm",
+               n = length(significant_genes_df$pvalues_2))
+    }
+    
+    significant_genes_df <- {
+      significant_genes_df[significant_genes_df$pvalues_1 <= significance_level |
+                             significant_genes_df$pvalues_2 <= significance_level ,]
     }
   }
+  
+  else {
+    significant_genes_df$pvalues <- {
+      p.adjust(significant_genes_df$pvalues, method = "holm",
+               n = length(significant_genes_df$pvalues))
+    }
+    
+    significant_genes_df <- {
+      significant_genes_df[significant_genes_df$pvalues <= significance_level,]
+      }
+  }
+  
+
+  
+  
   #' return the significant genes ---------------------------------------------
   if (nrow(significant_genes_df) != 0) {
     significant_genes_df$var <- var
@@ -494,7 +551,7 @@ get_common_ancestor <- function(in_group,
 #' @return return the pvalues
 #' @author Carla Mölbert (carla.moelbert@gmx.de)
 get_p_values <- function(in_group, out_group, variable, gene, parameters){
-  significance_level <- parameters$significance
+  
   #' get the p-values for both variables --------------------------------------
   if (variable == "Both") {
     var1 <- parameters$var1
@@ -509,43 +566,8 @@ get_p_values <- function(in_group, out_group, variable, gene, parameters){
     pvalues2 <- calculate_p_value(in_group$var2,
                                   out_group$var2,
                                   significance_level)
-
-    #' check if the gene has a significant difference -------------------------
-    #' in the distribioution of In- and Out-Group
-    #' in at least one of the variables
-
-    if (is.null(pvalues1)) {
-      #' if there is not enough data to calculate a p-value the gene is 
-      #' considered as not intereisting
-    }#
-    else if (is.na(pvalues1[length(pvalues1)])) {
-      
-    }
-    else if (pvalues1[length(pvalues1)] < significance_level) {
-      #' if the last p-value is smaller than the significance level
-      #' the gene is considered as significant
-      significant <- TRUE
-    }
-    
-    #' analog to pvalues in the first variable
-    if (is.null(pvalues2)) {
-      
-    }
-    else if (is.na(pvalues1[length(pvalues1)])) {
-      
-    }
-    else if (pvalues2[length(pvalues2)] < significance_level) {
-      significant <-  TRUE
-    }
-    
-    #' Return the conclusion --------------------------------------------------
-    #' if the gene is interisting return the p_values 
-    if (significant) {
-      pvalues <- list(pvalues1, pvalues2)
-      return(pvalues)
-    }
-    #' if the gene is not interisting return NULL
-    else return(NULL)
+    pvalues <- list(pvalues1, pvalues2)
+    return(pvalues)
     
     #' get the p-values for one variable --------------------------------------
   } else{
@@ -561,18 +583,9 @@ get_p_values <- function(in_group, out_group, variable, gene, parameters){
                                    significance_level)
     }
     
-    #' Analog to getting the significance with both variables
-    if (is.null(pvalues)) return(NULL)
-    else if (is.nan(pvalues[length(pvalues)])) {
-      return(NULL)
-    } else if (pvalues[length(pvalues)] < significance_level) {
-      pvalues <-  list(pvalues)
-      return(pvalues)
-    } else{
-      return(NULL)
+    return(pvalues)
     }
   }
-}
 
 
 #' calculate the p_values -----------------------------------------------------
@@ -582,38 +595,52 @@ get_p_values <- function(in_group, out_group, variable, gene, parameters){
 #' @param significance_level 
 #' @return return the pvalues
 #' @author Carla Mölbert (carla.moelbert@gmx.de)
+#install.packages("coin")
+
 calculate_p_value <- function(var_in, var_out, significance_level){
   
   #' delete all entrys that are NA
   var_in <- var_in[!is.na(var_in)]
   var_out <- var_out[!is.na(var_out)]
   
-  # var_in <- jitter(var_in, factor = 1)
-  # var_out <- jitter(var_out, factor = 1)
   
   #' if there is no data in one of the groups the p-value is NULL
-  if (length(var_in) == 0) return(NULL)
-  else if (length(var_out) == 0) return(NULL)
+  if (length(var_in) == 0) return(NA)
+  else if (length(var_out) == 0) return(NA)
   else{
-    #' * Kolmogorov-Smirnov Test ----------------------------------------------
-    #' H0 : The two samples have the same distribution
-    ks <- ks.test(var_in, var_out, exact = FALSE)
-    print(ks)
-    p_value <- ks$p.value # probabilitiy to recet H0, if it is correct
-    if (p_value < significance_level) pvalue <- c(p_value)
+    #' #' * Kolmogorov-Smirnov Test ----------------------------------------------
+    #' #' H0 : The two samples have the same distribution
+    #' ks <- ks.test(var_in, var_out, exact = FALSE)
+    #' 
+    #' p_value <- ks$p.value # probabilitiy to recet H0, if it is correct
+    #' 
+    #' if (p_value < significance_level) pvalue <- c(p_value)
+    #' 
+    #' else {
+    #'   #' * Wilcoxon-Mann-Whitney Test -----------------------------------------
+    #'   #' H0: the samples have the same location parameters
+    #'   
+    #'   wilcox <- wilcox.test(var_in,
+    #'                         var_out,
+    #'                         alternative = "two.sided",
+    #'                         #exact = FALSE,
+    #'                         paired = FALSE)
+    #'   p_value_wilcox <- wilcox$p.value
+    #'   pvalue <- c(p_value, p_value_wilcox)
+
+    # }
+    perm <- perm.test(var_in,var_out, alternative = c("two.sided"),
+                      mu = 0, # Hypothesis: Samples do not differ
+                      paired = FALSE, 
+                      all.perms = TRUE, # Tries to get a exact p value
+                      num.sim = 1000000, 
+                      plot = FALSE, # does not plot
+                      stat = mean) # compaires the means of the distributions
     
-    else {
-      #' * Wilcoxon-Mann-Whitney Test -----------------------------------------
-      #' H0: the samples have the same location parameters
-      
-      wilcox <- wilcox.test(var_in,
-                            var_out,
-                            alternative = "two.sided",
-                            #exact = FALSE,
-                            paired = FALSE)
-      p_value_wilcox <- wilcox$p.value
-      pvalue <- c(p_value, p_value_wilcox)
-    }
+    pvalue <- perm$p.value
+    
+    print(pvalue)
+
     #' return the calculated pvalues ------------------------------------------
     return(pvalue)
   }
@@ -677,7 +704,7 @@ get_multiplot <- function(gene_info, parameters, interesting_features, domains_t
   in_group <- as.data.frame(gene_info$in_group)
   out_group <- as.data.frame(gene_info$out_group)
   features <- as.data.frame(gene_info$features)
-  pvalues <- gene_info$pvalues
+  
   var <- gene_info$var
   
   #' Get the barplot ---------------------------------------------------------
@@ -692,18 +719,16 @@ get_multiplot <- function(gene_info, parameters, interesting_features, domains_t
   if (is.null(barplot)) {
     barplot <- textGrob("The selected domains are not found in the gene")
   }
-  
+  print(colnames(gene_info))
   #' Get the boxplots  for two variables  -------------------------------------
   if (var == "Both") {
-    #' Get information about pvalues
-    pvalues <- unlist(pvalues, recursive = FALSE)
-    p_value1 <- unlist(pvalues[1])
-    p_value2 <- unlist(pvalues[2])
+    p_value1 <- gene_info$pvalues_1
+    p_value2 <- gene_info$pvalues_2
     
     #' Check if the p_values should be printed
     if (parameters$show_p_value == TRUE) {
-      info_p_value1 <- get_info_p_values(p_value1)
-      info_p_value2 <- get_info_p_values(p_value2)
+      info_p_value1 <- paste("P-value:", p_value1, sep = " ")
+      info_p_value2 <- paste("P-value:", p_value2, sep = " ")
     }
     else{
       info_p_value1 <- " "
@@ -712,14 +737,14 @@ get_multiplot <- function(gene_info, parameters, interesting_features, domains_t
     
     #' Get information about the plot colour 
     if (parameters$highlight_significant == TRUE) {
-      if (is.null(p_value1[1])) colour1 <- "grey"
-      else if (p_value1[length(p_value1)] < parameters$significance) {
+      if (is.null(p_value1)) colour1 <- "grey"
+      else if (p_value1 < parameters$significance) {
         colour1 <- "indianred2"
       }
       else colour1 <- "grey"
       
-      if (is.null(p_value2[1])) colour2 <- "grey"
-      else if (p_value2[length(p_value2)] < parameters$significance) {
+      if (is.null(p_value2)) colour2 <- "grey"
+      else if (p_value2 < parameters$significance) {
         colour2 <- "indianred2"
       }
       else colour2 <- "grey"
@@ -750,11 +775,12 @@ get_multiplot <- function(gene_info, parameters, interesting_features, domains_t
                           heights = c(0.02, 0.45, 0.458), ncol = 1)
   }else {
     #' get the boxplot if one varibale is selected  ---------------------------
-    p <- unlist(pvalues)
+    p <- gene_info$pvalue
+    
     
     #' Check if the p_values should be printed
     if (parameters$show_p_value == TRUE) {
-      info <- get_info_p_values(p)
+      info <- paste("P-value:", p)
     }else{
       info <- " "
     }
@@ -833,10 +859,12 @@ get_boxplot_gc <- function(in_group_df,
   
   #' Generate the boxplot -----------------------------------------------------
   boxplot_gc <- ggplot(data_boxplot, aes(group, values)) +
-    geom_boxplot(stat = "boxplot",
-                 position = position_dodge(),
-                 width = 0.5,
-                 fill = colour) +
+    geom_violin(position = position_dodge(), scale = "width",
+                fill = colour) +
+    # geom_boxplot(stat = "boxplot",
+    #              position = position_dodge(),
+    #              width = 0.5,
+    #              fill = colour) +
     labs(x = "", y = var, caption = paste(info)) +
     scale_x_discrete(labels = names) +
     theme_minimal()

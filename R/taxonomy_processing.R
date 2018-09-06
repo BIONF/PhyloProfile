@@ -27,11 +27,11 @@ rankIndexing <- function(rankListFile){
   
   ### initial index for main ranks
   mainRank <- c("strain","forma","subspecies","varietas",
-                "species","speciessubgroup","speciesgroup",
+                "subspecies","species","species subgroup","species group",
                 "subgenus","genus","subtribe","tribe",
                 "subfamily","family","superfamily",
                 "parvorder","infraorder","suborder","order","superorder",
-                "infraclass","subclass","class","superclass",
+                "cohort","infraclass","subclass","class","superclass",
                 "subphylum","phylum","superphylum",
                 "subkingdom","kingdom","superkingdom")
   rank2Index <- new.env()
@@ -101,6 +101,7 @@ rankIndexing <- function(rankListFile){
 taxonomyTableCreator <- function(idListFile,rankListFile){
   ### get indexed rank list
   index2RankDf <- rankIndexing(rankListFile)
+  
   ### load idList file
   ncol <- max(count.fields(rankListFile, sep = '\t'))
   idList <- as.data.frame(
@@ -117,7 +118,7 @@ taxonomyTableCreator <- function(idListFile,rankListFile){
   
   ### get ordered rank list
   orderedRank <- factor(index2RankDf$rank, levels = index2RankDf$rank)
-  
+
   ### create a dataframe containing ordered ranks
   fullRankIDdf <- data.frame(
     "rank" = matrix(unlist(orderedRank),
@@ -126,7 +127,7 @@ taxonomyTableCreator <- function(idListFile,rankListFile){
     stringsAsFactors = FALSE
   )
   fullRankIDdf$index <- as.numeric(rownames(fullRankIDdf))
-  
+
   for (i in 1:nrow(idList)) {
     ### get list of all IDs for this taxon
     taxonDf <- data.frame(idList[i,])
@@ -135,7 +136,7 @@ taxonomyTableCreator <- function(idListFile,rankListFile){
     )
     ### convert into long format
     mTaxonDf <- suppressWarnings(melt(taxonDf, id = "tip"))
-    
+  
     ### get rank names and corresponding IDs
     splitCol <- data.frame(
       do.call(
@@ -157,44 +158,49 @@ taxonomyTableCreator <- function(idListFile,rankListFile){
     
     ### rename columns
     colnames(mTaxonDf) <- c(taxonName[1], "rank")
-    
+
     ### merge with index2RankDf (contains all available ranks from input data)
     fullRankIDdf <- merge(fullRankIDdf, mTaxonDf, by = c("rank"), all.x = TRUE)
-    
+
     ### reorder ranks
     fullRankIDdf <- fullRankIDdf[order(fullRankIDdf$index),]
     
     ### replace NA id by id of previous rank
     fullRankIDdf <- zoo::na.locf(fullRankIDdf)
+    
+    ### print process
+    p <- i / nrow(idList) * 100
+    progress(p)
   }
   
   ### remove index column
   fullRankIDdf <- subset(fullRankIDdf, select = -c(index))
-  
+
   ### transpose into wide format
   t_fullRankIDdf <- transpose(fullRankIDdf)
   
   ### set first row to column names
   colnames(t_fullRankIDdf) = as.character(unlist(t_fullRankIDdf[1,]))
   t_fullRankIDdf <- t_fullRankIDdf[-1,]
-  
+
   ### replace NA values in the dataframe t_fullRankIDdf
   if (nrow(t_fullRankIDdf[is.na(t_fullRankIDdf),]) > 0) {
-    t_fullRankIDdfTMP <- t_fullRankIDdf[complete.cases(t_fullRankIDdf),]
-    t_fullRankIDdfEdit <- t_fullRankIDdf[is.na(t_fullRankIDdf),]
-    
-    for (i in 1:nrow(t_fullRankIDdfEdit)) {
-      for (j in 1:(ncol(t_fullRankIDdf)-1)) {
-        if (is.na(t_fullRankIDdfEdit[i, j])) {
-          t_fullRankIDdfEdit[i, j] <- t_fullRankIDdfEdit[i, j+1]
-        }
-      }
-      if (is.na(t_fullRankIDdfEdit[i, ncol(t_fullRankIDdf)])) {
-        t_fullRankIDdfEdit[i, ncol(t_fullRankIDdf)] <- 
-          t_fullRankIDdfEdit[i, ncol(t_fullRankIDdf)-1]
-      }
-    }
-    t_fullRankIDdf <- rbind(t_fullRankIDdfEdit, t_fullRankIDdfTMP)
+    print("yes")
+    # t_fullRankIDdfTMP <- t_fullRankIDdf[complete.cases(t_fullRankIDdf),]
+    # t_fullRankIDdfEdit <- t_fullRankIDdf[is.na(t_fullRankIDdf),]
+    # 
+    # for (i in 1:nrow(t_fullRankIDdfEdit)) {
+    #   for (j in 1:(ncol(t_fullRankIDdf) - 1)) {
+    #     if (is.na(t_fullRankIDdfEdit[i, j])) {
+    #       t_fullRankIDdfEdit[i, j] <- t_fullRankIDdfEdit[i, j + 1]
+    #     }
+    #   }
+    #   if (is.na(t_fullRankIDdfEdit[i, ncol(t_fullRankIDdf)])) {
+    #     t_fullRankIDdfEdit[i, ncol(t_fullRankIDdf)] <- 
+    #       t_fullRankIDdfEdit[i, ncol(t_fullRankIDdf) - 1]
+    #   }
+    # }
+    # t_fullRankIDdf <- rbind(t_fullRankIDdfEdit, t_fullRankIDdfTMP)
   }
   
   ### add "abbrName	ncbiID  fullName" columns

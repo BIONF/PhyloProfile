@@ -1,0 +1,2 @@
+export(ks.test, cvm.test)
+useDynLib(dgof)
