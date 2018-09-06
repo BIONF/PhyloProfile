@@ -26,9 +26,9 @@
 
 source("R/functions.R")
 
-if ("coin" %in% installed.packages() == FALSE) {
-  install.packages("coin")
-}
+install_packages("exactRankTests")
+library("exactRankTests")
+
 
 
 group_comparison_ui <- function(id){
@@ -414,6 +414,9 @@ get_significant_genes <- function(in_group,
       significant_genes_df[significant_genes_df$pvalues_1 <= significance_level |
                              significant_genes_df$pvalues_2 <= significance_level ,]
     }
+    
+    significant_genes_df <- significant_genes_df[!is.na(significant_genes_df$pvalues_1) |
+                                                   !is.na(significant_genes_df$pvalues_1),]
   }
   
   else {
@@ -424,7 +427,11 @@ get_significant_genes <- function(in_group,
     
     significant_genes_df <- {
       significant_genes_df[significant_genes_df$pvalues <= significance_level,]
-      }
+    }
+    
+    significant_genes_df <- {
+      significant_genes_df[!is.na(significant_genes_df$pvalues) ,]
+    }
   }
   
 
@@ -639,7 +646,6 @@ calculate_p_value <- function(var_in, var_out, significance_level){
     
     pvalue <- perm$p.value
     
-    print(pvalue)
 
     #' return the calculated pvalues ------------------------------------------
     return(pvalue)
@@ -719,7 +725,6 @@ get_multiplot <- function(gene_info, parameters, interesting_features, domains_t
   if (is.null(barplot)) {
     barplot <- textGrob("The selected domains are not found in the gene")
   }
-  print(colnames(gene_info))
   #' Get the boxplots  for two variables  -------------------------------------
   if (var == "Both") {
     p_value1 <- gene_info$pvalues_1
@@ -737,13 +742,12 @@ get_multiplot <- function(gene_info, parameters, interesting_features, domains_t
     
     #' Get information about the plot colour 
     if (parameters$highlight_significant == TRUE) {
-      if (is.null(p_value1)) colour1 <- "grey"
+      if (is.na(p_value1)) colour1 <- "grey"
       else if (p_value1 < parameters$significance) {
         colour1 <- "indianred2"
       }
       else colour1 <- "grey"
-      
-      if (is.null(p_value2)) colour2 <- "grey"
+      if (is.na(p_value2)) colour2 <- "grey"
       else if (p_value2 < parameters$significance) {
         colour2 <- "indianred2"
       }
