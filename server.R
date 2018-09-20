@@ -1556,17 +1556,19 @@ shinyServer(function(input, output, session) {
                                             sortedOut$fullName.y[1])
     sortedOut$species[1] <- paste0("ncbi",
                                    sortedOut$species[1])
-
-    for (i in 2:nrow(sortedOut)) {
-      ## increase prefix if changing to another supertaxon
-      if (sortedOut$fullName.y[i] != sortedOut$fullName.y[i - 1]) {
-        prefix <- prefix + 1
+    
+    if (nrow(sortedOut) > 1) {
+      for (i in 2:nrow(sortedOut)) {
+        ## increase prefix if changing to another supertaxon
+        if (sortedOut$fullName.y[i] != sortedOut$fullName.y[i - 1]) {
+          prefix <- prefix + 1
+        }
+        sortedOut$sortedSupertaxon[i] <- paste0(prefix,
+                                                "_",
+                                                sortedOut$fullName.y[i])
+        sortedOut$species[i] <- paste0("ncbi",
+                                       sortedOut$species[i])
       }
-      sortedOut$sortedSupertaxon[i] <- paste0(prefix,
-                                              "_",
-                                              sortedOut$fullName.y[i])
-      sortedOut$species[i] <- paste0("ncbi",
-                                     sortedOut$species[i])
     }
 
     # final sorted supertaxa list
