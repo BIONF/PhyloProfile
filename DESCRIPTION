@@ -1,0 +1,7 @@
+Package: phyloprofile
+Version: 0.3.1
+Date: 2018-09-18
+Title: PhyloProfile
+Description: Analyze multidimensional phylogenetic profiles with a Shiny app
+Author: Vinh Tran <tran@bio.uni-frankfurt.de>, Bastian Greshake Tzovaras <bgreshake@googlemail.com>, Ingo Ebersberger <ebersberger@bio.uni-frankfurt.de>
+Maintainer: Vinh Tran <tran@bio.uni-frankfurt.de>
