@@ -169,8 +169,8 @@ taxonomyTableCreator <- function(idListFile,rankListFile){
     fullRankIDdf <- zoo::na.locf(fullRankIDdf)
     
     ### print process
-    p <- i / nrow(idList) * 100
-    progress(p)
+    # p <- i / nrow(idList) * 100
+    # progress(p)
   }
   
   ### remove index column

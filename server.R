@@ -787,9 +787,7 @@ shinyServer(function(input, output, session) {
 
           pipe_ncbi <- paste0("cut -f 1 ", getwd(), "/data/taxonNamesFull.txt")
           ncbiTaxa <- unlist((read.table(pipe(pipe_ncbi))))
-          pipe_new <- paste0("cut -f 1 ", getwd(), "/data/newTaxa.txt")
-          newTaxa <- unlist((read.table(pipe(pipe_new))))
-
+          
           ncbiID <- levels(ncbiTaxa)
           maxNCBI <- max(sort(as.numeric(ncbiID[ncbiID != "ncbiID"])))
 
@@ -807,14 +805,20 @@ shinyServer(function(input, output, session) {
           }
           
           # check for invalid newly generated IDs in newTaxa.txt file
-          newTaxaList <- levels(newTaxa)
-          newTaxaList <- as.integer(newTaxaList[newTaxaList != "ncbiID"])
-          if (min(newTaxaList) < maxNCBI) {
-            invalidList <- as.data.frame(newTaxaList[newTaxaList < maxNCBI])
-            colnames(invalidList) <- c("id")
-            invalidList$TaxonID <- "newTaxa.txt"
-            invalidList$Source <- "invalid"
-            unkTaxa <- rbind(invalidList, unkTaxa)
+          pipe_new <- paste0("cut -f 1 ", getwd(), "/data/newTaxa.txt")
+          newTaxa <- unlist((read.table(pipe(pipe_new))))
+
+          if (length(newTaxa) > 1) {
+            newTaxaList <- levels(newTaxa)
+            newTaxaList <- as.integer(newTaxaList[newTaxaList != "ncbiID"])
+            
+            if (min(newTaxaList) < maxNCBI) {
+              invalidList <- as.data.frame(newTaxaList[newTaxaList < maxNCBI])
+              colnames(invalidList) <- c("id")
+              invalidList$TaxonID <- "newTaxa.txt"
+              invalidList$Source <- "invalid"
+              unkTaxa <- rbind(invalidList, unkTaxa)
+            }
           }
 
           # return list of unkTaxa
@@ -1013,8 +1017,8 @@ shinyServer(function(input, output, session) {
           }
           
           # print progress
-          p <- (i - 1) / (length(titleline) - 1) * 100
-          progress(p)
+          # p <- (i - 1) / (length(titleline) - 1) * 100
+          # progress(p)
         }
         uniqueRank <- names(which(table(as.character(allRanks)) == 1))
         uniqueID <- names(which(table(as.character(allNorankIDs)) == 1))
