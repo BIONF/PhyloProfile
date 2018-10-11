@@ -792,8 +792,6 @@ shinyServer(function(input, output, session) {
           
           pipe_ncbi <- paste0("cut -f 1 ", getwd(), "/data/taxonNamesFull.txt")
           ncbiTaxa <- unlist((read.table(pipe(pipe_ncbi))))
-          pipe_new <- paste0("cut -f 1 ", getwd(), "/data/newTaxa.txt")
-          newTaxa <- unlist((read.table(pipe(pipe_new))))
           
           ncbiID <- levels(ncbiTaxa)
           maxNCBI <- max(sort(as.numeric(ncbiID[ncbiID != "ncbiID"])))
@@ -812,14 +810,20 @@ shinyServer(function(input, output, session) {
           }
           
           # check for invalid newly generated IDs in newTaxa.txt file
-          newTaxaList <- levels(newTaxa)
-          newTaxaList <- as.integer(newTaxaList[newTaxaList != "ncbiID"])
-          if (min(newTaxaList) < maxNCBI) {
-            invalidList <- as.data.frame(newTaxaList[newTaxaList < maxNCBI])
-            colnames(invalidList) <- c("id")
-            invalidList$TaxonID <- "newTaxa.txt"
-            invalidList$Source <- "invalid"
-            unkTaxa <- rbind(invalidList, unkTaxa)
+          pipe_new <- paste0("cut -f 1 ", getwd(), "/data/newTaxa.txt")
+          newTaxa <- unlist((read.table(pipe(pipe_new))))
+
+          if (length(newTaxa) > 1) {
+            newTaxaList <- levels(newTaxa)
+            newTaxaList <- as.integer(newTaxaList[newTaxaList != "ncbiID"])
+            
+            if (min(newTaxaList) < maxNCBI) {
+              invalidList <- as.data.frame(newTaxaList[newTaxaList < maxNCBI])
+              colnames(invalidList) <- c("id")
+              invalidList$TaxonID <- "newTaxa.txt"
+              invalidList$Source <- "invalid"
+              unkTaxa <- rbind(invalidList, unkTaxa)
+            }
           }
           
           # return list of unkTaxa
@@ -1018,8 +1022,8 @@ shinyServer(function(input, output, session) {
           }
           
           # print progress
-          p <- (i - 1) / (length(titleline) - 1) * 100
-          progress(p)
+          # p <- (i - 1) / (length(titleline) - 1) * 100
+          # progress(p)
         }
         uniqueRank <- names(which(table(as.character(allRanks)) == 1))
         uniqueID <- names(which(table(as.character(allNorankIDs)) == 1))
@@ -1564,16 +1568,18 @@ shinyServer(function(input, output, session) {
     sortedOut$species[1] <- paste0("ncbi",
                                    sortedOut$species[1])
     
-    for (i in 2:nrow(sortedOut)) {
-      ## increase prefix if changing to another supertaxon
-      if (sortedOut$fullName.y[i] != sortedOut$fullName.y[i - 1]) {
-        prefix <- prefix + 1
+    if (nrow(sortedOut) > 1) {
+      for (i in 2:nrow(sortedOut)) {
+        ## increase prefix if changing to another supertaxon
+        if (sortedOut$fullName.y[i] != sortedOut$fullName.y[i - 1]) {
+          prefix <- prefix + 1
+        }
+        sortedOut$sortedSupertaxon[i] <- paste0(prefix,
+                                                "_",
+                                                sortedOut$fullName.y[i])
+        sortedOut$species[i] <- paste0("ncbi",
+                                       sortedOut$species[i])
       }
-      sortedOut$sortedSupertaxon[i] <- paste0(prefix,
-                                              "_",
-                                              sortedOut$fullName.y[i])
-      sortedOut$species[i] <- paste0("ncbi",
-                                     sortedOut$species[i])
     }
     
     # final sorted supertaxa list
