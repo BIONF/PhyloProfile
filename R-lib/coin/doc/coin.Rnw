@@ -1,0 +1,511 @@
+\documentclass[a4paper]{article}
+\usepackage[a4paper]{geometry}
+\usepackage{amstext}
+\usepackage{amsfonts}
+\usepackage{hyperref}
+\usepackage[round]{natbib}
+\usepackage{hyperref}
+
+\let\proglang=\textsf
+\newcommand{\pkg}[1]{{\normalfont\fontseries{b}\selectfont #1}}
+
+
+\SweaveOpts{engine=R, eps=FALSE, keep.source = TRUE}
+
+%%\VignetteIndexEntry{coin: A Computational Framework for Conditional Inference}
+%%\VignetteDepends{coin}
+
+\input{head}
+
+\hypersetup{%
+  pdftitle = {coin: A Computational Framework for Conditional Inference},
+  pdfsubject = {Manuscript},
+  pdfauthor = {Torsten Hothorn, Kurt Hornik,
+               Mark van de Wiel and Achim Zeileis},
+%% change colorlinks to false for pretty printing
+  colorlinks = {true},
+  linkcolor = {blue},
+  citecolor = {blue},
+  urlcolor = {red},
+  hyperindex = {true},
+  linktocpage = {true},
+}
+
+
+\begin{document}
+
+\title{\pkg{coin}: A Computational Framework for \\
+       Conditional Inference}
+\author{Torsten Hothorn$^1$, Kurt Hornik$^2$, Mark van de Wiel$^3$ \\
+        and Achim Zeileis$^2$}
+\date{}
+\maketitle
+
+\noindent$^1$Institut f\"ur Medizininformatik, Biometrie und Epidemiologie\\
+     Friedrich-Alexander-Universit\"at Erlangen-N\"urnberg\\
+     Waldstra{\ss}e 6, D-91054 Erlangen, Germany \\
+     \texttt{Torsten.Hothorn@R-project.org}
+\newline
+
+\noindent$^2$Department f\"ur Statistik und Mathematik,
+             Wirtschaftsuniversit\"at Wien \\
+       Augasse 2-6, A-1090 Wien, Austria \\
+       \texttt{Kurt.Hornik@R-project.org} \\
+       \texttt{Achim.Zeileis@R-project.org}
+\newline
+
+\noindent$^3$Department of Mathematics, Vrije Universiteit \\
+             De Boelelaan 1081a, 1081 HV Amsterdam, The Netherlands \\
+            \texttt{mark.vdwiel@vumc.nl}
+\newline
+
+<<setup, echo = FALSE, results = hide>>=
+options(width = 60)
+require("coin")
+set.seed(290875)
+@
+
+\section{Introduction}
+
+The \pkg{coin} package provides a unified approach to conditional
+inference procedures commonly known as \textit{permutation tests}.
+The theoretical basis for the design and implementation is the general
+framework for permutation tests given by \cite{strasserweber1999}.  For a
+very flexible formulation of multivariate linear statistics,
+\cite{strasserweber1999} derived the conditional expectation and covariance
+of the conditional (permutation) distribution as well as the multivariate
+limiting distribution.  Test procedures for nominal, ordinal and continuous data
+with or without censoring are all part of this framework.  For a more detailed
+overview see \cite{Hothorn:2006:AmStat}.
+
+The conceptual Strasser-Weber framework of permutation tests
+for arbitrary independence and symmetry problems are available via the generic
+functions \texttt{independence\_test} and \texttt{symmetry\_test} respectively.
+In addition to these very flexible procedures, a large set of convenience
+functions including well-known as well as lesser-known classical and
+non-classical procedures for tests of independence between two continuous
+variables, two- and $K$-sample tests for location and scale alternatives, tests
+of independence for contingency tables as well as tests of marginal homogeneity
+and symmetry have been implemented within the framework.  Currently, the
+following conditional test procedures are available:
+
+\begin{center}
+  \begin{tabular}{ll}
+    % CorrelationTests
+    \texttt{spearman\_test}   & Spearman correlation test \\
+    \texttt{fisyat\_test}     & Fisher-Yates correlation test \\
+    \texttt{quadrant\_test}   & Quadrant test \\
+    \texttt{koziol\_test}     & Koziol-Nemec test \\
+    % LocationTests
+    \texttt{oneway\_test}     & Two- and $K$-sample Fisher-Pitman permutation
+                                test \\
+    \texttt{wilcox\_test}     & Wilcoxon-Mann-Whitney test \\
+    \texttt{kruskal\_test}    & Kruskal-Wallis test \\
+    \texttt{normal\_test}     & Two- and $K$-sample van der Waerden test \\
+    \texttt{median\_test}     & Two- and $K$-sample Brown-Mood median test \\
+    \texttt{savage\_test}     & Two- and $K$-sample Savage test \\
+    % ScaleTests
+    \texttt{taha\_test}       & Two- and $K$-sample Taha test \\
+    \texttt{klotz\_test}      & Two- and $K$-sample Klotz test \\
+    \texttt{mood\_test}       & Two- and $K$-sample Mood test \\
+    \texttt{ansari\_test}     & Two- and $K$-sample Ansari-Bradley test \\
+    \texttt{fligner\_test}    & Two- and $K$-sample Fligner-Killeen test \\
+    \texttt{conover\_test}    & Two- and $K$-sample Conover-Iman test \\
+    % SurvivalTests
+    \texttt{logrank\_test}    & Two- and $K$-sample weighted logrank tests \\
+                              & (Logrank test, Gehan-Breslow test, Tarone-Ware
+                                test, \dots) \\
+    % SymmetryTests
+    \texttt{sign\_test}       & Sign test \\
+    \texttt{wilcoxsign\_test} & Wilcoxon signed-rank test \\
+    \texttt{friedman\_test}   & Friedman test and Page test \\
+    \texttt{quade\_test}      & Quade test \\
+    % ContingencyTests
+    \texttt{chisq\_test}      & Pearson $\chi^2$ test \\
+    \texttt{cmh\_test}        & Generalized Cochran-Mantel-Haenszel test \\
+    \texttt{lbl\_test}        & Linear-by-linear association test \\
+    % MarginalHomogeneityTests
+    \texttt{mh\_test}         & Marginal homogeneity tests \\
+                              & (McNemar test, Cochran $Q$ test, Stuart-Maxwell
+                                test, \dots) \\
+    % MaximallySelectedStatisticsTests
+    \texttt{maxstat\_test}    & Generalized maximally selected statistics \\
+  \end{tabular}
+\end{center}
+
+These convenience functions essentially perform a certain transformation of
+the data, e.g., a rank transformation, and then call \texttt{independence\_test}
+or \texttt{symmetry\_test} for the computation of the (multivariate) linear
+statistic and its conditional expectation and covariance as well as the scalar
+test statistic and its null distribution.  The exact null distribution can
+be approximated by the asymptotic distribution or via conditional
+Monte Carlo resampling for all test procedures, whereas the exact null distribution is
+available for special cases only.  Moreover, all test procedures allow for the
+specification of blocks pertaining to, e.g., stratification or repeated measurements.
+
+\section{Permutation Tests}
+
+In the following we assume that we are provided with $n$ observations
+\begin{eqnarray*}
+(\Y_i, \X_i, w_i, b_i), \quad i = 1, \dots, n.
+\end{eqnarray*}
+The variables $\Y$ and $\X$ from sample spaces $\mathcal{Y}$ and
+$\mathcal{X}$ may
+be measured at arbitrary scales and may be multivariate as well. In addition
+to those measurements, case weights $w$ and a factor $b$ coding blocks may
+be available. For the sake of simplicity, we assume $w_i = 1$ and $b_i = 0$
+for all observations $i = 1, \dots, n$ for the moment.
+
+We are interested in testing the null hypothesis of independence of $\Y$ and
+$\X$
+\begin{eqnarray*}
+H_0: D(\Y | \X) = D(\Y)
+\end{eqnarray*}
+against arbitrary alternatives. \cite{strasserweber1999} suggest to derive
+scalar test statistics for testing $H_0$ from multivariate linear statistics
+of the form
+\begin{eqnarray} \label{linstat}
+\T = \vec\left(\sum_{i = 1}^n w_i g(\X_i) h(\Y_i, (\Y_1, \dots, \Y_n))^\top\right)
+\in \R^{pq}.
+\end{eqnarray}
+Here, $g: \mathcal{X} \rightarrow \R^{p}$ is a transformation of
+$\X$ known as the \emph{regression function} and $h: \mathcal{Y} \times
+\mathcal{Y}^n \rightarrow \R^q$ is a transformation of $\Y$ known as the
+\emph{influence function}, where the latter may depend on $(\Y_1, \dots, \Y_n)$
+in a permutation symmetric way.  We will give specific examples on how to choose
+$g$ and $h$ later on.
+
+The distribution of $\T$  depends on the joint
+distribution of $\Y$ and $\X$, which is unknown under almost all practical
+circumstances. At least under the null hypothesis one can dispose of this
+dependency by fixing $\X_1, \dots, \X_n$ and conditioning on all possible
+permutations $S$ of the responses $\Y_1, \dots, \Y_n$.
+This principle leads to test procedures known
+as \textit{permutation tests}.
+
+The conditional expectation $\mu \in \R^{pq}$ and covariance
+$\Sigma \in \R^{pq \times pq}$
+of $\T$ under $H_0$ given
+all permutations $\sigma \in S$ of the responses are derived by
+\cite{strasserweber1999}:
+\begin{eqnarray}
+\mu & = & \E(\T | S) = \vec \left( \left( \sum_{i = 1}^n w_i g(\X_i) \right) \E(h | S)^\top
+\right), \nonumber \\
+\Sigma & = & \V(\T | S) \nonumber \\
+& = &
+    \frac{\ws}{\ws - 1}  \V(h | S) \otimes
+        \left(\sum_i w_i  g(\X_i) \otimes w_i  g(\X_i)^\top \right)
+\label{expectcovar}
+\\
+& - & \frac{1}{\ws - 1}  \V(h | S)  \otimes \left(
+        \sum_i w_i g(\X_i) \right)
+\otimes \left( \sum_i w_i g(\X_i)\right)^\top
+\nonumber
+\end{eqnarray}
+where $\ws = \sum_{i = 1}^n w_i$ denotes the sum of the case weights,
+and $\otimes$ is the Kronecker product. The conditional expectation of the
+influence function is
+\begin{eqnarray*}
+\E(h | S) = \ws^{-1} \sum_i w_i h(\Y_i, (\Y_1, \dots, \Y_n)) \in
+\R^q
+\end{eqnarray*}
+with corresponding $q \times q$ covariance matrix
+\begin{eqnarray*}
+\V(h | S) = \ws^{-1} \sum_i w_i \left(h(\Y_i, (\Y_1, \dots, \Y_n))
+- \E(h | S)
+\right) \\
+\left(h(\Y_i, (\Y_1, \dots, \Y_n)) - \E(h | S)\right)^\top.
+\end{eqnarray*}
+
+Having the conditional expectation and covariance at hand we are able to
+standardize a linear statistic $\T \in \R^{pq}$ of the form
+(\ref{linstat}). Univariate test statistics~$c$ mapping an observed linear
+statistic $\mathbf{t} \in
+\R^{pq}$ into the real line can be of arbitrary form.  An obvious choice is
+the maximum of the absolute values of the standardized linear statistic
+\begin{eqnarray*}
+c_\text{max}(\mathbf{t}, \mu, \Sigma)  = \max \left| \frac{\mathbf{t} -
+\mu}{\text{diag}(\Sigma)^{1/2}} \right|
+\end{eqnarray*}
+utilizing the conditional expectation $\mu$ and covariance matrix
+$\Sigma$. The application of a quadratic form $c_\text{quad}(\mathbf{t}, \mu,
+\Sigma)  =
+(\mathbf{t} - \mu) \Sigma^+ (\mathbf{t} - \mu)^\top$ is one alternative, although
+computationally more expensive because the Moore-Penrose
+inverse $\Sigma^+$ of $\Sigma$ is involved.
+
+The definition of one- and two-sided $p$-values used for the computations in
+the \pkg{coin} package is
+\begin{eqnarray*}
+P(c(\T, \mu, \Sigma) &\le& c(\mathbf{t}, \mu, \Sigma)) \quad \text{(less)} \\
+P(c(\T, \mu, \Sigma) &\ge& c(\mathbf{t}, \mu, \Sigma)) \quad \text{(greater)}\\
+P(|c(\T, \mu, \Sigma)| &\le& |c(\mathbf{t}, \mu, \Sigma)|) \quad \text{(two-sided).}
+\end{eqnarray*}
+Note that for quadratic forms only two-sided $p$-values are available
+and that in the one-sided case maximum type test statistics are replaced by
+\begin{eqnarray*}
+\min \left( \frac{\mathbf{t} - \mu}{\text{diag}(\Sigma)^{1/2}} \right)
+    \quad \text{(less) and }
+\max \left( \frac{\mathbf{t} - \mu}{\text{diag}(\Sigma)^{1/2}} \right)
+    \quad \text{(greater).}
+\end{eqnarray*}
+
+The conditional distribution and thus the $p$-value
+of the statistics $c(\mathbf{t}, \mu, \Sigma)$ can be
+computed in several different ways. For some special forms of the
+linear statistic, the exact distribution of the test statistic is tractable.
+For two-sample problems, the shift-algorithm by \cite{axact-dist:1986}
+and \cite{exakte-ver:1987} and the split-up algorithm by
+\cite{vdWiel2001} are implemented as part of the package.
+Conditional Monte Carlo procedures can be used to approximate the exact
+distribution. \cite{strasserweber1999} proved (Theorem 2.3) that the
+conditional distribution of linear statistics $\T$ with conditional
+expectation $\mu$ and covariance $\Sigma$ tends to a multivariate normal
+distribution with parameters $\mu$ and $\Sigma$ as $n, \ws \rightarrow
+\infty$. Thus, the asymptotic conditional distribution of test statistics of
+the
+form $c_\text{max}$ is normal and
+can be computed directly in the univariate case ($pq = 1$)
+or approximated by means of quasi-randomized Monte Carlo
+procedures in the multivariate setting \citep{numerical-:1992}. For
+quadratic forms
+$c_\text{quad}$ which follow a $\chi^2$ distribution with degrees of freedom
+given by the rank of $\Sigma$ \citep[see][Chapter 29]{johnsonkotz1970}, exact
+probabilities can be computed efficiently.
+
+\section{Illustrations and Applications}
+
+The main workhorse \texttt{independence\_test} essentially allows for the
+specification of $\Y, \X$ and $b$ through a formula interface of the form
+\verb/y ~ x | b/, case weights can be defined by a formula with one variable on
+the right hand side only. Four additional arguments are available for the
+specification of the regression function $g$ (\texttt{xtrans}), the influence
+function $h$ (\texttt{ytrans}), the form of the test statistic $c$
+(\texttt{teststat}) and the null distribution (\texttt{distribution}).
+
+\paragraph{Independent $K$-Sample Problems.}
+
+When we want to compare the distribution of an univariate qualitative response
+$\Y$ in $K$ groups given by a factor $\X$ at $K$ levels, the transformation
+$g$ is the dummy matrix coding the groups and $h$ is either the identity
+transformation or a some form of rank transformation.
+
+For example, the Kruskal-Wallis test may be computed as follows
+\citep[example taken from][Table 6.3, page 200]{HollanderWolfe1999}:
+
+<<YOY-kruskal, echo = TRUE>>=
+library("coin")
+YOY <- data.frame(
+    length = c(46, 28, 46, 37, 32, 41, 42, 45, 38, 44,
+               42, 60, 32, 42, 45, 58, 27, 51, 42, 52,
+               38, 33, 26, 25, 28, 28, 26, 27, 27, 27,
+               31, 30, 27, 29, 30, 25, 25, 24, 27, 30),
+    site = gl(4, 10, labels = as.roman(1:4))
+)
+
+it <- independence_test(length ~ site, data = YOY,
+          ytrafo = function(data)
+              trafo(data, numeric_trafo = rank_trafo),
+          teststat = "quadratic")
+it
+@
+The linear statistic $\T$ is the sum of the ranks in each group and
+can be extracted via
+<<YOY-T, echo = TRUE>>=
+statistic(it, type = "linear")
+@
+Note that \texttt{statistic(..., type = "linear")} currently returns the linear
+statistic in matrix form, i.e.
+\begin{eqnarray*}
+\sum_{i = 1}^n w_i g(\X_i) h(\Y_i, (\Y_1, \dots, \Y_n))^\top \in \R^{p
+\times q}.
+\end{eqnarray*}
+The conditional expectation and covariance are available from
+<<YOY-EV, echo = TRUE>>=
+expectation(it)
+covariance(it)
+@
+and the standardized linear statistic $(\T - \mu)\text{diag}(\Sigma)^{-1/2}$
+is
+<<YOY-S, echo = TRUE>>=
+statistic(it, type = "standardized")
+@
+Since a quadratic form of the test statistic was requested via
+\texttt{teststat = "quadratic"}, the test statistic is
+<<YOY-c, echo = TRUE>>=
+statistic(it)
+@
+By default, the asymptotic distribution of the test statistic is computed,
+the $p$-value is
+<<YOY-p, echo = TRUE>>=
+pvalue(it)
+@
+
+Life is much simpler with convenience functions very similar to those
+available in package \pkg{stats} for a long time. Here, the exact
+null distribution of the Kruskal-Wallis test is approximated by Monte Carlo
+resampling using $10000$ replicates via
+<<YOY-KW, echo = TRUE>>=
+kt <- kruskal_test(length ~ site, data = YOY,
+          distribution = approximate(B = 10000))
+kt
+@
+with $p$-value (and $99~\%$ confidence interval) of
+<<YOY-KWp, echo = TRUE>>=
+pvalue(kt)
+@
+Of course it is possible to choose a $c_\text{max}$ type test statistic
+instead of a quadratic form.
+
+\paragraph{Independence in Contingency Tables.}
+
+Independence in general two- or three-dimensional contingency tables can be
+tested by the Cochran-Mantel-Haenszel test. Here, both $g$ and $h$ are dummy
+matrices \citep[example data from][Table 7.8, page 288]{agresti2002}:
+
+<<jobsatisfaction-cmh, echo = TRUE>>=
+data("jobsatisfaction", package = "coin")
+
+ct <- cmh_test(jobsatisfaction)
+ct
+@
+
+The standardized contingency table allowing for an inspection of the
+deviation from the null hypothesis of independence of income and
+jobsatisfaction (stratified by gender) is
+<<jobsatisfaction-s, echo = TRUE>>=
+statistic(ct, type = "standardized")
+@
+
+\paragraph{Ordered Alternatives.}
+
+Of course, both job satisfaction and income are ordered variables.
+When $\Y$ is measured at $J$ levels and $\X$ at $K$ levels,
+$\Y$ and $\X$ are associated with score vectors $\eta \in
+\R^J$ and $\gamma \in \R^K$, respectively. The linear statistic is now a linear
+combination of the linear statistic $\T$ of the form
+\begin{eqnarray*}
+\M \T & = & \vec \left( \sum_{i=1}^n w_i \gamma^\top g(\X_i)
+            \left(\eta^\top h(\Y_i, (\Y_1, \dots, \Y_n)\right)^\top \right)
+\in \R \text{ with } \M = \eta \otimes \gamma.
+\end{eqnarray*}
+By default, scores are $\eta = 1, \dots, J$ and $\gamma = 1, \dots, K$.
+<<jobsatisfaction-lbl, echo = TRUE>>=
+lbl_test(jobsatisfaction)
+@
+The scores $\eta$ and $\gamma$ can be specified to the linear-by-linear
+association test via a list whose names correspond to the variable names
+<<jobsatisfaction-lbl-sc, echo = TRUE>>=
+lbl_test(jobsatisfaction,
+    scores = list(Job.Satisfaction = c(1, 3, 4, 5),
+                  Income = c(3, 10, 20, 35)))
+@
+Alternatively, scores can be specified through \texttt{of\_trafo}
+<<jobsatisfaction-lbl-sc-alt, echo = TRUE>>=
+lbl_test(jobsatisfaction,
+    ytrafo = function(data)
+        trafo(data, ordered_trafo = function(y)
+            of_trafo(y, scores = c(1, 3, 4, 5))),
+    xtrafo = function(data)
+        trafo(data, ordered_trafo = function(x)
+            of_trafo(x, scores = c(3, 10, 20, 35))))
+@
+
+\paragraph{Incomplete Randomised Blocks.}
+
+\cite{RaynerBest2001}, Chapter 7, discuss the application of Durbin's test
+to data from sensory experiments, where incomplete block designs are
+common. As an example, data from taste-testing on ten dried eggs where mean
+scores for off-flavour from seven judges are given and one wants to assess
+whether there is any difference in the scores between the ten egg samples.
+The sittings are a block variable which can be added to the formula via
+`\texttt{|}'.
+<<eggs-Durbin, echo = TRUE>>=
+egg_data <- data.frame(
+    scores = c(9.7, 8.7, 5.4, 5.0, 9.6, 8.8, 5.6,  3.6, 9.0,
+               7.3, 3.8, 4.3, 9.3, 8.7, 6.8, 3.8, 10.0, 7.5,
+               4.2, 2.8, 9.6, 5.1, 4.6, 3.6, 9.8,  7.4, 4.4,
+               3.8, 9.4, 6.3, 5.1, 2.0, 9.4, 9.3,  8.2, 3.3,
+               8.7, 9.0, 6.0, 3.3, 9.7, 6.7, 6.6,  2.8, 9.3,
+               8.1, 3.7, 2.6, 9.8, 7.3, 5.4, 4.0,  9.0, 8.3,
+               4.8, 3.8, 9.3, 8.3, 6.3, 3.8),
+    sitting = factor(rep(c(1:15), rep(4, 15))),
+    product = factor(c(1, 2, 4,  5, 2, 3, 6, 10, 2, 4, 6,  7,
+                       1, 3, 5,  7, 1, 4, 8, 10, 2, 7, 8,  9,
+                       2, 5, 8, 10, 5, 7, 9, 10, 1, 2, 3,  9,
+                       4, 5, 6,  9, 1, 6, 7, 10, 3, 4, 9, 10,
+                       1, 6, 8,  9, 3, 4, 7,  8, 3, 5, 6,  8))
+)
+
+independence_test(scores ~ product | sitting,
+    data = egg_data, teststat = "quadratic",
+    ytrafo = function(data)
+        trafo(data, numeric_trafo = rank_trafo,
+              block = egg_data$sitting))
+@
+and the Monte Carlo $p$-value can be computed via
+<<eggs-Durbin-approx, echo = TRUE>>=
+pvalue(independence_test(scores ~ product | sitting,
+           data = egg_data, teststat = "quadratic",
+           ytrafo = function(data)
+               trafo(data, numeric_trafo = rank_trafo,
+                     block = egg_data$sitting),
+           distribution = approximate(B = 19999)))
+@
+If we assume that the products are ordered, the Page test is appropriate and
+can be computed as follows
+<<eggs-Page, echo = TRUE>>=
+independence_test(scores ~ product | sitting,
+    data = egg_data,
+    ytrafo = function(data)
+        trafo(data, numeric_trafo = rank_trafo,
+              block = egg_data$sitting),
+    scores = list(product = 1:10))
+@
+
+\paragraph{Multiple Tests.}
+
+One may be interested in testing multiple hypotheses simultaneously, either
+by using a linear combination of the linear statistic $\K\T$, or by
+specifying multivariate variables $\Y$ and/or $\X$. For example, all pair
+comparisons may be implemented via
+<<warpbreaks-Tukey, echo = TRUE>>=
+it <- independence_test(length ~ site, data = YOY,
+          xtrafo = mcp_trafo(site = "Tukey"),
+          teststat = "maximum",
+          distribution = "approximate")
+pvalue(it)
+pvalue(it, method = "single-step")
+@
+When either $g$ or $h$ are multivariate, single-step adjusted $p$-values based on
+maximum-type statistics are computed as described in \cite{WestfallYoung1993},
+algorithm 2.5 (page 47) and equation (2.8), page 50. Note that for the
+example shown above only the \textit{minimum} $p$-value is adjusted
+appropriately because the subset pivotality condition is violated, i.e., the
+distribution of the test statistics under the complete null-hypothesis of no
+treatment effect of \texttt{site} is the basis of all adjustments instead of
+the corresponding partial null-hypothesis.
+
+\section{Quality Assurance}
+
+The test procedures implemented in package \pkg{coin} are continuously checked
+against results obtained by the corresponding implementations in package
+\pkg{stats} (where available). In addition, the test statistics and
+exact, approximative and asymptotic $p$-values for data examples given in the
+\pkg{StatXact}~-6
+user manual \citep{StatXact6} are compared with the results reported in the
+\pkg{StatXact}~6 manual. Step-down multiple adjusted $p$-values have been
+checked against results reported by \texttt{mt.maxT} from package
+\pkg{multtest} \citep{PKG:multtest}.
+For details on the test procedures we refer to
+the \proglang{R} transcript files in directory \texttt{coin/tests}.
+
+\section{Acknowledgements}
+
+We would like to thank Helmut Strasser for discussions on the theoretical framework.
+Henric Winell provided clarification and examples for the Stuart-Maxwell test.
+
+\bibliographystyle{jss}
+\bibliography{coin}
+
+\end{document}

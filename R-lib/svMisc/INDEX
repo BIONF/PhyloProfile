@@ -1,0 +1,42 @@
+Install                 An easy package installation function that
+                        pairs with 'package()'
+about                   Get information and help about R objects
+add_actions             Add GUI elements like actions (menu items),
+                        icons, or methods in a predefined list
+batch                   Run a function in batch mode
+capture_all             Run an R expression and capture output and
+                        messages in a similar way as it would be done
+                        at the command line
+compare_r_version       Compare current R version with a specified one
+completion              Get a completion list for a R code fragment
+def                     Define a vector of a given mode and length
+                        (possibly filling it with default values)
+describe_function       Get textual help on function or function
+                        arguments, or get a call tip
+file_edit               Invoke an external text editor for a file
+gui_cmd                 Execute a command in the GUI client
+is_help                 Check for the existence of an help file, or
+                        some context
+list_methods            List all methods associated with a generic
+                        function or a class, or all types associated
+                        with a method
+obj_browse              Functions to implement an object browser
+package                 A (possibly) very silent and multi-package
+                        library()/require() function
+parse_text              Parse a character string as if it was a command
+                        entered at the command line
+pkgman_describe         Functions to manage R side of the SciViews R
+                        package manager
+progress                Display progression of a long calculation at
+                        the R console and/or in a GUI
+search_web              Search web documents about R and R functions
+source_clipboard        Source code from the clipboard
+subsettable             Define a function as being 'subsettable' using
+                        $ operator
+svMisc-package          SciViews - Miscellaneous functions
+system_file             Get a system file or directory
+temp_env                Get an environment dedicated to temporary
+                        variables (and create it if needed)
+temp_var                Get an arbitrary name for a temporary variable
+to_rjson                Convert R object to and from RJSON
+                        specification

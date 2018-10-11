@@ -258,8 +258,7 @@ shinyServer(function(input, output, session) {
                   row.names = FALSE,
                   col.names = TRUE,
                   quote = FALSE)
-      
-      # write.table(long_to_fasta(get_main_input()), "fasta.txt",
+
       write.table(get_all_fasta_oma(final_oma_df()), "fasta.txt",
                   sep = "\t",
                   row.names = FALSE,
@@ -539,6 +538,12 @@ shinyServer(function(input, output, session) {
     create_slider_cutoff(
       "var1", paste(input$var1_id, "cutoff:"), 0.0, 1.0, input$var1_id
     )
+
+    # numericInput("var1",
+    #              paste(input$var1_id, "cutoff:"),
+    #              min = 0,
+    #              max = 1,
+    #              value = 0)
   })
   
   output$var2_cutoff.ui <- renderUI({
@@ -1657,8 +1662,9 @@ shinyServer(function(input, output, session) {
   # * max/min/mean/median VAR1 (3) and VAR2 (4)
   get_data_filtered <- reactive({
     if (is.null(preData())) return()
-    
+
     mdData <- preData()
+  
     
     # count number of inparalogs
     paralogCount <- plyr::count(mdData, c("geneID", "ncbiID"))
@@ -1680,7 +1686,6 @@ shinyServer(function(input, output, session) {
     
     # (2) calculate PERCENTAGE of PRESENT SPECIES
     finalPresSpecDt <- calc_pres_spec(taxaMdData, taxaCount)
-    
     # (3) calculate max/min/mean/median VAR1 for every supertaxon of each gene
     # remove NA rows from taxaMdData
     taxaMdDataNoNA <- taxaMdData[!is.na(taxaMdData$var1), ]
@@ -1731,7 +1736,6 @@ shinyServer(function(input, output, session) {
     names(fullMdData)[names(fullMdData) == "orthoID.x"] <- "orthoID"
     # parsed input data frame !!!
     fullMdData <- fullMdData[!duplicated(fullMdData), ]
-    
     return(fullMdData)
   })
   
@@ -1824,7 +1828,6 @@ shinyServer(function(input, output, session) {
       filein <- 1
     }
     if (is.null(filein)) return()
-    
     dataHeat <- dataSupertaxa()
     
     # get selected supertaxon name
@@ -1897,22 +1900,39 @@ shinyServer(function(input, output, session) {
   clusteredDataHeat <- reactive({
     dataHeat <- dataHeat()
     dat <- get_profiles()
-    
+    cutoff <- (input$var1[1])*100
+
     # do clustering based on distance matrix
+   
     row.order <- hclust(get_distance_matrix_profiles(),
                         method = input$cluster_method)$order
-    col.order <- hclust(get_distance_matrix(t(dat), method = input$dist_method),
-                        method = input$cluster_method)$order
+    
+    
+   
+    # col.order <- hclust(get_distance_matrix(t(dat), method = input$dist_method, (input$var1[1])*100),
+    #                     method = input$cluster_method)$order
+    
     
     # re-order distance matrix accoring to clustering
-    dat_new <- dat[row.order, col.order]
+    dat_new <- dat[row.order, ] #col.order
+    #dat_new <- dat[row.order, col.order]
+    
+   
     
     # return clustered gene ID list
     clustered_gene_ids <- as.factor(row.names(dat_new))
     
+
+    
     # sort original data according to clustered_gene_ids
     dataHeat$geneID <- factor(dataHeat$geneID,
                               levels = clustered_gene_ids)
+    
+    dataHeat <- dataHeat[!is.na(dataHeat$geneID),]
+    # print("Writing the table...")
+    # write.table(clustered_gene_ids, file = paste0("../gene_order_",
+    #                                            input$dist_method, "_", (input$var1[1])*100),
+    #             col.names = FALSE, row.names = FALSE, quote = FALSE)
     return(dataHeat)
   })
   
@@ -2685,7 +2705,10 @@ shinyServer(function(input, output, session) {
   get_distance_matrix_profiles <- reactive({
     if (is.null(input$dist_method)) return()
     profiles <- get_profiles()
-    distance_matrix <- get_distance_matrix(profiles, input$dist_method)
+    distance_matrix <- get_distance_matrix(profiles, input$dist_method, (input$var1[1])*100)
+    # write.table(as.matrix(distance_matrix), file = paste0("../distance_matrix_",
+    #                                                       input$dist_method, "_",(input$var1[1])*100 ),
+    #             col.names = TRUE, row.names = TRUE, quote = FALSE, sep = " \t")
     return(distance_matrix)
   })
   
@@ -2695,8 +2718,7 @@ shinyServer(function(input, output, session) {
     if (nrow(data_heat) < 1) return()
     if (is.null(input$dist_method)) return()
     profiles <- get_data_clustering(data_heat,
-                                    #input$profile_type,
-                                    "binary", # Till the second profile type is added
+                                    input$profile_type,
                                     input$var1_aggregate_by,
                                     input$var2_aggregate_by)
     return(profiles)
@@ -2710,7 +2732,7 @@ shinyServer(function(input, output, session) {
     distance_matrix = get_distance_matrix_profiles,
     cluster_method = reactive(input$cluster_method),
     plot_width = reactive(input$cluster_plot.width),
-    plot_height = reactive(input$cluster_plot.width))
+    plot_height = reactive(input$cluster_plot.height))
   
   
   # * DISTRIBUTION ANALYSIS ===================================================
@@ -3292,6 +3314,7 @@ shinyServer(function(input, output, session) {
     right_format_features = reactive(input$right_format_features),
     domain_information = get_domain_information,
     plot = reactive(input$plot_gc),
-    parameter = get_parameter_input_gc
+    parameter = get_parameter_input_gc,
+    selected_point = reactive(input$show_point_gc)
   )
     })

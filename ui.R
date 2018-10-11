@@ -1420,9 +1420,18 @@ shinyUI(
         )
       ),
       column(
-        12,
+        6,
         create_text_size("p_values_size_gc", "P-value label size (px)", 10, 100)
       ),
+      column(
+        6,
+        selectInput(
+          "show_point_gc", label = "Show location parameter:",
+          choices = list("Mean" = "mean",
+                         "Median" = "median"),
+          selected = "mean",
+          width = 150)
+        ), 
       column(
         12,
         sliderInput(

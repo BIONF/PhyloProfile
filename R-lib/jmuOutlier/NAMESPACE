@@ -1,0 +1,8 @@
+exportPattern("^[[:alpha:]]+")
+importFrom("graphics", "abline", "axis", "curve", "plot", "hist")
+importFrom("stats", "dnorm", "dbinom", "pbinom", "quantile", "runif", "rexp", "plot.ecdf", 
+           "t.test", "aov", "cor", "ansari.test", "pnorm", "pexp", "pcauchy",
+           "pt", "pchisq", "pf", "punif", "pgeom", "ppois")
+importFrom("graphics", "lines")
+importFrom("stats", "binom.test", "integrate", "median", "qbinom", "qnorm", "qt", "var")
+importFrom("utils", "combn")

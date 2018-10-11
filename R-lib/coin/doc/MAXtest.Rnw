@@ -1,0 +1,1416 @@
+
+\documentclass[nojss]{jss}
+
+%%\usepackage{Sweave}
+
+
+
+\usepackage[authoryear]{natbib}
+\setlength{\bibsep}{2pt}
+\setlength{\bibhang}{2em}
+
+
+\usepackage{verbatim}
+\usepackage{graphicx}
+\usepackage{amsfonts}
+\usepackage{amstext}
+\usepackage{amsmath}
+%%\usepackage{amsthm}
+%%\usepackage[round]{natbib}
+%%\usepackage{bibentry}
+%%\usepackage{hyperref}
+\usepackage{rotating}
+%%\usepackage{floatflt}
+
+\newcommand{\R}{\mathbb{R} }
+\newcommand{\N}{\mathbb{N} }
+\newcommand{\C}{\mathbb{C} }
+\newcommand{\V}{\mathbb{V}} %% cal{\mbox{\textnormal{Var}}} }
+%%\newcommand{\E}{\mathbb{E}} %%mathcal{\mbox{\textnormal{E}}} }
+\newcommand{\Var}{\mathbb{V}} %%mathcal{\mbox{\textnormal{Var}}} }
+\newcommand{\argmin}{\operatorname{argmin}\displaylimits}
+\newcommand{\argmax}{\operatorname{argmax}\displaylimits}
+\newcommand{\LS}{\mathcal{L}_n}
+\newcommand{\TS}{\mathcal{T}_n}
+\newcommand{\LSc}{\mathcal{L}_{\text{comb},n}}
+\newcommand{\LSbc}{\mathcal{L}^*_{\text{comb},n}}
+\newcommand{\F}{\mathcal{F}}
+\newcommand{\A}{\mathcal{A}}
+\newcommand{\yn}{y_{\text{new}}}
+\newcommand{\z}{\mathbf{z}}
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\Y}{\mathbf{Y}}
+\newcommand{\sX}{\mathcal{X}}
+\newcommand{\sY}{\mathcal{Y}}
+\newcommand{\T}{\mathbf{T}}
+\newcommand{\x}{\mathbf{x}}
+\renewcommand{\a}{\mathbf{a}}
+\newcommand{\xn}{\mathbf{x}_{\text{new}}}
+\newcommand{\y}{\mathbf{y}}
+\newcommand{\w}{\mathbf{w}}
+\newcommand{\ws}{\mathbf{w}_\cdot}
+\renewcommand{\t}{\mathbf{t}}
+\newcommand{\M}{\mathbf{M}}
+\renewcommand{\vec}{\text{vec}}
+\newcommand{\B}{\mathbf{B}}
+\newcommand{\K}{\mathbf{K}}
+\newcommand{\W}{\mathbf{W}}
+\newcommand{\D}{\mathbf{D}}
+\newcommand{\I}{\mathbf{I}}
+\newcommand{\bS}{\mathbf{S}}
+\newcommand{\cellx}{\pi_n[\x]}
+\newcommand{\partn}{\pi_n(\mathcal{L}_n)}
+\newcommand{\err}{\text{Err}}
+\newcommand{\ea}{\widehat{\text{Err}}^{(a)}}
+\newcommand{\ecv}{\widehat{\text{Err}}^{(cv1)}}
+\newcommand{\ecvten}{\widehat{\text{Err}}^{(cv10)}}
+\newcommand{\eone}{\widehat{\text{Err}}^{(1)}}
+\newcommand{\eplus}{\widehat{\text{Err}}^{(.632+)}}
+\newcommand{\eoob}{\widehat{\text{Err}}^{(oob)}}
+
+\hyphenation{Qua-dra-tic}
+
+\newcommand{\Rpackage}[1]{{\normalfont\fontseries{b}\selectfont #1}}
+\newcommand{\Robject}[1]{\texttt{#1}}
+\newcommand{\Rclass}[1]{\textit{#1}}
+\newcommand{\Rcmd}[1]{\texttt{#1}}
+\newcommand{\Roperator}[1]{\texttt{#1}}
+\newcommand{\Rarg}[1]{\texttt{#1}}
+\newcommand{\Rlevel}[1]{\texttt{#1}}
+
+\newcommand{\RR}{\textsf{R}}
+\renewcommand{\S}{\textsf{S}}
+
+\SweaveOpts{eps=FALSE,keep.source=TRUE,echo=FALSE}
+
+%% end of declarations %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+<<coin-setup, echo = FALSE, results = hide>>=
+library("coin")
+set.seed(290875)
+library("xtable")
+xtable.table <- function(x, ...) {
+
+  tab2 <- function(x, pre = NULL, totals = TRUE) {
+      if (totals) {
+          x <- cbind(x, Total = rowSums(x))
+          x <- rbind(x, Total = colSums(x))
+      }
+      if (!is.null(pre)) cat(pre, " & ")
+      cat(" & ", paste(colnames(x), collapse = " & "), "\\\\ \\hline \n")
+      tmp <- sapply(1:nrow(x), function(i) {
+          if (!is.null(pre)) cat(" & ")
+          cat(rownames(x)[i], " & ", paste(x[i,], collapse = " & "),
+              " \\\\ \n")
+      })
+  }
+  if (length(dim(x)) == 2) {
+      tab2(x, ...)
+  } else {
+      for (i in 1:dim(x)[3])
+          tab2(x[,,i], pre = dimnames(x)[[3]][i], ...)
+  }
+}
+
+### psoriasis data
+`psoriasis` <-
+structure(list(gender = structure(as.integer(c(2, 2, 2, 2, 2,
+2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+1, 1, 1, 1, 2, 2, 1, 2, 2, 2, 1, 1, 1, 2, 1, 2, 1, 1, 2, 1, 1,
+2, 1, 2, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1, 2, 2, 1, 1, 1,
+1, 2, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1,
+1, 2, 2, 2, 2, 1, 1, 1, 2, 1, 1, 1, 1, 2, 1, 1, 2, 2, 1, 1, 1,
+1, 2, 2, 1, 1, 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1,
+2, 1, 1, 2, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2,
+1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1,
+2, 2, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 2, 2, 1, 2, 1, 1, 1, 1,
+1, 2, 2, 2, 2, 2, 1, 1, 2, 1, 1, 2, 1, 1, 1, 2, 2, 1, 1, 2, 2,
+2, 1, 1, 1, 1, 2, 1, 1, 2, 1, 2, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2,
+1, 2, 1, 2)), .Label = c("Male", "Female"), class = "factor"),
+    group = structure(as.integer(c(1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3)), .Label = c("Control",
+    "Early Onset", "Late Onset"), class = "factor"), TNFA_238 = structure(as.integer(c(2,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 1, 1, 2, 1, 2, 2, 1, 2, 1,
+    1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 2, 2, 1, 1, 1, 1, 2, 2,
+    1, 1, 1, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 2, 1, 1, 3,
+    1, 1, 1, 2, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2,
+    2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 2, 2, 1, 1,
+    1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1,
+    1, 2, 1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1,
+    1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 2, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 2, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1,
+    2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 2, 1, 2, 1)), .Label = c("GG", "GA", "AA"), class = "factor"),
+    IL1B_511 = structure(as.integer(c(2, 1, 2, 2, 1, 2, 2, 2,
+    1, 3, 2, 3, 2, 2, 1, 2, 3, 1, 2, 2, 2, 2, 3, 2, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 2, 2, 1, 1, 1, 1, 2,
+    2, 1, 1, 2, 2, 1, 1, 2, 1, 3, 2, 2, 1, 2, 1, 1, 1, 1, 1,
+    2, 2, 1, 2, 1, 2, 1, 1, 1, 1, 3, 2, 1, 1, 2, 2, 2, 2, 2,
+    1, 2, 1, 1, 2, 3, 1, 1, 2, 2, 2, 1, 3, 3, 2, 2, 3, 1, 3,
+    1, 1, 1, 3, 2, 2, 1, 2, 2, 1, 2, 3, 2, 2, 1, 3, 2, 3, 1,
+    2, 2, 1, 1, 2, 1, 1, 2, 1, 3, 2, 3, 2, 1, 1, 1, 1, 2, 1,
+    1, 1, 1, 1, 3, 1, 2, 2, 1, 1, 2, 2, 2, 1, 1, 2, 1, 1, 2,
+    1, 2, 2, 1, 1, 1, 3, 2, 3, 1, 2, 1, 1, 2, 2, 1, 2, 2, 1,
+    3, 1, 1, 2, 2, 1, 2, 1, 1, 2, 1, 2, 2, 2, 2, 1, 1, 1, 2,
+    1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 2,
+    2, 2, 1, 2, 2, 2, 2, 1, 1, 3, 2, 1, 1, 2, 2, 1, 3, 2, 2,
+    2, 1, 3, 2, 1, 2, 3, 2, 2, 2, 1, 2, 2, 2, 2, 1, 3, 1, 1,
+    1, 1, 1, 2, 2, 1, 2, 1, 3, 2, 2, 2, 1, 3, 1, 2, 1, 1, 1,
+    1, 2, 1, 1, 1, 1, 2, 1, 2, 1, 2, 2, 1, 1, 1, 2, 1, 1, 1,
+    3, 2, 2, 2, 2, 2, 3, 2, 2, 1, 2, 2, 2, 1, 1, 2, 2, 2, 2,
+    2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2,
+    2, 1, 1, 2, 3, 3, 1, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 3, 2,
+    3, 1, 2, 1, 1, 2, 1, 2, 1, 2, 1, 1, 2, 1, 1, 2, 2, 1, 2,
+    2, 1, 1, 2, 1, 1, 1, 2, 2, 2, 1, 2, 1, 2, 2, 1, 1, 1, 2,
+    1, 1, 1, 2, 2, 1, 1, 3, 2, 2, 1, 1, 3, 1, 1, 1, 1, 1, 1,
+    2, 2, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 2, 3, 2, 2, 3, 2, 2,
+    1, 2, 1, 2, 2, 2, 1, 1, 1, 2, 3, 2, 1, 1, 1, 1, 2, 2, 2,
+    2, 1, 1, 2, 1, 2, 2, 1, 2, 1, 2, 1, 2, 2, 1, 2, 3, 3, 1,
+    2, 2, 1, 1, 2, 1, 3, 1, 1, 2, 1, 2, 2, 2, 1, 3, 1, 1, 1,
+    2, 1, 2, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 3, 1, 2, 1, 2,
+    1, 2, 1, 1, 2, 1, 2, 1, 1, 1, 2, 3, 1, 1, 2, 1, 1, 1, 1,
+    1, 1, 1, 2, 2, 2, 3, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 3, 1,
+    1, 1, 3, 1, 1, 1, 1, 1, 3, 2, 2, 1, 2, 1, 1, 1, 2, 2, 1,
+    1, 2, 2, 1, 2, 2, 2, 1, 1, 1, 1, 1, 3, 1, 2, 2, 1)), .Label = c("CC",
+    "CT", "TT"), class = "factor")), .Names = c("gender", "group",
+"TNFA_238", "IL1B_511"), row.names = c("1", "2", "3", "4", "5",
+"6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16",
+"17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27",
+"28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38",
+"39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49",
+"50", "51", "52", "53", "54", "55", "56", "57", "58", "59", "60",
+"61", "62", "63", "64", "65", "66", "67", "68", "69", "70", "71",
+"72", "73", "74", "75", "76", "77", "78", "79", "80", "81", "82",
+"83", "84", "85", "86", "87", "88", "89", "90", "91", "92", "93",
+"94", "95", "96", "97", "98", "99", "100", "101", "102", "103",
+"104", "105", "106", "107", "108", "109", "110", "111", "112",
+"113", "114", "115", "116", "117", "118", "119", "120", "121",
+"122", "123", "124", "125", "126", "127", "128", "129", "130",
+"131", "132", "133", "134", "135", "136", "137", "138", "139",
+"140", "141", "142", "143", "144", "145", "146", "147", "148",
+"149", "150", "151", "152", "153", "154", "155", "156", "157",
+"158", "159", "160", "161", "162", "163", "164", "165", "166",
+"167", "168", "169", "170", "171", "172", "173", "174", "175",
+"176", "177", "178", "179", "180", "181", "182", "183", "184",
+"185", "186", "187", "188", "189", "190", "191", "192", "193",
+"194", "195", "196", "197", "198", "199", "200", "201", "202",
+"203", "204", "205", "206", "207", "208", "209", "210", "211",
+"212", "213", "214", "215", "216", "217", "218", "219", "220",
+"221", "222", "223", "224", "225", "226", "227", "228", "229",
+"230", "231", "232", "233", "234", "235", "236", "237", "238",
+"239", "240", "241", "242", "243", "244", "245", "246", "247",
+"248", "249", "250", "251", "252", "253", "254", "255", "256",
+"257", "258", "259", "260", "261", "262", "263", "264", "265",
+"266", "267", "268", "269", "270", "271", "272", "273", "274",
+"275", "276", "277", "278", "279", "280", "281", "282", "283",
+"284", "285", "286", "287", "288", "289", "290", "291", "292",
+"293", "294", "295", "296", "297", "298", "299", "300", "301",
+"302", "303", "304", "305", "306", "307", "308", "309", "310",
+"311", "312", "313", "314", "315", "316", "317", "318", "319",
+"320", "321", "322", "323", "324", "325", "326", "327", "328",
+"329", "330", "331", "332", "333", "334", "335", "336", "337",
+"338", "339", "340", "341", "342", "343", "344", "345", "346",
+"347", "348", "349", "350", "351", "352", "353", "354", "355",
+"356", "357", "358", "359", "360", "361", "362", "363", "364",
+"365", "366", "367", "368", "369", "370", "371", "372", "373",
+"374", "375", "376", "377", "378", "379", "380", "381", "382",
+"383", "384", "385", "386", "387", "388", "389", "390", "391",
+"392", "393", "394", "395", "396", "397", "398", "399", "400",
+"401", "402", "403", "404", "405", "406", "407", "408", "409",
+"410", "411", "412", "413", "414", "415", "416", "417", "418",
+"419", "420", "421", "422", "423", "424", "425", "426", "427",
+"428", "429", "430", "431", "432", "433", "434", "435", "436",
+"437", "438", "439", "440", "441", "442", "443", "444", "445",
+"446", "447", "448", "449", "450", "451", "452", "453", "454",
+"455", "456", "457", "458", "459", "460", "461", "462", "463",
+"464", "465", "466", "467", "468", "469", "470", "471", "472",
+"473", "474", "475", "476", "477", "478", "479", "480", "481",
+"482", "483", "484", "485", "486", "487", "488", "489", "490",
+"491", "492", "493", "494", "495", "496", "497", "498", "499",
+"500", "501", "502", "503", "504", "505", "506", "507", "508",
+"509", "510", "511", "512", "513", "514", "515", "516", "517",
+"518", "519", "520", "521", "522", "523", "524", "525", "526",
+"527", "528", "529", "530", "531", "532", "533", "534", "535",
+"536", "537", "538", "539", "540", "541", "542", "543", "544",
+"545", "546", "547", "548", "549", "550", "551", "552", "553",
+"554", "555", "556", "557", "558", "559", "560", "561", "562",
+"563", "564", "565", "566", "567", "568", "569", "570", "571",
+"572", "573", "574", "575", "576"), class = "data.frame")
+
+### Bagos & Nikolopoulos (2007) example.
+`diabetes` <-
+structure(list(Study = structure(c(1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 3L, 3L, 3L, 3L, 3L,
+3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L,
+3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L,
+3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L,
+3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L,
+3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L,
+3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L,
+3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L,
+3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L,
+4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
+4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
+4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
+4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
+4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
+4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
+4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
+4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
+4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
+4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
+4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
+4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
+4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
+4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
+4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
+4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
+4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
+4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
+4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L,
+4L), .Label = c("S1", "S2", "S3", "S4"), class = "factor"), Group = structure(c(2L,
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 2L, 2L, 2L, 2L, 2L,
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+1L, 1L, 1L, 1L, 1L, 1L, 1L), .Label = c("Cases", "Control"), class = "factor"),
+    Locus = structure(c(1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+    1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+    1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 2L, 2L,
+    2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+    2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+    2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+    2L, 2L, 2L, 2L, 2L, 3L, 3L, 3L, 3L, 3L, 3L, 1L, 1L, 1L, 1L,
+    1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+    1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+    1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+    1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+    1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+    2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+    2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+    2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+    2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+    2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 3L, 3L, 3L, 3L,
+    3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L,
+    3L, 3L, 3L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+    1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+    1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+    1L, 1L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+    2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 3L,
+    3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 1L, 1L, 1L, 1L, 1L,
+    1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+    1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+    1L, 1L, 1L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+    2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+    2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+    2L, 2L, 2L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L,
+    3L, 3L, 3L, 3L, 3L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+    1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+    1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+    2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+    2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 3L, 3L, 3L,
+    3L, 3L, 3L, 3L, 3L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+    1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 2L, 2L, 2L, 2L,
+    2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+    2L, 2L, 2L, 2L, 2L, 2L, 2L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L,
+    3L, 3L, 3L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+    1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+    1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+    1L, 1L, 1L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+    2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+    2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+    2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 3L, 3L, 3L, 3L,
+    3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 1L, 1L, 1L,
+    1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+    1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+    1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+    1L, 1L, 1L, 1L, 1L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+    2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+    2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+    2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+    2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+    2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L,
+    2L, 2L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L,
+    3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L,
+    3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L,
+    3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L), .Label = c("AA", "AB", "BB"
+    ), class = "factor")), .Names = c("Study", "Group", "Locus"
+), row.names = c(NA, 888L), class = "data.frame")
+@
+
+
+
+%\VignetteIndexEntry{Order-restricted Scores Test}
+%\VignetteKeywords{genetic association, case-control study, robust trend test, maximum test, conditional inference}
+%\VignettePackage{coin}
+
+\title{Order-restricted Scores Test for the Evaluation of \\
+       Population-based Case-control Studies when the \\
+       Genetic Model is Unknown}
+\Shorttitle{Order-restricted Scores Test}
+
+
+\author{Ludwig A. Hothorn \\ Leibniz Universit\"at Hannover
+  \And Torsten Hothorn \\ Ludwig-Maximilians-Universit{\"a}t M{\"u}nchen}
+\Plainauthor{Ludwig A. Hothorn, Torsten Hothorn}
+
+
+\Address{
+  Ludwig A. Hothorn \\
+  Institut f\"ur Biostatistik \\
+  Leibniz Universit\"at Hannover \\
+  Herrenh\"auser Stra{\ss}e 2 \\
+  DE--30419 Hannover, Germany \\
+
+  Torsten Hothorn\\
+  Institut f\"ur Statistik\\
+  Ludwig-Maximilians-Universit\"at M\"unchen\\
+  Ludwigstra{\ss}e 33\\
+  DE-80539 M\"unchen, Germany \\
+  E-mail: \email{Torsten.Hothorn@R-project.org}\\
+  URL: \url{http://www.stat.uni-muenchen.de/~hothorn/}\\
+}
+
+
+\Abstract{
+This is an preprint of an article to be published in
+\emph{Biometrical Journal}. Copyright \copyright{} 2009 WILEY-VCH
+Verlag GmbH \& Co. KGaA, Weinheim;
+available online at \url{http://www.biometrical-journal.com}.
+
+The Cochran-Armitage linear trend test for proportions is often
+used for genotype-based analysis of candidate gene association. Depending on
+the underlying genetic mode of inheritance, the use of model-specific scores maximises
+the power. Commonly, the underlying genetic model, i.e.,
+additive, dominant or recessive mode of inheritance, is a priori unknown.
+Association studies are commonly analysed using permutation tests, where
+both inference and identification of the underlying mode of inheritance are important.
+Especially interesting are tests for case-control studies,
+defined by a maximum over a series of standardised Cochran-Armitage tests, because
+such a procedure has power under all three genetic models.
+
+We reformulate the test problem and propose a conditional maximum test
+of scores-specific linear-by-linear association tests \citep{bookagresti2002}. For maximum-type, sum
+and quadratic test statistics the asymptotic expectation and covariance
+can be derived in a closed form and the limiting distribution
+is known. Both the limiting distribution and approximations of the
+exact conditional distribution can easily be computed using standard
+software packages. In addition to these technical advances,
+we extend the area of application to stratified designs,
+studies involving more than two groups and the simultaneous analysis
+of multiple loci by means of multiplicity-adjusted $p$-values for the
+underlying multiple Cochran-Armitage trend tests. The new test is applied
+to reanalyse a study investigating genetic components of
+different subtypes of psoriasis.
+
+A new and flexible inference tool for association
+studies is available both theoretically as well as practically since
+already available software packages can be easily used to implement
+the suggested test procedures.
+}
+
+\Keywords{genetic association, case-control study, robust trend test, maximum test, conditional inference}
+
+\begin{document}
+
+\section{Objectives}
+
+In population-based case-control studies the association between a
+candidate allele and a disease can be evaluated by the Cochran-Armitage
+(CA) trend test \citep{Armitage:1955}, regardless of
+whether or not Hardy-Weinberg equilibrium holds
+\citep{Sasieni:1997}.
+The CA test is based on a set of scores assigned to the alleles.
+For genotypes $aa$, $Aa$, or $AA$, with $A$ denoting a high risk
+candidate allele and $a$ any of the other alleles,
+three-dimensional score vectors optimising the power of the CA test
+against dominant, additive, and recessive alternatives can be defined.
+If the underlying mode of inheritance is known, the choice of
+an appropriate score vector for the trend test is obvious.
+However, in situations where the underlying genetic model is unknown
+choosing the \textit{wrong} score vector leads to a substantial loss of power
+as shown by \citet{Freidlin:2002}.
+Therefore, inference procedures
+with good power under \textit{all} three genetic models
+are of special interest.
+An appealing approach is to construct a test based on all three possible
+trend tests, for example utilising the maximum of the standardised
+test statistics of the CA tests which are optimal under the dominant,
+additive, and recessive model.
+An unconditional version of this test was proposed and investigated by \citet{Freidlin:2002}.
+The distribution of this maximum test, called MAX test hereafter,
+under the null hypothesis of equal genotype distribution
+in cases and controls is approximated by simulation procedures
+by \citet{Freidlin:2002}
+since the unconditional asymptotic distribution is hard to derive.
+
+In this paper, we show that the conditional MAX test is a simple special
+case of a general class of linear statistics whose conditional
+distribution is easy to compute. Thus, without additional
+theoretical effort, the MAX test enjoys all the nice properties
+of this class of conditional tests. Therefore, we embed the MAX test as suggested by
+\citet{Freidlin:2002} into the flexible framework for
+conditional independence tests introduced by
+\citet{StrasserWeber1999}. The merits of doing so are
+i) the conditional reference distribution for the MAX test can be easily
+approximated either by evaluating a three-dimensional normal distribution
+or by conditional Monte Carlo experiments,
+ii) tests for stratified designs, designs with more than two
+groups and two or more loci can be defined in a rather
+straightforward way, iii) the most likely underlying
+mode of inheritance can be estimated by
+multiplicity-adjusted $p$-values for the
+three CA statistics under consideration, iv) the simultaneous analysis
+of multiple loci, and v) the analysis of
+genetic association studies using the MAX test and its newly
+introduced extension can be performed by already
+available software implementations of the
+\citet{StrasserWeber1999} framework.
+
+\section{Maximum Test}
+
+For case-control studies investigating the association between a binary phenotype
+and the measured alleles of a candidate gene the data are typically
+presented as empirical genotype distribution in each group.
+For a simple bi-allelic marker the data can be
+presented in a $3 \times 2$ contingency table, where $A$ is the
+high risk candidate allele and $a$ is any of the other alleles
+(see Table~\ref{gdistr}).
+
+\begin{table}
+\begin{center}
+\caption{Genotype distributions for cases and controls. \label{gdistr}}
+\vspace*{0.5cm}
+  \begin{tabular}{l l l l}
+       & Cases & Controls & Total \\
+ \hline
+ $aa$       &       $r_{aa}$ & $s_{aa}$ & $n_{aa}$\\
+ $aA$       &       $r_{aA}$ & $s_{aA}$ & $n_{aA}$ \\
+ $AA$       &       $r_{AA}$ & $s_{AA}$ & $n_{AA}$ \\
+ Total&         $R$     & $S$       & $N$  \\
+  \hline
+ \end{tabular}
+\end{center}
+ \end{table}
+
+
+We are interested in a comparison of the genotype distributions,
+i.e., the penetrances $f_j = P(\text{case} | j)$ for $j \in \{aa, aA, AA\}$:
+\begin{eqnarray*}
+H_0: f_{aa} = f_{aA} = f_{AA} \text{ vs. } H_1: f_{aa} \le f_{aA} \le f_{AA}
+\end{eqnarray*}
+where at least one of the inequalities in the alternative is strict.
+
+The CA test statistic with scores
+$\mathbb{\xi} = (\xi_{aa}, \xi_{aA}, \xi_{AA})$
+is essentially (modulo standardisation)
+\begin{eqnarray} \label{CAstat}
+\text{CA}(\mathbb{\xi}) = \sum_{j \in \{aa, aA, AA\}} \xi_j r_j.
+\end{eqnarray}
+If the mode of inheritance is best described by the dominant model,
+the scores $\mathbb{\xi}_\text{dom}=(0,1,1)$
+($f_{aa} < f_{aA} = f_{AA}$) will lead to a trend test with maximal power.
+Under the recessive model the score vector
+$\mathbb{\xi}_\text{rec}=(0,0,1)$ ($f_{aa} =  f_{aA} < f_{AA}$)
+is power optimal whereas a linear trend represented
+by scores $\mathbb{\xi}_\text{add}=(0,1,2)$ should be chosen
+when the mode if inheritance is additive, i.e., $f_{aa} < f_{aA} < f_{AA}$
+\citep{Sasieni:1997,Slager:2001}.
+However, the underlying genetic model is rarely known \textit{a priori}.
+Motivated by the problem of choosing the `right' score vector,
+\citet{Freidlin:2002} proposed the MAX unconditional test as the maximum of three standardised
+CA tests with scores
+$\mathbb{\xi}_\text{dom}, \mathbb{\xi}_\text{add}$, and $\mathbb{\xi}_\text{rec}$
+as a global test for association. A similar approach \citep{Zheng:2003,Zheng:2008}
+is to introduce a parameter $\eta$ for the score vector
+$\mathbb{\xi}_\eta=(0,\eta,1)$ and to choose $\eta$ in a data-driven way.
+This procedure (based on a grid of $\eta$ values) is a special
+case of the general framework described in the following, see
+Appendix~\ref{ex} for more details.
+
+In the following, we reformulate the test problem and embed the MAX test into a general framework
+for conditional inference procedures, derive its limiting
+distribution and propose extensions to stratified designs,
+more than two groups and multiple loci.
+
+\subsection{Reformulation of the Problem}
+Let $\Y_i$ denote the case and control status and $\X_i$ the genotype
+for all cells $i = 1, \dots, n = 6$. The weights $w_i$ represent the number of
+observations in each cell with total number of observations $N = \sum_i w_i$.
+The influence function $h$ provides us with a zero-one
+dummy coding of the groups (being one for cases and zero for controls).
+Moreover, three transformations $g$ of the genotype are under test: $g_\text{dom}$
+assigns scores $\xi_\text{dom}$ to
+genotypes $(aa, Aa, AA)$, $g_\text{add}$ assigns scores
+$\xi_\text{add}$ and $g_\text{rec}$
+implements scores $\xi_\text{rec}$, cf. Table~\ref{gd}.
+
+\begin{table}
+\begin{center}
+\caption{Genotype distribution reformulated. \label{gd}}
+\vspace*{0.5cm}
+\begin{tabular}{lllc|cccc}
+$i$ & $\Y_i$  &  $\X_i$  & $w_i$ & $h(\Y_i)$ & $g_\text{add}(\X_i)$ & $g_\text{dom}(\X_i)$ & $g_\text{rec}(\X_i)$ \\ \hline
+1 & Case & $aa$ & $r_{aa}$ & 1 & 0 & 0 & 0 \\
+2 & Case & $Aa$ & $r_{aA}$ & 1 & 1 & 1 & 0 \\
+3 & Case & $AA$ & $r_{AA}$ & 1 & 2 & 1 & 1 \\
+4 & Control & $aa$ & $s_{aa}$ & 0 & 0 & 0 & 0 \\
+5 & Control & $Aa$ & $s_{aA}$ & 0 & 1 & 1 & 0 \\
+6 & Control & $AA$ & $s_{AA}$ & 0 & 2 & 1 & 1 \\
+\hline
+\end{tabular}
+
+\end{center}
+\end{table}
+
+\subsection{Inference Problem and Linear Statistic}
+
+We are interested in testing the null hypothesis of independence of
+grouping $\Y$ and genotype $\X$, i.e., the equality of the distribution $D(\Y)$
+to the conditional distribution $D(\Y | \X)$ of $\Y$ given $\X$
+\begin{eqnarray*}
+H_0: D(\Y | \X) = D(\Y)
+\end{eqnarray*}
+against ordered alternatives. First, we define a three-dimensional
+statistic $\T$, each dimension being associated with one of the
+scores $g_\text{add}$, $g_\text{dom}$, and $g_\text{rec}$.
+Each statistic is defined by the sum of the scores multiplied by
+the weights associated with cases, i.e., is equivalent to the
+Cochran-Armitage statistic (\ref{CAstat}):
+\begin{eqnarray} \label{linstat}
+\T = (\T_\text{add}, \T_\text{dom}, \T_\text{rec}) =
+\sum_{i = 1}^n w_i g(\X_i) h(\Y_i) \in \R^{3}
+\end{eqnarray}
+with $g(\X_i) =
+(g_\text{add}(\X_i), g_\text{dom}(\X_i), g_\text{rec}(\X_i))$. Thus, the
+three-dimensional linear statistic $\T$ is the vector of the unstandardised
+Cochran-Armitage statistics $(\text{CA}(\xi_\text{dom}), \text{CA}(\xi_\text{add}),
+\text{CA}(\xi_\text{rec}))$ for the dominant, additive, and recessive model.
+
+\subsection{Conditional Expectation and Covariance}
+
+The distribution of $\T$  depends on the joint
+distribution of $\Y$ and $\X$, which is unknown under almost all practical
+circumstances. At least under the null hypothesis one can dispose of this
+dependency by fixing the genotypes and conditioning on all possible
+permutations of the groups.
+This principle leads to test procedures known as \textit{permutation tests}.
+\citet{StrasserWeber1999} derived closed-form expressions for the conditional
+expectation $\mu \in \R^{pq}$ and covariance $\Sigma \in \R^{3 \times 3}$
+of $\T$ under $H_0$ given all permutations of the groupings.
+
+The conditional expectation of the influence function $h$ is
+\begin{eqnarray*}
+\E(h) = N^{-1} \sum_i w_i h(\Y_i) \in \R
+\end{eqnarray*}
+with corresponding variance
+\begin{eqnarray*}
+\V(h) = N^{-1} \sum_i w_i \left(h(\Y_i) - \E(h)\right)^2.
+\end{eqnarray*}
+The conditional expectation of the linear statistic $\T$ is
+\begin{eqnarray}
+\mu & = & \E(\T) = \E(h) \sum_{i = 1}^n w_i g(\X_i), \nonumber \\
+\Sigma & = & \V(\T) \nonumber \\
+& = &
+    \frac{N}{N - 1}  \V(h) \times
+        \left(\sum_i w_i \left( g(\X_i) g(\X_i)^\top\right) \right)
+\label{expectcovar}
+\\
+& - & \frac{1}{N - 1}  \V(h)  \times \left(
+        \sum_i  w_i g(\X_i) \right) \left( \sum_i w_i g(\X_i)\right)^\top.
+\nonumber
+\end{eqnarray}
+The three-dimensional expectation $\mu$ and the three diagonal elements
+of the covariance matrix $\Sigma$ contain the mean and the variances
+for the additive, dominant and recessive (unstandardised)
+Cochran-Armitage statistics under $H_0$, as given in (\ref{CAstat})
+and (\ref{linstat}), respectively.
+
+Note that the complete covariance structure, and thus the
+correlation between the elements of the three-dimensional statistic
+$\T$, is known and can be computed for the data at hand.
+The corresponding correlation matrix coincides with the correlations
+obtained for the three CA test statistics by \citet{Freidlin:2002}.
+
+\subsection{Test Statistics}
+
+Based on the three-dimensional statistic $\T$ and its expectation
+$\mu$ and covariance matrix $\Sigma$, we can easily construct test
+statistics and derive their distribution under the conditions
+described in the null hypothesis. As the number of observations
+$N$ tends to infinity, \citet{StrasserWeber1999}
+proved that the limiting distribution of the three-dimensional
+statistic $\T$ is a three-dimensional normal distribution with
+expectation $\mu$ and covariance $\Sigma$. Thus, the asymptotic distribution
+of a maximum-type statistic
+\begin{eqnarray*}
+c_\text{max}(\T, \mu, \Sigma)  = \max \left| \frac{\T - \mu}{\text{diag}(\Sigma)^{1/2}} \right|
+\end{eqnarray*}
+can be evaluated by computing three-dimensional normal probabilities. Here,
+$\text{diag}(\Sigma)^{1/2}$ are the conditional standard deviations of
+the elements of $\T$. Alternatively, either the sum (or average) statistic
+\begin{eqnarray*}
+c_\text{sum} = \frac{\mathbf{1}^\top \T - \mathbf{1}^\top\mu}{\mathbf{1}^\top \Sigma \mathbf{1}}, \quad \mathbf{1} = (1, 1, 1)^\top
+\end{eqnarray*}
+or a quadratic form
+based on the Moore-Penrose inverse $\Sigma^+$ of the conditional covariance
+matrix $\Sigma$, i.e.,
+\begin{eqnarray*}
+c_\text{quad}(\T, \mu, \Sigma)  = (\T - \mu)^\top \Sigma^+ (\T - \mu)
+\end{eqnarray*}
+can be used and
+follow a standard normal or a $\chi^2$ distribution with two degrees of freedom, respectively.
+The sum and quadratic form statistics, which are competitors for the MAX
+test statistic, reveal high power for an average alternative while the maximum-type
+form for a particular genetic alternative.
+In addition, simple linear combinations of the standardised optimum tests for each of
+the models have been proposed \citep{Gastwirth:1985}. Often the most appropriate test is not the
+average of all these tests but a linear combination of a few ``extreme'' members. Nonlinear
+MAX type tests have greater efficiency robustness properties when the minimum
+correlation between the optimal tests for the models considered is less than $.70$
+\citep{Freidlin+Podgor+Gastwirth:1999}, therefore, we focus on the MAX test. A further advantage of
+maximum-type statistics is that information about the likely genetic model underlying the data
+is available using multiplicity-adjusted $p$-values.
+Note that, under any circumstances, the exact conditional distribution
+can be approximated by conditional Monte Carlo methods, which is especially
+attractive for small sample sizes $N$ when we can not expect asymptotics
+to work well.
+
+\subsection{Illustration}
+
+In order to compare the conditional test and its implementation with the
+unconditional results reported by \citet{Freidlin:2002}, we reanalyse a study on the association
+between a variant of the epidermal growth factor
+(EGF) gene and malignant melanoma according to
+\citet[Table~\ref{mel},][]{Shahbazi:2002}.
+
+<<melanoma-table, echo = FALSE>>=
+me <- as.table(matrix(c( 6,  8, 10,
+               32, 47, 20), byrow = TRUE, nrow = 2,
+    dimnames = list(Group = c("In situ", "Control"),
+                    Genotype = c("AA", "AG", "GG"))))
+me <- t(me)
+@
+
+\begin{table}
+\begin{center}
+\caption{Melanoma data. \label{mel}}
+\vspace*{0.5cm}
+\begin{tabular}{l l l l l}
+<<melanoma-tabular, echo = FALSE, results = tex>>=
+xtable.table(me)
+@
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+<<melanoma-coin, echo = FALSE>>=
+add <- c(0, 1, 2)
+dom <- c(0, 1, 1)
+rec <- c(0, 0, 1)
+g <- function(x) {
+    x <- unlist(x)
+    cbind(dominant = dom[x], additive = add[x], recessive = rec[x])
+}
+it <- independence_test(me, xtrafo = g, alternative = "greater")
+CA <- statistic(it, type = "linear")
+CAstand <- statistic(it, type = "standardized")
+pasympt <- pvalue(it, method = "single-step")
+itp <- independence_test(me, xtrafo = g,
+    distribution = approximate(B = 49999),
+    alternative = "greater")
+papprox <- pvalue(itp, method = "step-down")
+out <- cbind(CA, round(expectation(it), 4), round(sqrt(variance(it)), 4),
+             round(CAstand, 4), round(pasympt, 4), round(papprox, 4))
+rownames(out) <- rownames(CA)
+out[,2] <- formatC(out[,2], digits = 4, format = "f")
+@
+
+
+The linear statistic $\T$, its conditional expectation $\mu$,
+the standard deviations $\sigma = \sqrt{\text{diag}(\Sigma)}$, and
+the corresponding standardised CA statistics are given in
+Table~\ref{melres}.
+In addition, we immediately are provided with the covariance matrix
+\begin{eqnarray*}
+\Sigma = \left( \begin{array}{rrr}
+<<melanoma-cov, echo = FALSE, results = tex>>=
+S <- round(covariance(it), 4)
+S <- formatC(S, digits = 4, format = "f")
+for (i in 1:nrow(S))
+    cat(paste(S[i,], collapse = " & "), "\\\\ \n")
+@
+\end{array} \right)
+\end{eqnarray*}
+and corresponding correlation matrix
+\begin{eqnarray*}
+\text{cor}(\Sigma) = \left( \begin{array}{rrr}
+<<melanoma-cor, echo = FALSE, results = tex>>=
+S <- round(cov2cor(covariance(it)), 4)
+S <- formatC(S, digits = 4, format = "f")
+for (i in 1:nrow(S))
+    cat(paste(S[i,], collapse = " & "), "\\\\ \n")
+@
+\end{array} \right)
+\end{eqnarray*}
+These values are similar to the correlations between the
+three different CA test statistics as reported by
+\citet{Freidlin:2002}.
+
+\begin{table}
+\begin{center}
+\caption{MAX test for Melanoma data with linear statistic
+         $\T$, its conditional expectation $\mu$, standard deviation
+         $\sigma$ and corresponding standardised statistic along with
+         multiplicity-adjusted $p$-values. \label{melres}}
+\vspace*{0.5cm}
+\begin{tabular}{l l l l l l l l}
+ & $\T$ & $\mu$ & $ \sigma$ & $(\T - \mu) / \sigma$ & $p_\text{asympt}$ & $p_\text{step-down}$ \\ \hline
+<<melanoma-results, echo = FALSE, results = tex>>=
+for (i in 1:nrow(out))
+    cat(rownames(out)[i], " & ", paste(out[i,], collapse = " & "), "\\\\ \n")
+@
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+
+The MAX test has a test statistic equal to
+$\Sexpr{round(max(CAstand), 4)}$  and its asymptotic $p$-value
+is \Sexpr{round(min(pasympt), 4)} (the minimum of $p_\text{asympt}$ in
+Table~\ref{melres})
+which is roughly the same $p$-value as shown in Table~8 of \citet{Freidlin:2002}.
+However, this global $p$-value does not give any information about the
+underlying genetic model. Multiplicity-adjusted $p$-values
+($p_\text{asympt}$ in Table~\ref{melres})
+for each of the dominant, additive, and recessive tests indicate
+which mode of inheritance describes the data best
+(see Section~\ref{sim} in addition):
+These results suggest that the cancer follows a recessive model, although
+an additive or intermediate model cannot be ruled out based on these data.
+
+We might want to check whether the asymptotic approximation work well enough
+in this situation. The exact conditional
+$p$-value is approximated by a conditional Monte Carlo procedure
+with $49999$ random permutations of the data and the corresponding
+step-down multiplicity-adjusted $p$-values \citep{WestfallYoung1993}
+are given as $p_\text{step-down}$ in Table~\ref{melres}. The small
+differences between the asymptotic and approximated $p$-values
+indicates that using the asymptotic distribution is adequate.
+
+\subsection{Generalisations}
+
+A straightforward generalisation is the consideration of $3 \times k$ tables
+instead of $3 \times 2$ tables, where sub-types of cases are compared
+with a control. For example, the genotype distribution
+of the control can compare the genotype
+of cases with early and late onset of a certain disease.
+A score can be attached to each group, for example
+$1$ to the control group and $-1/2$ for both the early and late onset
+cases leading to a linear-by-linear association test. Alternatively,
+a trend in the onset of the disease can be described by scores $0, 1, 2$
+for the three groups.
+
+In stratified designs, only permutations within each stratum, gender or
+family history, are
+admissible; therefore, the expectation $\mu$ and covariance $\Sigma$ has
+to be computed separately for each stratum and is then aggregated
+over all possible strata. A special version of a stratified design is the commonly used
+meta-analysis,
+including several independent studies as strata, see e.g. \citet{Kavvoura2008}.
+In the absence of a a priori assumption for a particular mode of inheritance, recently
+ \citet{Salanti2008} proposed a Bayesian approach.
+
+ In a recent meta-analysis of genome-wide association studies variants on chromosome 9p21.3
+ were identified affecting the coronary artery disease \citep{Schunkert2008}
+ where all seven studies revealed the same additive mode of inheritance using the here proposed approach.
+
+
+Finally, it is interesting to consider multiple loci, i.e.,
+multiple genotype distributions, simultaneously. For two loci,
+we can look at all six CA tests by defining a linear statistic
+$\T$ containing the three CA tests for the first as well
+as the three CA tests for the second locus. As a consequence,
+we can compute the complete covariance matrix and take the
+underlying correlations between the two loci as well as between the three genetic models into account.
+
+\section{Illustration and Application}
+
+\begin{table}[t!]
+\begin{center}
+\caption{Psoriasis data \label{reich}}
+\vspace*{0.5cm}
+\begin{tabular}{llllll} \\
+\multicolumn{6}{c}{IL1B\_511 locus} \\
+\multicolumn{6}{c}{} \\
+<<Reich-data-1, echo = FALSE, results = tex>>=
+xtable(xtabs(~ IL1B_511 + group + gender, data = psoriasis))
+@
+\multicolumn{6}{c}{} \\
+\multicolumn{6}{c}{TNFA\_238 locus} \\
+\multicolumn{6}{c}{} \\
+<<Reich-data-2, echo = FALSE, results = tex>>=
+xtable(xtabs(~ TNFA_238 + group + gender, data = psoriasis))
+@
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+
+\citet{Reich:2002} investigate the association between psoriasis and
+polymorphisms of genes encoding tumour necrosis Factor-$\alpha$ and
+Interleukin-$1\beta$ where for the IL1B\_511 locus the related
+$3 \times 2$ table data are given in Table~\ref{reich}.
+A control group and two groups of affected people with early and
+late onset of the disease are under test. One is
+interested in detecting any deviation from independence of
+genotype distribution for both loci and the three groups in either
+females and / or males. Attaching scores $1, -1/2, -1/2$ to the
+control, early and late onset group results in a linear statistic
+$\T$ with six elements: three models for each of the two loci.
+
+<<ps, echo = FALSE, results = hide>>=
+it <- independence_test(TNFA_238 + IL1B_511 ~ group | gender, data = psoriasis,
+                  ytrafo = function(data) trafo(data, factor_trafo = g),
+                  scores = list(group = c(1, -1/2, -1/2)), alter = "tw")
+pvals <- matrix(round(pvalue(it, method = "single-step"), 4), nr = 3)
+pvals[pvals < 0.01] <- "$< 0.0001$"
+rownames(pvals) <- c("dominant", "additive", "recessive")
+@
+
+The multiplicity-adjusted $p$-values in Table~\ref{pstab} indicate that
+there is a strong deviation from independence for the TNFA\_238 locus.
+The recessive model has the largest $p$-value and thus it is not likely
+that this model is true. The $p$-values for the dominant and the
+additive are extremely small, so either of these models could have generated
+the data. We can simultaneously reject the null hypothesis of independence
+between the genotype distribution of the IL1B\_511 locus and the three groups.
+Here, the dominant model seems to explain the data best.
+
+Our analysis improves upon the original analysis of these data by \citet{Reich:2002}
+with respect to three points: All three groups and the stratification
+by gender are taken into account and and the new test makes use of the
+correlation between the two loci instead of applying a Bonferroni correction
+in order to maintain an overall significance level.
+
+
+\begin{table}
+\begin{center}
+\caption{MAX test for psoriasis data: Asymptotic multiplicity-adjusted $p$-values. \label{pstab}}
+\vspace*{0.5cm}
+\begin{tabular}{lrr}
+ & TNFA\_238 & IL1B\_511 \\ \hline
+<<ps-res, echo = FALSE, results = tex>>=
+for (i in 1:nrow(pvals))
+    cat(rownames(pvals)[i], " & ", paste(pvals[i,], collapse = "&"), "\\\\ \n")
+@
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+Recently, \citet{Bagos2007} proposed a penalty-free selection approach for the underlying mode of inheritance
+based on the parameter estimates in a logistic regression model. Here, we re-analyse their meta-analysis
+data on the association of KIR6.2 gene polymorphism with type II diabetes
+\citep[Table~1 on page 3 in][]{Bagos2007}.
+
+
+<<bagos-coin, echo = FALSE>>=
+bit <- independence_test(Group ~ Locus | Study, data = diabetes, xtrafo = g, alternative = "greater")
+bCA <- statistic(bit, type = "linear")
+bCAstand <- statistic(bit, type = "standardized")
+bpasympt <- pvalue(bit, method = "single-step")
+bitp <- independence_test(Group ~ Locus | Study, data = diabetes, xtrafo = g,
+    distribution = approximate(B = 49999),
+    alternative = "greater")
+bpapprox <- pvalue(bitp, method = "step-down")
+out <- cbind(bCA, round(expectation(bit), 4), round(sqrt(variance(bit)), 4),
+             round(bCAstand, 4), round(bpasympt, 4), round(bpapprox, 4))
+rownames(out) <- rownames(bCA)
+out[,2] <- formatC(out[,2], digits = 4, format = "f")
+@
+
+\begin{table}
+\begin{center}
+\caption{MAX test for Type II diabetes data  with linear statistic
+         $\T$, its conditional expectation $\mu$, standard deviation
+         $\sigma$ and corresponding standardised statistic along with
+         multiplicity-adjusted $p$-values. \label{diares}}
+\vspace*{0.5cm}
+\begin{tabular}{l l l l l l l l}
+ & $\T$ & $\mu$ & $ \sigma$ & $(\T - \mu) / \sigma$ & $p_\text{asympt}$ & $p_\text{step-down}$ \\ \hline
+<<diabetes-results, echo = FALSE, results = tex>>=
+for (i in 1:nrow(out))
+    cat(rownames(out)[i], " & ", paste(out[i,], collapse = " & "), "\\\\ \n")
+@
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\section{Simulation Experiments}
+\label{sim}
+
+It might be questioned if the minimal $p$-value can be observed for the
+correct mode of inheritance with high probability and thus how good the `estimator'
+is under practical circumstances. The frequency of
+correct model identifications and the power of the MAX test is investigated
+in some simple situations in the following.
+
+Many different patterns of penetrances $f_j$, $j \in \{aa, aA, AA\}$,
+disease prevalence $p$, sample size of cases and controls
+$R$, $S$ can be investigated in a simulation study. We will
+focus on a high prevalent disease (i.e., $p=0.5$), penetrances according
+to an additive, recessive and dominant genetic model (as well as no
+association characterising the null hypothesis) for a total sample size
+of $N=400$ divided into the balanced $R=S=200$ and several unbalanced sampling schemes.
+Unbalanced data are of interest because real data examples exist with
+seriously higher control sample size, see e.g. the data in Table~\ref{mel},
+or with more cases, see e.g. the IL13 polymorphism in atopic
+dermatitis \cite{Neuhauser:2002}, Table 4. For the proposed MAX test both the global
+power $\pi_\text{global}$(the decision rate in favour of any alternative) and the
+correct model identification rates $\psi_\text{add}$,$\psi_\text{rec}$,$\psi_\text{dom}$
+are compared with the power of the individual genetic model tests
+$\pi_\text{add}$, $\pi_\text{rec}$, $\pi_\text{dom}$ in Table~\ref{simtab}.
+
+\begin{table}
+\begin{center}
+\caption{Type I error rate and empirical power estimates ($\pi$) for prevalence $p=0.5$ based on 10000 runs
+         with sample sizes $R$ (cases) and $S$ (controls) along with correct model identification rates
+         $\psi$. \label{simtab}}
+\vspace*{0.5cm}
+  \begin{tabular}{l l l l| l l l |l l l}
+        Model & R & S & $\pi_{\text{global}}$ &  $\psi_\text{add}$ & $\psi_\text{rec}$ & $\psi_\text{dom}$ & $\pi_\text{add}$ & $\pi_\text{rec}$ & $\pi_\text{dom}$   \\
+ \hline
+ Null & 200 & 200 & 0.048&  0.012 & 0.017&  0.019           &   0.051 & 0.047 & 0.049 \\
+ dominant  & 200 & 200 & 0.85 &  0.13 &  0.01 &  \textit{0.71} & 0.75 &  0.23 &  \textbf{0.91} \\
+ additive  & 200 & 200 & 0.84 &  \textit{0.53} & 0.10  & 0.21 &  \textbf{0.88} & 0.71 &  0.78 \\
+ recessive  & 200 & 200 & 0.86 &  0.16 &  \textit{0.69} & 0.01 &  0.80 &  \textbf{0.91} & 0.28 \\
+ dominant  & 100 & 300 & 0.72 &  0.16 &  0.01 &  \textit{0.55}&  0.63 &  0.21 & \textbf{0.80} \\
+ additive  & 100 & 300 & 0.73 &  \textit{0.43} & 0.14 &  0.16 &  \textbf{0.78} & 0.60 &  0.65 \\
+ recessive  & 100 & 300 & 0.77 &  0.16 &  \textit{0.60} & 0.01 &  0.67 &  \textbf{0.82} & 0.22  \\
+ dominant  & 300 & 100 & 0.76 &  0.11 &  0.01 &  \textit{0.64} & 0.66 &  0.19 &  \textbf{0.82} \\
+ additive  & 300 & 100 & 0.75 &  \textit{0.42} & 0.09 &  0.24 &  \textbf{0.79} & 0.59 &  0.69 \\
+ recessive  & 300 & 100 & 0.75 &  0.17 &  \textit{0.55} & 0.01 &  0.69 &  \textbf{0.82 }& 0.24 \\
+\hline
+ \end{tabular}
+\end{center}
+ \end{table}
+
+
+Per definition all tests control the type I error rates. Clearly, the power is maximal for
+the individual, unadjusted tests when the genetic model is known (bold marked). But the a
+priori knowledge of the genetic model is commonly unrealistic. For balanced samples sizes the power
+of the MAX test is independent of the underlying genetic model and marginal smaller
+compared with the maximum power for the known model. Additionally to the global decision
+that a significant association exists, the MAX test provide an adjusted $p$-value for the
+most likely genetic model. In this case, the identification of the additive model is most difficult
+because of the two equal competitors; whereas the identification of the dominant or recessive
+model is easier because the additive model is the only competitor. For unbalanced
+designs the power decreases although the total sample size remains constant.
+
+\section{Computational Details}
+\label{Comp}
+
+The \Rpackage{coin} add-on package \citep{Hothorn:2006:AmStat, Hothorn+Hornik+VanDeWiel:2008, PKG:coin}
+to the \textsf{R} system for statistical computing \citep{rcore2007}
+provides an implementation of the conditional inference framework
+sketched in this section. The analysis of an association study
+by the MAX test only requires the user to set-up the score function $g$. Then, the
+function \texttt{independence\_test} can be used to perform
+the MAX test and to compute multiplicity-adjusted $p$-values.
+
+\section{Conclusions}
+
+We propose a flexible approach to permutation tests for association of a
+bi-allelic marker with a disease in population-based case-control
+studies. The joint conditional asymptotic distribution of the
+three underlying
+linear association tests, i.e., Cochran-Armitage tests with optimal
+scores for additive, dominant, and recessive modes of inheritance,
+is known and can be used to approximate the distribution of the
+corresponding maximum statistic.
+Not only a global $p$-value can be derived this way but also
+multiplicity-adjusted $p$-values for each of the individual models.
+When the mode of inheritance is unknown, remarkably high correct model
+selection rates can be achieved. Based on a general framework for conditional
+inference we extend the MAX test to stratified designs, $3 \times k$ tables
+as well as multiple loci. Correlations between
+loci and corresponding association tests are taken into account leading to
+more powerful multiple test procedure. Further modifications and extensions
+and specific choices of $g$ and $h$ are described by \cite{Hothorn:2006:AmStat}
+and \cite{Hothorn+Hornik+VanDeWiel:2008}.
+For small sample sizes, a better approximation of the $p$-values
+can be obtained from Monte Carlo resampling techniques.
+For genome-wide association studies, computing time is a limiting factor;
+a further advantage for the above approach \citep{Ziegler2008}.
+
+The proposed procedures are easily
+applicable using the computational tools provided by the \textsf{R}
+add-on package \Rpackage{coin} as illustrated in Appendix~\ref{ex}.
+A future modification will be
+the use of model-specific genomic-control corrected tests
+analogously to \citet{Zang:2007} in the possible case of
+population stratification.
+
+\section{Acknowledgements}
+We would like to thank Andreas Ziegler and Inke R. Koenig for providing
+us with the psoriasis data.
+
+\bibliography{references}
+
+\newpage
+
+\begin{appendix}
+
+\section{Example Analyses} \label{ex}
+
+The Melanoma data are represented by a \texttt{table} object in \textsf{R}
+as follows:
+<<Ame-tab, echo =TRUE>>=
+me <- as.table(matrix(c( 6,  8, 10,
+               32, 47, 20), byrow = TRUE, nrow = 2,
+    dimnames = list(Group = c("In situ", "Control"),
+                    Genotype = c("AA", "AG", "GG"))))
+me <- t(me)
+me
+@
+The function $g$ is implemented by the following function:
+<<Ag, echo = TRUE>>=
+add <- c(0, 1, 2)
+dom <- c(0, 1, 1)
+rec <- c(0, 0, 1)
+g <- function(x) {
+    x <- unlist(x)
+    cbind(dominant = dom[x], additive = add[x], recessive = rec[x])
+}
+@
+which then sets up the MAX test for the Melanoma data:
+<<AMAX, echo =TRUE>>=
+library("coin")
+it <- independence_test(me, xtrafo = g, alternative = "greater")
+it
+@
+The multiplicity-adjusted $p$-values for both inference and
+estimating the underlying mode of inheritance are computed
+via:
+<<Ap, echo = TRUE, eval = FALSE>>=
+pvalue(it, method = "single-step")
+@
+<<Ap, echo = FALSE>>=
+drop(pvalue(it, method = "single-step"))
+@
+
+The score independent approach by \cite{Zheng:2008} maximises the
+Cochran-Armitage statistic over potential score vectors
+$\xi_\eta = (0, \eta, 1)$, i.e., one is interested in the test statistic
+$c_\text{max}$ where the maximium is taken over a grid of $\eta$ values.
+This procedure can be performed by choosing appropriate transformation
+$g$, i.e., a grid of $\eta$ values in $[0,1]$
+<<Zheng-g, echo = TRUE>>=
+gZheng <- function(x) {
+    x <- unlist(x)
+    eta <- seq(from = 0, to = 1, by = 0.01)
+    tr <- sapply(eta, function(n) c(0, n, 1)[x])
+    colnames(tr) <- paste("eta", eta, sep = "_")
+    tr
+}
+itZ <- independence_test(me, xtrafo = gZheng, alternative = "greater")
+itZ
+@
+<<pZheng, echo = TRUE, eval = FALSE>>=
+pvalue(itZ, method = "single-step")
+@
+<<pZheng, echo = FALSE>>=
+drop(pvalue(itZ, method = "single-step"))
+@
+The test statistic takes its maximum for the score $(0, 0, 1)$
+(as above), its corresponding adjusted $p$-value is only marginally larger compared
+to the MAX test based on three score vectors (\Sexpr{round(pvalue(itZ, method = "single-step")[1], 5)}
+vs. \Sexpr{round(pvalue(it)[1], 5)}).
+
+\end{appendix}
+
+\end{document}
+
+<<Simulations, echo = FALSE, eval = FALSE>>=
+library("coin")
+
+assocAS <- function(x, scores = 1:ncol(x), ...) {
+
+    if (!is.table(x))
+        stop(sQuote("x"), " is not a table.")
+    if (length(scores) != ncol(x))
+        stop("Length of ", sQuote(scores), " does not match ", sQuote("ncol(x)"))
+    xtab <- as.vector(t(x))
+
+    tmpdat <- data.frame(groups = factor(rep(paste("G", 1:nrow(x), sep = ""), rowSums(x))),
+                         scores1 = rep(rep(scores, nrow(x)), xtab),
+                         scores2 = rep(rep(c(scores[1], scores[2], scores[2]), nrow(x)), xtab),
+                         scores3 = rep(rep(c(scores[1], scores[1], scores[2]), nrow(x)), xtab))
+
+    independence_test(scores1 + scores2 + scores3 ~ groups, data = tmpdat, ...)
+}
+
+set.seed(17057711)
+
+SIMG=function (sims,R,S,p,f0,f1,f2)
+{
+#sims=10000
+#R=200; S=200;
+#p=0.2; f0=0.1; f1=0.1; f2=0.3
+phi=f2*(p**2)+(2*f1)*((1-p)*p)+f0*((1-p)**2)
+p0=(f0*(1-p)**2)/phi
+p1=(2*f1*(1-p)*p)/phi
+p2=(f2*p**2)/phi
+q0=((1-f0)*(1-p)**2)/(1-phi)
+q1=(2*(1-f1)*(1-p)*p)/(1-phi)
+q2=((1-f2)*p**2)/(1-phi)
+Probs=list(c(p2,p1,p0), c(q2,q1,q0)) # ansteigend
+ntotal=c(R,S)
+
+assocASsim <- function(n = sims, ngroup = ntotal,
+                       probs =Probs,
+                       scores = 1:3, ...) {
+
+    g1 <- rmultinom(n, ngroup[1], probs[[1]])
+    g2 <- rmultinom(n, ngroup[2], probs[[2]])
+
+    padj <- matrix(0, nrow = n, ncol = length(scores))
+    praw <- matrix(0, nrow = n, ncol = length(scores))
+
+    for (i in 1:n) {
+
+        x <- as.table(rbind(g1[,i], g2[,i]))
+        it <- assocAS(x, scores = scores, ...)
+
+        ### adjusted p-value
+        padj[i,] <- pvalue(it, method = "single-step")
+
+        ### raw p-value
+        praw[i,] <-  pnorm(statistic(it, type = "standardized"))
+    }
+    list(padj = padj, praw = praw)
+}
+
+tw <- assocASsim(alternative = "less")
+
+### minimum p-value erg=table(apply(tw$padj, 1, which.min))
+welchmin=apply(tw$padj, 1, which.min)
+nwelc=factor(welchmin, levels=c(1,2,3))
+kleinst=apply(tw$padj, 1, min)
+gg=kleinst<0.05
+fgg=factor(gg, levels=c(TRUE, FALSE))
+oma=table(nwelc,fgg)
+
+est1=oma[1,1]/sims
+est2=oma[2,1]/sims
+est3=oma[3,1]/sims
+estMax=length(which(tw$padj[,1]<0.05 | tw$padj[,2]<0.05 |tw$padj[,3]<0.05))/sims
+estA=length(which(tw$praw[,1]<0.05))/sims
+estR=length(which(tw$praw[,2]<0.05))/sims
+estD=length(which(tw$praw[,3]<0.05))/sims
+ergeb=c("Max"=estMax,"MaxA"=est1,"MaxR"=est2,"MaxD"=est3,"Add"=estA, "Rec"=estR, "Dom"=estD,
+ "p"=p,"f0"=f0,"f1"=f1,"f2"=f2,"cas"=R, "con"=S )
+ergeb
+}
+
+SIMG(sims=10000,R=200,S=200,p=0.5,f0=0.1,f1=0.1,f2=0.1)
+SIMG(sims=10000,R=200,S=200,p=0.5,f0=0.1,f1=0.187,f2=0.187)
+SIMG(sims=10000,R=200,S=200,p=0.5,f0=0.1,f1=0.15, f2=0.2)
+SIMG(sims=10000,R=200,S=200,p=0.5,f0=0.1,f1=0.1,  f2=0.175)
+
+
+
+
+
+SIMG(sims=1000,R=180,S=220,p=0.5,f0=0.1,f1=0.187,f2=0.187)
+SIMG(sims=1000,R=150,S=250,p=0.5,f0=0.1,f1=0.187,f2=0.187)
+SIMG(sims=1000,R=100,S=300,p=0.5,f0=0.1,f1=0.187,f2=0.187)
+SIMG(sims=1000,R=180,S=220,p=0.5,f0=0.1,f1=0.15, f2=0.2)
+SIMG(sims=1000,R=150,S=250,p=0.5,f0=0.1,f1=0.15, f2=0.2)
+SIMG(sims=1000,R=100,S=300,p=0.5,f0=0.1,f1=0.15, f2=0.2)
+SIMG(sims=1000,R=180,S=220,p=0.5,f0=0.1,f1=0.1,  f2=0.175)
+SIMG(sims=1000,R=150,S=250,p=0.5,f0=0.1,f1=0.1,  f2=0.175)
+SIMG(sims=1000,R=100,S=300,p=0.5,f0=0.1,f1=0.1,  f2=0.175)
+
+
+SIMG(sims=1000,R=220,S=180,p=0.5,f0=0.1,f1=0.187,f2=0.187)
+SIMG(sims=1000,R=250,S=150,p=0.5,f0=0.1,f1=0.187,f2=0.187)
+SIMG(sims=1000,R=300,S=100,p=0.5,f0=0.1,f1=0.187,f2=0.187)
+SIMG(sims=1000,R=220,S=180,p=0.5,f0=0.1,f1=0.15, f2=0.2)
+SIMG(sims=1000,R=250,S=150,p=0.5,f0=0.1,f1=0.15, f2=0.2)
+SIMG(sims=1000,R=300,S=100,p=0.5,f0=0.1,f1=0.15, f2=0.2)
+SIMG(sims=1000,R=220,S=180,p=0.5,f0=0.1,f1=0.1,  f2=0.175)
+SIMG(sims=1000,R=250,S=150,p=0.5,f0=0.1,f1=0.1,  f2=0.175)
+SIMG(sims=1000,R=300,S=100,p=0.5,f0=0.1,f1=0.1,  f2=0.175)
+
+
+
+SIMG(sims=10000,R=200,S=200,p=0.5,f0=0.1,f1=0.1,  f2=0.1)
+SIMG(sims=10000,R=180,S=220,p=0.5,f0=0.1,f1=0.1,  f2=0.1)
+SIMG(sims=10000,R=150,S=250,p=0.5,f0=0.1,f1=0.1,  f2=0.1)
+SIMG(sims=10000,R=100,S=300,p=0.5,f0=0.1,f1=0.1,  f2=0.1)
+SIMG(sims=10000,R=300,S=100,p=0.5,f0=0.1,f1=0.1,  f2=0.1)
+
+SIMG(sims=10000,R=200,S=200,p=0.5,f0=0.1,f1=0.187,  f2=0.187)
+SIMG(sims=10000,R=200,S=200,p=0.5,f0=0.1,f1=0.15, f2=0.2)
+SIMG(sims=10000,R=200,S=200,p=0.5,f0=0.1,f1=0.1,  f2=0.175)
+
+SIMG(sims=10000,R=100,S=100,p=0.2,f0=0.16,f1=0.26,  f2=0.36)
+SIMG(sims=10000,R=100,S=100,p=0.2,f0=0.2,f1=0.2,  f2=0.7)
+SIMG(sims=10000,R=100,S=100,p=0.2,f0=0.2,f1=0.35,  f2=0.35)
+
+SIMG(sims=10000,R=300,S=100,p=0.5,f0=0.1,f1=0.187,  f2=0.187)
+SIMG(sims=10000,R=300,S=100,p=0.5,f0=0.1,f1=0.15, f2=0.2)
+SIMG(sims=10000,R=300,S=100,p=0.5,f0=0.1,f1=0.1,  f2=0.175)
+SIMG(sims=10000,R=100,S=300,p=0.5,f0=0.1,f1=0.187,  f2=0.187)
+SIMG(sims=10000,R=100,S=300,p=0.5,f0=0.1,f1=0.15, f2=0.2)
+SIMG(sims=10000,R=100,S=300,p=0.5,f0=0.1,f1=0.1,  f2=0.175)
+@

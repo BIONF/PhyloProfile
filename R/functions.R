@@ -351,8 +351,11 @@ get_data_clustering <- function(data,
 #' @param dist_method distance method
 #' @return distance matrix
 #' @author Carla Mölbert (carla.moelbert@gmx.de)
-get_distance_matrix <- function(profiles, method){
-
+get_distance_matrix <- function(profiles, method, cutoff){
+  
+  profiles <-  profiles[, colSums(profiles != 0) > 0]
+  profiles <-  profiles[rowSums(profiles != 0) > 0, ]
+  
   dist_methods <- c("euclidean", "maximum", "manhattan", "canberra", "binary")
   if (method %in% dist_methods) {
     distance_matrix <- dist(profiles, method = method)
@@ -376,15 +379,12 @@ get_distance_matrix <- function(profiles, method){
     distance_matrix <- as.dist(matrix)
     
   } else if (method == "mutual_information") {
-    empty_rows <- profiles[(rowSums(profiles) == 0),]
-    profiles <- profiles[!(rowSums(profiles) == 0),] 
     distance_matrix <- mutualInfo(as.matrix(profiles))
-    distance_matrix <- max(distance_matrix, na.rm=TRUE) - distance_matrix
+    distance_matrix <- max(distance_matrix, na.rm = TRUE) - distance_matrix
   } else if (method == "pearson") {
     distance_matrix <-  cor.dist(as.matrix(profiles))
+    
   }
-  write.table(as.matrix(distance_matrix), file = paste0("../distance_matrix_",
-                                                        method),
-              col.names = TRUE, row.names = TRUE, quote = FALSE, sep = " \t")
+
   return(distance_matrix)
 }

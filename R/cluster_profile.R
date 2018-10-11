@@ -22,6 +22,7 @@ cluster_profile_ui <- function(id) {
     ),
     column(
       4,
+      downloadButton(ns("download_distance_matrix"), "Download distance matrix"),
       downloadButton(ns("download_cluster_genes"), "Download gene list"),
       tableOutput(ns("brushed_cluster.table"))
     )
@@ -68,6 +69,7 @@ cluster_profile <- function(input, output, session,
       "clustered_plot.pdf"
     },
     content = function(file) {
+      print("test")
       ggsave(
         file,
         plot = get_dendrogram (cluster_data()),
@@ -93,13 +95,11 @@ cluster_profile <- function(input, output, session,
     else{
       top <- as.numeric(-round(input$plot_brush$ymin))
       bottom <- as.numeric(-round(input$plot_brush$ymax))
-      
       df <- dt$labels[bottom:top,]
     }
     
     # return list of genes
     df <- df[complete.cases(df), 3]
-  
 
     df
   })
@@ -129,6 +129,26 @@ cluster_profile <- function(input, output, session,
         row.names = FALSE,
         quote = FALSE
       )
+    }
+  )
+  
+  
+  #' download distance matrix
+  output$download_distance_matrix <- downloadHandler(
+    filename = function() {
+      c("distanceMatrixClustering.out")
+    },
+    content = function(file) {
+      data_out <- distance_matrix()
+      data_out <- as.matrix(data_out)
+      write.table(
+        data_out,
+        file,
+        col.names = TRUE,
+        row.names = TRUE,
+        quote = FALSE,
+        sep = " \t"
+        )
     }
   )
   

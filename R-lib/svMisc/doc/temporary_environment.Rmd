@@ -1,0 +1,30 @@
+---
+title: "Temporary environment"
+author: "Philippe Grosjean"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Temporary environment}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+  \usepackage[utf8]{inputenc}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+**svMisc** attaches `SciViews:TempEnv` at the forelast position in the search path, so that its content is accessible from any loaded R package (except **base**). This environment is a convenient place where temporary items that you do not want to see in the global environment, for instance, variables related to GUI (Graphical User Interface) and that are typically a nonsense to `save()` and re`load()` in the global environment.
+
+**TODO: show a couple of case where it is useful.**
+
+The following functions are available to ease access to these variables:
+
+- `temp_env()` get the environment itself,
+- `assign_temp()`, `add_temp()`, and `change_temp()` place or modify  data in the temporary environment,
+- `rm_temp()` or `delete_temp()` eliminate variables from there,
+- `exists_temp()` tests for the existence of objects it this environment,
+- `get_temp()` retrieves objects from there.

@@ -45,6 +45,7 @@ create_profile_plot <- function(input, output, session,
                                 type_profile) {
   # data for heatmap -----------------------------------------------------------
   dataHeat <- reactive({
+
     if (is.null(data())) return()
 
     if (type_profile() == "customized_profile") {

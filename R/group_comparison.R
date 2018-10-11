@@ -26,8 +26,8 @@
 
 source("R/functions.R")
 
-install_packages("exactRankTests")
-library("exactRankTests")
+#install_packages("exactRankTests")
+
 
 
 
@@ -82,7 +82,8 @@ group_comparison <- function(input, output, session,
                              right_format_features,
                              domain_information,
                              plot,
-                             parameter){
+                             parameter,
+                             selected_point){
   # Dataframe for the significant Genes =========================
   #' contains geneID, in_group, out_group, pvalues, features, databases,
   #' rank, var
@@ -208,7 +209,8 @@ group_comparison <- function(input, output, session,
         get_plots_to_download(gene,
                               parameter(),
                               input$interesting_features,
-                              significant_genes,input$domains_threshold)
+                              significant_genes,input$domains_threshold,
+                              selected_point())
         dev.off()
       }
       zip(zipfile = file, files = fs)
@@ -242,7 +244,8 @@ group_comparison <- function(input, output, session,
       plot_output_list <- get_plot_output_list(significant_genes,
                                                parameter(),
                                                input$interesting_features,
-                                               input$domains_threshold)
+                                               input$domains_threshold,
+                                               selected_point())
     }else{
       gene_info <- {
         significant_genes[significant_genes$geneID == gene, ]
@@ -251,7 +254,8 @@ group_comparison <- function(input, output, session,
       plot_output_list <- get_plot_output_list(gene_info,
                                                parameter(),
                                                input$interesting_features,
-                                               input$domains_threshold)
+                                               input$domains_threshold,
+                                               selected_point())
     }
     #' List with all plots that will be shown
     return(plot_output_list)
@@ -602,8 +606,8 @@ get_p_values <- function(in_group, out_group, variable, gene, parameters){
 #' @param significance_level 
 #' @return return the pvalues
 #' @author Carla Mölbert (carla.moelbert@gmx.de)
-#install.packages("coin")
-
+install_packages("jmuOutlier")
+library(jmuOutlier)
 calculate_p_value <- function(var_in, var_out, significance_level){
   
   #' delete all entrys that are NA
@@ -638,14 +642,14 @@ calculate_p_value <- function(var_in, var_out, significance_level){
     # }
     perm <- perm.test(var_in,var_out, alternative = c("two.sided"),
                       mu = 0, # Hypothesis: Samples do not differ
-                      paired = FALSE, 
+                      paired = FALSE,
                       all.perms = TRUE, # Tries to get a exact p value
-                      num.sim = 1000000, 
+                      num.sim = 1000000,
                       plot = FALSE, # does not plot
                       stat = mean) # compaires the means of the distributions
-    
+
     pvalue <- perm$p.value
-    
+    print(pvalue)
 
     #' return the calculated pvalues ------------------------------------------
     return(pvalue)
@@ -680,14 +684,18 @@ get_features <- function(selected_gene, domains){
 #' @param interesting_features list of databases to take the features from
 #' @return list with all plots
 #' @author Carla Mölbert (carla.moelbert@gmx.de)
-get_plot_output_list <- function(genes, parameters, interesting_features, domains_threshold) {
+get_plot_output_list <- function(genes, parameters, interesting_features,
+                                 domains_threshold, selected_point) {
+  print(selected_point)
   # if we don't have parameters we can not generate plots
   if (is.null(genes)) return()
   # Insert plot output objects the list
   plot_output_list <- lapply(1:nrow(genes), function(i) {
     plotname <- paste(genes[i, 1])
     plot_output_object <- renderPlot(get_multiplot(genes[i, ], parameters,
-                                                   interesting_features, domains_threshold),
+                                                   interesting_features,
+                                                   domains_threshold,
+                                                   selected_point),
                                      height = 650, width = 700)
   })
   do.call(tagList, plot_output_list) # needed to display properly.
@@ -704,7 +712,10 @@ get_plot_output_list <- function(genes, parameters, interesting_features, domain
 #' @param interesting_features list of databases to take the features from
 #' @return grid arrange with the plots that should be shown for this gene
 #' @author Carla Mölbert (carla.moelbert@gmx.de)
-get_multiplot <- function(gene_info, parameters, interesting_features, domains_threshold){
+get_multiplot <- function(gene_info, parameters, interesting_features,
+                          domains_threshold,
+                          selected_point){
+  print(selected_point)
   #' Sorting the information to the selected gene ---------------------------- 
   gene <- as.character(gene_info$geneID)
   in_group <- as.data.frame(gene_info$in_group)
@@ -764,14 +775,16 @@ get_multiplot <- function(gene_info, parameters, interesting_features, domains_t
                                parameters$var1_id,
                                gene,
                                colour1,
-                               info_p_value1, parameters)
+                               info_p_value1, parameters,
+                               selected_point)
     
     boxplot2 <- get_boxplot_gc(in_group,
                                out_group,
                                parameters$var2_id,
                                gene,
                                colour2,
-                               info_p_value2, parameters)
+                               info_p_value2, parameters,
+                               selected_point)
     
     plots <- grid.arrange(textGrob(gene),
                           arrangeGrob(boxplot1, boxplot2, ncol = 2),
@@ -796,7 +809,8 @@ get_multiplot <- function(gene_info, parameters, interesting_features, domains_t
                               gene,
                               "grey",
                               info,
-                              parameters)
+                              parameters,
+                              selected_plot)
     
     plots <- grid.arrange(textGrob(gene),
                           boxplot,
@@ -831,7 +845,8 @@ get_boxplot_gc <- function(in_group_df,
                            gene,
                            colour,
                            info,
-                           parameters){
+                           parameters,
+                           selected_point){
   #' pre-processing the data for the boxplot ---------------------------------
   if (var == parameters$var1_id) {
     in_group <- in_group_df$var1
@@ -869,15 +884,22 @@ get_boxplot_gc <- function(in_group_df,
     #              position = position_dodge(),
     #              width = 0.5,
     #              fill = colour) +
-    labs(x = "", y = var, caption = paste(info)) +
+    labs(x = "", y = var, caption = paste(info), colour = "") +
     scale_x_discrete(labels = names) +
-    theme_minimal()
+    #theme_minimal() + 
+    stat_summary(aes(colour = selected_point),fun.y = selected_point,
+                 geom = "point", size = 3, show.legend = TRUE)
   
   boxplot_gc <- boxplot_gc +
     theme(axis.text.x = element_text(size = parameters$x_size_gc, hjust = 1),
           axis.text.y = element_text(size = parameters$y_size_gc),
           axis.title.y = element_text(size = parameters$y_size_gc),
-          plot.caption = element_text(size = parameters$p_values_size))
+          plot.caption = element_text(size = parameters$p_values_size),
+          legend.position = "bottom",
+          legend.text = element_text(size = parameters$legend_size_gc ),
+          legend.title = element_text(size = parameters$legend_size_gc)) +
+    scale_color_manual("", values = c("green"))
+  
   #' return the boxplot -------------------------------------------------------
   return(boxplot_gc)
 }
@@ -1000,11 +1022,11 @@ get_barplot_gc <- function(selected_gene,
     features_out <- data_out$feature[!(data_out$feature %in% data_in$feature)]
     
   
-    for (i in features_out){
+    for (i in features_out) {
       data_in <- rbind(data_in, c(i, 0, 0))
     }
     
-    for (i in features_in){
+    for (i in features_in) {
       data_out <- rbind(data_out, c(i, 0, 0))
     }
     
@@ -1133,10 +1155,13 @@ get_plots_to_download <- function(gene,
                                   parameters,
                                   interesting_features,
                                   significant_genes,
-                                  domain_threshold){
+                                  domain_threshold,
+                                  selected_point){
   info_gene <- subset(significant_genes,
                       significant_genes$geneID == gene)
-  return(get_multiplot(info_gene, parameters, interesting_features, domains_threshold))
+  return(get_multiplot(info_gene, parameters, interesting_features,
+                       domains_threshold,
+                       selected_point))
 }
 
 #' print list of available taxa -----------------------------------------------
