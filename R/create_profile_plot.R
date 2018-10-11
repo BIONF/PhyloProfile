@@ -45,6 +45,7 @@ create_profile_plot <- function(input, output, session,
                                 type_profile) {
   # data for heatmap -----------------------------------------------------------
   dataHeat <- reactive({
+
     if (is.null(data())) return()
 
     if (type_profile() == "customized_profile") {
@@ -107,17 +108,18 @@ create_profile_plot <- function(input, output, session,
       ggsave(
         file,
         plot = final_profile_plot(dataHeat(),
+
                             parameters(),
                             "none",
                             rank_select(),
                             "none"),
+
         width = width() * 0.056458333,
         height = height() * 0.056458333,
         units = "cm", dpi = 300, device = "pdf", limitsize = FALSE
       )
     }
   )
-
   # get info of clicked point on heatmap plot ----------------------------------
   selectedpoint_info <- reactive({
 

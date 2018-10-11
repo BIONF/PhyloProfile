@@ -26,6 +26,11 @@
 
 source("R/functions.R")
 
+#install_packages("exactRankTests")
+
+
+
+
 group_comparison_ui <- function(id){
   ns <- NS(id)
   fluidPage(
@@ -44,6 +49,10 @@ group_comparison_ui <- function(id){
         "This function is only use full if the features are
         saved in the right format: featuretype_featurename"
       ),
+      sliderInput(ns("domains_threshold"), 
+                  "Persentage of proteins in which the domain needs to have an instance",
+                  min = 0 , max = 100, value = 0,
+                  step = 1, round = FALSE),
       
       downloadButton(ns("download_plots"), "Download plots"),
       width = 3
@@ -73,7 +82,8 @@ group_comparison <- function(input, output, session,
                              right_format_features,
                              domain_information,
                              plot,
-                             parameter){
+                             parameter,
+                             selected_point){
   # Dataframe for the significant Genes =========================
   #' contains geneID, in_group, out_group, pvalues, features, databases,
   #' rank, var
@@ -199,7 +209,8 @@ group_comparison <- function(input, output, session,
         get_plots_to_download(gene,
                               parameter(),
                               input$interesting_features,
-                              significant_genes)
+                              significant_genes,input$domains_threshold,
+                              selected_point())
         dev.off()
       }
       zip(zipfile = file, files = fs)
@@ -224,6 +235,7 @@ group_comparison <- function(input, output, session,
   # Deciding which plots will be shown =========================
   get_plots <- reactive({
     input$interesting_features
+    input$domains_threshold
     gene <- as.character(input$selected_gene)
     plot()
     if (is.null(candidate_genes$plots)) return()
@@ -231,7 +243,9 @@ group_comparison <- function(input, output, session,
     if (gene == "all") {
       plot_output_list <- get_plot_output_list(significant_genes,
                                                parameter(),
-                                               input$interesting_features)
+                                               input$interesting_features,
+                                               input$domains_threshold,
+                                               selected_point())
     }else{
       gene_info <- {
         significant_genes[significant_genes$geneID == gene, ]
@@ -239,7 +253,9 @@ group_comparison <- function(input, output, session,
       if (nrow(gene_info) == 0) return()
       plot_output_list <- get_plot_output_list(gene_info,
                                                parameter(),
-                                               input$interesting_features)
+                                               input$interesting_features,
+                                               input$domains_threshold,
+                                               selected_point())
     }
     #' List with all plots that will be shown
     return(plot_output_list)
@@ -287,7 +303,7 @@ get_significant_genes <- function(in_group,
                                   right_format_features,
                                   domains){
   if (is.null(in_group) | length(selected_genes_list) == 0) return()
-  
+  significance_level <- parameters$significance
   
   name_list <- get_name_list(TRUE, TRUE) # load name List
   taxa_list <- get_taxa_list(FALSE, ncbi_id_list) # load list of unsorted taxa
@@ -306,13 +322,25 @@ get_significant_genes <- function(in_group,
   if (is.na(rank)) { return("No common anchestor found")}
   
   #' provide the empty data frame ---------------------------------------------
-  significant_genes_df <- data.frame(
-    geneID = character(),
-    in_group = I(list()),
-    out_group = I(list()),
-    pvalues = I(list()),
-    features = I(list()),
-    databases = I(list()))
+  if(var == "Both") {
+    significant_genes_df <- data.frame(
+      geneID = character(),
+      in_group = I(list()),
+      out_group = I(list()),
+      pvalues_1 = I(list()),
+      pvalues_2 = I(list()),
+      features = I(list()),
+      databases = I(list()))
+  } else {
+    significant_genes_df <- data.frame(
+      geneID = character(),
+      in_group = I(list()),
+      out_group = I(list()),
+      pvalues = I(list()),
+      features = I(list()),
+      databases = I(list()))
+  }
+
   
   #' Get the list of genes to look at ----------------------------------------- 
   if (is.element("all", selected_genes_list)) {
@@ -327,9 +355,10 @@ get_significant_genes <- function(in_group,
   selected_subset <- get_selected_subset(rank, in_group, name_list, taxa_list)
   selected_subset <- subset(selected_subset,
                             !selected_subset$fullName == reference_taxon)
-  
+
   #' Check for each gene if it is significant ---------------------------------
   for (gene in genes) {
+    print(paste("Looking at gene", gene, "..."))
     #' Processing the dataframes for in- and out-group
     selected_gene_df <- subset(data_full, data_full$geneID == gene)
     
@@ -345,27 +374,73 @@ get_significant_genes <- function(in_group,
       subset(out_group_df, !out_group_df$fullName == reference_taxon)
     }
     
+    
     #' Generate and check the p_values for the gene ---------------------------
-    pvalues <- get_p_values(in_group_df, out_group_df, var, gene, parameters)
+    pvalue <- get_p_values(in_group_df, out_group_df, var, gene, parameters)
     
-    
-    if (!is.null(pvalues)) {
-      new_row <- data.frame(geneID = gene,
+    new_row <- data.frame(geneID = gene,
                             in_group = NA,
                             out_group = NA,
                             pvalues = NA,
                             features = NA)
       new_row$in_group <- list(in_group_df)
       new_row$out_group <- list(out_group_df)
-      new_row$pvalues <- list(pvalues)
+
+      if(var == "Both") {
+        new_row$pvalues_1 <- pvalue[1]
+        new_row$pvalues_2 <- pvalue[2]
+      } 
+      else{
+        new_row$pvalues <- pvalue
+      }
+      
       features  <- get_features(gene, domains)
       new_row$features <- list(features)
       if (right_format_features) {
         new_row$databases <- list(get_prefix_features(features))
       }
       significant_genes_df <- rbind(significant_genes_df, new_row)
+    
+  }
+
+  if (var == "Both"){
+    significant_genes_df$pvalues_1 <- {
+      p.adjust(significant_genes_df$pvalues_1, method = "holm",
+               n = length(significant_genes_df$pvalues_1))
+    }
+    
+    significant_genes_df$pvalues_2 <- {
+      p.adjust(significant_genes_df$pvalues_2, method = "holm",
+               n = length(significant_genes_df$pvalues_2))
+    }
+    
+    significant_genes_df <- {
+      significant_genes_df[significant_genes_df$pvalues_1 <= significance_level |
+                             significant_genes_df$pvalues_2 <= significance_level ,]
+    }
+    
+    significant_genes_df <- significant_genes_df[!is.na(significant_genes_df$pvalues_1) |
+                                                   !is.na(significant_genes_df$pvalues_1),]
+  }
+  
+  else {
+    significant_genes_df$pvalues <- {
+      p.adjust(significant_genes_df$pvalues, method = "holm",
+               n = length(significant_genes_df$pvalues))
+    }
+    
+    significant_genes_df <- {
+      significant_genes_df[significant_genes_df$pvalues <= significance_level,]
+    }
+    
+    significant_genes_df <- {
+      significant_genes_df[!is.na(significant_genes_df$pvalues) ,]
     }
   }
+  
+
+  
+  
   #' return the significant genes ---------------------------------------------
   if (nrow(significant_genes_df) != 0) {
     significant_genes_df$var <- var
@@ -487,7 +562,6 @@ get_common_ancestor <- function(in_group,
 #' @return return the pvalues
 #' @author Carla Mölbert (carla.moelbert@gmx.de)
 get_p_values <- function(in_group, out_group, variable, gene, parameters){
-  significance_level <- parameters$significance
   
   #' get the p-values for both variables --------------------------------------
   if (variable == "Both") {
@@ -499,39 +573,12 @@ get_p_values <- function(in_group, out_group, variable, gene, parameters){
     pvalues1 <- calculate_p_value(in_group$var1,
                                   out_group$var1,
                                   significance_level)
+
     pvalues2 <- calculate_p_value(in_group$var2,
                                   out_group$var2,
                                   significance_level)
-    
-    #' check if the gene has a significant difference -------------------------
-    #' in the distribioution of In- and Out-Group
-    #' in at least one of the variables
-    
-    if (is.null(pvalues1)) {
-      #' if there is not enough data to calculate a p-value the gene is 
-      #' considered as not intereisting
-    }
-    else if (pvalues1[length(pvalues1)] < significance_level) {
-      #' if the last p-value is smaller than the significance level
-      #' the gene is considered as significant
-      significant <- TRUE
-    }
-    
-    #' analog to pvalues in the first variable
-    if (is.null(pvalues2)) {
-      
-    } else if (pvalues2[length(pvalues2)] < significance_level) {
-      significant <-  TRUE
-    }
-    
-    #' Return the conclusion --------------------------------------------------
-    #' if the gene is interisting return the p_values 
-    if (significant) {
-      pvalues <- list(pvalues1, pvalues2)
-      return(pvalues)
-    }
-    #' if the gene is not interisting return NULL
-    else return(NULL)
+    pvalues <- list(pvalues1, pvalues2)
+    return(pvalues)
     
     #' get the p-values for one variable --------------------------------------
   } else{
@@ -547,18 +594,9 @@ get_p_values <- function(in_group, out_group, variable, gene, parameters){
                                    significance_level)
     }
     
-    #' Analog to getting the significance with both variables
-    if (is.null(pvalues)) return(NULL)
-    else if (is.nan(pvalues[length(pvalues)])) {
-      return(NULL)
-    } else if (pvalues[length(pvalues)] < significance_level) {
-      pvalues <-  list(pvalues)
-      return(pvalues)
-    } else{
-      return(NULL)
+    return(pvalues)
     }
   }
-}
 
 
 #' calculate the p_values -----------------------------------------------------
@@ -568,32 +606,51 @@ get_p_values <- function(in_group, out_group, variable, gene, parameters){
 #' @param significance_level 
 #' @return return the pvalues
 #' @author Carla Mölbert (carla.moelbert@gmx.de)
+install_packages("jmuOutlier")
+library(jmuOutlier)
 calculate_p_value <- function(var_in, var_out, significance_level){
   
   #' delete all entrys that are NA
   var_in <- var_in[!is.na(var_in)]
   var_out <- var_out[!is.na(var_out)]
   
+  
   #' if there is no data in one of the groups the p-value is NULL
-  if (length(var_in) == 0) return(NULL)
-  else if (length(var_out) == 0) return(NULL)
+  if (length(var_in) == 0) return(NA)
+  else if (length(var_out) == 0) return(NA)
   else{
-    #' * Kolmogorov-Smirnov Test ----------------------------------------------
-    #' H0 : The two samples have the same distribution
-    ks <- ks.test(var_in, var_out, exact = FALSE)
-    p_value <- ks$p.value # probabilitiy to recet H0 if it is correct
-    if (p_value < significance_level) pvalue <- c(p_value)
-    
-    else {
-      #' * Wilcoxon-Mann-Whitney Test -----------------------------------------
-      #' H0: the samples have the same location parameters
-      wilcox <- wilcox.test(var_in,
-                            var_out,
-                            alternative = "two.sided",
-                            exact = FALSE)
-      p_value_wilcox <- wilcox$p.value
-      pvalue <- c(p_value, p_value_wilcox)
-    }
+    #' #' * Kolmogorov-Smirnov Test ----------------------------------------------
+    #' #' H0 : The two samples have the same distribution
+    #' ks <- ks.test(var_in, var_out, exact = FALSE)
+    #' 
+    #' p_value <- ks$p.value # probabilitiy to recet H0, if it is correct
+    #' 
+    #' if (p_value < significance_level) pvalue <- c(p_value)
+    #' 
+    #' else {
+    #'   #' * Wilcoxon-Mann-Whitney Test -----------------------------------------
+    #'   #' H0: the samples have the same location parameters
+    #'   
+    #'   wilcox <- wilcox.test(var_in,
+    #'                         var_out,
+    #'                         alternative = "two.sided",
+    #'                         #exact = FALSE,
+    #'                         paired = FALSE)
+    #'   p_value_wilcox <- wilcox$p.value
+    #'   pvalue <- c(p_value, p_value_wilcox)
+
+    # }
+    perm <- perm.test(var_in,var_out, alternative = c("two.sided"),
+                      mu = 0, # Hypothesis: Samples do not differ
+                      paired = FALSE,
+                      all.perms = TRUE, # Tries to get a exact p value
+                      num.sim = 1000000,
+                      plot = FALSE, # does not plot
+                      stat = mean) # compaires the means of the distributions
+
+    pvalue <- perm$p.value
+    print(pvalue)
+
     #' return the calculated pvalues ------------------------------------------
     return(pvalue)
   }
@@ -627,14 +684,18 @@ get_features <- function(selected_gene, domains){
 #' @param interesting_features list of databases to take the features from
 #' @return list with all plots
 #' @author Carla Mölbert (carla.moelbert@gmx.de)
-get_plot_output_list <- function(genes, parameters, interesting_features) {
+get_plot_output_list <- function(genes, parameters, interesting_features,
+                                 domains_threshold, selected_point) {
+  print(selected_point)
   # if we don't have parameters we can not generate plots
   if (is.null(genes)) return()
   # Insert plot output objects the list
   plot_output_list <- lapply(1:nrow(genes), function(i) {
     plotname <- paste(genes[i, 1])
     plot_output_object <- renderPlot(get_multiplot(genes[i, ], parameters,
-                                                   interesting_features),
+                                                   interesting_features,
+                                                   domains_threshold,
+                                                   selected_point),
                                      height = 650, width = 700)
   })
   do.call(tagList, plot_output_list) # needed to display properly.
@@ -651,13 +712,16 @@ get_plot_output_list <- function(genes, parameters, interesting_features) {
 #' @param interesting_features list of databases to take the features from
 #' @return grid arrange with the plots that should be shown for this gene
 #' @author Carla Mölbert (carla.moelbert@gmx.de)
-get_multiplot <- function(gene_info, parameters, interesting_features){
+get_multiplot <- function(gene_info, parameters, interesting_features,
+                          domains_threshold,
+                          selected_point){
+  print(selected_point)
   #' Sorting the information to the selected gene ---------------------------- 
   gene <- as.character(gene_info$geneID)
   in_group <- as.data.frame(gene_info$in_group)
   out_group <- as.data.frame(gene_info$out_group)
   features <- as.data.frame(gene_info$features)
-  pvalues <- gene_info$pvalues
+  
   var <- gene_info$var
   
   #' Get the barplot ---------------------------------------------------------
@@ -666,23 +730,21 @@ get_multiplot <- function(gene_info, parameters, interesting_features){
                              out_group,
                              features,
                              parameters,
-                             interesting_features)
+                             interesting_features,
+                             domains_threshold)
   
   if (is.null(barplot)) {
     barplot <- textGrob("The selected domains are not found in the gene")
   }
-  
   #' Get the boxplots  for two variables  -------------------------------------
   if (var == "Both") {
-    #' Get information about pvalues
-    pvalues <- unlist(pvalues, recursive = FALSE)
-    p_value1 <- unlist(pvalues[1])
-    p_value2 <- unlist(pvalues[2])
+    p_value1 <- gene_info$pvalues_1
+    p_value2 <- gene_info$pvalues_2
     
     #' Check if the p_values should be printed
     if (parameters$show_p_value == TRUE) {
-      info_p_value1 <- get_info_p_values(p_value1)
-      info_p_value2 <- get_info_p_values(p_value2)
+      info_p_value1 <- paste("P-value:", p_value1, sep = " ")
+      info_p_value2 <- paste("P-value:", p_value2, sep = " ")
     }
     else{
       info_p_value1 <- " "
@@ -691,14 +753,13 @@ get_multiplot <- function(gene_info, parameters, interesting_features){
     
     #' Get information about the plot colour 
     if (parameters$highlight_significant == TRUE) {
-      if (is.null(p_value1[1])) colour1 <- "grey"
-      else if (p_value1[length(p_value1)] < parameters$significance) {
+      if (is.na(p_value1)) colour1 <- "grey"
+      else if (p_value1 < parameters$significance) {
         colour1 <- "indianred2"
       }
       else colour1 <- "grey"
-      
-      if (is.null(p_value2[1])) colour2 <- "grey"
-      else if (p_value2[length(p_value2)] < parameters$significance) {
+      if (is.na(p_value2)) colour2 <- "grey"
+      else if (p_value2 < parameters$significance) {
         colour2 <- "indianred2"
       }
       else colour2 <- "grey"
@@ -714,14 +775,16 @@ get_multiplot <- function(gene_info, parameters, interesting_features){
                                parameters$var1_id,
                                gene,
                                colour1,
-                               info_p_value1, parameters)
+                               info_p_value1, parameters,
+                               selected_point)
     
     boxplot2 <- get_boxplot_gc(in_group,
                                out_group,
                                parameters$var2_id,
                                gene,
                                colour2,
-                               info_p_value2, parameters)
+                               info_p_value2, parameters,
+                               selected_point)
     
     plots <- grid.arrange(textGrob(gene),
                           arrangeGrob(boxplot1, boxplot2, ncol = 2),
@@ -729,11 +792,12 @@ get_multiplot <- function(gene_info, parameters, interesting_features){
                           heights = c(0.02, 0.45, 0.458), ncol = 1)
   }else {
     #' get the boxplot if one varibale is selected  ---------------------------
-    p <- unlist(pvalues)
+    p <- gene_info$pvalue
+    
     
     #' Check if the p_values should be printed
     if (parameters$show_p_value == TRUE) {
-      info <- get_info_p_values(p)
+      info <- paste("P-value:", p)
     }else{
       info <- " "
     }
@@ -745,7 +809,8 @@ get_multiplot <- function(gene_info, parameters, interesting_features){
                               gene,
                               "grey",
                               info,
-                              parameters)
+                              parameters,
+                              selected_plot)
     
     plots <- grid.arrange(textGrob(gene),
                           boxplot,
@@ -780,7 +845,8 @@ get_boxplot_gc <- function(in_group_df,
                            gene,
                            colour,
                            info,
-                           parameters){
+                           parameters,
+                           selected_point){
   #' pre-processing the data for the boxplot ---------------------------------
   if (var == parameters$var1_id) {
     in_group <- in_group_df$var1
@@ -812,19 +878,28 @@ get_boxplot_gc <- function(in_group_df,
   
   #' Generate the boxplot -----------------------------------------------------
   boxplot_gc <- ggplot(data_boxplot, aes(group, values)) +
-    geom_boxplot(stat = "boxplot",
-                 position = position_dodge(),
-                 width = 0.5,
-                 fill = colour) +
-    labs(x = "", y = var, caption = paste(info)) +
+    geom_violin(position = position_dodge(), scale = "width",
+                fill = colour) +
+    # geom_boxplot(stat = "boxplot",
+    #              position = position_dodge(),
+    #              width = 0.5,
+    #              fill = colour) +
+    labs(x = "", y = var, caption = paste(info), colour = "") +
     scale_x_discrete(labels = names) +
-    theme_minimal()
+    #theme_minimal() + 
+    stat_summary(aes(colour = selected_point),fun.y = selected_point,
+                 geom = "point", size = 3, show.legend = TRUE)
   
   boxplot_gc <- boxplot_gc +
     theme(axis.text.x = element_text(size = parameters$x_size_gc, hjust = 1),
           axis.text.y = element_text(size = parameters$y_size_gc),
           axis.title.y = element_text(size = parameters$y_size_gc),
-          plot.caption = element_text(size = parameters$p_values_size))
+          plot.caption = element_text(size = parameters$p_values_size),
+          legend.position = "bottom",
+          legend.text = element_text(size = parameters$legend_size_gc ),
+          legend.title = element_text(size = parameters$legend_size_gc)) +
+    scale_color_manual("", values = c("green"))
+  
   #' return the boxplot -------------------------------------------------------
   return(boxplot_gc)
 }
@@ -849,25 +924,11 @@ get_boxplot_gc <- function(in_group_df,
 #' @author Carla Mölbert (carla.moelbert@gmx.de)
 get_barplot_gc <- function(selected_gene,
                            in_group, out_group,
-                           features, parameters, interesting_features){
+                           features, parameters, interesting_features, domains_threshold){
+
   
   #' information about the features ------------------------------------------
   features$feature <- as.character(features$feature)
-  #' only show features that interest the user
-  if (!("all" %in% interesting_features)) {
-    features_list <- NULL
-    for (feature in interesting_features) {
-      subset_features <- subset(features$feature,
-                                startsWith(features$feature, feature))
-      features_list <- append(features_list, subset_features)
-    }
-    
-    if (is.null(features_list)) return()
-    #' only keep rows in which the feature begins with a element out of the
-    #' interesing Features
-    features_list <- features_list[!duplicated(features_list)]
-    features <- subset(features, features$feature %in% features_list)
-  }
   
   #' part in in_group and out-group  ------------------------------------------ 
   in_group_domain_df  <-  {
@@ -877,6 +938,7 @@ get_barplot_gc <- function(selected_gene,
     subset(features, features$orthoID %in% out_group$orthoID)
   }
   
+  
   #' get the dataframes for in- and out-group ---------------------------------
   if (nrow(in_group_domain_df) == 0) {
     data_in <- NULL
@@ -884,6 +946,7 @@ get_barplot_gc <- function(selected_gene,
     feature <- unique(in_group_domain_df$feature)
     data_in <- as.data.frame(feature)
     data_in$amount <- 0
+    data_in$proteins <- 0
   }
   
   if (nrow(out_group_domain_df) == 0) {
@@ -892,18 +955,27 @@ get_barplot_gc <- function(selected_gene,
     feature <- unique(out_group_domain_df$feature)
     data_out <- as.data.frame(feature)
     data_out$amount <- 0
+    data_out$proteins <- 0
   }
   
+  seeds <- features$seedID
+  #seeds <- sapply(strsplit(seeds,"#"), `[`, 2)
+  seeds <- unique(seeds)
+
+  
   #' Get the values for the boxplot ------------------ ------------------------ 
-  seeds <- unique(features$seedID)
   in_not_empty <- 0
   out_not_empty <- 0
   
+
   #' Count for each feature how often it is present in each seed --------------
   for (seed in seeds) {
+
     #' count the features in the in-group  
     if (!is.null(data_in)) {
       in_g <- subset(in_group_domain_df, in_group_domain_df$seedID == seed)
+      in_g <- in_g[str_detect(in_g$seedID, in_g$orthoID),]
+      #in_g <- subset(in_group_domain_df, str_detect(in_group_domain_df$seedID, seed))
       if (!empty(in_g)) {
         in_not_empty <- in_not_empty + 1 
         in_group_features <-  plyr::count(in_g, "feature")
@@ -911,6 +983,7 @@ get_barplot_gc <- function(selected_gene,
           for (j in 1:nrow(data_in)) {
             if (data_in[j, 1] == in_group_features[i, 1]) {
               data_in[j, 2] <- data_in[j, 2] + in_group_features[i, 2]
+              data_in[j, 3] <- data_in[j,3] + 1
             }
           }
         }
@@ -919,10 +992,9 @@ get_barplot_gc <- function(selected_gene,
     
     #' count the featueres in the out-group 
     if (!is.null(data_out)) {
-      out_g <- {
-        subset(out_group_domain_df, out_group_domain_df$seedID == seed)
-      }
-      
+      out_g <- subset(out_group_domain_df, out_group_domain_df$seedID == seed)
+      out_g <- out_g[str_detect(out_g$seedID, out_g$orthoID),]
+      # out_g <- subset(out_group_domain_df, str_detect(out_group_domain_df$seedID, seed))
       if (!empty(out_g)) {
         out_not_empty <- out_not_empty + 1
         out_group_features <-  plyr::count(out_g, "feature")
@@ -930,6 +1002,7 @@ get_barplot_gc <- function(selected_gene,
           for (j in 1:nrow(data_out)) {
             if (data_out[j, 1] == out_group_features[i, 1]) {
               data_out[j, 2] <- data_out[j, 2] + out_group_features[i, 2]
+              data_out[j, 3] <- data_out[j,3] + 1
             }
           }
         }
@@ -937,13 +1010,55 @@ get_barplot_gc <- function(selected_gene,
     }
   }
   
+  if (domains_threshold > 0) {
+    threshold_in  <- as.numeric((domains_threshold / 100) * in_not_empty)
+    threshold_out <- as.numeric((domains_threshold / 100) * out_not_empty)
+    
+    data_in <- data_in[sort(data_in$feature),]
+    data_out <- data_out[sort(data_out$feature),]
+    
+    
+    features_in <- data_in$feature[!(data_in$feature %in% data_out$feature)]
+    features_out <- data_out$feature[!(data_out$feature %in% data_in$feature)]
+    
+  
+    for (i in features_out) {
+      data_in <- rbind(data_in, c(i, 0, 0))
+    }
+    
+    for (i in features_in) {
+      data_out <- rbind(data_out, c(i, 0, 0))
+    }
+    
+    
+    data_in$proteins <- as.numeric(data_in$proteins)
+    data_out$proteins <- as.numeric(data_out$proteins)
+    
+    data_in_keep <- data_in[data_in$proteins >= threshold_in,]
+    data_out_keep <- data_out[data_out$proteins >= threshold_out, ]
+    
+    keep <- rbind(data_in_keep, data_out_keep)
+    keep <- keep[!duplicated(keep$feature),]
+
+
+    
+    data_in <- data_in[data_in$feature %in% keep$feature,]
+    data_out <- data_out[data_out$feature %in% keep$feature,]
+
+  }
+  
   #' Calculate the average of appearances for each feature --------------------
   if (!is.null(data_in)) {
+    data_in$amount <- as.numeric(data_in$amount)
+
     data_in$amount <- data_in$amount / in_not_empty
     data_in$type <- "In-Group"
   }
   
   if (!is.null(data_out)) {
+
+    data_out$amount <- as.numeric(data_out$amount)
+
     data_out$amount <- data_out$amount / out_not_empty
     data_out$type <- "Out-Group"
   }
@@ -959,6 +1074,25 @@ get_barplot_gc <- function(selected_gene,
     data_barplot <- NULL
   }
   
+  #' only show features that interest the user
+  if (!("all" %in% interesting_features)) {
+    features_list <- NULL
+    for (feature in interesting_features) {
+    data_barplot$feature <- as.character(data_barplot$feature)
+      subset_features <- subset(data_barplot$feature,
+                                startsWith(data_barplot$feature, feature))
+      features_list <- append(features_list, subset_features)
+    }
+    
+    if (is.null(features_list)) return()
+    #' only keep rows in which the feature begins with a element out of the
+    #' interesing Features
+    features_list <- features_list[!duplicated(features_list)]
+    data_barplot <- subset(data_barplot, data_barplot$feature %in% features_list)
+  }
+  
+  
+  data_barplot <- data_barplot[sort(data_barplot$feature),]
   #' generate the barplot -----------------------------------------------------
   if (!is.null(data_barplot)) {
     barplot_gc <- ggplot(data_barplot,
@@ -1020,10 +1154,14 @@ get_info_p_values <- function(pvalues) {
 get_plots_to_download <- function(gene,
                                   parameters,
                                   interesting_features,
-                                  significant_genes){
+                                  significant_genes,
+                                  domain_threshold,
+                                  selected_point){
   info_gene <- subset(significant_genes,
                       significant_genes$geneID == gene)
-  return(get_multiplot(info_gene, parameters, interesting_features))
+  return(get_multiplot(info_gene, parameters, interesting_features,
+                       domains_threshold,
+                       selected_point))
 }
 
 #' print list of available taxa -----------------------------------------------

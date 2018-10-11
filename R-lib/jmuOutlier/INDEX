@@ -1,0 +1,29 @@
+CI.t.test               Student's t-Confidence Interval with Finite
+                        Population Correction
+abbreviation            Allows Abbreviations of Character Data
+dlaplace                Laplace (Double Exponential) Density Function
+dtriang                 Triangular Density Function
+fourier                 Determining and Graphing Fourier Approximation
+jmuOutlier-package      Permutation Tests for Nonparametric Statistics
+lineGraph               Line Graph Plotting
+perm.cor.test           Permutation Test on Correlation
+perm.f.test             Permutation Test on the F-statistic
+perm.test               Permutation Test
+plaplace                Laplace (Double Exponential) Cumulative
+                        Distribution Function
+plotCI                  Confidence Interval Plot
+plotEcdf                Plotting Two Empirical Cumulative Distribution
+                        Functions
+plotVector              Plotting Vector Addition
+power.binom.test        Power Calculations for Exact Binomial Test
+ptriang                 Triangular Cumulative Distribution Function
+qlaplace                Laplace (Double Exponential) Quantile Function
+qtriang                 Triangular Quantile Function
+quantileCI              Confidence Intervals on Quantiles
+rlaplace                Laplace (Double Exponential) Random Generation
+rmd.test                Ratio Mean Deviance Test
+rtriang                 Triangular Random Generation
+score                   Generating van der Waerden and Exponential
+                        Scores
+siegel.test             Siegel-Tukey Test
+truncHist               Truncated Histograms

@@ -1,0 +1,128 @@
+useDynLib(coin, .registration = TRUE)
+
+importFrom("methods", callNextMethod, extends, getSlots, new, validObject)
+importMethodsFrom("methods", initialize, show)
+importFrom("survival", is.Surv)
+importFrom("stats", complete.cases, confint, cov2cor, dchisq, dnorm, median,
+                    model.frame, model.matrix, na.pass, pbinom, pchisq, pnorm,
+                    qbeta, qchisq, qnorm, quantile, runif, setNames, uniroot)
+importFrom("modeltools", ModelEnvFormula)
+importMethodsFrom("modeltools", has, na.omit)
+importFrom("mvtnorm", pmvnorm, qmvnorm)
+importFrom("multcomp", contrMat)
+
+export(independence_test,
+       symmetry_test,
+       oneway_test,
+       wilcox_test, kruskal_test, normal_test, median_test, savage_test,
+       taha_test, klotz_test, mood_test, ansari_test, fligner_test, conover_test,
+       surv_test, logrank_test,
+       sign_test, wilcoxsign_test, friedman_test, quade_test,
+       spearman_test, fisyat_test, quadrant_test, koziol_test,
+       maxstat_test,
+       chisq_test, cmh_test, lbl_test, mh_test,
+       trafo,
+       id_trafo,
+       rank_trafo,
+       normal_trafo, median_trafo, savage_trafo, consal_trafo, koziol_trafo,
+       klotz_trafo, mood_trafo, ansari_trafo, fligner_trafo,
+       logrank_trafo, logrank_weight,
+       maxstat_trafo, fmaxstat_trafo, ofmaxstat_trafo,
+       f_trafo, of_trafo, mcp_trafo,
+       asymptotic, approximate, exact)
+
+exportClasses("ExpectCovar", "ExpectCovarInfluence", "CovarianceMatrix",
+              "Variance", "VarCovar", "IndependenceProblem",
+              "IndependenceTestProblem", "IndependenceLinearStatistic",
+              "IndependenceTestStatistic", "MaxTypeIndependenceTestStatistic",
+              "QuadTypeIndependenceTestStatistic",
+              "ScalarIndependenceTestStatistic", "PValue", "NullDistribution",
+              "AsymptNullDistribution", "ApproxNullDistribution",
+              "ExactNullDistribution", "IndependenceTest",
+              "MaxTypeIndependenceTest", "QuadTypeIndependenceTest",
+              "ScalarIndependenceTest", "ScalarIndependenceTestConfint",
+              "SymmetryProblem")
+
+exportMethods("initialize", "show", "pvalue", "midpvalue", "pvalue_interval",
+              "statistic", "dperm", "pperm", "qperm", "rperm", "support",
+              "expectation", "covariance", "variance", "AsymptNullDistribution",
+              "ApproxNullDistribution", "ExactNullDistribution")
+
+S3method(independence_test, formula)
+S3method(independence_test, table)
+S3method(independence_test, IndependenceProblem)
+
+S3method(symmetry_test, formula)
+S3method(symmetry_test, table)
+S3method(symmetry_test, SymmetryProblem)
+
+S3method(oneway_test, formula)
+S3method(oneway_test, IndependenceProblem)
+
+S3method(wilcox_test, formula)
+S3method(wilcox_test, IndependenceProblem)
+S3method(kruskal_test, formula)
+S3method(kruskal_test, IndependenceProblem)
+S3method(normal_test, formula)
+S3method(normal_test, IndependenceProblem)
+S3method(median_test, formula)
+S3method(median_test, IndependenceProblem)
+S3method(savage_test, formula)
+S3method(savage_test, IndependenceProblem)
+
+S3method(taha_test, formula)
+S3method(taha_test, IndependenceProblem)
+S3method(klotz_test, formula)
+S3method(klotz_test, IndependenceProblem)
+S3method(mood_test, formula)
+S3method(mood_test, IndependenceProblem)
+S3method(ansari_test, formula)
+S3method(ansari_test, IndependenceProblem)
+S3method(fligner_test, formula)
+S3method(fligner_test, IndependenceProblem)
+S3method(conover_test, formula)
+S3method(conover_test, IndependenceProblem)
+
+S3method(logrank_test, formula)
+S3method(logrank_test, IndependenceProblem)
+
+S3method(sign_test, formula)
+S3method(sign_test, SymmetryProblem)
+S3method(wilcoxsign_test, formula)
+S3method(wilcoxsign_test, SymmetryProblem)
+S3method(friedman_test, formula)
+S3method(friedman_test, SymmetryProblem)
+S3method(quade_test, formula)
+S3method(quade_test, SymmetryProblem)
+
+S3method(spearman_test, formula)
+S3method(spearman_test, IndependenceProblem)
+S3method(fisyat_test, formula)
+S3method(fisyat_test, IndependenceProblem)
+S3method(quadrant_test, formula)
+S3method(quadrant_test, IndependenceProblem)
+S3method(koziol_test, formula)
+S3method(koziol_test, IndependenceProblem)
+
+S3method(maxstat_test, formula)
+S3method(maxstat_test, table)
+S3method(maxstat_test, IndependenceProblem)
+
+S3method(chisq_test, formula)
+S3method(chisq_test, table)
+S3method(chisq_test, IndependenceProblem)
+S3method(cmh_test, formula)
+S3method(cmh_test, table)
+S3method(cmh_test, IndependenceProblem)
+S3method(lbl_test, formula)
+S3method(lbl_test, table)
+S3method(lbl_test, IndependenceProblem)
+S3method(mh_test, formula)
+S3method(mh_test, table)
+S3method(mh_test, SymmetryProblem)
+
+S3method(confint, ScalarIndependenceTestConfint)
+
+S3method(print, ci)
+S3method(print, MCp)
+S3method(print, cutpoint)

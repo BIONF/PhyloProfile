@@ -546,7 +546,6 @@ shinyUI(
               )
             )
           ),
-
           # * main panel for profile plot -------------------------------------
           mainPanel(
             conditionalPanel(
@@ -605,7 +604,6 @@ shinyUI(
               style = "padding:0px;",
               strong("Select (super)taxon/(super)taxa of interest:")
             ),
-
             column(
               12,
               fluidRow(
@@ -655,10 +653,10 @@ shinyUI(
 
           wellPanel(
             fluidRow(
-              # column(
-              #   2,
-              #   uiOutput("select_profile_type")
-              # ),
+              column(
+                2,
+                uiOutput("select_profile_type")
+              ),
               column(
                 3,
                 uiOutput("select_dist_method")
@@ -684,11 +682,11 @@ shinyUI(
               ),
               column(
 
-                2, #1
+                1, 
                 create_plot_size("cluster_plot.height", "Height (px)", 600)
               ),
               column(
-                3, #1
+                2,
                 checkboxInput(
                   "apply_cluster",
                   em(strong("Apply clustering to profile plot",
@@ -754,6 +752,7 @@ shinyUI(
 
           analyze_distribution_ui("dist_plot")
         ),
+
 
         # * Gene age estimation -----------------------------------------------
         tabPanel(
@@ -1421,9 +1420,18 @@ shinyUI(
         )
       ),
       column(
-        12,
+        6,
         create_text_size("p_values_size_gc", "P-value label size (px)", 10, 100)
       ),
+      column(
+        6,
+        selectInput(
+          "show_point_gc", label = "Show location parameter:",
+          choices = list("Mean" = "mean",
+                         "Median" = "median"),
+          selected = "mean",
+          width = 150)
+        ), 
       column(
         12,
         sliderInput(
