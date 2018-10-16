@@ -3,7 +3,8 @@ packages <- c("ggplot2", "reshape2",
               "plyr", "dplyr", "tidyr", "scales", "grid",
               "gridExtra", "ape", "stringr", "gtable",
               "dendextend", "ggdendro", "gplots", "data.table",
-              "taxize", "zoo", "RCurl", "svMisc")
+              "taxize", "zoo", "RCurl", "svMisc",
+              "jmuOutlier")
 source("R/functions.R")
 install_packages(packages)
 lapply(packages, library, character.only = TRUE)
@@ -27,16 +28,16 @@ shinyServer(function(input, output, session) {
   # Automatically stop a Shiny app when closing the browser tab
   # session$onSessionEnded(stopApp)
   session$allowReconnect(TRUE)
-
+  
   # =========================== INITIAL CHECKING  =============================
-
+  
   # * check for internet connection -------------------------------------------
   observe({
     if (has_internet() == FALSE) {
       toggleState("demo_data")
     }
   })
-
+  
   output$no_internet_msg <- renderUI({
     if (has_internet() == FALSE) {
       strong(em("Internet connection is required for using demo data!"),
@@ -45,7 +46,7 @@ shinyServer(function(input, output, session) {
       return()
     }
   })
-
+  
   # * check for the existence of taxonomy files -------------------------------
   observe({
     if (!file.exists(isolate("data/rankList.txt"))) {
@@ -69,7 +70,7 @@ shinyServer(function(input, output, session) {
       }
     }
   })
-
+  
   observe({
     if (!file.exists(isolate("data/idList.txt"))) {
       if (has_internet() == TRUE) {
@@ -93,7 +94,7 @@ shinyServer(function(input, output, session) {
       }
     }
   })
-
+  
   observe({
     if (!file.exists(isolate("data/taxonNamesReduced.txt"))) {
       if (has_internet() == TRUE) {
@@ -116,7 +117,7 @@ shinyServer(function(input, output, session) {
       }
     }
   })
-
+  
   observe({
     if (!file.exists(isolate("data/taxonomyMatrix.txt"))) {
       if (has_internet() == TRUE) {
@@ -129,7 +130,7 @@ shinyServer(function(input, output, session) {
                          fill = TRUE,
                          na.strings = c("", "NA"),
                          col.names = paste0("V", seq_len(ncol)))
-
+        
         write.table(df, file = "data/taxonomyMatrix.txt",
                     col.names = FALSE,
                     row.names = FALSE,
@@ -138,19 +139,19 @@ shinyServer(function(input, output, session) {
       }
     }
   })
-
+  
   # ======================== INPUT & SETTINGS TAB =============================
   # * check the validity of input file and render input_check.ui --------------
   output$input_check.ui <- renderUI({
     filein <- input$main_input
     if (is.null(filein)) return()
     input_type <- check_input_vadility(filein) #get_input_type()
-
+    
     if (input_type[1] == "noGeneID") {
       updateButton(session, "do", disabled = TRUE)
       HTML(
         "<font color=\"red\"><em><strong>ERROR: Unsupported input format.
-           <a href=\"https://github.com/BIONF/PhyloProfile/wiki/Input-Data\"
+        <a href=\"https://github.com/BIONF/PhyloProfile/wiki/Input-Data\"
         target=\"_blank\">Click here for more info</a></em></strong></font>"
       )
     } else if (input_type[1] == "emptyCell") {
@@ -177,7 +178,7 @@ shinyServer(function(input, output, session) {
       }
     }
   })
-
+  
   # * render download link for Demo online files ------------------------------
   output$main_input_file.ui <- renderUI({
     if (input$demo_data == "lca-micros") {
@@ -192,7 +193,7 @@ shinyServer(function(input, output, session) {
       fileInput("main_input", h5("Upload input file:"))
     }
   })
-
+  
   output$domain_input_file.ui <- renderUI({
     if (input$demo_data == "lca-micros") {
       strong(a("Download demo domain files",
@@ -210,7 +211,7 @@ shinyServer(function(input, output, session) {
       }
     }
   })
-
+  
   output$download_fastaDemo.ui <- renderUI({
     if (input$demo_data == "lca-micros") {
       strong(a("Download demo fasta file",
@@ -222,7 +223,7 @@ shinyServer(function(input, output, session) {
                target = "_blank"))
     }
   })
-
+  
   # * render description for Demo data ----------------------------------------
   output$demo_data_describe <- renderUI({
     if (input$demo_data == "none") {
@@ -237,7 +238,7 @@ shinyServer(function(input, output, session) {
            target = "_blank"))
     }
   })
-
+  
   # * check OMA input ---------------------------------------------------------
   output$check_oma_input <- reactive({
     filein <- input$main_input
@@ -246,7 +247,7 @@ shinyServer(function(input, output, session) {
     input_type == "oma"
   })
   outputOptions(output, "check_oma_input", suspendWhenHidden = FALSE)
-
+  
   # * download OMA data after parsing -----------------------------------------
   output$download_files_oma <- downloadHandler(
     filenname <- function() {
@@ -259,32 +260,31 @@ shinyServer(function(input, output, session) {
                   col.names = TRUE,
                   quote = FALSE)
 
-      # write.table(long_to_fasta(get_main_input()), "fasta.txt",
       write.table(get_all_fasta_oma(final_oma_df()), "fasta.txt",
                   sep = "\t",
                   row.names = FALSE,
                   col.names = FALSE,
                   quote = FALSE)
-
+      
       write.table(get_domain_information(), "domain.txt",
                   sep = "\t",
                   row.names = FALSE,
                   col.names = FALSE,
                   quote = FALSE)
-
+      
       zip(zipfile = file,
           files = c("long.txt", "domain.txt", "fasta.txt"))
     },
     contentType = "application/zip"
   )
-
+  
   # * close OMA parsing popup windows -------------------------------------
   observeEvent(input$get_data_oma, {
     toggleModal(session, "get_oma_data_windows", toggle = "close")
     updateButton(session, "get_data_oma", disabled = TRUE)
     toggleState("main_input")
   })
-
+  
   # * render textinput for Variable 1 & 2 -------------------------------------
   output$var1_id.ui <- renderUI({
     long_dataframe <- get_main_input()
@@ -301,7 +301,7 @@ shinyServer(function(input, output, session) {
                 placeholder = "Name of first variable")
     }
   })
-
+  
   output$var2_id.ui <- renderUI({
     long_dataframe <- get_main_input()
     if (is.null(long_dataframe)) {
@@ -317,7 +317,7 @@ shinyServer(function(input, output, session) {
                 placeholder = "Name of first variable")
     }
   })
-
+  
   # * render 2. variable relationship according to demo data ------------------
   output$var2_relation.ui <- renderUI({
     if (input$demo_data == "ampk-tor") {
@@ -334,7 +334,7 @@ shinyServer(function(input, output, session) {
                   width = 130)
     }
   })
-
+  
   # * check the existance of the input concatenate fasta file -----------------
   output$concat_fasta.exist_check <- renderUI({
     if (is.null(input$concat_fasta)) return()
@@ -355,22 +355,22 @@ shinyServer(function(input, output, session) {
             helpText("is not a fasta file!!")
           }
         }
+        }
       }
-    }
-  })
-
+    })
+  
   # * check the validity of input tree file and render checkNewick.ui ---------
   check_newick_id <- reactive({
     req(input$inputTree)
     req(input$main_input)
-
+    
     check_newick <- check_newick(input$inputTree, input$main_input, subset_taxa())
     if (check_newick == 0) {
       updateButton(session, "do", disabled = FALSE)
     }
     return(check_newick)
   })
-
+  
   output$checkNewick.ui <- renderUI({
     check_newick <- check_newick_id()
     if (check_newick == 1) {
@@ -393,22 +393,22 @@ shinyServer(function(input, output, session) {
              style = "color:red")
     }
   })
-
+  
   # * reset profile plot colors -----------------------------------------------
   observeEvent(input$default_color_var2, {
     shinyjs::reset("low_color_var2")
     shinyjs::reset("high_color_var2")
   })
-
+  
   observeEvent(input$default_color_var1, {
     shinyjs::reset("low_color_var1")
     shinyjs::reset("high_color_var1")
   })
-
+  
   observeEvent(input$default_color_para, {
     shinyjs::reset("para_color")
   })
-
+  
   # * render list of taxonomy ranks -------------------------------------------
   output$rank_select <- renderUI({
     if (input$demo_data == "lca-micros") {
@@ -425,12 +425,12 @@ shinyServer(function(input, output, session) {
                   selected = "06_species")
     }
   })
-
+  
   # * render list of (super)taxa ----------------------------------------------
   output$select <- renderUI({
     choice <- alltaxa_list()
     choice$fullName <- as.factor(choice$fullName)
-
+    
     if (input$demo_data == "lca-micros") {
       hellemDf <- data.frame("name" = c("Encephalitozoon hellem",
                                         "Encephalitozoon hellem",
@@ -454,7 +454,7 @@ shinyServer(function(input, output, session) {
       rankName <- substr(rank_select,
                          4,
                          nchar(rank_select))
-
+      
       selectInput("in_select", "",
                   as.list(levels(choice$fullName)),
                   hellemDf$name[hellemDf$rank == rankName])
@@ -479,7 +479,7 @@ shinyServer(function(input, output, session) {
                                        "superkingdom"))
       rank_select <- input$rank_select
       rankName <- substr(rank_select, 4, nchar(rank_select))
-
+      
       selectInput("in_select", "",
                   as.list(levels(choice$fullName)),
                   humanDf$name[humanDf$rank == rankName])
@@ -489,7 +489,7 @@ shinyServer(function(input, output, session) {
                   levels(choice$fullName)[1])
     }
   })
-
+  
   # * enable "PLOT" button ----------------------------------------------------
   observeEvent(input$rank_select,  ({
     if (input$rank_select == "") {
@@ -508,8 +508,8 @@ shinyServer(function(input, output, session) {
       updateTabsetPanel(session, "tabs", selected = "Main profile")
     }
   })
-
-
+  
+  
   # * disable main input, genelist input and demo data checkbox ---------------
   observe({
     if (input$do > 0) {
@@ -518,7 +518,7 @@ shinyServer(function(input, output, session) {
       toggleState("demo_data")
     }
   })
-
+  
   # * update var2_aggregate_by to mean if using demo lca-micros data ----------
   observe({
     if (input$demo_data == "lca-micros") {
@@ -531,28 +531,34 @@ shinyServer(function(input, output, session) {
                         selected = "mean")
     }
   })
-
+  
   # =========================== RENDER FILTER SLIDEBARS =======================
-
+  
   # * render filter slidebars for Main plot -----------------------------------
   output$var1_cutoff.ui <- renderUI({
     create_slider_cutoff(
       "var1", paste(input$var1_id, "cutoff:"), 0.0, 1.0, input$var1_id
     )
-  })
 
+    # numericInput("var1",
+    #              paste(input$var1_id, "cutoff:"),
+    #              min = 0,
+    #              max = 1,
+    #              value = 0)
+  })
+  
   output$var2_cutoff.ui <- renderUI({
     create_slider_cutoff(
       "var2", paste(input$var2_id, "cutoff:"), 0.0, 1.0, input$var2_id
     )
   })
-
+  
   output$percent_cutoff.ui <- renderUI({
     create_slider_cutoff(
       "percent", "% of present taxa:", 0.0, 1.0, "percent"
     )
   })
-
+  
   # * render filter slidebars for Customized plot -----------------------------
   output$var1_filter.ui <- renderUI({
     create_slider_cutoff(
@@ -561,7 +567,7 @@ shinyServer(function(input, output, session) {
       input$var1[1], input$var1[2], input$var1_id
     )
   })
-
+  
   output$var2_filter.ui <- renderUI({
     create_slider_cutoff(
       "var2cus",
@@ -569,7 +575,7 @@ shinyServer(function(input, output, session) {
       input$var2[1], input$var2[2], input$var2_id
     )
   })
-
+  
   output$percent_filter.ui <- renderUI({
     create_slider_cutoff(
       "percent2",
@@ -577,7 +583,7 @@ shinyServer(function(input, output, session) {
       input$percent[1], input$percent[2], "percent"
     )
   })
-
+  
   # * render filter slidebars for Distribution plot ---------------------------
   output$var1_dist.ui <- renderUI({
     create_slider_cutoff(
@@ -586,7 +592,7 @@ shinyServer(function(input, output, session) {
       input$var1[1], input$var1[2], input$var1_id
     )
   })
-
+  
   output$var2_dist.ui <- renderUI({
     create_slider_cutoff(
       "var2_dist",
@@ -594,7 +600,7 @@ shinyServer(function(input, output, session) {
       input$var2[1], input$var2[2], input$var2_id
     )
   })
-
+  
   output$percent_dist.ui <- renderUI({
     create_slider_cutoff(
       "percent_dist",
@@ -602,7 +608,7 @@ shinyServer(function(input, output, session) {
       input$percent[1], input$percent[2], "percent"
     )
   })
-
+  
   # * render filter slidebars for Gene age estimation plot --------------------
   output$var1_age.ui <- renderUI({
     create_slider_cutoff(
@@ -611,7 +617,7 @@ shinyServer(function(input, output, session) {
       input$var1[1], input$var1[2], input$var1_id
     )
   })
-
+  
   output$var2_age.ui <- renderUI({
     create_slider_cutoff(
       "var2_age",
@@ -619,7 +625,7 @@ shinyServer(function(input, output, session) {
       input$var2[1], input$var2[2], input$var2_id
     )
   })
-
+  
   output$percent_age.ui <- renderUI({
     create_slider_cutoff(
       "percent_age",
@@ -627,7 +633,7 @@ shinyServer(function(input, output, session) {
       input$percent[1], input$percent[2], "percent"
     )
   })
-
+  
   # * render filter slidebars for Core gene finding function ------------------
   output$var1_core.ui <- renderUI({
     create_slider_cutoff(
@@ -636,7 +642,7 @@ shinyServer(function(input, output, session) {
       input$var1[1], input$var1[2], input$var1_id
     )
   })
-
+  
   output$var2_core.ui <- renderUI({
     create_slider_cutoff(
       "var2_core",
@@ -644,7 +650,7 @@ shinyServer(function(input, output, session) {
       input$var2[1], input$var2[2], input$var2_id
     )
   })
-
+  
   output$percent_core.ui <- renderUI({
     create_slider_cutoff(
       "percent_core",
@@ -652,7 +658,7 @@ shinyServer(function(input, output, session) {
       input$percent[1], input$percent[2], "percent"
     )
   })
-
+  
   # * update value for filter slidebars of Main Plot --------------------------
   # ** based on customized profile
   observe({
@@ -662,7 +668,7 @@ shinyServer(function(input, output, session) {
       "var1", paste(input$var1_id, "cutoff:"), new_var1, input$var1_id
     )
   })
-
+  
   observe({
     new_var2 <- input$var2cus
     update_slider_cutoff(
@@ -670,7 +676,7 @@ shinyServer(function(input, output, session) {
       "var2", paste(input$var2_id, "cutoff:"), new_var2, input$var2_id
     )
   })
-
+  
   observe({
     new_percent <- input$percent2
     update_slider_cutoff(
@@ -678,7 +684,7 @@ shinyServer(function(input, output, session) {
       "percent", "% of present taxa:", new_percent, "percent"
     )
   })
-
+  
   # ** based on "Distribution analysis"
   observe({
     new_var1 <- input$var1_dist
@@ -687,7 +693,7 @@ shinyServer(function(input, output, session) {
       "var1", paste(input$var1_id, "cutoff:"), new_var1, input$var1_id
     )
   })
-
+  
   observe({
     new_var2 <- input$var2_dist
     update_slider_cutoff(
@@ -695,7 +701,7 @@ shinyServer(function(input, output, session) {
       "var2", paste(input$var2_id, "cutoff:"), new_var2, input$var2_id
     )
   })
-
+  
   observe({
     new_percent <- input$percent_dist
     update_slider_cutoff(
@@ -703,7 +709,7 @@ shinyServer(function(input, output, session) {
       "percent", "% of present taxa:", new_percent, "percent"
     )
   })
-
+  
   # ** based on "Gene age estimation"
   observe({
     new_var1 <- input$var1_age
@@ -712,7 +718,7 @@ shinyServer(function(input, output, session) {
       "var1", paste(input$var1_id, "cutoff:"), new_var1, input$var1_id
     )
   })
-
+  
   observe({
     new_var2 <- input$var2_age
     update_slider_cutoff(
@@ -720,7 +726,7 @@ shinyServer(function(input, output, session) {
       "var2", paste(input$var2_id, "cutoff:"), new_var2, input$var2_id
     )
   })
-
+  
   observe({
     new_percent <- input$percent_age
     update_slider_cutoff(
@@ -728,34 +734,34 @@ shinyServer(function(input, output, session) {
       "percent", "% of present taxa:", new_percent, "percent"
     )
   })
-
+  
   # * reset cutoffs of Main plot ----------------------------------------------
   observeEvent(input$reset_main, {
     shinyjs::reset("var1")
     shinyjs::reset("var2")
     shinyjs::reset("percent")
   })
-
+  
   # * reset cutoffs of Customized plot ----------------------------------------
   observeEvent(input$reset_selected, {
     shinyjs::reset("var1")
     shinyjs::reset("var2")
     shinyjs::reset("percent")
   })
-
+  
   # ========================= PARSING UNKNOWN TAXA ============================
-
+  
   # * get list of "unknown" taxa in main input --------------------------------
   unkTaxa <- reactive({
     long_dataframe <- get_main_input()
     req(long_dataframe)
-
+    
     if (is.null(long_dataframe)) {
       inputTaxa <- c("NA")
     } else{
       inputTaxa <- levels(long_dataframe$ncbiID)
     }
-
+    
     if (inputTaxa[1] == "NA") {
       return()
     } else {
@@ -764,7 +770,7 @@ shinyServer(function(input, output, session) {
         # remove "geneID" element from vector inputTaxa
         inputTaxa <- inputTaxa[-1]
       }
-
+      
       if (!file.exists(isolate("data/rankList.txt"))) {
         return(inputTaxa)
       } else {
@@ -775,31 +781,31 @@ shinyServer(function(input, output, session) {
           # get list of all available taxon (from /data/rankList.txt)
           pipe_cmd <- paste0("cut -f 1 ", getwd(), "/data/rankList.txt")
           allTaxa <- unlist((read.table(pipe(pipe_cmd))))
-
+          
           # list of unknown taxa
           unkTaxa <- inputTaxa[!(inputTaxa %in% allTaxa)]
           if (identical(unkTaxa, character(0))) return()
-
+          
           # get non-ncbi taxa
           unkTaxa <- data.frame("TaxonID" = unkTaxa)
           unkTaxa$id <- substring(unkTaxa$TaxonID, 5)
           unkTaxa$Source <- "ncbi"
-
+          
           pipe_ncbi <- paste0("cut -f 1 ", getwd(), "/data/taxonNamesFull.txt")
           ncbiTaxa <- unlist((read.table(pipe(pipe_ncbi))))
           
           ncbiID <- levels(ncbiTaxa)
           maxNCBI <- max(sort(as.numeric(ncbiID[ncbiID != "ncbiID"])))
-
+          
           if (nrow(unkTaxa[!(unkTaxa$id %in% ncbiTaxa),]) > 0) {
             unk_taxa <- unkTaxa[!(unkTaxa$id %in% ncbiTaxa),]$id
             unkTaxa[unkTaxa$id %in% unk_taxa,]$Source <- "unknown"
             if (any(unk_taxa < maxNCBI)) {
               unkTaxa[unkTaxa$id %in% unk_taxa &
-                      unkTaxa$id < maxNCBI,]$Source <- "invalid"
+                        unkTaxa$id < maxNCBI,]$Source <- "invalid"
             }
           }
-
+          
           if (nrow(unkTaxa[unkTaxa$id %in% newTaxa,]) > 0) {
             unkTaxa[unkTaxa$id %in% newTaxa,]$Source <- "new"
           }
@@ -820,7 +826,7 @@ shinyServer(function(input, output, session) {
               unkTaxa <- rbind(invalidList, unkTaxa)
             }
           }
-
+          
           # return list of unkTaxa
           return(unkTaxa)
         }
@@ -829,7 +835,7 @@ shinyServer(function(input, output, session) {
     # return input taxa
     return(inputTaxa)
   })
-
+  
   # * check the status of unkTaxa ---------------------------------------------
   output$unk_taxa_status <- reactive({
     unkTaxa <- unkTaxa()
@@ -842,7 +848,7 @@ shinyServer(function(input, output, session) {
     }
   })
   outputOptions(output, "unk_taxa_status", suspendWhenHidden = FALSE)
-
+  
   # * render list of unkTaxa --------------------------------------------------
   output$unk_taxa_full <-
     renderDataTable(options = list(searching = FALSE, pageLength = 10),{
@@ -851,7 +857,7 @@ shinyServer(function(input, output, session) {
         tb[, c("TaxonID", "Source")]
       }
     })
-
+  
   # * download list of unkTaxa ------------------------------------------------
   output$unk_taxa.download <- downloadHandler(
     filename = function() {
@@ -866,7 +872,7 @@ shinyServer(function(input, output, session) {
                   quote = FALSE)
     }
   )
-
+  
   # * update the form for adding new taxa -------------------------------------
   newTaxa <- reactiveValues()
   newTaxa$Df <- data.frame("ncbiID" = numeric(),
@@ -876,7 +882,7 @@ shinyServer(function(input, output, session) {
                            stringsAsFactors = FALSE)
   newIndex <- reactiveValues()
   newIndex$value <- 1
-
+  
   observeEvent(input$new_add, {
     newTaxa$Df[newIndex$value, ] <- c(input$new_id,
                                       input$new_name,
@@ -889,7 +895,7 @@ shinyServer(function(input, output, session) {
     updateTextInput(session, "new_rank", value = "norank")
     updateTextInput(session, "new_parent", value = "")
   })
-
+  
   # * close adding taxa windows -----------------------------------------------
   observeEvent(input$new_done, {
     toggleModal(session, "add_taxa_windows", toggle = "close")
@@ -899,7 +905,7 @@ shinyServer(function(input, output, session) {
                 row.names = FALSE,
                 quote = FALSE)
   })
-
+  
   # * check if data is loaded and "parse" button is clicked and confirmed -----
   v1 <- reactiveValues(parse = FALSE)
   observeEvent(input$but_parse, {
@@ -909,17 +915,17 @@ shinyServer(function(input, output, session) {
     toggleState("new_taxa_ask")
     toggleState("main_input")
   })
-
+  
   # * create rankList.txt, idList.txt, ----------------------------------------
   invalidID <- reactive({
     invalidID <- data.frame("id" = as.character(),
                             "type" = as.character(),
                             stringsAsFactors = FALSE)
-
+    
     filein <- input$main_input
     if (is.null(filein)) return()
     input_type <- check_input_vadility(filein) #get_input_type()
-
+    
     if (input_type == "xml" |
         input_type == "long" |
         input_type == "wide" |
@@ -929,7 +935,7 @@ shinyServer(function(input, output, session) {
                                           header = TRUE,
                                           check.names = FALSE,
                                           comment.char = ""))
-
+      
       if (v1$parse == FALSE) return()
       else {
         # get list of taxa need to be parsed (the one mising taxonomy info)
@@ -939,14 +945,14 @@ shinyServer(function(input, output, session) {
           titleline <- c("geneID", unkTaxa)
         }
         # invalidIDtmp <- list()
-
+        
         ncbiTaxonInfo <- fread("data/taxonNamesFull.txt")
         newTaxaFromFile <- fread("data/newTaxa.txt",
                                  colClasses = c("ncbiID" = "character"))
-
+        
         ## join all ncbi taxa and new taxa together
         allTaxonInfo <- rbind(newTaxaFromFile, ncbiTaxonInfo)
-
+        
         ## check missing ids
         if (any(!(unkTaxa %in% allTaxonInfo$ncbiID))) {
           invalid_missing <-
@@ -957,7 +963,7 @@ shinyServer(function(input, output, session) {
           )
           invalidID <- rbind(invalidID, invalidID_tmp)
         }
-
+        
         ## check IDs & names from newTaxa that are present in taxonNamesFull
         if (nrow(newTaxaFromFile[newTaxaFromFile$ncbiID
                                  %in% ncbiTaxonInfo$ncbiID,]) > 0) {
@@ -968,11 +974,11 @@ shinyServer(function(input, output, session) {
             "type" = rep("id", length(invalid_id))
           )
           invalidID <- rbind(invalidID, invalidID_tmp)
-
+          
           newTaxaFromFile <- newTaxaFromFile[!(newTaxaFromFile$ncbiID
                                                %in% ncbiTaxonInfo$ncbiID),]
         }
-
+        
         if (nrow(newTaxaFromFile[newTaxaFromFile$fullName
                                  %in% ncbiTaxonInfo$fullName,]) > 0) {
           invalid_name <- newTaxaFromFile[newTaxaFromFile$fullName
@@ -983,7 +989,7 @@ shinyServer(function(input, output, session) {
           )
           invalidID <- rbind(invalidID, invalidID_tmp)
         }
-
+        
         if (nrow(invalidID) > 0) {
           return(invalidID)
         }
@@ -1030,16 +1036,16 @@ shinyServer(function(input, output, session) {
         rankList <- data.frame()
         idList <- data.frame()
         reducedInfoList <- data.frame()
-
+        
         # Create 0-row data frame which will be used to store data
         withProgress(message = "Parsing input file", value = 0, {
           for (i in 2:length(titleline)) {
             ## taxon ID
             refID <- titleline[i]
-
+            
             ## get info for this taxon
             refEntry <- allTaxonInfo[allTaxonInfo$ncbiID == refID, ]
-
+            
             if (
               nrow(reducedInfoList[
                 reducedInfoList$X1 == refEntry$ncbiID, ]) == 0
@@ -1053,10 +1059,10 @@ shinyServer(function(input, output, session) {
                                         stringsAsFactors = FALSE)
               reducedInfoList <- rbind(reducedInfoList, refInfoList)
             }
-
+            
             # parentID (used to check if hitting last rank, i.e. norank_1)
             lastID <- refEntry$parentID
-
+            
             # create list of rank for this taxon
             rank <- c(paste0("ncbi", refID), refEntry$fullName)
             if (refEntry$rank == "norank") {
@@ -1064,7 +1070,7 @@ shinyServer(function(input, output, session) {
             } else {
               rank <- c(rank, refEntry$rank)
             }
-
+            
             # create list of IDs for this taxon
             ids <- list(paste0(refEntry$fullName, "#name"))
             if (refEntry$rank == "norank") {
@@ -1080,11 +1086,11 @@ shinyServer(function(input, output, session) {
                               "#",
                               refEntry$rank))
             }
-
+            
             # append info into rank and ids
             while (lastID != 1) {
               nextEntry <- allTaxonInfo[allTaxonInfo$ncbiID == lastID, ]
-
+              
               if (
                 nrow(reducedInfoList[
                   reducedInfoList$X1 == nextEntry$ncbiID, ]) == 0
@@ -1096,13 +1102,13 @@ shinyServer(function(input, output, session) {
                                       nextEntry$parentID),
                                     nrow = 1, byrow = TRUE),
                              stringsAsFactors = FALSE)
-
+                
                 reducedInfoList <- rbind(reducedInfoList,
                                          nextEntryList)
               }
-
+              
               lastID <- nextEntry$parentID
-
+              
               if ("norank" %in% nextEntry$rank) {
                 rank <- c(rank,
                           paste0(nextEntry$rank,
@@ -1122,7 +1128,7 @@ shinyServer(function(input, output, session) {
                                 nextEntry$rank))
               }
             }
-
+            
             # last rank and id
             rank <- c(rank, "norank_1")
             ids <- c(ids, "1#norank_1")
@@ -1144,7 +1150,7 @@ shinyServer(function(input, output, session) {
                                            byrow = TRUE),
                                     stringsAsFactors = FALSE)
             idList <- rbind.fill(idList, idListTMP)
-
+            
             # Increment the progress bar, and update the detail text.
             incProgress(1 / (length(titleline) - 1),
                         detail = paste( (i - 1),
@@ -1152,7 +1158,7 @@ shinyServer(function(input, output, session) {
                                         length(titleline) - 1))
           }
         })
-
+        
         withProgress(message = "Generating taxonomy file...", value = 0, {
           # open existing files (idList, rankList and taxonNamesReduced.txt)
           ncol <- max(count.fields("data/rankList.txt", sep = "\t"))
@@ -1166,7 +1172,7 @@ shinyServer(function(input, output, session) {
                                      stringsAsFactors = TRUE,
                                      na.strings = c("", "NA"),
                                      col.names = paste0("X", seq_len(ncol))))
-
+          
           oldRankList <-
             as.data.frame(read.table("data/rankList.txt",
                                      sep = "\t",
@@ -1177,7 +1183,7 @@ shinyServer(function(input, output, session) {
                                      stringsAsFactors = TRUE,
                                      na.strings = c("", "NA"),
                                      col.names = paste0("X", seq_len(ncol))))
-
+          
           oldNameList <-
             as.data.frame(read.table("data/taxonNamesReduced.txt",
                                      sep = "\t",
@@ -1186,8 +1192,8 @@ shinyServer(function(input, output, session) {
                                      comment.char = "",
                                      fill = TRUE,
                                      stringsAsFactors = TRUE))
-
-
+          
+          
           # and append new info into those files
           new_idList <- rbind.fill(oldIDList, idList)
           new_rankList <- rbind.fill(oldRankList, rankList)
@@ -1218,6 +1224,7 @@ shinyServer(function(input, output, session) {
                       quote = FALSE,
                       sep = "\t")
           
+
           # create taxonomy matrix (taxonomyMatrix.txt)
           taxMatrix <- taxonomyTableCreator("data/idList.txt",
                                             "data/rankList.txt")
@@ -1232,7 +1239,7 @@ shinyServer(function(input, output, session) {
     }
     return()
   })
-
+  
   # * output invalid NCBI ID --------------------------------------------------
   output$invalidID.output <- renderTable({
     if (is.null(invalidID())) return()
@@ -1242,7 +1249,7 @@ shinyServer(function(input, output, session) {
       return(outDf)
     }
   })
-
+  
   # * download list of invalidID ----------------------------------------------
   output$invalidID.download <- downloadHandler(
     filename = function() {
@@ -1257,7 +1264,7 @@ shinyServer(function(input, output, session) {
                   quote = FALSE)
     }
   )
-
+  
   # * render final msg after taxon parsing ------------------------------------
   output$end_parsing_msg <- renderUI({
     if (is.null(invalidID())) {
@@ -1265,25 +1272,25 @@ shinyServer(function(input, output, session) {
              style = "color:red")
     } else {
       HTML('<p><strong><span style="color: #e12525;"> SOME INVALID TAXON
-            IDs HAVE BEEN FOUND!!</span><br /> </strong></p>
-            <p><em>Type="<span style="color: #0000ff;">id</span>"/
-            <span style="color: #0000ff;">name</span>:
-            IDs/names already exist in NCBI!</em></p>
-            <p><em>Type="<span style="color: #0000ff;">missing</span>": IDs
-            cannot be found in both NCBI and newTaxa.txt file.</em></p>
-            <p>For IDs with type of <em><span style="color: #0000ff;">"id"
-            </span></em> and <em><span style="color: #0000ff;">"name"</span>
-            </em>, please remove them from newTaxa.txt file or
-            renamed their IDs and names.</p>
-            <p>For IDs with type of <em><span style="color: #0000ff;">"missing"
-            </span></em>, please check the validity of them&nbsp;in
-            <a href="https://www.ncbi.nlm.nih.gov/taxonomy" target="_blank"
-            rel="noopener"> NCBI taxonomy database</a>!</p>')
+           IDs HAVE BEEN FOUND!!</span><br /> </strong></p>
+           <p><em>Type="<span style="color: #0000ff;">id</span>"/
+           <span style="color: #0000ff;">name</span>:
+           IDs/names already exist in NCBI!</em></p>
+           <p><em>Type="<span style="color: #0000ff;">missing</span>": IDs
+           cannot be found in both NCBI and newTaxa.txt file.</em></p>
+           <p>For IDs with type of <em><span style="color: #0000ff;">"id"
+           </span></em> and <em><span style="color: #0000ff;">"name"</span>
+           </em>, please remove them from newTaxa.txt file or
+           renamed their IDs and names.</p>
+           <p>For IDs with type of <em><span style="color: #0000ff;">"missing"
+           </span></em>, please check the validity of them&nbsp;in
+           <a href="https://www.ncbi.nlm.nih.gov/taxonomy" target="_blank"
+           rel="noopener"> NCBI taxonomy database</a>!</p>')
     }
-  })
-
+    })
+  
   # ====================== PROCESSING INPUT DATA ==============================
-
+  
   # * check if data is loaded and "plot" button is clicked --------------------
   v <- reactiveValues(doPlot = FALSE)
   observeEvent(input$do, {
@@ -1296,7 +1303,7 @@ shinyServer(function(input, output, session) {
       updateButton(session, "do", disabled = TRUE)
     }
   })
-
+  
   # * check if "no ordering gene IDs" has been checked ------------------------
   output$apply_cluster_check.ui <- renderUI({
     if (input$ordering == FALSE) {
@@ -1304,8 +1311,8 @@ shinyServer(function(input, output, session) {
            <strong>Input & settings tab</strong>&nbsp;to enable this function)
            </em></p>')
     }
-  })
-
+    })
+  
   # * to enable clustering ----------------------------------------------------
   observe({
     if (input$ordering == FALSE) {
@@ -1314,11 +1321,11 @@ shinyServer(function(input, output, session) {
       shinyjs::enable("apply_cluster")
     }
   })
-
+  
   # * get OMA data for input list ---------------------------------------------
   get_oma_browser <- function(id_list, ortho_type) {
     final_omaDf <- data.frame()
-
+    
     withProgress(value = 0, {
       i = 1
       for (seed_id in id_list) {
@@ -1346,15 +1353,15 @@ shinyServer(function(input, output, session) {
         i <- i + 1
       }
     })
-
+    
     return(final_omaDf)
   }
-
+  
   final_oma_df <- reactive({
     filein <- input$main_input
     if (is.null(filein)) return()
     input_type <- check_input_vadility(filein)
-
+    
     if (input_type == "oma") {
       if (input$get_data_oma[1] == 0) return()
       oma_ids <- as.data.frame(read.table(file = filein$datapath,
@@ -1369,7 +1376,7 @@ shinyServer(function(input, output, session) {
       return()
     }
   })
-
+  
   # * convert main input file in any format into long format dataframe --------
   get_main_input <- reactive({
     if (input$demo_data == "lca-micros") {
@@ -1392,7 +1399,7 @@ shinyServer(function(input, output, session) {
     }
     return(long_dataframe)
   })
-
+  
   # * parse domain info into data frame ---------------------------------------
   get_domain_information <- reactive({
     if (input$demo_data == "none") {
@@ -1401,10 +1408,11 @@ shinyServer(function(input, output, session) {
     } else {
       input_type <- "demo"
     }
-
+    
     if (input_type == "oma") {
       domain_df <- get_all_domains_oma(final_oma_df())
     } else {
+      print("Getting the domains...")
       main_input <- get_main_input()
       domain_df <- parse_domain_input(main_input,
                                       # input_type,
@@ -1417,7 +1425,7 @@ shinyServer(function(input, output, session) {
     }
     return(domain_df)
   })
-
+  
   # * get ID list of input taxa from main input -------------------------------
   subset_taxa <- reactive({
     if (input$demo_data == "lca-micros" |
@@ -1429,7 +1437,7 @@ shinyServer(function(input, output, session) {
     } else {
       inputTaxa <- readLines(filein$datapath, n = 1)
     }
-
+    
     inputTaxa <- unlist(strsplit(inputTaxa, split = "\t"))
     if (inputTaxa[1] == "geneID") {
       # remove "geneID" element from vector inputTaxa
@@ -1438,25 +1446,25 @@ shinyServer(function(input, output, session) {
     # return input taxa
     return(inputTaxa)
   })
-
+  
   # * get NAME list of all (super)taxa ----------------------------------------
   alltaxa_list <- reactive({
     filein <- input$main_input
     if (is.null(filein) & input$demo_data == "none") return()
-
+    
     rank_select <- input$rank_select
     if (rank_select == "") return()
     if (length(unkTaxa()) > 0) return()
-
+    
     # load list of unsorted taxa
     Dt <- get_taxa_list(TRUE, subset_taxa())
-
+    
     # load list of taxon name
     nameList <- get_name_list(TRUE, FALSE)
-
+    
     # get rank name from rank_select
     rankName <- substr(rank_select, 4, nchar(rank_select))
-
+    
     choice <- as.data.frame
     choice <- rbind(Dt[rankName])
     colnames(choice) <- "ncbiID"
@@ -1465,32 +1473,32 @@ shinyServer(function(input, output, session) {
                     by = "ncbiID",
                     all = FALSE)
   })
-
+  
   # * sort input taxa ---------------------------------------------------------
   sortedtaxa_list <- reactive({
     if (v$doPlot == FALSE) return()
-
+    
     # FIRST, GET REPRESENTATIVE TAXON
-
+    
     # load list of unsorted taxa
     Dt <- get_taxa_list(FALSE, subset_taxa())
-
+    
     # load list of taxon name
     nameList <- as.data.frame(read.table("data/taxonNamesReduced.txt",
                                          sep = "\t",
                                          header = TRUE,
                                          fill = TRUE))
     nameList$fullName <- as.character(nameList$fullName)
-
+    
     # input parameters
     rank_select <- input$rank_select
-
+    
     # get rank name from rank_select
     rankName <- substr(rank_select, 4, nchar(rank_select))
-
+    
     # get rank number (number of column in unsorted taxa list - dataframe Dt)
     rankNr <- 0 + as.numeric(substr(rank_select, 1, 2))
-
+    
     # get selected supertaxon ID
     taxa_list <- as.data.frame(read.table("data/taxonNamesReduced.txt",
                                           sep = "\t",
@@ -1506,20 +1514,20 @@ shinyServer(function(input, output, session) {
         as.numeric(taxa_list$ncbiID[taxa_list$fullName == input$in_select
                                     & taxa_list$rank == rankNameTMP[1]])
     }
-
+    
     # representative taxon
     repTaxon <- Dt[Dt[, rankName] == superID, ][1, ]
-
+    
     # THEN, SORT TAXON LIST BASED ON HCLUST TREE
-
+    
     # prepare Df for calculating distance matrix
     distDf <- subset(Dt, select = -c(ncbiID, fullName))
     row.names(distDf) <- distDf$abbrName
     distDf <- distDf[, -1]
-
+    
     # get sorted taxon IDs & sort full taxonomy info dataframe
     treeIn <- input$inputTree
-
+    
     if (is.null(treeIn)) {
       taxaTree <- create_rooted_tree(distDf, as.character(repTaxon$abbrName))
     } else {
@@ -1527,11 +1535,11 @@ shinyServer(function(input, output, session) {
     }
     taxonList <- sort_taxa_from_tree(taxaTree)
     sortedDt <- Dt[match(taxonList, Dt$abbrName), ]
-
+    
     # subset to get list of input taxa only
     inputTaxa <- subset_taxa()
     sortedDt <- subset(sortedDt, abbrName %in% inputTaxa)
-
+    
     # get only taxonIDs list of selected rank and rename columns
     sortedOut <- subset(sortedDt, select = c("abbrName",
                                              "ncbiID",
@@ -1541,18 +1549,18 @@ shinyServer(function(input, output, session) {
                              "species",
                              "fullName",
                              "ncbiID")
-
+    
     # add name of supertaxa into sortedOut list
     sortedOut <- merge(sortedOut, nameList,
                        by = "ncbiID",
                        all.x = TRUE,
                        sort = FALSE)
     sortedOut$species <- as.character(sortedOut$species)
-
+    
     # add order_prefix to supertaxon name
     # and add prefix "ncbi" to taxon_ncbiID (column "species")
     prefix <- 1001
-
+    
     ## create new column for sorted supertaxon
     sortedOut$sortedSupertaxon <- 0
     sortedOut$sortedSupertaxon[1] <- paste0(prefix,
@@ -1574,7 +1582,7 @@ shinyServer(function(input, output, session) {
                                        sortedOut$species[i])
       }
     }
-
+    
     # final sorted supertaxa list
     sortedOut$taxonID <- 0
     sortedOut$category <- "cat"
@@ -1594,16 +1602,16 @@ shinyServer(function(input, output, session) {
                              "supertaxon",
                              "rank",
                              "category")
-
+    
     sortedOut$taxonID <- as.numeric(sortedOut$taxonID)
     sortedOut$ncbiID <- as.factor(sortedOut$ncbiID)
     sortedOut$supertaxon <- as.factor(sortedOut$supertaxon)
     sortedOut$category <- as.factor(sortedOut$category)
-
+    
     ### return data frame
     return(sortedOut)
   })
-
+  
   # * get subset data (default: first 30 genes) for plotting ------------------
   preData <- reactive({
     # get list of gene of interest (from a separated file)
@@ -1623,10 +1631,10 @@ shinyServer(function(input, output, session) {
         }
       }
     }
-
+    
     long_dataframe <- get_main_input()
     if (is.null(long_dataframe)) return()
-
+    
     if (is.null(long_dataframe)) {
       data <- data.frame("geneID" = character(),
                          "ncbiID" = character(),
@@ -1634,27 +1642,28 @@ shinyServer(function(input, output, session) {
                          "var1" = character(),
                          "var2" = character(),
                          stringsAsFactors = FALSE)
-    } else{
+    } else {
       long_dataframe <- unsort_id(long_dataframe, input$ordering)
-
+      
       if (length(listGene) >= 1) {
         data <- long_dataframe[long_dataframe$geneID %in% listGene, ]
       } else {
         subsetID <- levels(long_dataframe$geneID)[input$st_index:end_index]
         data <- long_dataframe[long_dataframe$geneID %in% subsetID, ]
       }
-
+     
       if (ncol(data) < 5) {
         for (i in 1:(5 - ncol(data))) {
           data[paste0("newVar", i)] <- 1
         }
       }
+      
       colnames(data) <- c("geneID", "ncbiID", "orthoID", "var1", "var2")
     }
     # return preData
     return(data)
   })
-
+  
   # * creating main dataframe for subset taxa (in species/strain level) -------
   # * get (super)taxa names (1)
   # * calculate percentage of presence (2),
@@ -1663,28 +1672,27 @@ shinyServer(function(input, output, session) {
     if (is.null(preData())) return()
 
     mdData <- preData()
-
+    
     # count number of inparalogs
     paralogCount <- plyr::count(mdData, c("geneID", "ncbiID"))
     mdData <- merge(mdData, paralogCount, by = c("geneID", "ncbiID"))
     colnames(mdData)[ncol(mdData)] <- "paralog"
-
+    
     # (1) GET SORTED TAXONOMY LIST
     taxa_list <- sortedtaxa_list()
-
+    
     # calculate frequency of all supertaxa
     taxaCount <- plyr::count(taxa_list, "supertaxon")
-
+    
     # merge mdData, mdDataVar2 and taxa_list to get taxonomy info
     taxaMdData <- merge(mdData, taxa_list, by = "ncbiID")
     taxaMdData$var1 <-
       suppressWarnings(as.numeric(as.character(taxaMdData$var1)))
     taxaMdData$var2 <-
       suppressWarnings(as.numeric(as.character(taxaMdData$var2)))
-
+    
     # (2) calculate PERCENTAGE of PRESENT SPECIES
     finalPresSpecDt <- calc_pres_spec(taxaMdData, taxaCount)
-
     # (3) calculate max/min/mean/median VAR1 for every supertaxon of each gene
     # remove NA rows from taxaMdData
     taxaMdDataNoNA <- taxaMdData[!is.na(taxaMdData$var1), ]
@@ -1694,7 +1702,7 @@ shinyServer(function(input, output, session) {
                               taxaMdDataNoNA$geneID),
                          FUN = input$var1_aggregate_by)
     colnames(mVar1Dt) <- c("supertaxon", "geneID", "mVar1")
-
+    
     # (4) calculate max/min/mean/median VAR2 for each super taxon
     # remove NA rows from taxaMdData
     taxaMdDataNoNA_var2 <- taxaMdData[!is.na(taxaMdData$var2), ]
@@ -1709,13 +1717,13 @@ shinyServer(function(input, output, session) {
       mVar2Dt <- taxaMdData[, c("supertaxon", "geneID")]
       mVar2Dt$mVar2 <- 0
     }
-
+    
     # (3+4) & join mVar2 together with mVar1 scores into one df
     scoreDf <- merge(mVar1Dt,
                      mVar2Dt,
                      by = c("supertaxon", "geneID"),
                      all = TRUE)
-
+    
     # (2+3+4) add presSpec and mVar1 into taxaMdData
     presMdData <- merge(taxaMdData,
                         finalPresSpecDt,
@@ -1730,21 +1738,20 @@ shinyServer(function(input, output, session) {
                         all.x = TRUE)
     # rename "freq" into "numberSpec"
     names(fullMdData)[names(fullMdData) == "freq"] <- "numberSpec"
-
+    
     fullMdData$fullName <- as.vector(fullMdData$fullName)
     names(fullMdData)[names(fullMdData) == "orthoID.x"] <- "orthoID"
     # parsed input data frame !!!
     fullMdData <- fullMdData[!duplicated(fullMdData), ]
-
     return(fullMdData)
   })
-
+  
   # * reduce data from lowest level to supertaxon (e.g. phylum) ---------------
   # * This data set contain only supertaxa
   # * and their value (%present, mVar1 & mVar2) for each gene
   dataSupertaxa <- reactive({
     fullMdData <- get_data_filtered()
-
+    
     # to check if working with the lowest taxonomy rank; 1 for NO; 0 for YES
     flag <- 1
     if (length(unique(levels(as.factor(fullMdData$numberSpec)))) == 1) {
@@ -1761,7 +1768,7 @@ shinyServer(function(input, output, session) {
         flag <- 0
       }
     }
-
+    
     if (flag == 1) {
       # get representative orthoID that has m VAR1 for each supertaxon
       mOrthoID <- fullMdData[, c("geneID",
@@ -1779,7 +1786,7 @@ shinyServer(function(input, output, session) {
       mOrthoID <- mOrthoID[!is.na(mOrthoID$orthoID), ]
       mOrthoID <- mOrthoID[, c("geneID", "supertaxon", "orthoID")]
       mOrthoID <- mOrthoID[!duplicated(mOrthoID[, 1:2]), ]
-
+      
       # get data set for phyloprofile plotting (contains only supertaxa info)
       superDf <- subset(fullMdData, select = c("geneID",
                                                "supertaxon",
@@ -1791,7 +1798,7 @@ shinyServer(function(input, output, session) {
                                                "paralog"))
       superDf$paralog <- 1
       superDf <- superDf[!duplicated(superDf), ]
-
+      
       superDfExt <- merge(superDf, mOrthoID, by = c("geneID", "supertaxon"),
                           all.x = TRUE)
       superDfExt <- superDfExt[, c("geneID",
@@ -1803,15 +1810,14 @@ shinyServer(function(input, output, session) {
                                    "orthoID",
                                    "mVar2",
                                    "paralog")]
-
+      
       # rename mVar to var
       names(superDfExt)[names(superDfExt) == "mVar1"] <- "var1"
       names(superDfExt)[names(superDfExt) == "mVar2"] <- "var2"
     }
-
     return(superDfExt)
   })
-
+  
   # * heatmap data input ------------------------------------------------------
   dataHeat <- reactive({
     # get all cutoffs
@@ -1821,31 +1827,30 @@ shinyServer(function(input, output, session) {
     var1_cutoff_max <- input$var1[2]
     var2_cutoff_min <- input$var2[1]
     var2_cutoff_max <- input$var2[2]
-
+    
     # check input file
     filein <- input$main_input
     if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor") {
       filein <- 1
     }
     if (is.null(filein)) return()
-
     dataHeat <- dataSupertaxa()
-
+    
     # get selected supertaxon name
     split <- strsplit(as.character(input$in_select), "_")
     in_select <- as.character(split[[1]][1])
-
+    
     ### replace insufficient values according to the thresholds by NA or 0
     dataHeat$presSpec[dataHeat$supertaxon != in_select
                       & dataHeat$presSpec < percent_cutoff_min] <- 0
     dataHeat$presSpec[dataHeat$supertaxon != in_select
                       & dataHeat$presSpec > percent_cutoff_max] <- 0
-
+    
     dataHeat$presSpec[dataHeat$supertaxon != in_select
                       & dataHeat$var1 < var1_cutoff_min] <- 0
     dataHeat$presSpec[dataHeat$supertaxon != in_select
                       & dataHeat$var1 > var1_cutoff_max] <- 0
-
+    
     if (input$var1_relation == "protein") {
       if (input$var2_relation == "protein") {
         # prot-prot: remove complete cell if one variable not sufficient
@@ -1883,7 +1888,7 @@ shinyServer(function(input, output, session) {
                       & dataHeat$var1 > var1_cutoff_max] <- NA
       }
     }
-
+    
     dataHeat$var1[dataHeat$supertaxon != in_select
                   & dataHeat$var1 < var1_cutoff_min] <- NA
     dataHeat$var1[dataHeat$supertaxon != in_select
@@ -1894,75 +1899,129 @@ shinyServer(function(input, output, session) {
                   & dataHeat$var2 > var2_cutoff_max] <- NA
     dataHeat <- droplevels(dataHeat)  # delete unused levels
     dataHeat$geneID <- as.factor(dataHeat$geneID)
+    dataHeat$supertaxon <- as.factor(dataHeat$supertaxon)
+    
+    ### add gene categories (if provided)
+    if (input$color_by_group == TRUE) {
+      # get gene category
+      gene_category_file <- input$gene_category
+      if (is.null(gene_category_file)) {
+        cat_dt <- data.frame(
+          geneID = levels(dataHeat$geneID)
+        )
+        cat_dt$group <- "no_category"
+      } else {
+        
+        cat_dt <- as.data.frame(read.table(file = gene_category_file$datapath,
+                                           sep = "\t",
+                                           header = TRUE,
+                                           check.names = FALSE,
+                                           comment.char = "",
+                                           fill = TRUE))
+        colnames(cat_dt) <- c("geneID","group")
+      }
+      
+      # create a dataframe that contain all genes and all taxa
+      dataHeat_cat <- data.frame(
+        supertaxon = rep(levels(dataHeat$supertaxon), 
+                         nlevels(dataHeat$geneID)),
+        geneID = rep(levels(dataHeat$geneID), 
+                     each = nlevels(dataHeat$supertaxon))
+      )
+      
+      dataHeat_cat <- merge(dataHeat_cat, cat_dt, by = "geneID")
+      
+      # add categories into dataHeat
+      dataHeat <- merge(dataHeat_cat, dataHeat, 
+                        by = c("geneID","supertaxon"), 
+                        all.x = TRUE)
+    }
     return(dataHeat)
   })
-
+  
   # * clustered heatmap data --------------------------------------------------
   clusteredDataHeat <- reactive({
     dataHeat <- dataHeat()
     dat <- get_profiles()
+    cutoff <- (input$var1[1])*100
 
     # do clustering based on distance matrix
+   
     row.order <- hclust(get_distance_matrix_profiles(),
                         method = input$cluster_method)$order
-    col.order <- hclust(get_distance_matrix(t(dat), method = input$dist_method),
-                        method = input$cluster_method)$order
-
+   
+    # col.order <- hclust(
+    #   get_distance_matrix(t(dat),
+    #                       method = input$dist_method, 
+    #                       (input$var1[1])*100),
+    #   method = input$cluster_method)$order
+    
+    
     # re-order distance matrix accoring to clustering
-    dat_new <- dat[row.order, col.order]
-
+    dat_new <- dat[row.order, ] #col.order
+    #dat_new <- dat[row.order, col.order]
+    
     # return clustered gene ID list
     clustered_gene_ids <- as.factor(row.names(dat_new))
-
+    
     # sort original data according to clustered_gene_ids
     dataHeat$geneID <- factor(dataHeat$geneID,
                               levels = clustered_gene_ids)
+    
+    dataHeat <- dataHeat[!is.na(dataHeat$geneID),]
+    # print("Writing the table...")
+    # write.table(
+    #   clustered_gene_ids,
+    #   file = paste0("../gene_order_",
+    #                 input$dist_method, "_", (input$var1[1])*100),
+    #   col.names = FALSE, row.names = FALSE, quote = FALSE
+    # )
     return(dataHeat)
   })
-
+  
   # =========================== MAIN PROFILE TAB ==============================
-
+  
   # * get total number of genes -----------------------------------------------
   output$total_gene_number.ui <- renderUI({
     geneList <- preData()
     geneList$geneID <- as.factor(geneList$geneID)
     out <- as.list(levels(geneList$geneID))
-
+    
     listIn <- input$list
     if (!is.null(listIn)) {
       list <- as.data.frame(read.table(file = listIn$datapath,
                                        header = FALSE))
       out <- as.list(list$V1)
     }
-
+    
     if (length(out) > 0) {
       strong(paste0("Total number of genes:  ", length(out)))
     }
   })
-
+  
   # * get list of taxa for highlighting ---------------------------------------
   output$highlight_taxon_ui <- renderUI({
     choice <- alltaxa_list()
     choice$fullName <- as.factor(choice$fullName)
-
+    
     out <- as.list(levels(choice$fullName))
     out <- append("none", out)
-
+    
     selectInput("taxon_highlight", "Select (super)taxon to highlight:",
                 out, selected = out[1])
   })
-
+  
   # * get list of genes for highlighting --------------------------------------
   output$highlight_gene_ui <- renderUI({
     geneList <- dataHeat()
     geneList$geneID <- as.factor(geneList$geneID)
-
+    
     out <- as.list(levels(geneList$geneID))
     out <- append("none", out)
-
+    
     selectInput("gene_highlight", "Highlight:", out, selected = out[1])
   })
-
+  
   # * reset configuration windows of Main plot --------------------------------
   observeEvent(input$reset_main_config, {
     shinyjs::reset("x_size")
@@ -1971,12 +2030,12 @@ shinyServer(function(input, output, session) {
     shinyjs::reset("x_angle")
     shinyjs::reset("dot_zoom")
   })
-
+  
   # * close configuration windows of Main plot --------------------------------
   observeEvent(input$apply_main_config, {
     toggleModal(session, "main_plot_config_bs", toggle = "close")
   })
-
+  
   # * parameters for the main profile plot ------------------------------------
   get_parameter_input_main <- reactive({
     input_para <- list(
@@ -1998,21 +2057,21 @@ shinyServer(function(input, output, session) {
     )
     return(input_para)
   })
-
+  
   # * render dot size to dot_size_info ----------------------------------------
   output$dot_size_info <- renderUI({
     if (v$doPlot == FALSE) return()
-
+    
     dataHeat <- dataHeat()
     dataHeat$presSpec[dataHeat$presSpec == 0] <- NA
     presentVl <- dataHeat$presSpec[!is.na(dataHeat$presSpec)]
-
+    
     minDot <- (floor(min(presentVl) * 10) / 10 * 5) * (1 + input$dot_zoom)
     maxDot <- (floor(max(presentVl) * 10) / 10 * 5) * (1 + input$dot_zoom)
-
+    
     em(paste0("current point's size: ", minDot, " - ", maxDot))
   })
-
+  
   # * plot main profile -------------------------------------------------------
   mainpoint_info <- callModule(
     create_profile_plot, "main_profile",
@@ -2029,21 +2088,22 @@ shinyServer(function(input, output, session) {
     width = reactive(input$width),
     height = reactive(input$height),
     x_axis = reactive(input$x_axis),
-    type_profile = reactive("main_profile")
+    type_profile = reactive("main_profile"),
+    color_by_group = reactive(input$color_by_group)
   )
-
-
+  
+  
   # ======================== CUSTOMIZED PROFILE TAB ===========================
-
+  
   # * get list of all sequence IDs for customized profile -----
   output$gene_in <- renderUI({
     filein <- input$main_input
     fileCustom <- input$custom_file
-
+    
     if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor") {
       filein <- 1
     }
-
+    
     if (is.null(filein) & is.null(fileCustom)) {
       return(selectInput("in_seq", "", "all"))
     }
@@ -2077,7 +2137,7 @@ shinyServer(function(input, output, session) {
           out <- as.list(levels(customList$V1))
         }
       }
-
+      
       if (length(out) > 0) {
         create_select_gene("in_seq", out, out)
       }
@@ -2086,7 +2146,7 @@ shinyServer(function(input, output, session) {
       }
     }
   })
-
+  
   # * render popup for selecting taxon rank and return list of subset taxa ----
   cus_taxaName <- callModule(
     select_taxon_rank,
@@ -2094,20 +2154,20 @@ shinyServer(function(input, output, session) {
     rank_select = reactive(input$rank_select),
     subset_taxa = subset_taxa
   )
-
+  
   # * get list of all taxa for customized profile -----------------------------
   output$taxa_in <- renderUI({
     filein <- input$main_input
     if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor") {
       filein <- 1
     }
-
+    
     if (is.null(filein)) return(selectInput("in_taxa", "", "all"))
     if (v$doPlot == FALSE) return(selectInput("in_taxa", "", "all"))
     else{
       choice <- alltaxa_list()
       choice$fullName <- as.factor(choice$fullName)
-
+      
       out <- as.list(levels(choice$fullName))
       out <- append("all", out)
       if (input$apply_cus_taxa == TRUE) {
@@ -2126,7 +2186,7 @@ shinyServer(function(input, output, session) {
       }
     }
   })
-
+  
   # * check if all genes and all species are selected -------------------------
   output$same_profile <- reactive({
     if (v$doPlot == FALSE) return(FALSE)
@@ -2136,7 +2196,7 @@ shinyServer(function(input, output, session) {
     }
   })
   outputOptions(output, "same_profile", suspendWhenHidden = FALSE)
-
+  
   # * change label of plot_custom button for not auto_update ------------------
   output$plot_custom_btn <- renderUI({
     if (input$auto_update_selected == FALSE) {
@@ -2149,7 +2209,7 @@ shinyServer(function(input, output, session) {
                         style = "warning")
     }
   })
-
+  
   # * check if button (custom)PLOT is clicked ---------------------------------
   vCt <- reactiveValues(doPlotCustom = FALSE)
   observeEvent(input$plot_custom, {
@@ -2162,7 +2222,7 @@ shinyServer(function(input, output, session) {
     }
     if (is.null(filein)) vCt$doPlotCustom <- FALSE
   })
-
+  
   # * reset configuration windows of Customized plot -------------------------
   observeEvent(input$reset_selected_config, {
     shinyjs::reset("x_size_select")
@@ -2171,12 +2231,12 @@ shinyServer(function(input, output, session) {
     shinyjs::reset("x_angle_select")
     shinyjs::reset("dot_zoom_select")
   })
-
+  
   # ** close configuration windows of Customized plot -------------------------
   observeEvent(input$apply_selected_config, {
     toggleModal(session, "selected_plot_config_bs", toggle = "close")
   })
-
+  
   # * parameters for the customized profile plot ------------------------------
   get_parameter_input_customized <- reactive({
     input_para <- list(
@@ -2198,7 +2258,7 @@ shinyServer(function(input, output, session) {
     )
     return(input_para)
   })
-
+  
   # * plot customized profile -------------------------------------------------
   selectedpoint_info <- callModule(
     create_profile_plot, "customized_profile",
@@ -2215,11 +2275,12 @@ shinyServer(function(input, output, session) {
     width = reactive(input$selected_width),
     height = reactive(input$selected_height),
     x_axis = reactive(input$x_axis_selected),
-    type_profile = reactive("customized_profile")
+    type_profile = reactive("customized_profile"),
+    color_by_group = reactive(input$color_by_group)
   )
-
+  
   # ============================== POINT INFO =================================
-
+  
   # * get status of point_info for activating Detailed Plot button ------------
   output$point_info_status <- reactive({
     if (input$tabs == "Main profile") {
@@ -2233,7 +2294,7 @@ shinyServer(function(input, output, session) {
     is.null(info)
   })
   outputOptions(output, "point_info_status", suspendWhenHidden = FALSE)
-
+  
   # * show info into "point's info" box ---------------------------------------
   output$point_info <- renderText({
     # GET INFO BASED ON CURRENT TAB
@@ -2245,11 +2306,11 @@ shinyServer(function(input, output, session) {
     } else {
       return()
     }
-
+    
     if (is.null(info)) return()
     else{
       orthoID <- info[2]
-
+      
       if (is.na(orthoID)) return()
       else{
         # if (orthoID=="NA") {orthoID <- info[2]}
@@ -2279,13 +2340,13 @@ shinyServer(function(input, output, session) {
       }
     }
   })
-
+  
   # ============================= DETAILED PLOT ===============================
-
+  
   # * data for detailed plot --------------------------------------------------
   detail_plotDt <- reactive({
     if (v$doPlot == FALSE) return()
-
+    
     # GET INFO BASED ON CURRENT TAB
     if (input$tabs == "Main profile") {
       # info = groupID,orthoID,supertaxon,mVar1,%spec,var2
@@ -2293,7 +2354,7 @@ shinyServer(function(input, output, session) {
     } else if (input$tabs == "Customized profile") {
       info <- selectedpoint_info()
     }
-
+    
     if (is.null(info)) return()
     else{
       ### get info for present taxa in selected supertaxon (1)
@@ -2302,12 +2363,12 @@ shinyServer(function(input, output, session) {
       fullDf <- get_data_filtered()
       selDf <- as.data.frame(fullDf[fullDf$geneID == plotGeneID
                                     & fullDf$supertaxon == plotTaxon, ])
-
+      
       ### get all taxa of this supertaxon (2)
       allTaxaDf <- sortedtaxa_list()
       allTaxaDf <- allTaxaDf[allTaxaDf$supertaxon == plotTaxon, ]
       allTaxaDf <- subset(allTaxaDf, select = c("abbrName", "fullName"))
-
+      
       ### merge (1) and (2) together
       joinedDf <- merge(selDf, allTaxaDf,
                         by = c("abbrName"),
@@ -2320,23 +2381,23 @@ shinyServer(function(input, output, session) {
                                     "var1",
                                     "var2"))
       names(joinedDf)[names(joinedDf) == "fullName.y"] <- "fullName"
-
+      
       # replace var1/var2 as NA for all "NA orthologs"
       joinedDf$var1[is.na(joinedDf$orthoID)] <- NA
       joinedDf$var2[is.na(joinedDf$orthoID)] <- NA
-
+      
       # remove NA orthologs if required
       if (input$detailed_remove_na == TRUE) {
         joinedDf <- joinedDf[!is.na(joinedDf$orthoID), ]
       }
-
+      
       ### return data for detailed plot
       return(joinedDf)
     }
   })
-
+  
   # * render detailed plot ----------------------------------------------------
-
+  
   point_infoDetail <- callModule(
     create_detailed_plot, "detailed_plot",
     data = detail_plotDt,
@@ -2345,35 +2406,35 @@ shinyServer(function(input, output, session) {
     detailed_text = reactive(input$detailed_text),
     detailed_height = reactive(input$detailed_height)
   )
-
+  
   # * render FASTA sequence ---------------------------------------------------
   output$fasta <- renderText({
     if (v$doPlot == FALSE) return()
-
+    
     info <- point_infoDetail() # info = seedID, orthoID, var1
-
+    
     if (is.null(info)) return()
     else{
       data <- get_data_filtered()
-
+      
       seqID <- toString(info[2])
       groupID <- toString(info[1])
       ncbiID <- gsub("ncbi", "", toString(info[5]))
-
+      
       if (input$demo_data == "none") {
         filein <- input$main_input
         input_type <- check_input_vadility(filein)
       } else {
         input_type <- "demo"
       }
-
+      
       if (input_type == "oma") {
         fastaOut <- get_selected_fasta_oma(final_oma_df(), seqID)
       } else {
         seqDf <- data.frame("geneID" = groupID,
                             "orthoID" = seqID,
                             "ncbiID" = ncbiID)
-
+        
         fastaOut <- get_fasta_seqs(
           seqDf, input$main_input, input$demo_data,
           input$input_type, input$concat_fasta,
@@ -2384,13 +2445,13 @@ shinyServer(function(input, output, session) {
           get_main_input()
         )
       }
-
+      
       return(paste(fastaOut[1]))
     }
   })
-
+  
   # ======================== FEATURE ARCHITECTURE PLOT ========================
-
+  
   # * get domain file/path ----------------------------------------------------
   getDomainFile <- reactive({
     # click info
@@ -2398,7 +2459,7 @@ shinyServer(function(input, output, session) {
     group <- as.character(info[1])
     ortho <- as.character(info[2])
     var1 <- as.character(info[3])
-
+    
     if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor") {
       if (is.null(info)) {
         fileDomain <- "noSelectHit"
@@ -2461,7 +2522,7 @@ shinyServer(function(input, output, session) {
               break()
             }
           }
-
+          
           if (flag == 0) {
             fileDomain <- "noFileInFolder"
             updateButton(session, "do_domain_plot", disabled = TRUE)
@@ -2471,7 +2532,7 @@ shinyServer(function(input, output, session) {
     }
     return(fileDomain)
   })
-
+  
   # * check domain file -------------------------------------------------------
   output$check_domain_files <- renderUI({
     fileDomain <- getDomainFile()
@@ -2482,7 +2543,7 @@ shinyServer(function(input, output, session) {
         "<p><em>Domain file not found!! </em></p>
         <p><em>Please make sure that file name has to be in this format:
         <strong>&lt;seedID&gt;.extension</strong>, where extension is limited
-         to <strong>txt</strong>, <strong>csv</strong>, <strong>list</strong>,
+        to <strong>txt</strong>, <strong>csv</strong>, <strong>list</strong>,
         <strong>domains</strong> or <strong>architecture</strong>.
         </em></p>"
       )
@@ -2491,7 +2552,7 @@ shinyServer(function(input, output, session) {
       em("Please select one ortholog sequence!!")
     }
   })
-
+  
   # * render domain plot ------------------------------------------------------
   observeEvent(input$do_domain_plot, {
     callModule(
@@ -2504,9 +2565,9 @@ shinyServer(function(input, output, session) {
       archi_width = reactive(input$archi_width)
     )
   })
-
+  
   # ======================== FILTERED DATA DOWNLOADING ========================
-
+  
   # * for main profile ========================================================
   main_fasta_download <- reactive({
     if (input$demo_data == "none") {
@@ -2515,7 +2576,7 @@ shinyServer(function(input, output, session) {
     } else {
       input_type <- "demo"
     }
-
+    
     if (input_type == "oma") {
       all_oma_df <- final_oma_df()
       filtered_download_df <- as.data.frame(download_data())
@@ -2536,10 +2597,10 @@ shinyServer(function(input, output, session) {
         get_main_input()
       )
     }
-
+    
     return(main_fasta_out)
   })
-
+  
   download_data <- callModule(
     download_filtered_main,
     "filtered_main_download",
@@ -2551,7 +2612,7 @@ shinyServer(function(input, output, session) {
     var2 = reactive(input$var2),
     percent = reactive(input$percent)
   )
-
+  
   # * for customized profile ==================================================
   customized_fasta_download <- reactive({
     if (input$demo_data == "none") {
@@ -2560,7 +2621,7 @@ shinyServer(function(input, output, session) {
     } else {
       input_type <- "demo"
     }
-
+    
     if (input_type == "oma") {
       all_oma_df <- final_oma_df()
       filtered_download_df <- as.data.frame(download_custom_data())
@@ -2591,11 +2652,11 @@ shinyServer(function(input, output, session) {
     in_seq = reactive(input$in_seq),
     in_taxa = reactive(input$in_taxa)
   )
-
+  
   # ============================ ANALYSIS FUNCTIONS ===========================
-
+  
   # * PROFILE CLUSTERING ======================================================
-
+  
   # ** check if genes are added anywhere else to the customized profile -------
   observe({
     if (input$add_gene_age_custom_profile == TRUE
@@ -2606,7 +2667,7 @@ shinyServer(function(input, output, session) {
       shinyjs::enable("add_cluster_cutom_profile")
     }
   })
-
+  
   output$add_cluster_cutom_profile_check.ui <- renderUI({
     if (input$add_gene_age_custom_profile == TRUE
         | input$add_core_gene_custom_profile == TRUE |
@@ -2617,31 +2678,47 @@ shinyServer(function(input, output, session) {
            <strong>Group comparison</strong>
            &nbsp;to enable this function)</em></p>')
     }
-  })
-
+    })
+  
   # ** List of possible profile types -----------------------------------------
   output$select_profile_type <- renderUI({
     variable1 <- paste0("profile using ", input$var1_id)
-    variable2 <- paste0("profile using ", input$var2_id)
-    radioButtons(
-      "profile_type",
-      label = h5("Select the profile type"),
-      choiceNames = list(
-        "binary profile",
-        variable1,
-        variable2),
-      choiceValues = list(
-        "binary", "var1", "var2"
-      ),
-      selected = "binary",
-      inline = FALSE)
-  })
+    if (input$var2_id != "") {
+      variable2 <- paste0("profile using ", input$var2_id)
+      radioButtons(
+        "profile_type",
+        label = h5("Select the profile type"),
+        choiceNames = list(
+          "binary profile",
+          variable1,
+          variable2),
+        choiceValues = list(
+          "binary", "var1", "var2"
+        ),
+        selected = "binary",
+        inline = FALSE)
+    }
+    else {
+      radioButtons(
+        "profile_type",
+        label = h5("Select the profile type"),
+        choiceNames = list(
+          "binary profile",
+          variable1),
+        choiceValues = list(
+          "binary", "var1"
+        ),
+        selected = "binary",
+        inline = FALSE)
+    }
 
+  })
+  
   # ** List of possible distance methods --------------------------------------
   output$select_dist_method <- renderUI({
-    #if (is.null(input$profile_type)) return()
-
-     #if (input$profile_type == "binary") {
+    if (is.null(input$profile_type)) return()
+    
+    if (input$profile_type == "binary") {
     selectInput(
       "dist_method",
       label = h5("Distance measure method:"),
@@ -2649,69 +2726,62 @@ shinyServer(function(input, output, session) {
                      "maximum" = "maximum",
                      "manhattan" = "manhattan",
                      "canberra" = "canberra",
-                     "binary" = "binary"#,
-                     # "pearson correlation coefficient" = "pearson",
-                     # "fisher's exact test" = "fisher",
-                     # "mutual information" = "mutual_information",
-                     # "distance correlation" = "distance_correlation"
+                     "binary" = "binary",
+                     "pearson correlation coefficient" = "pearson",
+                     "mutual information" = "mutual_information",
+                     "distance correlation" = "distance_correlation"
       ),
       selected = "euclidean"
     )
-    #}
-    # else {
-    #   selectInput(
-    #     "dist_method",
-    #     label = h5("Distance measure method:"),
-    #     choices = list("mutual information" = "mutual_information",
-    #                    "distance correlation" = "distance_correlation"
-    #     ),
-    #     selected = "euclidean"
-    #   )
-    # }
+    }
+    else {
+      selectInput(
+        "dist_method",
+        label = h5("Distance measure method:"),
+        choices = list("mutual information" = "mutual_information",
+                       "distance correlation" = "distance_correlation"
+        ),
+        selected = "mutual_information"
+      )
+    }
   })
-
+  
   # ** Distance matrix --------------------------------------------------------
   get_distance_matrix_profiles <- reactive({
     if (is.null(input$dist_method)) return()
     profiles <- get_profiles()
-    distance_matrix <- get_distance_matrix(profiles, input$dist_method)
+    distance_matrix <- get_distance_matrix(profiles, input$dist_method, (input$var1[1])*100)
+    # write.table(as.matrix(distance_matrix), file = paste0("../distance_matrix_",
+    #                                                       input$dist_method, "_",(input$var1[1])*100 ),
+    #             col.names = TRUE, row.names = TRUE, quote = FALSE, sep = " \t")
     return(distance_matrix)
   })
-
+  
   # ** Phylogenetic profiles --------------------------------------------------
   get_profiles <- reactive({
     data_heat <- dataHeat()
     if (nrow(data_heat) < 1) return()
     if (is.null(input$dist_method)) return()
     profiles <- get_data_clustering(data_heat,
-                                    #input$profile_type,
-                                    "binary", # Till the second profile type is added
+                                    input$profile_type,
                                     input$var1_aggregate_by,
                                     input$var2_aggregate_by)
     return(profiles)
   })
-
-
-
-  # ** render cluster tree ----------------------------------------------------
-  # brushed_clusterGene <- callModule(
-  #   cluster_profile, "profile_clustering",
-  #   data = dataHeat,
-  #   dist_method = reactive(input$dist_method),
-  #   cluster_method = reactive(input$cluster_method),
-  #   cluster_plot.width = reactive(input$cluster_plot.width),
-  #   cluster_plot.height = reactive(input$cluster_plot.width)
-  # )
+  
+  
+  
+  # ** render cluster tree ---------------------------------------------------
   brushed_clusterGene <- callModule(
     cluster_profile, "profile_clustering",
     distance_matrix = get_distance_matrix_profiles,
     cluster_method = reactive(input$cluster_method),
     plot_width = reactive(input$cluster_plot.width),
-    plot_height = reactive(input$cluster_plot.width))
-
-
+    plot_height = reactive(input$cluster_plot.height))
+  
+  
   # * DISTRIBUTION ANALYSIS ===================================================
-
+  
   # ** list of available variables for distribution plot ----------------------
   output$selected.distribution <- renderUI({
     if (nchar(input$var1_id) == 0 & nchar(input$var2_id) == 0) {
@@ -2726,17 +2796,17 @@ shinyServer(function(input, output, session) {
                            input$var2_id,
                            "% present taxa"))
     }
-
+    
     selectInput("selected_dist",
                 "Choose variable to plot:",
                 varList,
                 varList[1])
   })
-
+  
   # ** var1 / var2 distribution data ------------------------------------------
   distribution_df <- reactive({
     if (v$doPlot == FALSE) return()
-
+    
     dataOrig <- get_main_input()
     if (ncol(dataOrig) < 4) {
       colnames(dataOrig) <- c("geneID",
@@ -2758,16 +2828,16 @@ shinyServer(function(input, output, session) {
                               "var2")
       splitDt <- dataOrig[, c("orthoID", "var1", "var2")]
     }
-
+    
     splitDt$orthoID[splitDt$orthoID == "NA" | is.na(splitDt$orthoID)] <- NA
     splitDt <- splitDt[complete.cases(splitDt), ]
-
+    
     if (length(levels(as.factor(splitDt$var2))) == 1) {
       if (levels(as.factor(splitDt$var2)) == "") {
         splitDt$var2 <- 0
       }
     }
-
+    
     # convert factor into numeric for "var1" & "var2" column
     if ("var1" %in% colnames(splitDt)) {
       splitDt$var1 <- suppressWarnings(as.numeric(as.character(splitDt$var1)))
@@ -2781,7 +2851,7 @@ shinyServer(function(input, output, session) {
       splitDt <- splitDt[splitDt$var2 >= input$var2[1]
                          & splitDt$var2 <= input$var2[2], ]
     }
-
+    
     # filter data base on customized plot (if chosen)
     if (input$dataset.distribution == "Customized data") {
       # get geneID and supertaxon name for splitDt
@@ -2804,7 +2874,7 @@ shinyServer(function(input, output, session) {
                                  "var2",
                                  "supertaxonMod",
                                  "geneID")
-
+      
       # filter
       if (input$in_taxa[1] == "all" & input$in_seq[1] != "all") {
         # select data from dataHeat for selected sequences only
@@ -2819,11 +2889,11 @@ shinyServer(function(input, output, session) {
                           & supertaxonMod %in% input$in_taxa)
       }
     }
-
+    
     # return dt
     return(splitDt)
   })
-
+  
   # ** calculate % present species in supertaxa -------------------------------
   presSpecAllDt <- reactive({
     # open main input file
@@ -2844,18 +2914,18 @@ shinyServer(function(input, output, session) {
                             "var1",
                             "var2")
     }
-
+    
     # count number of inparalogs
     paralogCount <- plyr::count(mdData, c("geneID", "ncbiID"))
     mdData <- merge(mdData, paralogCount, by = c("geneID", "ncbiID"))
     colnames(mdData)[ncol(mdData)] <- "paralog"
-
+    
     # (3) GET SORTED TAXONOMY LIST (3)
     taxa_list <- sortedtaxa_list()
-
+    
     # calculate frequency of all supertaxa
     taxaCount <- plyr::count(taxa_list, "supertaxon")
-
+    
     # merge mdData, mdDatavar2 and taxa_list to get taxonomy info
     taxaMdData <- merge(mdData, taxa_list, by = "ncbiID")
     if ("var1" %in% colnames(taxaMdData)) {
@@ -2870,11 +2940,11 @@ shinyServer(function(input, output, session) {
     finalPresSpecDt <- calc_pres_spec(taxaMdData, taxaCount)
     finalPresSpecDt
   })
-
+  
   # ** render distribution plots ----------------------------------------------
   observe({
     if (v$doPlot == FALSE) return()
-
+    
     if (is.null(input$selected_dist)) {
       return()
     } else {
@@ -2913,9 +2983,9 @@ shinyServer(function(input, output, session) {
       }
     }
   })
-
+  
   # * GENE AGE ESTIMATION =====================================================
-
+  
   # ** check if genes are added anywhere else to the customized profile -------
   observe({
     if (input$add_cluster_cutom_profile == TRUE
@@ -2926,7 +2996,7 @@ shinyServer(function(input, output, session) {
       shinyjs::enable("add_gene_age_custom_profile")
     }
   })
-
+  
   output$add_gene_age_custom_profile_check.ui <- renderUI({
     if (input$add_cluster_cutom_profile == TRUE
         | input$add_core_gene_custom_profile == TRUE
@@ -2937,25 +3007,25 @@ shinyServer(function(input, output, session) {
            <strong>Group comparison</strong>
            &nbsp;to enable this function)</em></p>')
     }
-  })
-
+    })
+  
   # ** reset gene_age_prot_config ---------------------------------------------
   observeEvent(input$reset_gene_age_prot_config, {
     shinyjs::reset("gene_age_width")
     shinyjs::reset("gene_age_height")
     shinyjs::reset("gene_age_text")
   })
-
+  
   # ** data for gene age estimation -------------------------------------------
   gene_ageDf <- reactive({
     if (v$doPlot == FALSE) return()
-
+    
     gene_ageDf <- estimate_gene_age(subset_taxa(), get_data_filtered(),
                                     input$rank_select, input$in_select,
                                     input$var1, input$var2, input$percent)
     return(gene_ageDf)
   })
-
+  
   # ** render age distribution plot -------------------------------------------
   selectedgene_age <- callModule(
     plot_gene_age, "gene_age",
@@ -2964,9 +3034,9 @@ shinyServer(function(input, output, session) {
     gene_age_height = reactive(input$gene_age_height),
     gene_age_text = reactive(input$gene_age_text)
   )
-
+  
   # * CORE GENES IDENTIFICATION ===============================================
-
+  
   # ** render list of available taxa ------------------------------------------
   output$taxa_list_core.ui <- renderUI({
     filein <- input$main_input
@@ -2986,10 +3056,10 @@ shinyServer(function(input, output, session) {
     else{
       choice <- alltaxa_list()
       choice$fullName <- as.factor(choice$fullName)
-
+      
       out <- as.list(levels(choice$fullName))
       out <- append("none", out)
-
+      
       if (input$apply_core_taxa == TRUE) {
         out <- core_taxa_name()
         selectInput("taxa_core",
@@ -3006,7 +3076,7 @@ shinyServer(function(input, output, session) {
       }
     }
   })
-
+  
   # ** render popup for selecting group of taxa to find core genes ------------
   core_taxa_name <- callModule(
     select_taxon_rank,
@@ -3014,7 +3084,7 @@ shinyServer(function(input, output, session) {
     rank_select = reactive(input$rank_select),
     subset_taxa = subset_taxa
   )
-
+  
   # ** check if genes are added anywhere else to the customized profile -------
   observe({
     if (input$add_cluster_cutom_profile == TRUE
@@ -3025,7 +3095,7 @@ shinyServer(function(input, output, session) {
       shinyjs::enable("add_core_gene_custom_profile")
     }
   })
-
+  
   output$add_core_gene_custom_profile_check.ui <- renderUI({
     if (input$add_cluster_cutom_profile == TRUE
         | input$add_gene_age_custom_profile == TRUE
@@ -3036,10 +3106,10 @@ shinyServer(function(input, output, session) {
            <strong>Group Comparioson</strong>
            &nbsp;to enable this function)</em></p>')
     }
-  })
-
-
-
+    })
+  
+  
+  
   # ** render table contains list of core genes -------------------------------
   core_geneDf <- callModule(
     identify_core_gene,
@@ -3049,7 +3119,7 @@ shinyServer(function(input, output, session) {
     taxa_core = reactive(input$taxa_core),
     percent_core = reactive(input$percent_core)
   )
-
+  
   # ** download gene list from core_gene.table --------------------------------
   output$core_gene_table_download <- downloadHandler(
     filename = function() {
@@ -3060,25 +3130,25 @@ shinyServer(function(input, output, session) {
       write.table(data_out, file, sep = "\t", row.names = FALSE, quote = FALSE)
     }
   )
-
+  
   # * GET NCBI TAXONOMY IDs FROM INPUT LIST OF TAXON NAMES ====================
   callModule(search_taxon_id,"search_taxon_id")
-
+  
   # * GROUP COMPARISON ========================================================
   # ** list of all available genes --------------------------------------------
   output$list_genes_gc <- renderUI({
     filein <- input$main_input
-
+    
     file_gc <- input$gc_file
     if (input$demo_data == "lca-micros" | input$demo_data == "ampk-tor") {
       filein <- 1
     }
-
-
+    
+    
     if (v$doPlot == FALSE) {
       return(selectInput("list_selected_genes_gc", "Select sequence(s):", "none"))
     }
-
+    
     if (is.null(filein) & is.null(file_gc)) {
       return(selectInput("list_selected_genes_gc", "Select sequence(s):", "none"))
     } else {
@@ -3107,7 +3177,7 @@ shinyServer(function(input, output, session) {
       }
     }
   })
-
+  
   # ** popup for selecting taxon rank and return list of belonging taxa -------
   gc_taxa_name <- callModule(
     select_taxon_rank,
@@ -3115,7 +3185,7 @@ shinyServer(function(input, output, session) {
     rank_select = reactive(input$rank_select),
     subset_taxa = subset_taxa
   )
-
+  
   # ** list of available taxa (for selecting as in_group) ---------------------
   output$taxa_list_gc <- renderUI({
     filein <- input$main_input
@@ -3130,9 +3200,9 @@ shinyServer(function(input, output, session) {
     } else {
       choice <- alltaxa_list()
       choice$fullName <- as.factor(choice$fullName)
-
+      
       out <- as.list(levels(choice$fullName))
-
+      
       #' when the taxonomy rank was changed -----------------------------------
       if (input$apply_taxa_gc == TRUE) {
         out <- gc_taxa_name()
@@ -3149,40 +3219,40 @@ shinyServer(function(input, output, session) {
         pos <- which(ranks == input$rank_select) # position in the list
         higher_rank <- ranks[pos + 1] # take the next higher rank
         higher_rank_name <- substr(higher_rank, 4, nchar(higher_rank))
-
+        
         name_list <- get_name_list(TRUE, TRUE) # get the taxon names
         dt <- get_taxa_list(FALSE, subset_taxa) # get the taxa
-
+        
         #' get the info for the reference protein from the namelist
         reference <- subset(name_list, name_list$fullName == input$in_select)
-
+        
         #' get the id for every rank for the reference protein
         rank_name <- substr(input$rank_select, 4, nchar(input$rank_select))
         reference_dt <- dt[dt[, rank_name] == reference$ncbiID, ]
-
+        
         #' save the next higher rank
         reference_higher_rank <- reference_dt[higher_rank_name]
         reference_higher_rank <-
           reference_higher_rank[!duplicated(reference_higher_rank), ]
-
+        
         #' get all the taxa with the same id in the next higher rank
         selected_taxa_dt <-
           subset(dt, dt[, higher_rank_name] %in% reference_higher_rank)
         selected_taxa_dt <-
           selected_taxa_dt[!duplicated(selected_taxa_dt[rank_name]), ]
-
+        
         #' get a list with all the ids with reference_higher_rank as parent
         selected_taxa_ids <- selected_taxa_dt[rank_name]
         if (length(selected_taxa_ids[[1]]) >= 1) {
           selected_taxa_ids <- selected_taxa_ids[[1]]
         }
-
+        
         selected_taxa <- subset(name_list, name_list$rank == rank_name)
         selected_taxa <-
           subset(selected_taxa, selected_taxa$ncbiID %in% selected_taxa_ids)
-
+        
         default_select <- selected_taxa$fullName
-
+        
         selectInput("selected_in_group_gc", "Select in_group taxa:",
                     out,
                     selected = default_select,
@@ -3191,7 +3261,7 @@ shinyServer(function(input, output, session) {
       }
     }
   })
-
+  
   # ** buttons to choose the variable -----------------------------------------
   output$variable_button_gc <- renderUI({
     radioButtons(
@@ -3202,7 +3272,7 @@ shinyServer(function(input, output, session) {
       inline = FALSE
     )
   })
-
+  
   # ** slider to set significance level ---------------------------------------
   output$significance.ui <- renderUI({
     msg <- paste0(
@@ -3222,7 +3292,7 @@ shinyServer(function(input, output, session) {
       msg
     )
   })
-
+  
   # ** reset plots config -----------------------------------------------------
   observeEvent(input$reset_config_gc, {
     shinyjs::reset("x_size_gc")
@@ -3230,11 +3300,11 @@ shinyServer(function(input, output, session) {
     shinyjs::reset("angle_gc")
     shinyjs::reset("legend_size_gc")
   })
-
+  
   observeEvent(input$apply_config_gc, {
     toggleModal(session, "gc_plot_config_bs", toggle = "close")
   })
-
+  
   # ** check if genes are added anywhere else to the customized profile -------
   observe({
     if (input$add_gene_age_custom_profile == TRUE |
@@ -3245,7 +3315,7 @@ shinyServer(function(input, output, session) {
       shinyjs::enable("add_gc_genes_custom_profile")
     }
   })
-
+  
   output$add_gc_custom_profile_check <- renderUI({
     if (input$add_gene_age_custom_profile == TRUE |
         input$add_core_gene_custom_profile == TRUE |
@@ -3257,7 +3327,7 @@ shinyServer(function(input, output, session) {
            </em></p>')
     }
   })
-
+  
   # ** parameters for the plots in Group Comparison ---------------------------
   get_parameter_input_gc <- reactive({
     input_data <- list("show_p_value" = input$show_p_value,
@@ -3272,9 +3342,9 @@ shinyServer(function(input, output, session) {
                        "legend_gc" = input$legend_gc,
                        "legend_size_gc" = input$legend_size_gc,
                        "p_values_size" = input$p_values_size_gc)
-
+    
   })
-
+  
   # ** render plots for group comparison --------------------------------------
   gene_list_gc <- callModule(
     group_comparison, "group_comparison",
@@ -3289,6 +3359,7 @@ shinyServer(function(input, output, session) {
     right_format_features = reactive(input$right_format_features),
     domain_information = get_domain_information,
     plot = reactive(input$plot_gc),
-    parameter = get_parameter_input_gc
-    )
-})
+    parameter = get_parameter_input_gc,
+    selected_point = reactive(input$show_point_gc)
+  )
+    })

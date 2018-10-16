@@ -292,32 +292,6 @@ library(bioDist)
 install_packages("energy")
 library(energy)
 
-#' Calculate the contengency table for the fisher exact test ------------------
-#' @export
-#' @param profile1 vector with 0,1 as entrys
-#' @param profile2 vector with 0,1 as entrys
-#' @return contengency table counting the distribution of 0,1 in the different 
-#' profiles
-#' @author Carla Mölbert (carla.moelbert@gmx.de)
-get_contengency_table <- function(profile_1, profile_2){
-  contigency_table <- data.frame(c(0,0), c(0,0))
-  for (i in 1:length(profile_1)) {
-    if (profile_1[i] == 1) {
-      if (profile_2[i] == 1) {
-        contigency_table[1,1] <- contigency_table[1,1] + 1
-      } else {
-        contigency_table[2,1] <- contigency_table[2,1] + 1
-      }
-    } else{
-      if (profile_2[i] == 1) {
-        contigency_table[1,2] <- contigency_table[1,2] + 1
-      } else {
-        contigency_table[2,2] <- contigency_table[2,2] + 1
-      }
-    }
-  }
-  return(contigency_table)
-}
 
 #' get the phylogenetic profiles ----------------------------------------------
 #' @export
@@ -330,16 +304,17 @@ get_contengency_table <- function(profile_1, profile_2){
 get_data_clustering <- function(data,
                                 profile_type,
                                 var1_aggregate_by,
-                                var2_aggregate_by){
-  
-  sub_data_heat <- subset(data, data$presSpec > 0)
+                                var2_aggregate_by)
+  {
 
+  sub_data_heat <- subset(data, data$presSpec > 0)
   if (profile_type == "binary") {
     #' Binary Profiles --------------------------------------------------------
     sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", "presSpec")]
+    sub_data_heat$presSpec[sub_data_heat$presSpec > 0] <- 1
     sub_data_heat <- sub_data_heat[!duplicated(sub_data_heat), ]
     wide_data <- spread(sub_data_heat, supertaxon, presSpec)
-    
+  
     
   }else {
     #' Profiles with FAS scores ----------------------------------------------
@@ -367,13 +342,6 @@ get_data_clustering <- function(data,
   rownames(dat) <- wide_data[, 1]
   dat[is.na(dat)] <- 0
   
-  #' Set all values smaller than a set cut off to 0 
-  #' Add cut off as input variable if it improves the prediction
-  if (!profile_type == "binary") {
-    cutoff <- 0 
-    dat[dat < cutoff] <- 0
-  }
-  
   return(dat)
 }
 
@@ -383,11 +351,15 @@ get_data_clustering <- function(data,
 #' @param dist_method distance method
 #' @return distance matrix
 #' @author Carla Mölbert (carla.moelbert@gmx.de)
-get_distance_matrix <- function(profiles, method){
+get_distance_matrix <- function(profiles, method, cutoff){
+  
+  profiles <-  profiles[, colSums(profiles != 0) > 0]
+  profiles <-  profiles[rowSums(profiles != 0) > 0, ]
+  
   dist_methods <- c("euclidean", "maximum", "manhattan", "canberra", "binary")
   if (method %in% dist_methods) {
     distance_matrix <- dist(profiles, method = method)
-  } else if (method %in% c("fisher", "distance_correlation")) {
+  } else if (method == "distance_correlation") {
     matrix <- data.frame()
     for (i in 1:nrow(profiles)) { # rows
       for (j in 1:nrow(profiles)) { # columns
@@ -395,23 +367,24 @@ get_distance_matrix <- function(profiles, method){
           matrix[i,i] = 1 # if this cell is NA as.dist does not work probably 
           break
         }
-        if (method == "fisher") {
-          contigency_table <- get_contengency_table(profiles[i,], profiles[j,])
-          dist <- fisher.test(contigency_table)
-        } else if (method == "distance_correlation") {
-          dist <- dcor(unlist(profiles[i,]), unlist(profiles[j,]))
-        }
-        matrix[i,j] <- dist 
+        dist <- dcor(unlist(profiles[i,]), unlist(profiles[j,]))
+        # Swich the value so that the profiles with a high correlation are 
+        # clustered together
+        matrix[i,j] <- 1 - dist 
       }
     }
     profile_names <- rownames(profiles)
     colnames(matrix) <- profile_names[1:length(profile_names) - 1]
     rownames(matrix) <- profile_names
     distance_matrix <- as.dist(matrix)
+    
   } else if (method == "mutual_information") {
     distance_matrix <- mutualInfo(as.matrix(profiles))
+    distance_matrix <- max(distance_matrix, na.rm = TRUE) - distance_matrix
   } else if (method == "pearson") {
     distance_matrix <-  cor.dist(as.matrix(profiles))
+    
   }
+
   return(distance_matrix)
 }
