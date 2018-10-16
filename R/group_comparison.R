@@ -25,11 +25,7 @@
 #' @author Carla Mölbert {carla.moelbert@gmx.de}
 
 source("R/functions.R")
-
 #install_packages("exactRankTests")
-
-
-
 
 group_comparison_ui <- function(id){
   ns <- NS(id)
@@ -49,10 +45,12 @@ group_comparison_ui <- function(id){
         "This function is only use full if the features are
         saved in the right format: featuretype_featurename"
       ),
-      sliderInput(ns("domains_threshold"), 
-                  "Persentage of proteins in which the domain needs to have an instance",
-                  min = 0 , max = 100, value = 0,
-                  step = 1, round = FALSE),
+      sliderInput(
+        ns("domains_threshold"), 
+        "Persentage of proteins in which the domain needs to have an instance",
+        min = 0 , max = 100, value = 0,
+        step = 1, round = FALSE
+      ),
       
       downloadButton(ns("download_plots"), "Download plots"),
       width = 3
@@ -84,12 +82,12 @@ group_comparison <- function(input, output, session,
                              plot,
                              parameter,
                              selected_point){
-  # Dataframe for the significant Genes =========================
+  # Dataframe for the significant Genes =======================================
   #' contains geneID, in_group, out_group, pvalues, features, databases,
   #' rank, var
   candidate_genes <- reactiveValues(plots = NULL)
   
-  # List with all candidate genes ========================= 
+  # List with all candidate genes =============================================
   output$candidate_genes <- renderUI({
     ns <- session$ns
     plot()
@@ -128,7 +126,7 @@ group_comparison <- function(input, output, session,
     })
   })
   
-  # Output of the plots for the selected gene(s) =========================
+  # Output of the plots for the selected gene(s) ==============================
   output$plots_ui <- renderUI({
     if (is.character(candidate_genes$plots)) return(candidate_genes$plots)
     get_plots()
@@ -164,8 +162,9 @@ group_comparison <- function(input, output, session,
         choices <- c("all")
         if (gene == "all") {
           for (current_gene in significant_genes$geneID) {
-            subset_current_gene <- subset(significant_genes,
-                                          significant_genes$geneID == current_gene)
+            subset_current_gene <- 
+              subset(significant_genes,
+                     significant_genes$geneID == current_gene)
             choices <- append(choices, unlist(subset_current_gene$databases))
           }
           # show each database only once
@@ -188,7 +187,7 @@ group_comparison <- function(input, output, session,
     })
   })
   
-  # download file with the shown plots =========================
+  # download file with the shown plots ========================================
   output$download_plots <- downloadHandler(
     filename = "plotSignificantGenes.zip",
     content = function(file){
@@ -232,7 +231,7 @@ group_comparison <- function(input, output, session,
     }
   })
   
-  # Deciding which plots will be shown =========================
+  # Deciding which plots will be shown ========================================
   get_plots <- reactive({
     input$interesting_features
     input$domains_threshold
@@ -261,7 +260,7 @@ group_comparison <- function(input, output, session,
     return(plot_output_list)
   })
   
-  # List of genes for the customized profile =========================
+  # List of genes for the customized profile ==================================
   gene_list <- reactive({
     if (!is.null(candidate_genes$plots)) {
       significant_genes <- candidate_genes$plots
@@ -322,7 +321,7 @@ get_significant_genes <- function(in_group,
   if (is.na(rank)) { return("No common anchestor found")}
   
   #' provide the empty data frame ---------------------------------------------
-  if(var == "Both") {
+  if (var == "Both") {
     significant_genes_df <- data.frame(
       geneID = character(),
       in_group = I(list()),
@@ -386,7 +385,7 @@ get_significant_genes <- function(in_group,
       new_row$in_group <- list(in_group_df)
       new_row$out_group <- list(out_group_df)
 
-      if(var == "Both") {
+      if (var == "Both") {
         new_row$pvalues_1 <- pvalue[1]
         new_row$pvalues_2 <- pvalue[2]
       } 
@@ -403,7 +402,7 @@ get_significant_genes <- function(in_group,
     
   }
 
-  if (var == "Both"){
+  if (var == "Both") {
     significant_genes_df$pvalues_1 <- {
       p.adjust(significant_genes_df$pvalues_1, method = "holm",
                n = length(significant_genes_df$pvalues_1))
@@ -414,13 +413,14 @@ get_significant_genes <- function(in_group,
                n = length(significant_genes_df$pvalues_2))
     }
     
-    significant_genes_df <- {
-      significant_genes_df[significant_genes_df$pvalues_1 <= significance_level |
-                             significant_genes_df$pvalues_2 <= significance_level ,]
-    }
+    significant_genes_df <-
+      significant_genes_df[significant_genes_df$pvalues_1 <= significance_level
+                           | significant_genes_df$pvalues_2 <= 
+                             significance_level ,]
     
-    significant_genes_df <- significant_genes_df[!is.na(significant_genes_df$pvalues_1) |
-                                                   !is.na(significant_genes_df$pvalues_1),]
+    significant_genes_df <- 
+      significant_genes_df[!is.na(significant_genes_df$pvalues_1) |
+                             !is.na(significant_genes_df$pvalues_1),]
   }
   
   else {
@@ -452,7 +452,7 @@ get_significant_genes <- function(in_group,
   }
 }
 
-#' Get the database for each feature in a specific gene-------------------------
+#' Get the database for each feature in a specific gene------------------------
 #' @export
 #' @param data contains "seedID", "orthoID", "feature", "start", "end"
 #' @return list of prefixes for the features
@@ -619,7 +619,7 @@ calculate_p_value <- function(var_in, var_out, significance_level){
   if (length(var_in) == 0) return(NA)
   else if (length(var_out) == 0) return(NA)
   else{
-    #' #' * Kolmogorov-Smirnov Test ----------------------------------------------
+    #' #' * Kolmogorov-Smirnov Test -------------------------------------------
     #' #' H0 : The two samples have the same distribution
     #' ks <- ks.test(var_in, var_out, exact = FALSE)
     #' 
@@ -628,7 +628,7 @@ calculate_p_value <- function(var_in, var_out, significance_level){
     #' if (p_value < significance_level) pvalue <- c(p_value)
     #' 
     #' else {
-    #'   #' * Wilcoxon-Mann-Whitney Test -----------------------------------------
+    #'   #' * Wilcoxon-Mann-Whitney Test --------------------------------------
     #'   #' H0: the samples have the same location parameters
     #'   
     #'   wilcox <- wilcox.test(var_in,
@@ -975,7 +975,8 @@ get_barplot_gc <- function(selected_gene,
     if (!is.null(data_in)) {
       in_g <- subset(in_group_domain_df, in_group_domain_df$seedID == seed)
       in_g <- in_g[str_detect(in_g$seedID, in_g$orthoID),]
-      #in_g <- subset(in_group_domain_df, str_detect(in_group_domain_df$seedID, seed))
+      # in_g <- subset(in_group_domain_df, 
+      #                str_detect(in_group_domain_df$seedID, seed))
       if (!empty(in_g)) {
         in_not_empty <- in_not_empty + 1 
         in_group_features <-  plyr::count(in_g, "feature")
@@ -994,7 +995,8 @@ get_barplot_gc <- function(selected_gene,
     if (!is.null(data_out)) {
       out_g <- subset(out_group_domain_df, out_group_domain_df$seedID == seed)
       out_g <- out_g[str_detect(out_g$seedID, out_g$orthoID),]
-      # out_g <- subset(out_group_domain_df, str_detect(out_group_domain_df$seedID, seed))
+      # out_g <- subset(out_group_domain_df, 
+      #                 str_detect(out_group_domain_df$seedID, seed))
       if (!empty(out_g)) {
         out_not_empty <- out_not_empty + 1
         out_group_features <-  plyr::count(out_g, "feature")
@@ -1088,7 +1090,8 @@ get_barplot_gc <- function(selected_gene,
     #' only keep rows in which the feature begins with a element out of the
     #' interesing Features
     features_list <- features_list[!duplicated(features_list)]
-    data_barplot <- subset(data_barplot, data_barplot$feature %in% features_list)
+    data_barplot <- subset(data_barplot, data_barplot$feature 
+                           %in% features_list)
   }
   
   

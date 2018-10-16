@@ -22,8 +22,10 @@ cluster_profile_ui <- function(id) {
     ),
     column(
       4,
-      downloadButton(ns("download_distance_matrix"), "Download distance matrix"),
-      downloadButton(ns("download_cluster_genes"), "Download gene list"),
+      downloadButton(ns("download_distance_matrix"), 
+                     "Download distance matrix"),
+      downloadButton(ns("download_cluster_genes"), 
+                     "Download gene list"),
       tableOutput(ns("brushed_cluster.table"))
     )
   )

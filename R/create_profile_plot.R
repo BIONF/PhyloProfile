@@ -42,8 +42,9 @@ create_profile_plot <- function(input, output, session,
                                 taxon_highlight, gene_highlight,
                                 width, height,
                                 x_axis,
-                                type_profile) {
-  # data for heatmap -----------------------------------------------------------
+                                type_profile,
+                                color_by_group) {
+  # data for heatmap ----------------------------------------------------------
   dataHeat <- reactive({
 
     if (is.null(data())) return()
@@ -66,7 +67,7 @@ create_profile_plot <- function(input, output, session,
     return(data_heat)
   })
 
-  # render heatmap profile -----------------------------------------------------
+  # render heatmap profile ----------------------------------------------------
   output$plot <- renderPlot({
     if (is.null(data())) return()
     if (type_profile() == "customized_profile") {
@@ -78,7 +79,8 @@ create_profile_plot <- function(input, output, session,
       parameters(),
       taxon_highlight(),
       rank_select(),
-      gene_highlight()
+      gene_highlight(),
+      color_by_group()
     )
   })
 
@@ -108,11 +110,11 @@ create_profile_plot <- function(input, output, session,
       ggsave(
         file,
         plot = final_profile_plot(dataHeat(),
-
-                            parameters(),
-                            "none",
-                            rank_select(),
-                            "none"),
+                                  parameters(),
+                                  "none",
+                                  rank_select(),
+                                  "none",
+                                  color_by_group()),
 
         width = width() * 0.056458333,
         height = height() * 0.056458333,
@@ -289,7 +291,8 @@ heatmap_plotting <- function(data,
                              main_legend,
                              dot_zoom,
                              x_angle,
-                             guideline){
+                             guideline,
+                             color_by_group){
   data_heat <- data
 
   # rescale numbers of paralogs
@@ -317,13 +320,19 @@ heatmap_plotting <- function(data,
   } else{
     p <- ggplot(data_heat, aes(y = geneID, x = supertaxon))
   }
-  if (length(unique(na.omit(data_heat$var2))) != 1) {
-    p <- p + scale_fill_gradient(low = low_color_var2,
-                                 high = high_color_var2,
-                                 na.value = "gray95",
-                                 limits = c(0, 1)) +  # fill color (var2)
-      geom_tile(aes(fill = var2))    # filled rect (var2 score)
+  
+  if (color_by_group == TRUE) {
+    p <- p + geom_tile(aes(fill = factor(group)), alpha = 0.3)
+  } else {
+    if (length(unique(na.omit(data_heat$var2))) != 1) {
+      p <- p + scale_fill_gradient(low = low_color_var2,
+                                   high = high_color_var2,
+                                   na.value = "gray95",
+                                   limits = c(0, 1)) +  # fill color (var2)
+        geom_tile(aes(fill = var2))    # filled rect (var2 score)
+    }
   }
+  
   if (length(unique(na.omit(data_heat$presSpec))) < 3) {
     if (length(unique(na.omit(data_heat$var1))) == 1) {
       # geom_point for circle illusion (var1 and presence/absence)
@@ -386,8 +395,15 @@ heatmap_plotting <- function(data,
                   (floor(max(present_vl) * 10) / 10 * 5) * (1 + dot_zoom))
       )
   }
-  p <- p + guides(fill = guide_colourbar(title = var2_id),
-                  color = guide_colourbar(title = var1_id))
+  
+  if (color_by_group == FALSE) {
+    p <- p + guides(fill = guide_colourbar(title = var2_id),
+                    color = guide_colourbar(title = var1_id))
+  } else {
+    p <- p + guides(fill = guide_legend("Category"),
+                    color = guide_colourbar(title = var1_id))
+  }
+  
   base_size <- 9
 
   # guideline for separating ref species
@@ -424,7 +440,9 @@ final_profile_plot <- function(data_heat,
                                plot_parameter,
                                taxon_name,
                                rank_select,
-                               gene_highlight){
+                               gene_highlight,
+                               color_by_group){
+
   # get heatmap
   p <- heatmap_plotting(data_heat,
                         plot_parameter$x_axis,
@@ -441,7 +459,8 @@ final_profile_plot <- function(data_heat,
                         plot_parameter$main_legend,
                         plot_parameter$dot_zoom,
                         plot_parameter$x_angle,
-                        plot_parameter$guideline)
+                        plot_parameter$guideline,
+                        color_by_group)
 
   # highlight taxon
   if (taxon_name != "none") {
@@ -523,6 +542,6 @@ final_profile_plot <- function(data_heat,
                        alpha = 0.3,
                        inherit.aes = FALSE)
   }
-
+  
   return(p)
 }

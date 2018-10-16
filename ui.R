@@ -341,14 +341,21 @@ shinyUI(
             ),
 
             uiOutput("checkNewick.ui"),
-
             hr(),
 
-            shinyBS::bsButton("get_config", "FASTA config"),
+            strong(h4("Other optional input:")),
+            
+            shinyBS::bsButton("fasta_upload", "FASTA file(s)"),
             h5(""),
+            
+            shinyBS::bsButton("upload_gene_category", "Gene categories"),
+            h5(""),
+            hr(),
+            
+            strong(h4("Color configuration:")),
             actionButton(
               "set_color",
-              "COLORS config",
+              "Change colors",
               style = "padding:4px; font-size:100%"
             ),
 
@@ -536,6 +543,12 @@ shinyUI(
             br(),
 
             uiOutput("highlight_taxon_ui"),
+            
+            checkboxInput(
+              "color_by_group",
+              strong("Highlight by categories"),
+              value = FALSE
+            ),
 
             conditionalPanel(
               condition = "input.auto_update == false",
@@ -1112,12 +1125,12 @@ shinyUI(
 
       colourpicker::colourInput(
         "low_color_var1",
-        "Low variable 1",
+        "Low variable 1 (dot)",
         value = "darkorange"
       ),
       colourpicker::colourInput(
         "high_color_var1",
-        "High variable 1",
+        "High variable 1 (dot)",
         value = "steelblue"
       ),
       actionButton(
@@ -1129,12 +1142,12 @@ shinyUI(
 
       colourpicker::colourInput(
         "low_color_var2",
-        "Low variable 2",
+        "Low variable 2 (background)",
         value = "grey95"
       ),
       colourpicker::colourInput(
         "high_color_var2",
-        "High variable 2",
+        "High variable 2 (background)",
         value = "khaki"
       ),
       actionButton(
@@ -1156,11 +1169,11 @@ shinyUI(
       )
     ),
 
-    # * popup for FASTA configurations ----------------------------------------
+    # * popup for FASTA upload ------------------------------------------------
     bsModal(
-      "config",
-      "FASTA config",
-      "get_config",
+      "fasta_upload_bs",
+      "FASTA upload",
+      "fasta_upload",
       size = "small",
 
       selectInput(
@@ -1203,6 +1216,15 @@ shinyUI(
           selected = 4
         )
       )
+    ),
+
+    # * popup for upload gene category ----------------------------------------
+    bsModal(
+      "upload_gene_category_bs",
+      "Upload gene categories",
+      "upload_gene_category",
+      size = "small",
+      fileInput("gene_category", "")
     ),
 
     # * popup for setting Main plot configurations ----------------------------
@@ -1265,7 +1287,7 @@ shinyUI(
           value = 0,
           width = 250
         ),
-        HTML("<em>size = (1+α)*default_size<br>default_size
+        HTML("<em>dot size = (1+α)*default_size<br>default_size
              =[0:5]</em>"),
         uiOutput("dot_size_info"),
         br()
@@ -1280,7 +1302,7 @@ shinyUI(
     # * popup for setting Customized plot configurations ----------------------
     bsModal(
       "selected_plot_config_bs",
-      "Plot properties configuration",
+      "Plot appearance configuration",
       "selected_plot_config",
       size = "small",
 
@@ -1335,7 +1357,7 @@ shinyUI(
           value = 0,
           width = 250
         ),
-        HTML("<em>size = (1+α)*default_size<br>default_size=[0:5]</em>"),
+        HTML("<em>dot size = (1+α)*default_size<br>default_size=[0:5]</em>"),
         uiOutput("dot_size_infoSelect"),
         br()
       ),

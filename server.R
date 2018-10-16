@@ -3,7 +3,8 @@ packages <- c("ggplot2", "reshape2",
               "plyr", "dplyr", "tidyr", "scales", "grid",
               "gridExtra", "ape", "stringr", "gtable",
               "dendextend", "ggdendro", "gplots", "data.table",
-              "taxize", "zoo", "RCurl", "svMisc")
+              "taxize", "zoo", "RCurl", "svMisc",
+              "jmuOutlier")
 source("R/functions.R")
 install_packages(packages)
 lapply(packages, library, character.only = TRUE)
@@ -1641,7 +1642,7 @@ shinyServer(function(input, output, session) {
                          "var1" = character(),
                          "var2" = character(),
                          stringsAsFactors = FALSE)
-    } else{
+    } else {
       long_dataframe <- unsort_id(long_dataframe, input$ordering)
       
       if (length(listGene) >= 1) {
@@ -1650,12 +1651,13 @@ shinyServer(function(input, output, session) {
         subsetID <- levels(long_dataframe$geneID)[input$st_index:end_index]
         data <- long_dataframe[long_dataframe$geneID %in% subsetID, ]
       }
-      
+     
       if (ncol(data) < 5) {
         for (i in 1:(5 - ncol(data))) {
           data[paste0("newVar", i)] <- 1
         }
       }
+      
       colnames(data) <- c("geneID", "ncbiID", "orthoID", "var1", "var2")
     }
     # return preData
@@ -1670,7 +1672,6 @@ shinyServer(function(input, output, session) {
     if (is.null(preData())) return()
 
     mdData <- preData()
-  
     
     # count number of inparalogs
     paralogCount <- plyr::count(mdData, c("geneID", "ncbiID"))
@@ -1814,7 +1815,6 @@ shinyServer(function(input, output, session) {
       names(superDfExt)[names(superDfExt) == "mVar1"] <- "var1"
       names(superDfExt)[names(superDfExt) == "mVar2"] <- "var2"
     }
-    
     return(superDfExt)
   })
   
@@ -1899,6 +1899,43 @@ shinyServer(function(input, output, session) {
                   & dataHeat$var2 > var2_cutoff_max] <- NA
     dataHeat <- droplevels(dataHeat)  # delete unused levels
     dataHeat$geneID <- as.factor(dataHeat$geneID)
+    dataHeat$supertaxon <- as.factor(dataHeat$supertaxon)
+    
+    ### add gene categories (if provided)
+    if (input$color_by_group == TRUE) {
+      # get gene category
+      gene_category_file <- input$gene_category
+      if (is.null(gene_category_file)) {
+        cat_dt <- data.frame(
+          geneID = levels(dataHeat$geneID)
+        )
+        cat_dt$group <- "no_category"
+      } else {
+        
+        cat_dt <- as.data.frame(read.table(file = gene_category_file$datapath,
+                                           sep = "\t",
+                                           header = TRUE,
+                                           check.names = FALSE,
+                                           comment.char = "",
+                                           fill = TRUE))
+        colnames(cat_dt) <- c("geneID","group")
+      }
+      
+      # create a dataframe that contain all genes and all taxa
+      dataHeat_cat <- data.frame(
+        supertaxon = rep(levels(dataHeat$supertaxon), 
+                         nlevels(dataHeat$geneID)),
+        geneID = rep(levels(dataHeat$geneID), 
+                     each = nlevels(dataHeat$supertaxon))
+      )
+      
+      dataHeat_cat <- merge(dataHeat_cat, cat_dt, by = "geneID")
+      
+      # add categories into dataHeat
+      dataHeat <- merge(dataHeat_cat, dataHeat, 
+                        by = c("geneID","supertaxon"), 
+                        all.x = TRUE)
+    }
     return(dataHeat)
   })
   
@@ -1912,23 +1949,20 @@ shinyServer(function(input, output, session) {
    
     row.order <- hclust(get_distance_matrix_profiles(),
                         method = input$cluster_method)$order
-    
-    
    
-    # col.order <- hclust(get_distance_matrix(t(dat), method = input$dist_method, (input$var1[1])*100),
-    #                     method = input$cluster_method)$order
+    # col.order <- hclust(
+    #   get_distance_matrix(t(dat),
+    #                       method = input$dist_method, 
+    #                       (input$var1[1])*100),
+    #   method = input$cluster_method)$order
     
     
     # re-order distance matrix accoring to clustering
     dat_new <- dat[row.order, ] #col.order
     #dat_new <- dat[row.order, col.order]
     
-   
-    
     # return clustered gene ID list
     clustered_gene_ids <- as.factor(row.names(dat_new))
-    
-
     
     # sort original data according to clustered_gene_ids
     dataHeat$geneID <- factor(dataHeat$geneID,
@@ -1936,9 +1970,12 @@ shinyServer(function(input, output, session) {
     
     dataHeat <- dataHeat[!is.na(dataHeat$geneID),]
     # print("Writing the table...")
-    # write.table(clustered_gene_ids, file = paste0("../gene_order_",
-    #                                            input$dist_method, "_", (input$var1[1])*100),
-    #             col.names = FALSE, row.names = FALSE, quote = FALSE)
+    # write.table(
+    #   clustered_gene_ids,
+    #   file = paste0("../gene_order_",
+    #                 input$dist_method, "_", (input$var1[1])*100),
+    #   col.names = FALSE, row.names = FALSE, quote = FALSE
+    # )
     return(dataHeat)
   })
   
@@ -2051,7 +2088,8 @@ shinyServer(function(input, output, session) {
     width = reactive(input$width),
     height = reactive(input$height),
     x_axis = reactive(input$x_axis),
-    type_profile = reactive("main_profile")
+    type_profile = reactive("main_profile"),
+    color_by_group = reactive(input$color_by_group)
   )
   
   
@@ -2237,7 +2275,8 @@ shinyServer(function(input, output, session) {
     width = reactive(input$selected_width),
     height = reactive(input$selected_height),
     x_axis = reactive(input$x_axis_selected),
-    type_profile = reactive("customized_profile")
+    type_profile = reactive("customized_profile"),
+    color_by_group = reactive(input$color_by_group)
   )
   
   # ============================== POINT INFO =================================
