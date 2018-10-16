@@ -232,56 +232,6 @@ create_select_gene <- function(id, list, selected) {
               selectize = FALSE)
 }
 
-create_slider_cutoff <- function(id, title, start, stop, var_id){
-  if (is.null(var_id)) return()
-  if (var_id == "") {
-    sliderInput(id, title,
-                min = 1,
-                max = 1,
-                step = 0.025,
-                value = 1,
-                width = 200)
-  } else {
-    sliderInput(id, title,
-                min = 0,
-                max = 1,
-                step = 0.025,
-                value = c(start, stop),
-                width = 200)
-  }
-}
-
-update_slider_cutoff <- function(session, id, title, new_var, var_id){
-  if (is.null(var_id) || var_id == "") return()
-  
-  updateSliderInput(session, id, title,
-                    value = new_var,
-                    min = 0,
-                    max = 1,
-                    step = 0.025)
-}
-
-create_plot_size <- function(id, title, value) {
-  numericInput(id,
-               title,
-               min = 100,
-               max = 3200,
-               step = 50,
-               value = value,
-               width = 100)
-}
-
-create_text_size <- function(id, title, value, width) {
-  numericInput(id,
-               title,
-               min = 3,
-               max = 99,
-               step = 1,
-               value = value,
-               width = width)
-}
-
-
 # PROFILE CLUSTERING =========================
 
 #' needed for:  mutual information, pearson

@@ -3117,7 +3117,8 @@ shinyServer(function(input, output, session) {
     filtered_data = get_data_filtered,
     rank_select = reactive(input$rank_select),
     taxa_core = reactive(input$taxa_core),
-    percent_core = reactive(input$percent_core)
+    percent_core = reactive(input$percent_core),
+    core_coverage = reactive(input$core_coverage)
   )
   
   # ** download gene list from core_gene.table --------------------------------

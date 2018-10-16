@@ -815,19 +815,30 @@ shinyUI(
           wellPanel(
             fluidRow(
               column(
-                2,
+                3,
                 uiOutput("var1_core.ui")
               ),
               column(
-                2,
+                3,
                 uiOutput("var2_core.ui")
               ),
               column(
-                2,
+                3,
                 uiOutput("percent_core.ui")
               ),
               column(
-                6,
+                3,
+                sliderInput(
+                  "core_coverage",
+                  "Core taxa coverage",
+                  min = 0,
+                  max = 100,
+                  value = 100,
+                  step = 5
+                )
+              ),
+              column(
+                12,
                 uiOutput("taxa_list_core.ui"),
                 shinyBS::bsButton("browse_taxa_core", "Browse")
               )

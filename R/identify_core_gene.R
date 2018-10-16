@@ -19,7 +19,8 @@ identify_core_gene_ui <- function(id){
 
 identify_core_gene <- function(input, output, session,
                                filtered_data,
-                               rank_select, taxa_core, percent_core){
+                               rank_select, taxa_core, percent_core,
+                               core_coverage){
 
   output$core_gene.table <- renderDataTable({
     data <- core_geneDf()
@@ -54,7 +55,7 @@ identify_core_gene <- function(input, output, session,
                          "presSpec",
                          "mVar1",
                          "mVar2")]
-
+    
     # filter by selecting taxa
     if (is.na(superID[1])) data <- NULL
     else{
@@ -65,10 +66,14 @@ identify_core_gene <- function(input, output, session,
         as.data.frame(plyr::count(data,
                                   c("geneID", "supertaxonID")))
       }
+      
       # count number of supertaxa present in each geneID
-      # and get only gene that contains all chosen taxa
+      # and get min number of supertaxa muss be taken into account
       count <- as.data.frame(table(supertaxonCount$geneID))
-      core_gene <- subset(count, Freq == length(superID))
+      require_coverage <- length(superID) * (core_coverage() / 100)
+      
+      # get only gene that contains orthologs in that coverage # of taxa
+      core_gene <- subset(count, Freq >= require_coverage)
       core_gene$Var1 <- factor(core_gene$Var1)
 
       return(levels(core_gene$Var1))
