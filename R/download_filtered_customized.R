@@ -29,13 +29,18 @@ download_filtered_customized_ui <- function(id) {
       dataTableOutput(ns("filtered_custom_data"))
     ),
     column(
-      3,
+      4,
       downloadButton(ns("download_custom_data"), "Download customized data")
     ),
     column(
-      9,
+      4,
       downloadButton(ns("download_custom_fasta"), "Download FASTA sequences"),
       uiOutput(ns("download_custom_fasta.ui"))
+    ),
+    column(
+      4,
+      downloadButton(ns("download_custom_long"),
+                     "Download data as PhyloProfile input format")
     )
   )
 }
@@ -103,6 +108,34 @@ download_filtered_customized <- function(input, output, session,
                   file,
                   sep = "\t",
                   col.names = FALSE,
+                  row.names = FALSE,
+                  quote = FALSE)
+    }
+  )
+  
+  # download data as long format ----------------------------------------------
+  download_custom_data_long <- reactive({
+    download_custom_data <- download_custom_data()
+    
+    if (ncol(download_custom_data) == 6) {
+      download_custom_data_long <- download_custom_data[,c(1,4,2)]
+    } else if (ncol(download_custom_data) == 7) {
+      download_custom_data_long <- download_custom_data[,c(1,4,2,6)]
+    } else if (ncol(download_custom_data) == 8) {
+      download_custom_data_long <- download_custom_data[,c(1,4,2,6,7)]
+    }
+    
+    return(download_custom_data_long)    
+  })
+  
+  output$download_custom_long <- downloadHandler(
+    filename = function(){
+      c("customFilteredData.phyloprofile")
+    },
+    content = function(file){
+      data_out <- download_custom_data_long()
+      write.table(data_out, file,
+                  sep = "\t",
                   row.names = FALSE,
                   quote = FALSE)
     }

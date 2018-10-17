@@ -546,7 +546,7 @@ shinyUI(
             
             checkboxInput(
               "color_by_group",
-              strong("Highlight by categories"),
+              strong("Highlight genes by categories"),
               value = FALSE
             ),
 

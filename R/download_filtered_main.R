@@ -57,14 +57,19 @@ download_filtered_main_ui <- function(id) {
       dataTableOutput(ns("filtered_main_data"))
     ),
     column(
-      3,
+      4,
       downloadButton(ns("download_data"),
                      "Download filtered data")
     ),
     column(
-      9,
+      4,
       downloadButton(ns("download_fasta"),
                      "Download FASTA sequences")
+    ),
+    column(
+      4,
+      downloadButton(ns("download_long"),
+                     "Download data as PhyloProfile input format")
     )
   )
 }
@@ -184,9 +189,10 @@ download_filtered_main <- function(input, output, session,
 
     data_out$geneID <- as.character(data_out$geneID)
     data_out$fullName <- as.character(data_out$fullName)
-    data_out$ncbiID <- substr(data_out$ncbiID,
-                              5,
-                              nchar(as.character(data_out$ncbiID)))
+    # data_out$ncbiID <- substr(data_out$ncbiID,
+    #                           5,
+    #                           nchar(as.character(data_out$ncbiID)))
+    data_out$ncbiID <- as.character(data_out$ncbiID)
     data_out$supertaxon <- substr(data_out$supertaxon,
                                   6,
                                   nchar(as.character(data_out$supertaxon)))
@@ -242,6 +248,34 @@ download_filtered_main <- function(input, output, session,
       write.table(fasta_out_df, file,
                   sep = "\t",
                   col.names = FALSE,
+                  row.names = FALSE,
+                  quote = FALSE)
+    }
+  )
+  
+  # download data as long format ----------------------------------------------
+  download_data_long <- reactive({
+    download_data <- download_data()
+    
+    if (ncol(download_data) == 6) {
+      download_data_long <- download_data[,c(1,4,2)]
+    } else if (ncol(download_data) == 7) {
+      download_data_long <- download_data[,c(1,4,2,6)]
+    } else if (ncol(download_data) == 8) {
+      download_data_long <- download_data[,c(1,4,2,6,7)]
+    }
+    
+    return(download_data_long)    
+  })
+  
+  output$download_long <- downloadHandler(
+    filename = function(){
+      c("filteredData.phyloprofile")
+    },
+    content = function(file){
+      data_out <- download_data_long()
+      write.table(data_out, file,
+                  sep = "\t",
                   row.names = FALSE,
                   quote = FALSE)
     }

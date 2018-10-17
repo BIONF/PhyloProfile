@@ -55,12 +55,15 @@ identify_core_gene <- function(input, output, session,
                          "presSpec",
                          "mVar1",
                          "mVar2")]
-    
+
     # filter by selecting taxa
     if (is.na(superID[1])) data <- NULL
-    else{
+    else {
       data <- subset(mdData, supertaxonID %in% superID
-                     & presSpec >= percent_core())
+                     & presSpec >= percent_core()[1])
+      data <- subset(data, supertaxonID %in% superID
+                     & presSpec <= percent_core()[2])
+
       # get supertaxa present in each geneID
       supertaxonCount <- {
         as.data.frame(plyr::count(data,

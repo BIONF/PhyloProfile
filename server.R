@@ -655,7 +655,8 @@ shinyServer(function(input, output, session) {
     create_slider_cutoff(
       "percent_core",
       "% of present taxa:",
-      input$percent[1], input$percent[2], "percent"
+      # input$percent[1], input$percent[2], "percent" HERERERERERERERERE
+      0, 1, "percent"
     )
   })
   
@@ -1850,7 +1851,6 @@ shinyServer(function(input, output, session) {
                       & dataHeat$var1 < var1_cutoff_min] <- 0
     dataHeat$presSpec[dataHeat$supertaxon != in_select
                       & dataHeat$var1 > var1_cutoff_max] <- 0
-    
     if (input$var1_relation == "protein") {
       if (input$var2_relation == "protein") {
         # prot-prot: remove complete cell if one variable not sufficient
@@ -1875,11 +1875,11 @@ shinyServer(function(input, output, session) {
       }
     } else {
       if (input$var2_relation == "species") {
-        # # spec-spec: remove var1 and var2 independently
-        # dataHeat$presSpec[dataHeat$supertaxon != in_select
-        #                   & dataHeat$var1 < var1_cutoff_min] <- 0
-        # dataHeat$presSpec[dataHeat$supertaxon != in_select
-        #                   & dataHeat$var1 > var1_cutoff_max] <- 0
+        # spec-spec: remove var1 and var2 independently
+        dataHeat$presSpec[dataHeat$supertaxon != in_select
+                          & dataHeat$var1 < var1_cutoff_min] <- 0
+        dataHeat$presSpec[dataHeat$supertaxon != in_select
+                          & dataHeat$var1 > var1_cutoff_max] <- 0
       } else {
         # spec-prot: var2 depend on var1
         dataHeat$var2[dataHeat$supertaxon != in_select
@@ -2644,6 +2644,7 @@ shinyServer(function(input, output, session) {
     }
     return(fasta_out_df)
   })
+  
   download_custom_data <- callModule(
     download_filtered_customized,
     "filtered_customized_download",
@@ -3053,7 +3054,7 @@ shinyServer(function(input, output, session) {
                          "Select taxa of interest:",
                          "none"))
     }
-    else{
+    else {
       choice <- alltaxa_list()
       choice$fullName <- as.factor(choice$fullName)
       
@@ -3106,9 +3107,7 @@ shinyServer(function(input, output, session) {
            <strong>Group Comparioson</strong>
            &nbsp;to enable this function)</em></p>')
     }
-    })
-  
-  
+  })
   
   # ** render table contains list of core genes -------------------------------
   core_geneDf <- callModule(
