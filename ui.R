@@ -72,7 +72,16 @@ shinyUI(
           ),
           column(
             2,
-            h6("blabla", style = "color:transparent"),
+            numericInput(
+              "coortholog",
+              "Min co-orthologs",
+              min = 1,
+              max = 999,
+              step = 1,
+              value = 1,
+              width = 150
+            ),
+            # h6("blabla", style = "color:transparent"),
             shinyBS::bsButton(
               "reset_main",
               "Reset cutoffs",
@@ -134,7 +143,8 @@ shinyUI(
           ),
           column(
             2,
-            h6("blabla", style = "color:transparent"),
+            uiOutput("coortholog_filter.ui"),
+            # h6("blabla", style = "color:transparent"),
             shinyBS::bsButton(
               "reset_selected",
               "Reset cutoffs",

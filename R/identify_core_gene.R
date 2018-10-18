@@ -20,6 +20,7 @@ identify_core_gene_ui <- function(id){
 identify_core_gene <- function(input, output, session,
                                filtered_data,
                                rank_select, taxa_core, percent_core,
+                               var1_cutoff, var2_cutoff,
                                core_coverage){
 
   output$core_gene.table <- renderDataTable({
@@ -56,8 +57,32 @@ identify_core_gene <- function(input, output, session,
                          "mVar1",
                          "mVar2")]
 
+    # filter by var1 and var2 cutoffs
+    var1_cutoff_min <- var1_cutoff()[1]
+    var1_cutoff_max <- var1_cutoff()[2]
+    var2_cutoff_min <- var2_cutoff()[1]
+    var2_cutoff_max <- var2_cutoff()[2]
+    
+    if (!is.null(var1_cutoff_max)) {
+      if (!is.na(var1_cutoff_max)) {
+        mdData <- subset(mdData, supertaxonID %in% superID
+                       & mVar1 >= var1_cutoff_min)
+        mdData <- subset(mdData, supertaxonID %in% superID
+                       & mVar1 <= var1_cutoff_max)
+      }
+    }
+    
+    if (!is.null(var2_cutoff_max)) {
+      if (!is.na(var2_cutoff_max)) {
+        mdData <- subset(mdData, supertaxonID %in% superID
+                       & mVar2 >= var2_cutoff_min)
+        mdData <- subset(mdData, supertaxonID %in% superID
+                       & mVar2 <= var2_cutoff_max)
+      }
+    }
+    
     # filter by selecting taxa
-    if (is.na(superID[1])) data <- NULL
+    if (is.na(superID[1])) mdData <- NULL
     else {
       data <- subset(mdData, supertaxonID %in% superID
                      & presSpec >= percent_core()[1])

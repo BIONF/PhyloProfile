@@ -539,12 +539,6 @@ shinyServer(function(input, output, session) {
     create_slider_cutoff(
       "var1", paste(input$var1_id, "cutoff:"), 0.0, 1.0, input$var1_id
     )
-
-    # numericInput("var1",
-    #              paste(input$var1_id, "cutoff:"),
-    #              min = 0,
-    #              max = 1,
-    #              value = 0)
   })
   
   output$var2_cutoff.ui <- renderUI({
@@ -581,6 +575,18 @@ shinyServer(function(input, output, session) {
       "percent2",
       "% of present taxa:",
       input$percent[1], input$percent[2], "percent"
+    )
+  })
+  
+  output$coortholog_filter.ui <- renderUI({
+    numericInput(
+      "coortholog2",
+      "Min co-orthologs",
+      min = 1,
+      max = 999,
+      step = 1,
+      value = input$coortholog,
+      width = 150
     )
   })
   
@@ -637,18 +643,24 @@ shinyServer(function(input, output, session) {
   # * render filter slidebars for Core gene finding function ------------------
   output$var1_core.ui <- renderUI({
     create_slider_cutoff(
-      "var1_core",
-      paste(input$var1_id, "cutoff:"),
-      input$var1[1], input$var1[2], input$var1_id
+      "var1_core", paste(input$var1_id, "cutoff:"), 0.0, 1.0, input$var1_id
     )
+    # create_slider_cutoff(
+    #   "var1_core",
+    #   paste(input$var1_id, "cutoff:"),
+    #   input$var1[1], input$var1[2], input$var1_id
+    # )
   })
   
   output$var2_core.ui <- renderUI({
     create_slider_cutoff(
-      "var2_core",
-      paste(input$var2_id, "cutoff:"),
-      input$var2[1], input$var2[2], input$var2_id
+      "var2_core", paste(input$var2_id, "cutoff:"), 0.0, 1.0, input$var2_id
     )
+    # create_slider_cutoff(
+    #   "var2_core",
+    #   paste(input$var2_id, "cutoff:"),
+    #   input$var2[1], input$var2[2], input$var2_id
+    # )
   })
   
   output$percent_core.ui <- renderUI({
@@ -683,6 +695,15 @@ shinyServer(function(input, output, session) {
     update_slider_cutoff(
       session,
       "percent", "% of present taxa:", new_percent, "percent"
+    )
+  })
+  
+  observe({
+    new_coortholog <- input$coortholog2
+    updateNumericInput(
+      session,
+      "coortholog",
+      value = new_coortholog
     )
   })
   
@@ -741,6 +762,7 @@ shinyServer(function(input, output, session) {
     shinyjs::reset("var1")
     shinyjs::reset("var2")
     shinyjs::reset("percent")
+    shinyjs::reset("coortholog")
   })
   
   # * reset cutoffs of Customized plot ----------------------------------------
@@ -748,6 +770,7 @@ shinyServer(function(input, output, session) {
     shinyjs::reset("var1")
     shinyjs::reset("var2")
     shinyjs::reset("percent")
+    shinyjs::reset("coortholog")
   })
   
   # ========================= PARSING UNKNOWN TAXA ============================
@@ -1824,6 +1847,7 @@ shinyServer(function(input, output, session) {
     # get all cutoffs
     percent_cutoff_min <- input$percent[1]
     percent_cutoff_max <- input$percent[2]
+    coortholog_cutoff_min <- input$coortholog
     var1_cutoff_min <- input$var1[1]
     var1_cutoff_max <- input$var1[2]
     var2_cutoff_min <- input$var2[1]
@@ -1842,10 +1866,28 @@ shinyServer(function(input, output, session) {
     in_select <- as.character(split[[1]][1])
     
     ### replace insufficient values according to the thresholds by NA or 0
-    dataHeat$presSpec[dataHeat$supertaxon != in_select
-                      & dataHeat$presSpec < percent_cutoff_min] <- 0
-    dataHeat$presSpec[dataHeat$supertaxon != in_select
-                      & dataHeat$presSpec > percent_cutoff_max] <- 0
+    # based on presSpec or # of co-orthologs
+    number_coortholog <- levels(as.factor(dataHeat$paralog))
+    if (length(number_coortholog) > 1) {
+      dataHeat$presSpec[dataHeat$supertaxon != in_select
+                        & dataHeat$paralog < coortholog_cutoff_min] <- 0
+      if (input$var2_relation == "protein") {
+        dataHeat$var2[dataHeat$supertaxon != in_select
+                      & dataHeat$paralog < coortholog_cutoff_min] <- NA
+      }
+    } else {
+      if (length(levels(as.factor(dataHeat$presSpec))) > 1)
+      dataHeat$presSpec[dataHeat$supertaxon != in_select
+                        & dataHeat$presSpec < percent_cutoff_min] <- 0
+      dataHeat$presSpec[dataHeat$supertaxon != in_select
+                        & dataHeat$presSpec > percent_cutoff_max] <- 0
+      if (input$var2_relation == "protein") {
+        dataHeat$var2[dataHeat$supertaxon != in_select
+                      & dataHeat$presSpec < percent_cutoff_min] <- NA
+        dataHeat$var2[dataHeat$supertaxon != in_select
+                      & dataHeat$presSpec > percent_cutoff_max] <- NA
+      }
+    }
     
     dataHeat$presSpec[dataHeat$supertaxon != in_select
                       & dataHeat$var1 < var1_cutoff_min] <- 0
@@ -1897,6 +1939,7 @@ shinyServer(function(input, output, session) {
                   & dataHeat$var2 < var2_cutoff_min] <- NA
     dataHeat$var2[dataHeat$supertaxon != in_select
                   & dataHeat$var2 > var2_cutoff_max] <- NA
+    
     dataHeat <- droplevels(dataHeat)  # delete unused levels
     dataHeat$geneID <- as.factor(dataHeat$geneID)
     dataHeat$supertaxon <- as.factor(dataHeat$supertaxon)
@@ -3117,6 +3160,8 @@ shinyServer(function(input, output, session) {
     rank_select = reactive(input$rank_select),
     taxa_core = reactive(input$taxa_core),
     percent_core = reactive(input$percent_core),
+    var1_cutoff = reactive(input$var1_core),
+    var2_cutoff = reactive(input$var2_core),
     core_coverage = reactive(input$core_coverage)
   )
   

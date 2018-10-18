@@ -173,7 +173,6 @@ has_internet <- function(){
 #' }
 
 ###################### FUNCTIONS FOR RENDER UI ELEMENTS #######################
-
 create_slider_cutoff <- function(id, title, start, stop, var_id){
   if (is.null(var_id)) return()
   if (var_id == "") {
