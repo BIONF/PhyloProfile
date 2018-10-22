@@ -1247,7 +1247,6 @@ shinyServer(function(input, output, session) {
                       row.names = FALSE,
                       quote = FALSE,
                       sep = "\t")
-          
 
           # create taxonomy matrix (taxonomyMatrix.txt)
           taxMatrix <- taxonomyTableCreator("data/idList.txt",
