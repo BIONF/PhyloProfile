@@ -12,6 +12,8 @@
 #' @return
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 
+source("R/functions.R")
+
 create_architecture_plot_ui <- function(id) {
   ns <- NS(id)
   tagList(
@@ -158,6 +160,21 @@ archi_plot <- function(info,
       ordered_seed_df$feature <- ordered_seed_df$yLabel
     }
     
+    # create color scheme for all features
+    # the same features in seed & ortholog will have the same colors
+    feature_seed <- levels(as.factor(seed_df$feature))
+    feature_ortho <- levels(as.factor(ortho_df$feature))
+    all_features <- c(feature_seed, feature_ortho)
+    all_colors <- get_qual_col_for_vector(
+      all_features,
+      length(all_features)
+    )
+    
+    color_scheme <- structure(
+      all_colors,
+      .Names = all_features
+    )
+    
     # plotting
     sep <- ":"
     
@@ -169,7 +186,8 @@ archi_plot <- function(info,
                                     title_archi_size,
                                     min(subdomain_df$start),
                                     max(c(subdomain_df$end,
-                                          subdomain_df$length)))
+                                          subdomain_df$length)),
+                                    color_scheme)
       plot_seed <- domain_plotting(ordered_seed_df,
                                    seed,
                                    sep,
@@ -177,7 +195,8 @@ archi_plot <- function(info,
                                    title_archi_size,
                                    min(subdomain_df$start),
                                    max(c(subdomain_df$end,
-                                         subdomain_df$length)))
+                                         subdomain_df$length)),
+                                   color_scheme)
       
     } else{
       plot_ortho <- domain_plotting(ordered_ortho_df,
@@ -186,14 +205,16 @@ archi_plot <- function(info,
                                     label_archi_size,
                                     title_archi_size,
                                     min(subdomain_df$start),
-                                    max(subdomain_df$end))
+                                    max(subdomain_df$end),
+                                    color_scheme)
       plot_seed <- domain_plotting(ordered_seed_df,
                                    seed,
                                    sep,
                                    label_archi_size,
                                    title_archi_size,
                                    min(subdomain_df$start),
-                                   max(subdomain_df$end))
+                                   max(subdomain_df$end),
+                                   color_scheme)
     }
     
     # grid.arrange(plot_seed,plot_ortho,ncol=1)
@@ -225,14 +246,16 @@ domain_plotting <- function(df,
                             geneID,
                             sep,
                             label_size, title_size,
-                            min_start, max_end){
-  gg <- ggplot(df, aes(y = feature, x = end, color = feature)) +
+                            min_start, max_end,
+                            color_scheme){
+  gg <- ggplot(df, aes(y = feature, x = end, color = as.factor(feature))) +
     geom_segment(data = df,
                  aes(y = feature, yend = feature,
                      x = min_start, xend = max_end),
                  color = "white",
-                 size = 0)
-  
+                 size = 0) +
+    scale_color_manual(values = color_scheme)
+
   # draw lines for representing sequence length
   if ("length" %in% colnames(df)) {
     gg <- gg + geom_segment(data = df,

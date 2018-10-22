@@ -11,7 +11,7 @@ packages <- c("shiny", "shinyBS", "shinyjs", "colourpicker", "DT",
               "gridExtra", "ape", "stringr", "gtable", 
               "dendextend", "ggdendro", "gplots", "data.table", 
               "taxize", "zoo", "RCurl", "energy", "svMisc",
-              "jmuOutlier")
+              "jmuOutlier", "RColorBrewer")
 
 # Set path for install packages while deploy into shiny server ----------------
 # (from https://gist.github.com/wch/c3653fb39a00c63b33cf)
