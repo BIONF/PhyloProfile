@@ -1843,14 +1843,26 @@ shinyServer(function(input, output, session) {
   
   # * heatmap data input ------------------------------------------------------
   dataHeat <- reactive({
+    input$update_btn
+    
     # get all cutoffs
-    percent_cutoff_min <- input$percent[1]
-    percent_cutoff_max <- input$percent[2]
-    coortholog_cutoff_min <- input$coortholog
-    var1_cutoff_min <- input$var1[1]
-    var1_cutoff_max <- input$var1[2]
-    var2_cutoff_min <- input$var2[1]
-    var2_cutoff_max <- input$var2[2]
+    if (input$auto_update == TRUE) {
+      percent_cutoff_min <- input$percent[1]
+      percent_cutoff_max <- input$percent[2]
+      coortholog_cutoff_min <- input$coortholog
+      var1_cutoff_min <- input$var1[1]
+      var1_cutoff_max <- input$var1[2]
+      var2_cutoff_min <- input$var2[1]
+      var2_cutoff_max <- input$var2[2]
+    } else {
+      percent_cutoff_min <- isolate(input$percent[1])
+      percent_cutoff_max <- isolate(input$percent[2])
+      coortholog_cutoff_min <- isolate(input$coortholog)
+      var1_cutoff_min <- isolate(input$var1[1])
+      var1_cutoff_max <- isolate(input$var1[2])
+      var2_cutoff_min <- isolate(input$var2[1])
+      var2_cutoff_max <- isolate(input$var2[2])
+    }
     
     # check input file
     filein <- input$main_input
@@ -2080,23 +2092,50 @@ shinyServer(function(input, output, session) {
   
   # * parameters for the main profile plot ------------------------------------
   get_parameter_input_main <- reactive({
-    input_para <- list(
-      "x_axis" = input$x_axis,
-      "var1_id" = input$var1_id,
-      "var2_id"  = input$var2_id,
-      "low_color_var1" =  input$low_color_var1,
-      "high_color_var1" = input$high_color_var1,
-      "low_color_var2" = input$low_color_var2,
-      "high_color_var2" = input$high_color_var2,
-      "para_color" = input$para_color,
-      "x_size" = input$x_size,
-      "y_size" = input$y_size,
-      "legend_size" = input$legend_size,
-      "main_legend" = input$main_legend,
-      "dot_zoom" = input$dot_zoom,
-      "x_angle" = input$x_angle,
-      "guideline" = 1
-    )
+    input$update_btn
+    if (input$auto_update == TRUE) {
+      input_para <- list(
+        "x_axis" = input$x_axis,
+        "var1_id" = input$var1_id,
+        "var2_id"  = input$var2_id,
+        "low_color_var1" =  input$low_color_var1,
+        "high_color_var1" = input$high_color_var1,
+        "low_color_var2" = input$low_color_var2,
+        "high_color_var2" = input$high_color_var2,
+        "para_color" = input$para_color,
+        "x_size" = input$x_size,
+        "y_size" = input$y_size,
+        "legend_size" = input$legend_size,
+        "main_legend" = input$main_legend,
+        "dot_zoom" = input$dot_zoom,
+        "x_angle" = input$x_angle,
+        "guideline" = 1,
+        "width" = input$width,
+        "height" = input$height
+      )
+    } else {
+      input_para <- isolate(
+        list(
+          "x_axis" = input$x_axis,
+          "var1_id" = input$var1_id,
+          "var2_id"  = input$var2_id,
+          "low_color_var1" =  input$low_color_var1,
+          "high_color_var1" = input$high_color_var1,
+          "low_color_var2" = input$low_color_var2,
+          "high_color_var2" = input$high_color_var2,
+          "para_color" = input$para_color,
+          "x_size" = input$x_size,
+          "y_size" = input$y_size,
+          "legend_size" = input$legend_size,
+          "main_legend" = input$main_legend,
+          "dot_zoom" = input$dot_zoom,
+          "x_angle" = input$x_angle,
+          "guideline" = 1,
+          "width" = input$width,
+          "height" = input$height
+        )
+      )
+    }
     return(input_para)
   })
   
@@ -2127,13 +2166,9 @@ shinyServer(function(input, output, session) {
     in_select = reactive(input$in_select),
     taxon_highlight = reactive(input$taxon_highlight),
     gene_highlight = reactive(input$gene_highlight),
-    width = reactive(input$width),
-    height = reactive(input$height),
-    x_axis = reactive(input$x_axis),
     type_profile = reactive("main_profile"),
     color_by_group = reactive(input$color_by_group)
   )
-  
   
   # ======================== CUSTOMIZED PROFILE TAB ===========================
   
@@ -2239,16 +2274,13 @@ shinyServer(function(input, output, session) {
   })
   outputOptions(output, "same_profile", suspendWhenHidden = FALSE)
   
-  # * change label of plot_custom button for not auto_update ------------------
-  output$plot_custom_btn <- renderUI({
-    if (input$auto_update_selected == FALSE) {
-      shinyBS::bsButton("plot_custom",
-                        "Plot/Update selected sequence(s)/taxa",
-                        style = "warning")
-    } else {
-      shinyBS::bsButton("plot_custom",
-                        "Plot selected sequence(s)/taxa",
-                        style = "warning")
+  # * change value of auto_update_selected checkbox ---------------------------
+  observe({
+    updateCheckboxInput(session,
+                        "auto_update_selected", value = input$auto_update)
+    shinyjs::disable("auto_update_selected")
+    if (input$auto_update == TRUE) {
+      shinyjs::disable("plot_custom")
     }
   })
   
@@ -2281,23 +2313,50 @@ shinyServer(function(input, output, session) {
   
   # * parameters for the customized profile plot ------------------------------
   get_parameter_input_customized <- reactive({
-    input_para <- list(
-      "x_axis" = input$x_axis_selected,
-      "var1_id" = input$var1_id,
-      "var2_id"  = input$var2_id,
-      "low_color_var1" =  input$low_color_var1,
-      "high_color_var1" = input$high_color_var1,
-      "low_color_var2" = input$low_color_var2,
-      "high_color_var2" = input$high_color_var2,
-      "para_color" = input$para_color,
-      "x_size" = input$x_size_select,
-      "y_size" = input$y_size_select,
-      "legend_size" = input$legend_size_select,
-      "main_legend" = input$selected_legend,
-      "dot_zoom" = input$dot_zoom_select,
-      "x_angle" = input$x_angle_select,
-      "guideline" = 0
-    )
+    input$plot_custom
+    if (input$auto_update_selected == TRUE) {
+      input_para <- list(
+        "x_axis" = input$x_axis_selected,
+        "var1_id" = input$var1_id,
+        "var2_id"  = input$var2_id,
+        "low_color_var1" =  input$low_color_var1,
+        "high_color_var1" = input$high_color_var1,
+        "low_color_var2" = input$low_color_var2,
+        "high_color_var2" = input$high_color_var2,
+        "para_color" = input$para_color,
+        "x_size" = input$x_size_select,
+        "y_size" = input$y_size_select,
+        "legend_size" = input$legend_size_select,
+        "main_legend" = input$selected_legend,
+        "dot_zoom" = input$dot_zoom_select,
+        "x_angle" = input$x_angle_select,
+        "guideline" = 0,
+        "width" = input$selected_width,
+        "height" = input$selected_height
+      )
+    } else {
+      input_para <- isolate(
+        list(
+          "x_axis" = input$x_axis_selected,
+          "var1_id" = input$var1_id,
+          "var2_id"  = input$var2_id,
+          "low_color_var1" =  input$low_color_var1,
+          "high_color_var1" = input$high_color_var1,
+          "low_color_var2" = input$low_color_var2,
+          "high_color_var2" = input$high_color_var2,
+          "para_color" = input$para_color,
+          "x_size" = input$x_size_select,
+          "y_size" = input$y_size_select,
+          "legend_size" = input$legend_size_select,
+          "main_legend" = input$selected_legend,
+          "dot_zoom" = input$dot_zoom_select,
+          "x_angle" = input$x_angle_select,
+          "guideline" = 0,
+          "width" = input$selected_width,
+          "height" = input$selected_height
+        )
+      )
+    }
     return(input_para)
   })
   
@@ -2314,9 +2373,6 @@ shinyServer(function(input, output, session) {
     in_select = reactive(input$in_select),
     taxon_highlight = reactive("none"),
     gene_highlight = reactive("none"),
-    width = reactive(input$selected_width),
-    height = reactive(input$selected_height),
-    x_axis = reactive(input$x_axis_selected),
     type_profile = reactive("customized_profile"),
     color_by_group = reactive(input$color_by_group)
   )

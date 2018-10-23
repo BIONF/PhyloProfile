@@ -44,7 +44,7 @@ shinyUI(
             checkboxInput(
               "auto_update",
               strong(em("Auto update plot")),
-              value = TRUE,
+              value = FALSE,
               width = NULL
             )
           ),
@@ -115,7 +115,7 @@ shinyUI(
             checkboxInput(
               "auto_update_selected",
               strong(em("Auto update plot")),
-              value = TRUE,
+              value = FALSE,
               width = NULL
             )
           ),
@@ -645,7 +645,11 @@ shinyUI(
             ),
 
             h5(""),
-            uiOutput("plot_custom_btn")
+            shinyBS::bsButton(
+              "plot_custom",
+              "Update selected sequence(s)/taxa",
+              style = "warning"
+            )
           ),
 
           # * main panel for customized profile plot --------------------------

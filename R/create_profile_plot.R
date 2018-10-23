@@ -11,9 +11,6 @@
 #' @param in_select selected taxon name (input$in_select)
 #' @param taxon_highlight highlighted taxon (input$taxon_highlight)
 #' @param gene_highlight highlighted gene (input$gene_highlight)
-#' @param width plot width
-#' @param height plot height
-#' @param x_axis type of x_axis (either "genes" or "taxa", from input$x_axis)
 #' @param type_profile either "main_profile" or "customized_profile"
 #' @return info for selected point on the profile
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
@@ -40,8 +37,8 @@ create_profile_plot <- function(input, output, session,
                                 in_seq, in_taxa,
                                 rank_select, in_select,
                                 taxon_highlight, gene_highlight,
-                                width, height,
-                                x_axis,
+                                # width, height,
+                                # x_axis,
                                 type_profile,
                                 color_by_group) {
   # data for heatmap ----------------------------------------------------------
@@ -73,7 +70,7 @@ create_profile_plot <- function(input, output, session,
     if (type_profile() == "customized_profile") {
       if (in_seq()[1] == "all" & in_taxa()[1] == "all") return()
     }
-
+    
     final_profile_plot(
       dataHeat(),
       parameters(),
@@ -95,8 +92,8 @@ create_profile_plot <- function(input, output, session,
     withSpinner(
       plotOutput(
         ns("plot"),
-        width = width(),
-        height = height(),
+        width = parameters()$width,
+        height = parameters()$height,
         click = ns("plot_click")
       )
     )
@@ -116,8 +113,8 @@ create_profile_plot <- function(input, output, session,
                                   "none",
                                   color_by_group()),
 
-        width = width() * 0.056458333,
-        height = height() * 0.056458333,
+        width = parameters()$width * 0.056458333,
+        height = parameters()$height * 0.056458333,
         units = "cm", dpi = 300, device = "pdf", limitsize = FALSE
       )
     }
@@ -164,7 +161,7 @@ create_profile_plot <- function(input, output, session,
     if (is.null(input$plot_click$x)) return()
     else {
       # get cooridiate point
-      if (x_axis() == "genes") {
+      if (parameters()$x_axis == "genes") {
         corX <- round(input$plot_click$y);
         corY <- round(input$plot_click$x)
       } else {
