@@ -143,27 +143,29 @@ archi_plot <- function(info,
       ordered_seed_df <- seed_df[order(seed_df$feature), ]
       ordered_ortho_df <- sort_domains(ordered_seed_df, ortho_df)
     }
-    
+
     # join weight values and feature names
     if ("weight" %in% colnames(ordered_ortho_df)) {
       ordered_ortho_df$yLabel <- paste0(ordered_ortho_df$feature,
                                         " (",
                                         round(ordered_ortho_df$weight, 2),
                                         ")")
-      ordered_ortho_df$feature <- ordered_ortho_df$yLabel
+    } else {
+      ordered_ortho_df$yLabel <- ordered_ortho_df$feature
     }
     if ("weight" %in% colnames(ordered_seed_df)) {
       ordered_seed_df$yLabel <- paste0(ordered_seed_df$feature,
                                        " (",
                                        round(ordered_seed_df$weight, 2),
                                        ")")
-      ordered_seed_df$feature <- ordered_seed_df$yLabel
+    } else {
+      ordered_seed_df$yLabel <- ordered_seed_df$feature
     }
     
     # create color scheme for all features
     # the same features in seed & ortholog will have the same colors
-    feature_seed <- levels(as.factor(seed_df$feature))
-    feature_ortho <- levels(as.factor(ortho_df$feature))
+    feature_seed <- levels(as.factor(ordered_seed_df$feature))
+    feature_ortho <- levels(as.factor(ordered_ortho_df$feature))
     all_features <- c(feature_seed, feature_ortho)
     all_colors <- get_qual_col_for_vector(
       all_features,
@@ -300,7 +302,9 @@ domain_plotting <- function(df,
   
   # theme format
   title_mod <- gsub(":", sep, geneID)
-  gg <- gg + scale_y_discrete(expand = c(0.075, 0))
+  gg <- gg + scale_y_discrete(expand = c(0.075, 0),
+                              breaks = df$feature,
+                              labels = df$yLabel)
   gg <- gg + labs(title = paste0(title_mod), y = "Feature")
   gg <- gg + theme_minimal()
   gg <- gg + theme(panel.border = element_blank())

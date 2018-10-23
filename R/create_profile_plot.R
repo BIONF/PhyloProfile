@@ -43,7 +43,6 @@ create_profile_plot <- function(input, output, session,
                                 color_by_group) {
   # data for heatmap ----------------------------------------------------------
   dataHeat <- reactive({
-
     if (is.null(data())) return()
 
     if (type_profile() == "customized_profile") {
@@ -60,7 +59,6 @@ create_profile_plot <- function(input, output, session,
         data_heat <- data_main_plot(clusteredDataHeat())
       }
     }
-
     return(data_heat)
   })
 
@@ -70,7 +68,7 @@ create_profile_plot <- function(input, output, session,
     if (type_profile() == "customized_profile") {
       if (in_seq()[1] == "all" & in_taxa()[1] == "all") return()
     }
-    
+
     final_profile_plot(
       dataHeat(),
       parameters(),

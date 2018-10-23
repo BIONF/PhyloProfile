@@ -33,7 +33,7 @@ def main(argv):
 			if not re.match("^#", line) is not None and len(line) > 1:
 				hit = line.strip("\n").split()
 				geneID = hit[0]
-				print(geneID.split('|')[0]+"#"+geneID.split('|')[2]+"\t"+geneID.split('|')[2]+"\t"+"pfam_"+hit[6]+"\t"+hit[3]+"\t"+hit[4]+"\tNA"+"\tN")
+				print(geneID.split('|')[0]+"#"+geneID.split('|')[2]+"\t"+geneID.split('|')[2]+"\t"+"0"+"\t"+"pfam_"+hit[6]+"\t"+hit[3]+"\t"+hit[4]+"\tNA"+"\tN")
 				# print(geneID+"\t"+"pfam_"+hit[0]+"\t"+hit[19]+"\t"+hit[20]+"\tNA"+"\tN")
 				# time.sleep(1)
 

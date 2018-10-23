@@ -70,7 +70,9 @@ search_taxon_id <- function(input, output, session){
             message = "Retrieving IDs for unknown taxa...", 
             value = 0, {
               for (i in 1:nrow(notfound_df)) {
-                id_df_tmp <- search_ncbi_online(as.character(notfound_df[i,]$name))
+                id_df_tmp <- search_ncbi_online(
+                  as.character(notfound_df[i,]$name)
+                )
                 id_df <- rbind(id_df, id_df_tmp)
               }
               # Increment the progress bar, and update the detail text.

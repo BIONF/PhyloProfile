@@ -3,7 +3,7 @@ packages <- c("ggplot2", "reshape2",
               "plyr", "dplyr", "tidyr", "scales", "grid",
               "gridExtra", "ape", "stringr", "gtable",
               "dendextend", "ggdendro", "gplots", "data.table",
-              "taxize", "zoo", "RCurl", "svMisc",
+              "taxize", "zoo", "RCurl",
               "jmuOutlier")
 source("R/functions.R")
 install_packages(packages)
@@ -283,6 +283,8 @@ shinyServer(function(input, output, session) {
     toggleModal(session, "get_oma_data_windows", toggle = "close")
     updateButton(session, "get_data_oma", disabled = TRUE)
     toggleState("main_input")
+    toggleState("file_domain_input")
+    toggleState("fasta_upload")
   })
   
   # * render textinput for Variable 1 & 2 -------------------------------------
@@ -953,7 +955,8 @@ shinyServer(function(input, output, session) {
     if (input_type == "xml" |
         input_type == "long" |
         input_type == "wide" |
-        input_type == "fasta" ) {
+        input_type == "fasta" |
+        input_type == "oma") {
       inputDf <- as.data.frame(read.table(file = filein$datapath,
                                           sep = "\t",
                                           header = TRUE,
@@ -969,7 +972,7 @@ shinyServer(function(input, output, session) {
           titleline <- c("geneID", unkTaxa)
         }
         # invalidIDtmp <- list()
-        
+
         ncbiTaxonInfo <- fread("data/taxonNamesFull.txt")
         newTaxaFromFile <- fread("data/newTaxa.txt",
                                  colClasses = c("ncbiID" = "character"))

@@ -1,8 +1,9 @@
 # PhyloProfile
 [![language: R](https://img.shields.io/badge/language-R-blue.svg?style=flat)](https://www.r-project.org/)
-[![presented at: BOSC2017](https://img.shields.io/badge/presented%20at-BOSC2017-green.svg?style=flat)](https://f1000research.com/posters/6-1782)
+[![poster at: BOSC2017](https://img.shields.io/badge/poster%20at-BOSC2017-green.svg?style=flat)](https://f1000research.com/posters/6-1782)
+[![presented at: GCB2018](https://img.shields.io/badge/presented%20at-GCB2018-green.svg?style=flat)](http://gcb2018.de)
 [![published in: Bioinformatics](https://img.shields.io/badge/published%20in-Bioinformatics-ff69b4.svg?style=flat)](https://doi.org/10.1093/bioinformatics/bty225)
-[![GitHub release](https://img.shields.io/badge/latest%20release-v0.3.1-orange.svg)](https://github.com/BIONF/PhyloProfile/releases/tag/v0.3.1)
+[![GitHub release](https://img.shields.io/badge/latest%20release-v0.3.2-orange.svg)](https://github.com/BIONF/PhyloProfile/releases/tag/v0.3.2)
 [![license: MIT](https://img.shields.io/badge/license-MIT-lightgrey.svg)](https://opensource.org/licenses/MIT)
 
 [![](www/posterSub.png)](https://f1000research.com/posters/6-1782)
@@ -45,7 +46,7 @@ The initial start can take a while, as `phyloprofile.R` will try do download and
 Once all packages are downloaded and installed your web browser will open a new tab and display the main *PhyloProfile* menu.
 
 # Input Data
-*PhyloProfile* can read a number of different input files, including multi-FASTA files, regular tab-separated files and *OrthoXML*. The additional information layers can be embedded in the OrthoXML or be provided separately.
+*PhyloProfile* can read a number of different input files, including multi-FASTA files, regular tab-separated files, OMA ID list or *OrthoXML*. The additional information layers can be embedded in the OrthoXML or be provided separately.
 
 We described all suppported input formats in section [Input Data](https://github.com/BIONF/PhyloProfile/wiki/Input-Data) in our [PhyloProfile's Wiki](https://github.com/BIONF/PhyloProfile/wiki).
 

@@ -249,7 +249,7 @@ qualitative_colours <- function(n, light=FALSE) {
                    "#FF8500", "#FF3300")
   
   # Qualitative colour schemes by Paul Tol
-  ifelse (
+  ifelse(
     n >= 19 & n <= 21,
     # return 21 qualitative color scheme
     return(
@@ -260,7 +260,7 @@ qualitative_colours <- function(n, light=FALSE) {
                          "#AA7744", "#DDAA77", "#771122", "#AA4455",
                          "#DD7788"))(n)
     ),
-    ifelse (
+    ifelse(
       n >= 16 & n <= 18,
       # up to 18 qualitative color scheme
       return(
@@ -354,7 +354,6 @@ library(bioDist)
 #' needed for: distance correlation 
 install_packages("energy")
 library(energy)
-
 
 #' get the phylogenetic profiles ----------------------------------------------
 #' @export
