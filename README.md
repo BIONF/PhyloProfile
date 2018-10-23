@@ -7,7 +7,7 @@
 [![license: MIT](https://img.shields.io/badge/license-MIT-lightgrey.svg)](https://opensource.org/licenses/MIT)
 
 [![](www/posterSub.png)](https://f1000research.com/posters/6-1782)
-[Click for the full PDF version of the poster](https://f1000research.com/posters/6-1782)
+[Click here for the full PDF version of the BOSC2017 poster](https://f1000research.com/posters/6-1782)
 
 *PhyloProfile* is a *Shiny*-based tool for integrating, visualizing and exploring multi-layered [phylogenetic profiles](https://en.wikipedia.org/wiki/Phylogenetic_profiling).
 
@@ -56,7 +56,7 @@ In `data/demo/` you can find some test data to see how the files should look lik
 Read the [walkthrough slides](https://github.com/BIONF/PhyloProfile/wiki/Walkthrough) to explore the functionality of *PhyloProfile*.
 
 # Bugs
-Any bug reports or comments, suggestions are highly appreciated. Please open an issue on GitHub or be in touch via email.
+Any [bug reports or comments, suggestions](https://github.com/BIONF/PhyloProfile/blob/master/CONTRIBUTING.md) are highly appreciated. Please [open an issue on GitHub](https://github.com/BIONF/PhyloProfile/issues/new) or be in touch via email.
 
 # Acknowledgements
 We would like to thank
