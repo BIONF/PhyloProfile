@@ -71,7 +71,6 @@ cluster_profile <- function(input, output, session,
       "clustered_plot.pdf"
     },
     content = function(file) {
-      print("test")
       ggsave(
         file,
         plot = get_dendrogram (cluster_data()),
