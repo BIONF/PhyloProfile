@@ -1,5 +1,5 @@
 #' Detailed plot
-#' 
+#'
 #' @export
 #' @param data (from reactive fn "detail_plotDt")
 #' @param var1_id name of variable 1 (from input$var1_id)
@@ -26,12 +26,12 @@ create_detailed_plot_ui <- function(id) {
 create_detailed_plot <- function(input, output, session, data,
                                  var1_id, var2_id,
                                  detailed_text, detailed_height){
-  
+
   # render detailed plot -------------------------------------------------------
   output$detail_plot <- renderPlot({
     detail_plot(data(), detailed_text(), var1_id(), var2_id())
   })
-  
+
   output$detail_plot.ui <- renderUI({
     ns <- session$ns
     withSpinner(
@@ -67,18 +67,18 @@ create_detailed_plot <- function(input, output, session, data,
   point_infoDetail <- reactive({
     selDf <- data()
     selDf$orthoID <- as.character(selDf$orthoID)
-    
+
     # get coordinates of plot_click_detail
     if (is.null(input$plot_click_detail$x)) return()
     else{
       corX <- round(input$plot_click_detail$y)
       corY <- round(input$plot_click_detail$x)
     }
-    
+
     # get pair of sequence IDs & var1
     seedID <- as.character(selDf$geneID[!is.na(selDf$geneID)][1])
     orthoID <- as.character(selDf$orthoID[corX])
-    
+
     var1 <- as.list(selDf$var1[selDf$orthoID == orthoID])
     var1 <- as.character(var1[!is.na(var1)])
     var2 <- as.list(selDf$var2[selDf$orthoID == orthoID])
@@ -98,7 +98,7 @@ create_detailed_plot <- function(input, output, session, data,
       }
     }
   })
-  
+
   # * show info when clicking on detailed plot ----------------------------------
   output$detail_click <- renderText({
     info <- point_infoDetail() # info = seedID, orthoID, var1
@@ -118,7 +118,7 @@ create_detailed_plot <- function(input, output, session, data,
       paste(a, b, c, d, sep = "\n")
     }
   })
-  
+	
   return(point_infoDetail)
 }
 
@@ -170,6 +170,6 @@ detail_plot <- function(sel_df, detailed_text, var1_id, var2_id){
                 axis.title = element_text(size = detailed_text),
                 legend.text = element_text(size = detailed_text)
   )
-  
+
   return(gp)
 }

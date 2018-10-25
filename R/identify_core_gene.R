@@ -47,6 +47,7 @@ identify_core_gene <- function(input, output, session,
 
     # get main input data
     mdData <- filtered_data()
+    if (is.null(mdData)) return()
     mdData <- mdData[, c("geneID",
                          "ncbiID",
                          "fullName",

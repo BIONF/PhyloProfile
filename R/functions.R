@@ -172,7 +172,7 @@ has_internet <- function(){
 #'   substr(x, nchar(x) - n + 1, nchar(x))
 #' }
 
-# FUNCTIONS FOR RENDER UI ELEMENTS =============================================
+# FUNCTIONS FOR RENDER UI ELEMENTS ============================================
 create_slider_cutoff <- function(id, title, start, stop, var_id){
   if (is.null(var_id)) return()
   if (var_id == "") {
@@ -231,9 +231,8 @@ create_select_gene <- function(id, list, selected) {
               selectize = FALSE)
 }
 
-# CREATE MANUAL COLOR SCHEME FOR A LIST ========================================
+# CREATE MANUAL COLOR SCHEME FOR A LIST =======================================
 #' @source Modified based on https://gist.github.com/peterk87/6011397
-install_packages("RColorBrewer")
 library(RColorBrewer)
 
 qualitative_colours <- function(n, light=FALSE) {
@@ -293,15 +292,15 @@ qualitative_colours <- function(n, light=FALSE) {
           ifelse(
             n > 9 & n <= 12,
             ifelse(light,
-                   return(RColorBrewer::brewer.pal(n=n, name='Set3')),
-                   return(RColorBrewer::brewer.pal(n=n, name='Paired'))
+                   return(RColorBrewer::brewer.pal(n = n, name = 'Set3')),
+                   return(RColorBrewer::brewer.pal(n = n, name = 'Paired'))
             ),
             ifelse(
               n <= 9,
               ifelse(
                 light,
-                return(RColorBrewer::brewer.pal(n=n, name='Pastel1')),
-                return(RColorBrewer::brewer.pal(n=n, name='Set1'))
+                return(RColorBrewer::brewer.pal(n = n, name = 'Pastel1')),
+                return(RColorBrewer::brewer.pal(n = n, name = 'Set1'))
               ),
               # else(n > 21,
               # If there are more than 21 qualitative colours,  
@@ -336,7 +335,8 @@ get_qual_col_for_vector <- function(x, n) {
       count_colors <- 1
     }
     
-    colors_types[colors_types == types[count_types]] <- type_colors[count_colors]
+    colors_types[colors_types == types[count_types]] <- 
+      type_colors[count_colors]
     
     count_colors <- count_colors + 1
     count_types <- count_types + 1
@@ -345,14 +345,12 @@ get_qual_col_for_vector <- function(x, n) {
   return(unlist(colors_types))
 }
 
-# PROFILE CLUSTERING ===========================================================
+# PROFILE CLUSTERING ==========================================================
 
 #' needed for:  mutual information, pearson
-install_packages_bioconductor("bioDist")
 library(bioDist)
 
-#' needed for: distance correlation 
-install_packages("energy")
+#' needed for: distance correlation
 library(energy)
 
 #' get the phylogenetic profiles ----------------------------------------------
@@ -379,7 +377,7 @@ get_data_clustering <- function(data,
   
     
   }else {
-    #' Profiles with FAS scores ----------------------------------------------
+    #' Profiles with FAS scores -----------------------------------------------
     var <- profile_type
 
     sub_data_heat <- sub_data_heat[, c("geneID", "supertaxon", var)]
@@ -447,7 +445,6 @@ get_distance_matrix <- function(profiles, method, cutoff){
     distance_matrix <-  cor.dist(as.matrix(profiles))
     
   }
-
   return(distance_matrix)
 }
 

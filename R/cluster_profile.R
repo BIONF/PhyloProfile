@@ -5,7 +5,6 @@
 #' @param plot_width Width of the generated plot (input$cluster_plot.width)
 #' @param plot_height Height of the generated plot (input$cluster_plot.height)
 
-
 source("R/functions.R")
 
 cluster_profile_ui <- function(id) {
@@ -22,9 +21,9 @@ cluster_profile_ui <- function(id) {
     ),
     column(
       4,
-      downloadButton(ns("download_distance_matrix"), 
+      downloadButton(ns("download_distance_matrix"),
                      "Download distance matrix"),
-      downloadButton(ns("download_cluster_genes"), 
+      downloadButton(ns("download_cluster_genes"),
                      "Download gene list"),
       tableOutput(ns("brushed_cluster.table"))
     )
@@ -35,20 +34,18 @@ cluster_profile <- function(input, output, session,
                             distance_matrix,
                             cluster_method,
                             plot_width, plot_height) {
-  # Reactive function holding data for clustering =========================
+  # Reactive function holding data for clustering =============================
   cluster_data <- reactive({
-
     df <- cluster_data_dend(distance_matrix(), cluster_method())
     return(df)
   })
-  
-  # Dendrogram =========================
+
+  # Dendrogram ================================================================
   output$dendrogram <- renderPlot({
-    if (is.null(data()))
-      return()
+    if (is.null(cluster_data())) return()
     get_dendrogram(cluster_data())
   })
-  
+
   output$cluster.ui <- renderUI({
     ns <- session$ns
     withSpinner(plotOutput(
@@ -64,8 +61,8 @@ cluster_profile <- function(input, output, session,
       )
     ))
   })
-  
-  # download clustered plot =========================
+
+  # download clustered plot ===================================================
   output$download_cluster <- downloadHandler(
     filename = function() {
       "clustered_plot.pdf"
@@ -73,23 +70,23 @@ cluster_profile <- function(input, output, session,
     content = function(file) {
       ggsave(
         file,
-        plot = get_dendrogram (cluster_data()),
+        plot = get_dendrogram(cluster_data()),
         dpi = 300,
         device = "pdf",
         limitsize = FALSE
       )
     }
   )
-  
-  # Brushed cluster table =========================
+
+  # Brushed cluster table =====================================================
   #' render brushed_cluster.table based on clicked point on dendrogram plot
   brushed_clusterGene <- reactive({
     # if (v$doPlot == FALSE) return()
-    
+
     dd.col <- cluster_data()
     dt <- dendro_data(dd.col)
     dt$labels$label <- levels(dt$labels$label)
-    
+
     # get list of selected gene(s)
     if (is.null(input$plot_brush))
       return()
@@ -98,24 +95,23 @@ cluster_profile <- function(input, output, session,
       bottom <- as.numeric(-round(input$plot_brush$ymax))
       df <- dt$labels[bottom:top,]
     }
-    
+
     # return list of genes
     df <- df[complete.cases(df), 3]
-
-    df
+    return(df)
   })
-  
+
   output$brushed_cluster.table <- renderTable({
     if (is.null(input$plot_brush$ymin))
       return()
-    
+
     data <- as.data.frame(brushed_clusterGene())
     data$number <- rownames(data)
     colnames(data) <- c("geneID", "No.")
     data <- data[, c("No.", "geneID")]
     data
   })
-  
+
   #' download gene list from brushed_cluster.table
   output$download_cluster_genes <- downloadHandler(
     filename = function() {
@@ -132,8 +128,7 @@ cluster_profile <- function(input, output, session,
       )
     }
   )
-  
-  
+
   #' download distance matrix
   output$download_distance_matrix <- downloadHandler(
     filename = function() {
@@ -149,12 +144,11 @@ cluster_profile <- function(input, output, session,
         row.names = TRUE,
         quote = FALSE,
         sep = " \t"
-        )
+      )
     }
   )
-  
-  #' Return the brushed genes
 
+  #' Return the brushed genes
   return(brushed_clusterGene)
 }
 
@@ -165,9 +159,7 @@ cluster_profile <- function(input, output, session,
 #' @return new data frame with % of present species
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 cluster_data_dend <- function(distance_matrix, cluster_method) {
-  # if (v$doPlot == FALSE) return()
-  if (is.null(distance_matrix))
-    return()
+  if (is.null(distance_matrix)) return()
   dd.col <- as.dendrogram(hclust(distance_matrix,
                                  method = cluster_method))
   return(dd.col)
@@ -180,8 +172,7 @@ cluster_data_dend <- function(distance_matrix, cluster_method) {
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 
 get_dendrogram <- function(dd.col) {
-  if (is.null(dd.col))
-    return()
+  if (is.null(dd.col)) return()
   py <- as.ggdend(dd.col)
   p <- ggplot(py, horiz = TRUE, theme = theme_minimal()) +
     theme(axis.title = element_blank(), axis.text.y = element_blank())

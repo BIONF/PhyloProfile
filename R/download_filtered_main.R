@@ -111,7 +111,7 @@ download_filtered_main <- function(input, output, session,
     if (is.null(data())) return()
     ### filtered data
     data_out <- data()
-    
+
     data_out <- as.data.frame(data_out[data_out$presSpec > 0, ])
     data_out <- data_out[!is.na(data_out$geneID), ]
 
@@ -133,7 +133,7 @@ download_filtered_main <- function(input, output, session,
     } else {
       data_out$var2 <- 0
     }
-    
+
     ### select only representative genes if chosen
     if (input$get_representative_main == TRUE) {
       if (is.null(input$ref_var_main)) return()
@@ -189,9 +189,6 @@ download_filtered_main <- function(input, output, session,
 
     data_out$geneID <- as.character(data_out$geneID)
     data_out$fullName <- as.character(data_out$fullName)
-    # data_out$ncbiID <- substr(data_out$ncbiID,
-    #                           5,
-    #                           nchar(as.character(data_out$ncbiID)))
     data_out$ncbiID <- as.character(data_out$ncbiID)
     data_out$supertaxon <- substr(data_out$supertaxon,
                                   6,
@@ -252,11 +249,11 @@ download_filtered_main <- function(input, output, session,
                   quote = FALSE)
     }
   )
-  
+
   # download data as long format ----------------------------------------------
   download_data_long <- reactive({
     download_data <- download_data()
-    
+
     if (ncol(download_data) == 6) {
       download_data_long <- download_data[,c(1,4,2)]
     } else if (ncol(download_data) == 7) {
@@ -264,10 +261,10 @@ download_filtered_main <- function(input, output, session,
     } else if (ncol(download_data) == 8) {
       download_data_long <- download_data[,c(1,4,2,6,7)]
     }
-    
-    return(download_data_long)    
+
+    return(download_data_long)
   })
-  
+
   output$download_long <- downloadHandler(
     filename = function(){
       c("filteredData.phyloprofile")

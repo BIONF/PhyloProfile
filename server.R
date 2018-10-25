@@ -3,14 +3,14 @@ packages <- c("ggplot2", "reshape2",
               "plyr", "dplyr", "tidyr", "scales", "grid",
               "gridExtra", "ape", "stringr", "gtable",
               "dendextend", "ggdendro", "gplots", "data.table",
-              "taxize", "zoo", "RCurl",
+              "taxize", "zoo", "RCurl", "energy",
               "jmuOutlier")
 source("R/functions.R")
 install_packages(packages)
 lapply(packages, library, character.only = TRUE)
 
 #' Install bioconductor packages
-bioconductor_pkgs <- c("Biostrings")
+bioconductor_pkgs <- c("Biostrings", "bioDist")
 install_packages_bioconductor(bioconductor_pkgs)
 lapply(bioconductor_pkgs, library, character.only = TRUE)
 
@@ -141,6 +141,26 @@ shinyServer(function(input, output, session) {
   })
   
   # ======================== INPUT & SETTINGS TAB =============================
+  # * Render input message ----------------------------------------------------
+  observe({
+    filein <- input$main_input
+    if (is.null(filein) & input$demo_data == "none") {
+      msg <- paste0(
+        "Please <em>upload an input file</em> or 
+        <em>select a demo data</em><br /> to begin!
+        To learn more about the <em>input data</em>, please visit
+        <span style=\"text-decoration: underline;\">
+        <a href=\"https://github.com/BIONF/PhyloProfile/wiki/Input-Data\">
+        <span style=\"color: #ff0000;\">our wiki</span></span></a>."
+      )
+      createAlert(session, "input_msg_ui", "input_msg", title = "",
+                  content = msg, 
+                  append = FALSE)
+    } else {
+      closeAlert(session, "input_msg")
+    }
+  })
+  
   # * check the validity of input file and render input_check.ui --------------
   output$input_check.ui <- renderUI({
     filein <- input$main_input
@@ -308,15 +328,15 @@ shinyServer(function(input, output, session) {
     long_dataframe <- get_main_input()
     if (is.null(long_dataframe)) {
       textInput("var2_id",
-                h5("1st variable:"),
+                h5("2st variable:"),
                 value = "Variable 2",
                 width = "100%",
-                placeholder = "Name of first variable")
+                placeholder = "Name of second variable")
     } else{
-      textInput("var2_id", h5("1st variable:"),
+      textInput("var2_id", h5("2st variable:"),
                 value = colnames(long_dataframe)[5],
                 width = "100%",
-                placeholder = "Name of first variable")
+                placeholder = "Name of second variable")
     }
   })
   
@@ -647,29 +667,18 @@ shinyServer(function(input, output, session) {
     create_slider_cutoff(
       "var1_core", paste(input$var1_id, "cutoff:"), 0.0, 1.0, input$var1_id
     )
-    # create_slider_cutoff(
-    #   "var1_core",
-    #   paste(input$var1_id, "cutoff:"),
-    #   input$var1[1], input$var1[2], input$var1_id
-    # )
   })
   
   output$var2_core.ui <- renderUI({
     create_slider_cutoff(
       "var2_core", paste(input$var2_id, "cutoff:"), 0.0, 1.0, input$var2_id
     )
-    # create_slider_cutoff(
-    #   "var2_core",
-    #   paste(input$var2_id, "cutoff:"),
-    #   input$var2[1], input$var2[2], input$var2_id
-    # )
   })
   
   output$percent_core.ui <- renderUI({
     create_slider_cutoff(
       "percent_core",
       "% of present taxa:",
-      # input$percent[1], input$percent[2], "percent" HERERERERERERERERE
       0, 1, "percent"
     )
   })
@@ -1048,10 +1057,6 @@ shinyServer(function(input, output, session) {
             allRanks <- c(allRanks, nextEntry$rank)
             lastID <- nextEntry$parentID
           }
-          
-          # print progress
-          # p <- (i - 1) / (length(titleline) - 1) * 100
-          # progress(p)
         }
         uniqueRank <- names(which(table(as.character(allRanks)) == 1))
         uniqueID <- names(which(table(as.character(allNorankIDs)) == 1))
@@ -1379,7 +1384,6 @@ shinyServer(function(input, output, session) {
         i <- i + 1
       }
     })
-    
     return(final_omaDf)
   }
   
@@ -1441,7 +1445,6 @@ shinyServer(function(input, output, session) {
       print("Getting the domains...")
       main_input <- get_main_input()
       domain_df <- parse_domain_input(main_input,
-                                      # input_type,
                                       input$demo_data,
                                       input$anno_location,
                                       input$file_domain_input,
@@ -2758,6 +2761,16 @@ shinyServer(function(input, output, session) {
   # ============================ ANALYSIS FUNCTIONS ===========================
   
   # * PROFILE CLUSTERING ======================================================
+  # ** description for profile clustering function ----------------------------
+  observe({
+    desc = paste("Cluster genes according to the distance of their 
+                 phylogenetic profiles.")
+    
+    if (input$tabs == "Profiles clustering") {
+      createAlert(session, "desc_clustering_ui", "desc_clustering",
+                  content = desc, append = FALSE)
+    }
+  })
   
   # ** check if genes are added anywhere else to the customized profile -------
   observe({
@@ -2765,7 +2778,7 @@ shinyServer(function(input, output, session) {
         | input$add_core_gene_custom_profile == TRUE
         | input$add_gc_genes_custom_profile == TRUE) {
       shinyjs::disable("add_cluster_cutom_profile")
-    }else{
+    } else {
       shinyjs::enable("add_cluster_cutom_profile")
     }
   })
@@ -2780,7 +2793,7 @@ shinyServer(function(input, output, session) {
            <strong>Group comparison</strong>
            &nbsp;to enable this function)</em></p>')
     }
-    })
+  })
   
   # ** List of possible profile types -----------------------------------------
   output$select_profile_type <- renderUI({
@@ -2813,7 +2826,6 @@ shinyServer(function(input, output, session) {
         selected = "binary",
         inline = FALSE)
     }
-
   })
   
   # ** List of possible distance methods --------------------------------------
@@ -2821,22 +2833,21 @@ shinyServer(function(input, output, session) {
     if (is.null(input$profile_type)) return()
     
     if (input$profile_type == "binary") {
-    selectInput(
-      "dist_method",
-      label = h5("Distance measure method:"),
-      choices = list("euclidean" = "euclidean",
-                     "maximum" = "maximum",
-                     "manhattan" = "manhattan",
-                     "canberra" = "canberra",
-                     "binary" = "binary",
-                     "pearson correlation coefficient" = "pearson",
-                     "mutual information" = "mutual_information",
-                     "distance correlation" = "distance_correlation"
-      ),
-      selected = "euclidean"
-    )
-    }
-    else {
+      selectInput(
+        "dist_method",
+        label = h5("Distance measure method:"),
+        choices = list("euclidean" = "euclidean",
+                       "maximum" = "maximum",
+                       "manhattan" = "manhattan",
+                       "canberra" = "canberra",
+                       "binary" = "binary",
+                       "pearson correlation coefficient" = "pearson",
+                       "mutual information" = "mutual_information",
+                       "distance correlation" = "distance_correlation"
+        ),
+        selected = "euclidean"
+      )
+    } else {
       selectInput(
         "dist_method",
         label = h5("Distance measure method:"),
@@ -2852,26 +2863,30 @@ shinyServer(function(input, output, session) {
   get_distance_matrix_profiles <- reactive({
     if (is.null(input$dist_method)) return()
     profiles <- get_profiles()
-    distance_matrix <- get_distance_matrix(profiles, input$dist_method, (input$var1[1])*100)
-    # write.table(as.matrix(distance_matrix), file = paste0("../distance_matrix_",
-    #                                                       input$dist_method, "_",(input$var1[1])*100 ),
-    #             col.names = TRUE, row.names = TRUE, quote = FALSE, sep = " \t")
+    distance_matrix <- get_distance_matrix(
+      profiles, input$dist_method, (input$var1[1])*100
+    )
+    # write.table(
+    #   as.matrix(distance_matrix),
+    #   file = paste0("../distance_matrix_",
+    #                 input$dist_method, "_",(input$var1[1])*100 ),
+    #   col.names = TRUE, row.names = TRUE, quote = FALSE, sep = " \t"
+    # )
     return(distance_matrix)
   })
   
   # ** Phylogenetic profiles --------------------------------------------------
   get_profiles <- reactive({
     data_heat <- dataHeat()
-    if (nrow(data_heat) < 1) return()
+    req(data_heat)
     if (is.null(input$dist_method)) return()
+    
     profiles <- get_data_clustering(data_heat,
                                     input$profile_type,
                                     input$var1_aggregate_by,
                                     input$var2_aggregate_by)
     return(profiles)
   })
-  
-  
   
   # ** render cluster tree ---------------------------------------------------
   brushed_clusterGene <- callModule(
@@ -2881,8 +2896,17 @@ shinyServer(function(input, output, session) {
     plot_width = reactive(input$cluster_plot.width),
     plot_height = reactive(input$cluster_plot.height))
   
-  
   # * DISTRIBUTION ANALYSIS ===================================================
+  # ** description for distribution analysis function -------------------------
+  observe({
+    desc = paste("Plot the distributions of the values incurred by the
+                 integrated information layers.")
+    
+    if (input$tabs == "Distribution analysis") {
+      createAlert(session, "desc_distribution_ui", "desc_distribution",
+                  content = desc, append = FALSE)
+    }
+  })
   
   # ** list of available variables for distribution plot ----------------------
   output$selected.distribution <- renderUI({
@@ -3040,7 +3064,7 @@ shinyServer(function(input, output, session) {
     }
     # calculate % present species
     finalPresSpecDt <- calc_pres_spec(taxaMdData, taxaCount)
-    finalPresSpecDt
+    return(finalPresSpecDt)
   })
   
   # ** render distribution plots ----------------------------------------------
@@ -3060,7 +3084,7 @@ shinyServer(function(input, output, session) {
           dist_text_size = reactive(input$dist_text_size),
           dist_width = reactive(input$dist_width)
         )
-      } else{
+      } else {
         if (input$selected_dist == input$var1_id) {
           callModule(
             analyze_distribution, "dist_plot",
@@ -3087,6 +3111,18 @@ shinyServer(function(input, output, session) {
   })
   
   # * GENE AGE ESTIMATION =====================================================
+  # ** description for gene age estimation function ---------------------------
+  observe({
+    desc = paste("ESTIMATE THE EVOLUTIONARY AGE OF GENES from the phylogenetic
+                 profiles using an LCA algorithm. Specifically, the last common
+                 ancestor of the two most distantly related species displaying
+                 a given gene serves as the minimal gene age.")
+    
+    if (input$tabs == "Gene age estimation") {
+      createAlert(session, "desc_gene_age_ui", "desc_gene_age", title = "",
+                  content = desc, append = FALSE)
+    }
+  })
   
   # ** check if genes are added anywhere else to the customized profile -------
   observe({
@@ -3109,7 +3145,7 @@ shinyServer(function(input, output, session) {
            <strong>Group comparison</strong>
            &nbsp;to enable this function)</em></p>')
     }
-    })
+  })
   
   # ** reset gene_age_prot_config ---------------------------------------------
   observeEvent(input$reset_gene_age_prot_config, {
@@ -3138,6 +3174,22 @@ shinyServer(function(input, output, session) {
   )
   
   # * CORE GENES IDENTIFICATION ===============================================
+  # ** description for core gene identification function ----------------------
+  observe({
+    desc = paste("IDENTIFY GENES THAT ARE SHARED AMONG SELECTED TAXA.",
+                 "You can set the minimal taxa that should be taken into 
+                 account by using the \"Core taxa coverage\" cutoff.",
+                 "If you are working with a taxonomy level (e.g. Family)
+                 that is higher than the one in the input profile (e.g. 
+                 Species), you can also identify a minimal fragtion of species
+                 that need to have an ortholog in each supertaxon with 
+                 \"% of present taxa\" cutoff.")
+    
+    if (input$tabs == "Core gene identification") {
+      createAlert(session, "desc_core_gene_ui", "desc_core_gene", title = "",
+                  content = desc, append = FALSE)
+    }
+  })
   
   # ** render list of available taxa ------------------------------------------
   output$taxa_list_core.ui <- renderUI({
@@ -3154,8 +3206,7 @@ shinyServer(function(input, output, session) {
       return(selectInput("in_taxa",
                          "Select taxa of interest:",
                          "none"))
-    }
-    else {
+    } else {
       choice <- alltaxa_list()
       choice$fullName <- as.factor(choice$fullName)
       
@@ -3238,6 +3289,27 @@ shinyServer(function(input, output, session) {
   callModule(search_taxon_id,"search_taxon_id")
   
   # * GROUP COMPARISON ========================================================
+  # ** description for group comparison function ------------------------------
+  observe({
+    if (is.null(input$var1_id)) return()
+    desc = paste("This function is used to COMPARE THE DISTRIBUTIONS of")
+    if (input$var1_id == "") {
+      desc = paste(desc, "two additional scores")
+      shinyjs::disable("plot_gc")
+    } else if (input$var2_id == "") {
+      desc = paste(desc, input$var1_id)
+    } else {
+      desc = paste(desc, input$var1_id, "and", input$var2_id)
+    }
+    desc = paste(desc, "between two taxon groups: an user defined in-group and 
+                 an out-group (taxa that are not part of the in-group).")
+    
+    if (input$tabs == "Group comparison") {
+      createAlert(session, "desc_gc_ui", "desc_gc", title = "",
+                  content = desc, append = FALSE)
+    }
+  })
+  
   # ** list of all available genes --------------------------------------------
   output$list_genes_gc <- renderUI({
     filein <- input$main_input
@@ -3247,20 +3319,23 @@ shinyServer(function(input, output, session) {
       filein <- 1
     }
     
-    
     if (v$doPlot == FALSE) {
-      return(selectInput("list_selected_genes_gc", "Select sequence(s):", "none"))
+      return(selectInput(
+        "list_selected_genes_gc", "Select sequence(s):", "none"
+      ))
     }
     
     if (is.null(filein) & is.null(file_gc)) {
-      return(selectInput("list_selected_genes_gc", "Select sequence(s):", "none"))
+      return(selectInput(
+        "list_selected_genes_gc", "Select sequence(s):", "none"
+      ))
     } else {
       # full list
       data <- as.data.frame(get_data_filtered())
-      data$geneID <- as.character(data$geneID)
       data$geneID <- as.factor(data$geneID)
       out_all <- as.list(levels(data$geneID))
       out_all <- append("all", out_all)
+      
       if (is.null(file_gc)) {
         selectInput("list_selected_genes_gc", "Select sequence(s):",
                     out_all,
@@ -3465,4 +3540,4 @@ shinyServer(function(input, output, session) {
     parameter = get_parameter_input_gc,
     selected_point = reactive(input$show_point_gc)
   )
-    })
+})

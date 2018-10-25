@@ -21,10 +21,10 @@ shinyUI(
   fluidPage(
 
     tags$style(type = "text/css", "body {padding-top: 80px;}"),
+    useShinyjs(),
 
     # Application title
     titlePanel("", windowTitle = "PhyloProfile"),
-    useShinyjs(),
 
     # TOP WELLPANEL FOR PLOT CONFIGURATION ------------------------------------
     conditionalPanel(
@@ -81,18 +81,11 @@ shinyUI(
               value = 1,
               width = 150
             ),
-            # h6("blabla", style = "color:transparent"),
             shinyBS::bsButton(
               "reset_main",
               "Reset cutoffs",
               style = "danger"
             )
-            # ,
-            # hr(),
-            # downloadButton("plot_download", "Download profile"),
-            # tags$head(
-            #   tags$style(HTML("#plot_download{background-color:#A9E2F3}"))
-            # )
           )
         )
       )
@@ -144,7 +137,6 @@ shinyUI(
           column(
             2,
             uiOutput("coortholog_filter.ui"),
-            # h6("blabla", style = "color:transparent"),
             shinyBS::bsButton(
               "reset_selected",
               "Reset cutoffs",
@@ -293,7 +285,8 @@ shinyUI(
         # * 2nd column --------------------------------------------------------
         column(
           3,
-
+          bsAlert("input_msg_ui"),
+          
           # ** List of new taxa -----------------------------------------------
           conditionalPanel(
             condition = "output.unk_taxa_status == 'unknown' ||
@@ -639,7 +632,6 @@ shinyUI(
                   4,
                   h3(""),
                   shinyBS::bsButton("cus_taxa", "Browse...")
-                  # select_taxon_rank_ui("cus_taxa")
                 )
               )
             ),
@@ -677,6 +669,7 @@ shinyUI(
         tabPanel(
           "Profiles clustering",
           h4(strong("Profiles clustering")),
+          bsAlert("desc_clustering_ui"),
 
           wellPanel(
             fluidRow(
@@ -742,6 +735,7 @@ shinyUI(
         tabPanel(
           "Distribution analysis",
           h4(strong("Distribution analysis")),
+          bsAlert("desc_distribution_ui"),
 
           wellPanel(
             fluidRow(
@@ -776,7 +770,6 @@ shinyUI(
               )
             )
           ),
-
           analyze_distribution_ui("dist_plot")
         ),
 
@@ -785,6 +778,7 @@ shinyUI(
         tabPanel(
           "Gene age estimation",
           h4(strong("Gene age estimation")),
+          bsAlert("desc_gene_age_ui"),
 
           wellPanel(
             fluidRow(
@@ -825,6 +819,7 @@ shinyUI(
         tabPanel(
           "Core gene identification",
           h4(strong("Core gene identification")),
+          bsAlert("desc_core_gene_ui"),
 
           wellPanel(
             fluidRow(
@@ -872,7 +867,6 @@ shinyUI(
             ),
             uiOutput("add_core_gene_custom_profile_check.ui")
           ),
-
           identify_core_gene_ui("core_gene")
         ),
 
@@ -880,6 +874,7 @@ shinyUI(
         tabPanel(
           "Group comparison",
           h4(strong("Group comparison")),
+          bsAlert("desc_gc_ui"),
           wellPanel(
             fluidRow(
               column(
@@ -896,7 +891,6 @@ shinyUI(
                   "",
                   "E.g.: pfam_ApbA, smart_SRP54"
                 )
-
               ),
               column(
                 2,

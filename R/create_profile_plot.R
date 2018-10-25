@@ -37,8 +37,6 @@ create_profile_plot <- function(input, output, session,
                                 in_seq, in_taxa,
                                 rank_select, in_select,
                                 taxon_highlight, gene_highlight,
-                                # width, height,
-                                # x_axis,
                                 type_profile,
                                 color_by_group) {
   # data for heatmap ----------------------------------------------------------
@@ -383,7 +381,7 @@ heatmap_plotting <- function(data,
     present_vl <- data_heat$presSpec[!is.na(data_heat$presSpec)]
 
     # to tune the size of circles;
-    # use "floor(value*10)/10" to round "down" the value with one decimal number
+    # use "floor(value*10)/10" to round "down" the value with one decimal nr
     p <- p +
       scale_size_continuous(
         range = c((floor(min(present_vl) * 10) / 10 * 5) * (1 + dot_zoom),
@@ -430,7 +428,7 @@ heatmap_plotting <- function(data,
   return(p)
 }
 
-# highlight gene and/or taxon of interest --------------------------------------
+# highlight gene and/or taxon of interest -------------------------------------
 final_profile_plot <- function(data_heat,
                                plot_parameter,
                                taxon_name,

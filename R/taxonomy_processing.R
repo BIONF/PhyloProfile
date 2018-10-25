@@ -15,7 +15,7 @@ rankIndexing <- function(rankListFile){
       stringsAsFactors = TRUE, na.strings = c("","NA")
     )
   )
-  
+
   ### get all available ranks from input rankList
   uList <- unlist(rankList)
   # remove unique rank by replacing with NA (they are useless for sorting)
@@ -23,7 +23,7 @@ rankIndexing <- function(rankListFile){
   # get final list of available ranks (remove NA items)
   allInputRank <- as.character(unique(uList))
   allInputRank <- allInputRank[!is.na(allInputRank)]
-  
+
   ### initial index for main ranks
   mainRank <- c("strain","forma","subspecies","varietas",
                 "subspecies","species","species subgroup","species group",
@@ -37,7 +37,7 @@ rankIndexing <- function(rankListFile){
   for (i in 1:length(mainRank)) {
     rank2Index[[mainRank[i]]] = i
   }
-  
+
   ### the magic happens here
   for (k in 1:nrow(rankList)) {
     ## get subset of rank list for current taxon
@@ -45,7 +45,7 @@ rankIndexing <- function(rankListFile){
     subList <- rankList[k,][!is.na(rankList[k,])]
     filter <- sapply(subList, function(x) x %in% allInputRank)
     subList <- subList[filter]
-    
+
     ## now go to each rank and check...
     for (i in 1:length(subList)) {
       # if it has no index (probably only for norank), then...
@@ -59,12 +59,12 @@ rankIndexing <- function(rankListFile){
             j = j - 1
           }
         }
-      } 
+      }
       # else, check if the current index is smaller than index of previous rank,
       else {
         if (i > 1) {
           preRank <- subList[i - 1]
-          # if so, increase index of this current rank by 
+          # if so, increase index of this current rank by
           # (index of previous rank + 1)
           if (rank2Index[[subList[i]]] <= rank2Index[[preRank]]) {
             rank2Index[[subList[i]]] = rank2Index[[preRank]] + 1
@@ -73,19 +73,19 @@ rankIndexing <- function(rankListFile){
       }
     }
   }
-  
+
   ### output a list of indexed ranks
   index2RankDf <- data.frame(
     "index" = character(), "rank" = character(), stringsAsFactors = FALSE
   )
-  
+
   for (i in 1:length(allInputRank)) {
     index2RankDf[i,] = c(rank2Index[[allInputRank[i]]], allInputRank[i])
   }
-  
+
   index2RankDf$index <- as.numeric(index2RankDf$index)
   index2RankDf <- index2RankDf[with(index2RankDf, order(index2RankDf$index)),]
-  
+
   return(index2RankDf)
 }
 
@@ -100,7 +100,7 @@ rankIndexing <- function(rankListFile){
 taxonomyTableCreator <- function(idListFile,rankListFile){
   ### get indexed rank list
   index2RankDf <- rankIndexing(rankListFile)
-  
+
   ### load idList file
   ncol <- max(count.fields(rankListFile, sep = '\t'))
   idList <- as.data.frame(
@@ -112,9 +112,9 @@ taxonomyTableCreator <- function(idListFile,rankListFile){
       col.names = paste0('X', seq_len(ncol))
     )
   )
-  
+
   colnames(idList)[1] <- "tip"
-  
+
   ### get ordered rank list
   orderedRank <- factor(index2RankDf$rank, levels = index2RankDf$rank)
 
@@ -135,7 +135,7 @@ taxonomyTableCreator <- function(idListFile,rankListFile){
     )
     ### convert into long format
     mTaxonDf <- suppressWarnings(melt(taxonDf, id = "tip"))
-  
+
     ### get rank names and corresponding IDs
     splitCol <- data.frame(
       do.call(
@@ -143,10 +143,10 @@ taxonomyTableCreator <- function(idListFile,rankListFile){
       )
     )
     mTaxonDf <- cbind(mTaxonDf, splitCol)
-    
+
     ### remove NA cases
     mTaxonDf <- mTaxonDf[complete.cases(mTaxonDf),]
-    
+
     ### subselect mTaxonDf to keep only 2 column rank id and rank name
     mTaxonDf <- mTaxonDf[, c("X1","X2")]
     if (mTaxonDf$X2[1] != index2RankDf$rank[1]) {
@@ -154,7 +154,7 @@ taxonomyTableCreator <- function(idListFile,rankListFile){
                                    "X2" = index2RankDf$rank[1]),
                         mTaxonDf)
     }
-    
+
     ### rename columns
     colnames(mTaxonDf) <- c(taxonName[1], "rank")
 
@@ -163,65 +163,45 @@ taxonomyTableCreator <- function(idListFile,rankListFile){
 
     ### reorder ranks
     fullRankIDdf <- fullRankIDdf[order(fullRankIDdf$index),]
-    
+
     ### replace NA id by id of previous rank
     fullRankIDdf <- zoo::na.locf(fullRankIDdf)
-    
+
     ### print process
     p <- i / nrow(idList) * 100
     print(p)
     flush.console()
   }
-  
+
   ### remove index column
   fullRankIDdf <- subset(fullRankIDdf, select = -c(index))
 
   ### transpose into wide format
   t_fullRankIDdf <- transpose(fullRankIDdf)
-  
+
   ### set first row to column names
   colnames(t_fullRankIDdf) = as.character(unlist(t_fullRankIDdf[1,]))
   t_fullRankIDdf <- t_fullRankIDdf[-1,]
 
-  ### replace NA values in the dataframe t_fullRankIDdf
-  if (nrow(t_fullRankIDdf[is.na(t_fullRankIDdf),]) > 0) {
-    print("yes")
-    # t_fullRankIDdfTMP <- t_fullRankIDdf[complete.cases(t_fullRankIDdf),]
-    # t_fullRankIDdfEdit <- t_fullRankIDdf[is.na(t_fullRankIDdf),]
-    # 
-    # for (i in 1:nrow(t_fullRankIDdfEdit)) {
-    #   for (j in 1:(ncol(t_fullRankIDdf) - 1)) {
-    #     if (is.na(t_fullRankIDdfEdit[i, j])) {
-    #       t_fullRankIDdfEdit[i, j] <- t_fullRankIDdfEdit[i, j + 1]
-    #     }
-    #   }
-    #   if (is.na(t_fullRankIDdfEdit[i, ncol(t_fullRankIDdf)])) {
-    #     t_fullRankIDdfEdit[i, ncol(t_fullRankIDdf)] <- 
-    #       t_fullRankIDdfEdit[i, ncol(t_fullRankIDdf) - 1]
-    #   }
-    # }
-    # t_fullRankIDdf <- rbind(t_fullRankIDdfEdit, t_fullRankIDdfTMP)
-  }
-  
   ### add "abbrName	ncbiID  fullName" columns
   abbrName <- paste0("ncbi", t_fullRankIDdf[,1])
   ncbiID <- t_fullRankIDdf[,1]
   fullName <- colnames(fullRankIDdf)[-c(1)]
-  
+
   fullRankIDdf <- cbind(abbrName, ncbiID)
   fullRankIDdf <- cbind(fullRankIDdf, fullName)
   fullRankIDdf <- cbind(fullRankIDdf, t_fullRankIDdf)
-  
+
   ### rename last column to "root"
   names(fullRankIDdf)[ncol(fullRankIDdf)] <- "root"
-  
+
   ### return
   return(fullRankIDdf)
 }
 
 #' TAXA2DIST
 #' @export
-#' @param 
+#' @param
 #' @return
 #' @author function from taxize library
 

@@ -227,7 +227,7 @@ estimate_gene_age <- function(subset_taxa, filtered_data,
                            & taxa_list$rank == "superkingdom"]
       )
     )
-  
+
   gene_ageDf$age[gene_ageDf$cat == "0000111"] <-
     paste0(
       "05_",
@@ -245,7 +245,7 @@ estimate_gene_age <- function(subset_taxa, filtered_data,
                            & taxa_list$rank == "phylum"]
       )
     )
-  
+
   gene_ageDf$age[gene_ageDf$cat == "0011111"] <-
     paste0(
       "03_",
@@ -254,7 +254,7 @@ estimate_gene_age <- function(subset_taxa, filtered_data,
                            & taxa_list$rank == "class"]
       )
     )
-  
+
   gene_ageDf$age[gene_ageDf$cat == "0111111"] <-
     paste0(
       "02_",
