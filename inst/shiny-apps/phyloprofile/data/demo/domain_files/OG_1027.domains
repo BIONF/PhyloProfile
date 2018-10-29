@@ -1,0 +1,40 @@
+OG_1027#E.intestinalis@876142@Eint_091090	E.cuniculi@6035@ECU11_0250	pfam_DUF1686	355	532
+OG_1027#E.intestinalis@876142@Eint_091090	E.cuniculi@6035@ECU11_0250	seg_low complexity regions	452	465
+OG_1027#E.intestinalis@876142@Eint_091090	E.cuniculi@6035@ECU11_0250	seg_low complexity regions	482	499
+OG_1027#E.intestinalis@876142@Eint_091090	E.cuniculi@6035@ECU11_0250	seg_low complexity regions	70	85
+OG_1027#E.intestinalis@876142@Eint_091090	E.cuniculi@6035@ECU11_0250	tmhmm_transmembrane	328	350
+OG_1027#E.intestinalis@876142@Eint_091090	E.cuniculi@6035@ECU11_0250	tmhmm_transmembrane	363	382
+OG_1027#E.intestinalis@876142@Eint_091090	E.cuniculi@6035@ECU11_0250	tmhmm_transmembrane	397	416
+OG_1027#E.intestinalis@876142@Eint_091090	E.cuniculi@6035@ECU11_0250	tmhmm_transmembrane	418	440
+OG_1027#E.intestinalis@876142@Eint_091090	E.cuniculi@6035@ECU11_0250	tmhmm_transmembrane	444	466
+OG_1027#E.intestinalis@876142@Eint_091090	E.cuniculi@6035@ECU11_0250	tmhmm_transmembrane	479	498
+OG_1027#E.intestinalis@876142@Eint_091090	E.cuniculi@6035@ECU11_0250	tmhmm_transmembrane	513	530
+OG_1027#E.intestinalis@876142@Eint_091090	E.intestinalis@876142@Eint_091090	coils_coiled_coil	208	228
+OG_1027#E.intestinalis@876142@Eint_091090	E.intestinalis@876142@Eint_091090	coils_coiled_coil	32	59
+OG_1027#E.intestinalis@876142@Eint_091090	E.intestinalis@876142@Eint_091090	pfam_DUF1686	321	486
+OG_1027#E.intestinalis@876142@Eint_091090	E.intestinalis@876142@Eint_091090	seg_low complexity regions	106	120
+OG_1027#E.intestinalis@876142@Eint_091090	E.intestinalis@876142@Eint_091090	tmhmm_transmembrane	294	313
+OG_1027#E.intestinalis@876142@Eint_091090	E.intestinalis@876142@Eint_091090	tmhmm_transmembrane	328	350
+OG_1027#E.intestinalis@876142@Eint_091090	E.intestinalis@876142@Eint_091090	tmhmm_transmembrane	373	395
+OG_1027#E.intestinalis@876142@Eint_091090	E.intestinalis@876142@Eint_091090	tmhmm_transmembrane	400	422
+OG_1027#E.intestinalis@876142@Eint_091090	E.intestinalis@876142@Eint_091090	tmhmm_transmembrane	435	452
+OG_1027#E.intestinalis@876142@Eint_091090	E.intestinalis@876142@Eint_091090	tmhmm_transmembrane	462	484
+OG_1027#S.lycopersicum@4081@24115	E.intestinalis@876142@Eint_091560	coils_coiled_coil	25	45
+OG_1027#S.lycopersicum@4081@24115	E.intestinalis@876142@Eint_091560	coils_coiled_coil	259	289
+OG_1027#S.lycopersicum@4081@24115	E.intestinalis@876142@Eint_091560	pfam_DUF1686	343	534
+OG_1027#S.lycopersicum@4081@24115	E.intestinalis@876142@Eint_091560	seg_low complexity regions	439	450
+OG_1027#S.lycopersicum@4081@24115	E.intestinalis@876142@Eint_091560	seg_low complexity regions	475	488
+OG_1027#S.lycopersicum@4081@24115	E.intestinalis@876142@Eint_091560	smart_DYNc	220	291
+OG_1027#S.lycopersicum@4081@24115	E.intestinalis@876142@Eint_091560	smart_MA	20	111
+OG_1027#S.lycopersicum@4081@24115	E.intestinalis@876142@Eint_091560	tmhmm_transmembrane	314	336
+OG_1027#S.lycopersicum@4081@24115	E.intestinalis@876142@Eint_091560	tmhmm_transmembrane	348	367
+OG_1027#S.lycopersicum@4081@24115	E.intestinalis@876142@Eint_091560	tmhmm_transmembrane	402	424
+OG_1027#S.lycopersicum@4081@24115	E.intestinalis@876142@Eint_091560	tmhmm_transmembrane	437	456
+OG_1027#S.lycopersicum@4081@24115	E.intestinalis@876142@Eint_091560	tmhmm_transmembrane	471	488
+OG_1027#S.lycopersicum@4081@24115	E.intestinalis@876142@Eint_091560	tmhmm_transmembrane	508	530
+OG_1027#S.lycopersicum@4081@24115	S.lycopersicum@4081@24115	cast_Q-rich	72	158
+OG_1027#S.lycopersicum@4081@24115	S.lycopersicum@4081@24115	coils_coiled_coil	103	165
+OG_1027#S.lycopersicum@4081@24115	S.lycopersicum@4081@24115	pfam_LOH1CR12	68	166
+OG_1027#S.lycopersicum@4081@24115	S.lycopersicum@4081@24115	pfam_Rab5-bind	94	166
+OG_1027#S.lycopersicum@4081@24115	S.lycopersicum@4081@24115	pfam_TMCO5	46	189
+OG_1027#S.lycopersicum@4081@24115	S.lycopersicum@4081@24115	smart_MA	61	168

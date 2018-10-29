@@ -1,0 +1,23 @@
+OG_1030#E.intestinalis@876142@Eint_080670	E.cuniculi@6035@ECU08_0720	pfam_DUF5092	5	350
+OG_1030#E.intestinalis@876142@Eint_080670	E.cuniculi@6035@ECU08_0720	seg_low complexity regions	296	309
+OG_1030#E.intestinalis@876142@Eint_080670	E.cuniculi@6035@ECU08_0720	seg_low complexity regions	313	323
+OG_1030#E.intestinalis@876142@Eint_080670	E.cuniculi@6035@ECU08_0720	tmhmm_transmembrane	288	310
+OG_1030#E.intestinalis@876142@Eint_080670	E.cuniculi@6035@ECU08_0720	tmhmm_transmembrane	314	336
+OG_1030#E.intestinalis@876142@Eint_080670	E.intestinalis@876142@Eint_080670	pfam_DUF5092	5	350
+OG_1030#E.intestinalis@876142@Eint_080670	E.intestinalis@876142@Eint_080670	seg_low complexity regions	178	189
+OG_1030#E.intestinalis@876142@Eint_080670	E.intestinalis@876142@Eint_080670	seg_low complexity regions	296	309
+OG_1030#E.intestinalis@876142@Eint_080670	E.intestinalis@876142@Eint_080670	seg_low complexity regions	313	323
+OG_1030#E.intestinalis@876142@Eint_080670	E.intestinalis@876142@Eint_080670	tmhmm_transmembrane	288	310
+OG_1030#E.intestinalis@876142@Eint_080670	E.intestinalis@876142@Eint_080670	tmhmm_transmembrane	314	336
+OG_1030#N.parisii@586133@NEPG_01709	N.parisii@586133@NEPG_01709	cast_L-rich	279	321
+OG_1030#N.parisii@586133@NEPG_01709	N.parisii@586133@NEPG_01709	pfam_B3	179	258
+OG_1030#N.parisii@586133@NEPG_01709	N.parisii@586133@NEPG_01709	pfam_DUF5092	6	336
+OG_1030#N.parisii@586133@NEPG_01709	N.parisii@586133@NEPG_01709	seg_low complexity regions	288	321
+OG_1030#N.parisii@586133@NEPG_01709	N.parisii@586133@NEPG_01709	smart_B3	181	258
+OG_1030#N.parisii@586133@NEPG_01709	N.parisii@586133@NEPG_01709	tmhmm_transmembrane	274	296
+OG_1030#N.parisii@586133@NEPG_01709	N.parisii@586133@NEPG_01709	tmhmm_transmembrane	300	322
+OG_1030#N.parisii@586133@NEPG_01709	N.ceranae@40302@NCER_101252	pfam_DUF5092	6	349
+OG_1030#N.parisii@586133@NEPG_01709	N.ceranae@40302@NCER_101252	seg_low complexity regions	249	258
+OG_1030#N.parisii@586133@NEPG_01709	N.ceranae@40302@NCER_101252	seg_low complexity regions	295	334
+OG_1030#N.parisii@586133@NEPG_01709	N.ceranae@40302@NCER_101252	tmhmm_transmembrane	292	314
+OG_1030#N.parisii@586133@NEPG_01709	N.ceranae@40302@NCER_101252	tmhmm_transmembrane	318	335

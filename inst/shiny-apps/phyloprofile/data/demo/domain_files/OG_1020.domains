@@ -1,0 +1,67 @@
+OG_1020#A.thaliana@3702@243417	A.thaliana@3702@243417	pfam_APH	106	214
+OG_1020#A.thaliana@3702@243417	A.thaliana@3702@243417	pfam_APH	197	274
+OG_1020#A.thaliana@3702@243417	A.thaliana@3702@243417	pfam_Pkinase	104	389
+OG_1020#A.thaliana@3702@243417	A.thaliana@3702@243417	pfam_Pkinase_Tyr	104	324
+OG_1020#A.thaliana@3702@243417	A.thaliana@3702@243417	seg_low complexity regions	129	149
+OG_1020#A.thaliana@3702@243417	A.thaliana@3702@243417	seg_low complexity regions	3	29
+OG_1020#A.thaliana@3702@243417	A.thaliana@3702@243417	signalp_SIGNAL	1	31
+OG_1020#A.thaliana@3702@243417	A.thaliana@3702@243417	smart_S_TKc	104	389
+OG_1020#A.thaliana@3702@243417	A.thaliana@3702@243417	smart_TyrKc	104	328
+OG_1020#A.thaliana@3702@243417	E.bieneusi@31281@EBI_23135	smart_TyrKc	36	294
+OG_1020#E.intestinalis@876142@Eint_051570	E.cuniculi@6035@ECU05_1510	pfam_Pkinase	37	316
+OG_1020#E.intestinalis@876142@Eint_051570	E.intestinalis@876142@Eint_051570	pfam_APH	143	201
+OG_1020#E.intestinalis@876142@Eint_051570	E.intestinalis@876142@Eint_051570	pfam_Choline_kinase	75	179
+OG_1020#E.intestinalis@876142@Eint_051570	E.intestinalis@876142@Eint_051570	pfam_Pkinase	37	316
+OG_1020#E.intestinalis@876142@Eint_051570	E.intestinalis@876142@Eint_051570	pfam_Pkinase_Tyr	37	255
+OG_1020#E.intestinalis@876142@Eint_051570	E.intestinalis@876142@Eint_051570	smart_S_TKc	37	316
+OG_1020#E.intestinalis@876142@Eint_051570	E.intestinalis@876142@Eint_051570	smart_TyrKc	37	313
+OG_1020#H.sapiens@9606@106204	E.bieneusi@31281@EBI_23314	pfam_Pkinase_Tyr	3	163
+OG_1020#H.sapiens@9606@106204	H.sapiens@9606@106204	pfam_APH	134	212
+OG_1020#H.sapiens@9606@106204	H.sapiens@9606@106204	pfam_APH	42	132
+OG_1020#H.sapiens@9606@106204	H.sapiens@9606@106204	pfam_Pkinase	39	324
+OG_1020#H.sapiens@9606@106204	H.sapiens@9606@106204	pfam_Pkinase_Tyr	39	253
+OG_1020#H.sapiens@9606@106204	H.sapiens@9606@106204	seg_low complexity regions	334	348
+OG_1020#H.sapiens@9606@106204	H.sapiens@9606@106204	seg_low complexity regions	64	84
+OG_1020#H.sapiens@9606@106204	H.sapiens@9606@106204	smart_RIO	27	90
+OG_1020#H.sapiens@9606@106204	H.sapiens@9606@106204	smart_RIO	95	198
+OG_1020#H.sapiens@9606@106204	H.sapiens@9606@106204	smart_S_TKc	39	324
+OG_1020#H.sapiens@9606@106204	H.sapiens@9606@106204	smart_TyrKc	39	255
+OG_1020#M.musculus@10090@97389	E.bieneusi@31281@EBI_23314	pfam_Pkinase_Tyr	3	163
+OG_1020#M.musculus@10090@97389	M.musculus@10090@97389	pfam_APH	137	211
+OG_1020#M.musculus@10090@97389	M.musculus@10090@97389	pfam_APH	42	144
+OG_1020#M.musculus@10090@97389	M.musculus@10090@97389	pfam_Pkinase	39	324
+OG_1020#M.musculus@10090@97389	M.musculus@10090@97389	pfam_Pkinase_Tyr	39	253
+OG_1020#M.musculus@10090@97389	M.musculus@10090@97389	seg_low complexity regions	64	84
+OG_1020#M.musculus@10090@97389	M.musculus@10090@97389	smart_RIO	27	90
+OG_1020#M.musculus@10090@97389	M.musculus@10090@97389	smart_RIO	95	198
+OG_1020#M.musculus@10090@97389	M.musculus@10090@97389	smart_S_TKc	39	324
+OG_1020#M.musculus@10090@97389	M.musculus@10090@97389	smart_TyrKc	39	255
+OG_1020#N.parisii@586133@NEPG_00242	E.bieneusi@31281@EBI_25525	pfam_Pkinase_Tyr	1	171
+OG_1020#N.parisii@586133@NEPG_00242	N.parisii@586133@NEPG_00242	pfam_APH	98	213
+OG_1020#N.parisii@586133@NEPG_00242	N.parisii@586133@NEPG_00242	pfam_Choline_kinase	72	214
+OG_1020#N.parisii@586133@NEPG_00242	N.parisii@586133@NEPG_00242	pfam_Pkinase	37	332
+OG_1020#N.parisii@586133@NEPG_00242	N.parisii@586133@NEPG_00242	pfam_Pkinase_Tyr	37	295
+OG_1020#N.parisii@586133@NEPG_00242	N.parisii@586133@NEPG_00242	seg_low complexity regions	75	88
+OG_1020#N.parisii@586133@NEPG_00242	N.parisii@586133@NEPG_00242	smart_S_TKc	37	332
+OG_1020#N.parisii@586133@NEPG_00242	N.parisii@586133@NEPG_00242	smart_TyrKc	269	328
+OG_1020#N.parisii@586133@NEPG_00242	N.parisii@586133@NEPG_00242	smart_TyrKc	37	279
+OG_1020#P.blakesleeanus@4837@12159	E.bieneusi@31281@EBI_23135	pfam_Pkinase	36	298
+OG_1020#P.blakesleeanus@4837@12159	P.blakesleeanus@4837@12159	pfam_APH	128	214
+OG_1020#P.blakesleeanus@4837@12159	P.blakesleeanus@4837@12159	pfam_APH	39	128
+OG_1020#P.blakesleeanus@4837@12159	P.blakesleeanus@4837@12159	pfam_Pkinase	37	322
+OG_1020#P.blakesleeanus@4837@12159	P.blakesleeanus@4837@12159	pfam_Pkinase_Tyr	37	249
+OG_1020#P.blakesleeanus@4837@12159	P.blakesleeanus@4837@12159	seg_low complexity regions	62	82
+OG_1020#P.blakesleeanus@4837@12159	P.blakesleeanus@4837@12159	smart_RIO	32	87
+OG_1020#P.blakesleeanus@4837@12159	P.blakesleeanus@4837@12159	smart_RIO	77	196
+OG_1020#P.blakesleeanus@4837@12159	P.blakesleeanus@4837@12159	smart_S_TKc	37	322
+OG_1020#P.blakesleeanus@4837@12159	P.blakesleeanus@4837@12159	smart_TyrKc	37	250
+OG_1020#S.lycopersicum@4081@24239	E.bieneusi@31281@EBI_25009	smart_S_TKc	36	328
+OG_1020#S.lycopersicum@4081@24239	S.lycopersicum@4081@24239	pfam_APH	133	205
+OG_1020#S.lycopersicum@4081@24239	S.lycopersicum@4081@24239	pfam_APH	36	143
+OG_1020#S.lycopersicum@4081@24239	S.lycopersicum@4081@24239	pfam_Pkinase	34	319
+OG_1020#S.lycopersicum@4081@24239	S.lycopersicum@4081@24239	pfam_Pkinase_Tyr	34	255
+OG_1020#S.lycopersicum@4081@24239	S.lycopersicum@4081@24239	seg_low complexity regions	59	79
+OG_1020#S.lycopersicum@4081@24239	S.lycopersicum@4081@24239	smart_RIO	3	84
+OG_1020#S.lycopersicum@4081@24239	S.lycopersicum@4081@24239	smart_RIO	88	194
+OG_1020#S.lycopersicum@4081@24239	S.lycopersicum@4081@24239	smart_S_TKc	34	319
+OG_1020#S.lycopersicum@4081@24239	S.lycopersicum@4081@24239	smart_TyrKc	34	316
