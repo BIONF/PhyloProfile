@@ -22,7 +22,7 @@ Imports:
 		dplyr (>= 0.7.6),
 		DT (>= 0.4),
 		energy (>= 1.7),
-		GenomeInfoDfData (>= 1.1.0),
+		GenomeInfoDbData (>= 1.1.0),
 		ggdendro (>= 0.1),
 		ggplot2 (>= 2.2.1),
 		gplots (>= 3.0.1),
