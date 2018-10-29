@@ -1,15 +1,15 @@
-#' Startup script for running PhyloProfile
+#' @title Run PhyloProfile app
 #' @export
 
 run_phyloprofile <- function(){
-	app_dir <- system.file("shiny-apps", "phyloprofile", 
+	appDir <- system.file("shiny-apps", "phyloprofile",
 	                       package = "phyloprofile")
-	if (app_dir == "") {
+	if (appDir == "") {
 		stop("Could not find apps director. Try re-installing `phyloprofile`.",
 				call = FALSE)
 	}
 
-	shiny::runApp(appDir = getwd(), 
-	              launch.browser = TRUE, 
+	shiny::runApp(appDir,
+	              launch.browser = TRUE,
 	              display.mode = "normal")
 }

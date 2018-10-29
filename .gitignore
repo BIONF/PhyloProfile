@@ -30,3 +30,4 @@ vignettes/*.pdf
 **/.DS_Store
 data/.DS_Store
 data/demo/.DS_Store
+.Rproj.user

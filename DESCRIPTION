@@ -3,15 +3,12 @@ Version: 0.3.2
 Date: 2018-10-29
 Title: PhyloProfile
 URL: https://github.com/BIONF/PhyloProfile/
-Description: Analyze multidimensional phylogenetic profiles with a Shiny app
-Author: c(
-    person("Vinh", "Tran", email = "tran@bio.uni-frankfurt.de", role = c("aut", "cre")),
-		person("Bastian", "Greshake Tzovaras", email = "", role = c("aut")),
-		person("Ingo", "Ebersberger", email = "ebersberger@bio.uni-frankfurt.de", role = c("aut"))
-)
+Description: Analyze multidimensional phylogenetic profiles with a Shiny app.
+Author: person("Vinh", "Tran", email = "tran@bio.uni-frankfurt.de", role = c("aut", "cre"))
 Maintainer: Vinh Tran <tran@bio.uni-frankfurt.de>
-License: MIT
+License: MIT + file LICENSE
 Depends: R (>= 3.4.0)
+Encoding: UTF-8
 Imports:
 		ape (>= 5.1),
 		colourpicker (>= 1.0),
@@ -39,3 +36,4 @@ Imports:
 		taxize (>= 0.9.3),
 		plyr (>= 1.8.4),
 		zoo (>= 1.8)
+RoxygenNote: 6.1.0
