@@ -1,6 +1,6 @@
 #' Startup script for running PhyloProfile
+#' @export
 
-### run phyloprofile shiny app
 run_phyloprofile <- function(){
 	app_dir <- system.file("shiny-apps", "phyloprofile", 
 	                       package = "phyloprofile")
