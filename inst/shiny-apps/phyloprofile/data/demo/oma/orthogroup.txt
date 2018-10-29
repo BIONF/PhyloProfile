@@ -1,0 +1,114 @@
+now getting FASTA sequence and domain annotations for:
+OrderedDict([(u'length', 533), (u'regions', [OrderedDict([(u'source', u'CATH/Gene3D'), (u'domainid', u'2.130.10.10'), (u'name', u'YVTN repeat-like/Quinoprotein amine dehydrogenase '), (u'location', u'146:467')])]), (u'seq_id', u'62cd0bfad44838e3a979beef5b9ddb42')])
+<orthologGroup id="371884">
+<property name="TaxRange" value="Eumetazoa"/>
+<paralogGroup>
+<orthologGroup>
+<property name="TaxRange" value="Chordata"/>
+<paralogGroup>
+<geneRef id="7080301"/>
+<orthologGroup>
+<property name="TaxRange" value="Tetrapoda"/>
+<paralogGroup>
+<orthologGroup>
+<property name="TaxRange" value="Sauria"/>
+<geneRef id="8274141"/>
+<geneRef id="8251831"/>
+</orthologGroup>
+<orthologGroup>
+<property name="TaxRange" value="Eutheria"/>
+<paralogGroup>
+<geneRef id="7716049"/>
+<orthologGroup>
+<property name="TaxRange" value="Boreoeutheria"/>
+<orthologGroup>
+<property name="TaxRange" value="Laurasiatheria"/>
+<paralogGroup>
+<geneRef id="7995174"/>
+<orthologGroup>
+<property name="TaxRange" value="Cetartiodactyla"/>
+<geneRef id="7917335"/>
+<geneRef id="7965258"/>
+<orthologGroup>
+<property name="TaxRange" value="Bovidae"/>
+<geneRef id="7927950"/>
+<geneRef id="7943331"/>
+</orthologGroup>
+</orthologGroup>
+</paralogGroup>
+<geneRef id="8063608"/>
+<orthologGroup>
+<property name="TaxRange" value="Chiroptera"/>
+<geneRef id="8011056"/>
+<geneRef id="8030863"/>
+</orthologGroup>
+<orthologGroup>
+<property name="TaxRange" value="Insectivora"/>
+<geneRef id="8045818"/>
+<geneRef id="8059857"/>
+</orthologGroup>
+<orthologGroup>
+<property name="TaxRange" value="Carnivora"/>
+<geneRef id="7898843"/>
+<orthologGroup>
+<property name="TaxRange" value="Caniformia"/>
+<geneRef id="7839262"/>
+<geneRef id="7854549"/>
+<geneRef id="7871747"/>
+</orthologGroup>
+</orthologGroup>
+</orthologGroup>
+<orthologGroup>
+<property name="TaxRange" value="Euarchontoglires"/>
+<paralogGroup>
+<geneRef id="7454237"/>
+<orthologGroup>
+<property name="TaxRange" value="Glires"/>
+<geneRef id="7432450"/>
+<orthologGroup>
+<property name="TaxRange" value="Rodentia"/>
+<geneRef id="7464314"/>
+<geneRef id="7481805"/>
+<geneRef id="7560820"/>
+<orthologGroup>
+<property name="TaxRange" value="Murinae"/>
+<geneRef id="7498558"/>
+<geneRef id="7525577"/>
+</orthologGroup>
+</orthologGroup>
+</orthologGroup>
+</paralogGroup>
+<geneRef id="7810519"/>
+<orthologGroup>
+<property name="TaxRange" value="Primates"/>
+<orthologGroup>
+<property name="TaxRange" value="Strepsirrhini"/>
+<geneRef id="7781331"/>
+<geneRef id="7799818"/>
+</orthologGroup>
+<orthologGroup>
+<property name="TaxRange" value="Haplorrhini"/>
+<geneRef id="7760471"/>
+<orthologGroup>
+<property name="TaxRange" value="Simiiformes"/>
+<geneRef id="7751579"/>
+<orthologGroup>
+<property name="TaxRange" value="Catarrhini"/>
+<orthologGroup>
+<property name="TaxRange" value="Cercopithecinae"/>
+<geneRef id="7568482"/>
+<geneRef id="7591757"/>
+<geneRef id="7614501"/>
+</orthologGroup>
+<orthologGroup>
+<property name="TaxRange" value="Hominoidea"/>
+<geneRef id="7729591"/>
+<orthologGroup>
+<property name="TaxRange" value="Homininae"/>
+<geneRef id="7634977"/>
+<geneRef id="7660316"/>
+<geneRef id="7686127"/>
+</orthologGroup>
+</orthologGroup>
+</orthologGroup>
+</orthologGroup></orthologGroup></orthologGroup></orthologGroup></orthologGroup></paralogGroup></orthologGroup></paralogGroup></orthologGroup></paralogGroup></orthologGroup></paralogGroup></orthologGroup>

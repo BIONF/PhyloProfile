@@ -1,0 +1,11 @@
+geneID	group
+OG_1009	a
+OG_1017	a
+OG_1019	a
+OG_1020	c
+OG_1023	b
+OG_1024	b
+OG_1026	c
+OG_1027	b
+OG_1029	c
+OG_1030	b
