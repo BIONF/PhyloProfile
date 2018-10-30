@@ -2,11 +2,15 @@ Package: phyloprofile
 Version: 0.3.2
 Date: 2018-10-29
 Title: PhyloProfile
+Authors@R: c(
+    person("Vinh", "Tran", email = "tran@bio.uni-frankfurt.de", role = c("aut", "cre")),
+    person("Bastian", "Greshake Tzovaras", email = "", role = "aut"),
+    person("Ingo", "Ebersberger", email = "ebersberger@bio.uni-frankfurt.de", role = "aut"),
+    person("Carla", "Mölbert", email = "carla.moelbert@gmx.de", role = "ctb"))
+Maintainer: Vinh Tran <tran@bio.uni-frankfurt.de>
+Description: Analyze multidimensional phylogenetic profiles with a Shiny app.
 URL: https://github.com/BIONF/PhyloProfile/
 BugReports: https://github.com/BIONF/PhyloProfile/issues
-Description: Analyze multidimensional phylogenetic profiles with a Shiny app.
-Author: person("Vinh", "Tran", email = "tran@bio.uni-frankfurt.de", role = c("aut", "cre"))
-Maintainer: Vinh Tran <tran@bio.uni-frankfurt.de>
 License: MIT + file LICENSE
 Depends: R (>= 3.4.0)
 Encoding: UTF-8
