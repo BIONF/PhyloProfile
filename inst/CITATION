@@ -1,0 +1,17 @@
+citHeader("To cite PhyloProfile in publications use:")
+
+citEntry(entry = "Article",
+         title        = "{PhyloProfile}: Dynamic visualization and exploration of multi-layered phylogenetic profiles",
+         author       = personList(as.person("Ngoc-Vinh Tran"),
+                                   as.person("Bastian Greshake Tzovaras"),
+                                   as.person("Ingo Ebersberger")),
+         journal      = "Bioinformatics",
+         year         = "2018",
+         url          = "https://doi.org/10.1093/bioinformatics/bty225",
+
+         textVersion  =
+           paste("Ngoc-Vinh Tran, Bastian Greshake Tzovaras, Ingo Ebersberger;",
+                 "PhyloProfile: Dynamic visualization and exploration of multi-layered phylogenetic profiles,",
+                 "Bioinformatics, bty225",
+                 "DOI https://doi.org/10.1093/bioinformatics/bty225")
+)
