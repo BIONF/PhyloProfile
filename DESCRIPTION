@@ -14,7 +14,7 @@ BugReports: https://github.com/BIONF/PhyloProfile/issues
 License: MIT + file LICENSE
 Depends: R (>= 3.4.0)
 Encoding: UTF-8
-biocViews:
+biocViews: 
 Imports:
 		ape (>= 5.1),
 		bioDist (>= 1.52.0),
@@ -51,3 +51,4 @@ Imports:
 RoxygenNote: 6.1.0
 Remotes: trvinh/OmaDB,
     andrewsali/shinycssloaders
+Suggests: testthat
