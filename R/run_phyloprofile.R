@@ -2,7 +2,7 @@
 #' @export
 
 run_phyloprofile <- function(){
-	appDir <- system.file("shiny-apps", "phyloprofile",
+	appDir <- system.file("phyloprofile",
 	                       package = "phyloprofile")
 	if (appDir == "") {
 		stop("Could not find apps director. Try re-installing `phyloprofile`.",

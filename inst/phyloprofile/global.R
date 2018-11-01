@@ -6,10 +6,10 @@ source("R/functions.R")
 
 # List of dependent packages --------------------------------------------------
 packages <- c("shiny", "shinyBS", "shinyjs", "colourpicker", "DT",
-              "devtools", "ggplot2", "reshape2", 
-              "plyr", "dplyr", "tidyr", "scales", "grid", 
-              "gridExtra", "ape", "stringr", "gtable", 
-              "dendextend", "ggdendro", "gplots", "data.table", 
+              "devtools", "ggplot2", "reshape2",
+              "plyr", "dplyr", "tidyr", "scales", "grid",
+              "gridExtra", "ape", "stringr", "gtable",
+              "dendextend", "ggdendro", "gplots", "data.table",
               "taxize", "zoo", "RCurl", "energy",
               "jmuOutlier", "RColorBrewer")
 
@@ -18,20 +18,20 @@ packages <- c("shiny", "shinyBS", "shinyjs", "colourpicker", "DT",
 
 #' By default, the directories in .libPaths() aren't writable on shinyapps.io
 #' so create a subdir where we'll install our package.
-if (!file.exists("R-lib")) {
-  dir.create("R-lib")
-}
+# if (!file.exists("R-lib")) {
+#   dir.create("R-lib")
+# }
 
-# Unfortunately, there's no way to get deployapp() to ignore this directory,
-# so make sure to remove it locally before you call deployapp(). 
-# This can be done with:
-unlink("pkgInst/R-lib", recursive = TRUE)
+#' Unfortunately, there's no way to get deployapp() to ignore this directory,
+#' so make sure to remove it locally before you call deployapp().
+#' This can be done with:
+# unlink("R-lib", recursive = TRUE)
 
-# You may also need to restart R before calling deployapp(), because calling
-# runApp() will modify your libpath (below), which can confuse deployapp().
+#' You may also need to restart R before calling deployapp(), because calling
+#' runApp() will modify your libpath (below), which can confuse deployapp().
 
-# Add ./R-lib/ to the libPaths
-.libPaths( c(normalizePath("R-lib/"), .libPaths()) )
+#' Add ./R-lib/ to the libPaths
+# .libPaths( c(normalizePath("R-lib/"), .libPaths()) )
 
 # Find & install missing packages ---------------------------------------------
 install_packages(packages)
