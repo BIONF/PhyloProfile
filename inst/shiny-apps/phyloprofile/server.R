@@ -862,14 +862,15 @@ shinyServer(function(input, output, session) {
             }
           }
 
+          # check for new taxa in newTaxa.txt file
+          pipe_new <- paste0("cut -f 1 ", getwd(), "/data/newTaxa.txt")
+          newTaxa <- unlist((read.table(pipe(pipe_new))))
+
           if (nrow(unkTaxa[unkTaxa$id %in% newTaxa,]) > 0) {
             unkTaxa[unkTaxa$id %in% newTaxa,]$Source <- "new"
           }
 
           # check for invalid newly generated IDs in newTaxa.txt file
-          pipe_new <- paste0("cut -f 1 ", getwd(), "/data/newTaxa.txt")
-          newTaxa <- unlist((read.table(pipe(pipe_new))))
-
           if (length(newTaxa) > 1) {
             newTaxaList <- levels(newTaxa)
             newTaxaList <- as.integer(newTaxaList[newTaxaList != "ncbiID"])
@@ -877,8 +878,8 @@ shinyServer(function(input, output, session) {
             if (min(newTaxaList) < maxNCBI) {
               invalidList <- as.data.frame(newTaxaList[newTaxaList < maxNCBI])
               colnames(invalidList) <- c("id")
-              invalidList$TaxonID <- "newTaxa.txt"
-              invalidList$Source <- "invalid"
+              invalidList$Source <- "newTaxa.txt"
+              invalidList$TaxonID <- "invalid"
               unkTaxa <- rbind(invalidList, unkTaxa)
             }
           }
@@ -896,7 +897,7 @@ shinyServer(function(input, output, session) {
   output$unk_taxa_status <- reactive({
     unkTaxa <- unkTaxa()
     if (length(unkTaxa) > 0) {
-      if ("invalid" %in% unkTaxa$Source) return("invalid")
+      if ("invalid" %in% unkTaxa$TaxonID) return("invalid")
       if ("unknown" %in% unkTaxa$Source) return("unknown")
       else return("ncbi")
     } else {
@@ -950,6 +951,37 @@ shinyServer(function(input, output, session) {
     updateTextInput(session, "new_name", value = "")
     updateTextInput(session, "new_rank", value = "norank")
     updateTextInput(session, "new_parent", value = "")
+    shinyjs::enable("new_done")
+  })
+
+  # * get info for new taxa from uploaded file --------------------------------
+  new_taxa_from_file <- reactive({
+    filein <- input$new_taxa_file
+    if (is.null(filein)) return()
+    tmp_df <- as.data.frame(read.table(file = filein$datapath,
+                                       sep = "\t",
+                                       header = TRUE,
+                                       check.names = FALSE,
+                                       comment.char = ""))
+    if (ncol(tmp_df) != 4) {
+      createAlert(session, "wrong_new_taxa", "wrong_new_taxa_msg",
+                  content = "Wrong format. Please check your file!",
+                  append = FALSE)
+      shinyjs::disable("new_done")
+      return()
+    } else {
+      createAlert(session, "wrong_new_taxa", "wrong_new_taxa_msg",
+                  content = "Click Finish adding to continue!",
+                  append = FALSE)
+      shinyjs::enable("new_done")
+      colnames(tmp_df) <- c("ncbiID", "fullName", "rank", "parentID")
+      newTaxa$Df <- tmp_df
+      return(newTaxa$Df)
+    }
+  })
+
+  observeEvent(input$new_taxa_file, {
+    new_taxa_from_file()
   })
 
   # * close adding taxa windows -----------------------------------------------
@@ -3322,8 +3354,14 @@ shinyServer(function(input, output, session) {
     } else {
       desc = paste(desc, input$var1_id, "and", input$var2_id)
     }
-    desc = paste(desc, "between two taxon groups: an user defined in-group and
-                 an out-group (taxa that are not part of the in-group).")
+    desc = paste(desc, "between two taxon groups, an in- and
+                 an out-group. You can define the in-group below and all taxa
+                 not included in this are used as the out-group. The value
+                 distributions of the variables are then compared using
+                 statistical tests (Kolmogorov-Smirnov and
+                 Wilcoxon-Mann-Whitney) using the specified significant level.
+                 Genes that have a significantly different distribution are
+                 shown in the candidate gene list below.")
 
     if (input$tabs == "Group comparison") {
       createAlert(session, "desc_gc_ui", "desc_gc", title = "",

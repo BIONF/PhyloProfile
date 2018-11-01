@@ -286,7 +286,7 @@ shinyUI(
         column(
           3,
           bsAlert("input_msg_ui"),
-          
+
           # ** List of new taxa -----------------------------------------------
           conditionalPanel(
             condition = "output.unk_taxa_status == 'unknown' ||
@@ -347,14 +347,14 @@ shinyUI(
             hr(),
 
             strong(h4("Other optional input:")),
-            
+
             shinyBS::bsButton("fasta_upload", "FASTA file(s)"),
             h5(""),
-            
+
             shinyBS::bsButton("upload_gene_category", "Gene categories"),
             h5(""),
             hr(),
-            
+
             strong(h4("Color configuration:")),
             actionButton(
               "set_color",
@@ -380,7 +380,7 @@ shinyUI(
               condition = "output.unk_taxa_status == 'invalid'",
               HTML(
                 "<p><em>Some new taxa have <span style=\"color: #ff0000;\">
-                invalid IDs</span> (either in newTaxa.txt or in the main 
+                invalid IDs</span> (either in newTaxa.txt or in the main
                 profile input or both). IDs of non-NCBI taxa have to be greater
                 than 2268208.</em></p>
                 <p><em>Please replace those IDs before continuing!</em></p>"
@@ -546,7 +546,7 @@ shinyUI(
             br(),
 
             uiOutput("highlight_taxon_ui"),
-            
+
             checkboxInput(
               "color_by_group",
               strong("Highlight genes by categories"),
@@ -702,7 +702,7 @@ shinyUI(
               ),
               column(
 
-                1, 
+                1,
                 create_plot_size("cluster_plot.height", "Height (px)", 600)
               ),
               column(
@@ -1034,8 +1034,7 @@ shinyUI(
       ),
       textInput(
         "new_rank",
-        "Rank (e.g. \"norank\" (for strain),species,
-        order, etc.)",
+        "Rank (e.g. \"norank\" (for strain), species, order, etc.)",
         "norank",
         width = 500
       ),
@@ -1047,7 +1046,19 @@ shinyUI(
         width = 500
       ),
       actionButton("new_add", "Add new taxon"),
-      actionButton("new_done", "Finish adding")
+
+      hr(),
+      fileInput("new_taxa_file","Or upload file contains IDs for new taxa"),
+      HTML(
+        "<p><em>Taxonomy file for new taxa has to be a tab-delimited text file
+        and has the following header (please follow the rule above):</em></p>
+        <p>ncbiID &nbsp;fullName &nbsp;rank &nbsp;parentID</p>"
+      ),
+      bsAlert("wrong_new_taxa"),
+
+      hr(),
+      shinyBS::bsButton("new_done", "Finish adding", style = "warning",
+                        disabled = TRUE)
     ),
 
     # * popup for confirming parsing taxa from input file ---------------------
@@ -1472,7 +1483,7 @@ shinyUI(
                          "Median" = "median"),
           selected = "mean",
           width = 150)
-        ), 
+        ),
       column(
         12,
         sliderInput(
