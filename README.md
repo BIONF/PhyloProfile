@@ -3,9 +3,9 @@
 [![published in: Bioinformatics](https://img.shields.io/badge/published%20in-Bioinformatics-ff69b4.svg?style=flat)](https://doi.org/10.1093/bioinformatics/bty225)
 [![poster at: BOSC2017](https://img.shields.io/badge/poster%20at-BOSC2017-green.svg?style=flat)](https://f1000research.com/posters/6-1782)
 [![presented at: GCB2018](https://img.shields.io/badge/presented%20at-GCB2018-green.svg?style=flat)](http://gcb2018.de)
-[![Travis-CI Build Status](https://travis-ci.org/trvinh/phyloprofile.svg?branch=master)](https://travis-ci.org/trvinh/phyloprofile)
 [![language: R](https://img.shields.io/badge/language-R-blue.svg?style=flat)](https://www.r-project.org/)
 [![license: MIT](https://img.shields.io/badge/license-MIT-lightgrey.svg)](https://opensource.org/licenses/MIT)
+[![Travis-CI Build Status](https://travis-ci.org/trvinh/phyloprofile.svg?branch=master)](https://travis-ci.org/trvinh/phyloprofile)
 
 [![](www/posterSub.png)](https://f1000research.com/posters/6-1782)
 [Click here for the full PDF version of the BOSC2017 poster](https://f1000research.com/posters/6-1782)
