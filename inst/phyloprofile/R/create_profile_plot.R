@@ -313,7 +313,7 @@ heatmap_plotting <- function(data,
   } else{
     p <- ggplot(data_heat, aes(y = geneID, x = supertaxon))
   }
-  
+
   if (color_by_group == TRUE) {
     p <- p + geom_tile(aes(fill = factor(group)), alpha = 0.3)
   } else {
@@ -325,7 +325,7 @@ heatmap_plotting <- function(data,
         geom_tile(aes(fill = var2))    # filled rect (var2 score)
     }
   }
-  
+
   if (length(unique(na.omit(data_heat$presSpec))) < 3) {
     if (length(unique(na.omit(data_heat$var1))) == 1) {
       # geom_point for circle illusion (var1 and presence/absence)
@@ -388,7 +388,7 @@ heatmap_plotting <- function(data,
                   (floor(max(present_vl) * 10) / 10 * 5) * (1 + dot_zoom))
       )
   }
-  
+
   if (color_by_group == FALSE) {
     p <- p + guides(fill = guide_colourbar(title = var2_id),
                     color = guide_colourbar(title = var1_id))
@@ -396,7 +396,7 @@ heatmap_plotting <- function(data,
     p <- p + guides(fill = guide_legend("Category"),
                     color = guide_colourbar(title = var1_id))
   }
-  
+
   base_size <- 9
 
   # guideline for separating ref species
@@ -535,6 +535,6 @@ final_profile_plot <- function(data_heat,
                        alpha = 0.3,
                        inherit.aes = FALSE)
   }
-  
+
   return(p)
 }

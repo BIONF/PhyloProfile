@@ -44,13 +44,13 @@ create_architecture_plot <- function(input, output, session,
       grid.draw(g)
     }
   })
-  
+
   output$archi_plot.ui <- renderUI({
     ns <- session$ns
     if (is.null(nrow(domain_info()))) {
       msg <- paste0(
-        "<p><em>Wrong domain file has been uploaded! 
-        Please check the correct format in 
+        "<p><em>Wrong domain file has been uploaded!
+        Please check the correct format in
         <a href=\"https://github.com/BIONF/PhyloProfile/wiki/Input-Data#ortholog-annotations-eg-domains\"
         target=\"_blank\" rel=\"noopener\">our PhyloProfile wiki</a>.</em></p>"
       )
@@ -66,7 +66,7 @@ create_architecture_plot <- function(input, output, session,
       )
     }
   })
-  
+
   output$archi_download <- downloadHandler(
     filename = function() {
       c("domains.pdf")
@@ -85,7 +85,7 @@ create_architecture_plot <- function(input, output, session,
       )
     }
   )
-  
+
   output$selected_domain <- renderText({
     if (is.null(input$archi_click$y)) return()
     convertY(unit(input$archi_click$y, "npc"), "native")
@@ -109,31 +109,31 @@ archi_plot <- function(info,
   group <- as.character(info[1])
   ortho <- as.character(info[2])
   var1 <- as.character(info[3])
-  
+
   # get sub dataframe based on selected group_id and orthoID
   ortho <- gsub("\\|", ":", ortho)
   grepID <- paste(group, "#", ortho, sep = "")
-  
+
   subdomain_df <- domain_df[grep(grepID, domain_df$seedID), ]
   subdomain_df$feature <- as.character(subdomain_df$feature)
-  
+
   if (nrow(subdomain_df) < 1) {
     return(paste0("ERR_0"))
   } else {
-    
+
     # ortho domains df
     ortho_df <- filter(subdomain_df, orthoID == ortho)
-    
+
     # seed domains df
     seed_df <- filter(subdomain_df, orthoID != ortho)
-    
+
     if (nrow(seed_df) == 0) seed_df <- ortho_df
-    
+
     seed <- as.character(seed_df$orthoID[1])
-    
+
     # return ERR_0 if seed_df and ortho_df are empty
     if (nrow(seed_df) == 0) return(paste0("ERR_0"))
-    
+
     # change order of one dataframe's features
     # based on order of other df's features
     if (length(ortho_df$feature) < length(seed_df$feature)) {
@@ -161,7 +161,7 @@ archi_plot <- function(info,
     } else {
       ordered_seed_df$yLabel <- ordered_seed_df$feature
     }
-    
+
     # create color scheme for all features
     # the same features in seed & ortholog will have the same colors
     feature_seed <- levels(as.factor(ordered_seed_df$feature))
@@ -171,15 +171,15 @@ archi_plot <- function(info,
       all_features,
       length(all_features)
     )
-    
+
     color_scheme <- structure(
       all_colors,
       .Names = all_features
     )
-    
+
     # plotting
     sep <- ":"
-    
+
     if ("length" %in% colnames(subdomain_df)) {
       plot_ortho <- domain_plotting(ordered_ortho_df,
                                     ortho,
@@ -199,7 +199,7 @@ archi_plot <- function(info,
                                    max(c(subdomain_df$end,
                                          subdomain_df$length)),
                                    color_scheme)
-      
+
     } else{
       plot_ortho <- domain_plotting(ordered_ortho_df,
                                     ortho,
@@ -218,14 +218,14 @@ archi_plot <- function(info,
                                    max(subdomain_df$end),
                                    color_scheme)
     }
-    
+
     # grid.arrange(plot_seed,plot_ortho,ncol=1)
     if (ortho == seed) {
       arrangeGrob(plot_seed, ncol = 1)
     } else {
       seed_height <- length(levels(as.factor(ordered_seed_df$feature)))
       ortho_height <- length(levels(as.factor(ordered_ortho_df$feature)))
-      
+
       arrangeGrob(plot_seed, plot_ortho, ncol = 1,
                   heights = c(seed_height, ortho_height))
     }
@@ -266,7 +266,7 @@ domain_plotting <- function(df,
                             size = 1,
                             color = "#b2b2b2")
   }
-  
+
   # draw line and points
   gg <- gg + geom_segment(data = df,
                           aes(x = start, xend = end,
@@ -282,14 +282,14 @@ domain_plotting <- function(df,
                         color = "#edae52",
                         size = 3,
                         shape = 5)
-  
+
   # draw dashed line for domain path
   gg <- gg + geom_segment(data = df[df$path == "Y", ],
                           aes(x = start, xend = end,
                               y = feature, yend = feature),
                           size = 3,
                           linetype = "dashed")
-  
+
   # # add text above
   # gg <- gg + geom_text(data = df,
   #                      aes(x = (start + end) / 2,
@@ -299,7 +299,7 @@ domain_plotting <- function(df,
   #                        vjust = -0.75,
   #                        fontface = "bold",
   #                        family = "serif")
-  
+
   # theme format
   title_mod <- gsub(":", sep, geneID)
   gg <- gg + scale_y_discrete(expand = c(0.075, 0),
@@ -333,14 +333,14 @@ sort_domains <- function(seed_df, ortho_df){
   colnames(feature_list) <- c("feature")
   # and add order number to each feature
   feature_list$orderNo <- seq(length(feature_list$feature))
-  
+
   # merge those info to ortho_df
   ordered_ortho_df <- merge(ortho_df, feature_list, all.x = TRUE)
-  
+
   # sort ortho_df
   index <- with(ordered_ortho_df, order(orderNo))
   ordered_ortho_df <- ordered_ortho_df[index, ]
-  
+
   #turn feature column into a character vector
   ordered_ortho_df$feature <- as.character(ordered_ortho_df$feature)
   #then turn it back into an ordered factor (to keep this order while plotting)
@@ -352,7 +352,7 @@ sort_domains <- function(seed_df, ortho_df){
 
 #' plot error message
 #' @export
-#' @param 
+#' @param
 #' @return error message in a ggplot object
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 
@@ -366,7 +366,7 @@ msg_plot <- function() {
   )
   x <- c(1,2,3,4,5)
   y <- c(1,2,3,4,5)
-  g <- ggplot(data.frame(x, y), aes(x,y)) + 
+  g <- ggplot(data.frame(x, y), aes(x,y)) +
     geom_point(color = "white") +
     annotate("text", label = msg, x = 3.5, y = 0.5, size = 5, colour = "red") +
     theme(axis.line = element_blank(), axis.text = element_blank(),
@@ -374,7 +374,7 @@ msg_plot <- function() {
           panel.background = element_blank(),
           panel.border = element_blank(),
           panel.grid = element_blank(),
-          plot.background = element_blank()) + 
+          plot.background = element_blank()) +
     ylim(0,1)
   return(g)
 }

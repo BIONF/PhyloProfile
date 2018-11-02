@@ -30,21 +30,26 @@ Take a look at [the functionality](https://github.com/BIONF/PhyloProfile/wiki/Fu
 * [Contact](#contact)
 
 # Installation & Usage
-*PhyloProfile* is based on the *R*-package *Shiny*, as such a recent version of *R* is needed. Once that is out of the way you can just clone this repository to get a copy of *PhyloProfile*.
+\<UNDER CONSTRUCTION>
+
+*PhyloProfile* is a *R-package*, as such a recent version of *R* is needed. You also need the [devtools](https://cran.r-project.org/web/packages/devtools/index.html) to install *PhyloProfile*. So, first  install `devtools` if it is missing
+```
+install.packages("devtools")
+```
+Once that is out of the way you can now install *PhyloProfile*
 
 ```
-git clone https://github.com/BIONF/phyloprofile
+library(devtools)
+install_github("trvinh20/phyloprofile", INSTALL_opts = c('--no-lock')))
 ```
+The initial start can take a while, as the tool will try do download and install all necessary dependencies automatically. *(Note: Depending on your system this sometimes fails, please check the console log for error messages concerning the dependency installation)*
 
-To start PhyloProfile simply move into the PhyloProfile directory and run the main script
+To start PhyloProfile simply run
 
 ```
-Rscript phyloprofile.R
+phyloprofile::run_phyloprofile()
 ```
-
-The initial start can take a while, as `phyloprofile.R` will try do download and install all necessary dependencies automatically. *(Note: Depending on your system this sometimes fails, please check the console log for error messages concerning the dependency installation)*
-
-Once all packages are downloaded and installed your web browser will open a new tab and display the main *PhyloProfile* menu.
+Check your web browser, *PhyloProfile* will be displayed there ;-) For the first time running, the tool will download a [pre-caculated taxonomy data](https://github.com/BIONF/phyloprofile-data). Please be patient until you see a message for uploading input files.
 
 # Input Data
 *PhyloProfile* can read a number of different input files, including multi-FASTA files, regular tab-separated files, OMA ID list or *OrthoXML*. The additional information layers can be embedded in the OrthoXML or be provided separately.
@@ -75,6 +80,10 @@ This tool is released with a [Contributor Code of Conduct](https://github.com/BI
 # How-To Cite
 Ngoc-Vinh Tran, Bastian Greshake Tzovaras, Ingo Ebersberger; PhyloProfile: Dynamic visualization and exploration of multi-layered phylogenetic profiles, Bioinformatics, , bty225, https://doi.org/10.1093/bioinformatics/bty225
 
+or use the citation function in R CMD to have the citation in BibTex or LaTeX format
+```
+citation("phyloprofile")
+```
 # Contact
 Vinh Tran
 tran@bio.uni-frankfurt.de

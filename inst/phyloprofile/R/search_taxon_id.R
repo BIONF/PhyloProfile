@@ -48,7 +48,7 @@ search_taxon_id <- function(input, output, session){
                                                check.names = FALSE,
                                                comment.char = ""))
       colnames(taxa_name_df) <- c("name")
-      
+
       tax_df <- as.data.frame(read.table("data/taxonomyMatrix.txt",
                                          sep = "\t",
                                          header = T,
@@ -56,21 +56,21 @@ search_taxon_id <- function(input, output, session){
       id_df <- tax_df[tax_df$fullName %in% taxa_name_df$name,
                       c("abbrName","fullName")]
       colnames(id_df) <- c("id","name")
-      
+
       id_df <- merge(taxa_name_df, id_df, all.x = TRUE)
-      
+
       id_df$type <- "retrieved"
       id_df$type[is.na(id_df$id)] <- "notfound"
       id_df$new_name <- id_df$name
-      
+
       notfound_df <- id_df[is.na(id_df$id),]
       if (nrow(notfound_df) > 0) {
         if (input$from_online == FALSE) {
           withProgress(
-            message = "Retrieving IDs for unknown taxa...", 
+            message = "Retrieving IDs for unknown taxa...",
             value = 0, {
               for (i in 1:nrow(notfound_df)) {
-                id_df_tmp <- search_ncbi_online(
+                id_df_tmp <- search_taxonID_online(
                   as.character(notfound_df[i,]$name)
                 )
                 id_df <- rbind(id_df, id_df_tmp)
@@ -83,7 +83,7 @@ search_taxon_id <- function(input, output, session){
           id_df <- id_df[!is.na(id_df$id),]
         }
       }
-    
+
       # return
       return(id_df)
     }
@@ -154,42 +154,4 @@ search_taxon_id <- function(input, output, session){
                   quote = FALSE)
     }
   )
-}
-
-search_ncbi_online <- function(tax_name){
-  id <- get_uid(sciname = tax_name)[1]
-  
-  id_df <- data.frame("name" = character(),
-                      "new_name" = character(),
-                      "id" = character(),
-                      "type" = character(),
-                      stringsAsFactors = FALSE)
-  
-  if (is.na(id)) {
-    temp <- gnr_resolve(names = as.character(tax_name))
-    if (nrow(temp) > 0) {
-      new_id <- get_uid(sciname = temp[1, 3])[1]
-      if (is.na(new_id)) {
-        id_df[1, ] <- c(as.character(tax_name),
-                        as.character(temp[1, 3]),
-                        paste0("NA"), "notfound")
-      } else {
-        id_df[1, ] <- c(as.character(tax_name),
-                        as.character(temp[1, 3]),
-                        paste0("ncbi", new_id),
-                        "notfound")
-      }
-    } else {
-      id_df[1, ] <- c(as.character(tax_name),
-                      paste0("no alternative"),
-                      paste0("NA"),
-                      "notfound")
-    }
-  } else {
-    id_df[1, ] <- c(as.character(tax_name),
-                    "NA",
-                    paste0("ncbi", id),
-                    "retrieved")
-  }
-  return(id_df)
 }

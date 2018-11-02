@@ -101,7 +101,7 @@ parse_domain_input <- function(main_input,
         }
       }
     }
-    
+
     if (ncol(domains) == 5) {
       colnames(domains) <- c("seedID",
                              "orthoID",

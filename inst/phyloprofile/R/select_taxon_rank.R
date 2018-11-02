@@ -56,7 +56,7 @@ select_taxon_rank <- function(input, output, session,
       nameList <- get_name_list(TRUE, FALSE)
       # get rank name from rank_select
       rankName <- substr(rank_select_cus, 4, nchar(rank_select_cus))
-      
+
       choice <- as.data.frame
       choice <- rbind(Dt[rankName])
       colnames(choice) <- "ncbiID"
@@ -64,7 +64,7 @@ select_taxon_rank <- function(input, output, session,
       return(choice)
     }
   })
-  
+
   # render list of possible taxon names from get_taxa_cus()
   output$taxa_select_cus.ui <- renderUI({
     ns <- session$ns
@@ -102,7 +102,7 @@ select_taxon_rank <- function(input, output, session,
     cus_taxaName <-
       taxa_list$fullName[taxa_list$rank %in% c(mainRankName, "norank")
                          & taxa_list$ncbiID %in% customizedtaxa_id]
-    
+
     return(cus_taxaName)
   })
 

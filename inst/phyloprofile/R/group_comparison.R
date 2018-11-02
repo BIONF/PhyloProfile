@@ -374,14 +374,14 @@ get_significant_genes <- function(in_group,
                             features = NA)
     new_row$in_group <- list(in_group_df)
     new_row$out_group <- list(out_group_df)
-    
+
     if (var == "Both") {
       new_row$pvalues_1 <- pvalue[1]
       new_row$pvalues_2 <- pvalue[2]
     } else {
       new_row$pvalues <- pvalue
     }
-    
+
     features  <- get_features(gene, domains)
     new_row$features <- list(features)
     if (right_format_features) {
@@ -547,7 +547,7 @@ get_common_ancestor <- function(in_group,
 get_p_values <- function(in_group, out_group, variable, gene, parameters){
   # significant <-  FALSE #### MODIFIED BY VINH HERERER
   significance_level <- parameters$significance
-  
+
   #' get the p-values for both variables --------------------------------------
   if (variable == "Both") {
     var1 <- parameters$var1
@@ -562,7 +562,7 @@ get_p_values <- function(in_group, out_group, variable, gene, parameters){
                                   significance_level)
     pvalues <- list(pvalues1, pvalues2)
     return(pvalues)
-  } 
+  }
   #' get the p-values for one variable --------------------------------------
   else {
     #' Check which variable is selected and get the p_values
@@ -623,7 +623,7 @@ calculate_p_value <- function(var_in, var_out, significance_level){
       # pvalue <- c(p_value, p_value_wilcox)
       pvalue <- c(p_value_wilcox)
     }
-    
+
     # perm <- perm.test(unique(var_in), unique(var_out),
     #                   alternative = c("two.sided"),
     #                   mu = 0, # Hypothesis: Samples do not differ
@@ -633,7 +633,7 @@ calculate_p_value <- function(var_in, var_out, significance_level){
     #                   plot = FALSE, # does not plot
     #                   stat = mean) # compaires the means of the distributions
     # pvalue <- perm$p.value
-    
+
     #' return the calculated pvalues ------------------------------------------
     return(pvalue)
   }
@@ -702,7 +702,7 @@ get_multiplot <- function(gene_info, parameters, interesting_features,
   features <- as.data.frame(gene_info$features)
 
   var <- gene_info$var
-  
+
   #' Get the barplot ---------------------------------------------------------
   barplot <-  get_barplot_gc(gene,
                              in_group,
@@ -778,7 +778,7 @@ get_multiplot <- function(gene_info, parameters, interesting_features,
     } else {
       info <- " "
     }
-    
+
     #' Generate the plot
     boxplot <- get_boxplot_gc(in_group,
                               out_group,
@@ -794,7 +794,7 @@ get_multiplot <- function(gene_info, parameters, interesting_features,
                           barplot,
                           heights = c(0.02, 0.45, 0.458), ncol = 1)
   }
-  
+
   #' return the plots --------------------------------------------------------
   return(plots)
 }
@@ -824,7 +824,7 @@ get_boxplot_gc <- function(in_group_df,
                            info,
                            parameters,
                            selected_point){
-  
+
   #' pre-processing the data for the boxplot ---------------------------------
   if (var == parameters$var1_id) {
     in_group <- in_group_df$var1
@@ -850,7 +850,7 @@ get_boxplot_gc <- function(in_group_df,
 
   data_boxplot <- rbind(in_group, out_group)
   data_boxplot <- data_boxplot[complete.cases(data_boxplot), ]
- 
+
   names <- c(paste("In-Group \n n=", length_in_group, sep = ""),
              paste("Out-Group \n n=", length_out_group, sep = ""))
 
