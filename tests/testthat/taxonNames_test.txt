@@ -1,0 +1,37 @@
+ncbiID	fullName	rank	parentID
+329726	Acaryochloris marina MBIC11017	norank	155978
+155978	Acaryochloris marina	species	155977
+155977	Acaryochloris	genus	1890429
+1890429	Acaryochloridaceae	family	1890424
+1890424	Synechococcales	order	1117
+1117	Cyanobacteria	phylum	1798711
+1798711	Cyanobacteria/Melainabacteria group	norank	1783272
+1783272	Terrabacteria group	norank	2
+2	Bacteria	superkingdom	131567
+131567	cellular organisms	norank	1
+6277	Acanthocheilonema viteae	species	6276
+6276	Acanthocheilonema	genus	6296
+6296	Onchocercidae	family	6295
+6295	Filarioidea	superfamily	2072716
+2072716	Spiruromorpha	infraorder	6274
+6274	Spirurida	order	119089
+119089	Chromadorea	class	6231
+6231	Nematoda	phylum	1206794
+1206794	Ecdysozoa	norank	33317
+33317	Protostomia	norank	33213
+33213	Bilateria	norank	6072
+6072	Eumetazoa	norank	33208
+33208	Metazoa	kingdom	33154
+33154	Opisthokonta	norank	2759
+2759	Eukaryota	superkingdom	131567
+245562	Acidomyces richmondensis	species	245561
+245561	Acidomyces	genus	159987
+159987	Dothideomycetes incertae sedis	norank	147541
+147541	Dothideomycetes	class	715962
+715962	dothideomyceta	norank	716546
+716546	leotiomyceta	norank	147538
+147538	Pezizomycotina	subphylum	716545
+716545	saccharomyceta	norank	4890
+4890	Ascomycota	phylum	451864
+451864	Dikarya	subkingdom	4751
+4751	Fungi	kingdom	33154

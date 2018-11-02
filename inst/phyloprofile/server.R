@@ -1083,166 +1083,12 @@ shinyServer(function(input, output, session) {
           return(invalidID)
         }
 
-        ## get unique norank IDs and unique rank
-        ## (which are uninformative for sorting taxa)
-        allNorankIDs <- list()
-        allRanks <- list()
-
-        for (i in 2:length(titleline)) {
-          # taxon ID
-          refID <- titleline[i]
-          # get info for this taxon
-          refEntry <- allTaxonInfo[allTaxonInfo$ncbiID == refID, ]
-          # parent ID
-          lastID <- refEntry$parentID
-
-          #
-          if (refEntry$rank == "norank") {
-            allNorankIDs <- c(allNorankIDs, refEntry$ncbiID)
-          }
-          allRanks <- c(allRanks, refEntry$rank)
-
-          while (lastID != 1) {
-            nextEntry <- allTaxonInfo[allTaxonInfo$ncbiID == lastID, ]
-            if (nextEntry$rank == "norank") {
-              allNorankIDs <- c(allNorankIDs, nextEntry$ncbiID)
-            }
-            allRanks <- c(allRanks, nextEntry$rank)
-            lastID <- nextEntry$parentID
-          }
-        }
-        uniqueRank <- names(which(table(as.character(allRanks)) == 1))
-        uniqueID <- names(which(table(as.character(allNorankIDs)) == 1))
-        overID <- names(which(table(as.character(allNorankIDs)) ==
-                                (length(titleline) - 1)))
-        uniqueID <- c(uniqueID, overID)
-
         ## parse taxonomy info
-        rankList <- data.frame()
-        idList <- data.frame()
-        reducedInfoList <- data.frame()
-
-        # Create 0-row data frame which will be used to store data
-        withProgress(message = "Parsing input file", value = 0, {
-          for (i in 2:length(titleline)) {
-            ## taxon ID
-            refID <- titleline[i]
-
-            ## get info for this taxon
-            refEntry <- allTaxonInfo[allTaxonInfo$ncbiID == refID, ]
-
-            if (
-              nrow(reducedInfoList[
-                reducedInfoList$X1 == refEntry$ncbiID, ]) == 0
-            ) {
-              refInfoList <- data.frame(matrix(c(refEntry$ncbiID,
-                                                 refEntry$fullName,
-                                                 refEntry$rank,
-                                                 refEntry$parentID),
-                                               nrow = 1,
-                                               byrow = TRUE),
-                                        stringsAsFactors = FALSE)
-              reducedInfoList <- rbind(reducedInfoList, refInfoList)
-            }
-
-            # parentID (used to check if hitting last rank, i.e. norank_1)
-            lastID <- refEntry$parentID
-
-            # create list of rank for this taxon
-            rank <- c(paste0("ncbi", refID), refEntry$fullName)
-            if (refEntry$rank == "norank") {
-              rank <- c(rank, paste0("strain"))
-            } else {
-              rank <- c(rank, refEntry$rank)
-            }
-
-            # create list of IDs for this taxon
-            ids <- list(paste0(refEntry$fullName, "#name"))
-            if (refEntry$rank == "norank") {
-              ids <- c(ids,
-                       paste0(refEntry$ncbiID,
-                              "#",
-                              "strain",
-                              "_",
-                              refEntry$ncbiID))
-            } else {
-              ids <- c(ids,
-                       paste0(refEntry$ncbiID,
-                              "#",
-                              refEntry$rank))
-            }
-
-            # append info into rank and ids
-            while (lastID != 1) {
-              nextEntry <- allTaxonInfo[allTaxonInfo$ncbiID == lastID, ]
-
-              if (
-                nrow(reducedInfoList[
-                  reducedInfoList$X1 == nextEntry$ncbiID, ]) == 0
-              ) {
-                nextEntryList <-
-                  data.frame(matrix(c(nextEntry$ncbiID,
-                                      nextEntry$fullName,
-                                      nextEntry$rank,
-                                      nextEntry$parentID),
-                                    nrow = 1, byrow = TRUE),
-                             stringsAsFactors = FALSE)
-
-                reducedInfoList <- rbind(reducedInfoList,
-                                         nextEntryList)
-              }
-
-              lastID <- nextEntry$parentID
-
-              if ("norank" %in% nextEntry$rank) {
-                rank <- c(rank,
-                          paste0(nextEntry$rank,
-                                 "_",
-                                 nextEntry$ncbiID))
-                ids <- c(ids,
-                         paste0(nextEntry$ncbiID,
-                                "#",
-                                nextEntry$rank,
-                                "_",
-                                nextEntry$ncbiID))
-              } else {
-                rank <- c(rank, nextEntry$rank)
-                ids <- c(ids,
-                         paste0(nextEntry$ncbiID,
-                                "#",
-                                nextEntry$rank))
-              }
-            }
-
-            # last rank and id
-            rank <- c(rank, "norank_1")
-            ids <- c(ids, "1#norank_1")
-
-            # change "no_rank" before species into "strain"
-            if (rank[3] == "norank" & any(rank == "species")) {
-              rank[3] = "strain"
-              tmpID <- unlist(strsplit(as.character(ids[2]), split = "#"))
-              ids[2] <- paste0(tmpID[1],"#","strain")
-            }
-
-            # append into rankList and idList files
-            rankListTMP <- data.frame(matrix(unlist(rank),
-                                             nrow = 1, byrow = TRUE),
-                                      stringsAsFactors = FALSE)
-            rankList <- rbind.fill(rankList, rankListTMP)
-            idListTMP <- data.frame(matrix(unlist(ids),
-                                           nrow = 1,
-                                           byrow = TRUE),
-                                    stringsAsFactors = FALSE)
-            idList <- rbind.fill(idList, idListTMP)
-
-            # Increment the progress bar, and update the detail text.
-            incProgress(1 / (length(titleline) - 1),
-                        detail = paste( (i - 1),
-                                        "/",
-                                        length(titleline) - 1))
-          }
-        })
+        taxonomy_info <- get_ids_rank(titleline[2:length(titleline)],
+                                      allTaxonInfo)
+        rankList <- as.data.frame(taxonomy_info[2])
+        idList <- as.data.frame(taxonomy_info[1])
+        reducedInfoList <- as.data.frame(taxonomy_info[3])
 
         withProgress(message = "Generating taxonomy file...", value = 0, {
           # open existing files (idList, rankList and taxonNamesReduced.txt)
@@ -1310,8 +1156,8 @@ shinyServer(function(input, output, session) {
                       sep = "\t")
 
           # create taxonomy matrix (taxonomyMatrix.txt)
-          taxMatrix <- taxonomyTableCreator("data/idList.txt",
-                                            "data/rankList.txt")
+          taxMatrix <- taxonomy_table_creator("data/idList.txt",
+                                              "data/rankList.txt")
           write.table(taxMatrix,
                       file = "data/taxonomyMatrix.txt",
                       sep = "\t",

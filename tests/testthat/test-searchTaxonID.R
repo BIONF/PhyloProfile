@@ -5,7 +5,7 @@ r_source <- paste0(pkg_path,"/phyloprofile/R")
 
 source(paste0(r_source,"/functions.R"))
 
-test_that("check internet connection ", {
+test_that("check internet connection", {
   a <- has_internet()
   expect_true(a)
 })

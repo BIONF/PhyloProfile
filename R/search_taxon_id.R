@@ -1,6 +1,8 @@
 #' @title Search NCBI taxonomy IDs for a list of taxon names
 #'
 #' @param taxa list of taxon names
+#' @importFrom taxize get_uid
+#' @importFrom taxize gnr_resolve
 #' @return dataframe contains NCBI taxonomy IDs for all input taxa
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @export
@@ -27,9 +29,9 @@ get_taxon_id <- function(tax_name){
                       stringsAsFactors = FALSE)
 
   if (is.na(id)) {
-    temp <- gnr_resolve(names = as.character(tax_name))
+    temp <- taxize::gnr_resolve(names = as.character(tax_name))
     if (nrow(temp) > 0) {
-      new_id <- get_uid(sciname = temp[1, 3])[1]
+      new_id <- taxize::get_uid(sciname = temp[1, 3])[1]
       if (is.na(new_id)) {
         id_df[1, ] <- c(as.character(tax_name),
                         as.character(temp[1, 3]),
