@@ -269,16 +269,16 @@ rankIndexing <- function(rankListFile){
   return(index2RankDf)
 }
 
-#' ARRANGE RANK IDs INTO SORTED RANK LIST (index2RankDf)
+#' @title Align ncbi taxonomy IDs of all taxa into a sorted rank list
 #' @export
-#' @param idListFile each row is a rank+ID list of a taxon
-#' @param rankListFile each row is a rank list of a taxon
+#' @param idListFile a text file whose each row is a rank+ID list of a taxon
+#' @param rankListFile a text file whose each row is a rank list of a taxon
 #' @importFrom data.table transpose
 #' @importFrom reshape2 melt
 #' @importFrom stats complete.cases
 #' @importFrom utils count.fields
 #' @importFrom utils read.table
-#' @return aligned taxonomy matrix
+#' @return aligned taxonomy matrix  (taxonomyMatrix.txt)
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 
 taxonomy_table_creator <- function(idListFile,rankListFile){

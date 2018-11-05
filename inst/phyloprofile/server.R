@@ -3425,7 +3425,6 @@ shinyServer(function(input, output, session) {
                        "legend_gc" = input$legend_gc,
                        "legend_size_gc" = input$legend_size_gc,
                        "p_values_size" = input$p_values_size_gc)
-
   })
 
   # ** render plots for group comparison --------------------------------------

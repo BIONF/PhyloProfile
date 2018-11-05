@@ -2,20 +2,20 @@
 % Please edit documentation in R/create_taxonomy_matrix.R
 \name{taxonomy_table_creator}
 \alias{taxonomy_table_creator}
-\title{ARRANGE RANK IDs INTO SORTED RANK LIST (index2RankDf)}
+\title{Align IDs of all taxa into a sorted rank list}
 \usage{
 taxonomy_table_creator(idListFile, rankListFile)
 }
 \arguments{
-\item{idListFile}{each row is a rank+ID list of a taxon}
+\item{idListFile}{a text file whose each row is a rank+ID list of a taxon}
 
-\item{rankListFile}{each row is a rank list of a taxon}
+\item{rankListFile}{a text file whose each row is a rank list of a taxon}
 }
 \value{
-aligned taxonomy matrix
+aligned taxonomy matrix  (taxonomyMatrix.txt)
 }
 \description{
-ARRANGE RANK IDs INTO SORTED RANK LIST (index2RankDf)
+Align IDs of all taxa into a sorted rank list
 }
 \author{
 Vinh Tran {tran@bio.uni-frankfurt.de}
