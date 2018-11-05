@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_taxonomy_matrix.R
 \name{taxonomy_table_creator}
 \alias{taxonomy_table_creator}
-\title{Align IDs of all taxa into a sorted rank list}
+\title{Align ncbi taxonomy IDs of all taxa into a sorted rank list}
 \usage{
 taxonomy_table_creator(idListFile, rankListFile)
 }
@@ -15,7 +15,7 @@ taxonomy_table_creator(idListFile, rankListFile)
 aligned taxonomy matrix  (taxonomyMatrix.txt)
 }
 \description{
-Align IDs of all taxa into a sorted rank list
+Align ncbi taxonomy IDs of all taxa into a sorted rank list
 }
 \author{
 Vinh Tran {tran@bio.uni-frankfurt.de}

@@ -1,33 +1,9 @@
-#' Get OMA information functions
-#' using OmaDB package (https://github.com/klarakaleb/OmaDB)
-#' NOTE: this can be installed under R > 3.5.0 only
-# if (!require("OmaDB")) {
-#   source("https://bioconductor.org/biocLite.R")
-#   biocLite("OmaDB")
-#   library(OmaDB)
-# }
-
-#' In case an old version of R still being used (R < 3.5.0)
-
-oma_pkgs <- c("GO.db", "GenomeInfoDbData")
-missing_packages <- 
-  oma_pkgs[!(oma_pkgs %in% installed.packages()[, "Package"])]
-if (length(missing_packages)) {
-  source("https://bioconductor.org/biocLite.R")
-  biocLite(missing_packages)
-}
-
-if (!require("OmaDB")) {
-  if ("devtools" %in% installed.packages() == FALSE) {
-    install.packages("devtools")
-  }
-  devtools::install_github("trvinh/OmaDB", force = TRUE)
-}
-library(OmaDB)
+# Get OMA information functions
+# using OmaDB package (https://github.com/klarakaleb/OmaDB)
 
 #' check OMA IDs or Uniprot IDs as valid Input --------------------------------
 #' @export
-#' @param id_list list of ids needs to be checked
+#' @param ids list of ids needs to be checked
 #' @return list of invalid IDs (not readable for OMA)
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 
@@ -48,7 +24,8 @@ check_oma_id <- function(ids) {
 #' @return list of ortholog members
 #' @author Carla Mölbert {carla.moelbert@gmx.de}
 
-get_members <- function(id, ortho_type) {
+get_oma_members <- function(id, ortho_type) {
+  print(id)
   # get the members of the Hierarchical Orthologous Group
   if (ortho_type == "HOG") {
     members <- OmaDB::getHOG(id = id,
@@ -72,8 +49,7 @@ get_members <- function(id, ortho_type) {
   return(members)
 }
 
-#' get domain annotation for a domain URL of an OMA sequence ------------------
-#' @export
+#' get domain annotation for a domain URL of an OMA sequence -------------------
 #' @param domainURL URL address for domain annotation of ONE OMA id
 #' @return data frame contains feature names, start and end positions
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
@@ -89,7 +65,8 @@ get_domain_from_url <- function(domainURL) {
     domains[i,]$end <- pos[2]
 
     if (nchar(domains$name[i]) > 0) {
-      domains[i,]$feature <- paste0(domains$source[i],"_",domains$domainid[i]," (",domains$name[i],")")
+      domains[i,]$feature <- paste0(domains$source[i],"_",domains$domainid[i],
+                                    " (",domains$name[i],")")
     } else {
       domains[i,]$feature <- paste0(domains$source[i],"_",domains$domainid[i])
     }
@@ -98,14 +75,12 @@ get_domain_from_url <- function(domainURL) {
   return(domains[, c("feature","start","end")])
 }
 
-
-#' get taxonomy ID, sequence and annotation for an OMA sequence ---------------
-#' @export
-#' @param id oma ID
+#' get taxonomy ID, sequence and annotation for an OMA sequence ----------------
+#' @param id oma ID of a ortholog
 #' @return data frame contains above info for ONE OMA id
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 
-get_data_for_one_oma <- function(id) {
+get_data_for_one_ortholog <- function(id) {
   omaDf <- data.frame(
     "ortho_id" = character(),
     "taxon_id" = character(),
@@ -139,37 +114,42 @@ get_data_for_one_oma <- function(id) {
   return(omaDf)
 }
 
-#' get all oma info for list of IDs and save into a data frame (final_oma_df) -
+#' get taxonomy ID, sequence and annotation for an OMA sequence ----------------
 #' @export
-#' @param id_list list of input OMA/UniProt ids
-#' @param ortho_type type of OMA ortholog
-#' @return data frame contains all OMA information (as in get_data_for_one_oma)
+#' @param seed_id seed ID in OMA or UniProt format
+#' @param ortho_type type of OMA orthologs
+#' @return data frame contains above info for ONE OMA id
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 
-# get_oma_browser <- function(id_list, ortho_type) {
-#   final_omaDf <- data.frame()
-#
-#   for (seed_id in id_list) {
-#     # get members
-#     members <- get_members(seed_id, ortho_type)
-#     oma_seed_id <- OmaDB::getData("protein",seed_id)$omaid
-#     # get all data
-#     for (ortho in members) {
-#       orthoDf <- get_data_for_one_oma(ortho)
-#       orthoDf$seed <- seed_id
-#       if (ortho == oma_seed_id) {
-#         orthoDf$ortho_id <- seed_id
-#       }
-#       final_omaDf <- rbind(final_omaDf, orthoDf)
-#     }
-#   }
-#
-#   return(final_omaDf)
-# }
+get_data_for_one_oma <- function(seed_id, ortho_type){
+  final_omaDf <- data.frame()
+
+  # get members
+  members <- get_oma_members(seed_id, ortho_type)
+  oma_seed_id <- OmaDB::getData("protein",seed_id)$omaid
+
+  # get all data
+  j <- 1
+  for (ortho in members) {
+    orthoDf <- get_data_for_one_ortholog(ortho)
+    orthoDf$seed <- seed_id
+    if (ortho == oma_seed_id) {
+      orthoDf$ortho_id <- seed_id
+    }
+    final_omaDf <- rbind(final_omaDf, orthoDf)
+
+    p <- j / length(members) * 100
+    svMisc::progress(p)
+    j <- j + 1
+  }
+
+  return(final_omaDf)
+}
 
 #' create phylogenetic profile from full OMA dataframe
 #' @export
-#' @param final_oma_df obtained OMA data for a list of input IDs
+#' @param final_oma_df raw OMA data for a list of input IDs
+#' (data for each oma ID were obtained by get_data_for_one_ortholog() function)
 #' @return profile in long format
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 
@@ -180,10 +160,9 @@ create_profile_from_oma <- function(final_oma_df) {
 }
 
 #' create domain annotation dataframe for ONE protein
-#' @export
-#' @param domain_id
-#' @param ortho_id
-#' @param length
+#' @param domain_id protein domain ID
+#' @param ortho_id protein ID
+#' @param length protein length
 #' @param domain_list list of all domains and their positions for this protein
 #' @return domain annotation in a dataframe
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
@@ -212,7 +191,8 @@ create_domain_df <- function(domain_id, ortho_id, length, domain_list) {
 
 #' create domain annotation dataframe for complete OMA data
 #' @export
-#' @param final_oma_df obtained OMA data for a list of input IDs
+#' @param final_oma_df raw OMA data for a list of input IDs
+#' (data for each oma ID were obtained by get_data_for_one_ortholog() function)
 #' @return domain annotation in a dataframe to input into phyloprofile
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 

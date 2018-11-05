@@ -1262,24 +1262,9 @@ shinyServer(function(input, output, session) {
         incProgress(1 / length(id_list),
                     message = paste0("Retrieving OMA for ", seed_id),
                     detail = paste(i, "/", length(id_list)))
-        # get members
-        members <- get_members(seed_id, ortho_type)
-        oma_seed_id <- OmaDB::getData("protein",seed_id)$omaid
-        # get all data
-        withProgress(message = "Ortholog ", value = 0, {
-          j <- 1
-          for (ortho in members) {
-            orthoDf <- get_data_for_one_oma(ortho)
-            orthoDf$seed <- seed_id
-            if (ortho == oma_seed_id) {
-              orthoDf$ortho_id <- seed_id
-            }
-            final_omaDf <- rbind(final_omaDf, orthoDf)
-            incProgress(1 / length(members),
-                        detail = paste(j, "/", length(members)))
-            j <- j + 1
-          }
-        })
+
+        tmp_omaDf <- get_data_for_one_oma(seed_id, ortho_type)
+        final_omaDf <- rbind(final_omaDf, tmp_omaDf)
         i <- i + 1
       }
     })

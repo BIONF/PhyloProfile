@@ -9,7 +9,7 @@
 #' @return input file format or type of error
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 
-source("R/get_oma_browser.R")
+#source("R/get_oma_browser.R")
 
 check_input_vadility <- function(filein) {
   input_dt <- as.data.frame(read.table(file = filein$datapath,
@@ -66,7 +66,7 @@ check_input_vadility <- function(filein) {
 
 #' parse orthoXML input file
 #' @export
-#' @param input_file
+#' @param input_file input file in xml format
 #' @return a data frame that contains input data in long-format
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 
@@ -91,7 +91,7 @@ xml_parser <- function(input_file){
 
 #' parse input file in fasta format
 #' @export
-#' @param input_file
+#' @param input_file input multiple fasta file
 #' @return a data frame that contains input data in long-format
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 
@@ -123,7 +123,7 @@ fasta_parser <- function(input_file){
 
 #' transform wide format input into long format
 #' @export
-#' @param input_file
+#' @param input_file input file in wide matrix format
 #' @return a data frame that contains input data in long-format
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 
@@ -157,7 +157,7 @@ wide_to_long <- function(input_file){
 
 #' create final dataframe for all kinds of input file
 #' @export
-#' @param input_file
+#' @param input_file input file (either in XML, fasta or wide matrix format)
 #' @return a data frame that contains input data in long-format
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 

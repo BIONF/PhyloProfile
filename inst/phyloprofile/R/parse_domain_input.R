@@ -1,5 +1,5 @@
 source("R/parse_main_input.R")
-source("R/get_oma_browser.R")
+# source("R/get_oma_browser.R")
 
 #' Parse domain input file
 #' @export
