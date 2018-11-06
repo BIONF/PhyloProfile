@@ -19,6 +19,3 @@ importFrom(taxize,get_uid)
 importFrom(taxize,gnr_resolve)
 importFrom(utils,count.fields)
 importFrom(utils,read.table)
-=======
-# Export all names
-exportPattern(".")
