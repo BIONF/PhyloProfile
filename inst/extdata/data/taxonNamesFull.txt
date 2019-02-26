@@ -1,0 +1,77 @@
+ncbiID	fullName	rank	parentID
+272557	Aeropyrum pernix K1	norank	56636
+56636	Aeropyrum pernix	species	56635
+56635	Aeropyrum	genus	2272
+2272	Desulfurococcaceae	family	114380
+114380	Desulfurococcales	order	183924
+183924	Thermoprotei	class	28889
+28889	Crenarchaeota	phylum	1783275
+1783275	TACK group	norank	2157
+2157	Archaea	superkingdom	131567
+131567	cellular organisms	norank	1
+176299	Agrobacterium fabrum str. C58	norank	1176649
+1176649	Agrobacterium fabrum	species	1183400
+1183400	Agrobacterium tumefaciens complex	speciesgroup	357
+357	Agrobacterium	genus	227290
+227290	Rhizobium/Agrobacterium group	norank	82115
+82115	Rhizobiaceae	family	356
+356	Rhizobiales	order	28211
+28211	Alphaproteobacteria	class	1224
+1224	Proteobacteria	phylum	2
+2	Bacteria	superkingdom	131567
+3702	Arabidopsis thaliana	species	3701
+3701	Arabidopsis	genus	980083
+980083	Camelineae	tribe	3700
+3700	Brassicaceae	family	3699
+3699	Brassicales	order	91836
+91836	malvids	norank	71275
+71275	rosids	subclass	1437201
+1437201	Pentapetalae	norank	91827
+91827	Gunneridae	norank	71240
+71240	eudicotyledons	norank	1437183
+1437183	Mesangiospermae	norank	3398
+3398	Magnoliophyta	norank	58024
+58024	Spermatophyta	norank	78536
+78536	Euphyllophyta	norank	58023
+58023	Tracheophyta	norank	3193
+3193	Embryophyta	norank	131221
+131221	Streptophytina	subphylum	35493
+35493	Streptophyta	phylum	33090
+33090	Viridiplantae	kingdom	2759
+2759	Eukaryota	superkingdom	131567
+876142	Encephalitozoon intestinalis ATCC 50506	norank	58839
+58839	Encephalitozoon intestinalis	species	6033
+6033	Encephalitozoon	genus	36734
+36734	Unikaryonidae	family	6032
+6032	Apansporoblastina	suborder	6029
+6029	Microsporidia	phylum	4751
+4751	Fungi	kingdom	33154
+33154	Opisthokonta	norank	2759
+9606	Homo sapiens	species	9605
+9605	Homo	genus	207598
+207598	Homininae	subfamily	9604
+9604	Hominidae	family	314295
+314295	Hominoidea	superfamily	9526
+9526	Catarrhini	parvorder	314293
+314293	Simiiformes	infraorder	376913
+376913	Haplorrhini	suborder	9443
+9443	Primates	order	314146
+314146	Euarchontoglires	superorder	1437010
+1437010	Boreoeutheria	norank	9347
+9347	Eutheria	norank	32525
+32525	Theria	norank	40674
+40674	Mammalia	class	32524
+32524	Amniota	norank	32523
+32523	Tetrapoda	norank	1338369
+1338369	Dipnotetrapodomorpha	norank	8287
+8287	Sarcopterygii	norank	117571
+117571	Euteleostomi	norank	117570
+117570	Teleostomi	norank	7776
+7776	Gnathostomata	norank	7742
+7742	Vertebrata	norank	89593
+89593	Craniata	subphylum	7711
+7711	Chordata	phylum	33511
+33511	Deuterostomia	norank	33213
+33213	Bilateria	norank	6072
+6072	Eumetazoa	norank	33208
+33208	Metazoa	kingdom	33154

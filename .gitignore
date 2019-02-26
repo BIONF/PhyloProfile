@@ -1,0 +1,36 @@
+inst/doc
+inst/phyloprofile/data/rankList.txt
+inst/phyloprofile/data/idList.txt
+inst/phyloprofile/data/taxonomyMatrix.txt
+inst/phyloprofile/data/taxonNamesReduced.txt
+inst/phyloprofile/data/taxonNamesFull.txt
+inst/phyloprofile/data/newTaxa.txt
+tests/testthat/Rplots.pdf
+
+rsconnect/
+# History files
+.Rhistory
+.Rapp.history
+# Session Data files
+.RData
+# Example code in package build process
+*-Ex.R
+# RStudio files
+*.Rproj
+*.rproj
+*.Rproj.user/
+*.rproj.user
+*.Rproj.user
+*.rprofile
+# produced vignettes
+vignettes/*.html
+vignettes/*.pdf
+# OAuth2 token, see https://github.com/hadley/httr/releases/tag/v0.3
+.httr-oauth
+# DS_Store
+**/.DS_Store
+data/.DS_Store
+data/demo/.DS_Store
+
+.renviron
+.Rproj.user
