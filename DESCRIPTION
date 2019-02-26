@@ -20,6 +20,7 @@ Imports:
 		bioDist (>= 1.52.0),
 		BiocStyle (>= 2.0.0),
 		Biostrings (>= 2.48.0),
+		Cairo (>= 1.5.9),
 		colourpicker (>= 1.0),
 		data.table (>= 1.10.4),
 		dendextend (>= 1.8.0),

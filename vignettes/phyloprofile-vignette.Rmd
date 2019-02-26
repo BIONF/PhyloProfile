@@ -138,7 +138,7 @@ step in the identification and characterization of novel functional protein
 interaction networks (Pellegrini, 2012). PhyloProfile offers the option to
 cluster genes according to the distance of their phylogenetic profiles.
 
-```{r, fig.show='hold'}
+```{r, fig.show='hold', dev='CairoPDF'}
 ### An example for plotting the clustered profiles tree.
 ### See ?phyloprofile::get_dendrogram for more details.
 
@@ -248,7 +248,7 @@ decide on reasonable filtering thresholds, PhyloProfile provides a function to
 plot the distributions of the values incurred by the integrated information
 layers.
 
-```{r, fig.show='hold'}
+```{r, fig.show='hold', dev='CairoPDF'}
 ### An example for plotting the distribution of the 1st additional variable.
 ### See ?phyloprofile::create_var_dist_plot for more details.
 
@@ -347,7 +347,7 @@ head(profile_data)
 
 ## Create profile plot
 Generate phylogenetic profile heatmap after processing the raw input file.
-```{r, fig.show='hold'}
+```{r, fig.show='hold', dev='CairoPDF'}
 #' Load built-in processed data
 data("full_processed_profile", package="phyloprofile")
 
@@ -396,7 +396,7 @@ gene_highlight <- "OG_1019"
 
 ## Create protein domain architecture plot
 Generate the domain architecture plot for a gene of interest and its orthologs.
-```{r, fig.show='hold'}
+```{r, fig.show='hold', dev='CairoPDF'}
 #' Load protein domain architecture file
 domain_file <- system.file(
     "extdata", "domain_files/OG_1009.domains",

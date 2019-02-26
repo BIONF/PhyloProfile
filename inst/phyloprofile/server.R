@@ -3,7 +3,7 @@ packages <- c("ggplot2", "reshape2",
               "plyr", "dplyr", "tidyr", "scales", "grid",
               "gridExtra", "ape", "stringr", "gtable",
               "dendextend", "gplots", "data.table",
-              "taxize", "zoo", "RCurl", "energy")
+              "taxize", "zoo", "RCurl", "energy", "Cairo")
 source("R/functions.R")
 install_packages(packages)
 lapply(packages, library, character.only = TRUE)
@@ -20,7 +20,10 @@ source_files = list.files(path = "R",
 lapply(source_files, source, .GlobalEnv)
 
 #' set size limit for input (9999mb)
-options(shiny.maxRequestSize = 9999 * 1024 ^ 2)  # size limit for input 9999mb
+options(
+    shiny.maxRequestSize = 9999 * 1024 ^ 2, # size limit for input 9999mb
+    shiny.usecairo = TRUE
+)
 
 #' MAIN SERVER ================================================================
 shinyServer(function(input, output, session) {
