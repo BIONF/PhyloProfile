@@ -100,7 +100,7 @@ an interactive visualization application implemented with
 [Shiny](https://shiny.rstudio.com) (https://CRAN.R-project.org/package=shiny).
 
 ```{r pressure, echo=FALSE, fig.cap="PhyloProfile's GUI", out.width = '100%'}
-knitr::include_graphics("poster.png")
+knitr::include_graphics("../www/posterSub.png")
 ```
 
 For both command-based and visualization analyses, users can:

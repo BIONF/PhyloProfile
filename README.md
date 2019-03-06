@@ -7,15 +7,7 @@
 [![license: MIT](https://img.shields.io/badge/license-MIT-lightgrey.svg)](https://opensource.org/licenses/MIT)
 [![Travis-CI Build Status](https://travis-ci.org/BIONF/PhyloProfile.svg?branch=master)](https://travis-ci.org/BIONF/PhyloProfile)
 
-
-
-```{r, echo=FALSE}
-# Define variable containing url
-url <- "https://github.com/BIONF/phyloprofile-data/blob/gh-pages/www/posterSub.png"
-```
-
-<center><img src="`r url`"></center>
-
+![](https://github.com/BIONF/phyloprofile-data/blob/gh-pages/www/posterSub.png)
 [![](www/posterSub.png)](https://f1000research.com/posters/6-1782)
 [Click here for the full PDF version of the BOSC2017 poster](https://f1000research.com/posters/6-1782)
 
