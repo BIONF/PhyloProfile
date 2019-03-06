@@ -4,7 +4,7 @@
 #' \describe{
 #'     \item{V1}{ tree in newick format}
 #' }
-"pp_tree"
+"ppTree"
 
 #' An example of a taxonomy matrix.
 #'
@@ -16,7 +16,7 @@
 #'     \item{strain}{ e.g. "10090"}
 #'     ...
 #' }
-"pp_taxonomy_matrix"
+"ppTaxonomyMatrix"
 
 #' An example of a raw long input file.
 #'
@@ -28,7 +28,7 @@
 #'     \item{FAS}{ First additional variable}
 #'     \item{traceability}{ Second additional variable}
 #' }
-"main_long_raw"
+"mainLongRaw"
 
 #' An example of a raw long input file together with taxonomy info.
 #'
@@ -48,7 +48,7 @@
 #'     \item{supertaxon}{ Name of the corresponding supertaxon}
 #'     \item{rank}{ Rank of the supertaxon}
 #' }
-"profile_with_taxonomy"
+"profileWithTaxonomy"
 
 #' An example of a fully processed phylogenetic profile.
 #'
@@ -74,7 +74,7 @@
 #'     \item{mVar2}{ Value of the 2. variable after grouping into supertaxon}
 #'     \item{numberSpec}{ Total number of species in each supertaxon}
 #' }
-"full_processed_profile"
+"fullProcessedProfile"
 
 #' An example of a large processed phylogenetic profile.
 #'
@@ -92,4 +92,4 @@
 #'     \item{var2}{ Second additional variable}
 #'     \item{paralog}{ Number of co-orthologs in the current taxon}
 #' }
-"full_processed_profile_large"
+"fullProcessedProfileLarge"

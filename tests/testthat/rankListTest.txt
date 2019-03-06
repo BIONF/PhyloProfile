@@ -1,0 +1,4 @@
+ncbi176299	Agrobacterium fabrum str. C58	strain	species	speciesgroup	genus	norank_227290	family	order	class	phylum	superkingdom	norank_131567	norank_1	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+ncbi272557	Aeropyrum pernix K1	strain	species	genus	family	order	class	phylum	norank_1783275	superkingdom	norank_131567	norank_1	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
+ncbi3702	Arabidopsis thaliana	species	genus	tribe	family	order	norank_91836	subclass	norank_1437201	norank_91827	norank_71240	norank_1437183	norank_3398	norank_58024	norank_78536	norank_58023	norank_3193	subphylum	phylum	kingdom	superkingdom	norank_131567	norank_1
+ncbi876142	Encephalitozoon intestinalis ATCC 50506	strain	species	genus	family	suborder	phylum	kingdom	norank_33154	superkingdom	norank_131567	norank_1	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA

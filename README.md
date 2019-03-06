@@ -57,7 +57,7 @@ The step can take a while, as the tool will try do download and install all nece
 Simply run
 ```r
 library(phyloprofile)
-run_phyloprofile()
+runPhyloprofile()
 ```
 Check your web browser, *PhyloProfile* will be displayed there ;-) For the first time running, the tool will download a [pre-caculated taxonomy data](https://github.com/BIONF/phyloprofile-data). Please be patient until you see a message for uploading input files.
 

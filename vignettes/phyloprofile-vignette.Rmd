@@ -86,8 +86,8 @@ as input.
 Here is an example of a tab delimited input with two additional annotation
 layers:
 ```{r, echo = FALSE, results = 'asis'}
-data("main_long_raw", package="phyloprofile")
-knitr::kable(head(main_long_raw, 10))
+data("mainLongRaw", package="phyloprofile")
+knitr::kable(head(mainLongRaw, 10))
 ```
 
 *The [WIKI](https://github.com/BIONF/PhyloProfile/wiki/Input-Data) accompanying
@@ -140,24 +140,24 @@ cluster genes according to the distance of their phylogenetic profiles.
 
 ```{r, fig.show='hold', dev='CairoPNG'}
 ### An example for plotting the clustered profiles tree.
-### See ?phyloprofile::get_dendrogram for more details.
+### See ?phyloprofile::getDendrogram for more details.
 
 #' Load built-in data
-data("full_processed_profile_large", package="phyloprofile")
-data <- full_processed_profile_large
+data("fullProcessedProfileLarge", package="phyloprofile")
+data <- fullProcessedProfileLarge
 
 #' Calculate distance matrix
-#' Check ?phyloprofile::get_distance_matrix
-profile_type <- "binary"
-profiles <- get_data_clustering(
-    data, profile_type, var1_aggregate_by, var2_aggregate_by)
-method <- "mutual_information"
-distance_matrix <- get_distance_matrix(profiles, method)
+#' Check ?phyloprofile::getDistanceMatrix
+profileType <- "binary"
+profiles <- getDataClustering(
+    data, profileType, var1AggregateBy, var2AggregateBy)
+method <- "mutualInformation"
+distanceMatrix <- getDistanceMatrix(profiles, method)
 
 #' Create clustered profile tree
-cluster_method <- "complete"
-dd <- cluster_data_dend(distance_matrix, cluster_method)
-get_dendrogram(dd)
+clusterMethod <- "complete"
+dd <- clusterDataDend(distanceMatrix, clusterMethod)
+getDendrogram(dd)
 ```
 
 ### Gene age estimation
@@ -169,25 +169,25 @@ upon filtering of the data.
 
 ```{r}
 ### An example for calculating gene age for the built-in data set.
-### See ?phyloprofile::estimate_gene_age for more details.
+### See ?phyloprofile::estimateGeneAge for more details.
 
 #' Load built-in data
-data("full_processed_profile", package="phyloprofile")
+data("fullProcessedProfile", package="phyloprofile")
 
 #' Choose the working rank and the reference taxon
-rank_name <- "class"
-ref_taxon <- "Mammalia"
+rankName <- "class"
+refTaxon <- "Mammalia"
 
 #' Set cutoff for 2 additional variables and the percentage of present species
 #' in each supertaxon
-var1_cutoff <- c(0,1)
-var2_cutoff <- c(0,1)
-percent_cutoff <- c(0,1)
+var1Cutoff <- c(0,1)
+var2Cutoff <- c(0,1)
+percentCutoff <- c(0,1)
 
 #' Estimate gene age
-estimate_gene_age(
-    full_processed_profile, rank_name, ref_taxon,
-    var1_cutoff, var2_cutoff, percent_cutoff
+estimateGeneAge(
+    fullProcessedProfile, rankName, refTaxon,
+    var1Cutoff, var2Cutoff, percentCutoff
 )
 ```
 
@@ -199,32 +199,32 @@ their core genes.
 
 ```{r}
 ### An example for calculating core gene set for the built-in data set.
-### See ?phyloprofile::get_core_gene for more details.
+### See ?phyloprofile::getCoreGene for more details.
 
 #' Load built-in data
-data("full_processed_profile", package="phyloprofile")
-processed_profile_data <- full_processed_profile
+data("fullProcessedProfile", package="phyloprofile")
+processedProfileData <- fullProcessedProfile
 
 #' Choose the working rank and a set of taxa of interest
-rank_name <- "class"
-taxa_core <- c("Mammalia", "Mucorales", "Alphaproteobacteria")
+rankName <- "class"
+taxaCore <- c("Mammalia", "Mucorales", "Alphaproteobacteria")
 
 #' Set cutoff for 2 additional variables and the percentage of present species
 #' in each supertaxon
-var1_cutoff <- c(0.75, 1.0)
-var2_cutoff <- c(0.75, 1.0)
-percent_cutoff <- c(0.0, 1.0)
+var1Cutoff <- c(0.75, 1.0)
+var2Cutoff <- c(0.75, 1.0)
+percentCutoff <- c(0.0, 1.0)
 
 #' Set core coverage, the % of taxa that must be present in the selected set
-core_coverage <- 1
+coreCoverage <- 1
 
 #' Identify core genes
-get_core_gene(
-    rank_name,
-    taxa_core,
-    processed_profile_data,
-    var1_cutoff, var2_cutoff,
-    percent_cutoff, core_coverage
+getCoreGene(
+    rankName,
+    taxaCore,
+    processedProfileData,
+    var1Cutoff, var2Cutoff,
+    percentCutoff, coreCoverage
 )
 ```
 
@@ -238,7 +238,7 @@ level (*0.05 by default*). Genes that have a significantly different
 distribution will be shown in the candidate gene list for further analysis.
 
 ```{r}
-?phyloprofile::get_significant_genes
+?phyloprofile::getSignificantGenes
 ```
 
 ### Distribution analysis
@@ -250,35 +250,35 @@ layers.
 
 ```{r, fig.show='hold', dev='CairoPNG'}
 ### An example for plotting the distribution of the 1st additional variable.
-### See ?phyloprofile::create_var_dist_plot for more details.
+### See ?phyloprofile::createVarDistPlot for more details.
 
 #' Load built-in data
-data("main_long_raw", package="phyloprofile")
+data("mainLongRaw", package="phyloprofile")
 
 #' Process data for distribution analysis
-#' See ?phyloprofile::create_variable_distribution_data
-data <- create_variable_distribution_data(
-    main_long_raw, 0, 1, 0.5, 1
+#' See ?phyloprofile::createVariableDistributionData
+data <- createVariableDistributionData(
+    mainLongRaw, 0, 1, 0.5, 1
 )
 head(data, 6)
 
 #' Choose a variable for plotting and set the variable name
-var_type <- "var1"
-var_name <- "Variable 1"
+varType <- "var1"
+varName <- "Variable 1"
 
 #' Set cutoff for the percentage of present species in each supertaxon
-percent_cutoff <- c(0,1)
+percentCutoff <- c(0,1)
 
 #' Set text size
-dist_text_size <- 12
+distTextSize <- 12
 
 #' Create distribution plot
-create_var_dist_plot(
+createVarDistPlot(
     data,
-    var_name,
-    var_type,
-    percent_cutoff,
-    dist_text_size
+    varName,
+    varType,
+    percentCutoff,
+    distTextSize
 )
 ```
 
@@ -290,107 +290,107 @@ required information for the phylogenetic profile analysis.
 ```{r}
 #' Load built-in data
 #' If input data is in other format (e.g. fasta, OrthoXML, or wide matrix),
-#' see ?phyloprofile::create_long_matrix
-raw_input <- system.file(
+#' see ?phyloprofile::createLongMatrix
+rawInput <- system.file(
     "extdata", "test.main.long", package = "phyloprofile", mustWork = TRUE
 )
 
 #' Set working rank and the reference taxon
-rank_name <- "class"
-ref_taxon <- "Mammalia"
+rankName <- "class"
+refTaxon <- "Mammalia"
 
 #' Input a user-defined taxonomy tree to replace NCBI taxonomy tree (optional)
-taxa_tree <- NULL
+taxaTree <- NULL
 
 #' Choose how to aggregate the additional variables when pocessing the data
 #' into supertaxon
-var1_aggregate_by <- "max"
-var2_aggregate_by <- "mean"
+var1AggregateBy <- "max"
+var2AggregateBy <- "mean"
 
 #' Set cutoffs for for percentage of species present in a supertaxon,
 #' allowed number of co orthologs, and cutoffs for the additional variables
-percent_cutoff <- c(0.0, 1.0)
-coortholog_cutoff_max <- 10
-var1_cutoff <- c(0.75, 1.0)
-var2_cutoff <- c(0.5, 1.0)
+percentCutoff <- c(0.0, 1.0)
+coorthologCutoffMax <- 10
+var1Cutoff <- c(0.75, 1.0)
+var2Cutoff <- c(0.5, 1.0)
 
 #' Choose the relationship of the additional variables, if they are related to
 #' the orthologous proteins or to the species
-var1_relation <- "protein"
-var2_relation <- "species"
+var1Relation <- "protein"
+var2Relation <- "species"
 
 #' Identify categories for input genes (by a mapping tab-delimited file)
-group_by_cat <- FALSE
-cat_dt <- NULL
+groupByCat <- FALSE
+catDt <- NULL
 
 #' Process the input file into a phylogenetic profile data that contains
 #' taxonomy information and the aggregated values for the 2 additional variables
-profile_data <- from_input_to_profile(
-    raw_input,
-    rank_name,
-    ref_taxon,
-    taxa_tree,
-    var1_aggregate_by,
-    var2_aggregate_by,
-    percent_cutoff,
-    coortholog_cutoff_max,
-    var1_cutoff,
-    var2_cutoff,
-    var1_relation,
-    var2_relation,
-    group_by_cat,
-    cat_dt
+profileData <- fromInputToProfile(
+    rawInput,
+    rankName,
+    refTaxon,
+    taxaTree,
+    var1AggregateBy,
+    var2AggregateBy,
+    percentCutoff,
+    coorthologCutoffMax,
+    var1Cutoff,
+    var2Cutoff,
+    var1Relation,
+    var2Relation,
+    groupByCat,
+    catDt
 )
 
-head(profile_data)
+head(profileData)
 ```
 
 ## Create profile plot
 Generate phylogenetic profile heatmap after processing the raw input file.
 ```{r, fig.show='hold', dev='CairoPNG'}
 #' Load built-in processed data
-data("full_processed_profile", package="phyloprofile")
+data("fullProcessedProfile", package="phyloprofile")
 
 #' Create data for plotting
-plot_df <- data_main_plot(full_processed_profile)
+plotDf <- dataMainPlot(fullProcessedProfile)
 
 #' You can also choose a subset of genes and/or taxa for plotting with:
-#' selected_taxa <- c("Mammalia", "Echinoidea", "Gunneridae")
-#' selected_seq <- "all"
-#' plot_df <- data_customized_plot(
-#'     full_processed_profile, selected_taxa, selected_seq
+#' selectedTaxa <- c("Mammalia", "Echinoidea", "Gunneridae")
+#' selectedSeq <- "all"
+#' plotDf <- dataCustomizedPlot(
+#'     fullProcessedProfile, selectedTaxa, selectedSeq
 #' )
 
 #' Identify plot's parameters
-plot_parameter <- list(
-    "x_axis" = "taxa",
-    "var1_id" = "FAS",
-    "var2_id"  = "Traceability",
-    "low_color_var1" =  "#FF8C00",
-    "high_color_var1" = "#4682B4",
-    "low_color_var2" = "#FFFFFF",
-    "high_color_var2" = "#F0E68C",
-    "para_color" = "#07D000",
-    "x_size" = 8,
-    "y_size" = 8,
-    "legend_size" = 8,
-    "main_legend" = "top",
-    "dot_zoom" = 0,
-    "x_angle" = 60,
+plotParameter <- list(
+    "xAxis" = "taxa",
+    "var1ID" = "FAS",
+    "var2ID"  = "Traceability",
+    "lowColorVar1" =  "#FF8C00",
+    "highColorVar1" = "#4682B4",
+    "lowColorVar2" = "#FFFFFF",
+    "highColorVar2" = "#F0E68C",
+    "paraColor" = "#07D000",
+    "xSize" = 8,
+    "ySize" = 8,
+    "legendSize" = 8,
+    "mainLegend" = "top",
+    "dotZoom" = 0,
+    "xAngle" = 60,
     "guideline" = 0,
-    "color_by_group" = FALSE
+    "colorByGroup" = FALSE
 )
 
 #' Generate profile plot
-heatmap_plotting(plot_df, plot_parameter)
+heatmapPlotting(plotDf, plotParameter)
 
 #' To highlight a gene and/or taxon of interest
-taxon_highlight <- "Mammalia"
-rank_name <- "class"
-gene_highlight <- "OG_1019"
-#' Then use ?phyloprofile::highlight_profile_plot function
-# highlight_profile_plot(
-#    plot_df, plot_parameter, taxon_highlight, rank_name, gene_highlight
+taxonHighlight <- "Mammalia"
+rankName <- "class"
+geneHighlight <- "OG_1019"
+#' Then use ?phyloprofile::highlightProfilePlot function
+# highlightProfilePlot(
+#    plotDf, plotParameter, taxonHighlight, rankName, geneHighlight
 # )
 ```
 
@@ -398,8 +398,8 @@ gene_highlight <- "OG_1019"
 Generate the domain architecture plot for a gene of interest and its orthologs.
 ```{r, fig.show='hold', dev='CairoPNG'}
 #' Load protein domain architecture file
-domain_file <- system.file(
-    "extdata", "domain_files/OG_1009.domains",
+domainFile <- system.file(
+    "extdata", "domainFiles/OG_1009.domains",
     package = "phyloprofile", mustWork = TRUE
 )
 
@@ -409,10 +409,10 @@ orthoID <- "A.thaliana@3702@241736"
 info <- c(seedID, orthoID)
 
 #' Get data for 2 selected genes from input file
-domain_df <- parse_domain_input(seedID, domain_file, "file")
+domainDf <- parseDomainInput(seedID, domainFile, "file")
 
 #' Generate plot
-plot <- create_archi_plot(info, domain_df, 9, 9)
+plot <- createArchiPlot(info, domainDf, 9, 9)
 grid::grid.draw(plot)
 ```
 
@@ -421,43 +421,43 @@ grid::grid.draw(plot)
 **Get taxonomy IDs and names in a specified rank for taxa in the input file.**
 ```{r}
 #' Load raw input
-data("main_long_raw", package="phyloprofile")
-input_df <- main_long_raw
+data("mainLongRaw", package="phyloprofile")
+inputDf <- mainLongRaw
 
 #' Set working rank and the reference taxon
-rank_name <- "phylum"
+rankName <- "phylum"
 
 #' Get taxonomy IDs and names for the input data
-input_taxonID <- phyloprofile::get_input_taxa_id(input_df)
-input_taxonName <- phyloprofile::get_input_taxa_name(rank_name, input_taxonID)
+inputTaxonID <- phyloprofile::getInputTaxaID(inputDf)
+inputTaxonName <- phyloprofile::getInputTaxaName(rankName, inputTaxonID)
 
-head(input_taxonName)
+head(inputTaxonName)
 ```
 
 **Get taxonomy info for list of input taxa and sort it based on the taxonomy**
 **distance to a reference taxon**
 ```{r}
 #' Get list of taxon IDs and names for input profile
-data("main_long_raw", package="phyloprofile")
-input_df <- main_long_raw
-rank_name <- "phylum"
-input_taxonID <- phyloprofile::get_input_taxa_id(input_df)
-input_taxonName <- phyloprofile::get_input_taxa_name(rank_name, input_taxonID)
+data("mainLongRaw", package="phyloprofile")
+inputDf <- mainLongRaw
+rankName <- "phylum"
+inputTaxonID <- phyloprofile::getInputTaxaID(inputDf)
+inputTaxonName <- phyloprofile::getInputTaxaName(rankName, inputTaxonID)
 
 #' Input a user-defined taxonomy tree to replace NCBI taxonomy tree (optional)
-input_taxaTree <- NULL
+inputTaxaTree <- NULL
 
-#' Sort taxonomy list based on a selected ref_taxon
-ref_taxon <- "Microsporidia"
-sorted_taxonomy <- sort_input_taxa(
-    taxon_IDs = input_taxonID,
-    taxon_names = input_taxonName,
-    rank_name = rank_name,
-    ref_taxon = ref_taxon,
-    taxa_tree = input_taxaTree
+#' Sort taxonomy list based on a selected refTaxon
+refTaxon <- "Microsporidia"
+sortedTaxonomy <- sortInputTaxa(
+    taxonIDs = inputTaxonID,
+    taxonNames = inputTaxonName,
+    rankName = rankName,
+    refTaxon = refTaxon,
+    taxaTree = inputTaxaTree
 )
 
-sorted_taxonomy[, c("ncbiID", "fullName", "supertaxon", "supertaxonID", "rank")]
+sortedTaxonomy[, c("ncbiID", "fullName", "supertaxon", "supertaxonID", "rank")]
 ```
 
 **More examples? Please tell us what you want to see ;-)**

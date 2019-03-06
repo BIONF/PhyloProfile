@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<orthoXML xmlns="http://orthoXML.org/2011/" version="0.3" origin="inparanoid"
+  originVersion="7.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://orthoXML.org/2011/ http://www.orthoxml.org/0.3/orthoxml.xsd">
+
+  <notes>
+    Example OrthoXML file. Stripped down version of a real InParanoid 7.0 file.
+  </notes>
+
+  <species name="Caenorhabditis elegans" NCBITaxId="6239">
+    <database name="WormBase" version="Caenorhabditis-elegans_WormBase_WS199_protein-all.fa"
+      geneLink="http://www.wormbase.org/db/gene/gene?name="
+      protLink="http://www.wormbase.org/db/seq/protein?name=WP:">
+      <genes>
+        <gene id="1" geneId="WBGene00000962" protId="CE23997" />
+        <gene id="5" geneId="WBGene00006801" protId="CE43332" />
+      </genes>
+    </database>
+  </species>
+
+  <species name="Homo Sapiens" NCBITaxId="9606">
+    <database name="Ensembl" version="Homo_sapiens.NCBI36.52.pep.all.fa"
+      geneLink="http://Dec2008.archive.ensembl.org/Homo_sapiens/geneview?gene="
+      protLink="http://Dec2008.archive.ensembl.org/Homo_sapiens/protview?peptide=">
+      <genes>
+        <gene id="2" geneId="ENSG00000197102" protId="ENSP00000348965" />
+        <gene id="6" geneId="ENSG00000198626" protId="ENSP00000355533" />
+        <gene id="7" protId="ENSP00000373884" />
+      </genes>
+    </database>
+  </species>
+
+  <scores>
+    <scoreDef id="bit" desc="BLAST score in bits of seed orthologs" />
+    <scoreDef id="inparalog" desc="Distance between edge seed ortholog" />
+    <scoreDef id="bootstrap" desc="Reliability of seed orthologs" />
+  </scores>
+
+  <groups>
+    <orthologGroup id="1">
+      <score id="bit" value="5093" />
+      <property name="foo" value="bar"/>
+      <geneRef id="1">
+        <score id="inparalog" value="1" />
+        <score id="bootstrap" value="1.00" />
+      </geneRef>
+      <geneRef id="2">
+        <score id="inparalog" value="1" />
+        <score id="bootstrap" value="1.00" />
+      </geneRef>
+    </orthologGroup>
+    <orthologGroup id="3">
+      <score id="bit" value="3795" />
+      <geneRef id="5">
+        <score id="inparalog" value="1" />
+        <score id="bootstrap" value="1.00" />
+      </geneRef>
+      <geneRef id="6">
+        <score id="bootstrap" value="1.00" />
+				<score id="inparalog" value="1" />
+      </geneRef>
+      <geneRef id="7">
+        <score id="inparalog" value="0.4781" />
+      </geneRef>
+    </orthologGroup>
+  </groups>
+
+</orthoXML>
