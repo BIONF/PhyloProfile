@@ -262,6 +262,9 @@ createLongMatrix <- function(inputFile){
     for (i in seq_len(ncol(longDataframe))) {
         longDataframe[, i] <- as.factor(longDataframe[, i])
     }
+    
+    # remove duplicated lines
+    longDataframe <- longDataframe[!duplicated(longDataframe),]
 
     # longDataframe$orthoID <- gsub("\\|",":",longDataframe$orthoID)
     return(longDataframe)

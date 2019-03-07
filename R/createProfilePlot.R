@@ -55,7 +55,7 @@ dataMainPlot <- function(dataHeat){
 dataCustomizedPlot <- function(dataHeat, selectedTaxa, selectedSeq){
     geneID <- NULL
     supertaxonMod <- NULL
-
+    
     # process data
     dataHeat$supertaxonMod <- {
         substr(
@@ -75,12 +75,27 @@ dataCustomizedPlot <- function(dataHeat, selectedTaxa, selectedSeq){
                             geneID %in% selectedSeq
                             & supertaxonMod %in% selectedTaxa)
     }
+    
+    # reduce number of inparalogs based on filtered dataHeat
+    dataHeatTb <- data.table(na.omit(dataHeat))
+    dataHeatTb[, paralogNew := .N, by = c("geneID", "supertaxon")]
+    dataHeatTb <- data.frame(dataHeatTb[, c("geneID",
+                                            "supertaxon",
+                                            "paralogNew")])
+    
+    dataHeat <- merge(
+        dataHeat, dataHeatTb,
+        by = c("geneID", "supertaxon"),
+        all.x = TRUE
+    )
+    dataHeat$paralog <- dataHeat$paralogNew
+    dataHeat <- dataHeat[!duplicated(dataHeat), ]
 
     # remove unneeded dots
     dataHeat$presSpec[dataHeat$presSpec == 0] <- NA
     dataHeat$paralog[dataHeat$presSpec < 1] <- NA
     dataHeat$paralog[dataHeat$paralog == 1] <- NA
-
+    
     return(dataHeat)
 }
 
