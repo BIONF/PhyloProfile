@@ -20,8 +20,8 @@
 #' @importFrom stats p.adjust
 #' @author Carla Mölbert (carla.moelbert@gmx.de)
 #' @examples
-#' data("mainLongRaw", package="phyloprofile")
-#' data("fullProcessedProfile", package="phyloprofile")
+#' data("mainLongRaw", package="PhyloProfile")
+#' data("fullProcessedProfile", package="PhyloProfile")
 #' inGroup <- c("Aeropyrum pernix", "Agrobacterium fabrum")
 #' selectedGenesList <- "OG_1017"
 #' rank <- "species"
@@ -33,7 +33,7 @@
 #' rightFormatFeatures <- TRUE
 #' domainFile <- system.file(
 #'     "extdata", "domainFiles/OG_1017.domains",
-#'     package = "phyloprofile", mustWork = TRUE
+#'     package = "PhyloProfile", mustWork = TRUE
 #' )
 #' domains <- parseDomainInput("OG_1017", domainFile, "file")
 #' parameters <- list(
@@ -253,7 +253,7 @@ getSignificantGenes <- function(
 #' rank <- "species"
 #' nameListFile <- system.file(
 #'     "extdata", "data/taxonNamesFull.txt",
-#'     package = "phyloprofile", mustWork = TRUE
+#'     package = "PhyloProfile", mustWork = TRUE
 #' )
 #' nameList <- as.data.frame(data.table::fread(nameListFile))
 #' selectedInGroup <- getTaxonomyMatrix(FALSE, NULL)
@@ -510,7 +510,7 @@ taxaSelectGC <- function(rankSelectGC, inputTaxonID){
         else dt <- getTaxonomyMatrix(TRUE, inputTaxonID)
 
         # load list of taxon name
-        nameList <- phyloprofile::getNameList()
+        nameList <- PhyloProfile::getNameList()
 
         # get rank name from rankSelect
         if (substr(rankSelectGC,3,3) == "_") {

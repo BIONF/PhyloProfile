@@ -23,7 +23,7 @@ Parse domain input file
 seed <- "OG_1009"
 inputFile <- system.file(
     "extdata", "domainFiles/OG_1009.domains",
-    package = "phyloprofile", mustWork = TRUE
+    package = "PhyloProfile", mustWork = TRUE
 )
 type <- "file"
 parseDomainInput(seed, inputFile, type)

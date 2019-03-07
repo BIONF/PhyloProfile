@@ -16,7 +16,7 @@ A data frame contains data for main profile plot.
 Create data for main profile plot
 }
 \examples{
-data("fullProcessedProfile", package="phyloprofile")
+data("fullProcessedProfile", package="PhyloProfile")
 dataMainPlot(fullProcessedProfile)
 }
 \seealso{

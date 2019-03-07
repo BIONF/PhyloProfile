@@ -30,7 +30,7 @@ orthoID <- "A.thaliana@3702@241736"
 info <- c(seedID, orthoID)
 domainFile <- system.file(
     "extdata", "domainFiles/OG_1009.domains",
-    package = "phyloprofile", mustWork = TRUE
+    package = "PhyloProfile", mustWork = TRUE
 )
 domainDf <- parseDomainInput(seedID, domainFile, "file")
 plot <- createArchiPlot(info, domainDf, 9, 9)

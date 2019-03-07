@@ -2,7 +2,7 @@ context("test identification of core genes for a selected set of taxa")
 
 test_that("test core gene estimation", {
     # load full processed data
-    data("fullProcessedProfile", package="phyloprofile")
+    data("fullProcessedProfile", package="PhyloProfile")
 
     # calculate gene ages
     rankName <- "class"

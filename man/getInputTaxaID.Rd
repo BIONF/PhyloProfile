@@ -16,7 +16,7 @@ List of all input taxon IDs
 Get ID list of input taxa from the main input
 }
 \examples{
-data("mainLongRaw", package="phyloprofile")
+data("mainLongRaw", package="PhyloProfile")
 getInputTaxaID(mainLongRaw)
 }
 \seealso{

@@ -71,7 +71,7 @@ searchTaxonID <- function(input, output, session){
                         value = 0, {
                             for (i in 1:nrow(notfoundDf)) {
                                 idDfTmp <-
-                                    phyloprofile::searchTaxonIDOnline(
+                                    PhyloProfile::searchTaxonIDOnline(
                                         as.character(notfoundDf[i,]$name)
                                     )
                                 idDf <- rbind(idDf, idDfTmp)

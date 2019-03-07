@@ -22,16 +22,16 @@
 #' @import BiocStyle
 #' @rawNamespace import(shinyjs, except = colourInput)
 #' @examples
-#' ?phyloprofile::runPhyloprofile
+#' ?PhyloProfile::runPhyloProfile
 #' \dontrun{
-#' runPhyloprofile()
+#' runPhyloProfile()
 #' }
 
-runPhyloprofile <- function(){
-    appDir <- system.file("phyloprofile", package = "phyloprofile")
+runPhyloProfile <- function(){
+    appDir <- system.file("PhyloProfile", package = "PhyloProfile")
     if (appDir == "") {
         stop(
-            "Could not find apps director. Try re-installing `phyloprofile`.",
+            "Could not find apps director. Try re-installing `PhyloProfile`.",
             call = FALSE
         )
     }

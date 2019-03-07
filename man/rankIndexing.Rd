@@ -18,7 +18,7 @@ Indexing all available ranks (including norank)
 \author{
 Vinh Tran {tran@bio.uni-frankfurt.de}
 rankListFile <- system.file(
-    "extdata", "data/rankList.txt", package = "phyloprofile", mustWork = TRUE
+    "extdata", "data/rankList.txt", package = "PhyloProfile", mustWork = TRUE
 )
 rankIndexing(rankListFile)
 }

@@ -21,7 +21,7 @@ Create data for customized profile plot based on a selected
 list of genes and/or taxa.
 }
 \examples{
-data("fullProcessedProfile", package="phyloprofile")
+data("fullProcessedProfile", package="PhyloProfile")
 selectedTaxa <- c("Mammalia", "Echinoidea", "Gunneridae")
 selectedSeq <- "all"
 dataCustomizedPlot(fullProcessedProfile, selectedTaxa, selectedSeq)

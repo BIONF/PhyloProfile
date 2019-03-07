@@ -4,7 +4,7 @@
 \alias{parseInfoProfile}
 \title{Parsing info for phylogenetic profiles}
 \usage{
-parseInfoProfile( inputDf, sortedInputTaxa, var1AggregateBy, 
+parseInfoProfile( inputDf, sortedInputTaxa, var1AggregateBy,
     var2AggregateBy)
 }
 \arguments{
@@ -28,7 +28,7 @@ The output contains the number of paralogs, percentage of species presence
 in each supertaxon, and the max/min/mean/median of VAR1 and VAR2.
 }
 \examples{
-data("mainLongRaw", package="phyloprofile")
+data("mainLongRaw", package="PhyloProfile")
 inputDf <- mainLongRaw
 taxonIDs <- getInputTaxaID(inputDf)
 taxonNames <- getInputTaxaName("class", taxonIDs)

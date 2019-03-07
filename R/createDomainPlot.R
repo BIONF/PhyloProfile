@@ -20,7 +20,7 @@
 #' info <- c(seedID, orthoID)
 #' domainFile <- system.file(
 #'     "extdata", "domainFiles/OG_1009.domains",
-#'     package = "phyloprofile", mustWork = TRUE
+#'     package = "PhyloProfile", mustWork = TRUE
 #' )
 #' domainDf <- parseDomainInput(seedID, domainFile, "file")
 #' plot <- createArchiPlot(info, domainDf, 9, 9)
@@ -168,7 +168,7 @@ createArchiPlot <- function(
 }
 
 #' Create architecure plot for a single protein
-#' @usage domainPlotting(df, geneID, sep, labelSize, titleSize, minStart, 
+#' @usage domainPlotting(df, geneID, sep, labelSize, titleSize, minStart,
 #'     maxEnd, colorScheme)
 #' @param df domain dataframe for ploting
 #' @param geneID ID of seed or orthologous protein
@@ -198,7 +198,7 @@ createArchiPlot <- function(
 #' # get domain data
 #' domainFile <- system.file(
 #'     "extdata", "domainFiles/OG_1009.domains",
-#'     package = "phyloprofile", mustWork = TRUE
+#'     package = "PhyloProfile", mustWork = TRUE
 #' )
 #' domainDf <- parseDomainInput(seedID, domainFile, "file")
 #' df <- domainDf[domainDf$orthoID == "A.thaliana@3702@241736",]
@@ -332,7 +332,7 @@ domainPlotting <- function(df,
 #' # get domain data
 #' domainFile <- system.file(
 #'     "extdata", "domainFiles/OG_1009.domains",
-#'     package = "phyloprofile", mustWork = TRUE
+#'     package = "PhyloProfile", mustWork = TRUE
 #' )
 #' domainDf <- parseDomainInput(seedID, domainFile, "file")
 #' # get seedDf and orthoDf

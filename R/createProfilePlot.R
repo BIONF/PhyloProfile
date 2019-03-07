@@ -7,7 +7,7 @@
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{fromInputToProfile}}
 #' @examples
-#' data("fullProcessedProfile", package="phyloprofile")
+#' data("fullProcessedProfile", package="PhyloProfile")
 #' dataMainPlot(fullProcessedProfile)
 
 dataMainPlot <- function(dataHeat){
@@ -47,7 +47,7 @@ dataMainPlot <- function(dataHeat){
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{fromInputToProfile}}
 #' @examples
-#' data("fullProcessedProfile", package="phyloprofile")
+#' data("fullProcessedProfile", package="PhyloProfile")
 #' selectedTaxa <- c("Mammalia", "Echinoidea", "Gunneridae")
 #' selectedSeq <- "all"
 #' dataCustomizedPlot(fullProcessedProfile, selectedTaxa, selectedSeq)
@@ -108,7 +108,7 @@ dataCustomizedPlot <- function(dataHeat, selectedTaxa, selectedSeq){
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{dataMainPlot}}, \code{\link{dataCustomizedPlot}}
 #' @examples
-#' data("fullProcessedProfile", package="phyloprofile")
+#' data("fullProcessedProfile", package="PhyloProfile")
 #' plotDf <- dataMainPlot(fullProcessedProfile)
 #' plotParameter <- list(
 #'     "xAxis" = "taxa",
@@ -331,7 +331,7 @@ heatmapPlotting <- function(data, plotParameter){
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{dataMainPlot}}, \code{\link{dataCustomizedPlot}}
 #' @examples
-#' data("fullProcessedProfile", package="phyloprofile")
+#' data("fullProcessedProfile", package="PhyloProfile")
 #' plotDf <- dataMainPlot(fullProcessedProfile)
 #' plotParameter <- list(
 #'     "xAxis" = "taxa",
@@ -377,8 +377,8 @@ highlightProfilePlot <- function(
     if (taxonHighlight != "none") {
         # get selected highlight taxon ID
         nameReducedFile <- paste(
-            system.file(package="phyloprofile"),
-            "phyloprofile/data/taxonNamesReduced.txt",
+            system.file(package="PhyloProfile"),
+            "PhyloProfile/data/taxonNamesReduced.txt",
             sep="/"
         )
 

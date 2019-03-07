@@ -18,7 +18,7 @@ Parse multi-fasta input file
 \examples{
 \dontrun{
 inputFile <- system.file(
-    "extdata", "test.main.fasta", package = "phyloprofile", mustWork = TRUE
+    "extdata", "test.main.fasta", package = "PhyloProfile", mustWork = TRUE
 )
 fastaParser(inputFile)
 }

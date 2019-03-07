@@ -8,7 +8,7 @@ date: "Feb 2019"
 output:
     BiocStyle::html_document:
         toc_float: true
-package: phyloprofile
+package: PhyloProfile
 abstract: |
     PhyloProfile: dynamic visualization and exploration of multi-layered
     phylogenetic profiles
@@ -20,7 +20,7 @@ vignette: >
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
-    library(phyloprofile),
+    library(PhyloProfile),
     collapse = TRUE,
     comment = "#>"
 )
@@ -65,7 +65,7 @@ To install the dev version from [github](https://github.com/BIONF/PhyloProfile):
 if (!requireNamespace("devtools"))
     install.packages("devtools", repos = "http://cran.us.r-project.org")
 devtools::install_github(
-    "bionf/phyloprofile",
+    "BIONF/PhyloProfile",
     INSTALL_opts = c('--no-lock'),
     build_opts = c('--no-resave-data')
 )
@@ -86,7 +86,7 @@ as input.
 Here is an example of a tab delimited input with two additional annotation
 layers:
 ```{r, echo = FALSE, results = 'asis'}
-data("mainLongRaw", package="phyloprofile")
+data("mainLongRaw", package="PhyloProfile")
 knitr::kable(head(mainLongRaw, 10))
 ```
 
@@ -140,14 +140,14 @@ cluster genes according to the distance of their phylogenetic profiles.
 
 ```{r, fig.show='hold', dev='CairoPNG'}
 ### An example for plotting the clustered profiles tree.
-### See ?phyloprofile::getDendrogram for more details.
+### See ?PhyloProfile::getDendrogram for more details.
 
 #' Load built-in data
-data("fullProcessedProfileLarge", package="phyloprofile")
+data("fullProcessedProfileLarge", package="PhyloProfile")
 data <- fullProcessedProfileLarge
 
 #' Calculate distance matrix
-#' Check ?phyloprofile::getDistanceMatrix
+#' Check ?PhyloProfile::getDistanceMatrix
 profileType <- "binary"
 profiles <- getDataClustering(
     data, profileType, var1AggregateBy, var2AggregateBy)
@@ -169,10 +169,10 @@ upon filtering of the data.
 
 ```{r}
 ### An example for calculating gene age for the built-in data set.
-### See ?phyloprofile::estimateGeneAge for more details.
+### See ?PhyloProfile::estimateGeneAge for more details.
 
 #' Load built-in data
-data("fullProcessedProfile", package="phyloprofile")
+data("fullProcessedProfile", package="PhyloProfile")
 
 #' Choose the working rank and the reference taxon
 rankName <- "class"
@@ -199,10 +199,10 @@ their core genes.
 
 ```{r}
 ### An example for calculating core gene set for the built-in data set.
-### See ?phyloprofile::getCoreGene for more details.
+### See ?PhyloProfile::getCoreGene for more details.
 
 #' Load built-in data
-data("fullProcessedProfile", package="phyloprofile")
+data("fullProcessedProfile", package="PhyloProfile")
 processedProfileData <- fullProcessedProfile
 
 #' Choose the working rank and a set of taxa of interest
@@ -238,7 +238,7 @@ level (*0.05 by default*). Genes that have a significantly different
 distribution will be shown in the candidate gene list for further analysis.
 
 ```{r}
-?phyloprofile::getSignificantGenes
+?PhyloProfile::getSignificantGenes
 ```
 
 ### Distribution analysis
@@ -250,13 +250,13 @@ layers.
 
 ```{r, fig.show='hold', dev='CairoPNG'}
 ### An example for plotting the distribution of the 1st additional variable.
-### See ?phyloprofile::createVarDistPlot for more details.
+### See ?PhyloProfile::createVarDistPlot for more details.
 
 #' Load built-in data
-data("mainLongRaw", package="phyloprofile")
+data("mainLongRaw", package="PhyloProfile")
 
 #' Process data for distribution analysis
-#' See ?phyloprofile::createVariableDistributionData
+#' See ?PhyloProfile::createVariableDistributionData
 data <- createVariableDistributionData(
     mainLongRaw, 0, 1, 0.5, 1
 )
@@ -290,9 +290,9 @@ required information for the phylogenetic profile analysis.
 ```{r}
 #' Load built-in data
 #' If input data is in other format (e.g. fasta, OrthoXML, or wide matrix),
-#' see ?phyloprofile::createLongMatrix
+#' see ?PhyloProfile::createLongMatrix
 rawInput <- system.file(
-    "extdata", "test.main.long", package = "phyloprofile", mustWork = TRUE
+    "extdata", "test.main.long", package = "PhyloProfile", mustWork = TRUE
 )
 
 #' Set working rank and the reference taxon
@@ -349,7 +349,7 @@ head(profileData)
 Generate phylogenetic profile heatmap after processing the raw input file.
 ```{r, fig.show='hold', dev='CairoPNG'}
 #' Load built-in processed data
-data("fullProcessedProfile", package="phyloprofile")
+data("fullProcessedProfile", package="PhyloProfile")
 
 #' Create data for plotting
 plotDf <- dataMainPlot(fullProcessedProfile)
@@ -388,7 +388,7 @@ heatmapPlotting(plotDf, plotParameter)
 taxonHighlight <- "Mammalia"
 rankName <- "class"
 geneHighlight <- "OG_1019"
-#' Then use ?phyloprofile::highlightProfilePlot function
+#' Then use ?PhyloProfile::highlightProfilePlot function
 # highlightProfilePlot(
 #    plotDf, plotParameter, taxonHighlight, rankName, geneHighlight
 # )
@@ -400,7 +400,7 @@ Generate the domain architecture plot for a gene of interest and its orthologs.
 #' Load protein domain architecture file
 domainFile <- system.file(
     "extdata", "domainFiles/OG_1009.domains",
-    package = "phyloprofile", mustWork = TRUE
+    package = "PhyloProfile", mustWork = TRUE
 )
 
 #' Identify IDs of gene of interest and its ortholog partner
@@ -421,15 +421,15 @@ grid::grid.draw(plot)
 **Get taxonomy IDs and names in a specified rank for taxa in the input file.**
 ```{r}
 #' Load raw input
-data("mainLongRaw", package="phyloprofile")
+data("mainLongRaw", package="PhyloProfile")
 inputDf <- mainLongRaw
 
 #' Set working rank and the reference taxon
 rankName <- "phylum"
 
 #' Get taxonomy IDs and names for the input data
-inputTaxonID <- phyloprofile::getInputTaxaID(inputDf)
-inputTaxonName <- phyloprofile::getInputTaxaName(rankName, inputTaxonID)
+inputTaxonID <- PhyloProfile::getInputTaxaID(inputDf)
+inputTaxonName <- PhyloProfile::getInputTaxaName(rankName, inputTaxonID)
 
 head(inputTaxonName)
 ```
@@ -438,11 +438,11 @@ head(inputTaxonName)
 **distance to a reference taxon**
 ```{r}
 #' Get list of taxon IDs and names for input profile
-data("mainLongRaw", package="phyloprofile")
+data("mainLongRaw", package="PhyloProfile")
 inputDf <- mainLongRaw
 rankName <- "phylum"
-inputTaxonID <- phyloprofile::getInputTaxaID(inputDf)
-inputTaxonName <- phyloprofile::getInputTaxaName(rankName, inputTaxonID)
+inputTaxonID <- PhyloProfile::getInputTaxaID(inputDf)
+inputTaxonName <- PhyloProfile::getInputTaxaName(rankName, inputTaxonID)
 
 #' Input a user-defined taxonomy tree to replace NCBI taxonomy tree (optional)
 inputTaxaTree <- NULL
@@ -471,7 +471,7 @@ Or use the citation function in R CMD to have the citation in BibTex or
 LaTeX format
 
 ```{r}
-citation("phyloprofile")
+citation("PhyloProfile")
 ```
 
 # How to contribute
@@ -521,7 +521,7 @@ Here is the output of `sessionInfo()` on the system on which this document was
 compiles:
 
 ```{r sessionInfo, echo = FALSE}
-sessionInfo(package = "phyloprofile")
+sessionInfo(package = "PhyloProfile")
 ```
 
 # References

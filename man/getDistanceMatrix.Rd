@@ -9,8 +9,8 @@ getDistanceMatrix(profiles, method)
 \arguments{
 \item{profiles}{profile data for distance calculating}
 
-\item{method}{distance calculation method ("euclidean", "maximum", 
-"manhattan", "canberra", "binary", "distanceCorrelation", 
+\item{method}{distance calculation method ("euclidean", "maximum",
+"manhattan", "canberra", "binary", "distanceCorrelation",
 "mutualInformation" or "pearson" for binary data; "distanceCorrelation" or
 "mutualInformation" for non-binary data)}
 }
@@ -24,7 +24,7 @@ Calculate the distance matrix
 Documented by Vinh Tran (tran@bio.uni-frankfurt.de)
 }
 \examples{
-data("fullProcessedProfileLarge", package="phyloprofile")
+data("fullProcessedProfileLarge", package="PhyloProfile")
 data <- fullProcessedProfileLarge
 profileType <- "binary"
 profiles <- getDataClustering(

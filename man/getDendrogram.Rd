@@ -16,7 +16,7 @@ A dendrogram plot
 Plot dendrogram tree
 }
 \examples{
-data("fullProcessedProfileLarge", package="phyloprofile")
+data("fullProcessedProfileLarge", package="PhyloProfile")
 data <- fullProcessedProfileLarge
 profileType <- "binary"
 profiles <- getDataClustering(

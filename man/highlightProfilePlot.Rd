@@ -33,7 +33,7 @@ as ggplot object.
 Highlight gene and/or taxon of interest on the profile plot
 }
 \examples{
-data("fullProcessedProfile", package="phyloprofile")
+data("fullProcessedProfile", package="PhyloProfile")
 plotDf <- dataMainPlot(fullProcessedProfile)
 plotParameter <- list(
     "xAxis" = "taxa",

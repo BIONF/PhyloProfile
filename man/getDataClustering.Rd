@@ -4,13 +4,13 @@
 \alias{getDataClustering}
 \title{Get data for calculating the distance matrix}
 \usage{
-getDataClustering(data, profileType, var1AggregateBy, 
+getDataClustering(data, profileType, var1AggregateBy,
     var2AggregateBy)
 }
 \arguments{
 \item{data}{processed profile data}
 
-\item{profileType}{type of data used for calculating the distance matrix. 
+\item{profileType}{type of data used for calculating the distance matrix.
 Either "binary" (consider only the presence/absence status of orthlogs), or
 "var1"/"var2" for taking values of the additional variables into account.}
 
@@ -28,7 +28,7 @@ Get data for calculating the distance matrix
 Documented by Vinh Tran (tran@bio.uni-frankfurt.de)
 }
 \examples{
-data("fullProcessedProfile", package="phyloprofile")
+data("fullProcessedProfile", package="PhyloProfile")
 data <- fullProcessedProfile
 profileType <- "binary"
 var1AggregateBy <- "max"

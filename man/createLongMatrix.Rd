@@ -18,7 +18,7 @@ Create a long matrix format for all kinds of input file
 }
 \examples{
 inputFile <- system.file(
-    "extdata", "test.main.wide", package = "phyloprofile", mustWork = TRUE
+    "extdata", "test.main.wide", package = "PhyloProfile", mustWork = TRUE
 )
 createLongMatrix(inputFile)
 }

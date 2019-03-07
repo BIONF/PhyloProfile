@@ -30,7 +30,7 @@ inGroup <- c("Aeropyrum pernix", "Agrobacterium fabrum")
 rank <- "species"
 nameListFile <- system.file(
     "extdata", "data/taxonNamesFull.txt",
-    package = "phyloprofile", mustWork = TRUE
+    package = "PhyloProfile", mustWork = TRUE
 )
 nameList <- as.data.frame(data.table::fread(nameListFile))
 selectedInGroup <- getTaxonomyMatrix(FALSE, NULL)

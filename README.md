@@ -49,15 +49,15 @@ Once that is out of the way you can now install *PhyloProfile*:
 
 ```r
 library(devtools)
-install_github("bionf/phyloprofile", INSTALL_opts = c('--no-lock'), build_opts = c('--no-resave-data'))
+install_github("BIONF/PhyloProfile", INSTALL_opts = c('--no-lock'), build_opts = c('--no-resave-data'))
 ```
 The step can take a while, as the tool will try do download and install all necessary dependencies automatically. *(Note: Depending on your system this sometimes fails, please check the console log for error messages concerning the dependency installation)*
 
 ## Start PhyloProfile
 Simply run
 ```r
-library(phyloprofile)
-runPhyloprofile()
+library(PhyloProfile)
+runPhyloProfile()
 ```
 Check your web browser, *PhyloProfile* will be displayed there ;-) For the first time running, the tool will download a [pre-caculated taxonomy data](https://github.com/BIONF/phyloprofile-data). Please be patient until you see a message for uploading input files.
 
@@ -73,7 +73,7 @@ Read the [walkthrough slides](https://github.com/BIONF/PhyloProfile/wiki/Walkthr
 
 Check the vignette for learning how to use PhyloProfile's functions in some specific use-cases:
 ```r
-browseVignettes("phyloprofile")
+browseVignettes("PhyloProfile")
 ```
 
 # Bugs
@@ -97,7 +97,7 @@ Ngoc-Vinh Tran, Bastian Greshake Tzovaras, Ingo Ebersberger; PhyloProfile: Dynam
 
 or use the citation function in R CMD to have it directly in BibTex or LaTeX format
 ```r
-citation("phyloprofile")
+citation("PhyloProfile")
 ```
 # Contact
 Vinh Tran

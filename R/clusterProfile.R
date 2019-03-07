@@ -1,9 +1,9 @@
 #' Get data for calculating the distance matrix
 #' @export
-#' @usage getDataClustering(data, profileType, var1AggregateBy, 
+#' @usage getDataClustering(data, profileType, var1AggregateBy,
 #'     var2AggregateBy)
 #' @param data processed profile data
-#' @param profileType type of data used for calculating the distance matrix. 
+#' @param profileType type of data used for calculating the distance matrix.
 #' Either "binary" (consider only the presence/absence status of orthlogs), or
 #' "var1"/"var2" for taking values of the additional variables into account.
 #' @param var1AggregateBy aggregate method for VAR1 (min, max, mean or median)
@@ -12,8 +12,8 @@
 #' @author Carla Mölbert (carla.moelbert@gmx.de)
 #' @note Documented by Vinh Tran (tran@bio.uni-frankfurt.de)
 #' @seealso \code{\link{fromInputToProfile}}
-#' @examples 
-#' data("fullProcessedProfile", package="phyloprofile")
+#' @examples
+#' data("fullProcessedProfile", package="PhyloProfile")
 #' data <- fullProcessedProfile
 #' profileType <- "binary"
 #' var1AggregateBy <- "max"
@@ -25,10 +25,10 @@ getDataClustering <- function(
 ) {
     supertaxon <- NULL
     presSpec <- NULL
-    
+
     # remove lines where there is no found ortholog
     subDataHeat <- subset(data, data$presSpec > 0)
-    
+
     # transform data into wide matrix
     if (profileType == "binary") {
         subDataHeat <- subDataHeat[, c("geneID", "supertaxon", "presSpec")]
@@ -37,45 +37,45 @@ getDataClustering <- function(
         wideData <- spread(subDataHeat, supertaxon, presSpec)
     } else {
         var <- profileType
-        
+
         subDataHeat <- subDataHeat[, c("geneID", "supertaxon", var)]
         subDataHeat <- subDataHeat[!duplicated(subDataHeat), ]
-        
+
         # aggreagte the values by the selected method
         if (var == "var1") aggregateBy <- var1AggregateBy
         else aggregateBy <- var2AggregateBy
-        
+
         subDataHeat <- aggregate(
             subDataHeat[, var],
             list(subDataHeat$geneID, subDataHeat$supertaxon),
             FUN = aggregateBy
         )
-        
+
         colnames(subDataHeat) <- c("geneID", "supertaxon", var)
         wideData <- spread(subDataHeat, supertaxon, var)
     }
-    
+
     # set name for wide matrix as gene IDs
     dat <- wideData[, 2:ncol(wideData)]
     rownames(dat) <- wideData[, 1]
     dat[is.na(dat)] <- 0
-    
+
     return(dat)
 }
 
 #' Calculate the distance matrix
 #' @export
 #' @param profiles profile data for distance calculating
-#' @param method distance calculation method ("euclidean", "maximum", 
-#' "manhattan", "canberra", "binary", "distanceCorrelation", 
+#' @param method distance calculation method ("euclidean", "maximum",
+#' "manhattan", "canberra", "binary", "distanceCorrelation",
 #' "mutualInformation" or "pearson" for binary data; "distanceCorrelation" or
 #' "mutualInformation" for non-binary data)
 #' @return A distance matrix for input phylogenetic profiles.
 #' @author Carla Mölbert (carla.moelbert@gmx.de)
 #' @note Documented by Vinh Tran (tran@bio.uni-frankfurt.de)
 #' @seealso \code{\link{getDataClustering}}
-#' @examples 
-#' data("fullProcessedProfileLarge", package="phyloprofile")
+#' @examples
+#' data("fullProcessedProfileLarge", package="PhyloProfile")
 #' data <- fullProcessedProfileLarge
 #' profileType <- "binary"
 #' profiles <- getDataClustering(
@@ -84,10 +84,10 @@ getDataClustering <- function(
 #' getDistanceMatrix(profiles, method)
 
 getDistanceMatrix <- function(profiles, method) {
-    
+
     profiles <-  profiles[, colSums(profiles != 0) > 0]
     profiles <-  profiles[rowSums(profiles != 0) > 0, ]
-    
+
     distMethods <- c("euclidean", "maximum", "manhattan", "canberra", "binary")
     if (method %in% distMethods) {
         distanceMatrix <- dist(profiles, method = method)
@@ -105,7 +105,7 @@ getDistanceMatrix <- function(profiles, method) {
                 matrix[i,j] <- 1 - dist
             }
         }
-        
+
         profileNames <- rownames(profiles)
         colnames(matrix) <- profileNames[seq_len(length(profileNames)) - 1]
         rownames(matrix) <- profileNames
@@ -116,23 +116,23 @@ getDistanceMatrix <- function(profiles, method) {
     } else if (method == "pearson") {
         distanceMatrix <-  cor.dist(as.matrix(profiles))
     }
-    
+
     return(distanceMatrix)
 }
 
 #' Create a dendrogram tree from the distance matrix
 #' @export
 #' @param distanceMatrix calculated distance matrix
-#' @param clusterMethod clustering method ("single", "complete", 
-#' "average" for UPGMA, "mcquitty" for WPGMA, "median" for WPGMC, 
+#' @param clusterMethod clustering method ("single", "complete",
+#' "average" for UPGMA, "mcquitty" for WPGMA, "median" for WPGMC,
 #' or "centroid" for UPGMC)
 #' @return A dendrogram tree object
 #' @importFrom stats as.dendrogram
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
-#' @seealso \code{\link{getDataClustering}}, 
+#' @seealso \code{\link{getDataClustering}},
 #' \code{\link{getDistanceMatrix}}, \code{\link{hclust}}
 #' @examples
-#' data("fullProcessedProfileLarge", package="phyloprofile")
+#' data("fullProcessedProfileLarge", package="PhyloProfile")
 #' data <- fullProcessedProfileLarge
 #' profileType <- "binary"
 #' profiles <- getDataClustering(
@@ -154,8 +154,8 @@ clusterDataDend <- function(distanceMatrix, clusterMethod) {
 #' @return A dendrogram plot
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{clusterDataDend}}
-#' @examples 
-#' data("fullProcessedProfileLarge", package="phyloprofile")
+#' @examples
+#' data("fullProcessedProfileLarge", package="PhyloProfile")
 #' data <- fullProcessedProfileLarge
 #' profileType <- "binary"
 #' profiles <- getDataClustering(

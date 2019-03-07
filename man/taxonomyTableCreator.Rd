@@ -19,10 +19,10 @@ Align ncbi taxonomy IDs of all taxa into a sorted rank list
 }
 \examples{
 idListFile <- system.file(
-    "extdata", "data/idList.txt", package = "phyloprofile", mustWork = TRUE
+    "extdata", "data/idList.txt", package = "PhyloProfile", mustWork = TRUE
 )
 rankListFile <- system.file(
-    "extdata", "data/rankList.txt", package = "phyloprofile", mustWork = TRUE
+    "extdata", "data/rankList.txt", package = "PhyloProfile", mustWork = TRUE
 )
 taxonomyTableCreator(idListFile, rankListFile)
 }

@@ -20,7 +20,7 @@ Get domain files from a folder
 \examples{
 \dontrun{
 domainPath <- paste0(
-    path.package("phyloprofile", quiet = FALSE), "extdata/domainFiles"
+    path.package("PhyloProfile", quiet = FALSE), "extdata/domainFiles"
 )
 getDomainOnline("OG_1009", domainPath)
 }

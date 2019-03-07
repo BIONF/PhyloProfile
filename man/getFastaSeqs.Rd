@@ -38,16 +38,16 @@ A dataframe contains fasta sequences
 Get fasta sequences
 }
 \examples{
-data("mainLongRaw", package="phyloprofile")
+data("mainLongRaw", package="PhyloProfile")
 dataIn <- mainLongRaw
 filein <- system.file(
-    "extdata", "test.main.long", package = "phyloprofile", mustWork = TRUE
+    "extdata", "test.main.long", package = "PhyloProfile", mustWork = TRUE
 )
 demoData <- "none"
 inputTypeFasta <- "Concatenated fasta file"
 concatFasta <- system.file(
     "extdata", "fastaFiles/concatenatedFile.fa",
-    package = "phyloprofile", mustWork = TRUE
+    package = "PhyloProfile", mustWork = TRUE
 )
 # the following parameters are conly required if upload a fasta folder!
 path <- NULL

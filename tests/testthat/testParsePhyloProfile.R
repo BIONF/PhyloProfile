@@ -1,12 +1,12 @@
-context("test parsing and pre-processing phyloprofile input")
+context("test parsing and pre-processing PhyloProfile input")
 
 test_that("test connection to taxonomy files and getting input taxa", {
     rankName <- "species"
-    inputDf <- phyloprofile::createLongMatrix("mainWideTest.txt")
+    inputDf <- PhyloProfile::createLongMatrix("mainWideTest.txt")
 
-    inputTaxonID <- phyloprofile::getInputTaxaID(inputDf)
+    inputTaxonID <- PhyloProfile::getInputTaxaID(inputDf)
     expect_true(length(inputTaxonID) == 4)
 
-    inputTaxonName <- phyloprofile::getInputTaxaName(rankName, inputTaxonID)
+    inputTaxonName <- PhyloProfile::getInputTaxaName(rankName, inputTaxonID)
     expect_true(nrow(inputTaxonName) == 4)
 })

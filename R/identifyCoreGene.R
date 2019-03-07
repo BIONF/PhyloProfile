@@ -16,7 +16,7 @@
 #' @seealso \code{\link{parseInfoProfile}} for creating a full processed
 #' profile dataframe
 #' @examples
-#' data("fullProcessedProfile", package="phyloprofile")
+#' data("fullProcessedProfile", package="PhyloProfile")
 #' rankName <- "class"
 #' taxaCore <- c("Mammalia", "Mucorales", "Alphaproteobacteria")
 #' processedProfileData <- fullProcessedProfile
@@ -46,7 +46,7 @@ getCoreGene <- function(
     Freq <- NULL
 
     # get ID list of chosen taxa
-    taxaList <- phyloprofile::getNameList()
+    taxaList <- PhyloProfile::getNameList()
 
     if ("none" %in% taxaCore) {
         superID <- NA

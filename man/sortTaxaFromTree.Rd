@@ -16,7 +16,7 @@ list of taxa sorted according to the taxonomy tree
 Get sorted supertaxon list based on a rooted taxonomy tree
 }
 \examples{
-data("ppTaxonomyMatrix", package = "phyloprofile")
+data("ppTaxonomyMatrix", package = "PhyloProfile")
 # prepare matrix for calculating distances
 distDf <- subset(ppTaxonomyMatrix, select = -c(ncbiID, fullName))
 row.names(distDf) <- distDf$abbrName

@@ -31,7 +31,7 @@ A list of core genes
 Identify core genes for a list of selected taxa
 }
 \examples{
-data("fullProcessedProfile", package="phyloprofile")
+data("fullProcessedProfile", package="PhyloProfile")
 rankName <- "class"
 taxaCore <- c("Mammalia", "Mucorales", "Alphaproteobacteria")
 processedProfileData <- fullProcessedProfile

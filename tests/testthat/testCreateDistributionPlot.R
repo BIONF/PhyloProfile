@@ -2,7 +2,7 @@ context("test creating data and plots for distritbution analysis function")
 
 test_that("test distritbution analyze functions", {
     # raw input
-    inputData <- phyloprofile::createLongMatrix("mainWideTest.txt")
+    inputData <- PhyloProfile::createLongMatrix("mainWideTest.txt")
 
     # selected rank name
     rankName <- "species"
@@ -30,19 +30,19 @@ test_that("test distritbution analyze functions", {
     expect_true(nrow(distributionData) == 6)
 
     # distribution data for 2 additional variables of a subset of taxa
-    inputTaxonID <- phyloprofile::getInputTaxaID(inputData)
-    inputTaxonName <- phyloprofile::getInputTaxaName(rankName,
+    inputTaxonID <- PhyloProfile::getInputTaxaID(inputData)
+    inputTaxonName <- PhyloProfile::getInputTaxaName(rankName,
                                                          inputTaxonID)
     refTaxon <- inputTaxonName$fullName[1]
     taxaTree <- NULL
 
-    sortedTaxa <- phyloprofile::sortInputTaxa(inputTaxonID,
+    sortedTaxa <- PhyloProfile::sortInputTaxa(inputTaxonID,
                                                  inputTaxonName,
                                                  rankName,
                                                  refTaxon,
                                                  taxaTree)
 
-    fullProfileData <- phyloprofile::parseInfoProfile(inputData,
+    fullProfileData <- PhyloProfile::parseInfoProfile(inputData,
                                                           sortedTaxa,
                                                           "max",
                                                           "mean")

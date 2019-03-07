@@ -12,7 +12,7 @@
 #' seed <- "OG_1009"
 #' inputFile <- system.file(
 #'     "extdata", "domainFiles/OG_1009.domains",
-#'     package = "phyloprofile", mustWork = TRUE
+#'     package = "PhyloProfile", mustWork = TRUE
 #' )
 #' type <- "file"
 #' parseDomainInput(seed, inputFile, type)
@@ -150,7 +150,7 @@ getDomainOnline <- function(demoData) {
 #' \dontrun{
 #' inputFile <- system.file(
 #'     "extdata", "domainFiles/OG_1009.domains",
-#'     package = "phyloprofile", mustWork = TRUE
+#'     package = "PhyloProfile", mustWork = TRUE
 #' )
 #' getDomainFile("lca-micors")
 #' }
@@ -168,7 +168,7 @@ getDomainFile <- function(inputFile) {
 #' @examples
 #' \dontrun{
 #' domainPath <- paste0(
-#'     path.package("phyloprofile", quiet = FALSE), "extdata/domainFiles"
+#'     path.package("PhyloProfile", quiet = FALSE), "extdata/domainFiles"
 #' )
 #' getDomainOnline("OG_1009", domainPath)
 #' }

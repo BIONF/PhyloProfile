@@ -24,7 +24,7 @@ common domain feature in the same order which make it easy for comparing.
 # get domain data
 domainFile <- system.file(
     "extdata", "domainFiles/OG_1009.domains",
-    package = "phyloprofile", mustWork = TRUE
+    package = "PhyloProfile", mustWork = TRUE
 )
 domainDf <- parseDomainInput(seedID, domainFile, "file")
 # get seedDf and orthoDf

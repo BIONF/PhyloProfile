@@ -7,7 +7,7 @@
 calcPresSpec(profileWithTax, taxaCount)
 }
 \arguments{
-\item{profileWithTax}{long data frame of main phyloprofile input together
+\item{profileWithTax}{long data frame of main PhyloProfile input together
 with their taxonomy info}
 
 \item{taxaCount}{number of species occur in each supertaxon}
@@ -21,7 +21,7 @@ Calculate percentage of present species in each ortholog group
 }
 \examples{
 # NOTE: for internal testing only - not recommended for outside using
-data("profileWithTaxonomy", package="phyloprofile")
+data("profileWithTaxonomy", package="PhyloProfile")
 taxaCount <- plyr::count(profileWithTaxonomy, "supertaxon")
 taxaCount$freq <- 1
 calcPresSpec(profileWithTaxonomy, taxaCount)

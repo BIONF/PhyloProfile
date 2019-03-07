@@ -7,7 +7,7 @@
 #' @export
 #' @seealso \code{\link{mainLongRaw}}
 #' @examples
-#' data("mainLongRaw", package="phyloprofile")
+#' data("mainLongRaw", package="PhyloProfile")
 #' createPercentageDistributionData(mainLongRaw, "class")
 
 createPercentageDistributionData <- function(inputData,
@@ -27,14 +27,14 @@ createPercentageDistributionData <- function(inputData,
     colnames(mdData)[ncol(mdData)] <- "paralog"
 
     # (3) GET SORTED TAXONOMY LIST (3)
-    inputTaxonID <- phyloprofile::getInputTaxaID(inputData)
-    inputTaxonName <- phyloprofile::getInputTaxaName(
+    inputTaxonID <- PhyloProfile::getInputTaxaID(inputData)
+    inputTaxonName <- PhyloProfile::getInputTaxaName(
         rankName, inputTaxonID
     )
     refTaxon <- inputTaxonName$fullName[1]
     taxaTree <- NULL
 
-    taxaList <- phyloprofile::sortInputTaxa(
+    taxaList <- PhyloProfile::sortInputTaxa(
         inputTaxonID, inputTaxonName, rankName, refTaxon, taxaTree
     )
 
@@ -72,7 +72,7 @@ createPercentageDistributionData <- function(inputData,
 #' @export
 #' @seealso \code{\link{mainLongRaw}}
 #' @examples
-#' data("mainLongRaw", package="phyloprofile")
+#' data("mainLongRaw", package="PhyloProfile")
 #' createVariableDistributionData(
 #'     mainLongRaw, 0, 1, 0.5, 1
 #' )
@@ -147,8 +147,8 @@ createVariableDistributionData <- function(
 #' \code{\link{createVariableDistributionData}},
 #' \code{\link{fullProcessedProfile}}, \code{\link{mainLongRaw}}
 #' @examples
-#' data("fullProcessedProfile", package="phyloprofile")
-#' data("mainLongRaw", package="phyloprofile")
+#' data("fullProcessedProfile", package="PhyloProfile")
+#' data("mainLongRaw", package="PhyloProfile")
 #' distributionData <- createVariableDistributionData(
 #'     mainLongRaw, 0, 1, 0.5, 1
 #' )
@@ -245,7 +245,7 @@ createVariableDistributionDataSubset <- function(
 #' \code{\link{createVariableDistributionDataSubset}},
 #' \code{\link{createPercentageDistributionData}}
 #' @examples
-#' data("mainLongRaw", package="phyloprofile")
+#' data("mainLongRaw", package="PhyloProfile")
 #' data <- createVariableDistributionData(
 #'     mainLongRaw, 0, 1, 0.5, 1
 #' )

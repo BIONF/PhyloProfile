@@ -40,8 +40,8 @@ dataframe with the significant genes
 Get the dataframe with the significant genes
 }
 \examples{
-data("mainLongRaw", package="phyloprofile")
-data("fullProcessedProfile", package="phyloprofile")
+data("mainLongRaw", package="PhyloProfile")
+data("fullProcessedProfile", package="PhyloProfile")
 inGroup <- c("Aeropyrum pernix", "Agrobacterium fabrum")
 selectedGenesList <- "OG_1017"
 rank <- "species"
@@ -53,7 +53,7 @@ dataFull <- fullProcessedProfile
 rightFormatFeatures <- TRUE
 domainFile <- system.file(
     "extdata", "domainFiles/OG_1017.domains",
-    package = "phyloprofile", mustWork = TRUE
+    package = "PhyloProfile", mustWork = TRUE
 )
 domains <- parseDomainInput("OG_1017", domainFile, "file")
 parameters <- list(

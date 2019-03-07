@@ -24,8 +24,8 @@ variable(s) for a subset of genes and/or taxa.
 Create data for additional variable distribution (for a subset data)
 }
 \examples{
-data("fullProcessedProfile", package="phyloprofile")
-data("mainLongRaw", package="phyloprofile")
+data("fullProcessedProfile", package="PhyloProfile")
+data("mainLongRaw", package="PhyloProfile")
 distributionData <- createVariableDistributionData(
     mainLongRaw, 0, 1, 0.5, 1
 )

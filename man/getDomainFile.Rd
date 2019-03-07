@@ -19,7 +19,7 @@ Get domain file from a single (concatenate) file
 \dontrun{
 inputFile <- system.file(
     "extdata", "domainFiles/OG_1009.domains",
-    package = "phyloprofile", mustWork = TRUE
+    package = "PhyloProfile", mustWork = TRUE
 )
 getDomainFile("lca-micors")
 }

@@ -11,7 +11,7 @@
 #' inputTaxa <- c("272557", "176299")
 #' ncbiFilein <- system.file(
 #'     "extdata", "data/taxonNamesFull.txt",
-#'     package = "phyloprofile", mustWork = TRUE
+#'     package = "PhyloProfile", mustWork = TRUE
 #' )
 #' currentNCBIinfo <- as.data.frame(data.table::fread(ncbiFilein))
 #' getIDsRank(inputTaxa, currentNCBIinfo)
@@ -228,7 +228,7 @@ getIDsRank <- function(inputTaxa, currentNCBIinfo){
 #' @return A dataframe containing a list of indexed ranks
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' rankListFile <- system.file(
-#'     "extdata", "data/rankList.txt", package = "phyloprofile", mustWork = TRUE
+#'     "extdata", "data/rankList.txt", package = "PhyloProfile", mustWork = TRUE
 #' )
 #' rankIndexing(rankListFile)
 
@@ -339,10 +339,10 @@ rankIndexing <- function(rankListFile){
 #' @seealso \code{\link{rankIndexing}}
 #' @examples
 #' idListFile <- system.file(
-#'     "extdata", "data/idList.txt", package = "phyloprofile", mustWork = TRUE
+#'     "extdata", "data/idList.txt", package = "PhyloProfile", mustWork = TRUE
 #' )
 #' rankListFile <- system.file(
-#'     "extdata", "data/rankList.txt", package = "phyloprofile", mustWork = TRUE
+#'     "extdata", "data/rankList.txt", package = "PhyloProfile", mustWork = TRUE
 #' )
 #' taxonomyTableCreator(idListFile, rankListFile)
 

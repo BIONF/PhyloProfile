@@ -1,4 +1,4 @@
 library(testthat)
-library(phyloprofile)
+library(PhyloProfile)
 
-test_check("phyloprofile")
+test_check("PhyloProfile")

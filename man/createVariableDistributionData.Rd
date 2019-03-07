@@ -26,7 +26,7 @@ variable(s)
 Create data for additional variable distribution
 }
 \examples{
-data("mainLongRaw", package="phyloprofile")
+data("mainLongRaw", package="PhyloProfile")
 createVariableDistributionData(
     mainLongRaw, 0, 1, 0.5, 1
 )

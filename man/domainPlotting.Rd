@@ -4,7 +4,7 @@
 \alias{domainPlotting}
 \title{Create architecure plot for a single protein}
 \usage{
-domainPlotting(df, geneID, sep, labelSize, titleSize, minStart, 
+domainPlotting(df, geneID, sep, labelSize, titleSize, minStart,
     maxEnd, colorScheme)
 }
 \arguments{
@@ -35,7 +35,7 @@ Create architecure plot for a single protein
 # get domain data
 domainFile <- system.file(
     "extdata", "domainFiles/OG_1009.domains",
-    package = "phyloprofile", mustWork = TRUE
+    package = "PhyloProfile", mustWork = TRUE
 )
 domainDf <- parseDomainInput(seedID, domainFile, "file")
 df <- domainDf[domainDf$orthoID == "A.thaliana@3702@241736",]

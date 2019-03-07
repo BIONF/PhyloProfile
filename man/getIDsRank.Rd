@@ -23,7 +23,7 @@ taxon list
 inputTaxa <- c("272557", "176299")
 ncbiFilein <- system.file(
     "extdata", "data/taxonNamesFull.txt",
-    package = "phyloprofile", mustWork = TRUE
+    package = "PhyloProfile", mustWork = TRUE
 )
 currentNCBIinfo <- as.data.frame(data.table::fread(ncbiFilein))
 getIDsRank(inputTaxa, currentNCBIinfo)

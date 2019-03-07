@@ -18,7 +18,7 @@ Parse orthoXML input file
 \examples{
 \dontrun{
 inputFile <- system.file(
-    "extdata", "test.main.xml", package = "phyloprofile", mustWork = TRUE
+    "extdata", "test.main.xml", package = "PhyloProfile", mustWork = TRUE
 )
 xmlParser(inputFile)
 }

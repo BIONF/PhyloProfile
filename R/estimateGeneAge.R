@@ -19,7 +19,7 @@
 #' \code{\link{getTaxonomyMatrix}} for getting taxonomy info,
 #' \code{\link{fullProcessedProfile}} for a demo input dataframe
 #' @examples
-#' data("fullProcessedProfile", package="phyloprofile")
+#' data("fullProcessedProfile", package="PhyloProfile")
 #' rankName <- "class"
 #' refTaxon <- "Mammalia"
 #' processedProfileData <- fullProcessedProfile
@@ -43,7 +43,7 @@ estimateGeneAge <- function(
     )
 
     # get selected (super)taxon ID
-    taxaList <- phyloprofile::getNameList()
+    taxaList <- PhyloProfile::getNameList()
     superID <- {
         as.numeric(
             taxaList[

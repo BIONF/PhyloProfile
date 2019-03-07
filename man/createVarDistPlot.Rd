@@ -26,7 +26,7 @@ Create distribution plot for one of the additional variable or
 the percentage of the species present in the supertaxa.
 }
 \examples{
-data("mainLongRaw", package="phyloprofile")
+data("mainLongRaw", package="PhyloProfile")
 data <- createVariableDistributionData(
     mainLongRaw, 0, 1, 0.5, 1
 )

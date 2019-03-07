@@ -12,7 +12,7 @@
 #' @seealso \code{\link{getInputTaxaID}} for getting input taxon IDs,
 #' \code{\link{ppTree}} for an example of input tree
 #' @examples
-#' data("ppTree", package="phyloprofile")
+#' data("ppTree", package="PhyloProfile")
 #' checkNewick(ppTree, c("ncbi3702", "ncbi3711", "ncbi7029"))
 
 checkNewick <- function(tree, inputTaxonID){
@@ -72,7 +72,7 @@ checkNewick <- function(tree, inputTaxonID){
 #' taxonomy matrix, \code{\link{getTaxonomyMatrix}} for getting taxonomy
 #' matrix, \code{\link{ppTaxonomyMatrix}} for a demo taxonomy matrix data
 #' @examples
-#' data("ppTaxonomyMatrix", package = "phyloprofile")
+#' data("ppTaxonomyMatrix", package = "PhyloProfile")
 #' # prepare matrix for calculating distances
 #' distDf <- subset(ppTaxonomyMatrix, select = -c(ncbiID, fullName))
 #' row.names(distDf) <- distDf$abbrName
@@ -98,7 +98,7 @@ createRootedTree <- function(df, rootTaxon){
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{ppTaxonomyMatrix}} for a demo taxonomy matrix data
 #' @examples
-#' data("ppTaxonomyMatrix", package = "phyloprofile")
+#' data("ppTaxonomyMatrix", package = "PhyloProfile")
 #' # prepare matrix for calculating distances
 #' distDf <- subset(ppTaxonomyMatrix, select = -c(ncbiID, fullName))
 #' row.names(distDf) <- distDf$abbrName

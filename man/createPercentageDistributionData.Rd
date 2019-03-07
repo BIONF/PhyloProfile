@@ -19,7 +19,7 @@ species in the selected supertaxa
 Create data for percentage present taxa distribution
 }
 \examples{
-data("mainLongRaw", package="phyloprofile")
+data("mainLongRaw", package="PhyloProfile")
 createPercentageDistributionData(mainLongRaw, "class")
 }
 \seealso{

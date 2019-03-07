@@ -12,7 +12,7 @@
 #' @seealso \code{\link{checkOmaID}}
 #' @examples
 #' filein <- system.file(
-#'     "extdata", "test.main.wide", package = "phyloprofile", mustWork = TRUE
+#'     "extdata", "test.main.wide", package = "PhyloProfile", mustWork = TRUE
 #' )
 #' checkInputValidity(filein)
 
@@ -78,15 +78,15 @@ checkInputValidity <- function(filein) {
 #' @examples
 #' \dontrun{
 #' inputFile <- system.file(
-#'     "extdata", "test.main.xml", package = "phyloprofile", mustWork = TRUE
+#'     "extdata", "test.main.xml", package = "PhyloProfile", mustWork = TRUE
 #' )
 #' xmlParser(inputFile)
 #' }
 
 xmlParser <- function(inputFile){
     path <- paste(
-        system.file(package="phyloprofile"),
-        "phyloprofile/scripts/orthoxmlParser.py",
+        system.file(package="PhyloProfile"),
+        "PhyloProfile/scripts/orthoxmlParser.py",
         sep="/"
     )
     cmd <- paste("python ", path, " -i ", inputFile, sep = "")
@@ -109,15 +109,15 @@ xmlParser <- function(inputFile){
 #' @examples
 #' \dontrun{
 #' inputFile <- system.file(
-#'     "extdata", "test.main.fasta", package = "phyloprofile", mustWork = TRUE
+#'     "extdata", "test.main.fasta", package = "PhyloProfile", mustWork = TRUE
 #' )
 #' fastaParser(inputFile)
 #' }
 
 fastaParser <- function(inputFile){
     path <- paste(
-        system.file(package="phyloprofile"),
-        "phyloprofile/scripts/fastaParser.py",
+        system.file(package="PhyloProfile"),
+        "PhyloProfile/scripts/fastaParser.py",
         sep="/"
     )
     cmd <- paste("python ", path, " -i ", inputFile, sep = "")
@@ -150,7 +150,7 @@ fastaParser <- function(inputFile){
 #' @examples
 #' \dontrun{
 #' inputFile <- system.file(
-#'     "extdata", "test.main.wide", package = "phyloprofile", mustWork = TRUE
+#'     "extdata", "test.main.wide", package = "PhyloProfile", mustWork = TRUE
 #' )
 #' wideToLong(inputFile)
 #' }
@@ -195,7 +195,7 @@ wideToLong <- function(inputFile){
 #' \code{\link{wideToLong}}
 #' @examples
 #' inputFile <- system.file(
-#'     "extdata", "test.main.wide", package = "phyloprofile", mustWork = TRUE
+#'     "extdata", "test.main.wide", package = "PhyloProfile", mustWork = TRUE
 #' )
 #' createLongMatrix(inputFile)
 

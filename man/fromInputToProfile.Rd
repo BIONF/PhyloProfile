@@ -50,7 +50,7 @@ from raw input file.
 }
 \examples{
 rawInput <- system.file(
-    "extdata", "test.main.long", package = "phyloprofile", mustWork = TRUE
+    "extdata", "test.main.long", package = "PhyloProfile", mustWork = TRUE
 )
 rankName <- "class"
 refTaxon <- "Mammalia"

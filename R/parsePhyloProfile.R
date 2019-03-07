@@ -1,4 +1,4 @@
-# Functions for parsing and pre-processing phyloprofile input
+# Functions for parsing and pre-processing PhyloProfile input
 
 #' Get list of pre-installed NCBI taxon names
 #' @description Get all NCBI taxon names from "data/taxonNamesReduced.txt"
@@ -11,8 +11,8 @@
 
 getNameList <- function() {
     nameReducedFile <- paste(
-        system.file(package="phyloprofile"),
-        "phyloprofile/data/taxonNamesReduced.txt",
+        system.file(package="PhyloProfile"),
+        "PhyloProfile/data/taxonNamesReduced.txt",
         sep="/"
     )
 
@@ -63,8 +63,8 @@ getNameList <- function() {
 
 getTaxonomyMatrix <- function(subsetTaxaCheck, taxonIDs){
     taxonomyMatrixFile <- paste(
-        system.file(package="phyloprofile"),
-        "phyloprofile/data/taxonomyMatrix.txt",
+        system.file(package="PhyloProfile"),
+        "PhyloProfile/data/taxonomyMatrix.txt",
         sep="/"
     )
 
@@ -103,7 +103,7 @@ getTaxonomyMatrix <- function(subsetTaxaCheck, taxonIDs){
 #' @export
 #' @seealso \code{\link{createLongMatrix}}, \code{\link{mainLongRaw}}
 #' @examples
-#' data("mainLongRaw", package="phyloprofile")
+#' data("mainLongRaw", package="PhyloProfile")
 #' getInputTaxaID(mainLongRaw)
 
 getInputTaxaID <- function(rawProfile){
@@ -308,7 +308,7 @@ sortInputTaxa <- function(taxonIDs,
 
 #' Calculate percentage of present species in each ortholog group
 #' @export
-#' @param profileWithTax long data frame of main phyloprofile input together
+#' @param profileWithTax long data frame of main PhyloProfile input together
 #' with their taxonomy info
 #' @param taxaCount number of species occur in each supertaxon
 #' @return A data frame with % of present species for each seed protein in
@@ -317,7 +317,7 @@ sortInputTaxa <- function(taxonIDs,
 #' @seealso \code{\link{profileWithTaxonomy}} for a demo input data
 #' @examples
 #' # NOTE: for internal testing only - not recommended for outside using
-#' data("profileWithTaxonomy", package="phyloprofile")
+#' data("profileWithTaxonomy", package="PhyloProfile")
 #' taxaCount <- plyr::count(profileWithTaxonomy, "supertaxon")
 #' taxaCount$freq <- 1
 #' calcPresSpec(profileWithTaxonomy, taxaCount)
@@ -384,7 +384,7 @@ calcPresSpec <- function(profileWithTax, taxaCount){
 #' the selected input taxonomy level (e.g. strain, species) and reference taxon.
 #' The output contains the number of paralogs, percentage of species presence
 #' in each supertaxon, and the max/min/mean/median of VAR1 and VAR2.
-#' @usage parseInfoProfile( inputDf, sortedInputTaxa, var1AggregateBy, 
+#' @usage parseInfoProfile( inputDf, sortedInputTaxa, var1AggregateBy,
 #'     var2AggregateBy)
 #' @param inputDf input profiles in long format
 #' @param sortedInputTaxa sorted taxonomy data for the input taxa
@@ -399,7 +399,7 @@ calcPresSpec <- function(profileWithTax, taxaCount){
 #' @seealso \code{\link{createLongMatrix}}, \code{\link{sortInputTaxa}},
 #' \code{\link{calcPresSpec}}, \code{\link{mainLongRaw}}
 #' @examples
-#' data("mainLongRaw", package="phyloprofile")
+#' data("mainLongRaw", package="PhyloProfile")
 #' inputDf <- mainLongRaw
 #' taxonIDs <- getInputTaxaID(inputDf)
 #' taxonNames <- getInputTaxaName("class", taxonIDs)
@@ -517,7 +517,7 @@ parseInfoProfile <- function(
 #' profile dataframe, \code{\link{fullProcessedProfile}} for a demo full
 #' processed profile dataframe
 #' @examples
-#' data("fullProcessedProfile", package="phyloprofile")
+#' data("fullProcessedProfile", package="PhyloProfile")
 #' reduceProfile(fullProcessedProfile)
 
 reduceProfile <- function(fullProfile) {
@@ -563,7 +563,7 @@ reduceProfile <- function(fullProfile) {
         mOrthoID <- mOrthoID[, c("geneID", "supertaxon", "orthoID")]
         mOrthoID <- mOrthoID[!duplicated(mOrthoID[, seq_len(2)]), ]
 
-        # get data set for phyloprofile plotting (contains only supertaxa info)
+        # get data set for PhyloProfile plotting (contains only supertaxa info)
         superDf <- subset(fullMdData, select = c(
             "geneID",
             "supertaxon",
@@ -625,7 +625,7 @@ reduceProfile <- function(fullProfile) {
 #' for generating input dataframe, \code{\link{fullProcessedProfile}} for a
 #' demo full processed profile dataframe
 #' @examples
-#' data("fullProcessedProfile", package="phyloprofile")
+#' data("fullProcessedProfile", package="PhyloProfile")
 #' superTaxonData <- reduceProfile(fullProcessedProfile)
 #' refTaxon <- "Mammalia"
 #' percentCutoff <- c(0.0, 1.0)
@@ -662,7 +662,7 @@ createProfileData <- function(
     catDt
 ) {
     dataHeat <- superTaxonData
-    
+
     # cutoffs
     percentCutoffMin <- percentCutoff[1]
     percentCutoffMax <- percentCutoff[2]
@@ -858,7 +858,7 @@ createProfileData <- function(
 #' \code{\link{createProfileData}}
 #' @examples
 #' rawInput <- system.file(
-#'     "extdata", "test.main.long", package = "phyloprofile", mustWork = TRUE
+#'     "extdata", "test.main.long", package = "PhyloProfile", mustWork = TRUE
 #' )
 #' rankName <- "class"
 #' refTaxon <- "Mammalia"
@@ -907,7 +907,7 @@ fromInputToProfile <- function(
     catDt
 ) {
     # convert raw input into long format
-    inputDf <- phyloprofile::createLongMatrix(rawInput)
+    inputDf <- PhyloProfile::createLongMatrix(rawInput)
 
     # get input taxon IDs and names
     inputTaxonID <- getInputTaxaID(inputDf)
@@ -927,7 +927,7 @@ fromInputToProfile <- function(
 
     # reduce profile df into supertaxon level
     dataSupertaxa <- reduceProfile(fullMdData)
-    
+
     # cutoffs
     percentCutoffMin <- percentCutoff[1]
     percentCutoffMax <- percentCutoff[2]

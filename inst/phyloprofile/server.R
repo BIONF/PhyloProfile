@@ -207,7 +207,7 @@ shinyServer(function(input, output, session) {
     output$inputCheck.ui <- renderUI({
         filein <- input$mainInput
         if (is.null(filein)) return()
-        inputType <- phyloprofile::checkInputValidity(filein$datapath)
+        inputType <- PhyloProfile::checkInputValidity(filein$datapath)
 
         if (inputType[1] == "noGeneID") {
             updateButton(session, "do", disabled = TRUE)
@@ -339,7 +339,7 @@ shinyServer(function(input, output, session) {
     output$checkOmaInput <- reactive({
         filein <- input$mainInput
         if (is.null(filein)) return()
-        inputType <- phyloprofile::checkInputValidity(filein$datapath)
+        inputType <- PhyloProfile::checkInputValidity(filein$datapath)
         inputType == "oma"
     })
     outputOptions(output, "checkOmaInput", suspendWhenHidden = FALSE)
@@ -1098,7 +1098,7 @@ shinyServer(function(input, output, session) {
 
         filein <- input$mainInput
         if (is.null(filein)) return()
-        inputType <- phyloprofile::checkInputValidity(filein$datapath)
+        inputType <- PhyloProfile::checkInputValidity(filein$datapath)
 
         if (inputType == "xml" |
             inputType == "long" |
@@ -1371,7 +1371,7 @@ shinyServer(function(input, output, session) {
     finalOmaDf <- reactive({
         filein <- input$mainInput
         if (is.null(filein)) return()
-        inputType <- phyloprofile::checkInputValidity(filein$datapath)
+        inputType <- PhyloProfile::checkInputValidity(filein$datapath)
 
         if (inputType == "oma") {
             if (input$getDataOma[1] == 0) return()
@@ -1398,7 +1398,7 @@ shinyServer(function(input, output, session) {
         } else {
             filein <- input$mainInput
             if (is.null(filein)) return()
-            inputType <- phyloprofile::checkInputValidity(filein$datapath)
+            inputType <- PhyloProfile::checkInputValidity(filein$datapath)
             if (inputType == "oma") {
                 if (input$getDataOma[1] == 0) return()
                 longDataframe <- createProfileFromOma(finalOmaDf())
@@ -1416,7 +1416,7 @@ shinyServer(function(input, output, session) {
     getDomainInformation <- reactive({
         if (input$demoData == "none") {
             filein <- input$mainInput
-            inputType <- phyloprofile::checkInputValidity(filein$datapath)
+            inputType <- PhyloProfile::checkInputValidity(filein$datapath)
         } else {
             inputType <- "demo"
         }
@@ -1428,7 +1428,7 @@ shinyServer(function(input, output, session) {
             mainInput <- getMainInput()
 
             if (inputType == "demo") {
-                domainDf <- phyloprofile::parseDomainInput(
+                domainDf <- PhyloProfile::parseDomainInput(
                     unlist(mainInput$geneID),
                     input$demoData,
                     "demo"
@@ -1436,7 +1436,7 @@ shinyServer(function(input, output, session) {
             } else {
                 if (input$annoLocation == "from file") {
                     inputDomain <- input$fileDomainInput
-                    domainDf <- phyloprofile::parseDomainInput(
+                    domainDf <- PhyloProfile::parseDomainInput(
                         NULL,
                         inputDomain$datapath,
                         "file"
@@ -1449,7 +1449,7 @@ shinyServer(function(input, output, session) {
                     } else if (input$tabs == "Customized profile") {
                         info <- selectedpointInfo()
                     }
-                    domainDf <- phyloprofile::parseDomainInput(
+                    domainDf <- PhyloProfile::parseDomainInput(
                         info[1],
                         input$domainPath,
                         "folder"
@@ -2176,7 +2176,7 @@ shinyServer(function(input, output, session) {
 
             if (input$demoData == "none") {
                 filein <- input$mainInput
-                inputType <- phyloprofile::checkInputValidity(
+                inputType <- PhyloProfile::checkInputValidity(
                     filein$datapath
                 )
             } else {
@@ -2235,7 +2235,7 @@ shinyServer(function(input, output, session) {
                                      disabled = FALSE)
                     }
                 } else {
-                    domainDf <- phyloprofile::parseDomainInput(
+                    domainDf <- PhyloProfile::parseDomainInput(
                         info[1],
                         input$domainPath,
                         "folder"
@@ -2300,7 +2300,7 @@ shinyServer(function(input, output, session) {
     mainFastaDownload <- reactive({
         if (input$demoData == "none") {
             filein <- input$mainInput
-            inputType <- phyloprofile::checkInputValidity(filein$datapath)
+            inputType <- PhyloProfile::checkInputValidity(filein$datapath)
         } else {
             inputType <- "demo"
         }
@@ -2344,7 +2344,7 @@ shinyServer(function(input, output, session) {
     customizedFastaDownload <- reactive({
         if (input$demoData == "none") {
             filein <- input$mainInput
-            inputType <- phyloprofile::checkInputValidity(filein$datapath)
+            inputType <- PhyloProfile::checkInputValidity(filein$datapath)
         } else {
             inputType <- "demo"
         }
@@ -2928,7 +2928,7 @@ shinyServer(function(input, output, session) {
                 higherRank <- ranks[pos + 1] # take the next higher rank
                 higherRankName <- as.character(higherRank[1])
 
-                nameList <- phyloprofile::getNameList() # get the taxon names
+                nameList <- PhyloProfile::getNameList() # get the taxon names
                 dt <- getTaxonomyMatrix(FALSE, NULL) # get the taxa
 
                 #' get the info for the reference protein from the namelist

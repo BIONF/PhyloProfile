@@ -18,7 +18,7 @@ multiple FASTA, wide or long matrix, or a list of OMA IDs.
 }
 \examples{
 filein <- system.file(
-    "extdata", "test.main.wide", package = "phyloprofile", mustWork = TRUE
+    "extdata", "test.main.wide", package = "PhyloProfile", mustWork = TRUE
 )
 checkInputValidity(filein)
 }

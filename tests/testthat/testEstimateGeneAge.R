@@ -2,7 +2,7 @@ context("test estimation of gene ages")
 
 test_that("test estimation of gene ages", {
     # load full processed data
-    data("fullProcessedProfile", package="phyloprofile")
+    data("fullProcessedProfile", package="PhyloProfile")
 
     # calculate gene ages
     rankName <- "class"

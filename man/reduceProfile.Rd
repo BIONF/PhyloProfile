@@ -19,7 +19,7 @@ Reduce data of the phylogenetic profiles from input taxonomy
 rank into supertaxon level (e.g. from species to phylum)
 }
 \examples{
-data("fullProcessedProfile", package="phyloprofile")
+data("fullProcessedProfile", package="PhyloProfile")
 reduceProfile(fullProcessedProfile)
 }
 \seealso{

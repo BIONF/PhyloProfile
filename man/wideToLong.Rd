@@ -18,7 +18,7 @@ Transform input file in wide matrix into long matrix format
 \examples{
 \dontrun{
 inputFile <- system.file(
-    "extdata", "test.main.wide", package = "phyloprofile", mustWork = TRUE
+    "extdata", "test.main.wide", package = "PhyloProfile", mustWork = TRUE
 )
 wideToLong(inputFile)
 }

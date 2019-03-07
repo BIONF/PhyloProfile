@@ -9,8 +9,8 @@ clusterDataDend(distanceMatrix, clusterMethod)
 \arguments{
 \item{distanceMatrix}{calculated distance matrix}
 
-\item{clusterMethod}{clustering method ("single", "complete", 
-"average" for UPGMA, "mcquitty" for WPGMA, "median" for WPGMC, 
+\item{clusterMethod}{clustering method ("single", "complete",
+"average" for UPGMA, "mcquitty" for WPGMA, "median" for WPGMC,
 or "centroid" for UPGMC)}
 }
 \value{
@@ -20,7 +20,7 @@ A dendrogram tree object
 Create a dendrogram tree from the distance matrix
 }
 \examples{
-data("fullProcessedProfileLarge", package="phyloprofile")
+data("fullProcessedProfileLarge", package="PhyloProfile")
 data <- fullProcessedProfileLarge
 profileType <- "binary"
 profiles <- getDataClustering(
@@ -31,7 +31,7 @@ clusterMethod <- "complete"
 clusterDataDend(distanceMatrix, clusterMethod)
 }
 \seealso{
-\code{\link{getDataClustering}}, 
+\code{\link{getDataClustering}},
 \code{\link{getDistanceMatrix}}, \code{\link{hclust}}
 }
 \author{

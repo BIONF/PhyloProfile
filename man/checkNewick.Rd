@@ -19,7 +19,7 @@ checking result (1 = missing parenthesis; 2 = missing comma;
 Check the validity of input newick tree
 }
 \examples{
-data("ppTree", package="phyloprofile")
+data("ppTree", package="PhyloProfile")
 checkNewick(ppTree, c("ncbi3702", "ncbi3711", "ncbi7029"))
 }
 \seealso{

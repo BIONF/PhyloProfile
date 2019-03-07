@@ -18,7 +18,7 @@ rooted tree based on rootTaxon
 Create rooted tree from a taxonomy matrix
 }
 \examples{
-data("ppTaxonomyMatrix", package = "phyloprofile")
+data("ppTaxonomyMatrix", package = "PhyloProfile")
 # prepare matrix for calculating distances
 distDf <- subset(ppTaxonomyMatrix, select = -c(ncbiID, fullName))
 row.names(distDf) <- distDf$abbrName

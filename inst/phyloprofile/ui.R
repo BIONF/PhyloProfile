@@ -406,7 +406,7 @@ shinyUI(
                                 ">Source="ncbi"</span>) nor </em></li>
                                 <li><em>be found in
                                 <span style="color: #ff0000;">
-                                phyloprofile/data/newTaxa.txt</span>&nbsp;(<span
+                                PhyloProfile/data/newTaxa.txt</span>&nbsp;(<span
                                 style="color: #0000ff;">Source="new"</span>)
                                 file</em></li></ul><p><strong><em>Please add
                                 taxonomy information for those unknown taxa and
@@ -431,7 +431,7 @@ shinyUI(
                                 ">Source="ncbi"</span>) or </em></li>
                                 <li><em>be found in
                                 <span style="color: #ff0000;">
-                                phyloprofile/data/newTaxa.txt</span>&nbsp;(<span
+                                PhyloProfile/data/newTaxa.txt</span>&nbsp;(<span
                                 style="color: #0000ff;">Source="new"</span>)
                                 file</em></li></ul><p><strong><em>Click here to
                                 get required taxonomy information for those
@@ -1056,7 +1056,7 @@ shinyUI(
                 taxonomy database (or alternatively you can manually prepare the
                 <span style=\"text-decoration: underline;\">
                 <span style=\"color: #ff0000; text-decoration: underline;\">
-                phyloprofile/data/newTaxa.txt file with the following
+                PhyloProfile/data/newTaxa.txt file with the following
                 description for each field).</em></p>
                 <p><span style=\"color: #ff0000;\"><em><strong>
                 NOTE: ID and name of new taxon must be

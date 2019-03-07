@@ -41,7 +41,7 @@ A dataframe ready for generating profile plot.
 Create data for plotting the phylogentic profiles
 }
 \examples{
-data("fullProcessedProfile", package="phyloprofile")
+data("fullProcessedProfile", package="PhyloProfile")
 superTaxonData <- reduceProfile(fullProcessedProfile)
 refTaxon <- "Mammalia"
 percentCutoff <- c(0.0, 1.0)

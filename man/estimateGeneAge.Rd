@@ -29,7 +29,7 @@ A dataframe contains estimated gene ages
 Calculate the phylogenetic gene age from profiles
 }
 \examples{
-data("fullProcessedProfile", package="phyloprofile")
+data("fullProcessedProfile", package="PhyloProfile")
 rankName <- "class"
 refTaxon <- "Mammalia"
 processedProfileData <- fullProcessedProfile

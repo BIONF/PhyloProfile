@@ -25,7 +25,7 @@ A profile heatmap plot as ggplot object.
 Create profile heatmap plot
 }
 \examples{
-data("fullProcessedProfile", package="phyloprofile")
+data("fullProcessedProfile", package="PhyloProfile")
 plotDf <- dataMainPlot(fullProcessedProfile)
 plotParameter <- list(
     "xAxis" = "taxa",
