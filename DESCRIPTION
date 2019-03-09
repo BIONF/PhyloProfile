@@ -55,9 +55,6 @@ Imports:
 		plyr (>= 1.8.4),
 		zoo (>= 1.8)
 RoxygenNote: 6.1.1
-Remotes:
-    trvinh/OmaDB,
-    andrewsali/shinycssloaders
 Suggests:
     testthat
 VignetteBuilder: knitr
