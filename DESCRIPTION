@@ -51,7 +51,7 @@ Imports:
 		tidyr (>= 0.8.1),
 		taxize (>= 0.9.0),
 		utils (>= 3.5.0),
-		OmaDB (>= 1.1.1),
+		OmaDB,
 		plyr (>= 1.8.4),
 		xml2 (>= 1.2.0),
 		zoo (>= 1.8)
