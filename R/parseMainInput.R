@@ -72,75 +72,134 @@ checkInputValidity <- function(filein) {
 }
 
 #' Parse orthoXML input file
+#' @export
 #' @param inputFile input file in xml format
 #' @return A data frame containing input data in long-format
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+#' @importFrom xml2 read_xml
+#' @importFrom xml2 xml_find_all
+#' @importFrom xml2 xml_attr
 #' @examples
-#' \dontrun{
 #' inputFile <- system.file(
 #'     "extdata", "test.main.xml", package = "PhyloProfile", mustWork = TRUE
 #' )
 #' xmlParser(inputFile)
-#' }
 
 xmlParser <- function(inputFile){
-    path <- paste(
-        system.file(package="PhyloProfile"),
-        "PhyloProfile/scripts/orthoxmlParser.py",
-        sep="/"
+    data <- read_xml(inputFile)
+    
+    # get all genes for each taxon
+    species <- xml_find_all(data, ".//species")
+    
+    speciesDf <- data.frame(
+        "ncbiID" = character(),
+        "refGeneID" = character(),
+        "orthoID" = character(),
+        stringsAsFactors=FALSE
     )
-    cmd <- paste("python ", path, " -i ", inputFile, sep = "")
+    c <- 1
+    
+    for (i in seq_len(length(species))) {
+        speciesName <- xml_attr(species[i], "name")
+        speciesID <- xml_attr(species[i], "NCBITaxId")
+        
+        gene <- xml_find_all(species[i], ".//gene")
+        for (j in seq_len(length(gene))) {
+            if (grepl("protId", gene[j])) {
+                refGeneID <- xml_attr(gene[j], "id")
+                orthoIDTmp <- unlist(
+                    strsplit(xml_attr(gene[j], "protId"), split = '|', fixed = TRUE)
+                )
+                orthoID <- orthoIDTmp[1]
+            } else if (grepl("geneId", gene[j])) {
+                refGeneID <- xml_attr(gene[j], "id")
+                orthoID <- xml_attr(gene[j], "protId")
+            }
+            speciesDf[c, ] <- c(paste0("ncbi", speciesID), refGeneID, orthoID)
+            c <- c + 1
+        }
+    }
 
-    dfIn <- as.data.frame(read.table(text = system(cmd, intern = TRUE)))
-
-    # the first row will be the header
-    colnames(dfIn) <- as.character(unlist(dfIn[1, ]))
-
-    dfIn <- subset(dfIn[dfIn$geneID != "geneID", ])
-    dfIn <- droplevels(dfIn)
-
-    return(dfIn)
+    # get orthologs and their scores
+    orthoDf <- data.frame(
+        "geneID" = character(),
+        "refGeneID" = character(),
+        stringsAsFactors=FALSE
+    )
+    orthoDf[1,] <- c(NA,NA)
+    
+    scoreType <- xml_find_all(data, ".//scoreDef")
+    for(s in seq_len(length(scoreType))){
+        scoreID <- xml_attr(scoreType[s], "id")
+        orthoDf[scoreID] <- NA
+    }
+    
+    c <- 1
+    orthoGroup <- xml_find_all(data, ".//orthologGroup")
+    for (i in seq_len(length(orthoGroup))) {
+        groupID <- xml_attr(orthoGroup[i], "id")
+        gene <- xml_find_all(orthoGroup[i], ".//geneRef")
+        for (j in seq_len(length(gene))) {
+            refGeneID <- xml_attr(gene[j], "id")
+            orthoDf[c, "geneID"] <- groupID
+            orthoDf[c, "refGeneID"] <- refGeneID
+            scores <- list()
+            score <- xml_find_all(gene[j], ".//score")
+            for (k in seq_len(length(score))) {
+                id <- xml_attr(score[k], "id")
+                value <- xml_attr(score[k], "value")
+                orthoDf[c, id] <- value
+            }
+            c <- c + 1
+        }
+    }
+    
+    # merge into final dataframe
+    finalDf <- merge(speciesDf, orthoDf, all.y = TRUE, by = "refGeneID")
+    
+    # remove refGeneID column and reorder columns
+    finalDf <- finalDf[, -1]
+    refcols <- c("geneID", "ncbiID", "orthoID")
+    finalDf <- finalDf[, c(refcols, setdiff(names(finalDf), refcols))]
+    
+    # remove columns that contains only NA
+    finalDf <- finalDf[, colSums(is.na(finalDf)) < nrow(finalDf)]
+    
+    # return final long dataframe
+    return(finalDf)
 }
 
 #' Parse multi-fasta input file
+#' @export
 #' @param inputFile input multiple fasta file
 #' @return A data frame containing input data in long-format
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+#' @importFrom Biostrings readAAStringSet
 #' @examples
-#' \dontrun{
 #' inputFile <- system.file(
 #'     "extdata", "test.main.fasta", package = "PhyloProfile", mustWork = TRUE
 #' )
 #' fastaParser(inputFile)
-#' }
 
 fastaParser <- function(inputFile){
-    path <- paste(
-        system.file(package="PhyloProfile"),
-        "PhyloProfile/scripts/fastaParser.py",
-        sep="/"
+    # split sequence IDs into columns
+    fastaFile <- Biostrings::readAAStringSet(inputFile)
+    seqID <- names(fastaFile)
+    faDf <- data.frame(seqID)
+    faDf
+    finalDf <- data.frame(
+        do.call('rbind', strsplit(as.character(faDf$seqID),'|',fixed=TRUE))
     )
-    cmd <- paste("python ", path, " -i ", inputFile, sep = "")
-
-    var1 <- NULL
-    var2 <- NULL
-
-    dfIn <- as.data.frame(read.table(text = system(cmd, intern = TRUE)))
-
-    # the first row will be the header
-    colnames(dfIn) <- as.character(unlist(dfIn[1, ]))
-    dfIn <- subset(dfIn[dfIn$geneID != "geneID", ])
-    dfIn <- droplevels(dfIn)
-
-    # remove var1 and var2 columns if they are all NAs
-    if (all(is.na(dfIn$var2))) {
-        dfIn <- subset(dfIn, select = -c(var2) )
+    
+    # rename columns
+    colnames(finalDf) <- c("geneID", "ncbiID", "orthoID")
+    for (i in seq_len(ncol(finalDf))) {
+        if (i > 3) {
+            colnames(finalDf)[i] <- paste0("value_", i - 3)
+        }
     }
-    if (all(is.na(dfIn$var1))) {
-        dfIn <- subset(dfIn, select = -c(var1) )
-    }
-
-    return(dfIn)
+    
+    return(finalDf)
 }
 
 #' Transform input file in wide matrix into long matrix format

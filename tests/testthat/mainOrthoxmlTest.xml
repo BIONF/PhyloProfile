@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<orthoXML xmlns="http://orthoXML.org/2011/" version="0.3" origin="inparanoid"
-  originVersion="7.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://orthoXML.org/2011/ http://www.orthoxml.org/0.3/orthoxml.xsd">
+<orthoXML>
 
   <notes>
     Example OrthoXML file. Stripped down version of a real InParanoid 7.0 file.

@@ -1,5 +1,5 @@
 # PhyloProfile
-[![GitHub release](https://img.shields.io/badge/latest%20release-v1.0.0-orange.svg)](https://github.com/BIONF/PhyloProfile/releases/tag/v1.0.0)
+[![GitHub release](https://img.shields.io/badge/latest%20release-0.99.0-orange.svg)](https://github.com/BIONF/PhyloProfile/releases/tag/v0.99.0)
 [![published in: Bioinformatics](https://img.shields.io/badge/published%20in-Bioinformatics-ff69b4.svg?style=flat)](https://doi.org/10.1093/bioinformatics/bty225)
 [![poster at: BOSC2017](https://img.shields.io/badge/poster%20at-BOSC2017-green.svg?style=flat)](https://f1000research.com/posters/6-1782)
 [![presented at: GCB2018](https://img.shields.io/badge/presented%20at-GCB2018-green.svg?style=flat)](http://gcb2018.de)

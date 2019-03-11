@@ -12,5 +12,5 @@ test_that("test wide input", {
 
 test_that("test xml input", {
     a <- PhyloProfile::createLongMatrix("mainOrthoxmlTest.xml")
-    expect_true(ncol(a) == 6)
+    expect_true(ncol(a) == 5)
 })

@@ -16,12 +16,10 @@ A data frame containing input data in long-format
 Parse multi-fasta input file
 }
 \examples{
-\dontrun{
 inputFile <- system.file(
     "extdata", "test.main.fasta", package = "PhyloProfile", mustWork = TRUE
 )
 fastaParser(inputFile)
-}
 }
 \author{
 Vinh Tran {tran@bio.uni-frankfurt.de}

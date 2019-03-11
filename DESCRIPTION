@@ -1,5 +1,5 @@
 Package: PhyloProfile
-Version: 1.0.0
+Version: 0.99.0
 Date: 2018-12-12
 Title: PhyloProfile
 Authors@R: c(
@@ -41,7 +41,7 @@ Imports:
 		reshape2 (>= 1.4.3),
 		rmarkdown (>= 1.11),
 		scales (>= 0.5.0),
-        shiny (>= 1.1.0),
+		shiny (>= 1.1.0),
 		shinyBS (>= 0.61),
 		shinycssloaders (>= 0.2.0),
 		shinyjs (>= 1.0),
@@ -53,6 +53,7 @@ Imports:
 		utils (>= 3.5.0),
 		OmaDB (>= 1.1.1),
 		plyr (>= 1.8.4),
+		xml2 (>= 1.2.0),
 		zoo (>= 1.8)
 RoxygenNote: 6.1.1
 Suggests:

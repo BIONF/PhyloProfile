@@ -16,12 +16,10 @@ A data frame containing input data in long-format
 Parse orthoXML input file
 }
 \examples{
-\dontrun{
 inputFile <- system.file(
     "extdata", "test.main.xml", package = "PhyloProfile", mustWork = TRUE
 )
 xmlParser(inputFile)
-}
 }
 \author{
 Vinh Tran {tran@bio.uni-frankfurt.de}
