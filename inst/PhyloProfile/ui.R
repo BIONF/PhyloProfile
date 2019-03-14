@@ -453,7 +453,7 @@ shinyUI(
                         br(),
 
                         strong(h5("Select taxonomy rank:")),
-                        withSpinner(
+                        shinycssloaders::withSpinner(
                             uiOutput("rankSelect"),
                             proxy.height = "50px",
                             type = 7,
@@ -462,7 +462,7 @@ shinyUI(
                         br(),
 
                         strong(h5("Choose (super)taxon of interest:")),
-                        withSpinner(
+                        shinycssloaders::withSpinner(
                             uiOutput("select"),
                             proxy.height = "50px",
                             type = 7,

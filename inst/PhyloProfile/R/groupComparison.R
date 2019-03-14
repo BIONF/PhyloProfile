@@ -30,14 +30,14 @@ groupComparisonUI <- function(id){
     ns <- NS(id)
     fluidPage(
         sidebarPanel(
-            withSpinner(uiOutput(ns("candidateGenes"))),
+            shinycssloaders::withSpinner(uiOutput(ns("candidateGenes"))),
             bsPopover(
                 "candidateGenes",
                 "",
                 "Select gene to show the plots",
                 "right"
             ),
-            withSpinner(uiOutput(ns("featuresOfInterestUI"))),
+            shinycssloaders::withSpinner(uiOutput(ns("featuresOfInterestUI"))),
             bsPopover(
                 "featuresOfInterestUI",
                 "",
@@ -59,7 +59,7 @@ groupComparisonUI <- function(id){
             tags$style(
                 HTML("#plotsUI { height:650px; overflow-y:scroll}")
             ),
-            withSpinner(uiOutput(ns("plotsUI"))),
+            shinycssloaders::withSpinner(uiOutput(ns("plotsUI"))),
             width = 9
         )
     )
