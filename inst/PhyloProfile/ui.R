@@ -1,15 +1,3 @@
-#' Load packages
-packages <- c("shiny", "shinyBS", "shinyjs", "DT", "devtools", "colourpicker")
-
-source("R/functions.R")
-installPackages(packages)
-lapply(packages, library, character.only = TRUE)
-
-if (!require("shinycssloaders")) {
-    devtools::install_github("andrewsali/shinycssloaders")
-    library(shinycssloaders)
-}
-
 #' Import function files
 sourceFiles = list.files(
     path = "R", pattern = "*.R$", full.names = TRUE
@@ -989,10 +977,7 @@ shinyUI(
                         )
                     ),
                     groupComparisonUI("groupComparison")
-                ),
-
-                # * Search for NCBI taxonomy IDs  ------------------------------
-                searchTaxonIDUI("searchTaxonID")
+                )
             ),
 
             # DATA DOWNLOAD TAB ================================================

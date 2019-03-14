@@ -1,18 +1,3 @@
-#' Load packages
-packages <- c("ggplot2", "reshape2",
-              "plyr", "dplyr", "tidyr", "scales", "grid",
-              "gridExtra", "ape", "stringr", "gtable",
-              "dendextend", "gplots", "data.table",
-              "taxize", "zoo", "RCurl", "energy", "Cairo")
-source("R/functions.R")
-installPackages(packages)
-lapply(packages, library, character.only = TRUE)
-
-#' Install bioconductor packages
-bioconductorPkgs <- c("Biostrings", "bioDist")
-installPackagesBioconductor(bioconductorPkgs)
-lapply(bioconductorPkgs, library, character.only = TRUE)
-
 #' Import function files
 sourceFiles = list.files(path = "R",
                           pattern = "*.R$",
@@ -2808,9 +2793,6 @@ shinyServer(function(input, output, session) {
                         quote = FALSE)
         }
     )
-
-    # * GET NCBI TAXONOMY IDs FROM INPUT LIST OF TAXON NAMES ===================
-    callModule(searchTaxonID,"searchTaxonID")
 
     # * GROUP COMPARISON =======================================================
     # ** description for group comparison function -----------------------------
