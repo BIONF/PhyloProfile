@@ -68,7 +68,7 @@ getOmaMembers <- function(id, orthoType) {
 #' getOmaDomainFromURL("https://omabrowser.org/api/protein/7916808/domains/")
 
 getOmaDomainFromURL <- function(domainURL) {
-    if (grepl("https://", domainURL)) {
+    if (grepl("https://", domainURL[1])) {
         domains <- OmaDB::resolveURL(domainURL)$regions
     } else {
         domains <- domainURL$regions
