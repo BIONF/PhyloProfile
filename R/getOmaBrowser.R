@@ -53,28 +53,27 @@ getOmaMembers <- function(id, orthoType) {
     #   seed <- OmaDB::getData("protein",id)$omaid
     #   members <- c(seed,members)
     # }
-
+    
     return(members)
 }
 
 #' Get domain annotation from OMA Browser
+#' @export
 #' @description Get domain annotation from OMA Browser based on a URL or a
 #' raw data frame contains annotation info from OMA
 #' @param domainURL URL address for domain annotation of ONE OMA id
 #' @return data frame contains feature names, start and end positions
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @examples
-#' \dontrun{
-#' getDomainFromURL("https://omabrowser.org/api/protein/7916808/domains/")
-#' }
+#' getOmaDomainFromURL("https://omabrowser.org/api/protein/7916808/domains/")
 
-getDomainFromURL <- function(domainURL) {
+getOmaDomainFromURL <- function(domainURL) {
     if (grepl("https://", domainURL)) {
         domains <- OmaDB::resolveURL(domainURL)$regions
     } else {
         domains <- domainURL$regions
     }
-
+    
     domains$feature <- NA
     domains$start <- NA
     domains$end <- NA
@@ -82,7 +81,7 @@ getDomainFromURL <- function(domainURL) {
         pos <- unlist(strsplit(domains$location[i], ":"))
         domains[i,]$start <- pos[1]
         domains[i,]$end <- pos[2]
-
+        
         if (nchar(domains$name[i]) > 0) {
             domains[i,]$feature <- paste0(
                 domains$source[i],"_",domains$domainid[i],
@@ -99,15 +98,14 @@ getDomainFromURL <- function(domainURL) {
 }
 
 #' Get taxonomy ID, sequence and annotation for one OMA sequence
+#' @export
 #' @param id oma ID of a ortholog
 #' @return data frame
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @examples
-#' \dontrun{
-#' getDataForOneOrtholog(HUMAN29397)
-#' }
+#' getOmaDataForOneOrtholog("HUMAN29397")
 
-getDataForOneOrtholog <- function(id) {
+getOmaDataForOneOrtholog <- function(id) {
     omaDf <- data.frame(
         "orthoID" = character(),
         "taxonID" = character(),
@@ -116,7 +114,7 @@ getDataForOneOrtholog <- function(id) {
         "domains" = character(),
         stringsAsFactors = FALSE
     )
-
+    
     # get ncbi taxonomy id
     specName <- substr(id, 1, 5)
     taxonID <- paste0(
@@ -124,19 +122,19 @@ getDataForOneOrtholog <- function(id) {
     )
     # get raw data
     raw <- OmaDB::getData("protein",id)
-
+    
     # get sequence
     seq <- as.character(raw$sequence)
-
+    
     # get sequence length
     length <- raw$sequence_length
-
+    
     # get annotation
     rawDomains <- suppressWarnings(raw$domains)
-    domainDf <- suppressWarnings(getDomainFromURL(rawDomains))
+    domainDf <- suppressWarnings(getOmaDomainFromURL(rawDomains))
     domainDfJoin <- c(domainDf, sep = "#")
     domains <- paste(unlist(do.call(paste, domainDfJoin)), collapse = "\t")
-
+    
     # return data frame contains all info
     omaDf[1,] <- c(id, taxonID, seq, length, domains)
     return(omaDf)
@@ -155,26 +153,26 @@ getDataForOneOrtholog <- function(id) {
 
 getDataForOneOma <- function(seedID, orthoType){
     finalOmaDf <- data.frame()
-
+    
     # get members
     members <- getOmaMembers(seedID, orthoType)
     omaSeedID <- OmaDB::getData("protein",seedID)$omaid
-
+    
     # get all data
     j <- 1
     for (ortho in members) {
-        orthoDf <- getDataForOneOrtholog(ortho)
+        orthoDf <- getOmaDataForOneOrtholog(ortho)
         orthoDf$seed <- seedID
         if (ortho == omaSeedID) {
             orthoDf$orthoID <- seedID
         }
         finalOmaDf <- rbind(finalOmaDf, orthoDf)
-
+        
         p <- j / length(members) * 100
         svMisc::progress(p)
         j <- j + 1
     }
-
+    
     return(finalOmaDf)
 }
 
@@ -212,12 +210,12 @@ createDomainDf <- function(domainID, orthoID, length, domainList) {
         end = numeric(),
         stringsAsFactors = FALSE
     )
-
+    
     for (i in seq_len(length(domainList))) {
         annoInfo <- strsplit(domainList[i], "#")[[1]]
         domainDf[i,] <- c( domainID, orthoID, length, annoInfo)
     }
-
+    
     return(domainDf)
 }
 
@@ -239,7 +237,7 @@ getAllDomainsOma <- function(finalOmaDf) {
         domainID <- paste0(
             finalOmaDf[i,]$seed, "#", finalOmaDf[i,]$orthoID
         )
-
+        
         seedLine <-
             finalOmaDf[finalOmaDf$orthoID == finalOmaDf[i,]$seed, ]
         seedDomains <- strsplit(as.character(seedLine$domains), "\t")[[1]]
@@ -247,7 +245,7 @@ getAllDomainsOma <- function(finalOmaDf) {
             domainID, seedLine$orthoID, seedLine$length, seedDomains
         )
         omaDomainDf <- rbind(omaDomainDf, seedDomainDf)
-
+        
         orthoDomains <-
             strsplit(as.character(finalOmaDf[i,]$domains), "\t")[[1]]
         orthoDomainDf <- createDomainDf(
@@ -258,7 +256,7 @@ getAllDomainsOma <- function(finalOmaDf) {
         )
         omaDomainDf <- rbind(omaDomainDf, orthoDomainDf)
     }
-
+    
     omaDomainDf$length <- as.numeric(omaDomainDf$length)
     omaDomainDf$start <- as.numeric(omaDomainDf$start)
     omaDomainDf$end <- as.numeric(omaDomainDf$end)
@@ -277,7 +275,7 @@ getAllDomainsOma <- function(finalOmaDf) {
 
 getAllFastaOma <- function(finalOmaDf) {
     omaFastaDf <- data.frame()
-
+    
     fastaDf <- finalOmaDf[, c("orthoID", "seq")]
     for (i in seq_len(nrow(fastaDf))) {
         seqID <- as.character(fastaDf$orthoID[i])
@@ -285,7 +283,7 @@ getAllFastaOma <- function(finalOmaDf) {
         fastaOut <- paste(paste0(">", seqID), seq, sep = "\n")
         omaFastaDf <- rbind(omaFastaDf, as.data.frame(fastaOut))
     }
-
+    
     return(omaFastaDf[!duplicated(omaFastaDf), ])
 }
 
