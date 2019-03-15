@@ -1,15 +1,3 @@
-#' Load packages
-packages <- c("shiny", "shinyBS", "shinyjs", "DT", "devtools", "colourpicker")
-
-source("R/functions.R")
-installPackages(packages)
-lapply(packages, library, character.only = TRUE)
-
-if (!require("shinycssloaders")) {
-    devtools::install_github("andrewsali/shinycssloaders")
-    library(shinycssloaders)
-}
-
 #' Import function files
 sourceFiles = list.files(
     path = "R", pattern = "*.R$", full.names = TRUE
@@ -151,7 +139,7 @@ shinyUI(
 
         # MAIN NARVARPAGE TABS -------------------------------------------------
         navbarPage(
-            em(strong("PhyloProfile v1.0.0")),
+            em(strong("PhyloProfile v0.99.0")),
             id = "tabs",
             collapsible = TRUE,
             inverse = TRUE,
@@ -465,7 +453,7 @@ shinyUI(
                         br(),
 
                         strong(h5("Select taxonomy rank:")),
-                        withSpinner(
+                        shinycssloaders::withSpinner(
                             uiOutput("rankSelect"),
                             proxy.height = "50px",
                             type = 7,
@@ -474,7 +462,7 @@ shinyUI(
                         br(),
 
                         strong(h5("Choose (super)taxon of interest:")),
-                        withSpinner(
+                        shinycssloaders::withSpinner(
                             uiOutput("select"),
                             proxy.height = "50px",
                             type = 7,
@@ -989,10 +977,7 @@ shinyUI(
                         )
                     ),
                     groupComparisonUI("groupComparison")
-                ),
-
-                # * Search for NCBI taxonomy IDs  ------------------------------
-                searchTaxonIDUI("searchTaxonID")
+                )
             ),
 
             # DATA DOWNLOAD TAB ================================================

@@ -86,7 +86,7 @@ createProfilePlot <- function(input, output, session,
             else if (inSeq()[1] == "all" & inTaxa()[1] == "all") return()
         }
 
-        withSpinner(
+        shinycssloaders::withSpinner(
             plotOutput(
                 ns("plot"),
                 width = parameters()$width,

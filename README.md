@@ -1,5 +1,5 @@
 # PhyloProfile
-[![GitHub release](https://img.shields.io/badge/latest%20release-v1.0.0-orange.svg)](https://github.com/BIONF/PhyloProfile/releases/tag/v1.0.0)
+[![GitHub release](https://img.shields.io/badge/latest%20release-0.99.0-orange.svg)](https://github.com/BIONF/PhyloProfile/releases/tag/v0.99.0)
 [![published in: Bioinformatics](https://img.shields.io/badge/published%20in-Bioinformatics-ff69b4.svg?style=flat)](https://doi.org/10.1093/bioinformatics/bty225)
 [![poster at: BOSC2017](https://img.shields.io/badge/poster%20at-BOSC2017-green.svg?style=flat)](https://f1000research.com/posters/6-1782)
 [![presented at: GCB2018](https://img.shields.io/badge/presented%20at-GCB2018-green.svg?style=flat)](http://gcb2018.de)
@@ -41,17 +41,15 @@ BiocManager::install("PhyloProfile")
 
 *Until then please install the dev version of *PhyloProfile* from our github repository using __[devtools](https://cran.r-project.org/web/packages/devtools/index.html)__.*
 ## Using devtools
-*PhyloProfile* is a *R-package*, as such a recent version of *R* is needed. You also need the `devtools` to install *PhyloProfile*. So, first  install `devtools` if it is missing:
-```r
-install.packages("devtools", repos = "http://cran.us.r-project.org")
-```
-Once that is out of the way you can now install *PhyloProfile*:
+The dev version of *PhyloProfile* can be installed from this github repository using `devtools`:
 
 ```r
-library(devtools)
-install_github("BIONF/PhyloProfile", INSTALL_opts = c('--no-lock'), build_opts = c('--no-resave-data'))
+if (!requireNamespace("devtools"))
+    install.packages("devtools")
+devtools::install_github("BIONF/PhyloProfile", INSTALL_opts = c('--no-lock'), build_opts = c('--no-resave-data'))
 ```
-The step can take a while, as the tool will try do download and install all necessary dependencies automatically. *(Note: Depending on your system this sometimes fails, please check the console log for error messages concerning the dependency installation)*
+
+This step can take a while, as the tool will try do download and install all necessary dependencies automatically. *(Note: Depending on your system this sometimes fails, please check the console log for error messages concerning the dependency installation)*
 
 ## Start PhyloProfile
 Simply run

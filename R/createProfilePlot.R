@@ -55,6 +55,7 @@ dataMainPlot <- function(dataHeat){
 dataCustomizedPlot <- function(dataHeat, selectedTaxa, selectedSeq){
     geneID <- NULL
     supertaxonMod <- NULL
+    paralogNew <- NULL
     
     # process data
     dataHeat$supertaxonMod <- {

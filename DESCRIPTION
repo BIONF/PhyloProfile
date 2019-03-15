@@ -1,6 +1,6 @@
 Package: PhyloProfile
-Version: 1.0.0
-Date: 2018-12-12
+Version: 0.99.0
+Date: 2019-03-15
 Title: PhyloProfile
 Authors@R: c(
     person("Vinh", "Tran", email = "tran@bio.uni-frankfurt.de", role = c("aut", "cre")),
@@ -12,7 +12,7 @@ Description: Analyze multidimensional phylogenetic profiles with a Shiny app.
 URL: https://github.com/BIONF/PhyloProfile/
 BugReports: https://github.com/BIONF/PhyloProfile/issues
 License: MIT + file LICENSE
-Depends: R (>= 3.5.0)
+Depends: R (>= 3.6.0)
 Encoding: UTF-8
 biocViews: Software, Visualization, DataRepresentation, MultipleComparison, FunctionalPrediction
 Imports:
@@ -41,7 +41,7 @@ Imports:
 		reshape2 (>= 1.4.3),
 		rmarkdown (>= 1.11),
 		scales (>= 0.5.0),
-        shiny (>= 1.1.0),
+		shiny (>= 1.1.0),
 		shinyBS (>= 0.61),
 		shinycssloaders (>= 0.2.0),
 		shinyjs (>= 1.0),
@@ -49,15 +49,12 @@ Imports:
 		stringr (>= 1.2.0),
 		svMisc (>= 1.1.0),
 		tidyr (>= 0.8.1),
-		taxize (>= 0.9.0),
 		utils (>= 3.5.0),
-		OmaDB (>= 1.1.1),
+		OmaDB,
 		plyr (>= 1.8.4),
+		xml2 (>= 1.2.0),
 		zoo (>= 1.8)
 RoxygenNote: 6.1.1
-Remotes:
-    trvinh/OmaDB,
-    andrewsali/shinycssloaders
 Suggests:
     testthat
 VignetteBuilder: knitr

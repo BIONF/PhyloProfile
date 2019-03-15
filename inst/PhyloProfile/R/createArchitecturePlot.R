@@ -56,7 +56,7 @@ createArchitecturePlot <- function(
             )
             HTML(msg)
         } else {
-            withSpinner(
+            shinycssloaders::withSpinner(
                 plotOutput(
                     ns("archiPlot"),
                     height = archiHeight(),

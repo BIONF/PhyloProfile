@@ -35,7 +35,7 @@ createDetailedPlot <- function(input, output, session, data,
 
     output$detailPlot.ui <- renderUI({
         ns <- session$ns
-        withSpinner(
+        shinycssloaders::withSpinner(
             plotOutput(
                 ns("detailPlot"),
                 width = 800,

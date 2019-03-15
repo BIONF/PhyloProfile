@@ -13,7 +13,7 @@ test_that("test for getting HOG orthologs", {
 
 test_that("test for getting protein annotations and fasta for one OMA id", {
     id <- "HUMAN29397"
-    omaDf <- getDataForOneOrtholog(id)
+    omaDf <- getOmaDataForOneOrtholog(id)
     expect_true(ncol(omaDf) == 5)
 })
 

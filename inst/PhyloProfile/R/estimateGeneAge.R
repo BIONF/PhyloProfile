@@ -28,7 +28,7 @@ plotGeneAgeUI <- function(id) {
             br(),
             em(
                 h6(
-                    "01-Species; 02-Family; 03-Class; 04-Phylum; 05-Kingdom; 
+                    "01-Species; 02-Family; 03-Class; 04-Phylum; 05-Kingdom;
                     06-Superkingdom; 07-Last universal common ancestor;
                     Undef-Genes have been filtered out"
                 )
@@ -56,7 +56,7 @@ plotGeneAge <- function(input, output, session,
 
     output$geneAge.ui <- renderUI({
         ns <- session$ns
-        withSpinner(
+        shinycssloaders::withSpinner(
             plotOutput(
                 ns("geneAgePlot"),
                 width = 600 * geneAgeWidth(),
