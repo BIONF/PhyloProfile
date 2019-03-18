@@ -108,7 +108,9 @@ xmlParser <- function(inputFile){
             if (grepl("protId", gene[j])) {
                 refGeneID <- xml_attr(gene[j], "id")
                 orthoIDTmp <- unlist(
-                    strsplit(xml_attr(gene[j], "protId"), split = '|', fixed = TRUE)
+                    strsplit(
+                        xml_attr(gene[j], "protId"), split = '|', fixed = TRUE
+                    )
                 )
                 orthoID <- orthoIDTmp[1]
             } else if (grepl("geneId", gene[j])) {
