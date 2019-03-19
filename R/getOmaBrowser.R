@@ -15,7 +15,7 @@ checkOmaID <- function(ids) {
     invalid <- list()
     for (id in ids) {
         id <- as.character(id)
-        data <- OmaDB::getProtein("protein", id)
+        data <- OmaDB::getProtein(id)
         if (is.null(data$entry_nr)) invalid <- c(invalid, id)
     }
     return(invalid)
