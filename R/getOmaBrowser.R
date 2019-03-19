@@ -15,7 +15,7 @@ checkOmaID <- function(ids) {
     invalid <- list()
     for (id in ids) {
         id <- as.character(id)
-        data <- OmaDB::getData("protein", id)
+        data <- OmaDB::getProtein("protein", id)
         if (is.null(data$entry_nr)) invalid <- c(invalid, id)
     }
     return(invalid)
@@ -42,7 +42,7 @@ getOmaMembers <- function(id, orthoType) {
     # get the members of the Ortholoug group
     else if (orthoType == "OG") {
         members <- suppressWarnings(
-            OmaDB::getData(type = "group", id = id)$members$omaid
+            OmaDB::getOMAGroup(type = "group", id = id)$members$omaid
         )
     }
     # # get the members of the Orthologous Pair
@@ -121,7 +121,7 @@ getOmaDataForOneOrtholog <- function(id) {
         "ncbi", OmaDB::getTaxonomy(members = specName, newick = FALSE)$id
     )
     # get raw data
-    raw <- OmaDB::getData("protein",id)
+    raw <- OmaDB::getProtein(id)
     
     # get sequence
     seq <- as.character(raw$sequence)
@@ -156,7 +156,7 @@ getDataForOneOma <- function(seedID, orthoType){
     
     # get members
     members <- getOmaMembers(seedID, orthoType)
-    omaSeedID <- OmaDB::getData("protein",seedID)$omaid
+    omaSeedID <- OmaDB::getProtein(seedID)$omaid
     
     # get all data
     j <- 1

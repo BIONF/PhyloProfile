@@ -1,13 +1,12 @@
 Package: PhyloProfile
-Version: 0.99.1
-Date: 2019-03-15
+Version: 0.99.2
+Date: 2019-03-19
 Title: PhyloProfile
 Authors@R: c(
     person("Vinh", "Tran", email = "tran@bio.uni-frankfurt.de", role = c("aut", "cre")),
     person("Bastian", "Greshake Tzovaras", email = "", role = "aut"),
     person("Ingo", "Ebersberger", email = "ebersberger@bio.uni-frankfurt.de", role = "aut"),
     person("Carla", "Mölbert", email = "carla.moelbert@gmx.de", role = "ctb"))
-Maintainer: Vinh Tran <tran@bio.uni-frankfurt.de>
 Description: Analyze multidimensional phylogenetic profiles with a Shiny app.
 URL: https://github.com/BIONF/PhyloProfile/
 BugReports: https://github.com/BIONF/PhyloProfile/issues
@@ -16,44 +15,11 @@ Depends: R (>= 3.6.0)
 Encoding: UTF-8
 biocViews: Software, Visualization, DataRepresentation, MultipleComparison, FunctionalPrediction
 Imports:
-		ape (>= 5.0),
-		bioDist (>= 1.52.0),
-		BiocStyle (>= 2.0.0),
-		Biostrings (>= 2.48.0),
-		Cairo (>= 1.5.9),
-		colourpicker (>= 1.0),
-		data.table (>= 1.10.4),
-		dendextend (>= 1.8.0),
-		devtools (>= 1.13.6),
-		dplyr (>= 0.7.4),
-		DT (>= 0.4),
-		energy (>= 1.7),
-		GenomeInfoDbData (>= 1.1.0),
-		ggplot2 (>= 2.2.1),
-		gplots (>= 3.0.1),
-		GO.db (>= 3.6.0),
-		grDevices (>= 3.5.0),
-		gridExtra (>= 2.3),
-		gtable (>= 0.2.0),
-		knitr (>= 1.21),
-		RColorBrewer (>= 1.1),
-		RCurl (>= 1.95),
-		reshape2 (>= 1.4.3),
-		rmarkdown (>= 1.11),
-		scales (>= 0.5.0),
-		shiny (>= 1.1.0),
-		shinyBS (>= 0.61),
-		shinycssloaders (>= 0.2.0),
-		shinyjs (>= 1.0),
-		stats (>= 3.5.0),
-		stringr (>= 1.2.0),
-		svMisc (>= 1.1.0),
-		tidyr (>= 0.8.1),
-		utils (>= 3.5.0),
-		OmaDB,
-		plyr (>= 1.8.4),
-		xml2 (>= 1.2.0),
-		zoo (>= 1.8)
+    ape, bioDist, BiocStyle, Biostrings, Cairo, colourpicker, data.table, 
+    dendextend, devtools, dplyr, DT, energy, GenomeInfoDbData, ggplot2, gplots,
+    GO.db, grDevices, gridExtra, gtable, knitr, RColorBrewer, RCurl, reshape2,
+    rmarkdown, scales, shiny, shinyBS, shinycssloaders, shinyjs, stats, stringr,
+    svMisc, tidyr, utils, OmaDB, plyr, xml2, zoo
 RoxygenNote: 6.1.1
 Suggests:
     testthat

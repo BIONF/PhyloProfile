@@ -4,7 +4,7 @@ author:
 -   name: Vinh Tran
     affiliation: Goethe University Frankfurt, Frankfurt am Main, Germany
     email: tran@bio.uni-frankfurt.de
-date: "Feb 2019"
+date: "Mar. 2019"
 output:
     BiocStyle::html_document:
         toc_float: true
@@ -477,7 +477,7 @@ citation("PhyloProfile")
 # How to contribute
 ![](http://www.sharegif.com/wp-content/uploads/2014/03/giphy41.gif)
 
-Thank you so much for your interest in contributing to *PhyloProfile*! 🎉👍🍾
+Thanks so much for your interest in contributing to *PhyloProfile* 🎉👍🍾
 
 Contributions to *PhyloProfile* can take many forms. If you are
 
