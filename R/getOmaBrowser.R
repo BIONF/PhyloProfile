@@ -42,7 +42,7 @@ getOmaMembers <- function(id, orthoType) {
     # get the members of the Ortholoug group
     else if (orthoType == "OG") {
         members <- suppressWarnings(
-            OmaDB::getOMAGroup(type = "group", id = id)$members$omaid
+            OmaDB::getOMAGroup(id = id)$members$omaid
         )
     }
     # # get the members of the Orthologous Pair
