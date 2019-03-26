@@ -1,6 +1,6 @@
 Package: PhyloProfile
-Version: 0.99.4
-Date: 2019-03-19
+Version: 0.99.5
+Date: 2019-03-26
 Title: PhyloProfile
 Authors@R: c(
     person("Vinh", "Tran", email = "tran@bio.uni-frankfurt.de", role = c("aut", "cre")),
@@ -15,7 +15,7 @@ Depends: R (>= 3.6.0)
 Encoding: UTF-8
 biocViews: Software, Visualization, DataRepresentation, MultipleComparison, FunctionalPrediction
 Imports:
-    ape, bioDist, BiocStyle, Biostrings, Cairo, colourpicker, data.table, 
+    ape, bioDist, BiocStyle, Biostrings, Cairo, colourpicker, data.table,
     dendextend, devtools, dplyr, DT, energy, GenomeInfoDbData, ggplot2, gplots,
     GO.db, grDevices, gridExtra, gtable, knitr, RColorBrewer, RCurl, reshape2,
     rmarkdown, scales, shiny, shinyBS, shinycssloaders, shinyjs, stats, stringr,
