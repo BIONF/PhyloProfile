@@ -138,21 +138,21 @@ groupComparison <- function(input, output, session,
         isolate({
             gene <- input$selectedGene
             if (!rightFormatFeatures()) {
-                selectInput(ns("interesting-features"),
+                selectInput(ns("interestingFeatures"),
                             "Feature type(s) of interest:",
                             NULL,
                             selected = NULL,
                             multiple = TRUE,
                             selectize = FALSE)
             } else if (is.null(gene)) {
-                selectInput(ns("interesting-features"),
+                selectInput(ns("interestingFeatures"),
                             "Feature type(s) of interest:",
                             NULL,
                             selected = NULL,
                             multiple = TRUE,
                             selectize = FALSE)
             } else if (gene == "") {
-                selectInput(ns("interesting-features"),
+                selectInput(ns("interestingFeatures"),
                             "Feature type(s) of interest:",
                             NULL,
                             selected = NULL,
@@ -180,7 +180,7 @@ groupComparison <- function(input, output, session,
                     choices <- append(choices, unlist(subsetGene$databases))
 
                 }
-                selectInput(ns("interesting-features"),
+                selectInput(ns("interestingFeatures"),
                             "Feature type(s) of interest:",
                             choices,
                             selected = choices[1],

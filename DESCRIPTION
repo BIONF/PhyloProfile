@@ -1,13 +1,13 @@
 Package: PhyloProfile
 Version: 0.99.5
-Date: 2019-03-26
+Date: 2019-04-23
 Title: PhyloProfile
 Authors@R: c(
     person("Vinh", "Tran", email = "tran@bio.uni-frankfurt.de", role = c("aut", "cre")),
     person("Bastian", "Greshake Tzovaras", email = "", role = "aut"),
     person("Ingo", "Ebersberger", email = "ebersberger@bio.uni-frankfurt.de", role = "aut"),
     person("Carla", "Mölbert", email = "carla.moelbert@gmx.de", role = "ctb"))
-Description: Analyze multidimensional phylogenetic profiles with a Shiny app.
+Description: PhyloProfile is a tool for exploring complex phylogenetic profiles. Phylogenetic profiles, presence/absence patterns of genes over a set of species, are commonly used to trace the functional and evolutionary history of genes across species and time. With PhyloProfile we can enrich regular phylogenetic profiles with further data like sequence/structure similarity, to make phylogenetic profiling more meaningful. Besides the interactive visualisation powered by R-Shiny, the package offers a set of further analysis features to gain insights like the gene age estimation or core gene identification.
 URL: https://github.com/BIONF/PhyloProfile/
 BugReports: https://github.com/BIONF/PhyloProfile/issues
 License: MIT + file LICENSE
