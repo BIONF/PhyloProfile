@@ -120,20 +120,16 @@ parseDomainInput <- function(seed, inputFile, type) {
 getDomainOnline <- function(demoData) {
     if (demoData == "lca-micros") {
         fileDomain <- {
-            suppressWarnings(
-                paste0(
-                    "https://github.com/BIONF/phyloprofile-data/blob/master/",
-                    "demo/domainFiles/concatenate.domains?raw=true"
-                )
+            paste0(
+                "https://github.com/BIONF/phyloprofile-data/blob/master/",
+                "demo/domainFiles/concatenate.domains?raw=true"
             )
         }
     } else {
         fileDomain <- {
-            suppressWarnings(
-                paste0(
-                    "https://raw.githubusercontent.com/BIONF/phyloprofile-data",
-                    "/master/expTestData/ampk-tor/ampk-tor.domains_F?raw=true"
-                )
+            paste0(
+                "https://raw.githubusercontent.com/BIONF/phyloprofile-data",
+                "/master/expTestData/ampk-tor/ampk-tor.domains_F?raw=true"
             )
         }
     }
