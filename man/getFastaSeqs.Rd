@@ -66,8 +66,7 @@ getFastaSeqs(
 )
 }
 \seealso{
-\code{\link{checkInputValidity}}, \code{\link{strReverse}},
-\code{\link{mainLongRaw}}
+\code{\link{checkInputValidity}}, \code{\link{mainLongRaw}}
 }
 \author{
 Vinh Tran {tran@bio.uni-frankfurt.de}

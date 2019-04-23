@@ -320,9 +320,14 @@ createLongMatrix <- function(inputFile){
         }
     }
 
-    # convert geneID, ncbiID and orthoID into factor
+    # convert geneID, ncbiID and orthoID into factor and var1, var2 into numeric
     for (i in seq_len(3)) {
         longDataframe[, i] <- as.factor(longDataframe[, i])
+    }
+    if (ncol(longDataframe) > 3) {
+        for (j in seq(4, ncol(longDataframe))){
+            longDataframe[,j] <- suppressWarnings(as.numeric(longDataframe[,j]))
+        }
     }
     
     # remove duplicated lines

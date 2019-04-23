@@ -31,21 +31,20 @@ test_that("test distritbution analyze functions", {
 
     # distribution data for 2 additional variables of a subset of taxa
     inputTaxonID <- getInputTaxaID(inputData)
-    inputTaxonName <- getInputTaxaName(rankName,
-                                                         inputTaxonID)
+    inputTaxonName <- getInputTaxaName(rankName, inputTaxonID)
     refTaxon <- inputTaxonName$fullName[1]
     taxaTree <- NULL
 
     sortedTaxa <- sortInputTaxa(inputTaxonID,
-                                                 inputTaxonName,
-                                                 rankName,
-                                                 refTaxon,
-                                                 taxaTree)
+                                inputTaxonName,
+                                rankName,
+                                refTaxon,
+                                taxaTree)
 
     fullProfileData <- parseInfoProfile(inputData,
-                                                          sortedTaxa,
-                                                          "max",
-                                                          "mean")
+                                        sortedTaxa,
+                                        "max",
+                                        "mean")
     selectedGenes <- c("OG_1017", "OG_1019")
     selectedTaxa <- c("Arabidopsis thaliana", "Encephalitozoon intestinalis")
     subsetDistributionData <- createVariableDistributionDataSubset(

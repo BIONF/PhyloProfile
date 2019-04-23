@@ -1409,7 +1409,7 @@ shinyServer(function(input, output, session) {
         if (inputType == "oma") {
             domainDf <- getAllDomainsOma(finalOmaDf())
         } else {
-            print("Getting the domains...")
+            message("Getting the domains...")
             mainInput <- getMainInput()
 
             if (inputType == "demo") {
