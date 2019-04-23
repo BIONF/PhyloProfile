@@ -142,13 +142,13 @@ downloadFilteredMain <- function(
             else {
                 if (input$refVarMain == var1ID()) {
                     dataOutAgg <- aggregate(
-                        as.numeric(dataOut$var1),
+                        dataOut$var1,
                         by = list(dataOut$geneID, dataOut$ncbiID),
                         FUN = input$refTypeMain
                     )
                 } else if (input$refVarMain == var2ID()) {
                     dataOutAgg <- aggregate(
-                        as.numeric(dataOut$var2),
+                        dataOut$var2,
                         by = list(dataOut$geneID, dataOut$ncbiID),
                         FUN = input$refTypeMain
                     )
@@ -204,7 +204,7 @@ downloadFilteredMain <- function(
                                       nchar(as.character(dataOut$supertaxon)))
         dataOut$var1 <- as.character(dataOut$var1)
         dataOut$var2 <- as.character(dataOut$var2)
-        dataOut$presSpec <- as.numeric(dataOut$presSpec)
+        dataOut$presSpec <- dataOut$presSpec
 
         # rename columns
         names(dataOut)[names(dataOut) == "presSpec"] <- "%Spec"

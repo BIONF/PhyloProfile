@@ -89,9 +89,9 @@ clusterProfile <- function(input, output, session,
         # get list of selected gene(s)
         if (is.null(input$plotBrush))
             return()
-        else{
-            top <- as.numeric(round(input$plotBrush$ymin))
-            bottom <- as.numeric(round(input$plotBrush$ymax))
+        else {
+            top <- round(input$plotBrush$ymin)
+            bottom <- round(input$plotBrush$ymax)
             df <- dt$labels[bottom:top,]
         }
 

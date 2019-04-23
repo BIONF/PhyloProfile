@@ -605,8 +605,8 @@ getBarplotGC <- function(selectedGene,
     }
 
     if (domainsThreshold > 0) {
-        thresholdIn  <- as.numeric((domainsThreshold / 100) * inNotEmpty)
-        thresholdOut <- as.numeric((domainsThreshold / 100) * outNotEmpty)
+        thresholdIn  <- (domainsThreshold / 100) * inNotEmpty
+        thresholdOut <- (domainsThreshold / 100) * outNotEmpty
 
         dataIn <- dataIn[sort(dataIn$feature),]
         dataOut <- dataOut[sort(dataOut$feature),]

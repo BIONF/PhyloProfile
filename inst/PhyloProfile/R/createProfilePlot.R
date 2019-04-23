@@ -121,9 +121,7 @@ createProfilePlot <- function(input, output, session,
         # rankSelect <- rankSelect()
         # rankName <- substr(rankSelect, 4, nchar(rankSelect))
         rankName <- rankSelect()
-        inSelect <- {
-            as.numeric(taxaList$ncbiID[taxaList$fullName == inSelect()])
-        }
+        inSelect <- taxaList$ncbiID[taxaList$fullName == inSelect()]
 
         dataHeat <- dataHeat()
         if (is.null(dataHeat)) return()
@@ -209,14 +207,14 @@ createProfilePlot <- function(input, output, session,
                 orthoID <- paste0(orthoID[1], ",...")
             }
 
-            if (is.na(as.numeric(Percent))) return()
+            if (is.na(Percent)) return()
             else {
                 info <- c(geneID,
                           as.character(orthoID),
-                          as.character(spec),
-                          round(as.numeric(var1), 2),
-                          round(as.numeric(Percent), 2),
-                          round(as.numeric(var2), 2))
+                          spec,
+                          round(var1, 2),
+                          round(Percent, 2),
+                          round(var2, 2))
                 return(info)
             }
         }
