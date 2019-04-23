@@ -43,7 +43,7 @@ estimateGeneAge <- function(
     )
 
     # get selected (super)taxon ID
-    taxaList <- PhyloProfile::getNameList()
+    taxaList <- getNameList()
     superID <- {
         as.numeric(
             taxaList[

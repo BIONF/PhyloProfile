@@ -510,7 +510,7 @@ taxaSelectGC <- function(rankSelectGC, inputTaxonID){
         else dt <- getTaxonomyMatrix(TRUE, inputTaxonID)
 
         # load list of taxon name
-        nameList <- PhyloProfile::getNameList()
+        nameList <- getNameList()
 
         # get rank name from rankSelect
         if (substr(rankSelectGC,3,3) == "_") {

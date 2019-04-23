@@ -117,7 +117,7 @@ createProfilePlot <- function(input, output, session,
     selectedpointInfo <- reactive({
 
         # get selected supertaxon name
-        taxaList <- PhyloProfile::getNameList()
+        taxaList <- getNameList()
         # rankSelect <- rankSelect()
         # rankName <- substr(rankSelect, 4, nchar(rankSelect))
         rankName <- rankSelect()

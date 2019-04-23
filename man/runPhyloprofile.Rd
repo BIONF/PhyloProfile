@@ -13,7 +13,7 @@ shiny application - GUI version of PhyloProfile
 Run PhyloProfile app
 }
 \examples{
-?PhyloProfile::runPhyloProfile
+?runPhyloProfile
 \dontrun{
 runPhyloProfile()
 }

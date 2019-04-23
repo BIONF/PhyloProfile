@@ -907,7 +907,7 @@ fromInputToProfile <- function(
     catDt
 ) {
     # convert raw input into long format
-    inputDf <- PhyloProfile::createLongMatrix(rawInput)
+    inputDf <- createLongMatrix(rawInput)
 
     # get input taxon IDs and names
     inputTaxonID <- getInputTaxaID(inputDf)

@@ -55,7 +55,7 @@ selectTaxonRank <- function(input, output, session, rankSelect, inputTaxonID) {
             # load list of unsorted taxa
             Dt <- getTaxonomyMatrix(TRUE, inputTaxonID())
             # load list of taxon name
-            nameList <- PhyloProfile::getNameList()
+            nameList <- getNameList()
             # get rank name from rankSelect
             rankName <- rankSelectCus
 
@@ -92,7 +92,7 @@ selectTaxonRank <- function(input, output, session, rankSelect, inputTaxonID) {
         Dt <- getTaxonomyMatrix(TRUE, inputTaxonID())
 
         # get ID of selected (super)taxon from input$taxaSelectCus
-        taxaList <- PhyloProfile::getNameList()
+        taxaList <- getNameList()
         superID <- taxaList$ncbiID[taxaList$fullName == taxaSelectCus
                                     & taxaList$rank %in% c(rankName, "norank")]
 

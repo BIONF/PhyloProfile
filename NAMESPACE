@@ -65,7 +65,7 @@ import(energy)
 import(gplots)
 import(gtable)
 import(knitr)
-import(rmarkdown, except = c(pdf_document, md_document, 
+import(rmarkdown, except = c(pdf_document, md_document,
     html_document))
 import(scales)
 import(shinyBS)

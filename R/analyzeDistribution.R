@@ -27,14 +27,14 @@ createPercentageDistributionData <- function(inputData,
     colnames(mdData)[ncol(mdData)] <- "paralog"
 
     # (3) GET SORTED TAXONOMY LIST (3)
-    inputTaxonID <- PhyloProfile::getInputTaxaID(inputData)
-    inputTaxonName <- PhyloProfile::getInputTaxaName(
+    inputTaxonID <- getInputTaxaID(inputData)
+    inputTaxonName <- getInputTaxaName(
         rankName, inputTaxonID
     )
     refTaxon <- inputTaxonName$fullName[1]
     taxaTree <- NULL
 
-    taxaList <- PhyloProfile::sortInputTaxa(
+    taxaList <- sortInputTaxa(
         inputTaxonID, inputTaxonName, rankName, refTaxon, taxaTree
     )
 

@@ -46,7 +46,7 @@ getCoreGene <- function(
     Freq <- NULL
 
     # get ID list of chosen taxa
-    taxaList <- PhyloProfile::getNameList()
+    taxaList <- getNameList()
 
     if ("none" %in% taxaCore) {
         superID <- NA
