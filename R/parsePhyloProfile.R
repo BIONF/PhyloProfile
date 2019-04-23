@@ -187,21 +187,15 @@ sortInputTaxa <- function(taxonIDs,
     # get selected supertaxon ID(s)
     rankNameTMP <- taxonNames$rank[taxonNames$fullName == refTaxon]
     if (rankName == "strain") {
-        superID <-
-            as.numeric(
-                fullnameList$ncbiID[
-                    fullnameList$fullName == refTaxon
-                    & fullnameList$rank == "norank"
-                ]
-            )
+        superID <- fullnameList$ncbiID[
+            fullnameList$fullName == refTaxon
+            & fullnameList$rank == "norank"
+            ]
     } else {
-        superID <-
-            as.numeric(
-                fullnameList$ncbiID[
-                    fullnameList$fullName == refTaxon
-                    & fullnameList$rank == rankNameTMP[1]
-                ]
-            )
+        superID <- fullnameList$ncbiID[
+            fullnameList$fullName == refTaxon 
+            & fullnameList$rank == rankNameTMP[1]
+            ]
     }
 
     # get full taxonomy data
@@ -297,8 +291,7 @@ sortInputTaxa <- function(taxonIDs,
         "rank",
         "category"
     )
-
-    sortedOut$taxonID <- as.numeric(sortedOut$taxonID)
+    
     sortedOut$ncbiID <- as.factor(sortedOut$ncbiID)
     sortedOut$supertaxon <- as.factor(sortedOut$supertaxon)
     sortedOut$category <- as.factor(sortedOut$category)
@@ -441,10 +434,6 @@ parseInfoProfile <- function(
 
     # merge mdData, mdDataVar2 and taxaList to get taxonomy info
     taxaMdData <- merge(mdData, taxaList, by = "ncbiID")
-    taxaMdData$var1 <-
-        suppressWarnings(as.numeric(as.character(taxaMdData$var1)))
-    taxaMdData$var2 <-
-        suppressWarnings(as.numeric(as.character(taxaMdData$var2)))
 
     # (2) calculate PERCENTAGE of PRESENT SPECIES
     finalPresSpecDt <- calcPresSpec(taxaMdData, taxaCount)

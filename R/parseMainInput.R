@@ -307,7 +307,8 @@ createLongMatrix <- function(inputFile){
                 sep = "\t",
                 header = TRUE,
                 check.names = FALSE,
-                comment.char = ""
+                comment.char = "",
+                stringsAsFactors = FALSE
             ))
         }
         # WIDE
@@ -319,8 +320,8 @@ createLongMatrix <- function(inputFile){
         }
     }
 
-    # make sure all columns have the same type (factor)
-    for (i in seq_len(ncol(longDataframe))) {
+    # convert geneID, ncbiID and orthoID into factor
+    for (i in seq_len(3)) {
         longDataframe[, i] <- as.factor(longDataframe[, i])
     }
     

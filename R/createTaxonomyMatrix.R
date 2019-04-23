@@ -312,14 +312,14 @@ rankIndexing <- function(rankListFile){
 
     ### output a list of indexed ranks
     index2RankDf <- data.frame(
-        "index" = character(), "rank" = character(), stringsAsFactors = FALSE
+        "index" = numeric(), "rank" = character(), stringsAsFactors = FALSE
     )
 
     for (i in seq_len(length(allInputRank))) {
-        index2RankDf[i,] = c(rank2Index[[allInputRank[i]]], allInputRank[i])
+        index2RankDf[i,]$index <- rank2Index[[allInputRank[i]]]
+        index2RankDf[i,]$rank <- allInputRank[i]
     }
 
-    index2RankDf$index <- as.numeric(index2RankDf$index)
     index2RankDf <- index2RankDf[with(index2RankDf, order(index2RankDf$index)),]
 
     return(index2RankDf)
