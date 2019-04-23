@@ -31,12 +31,12 @@ getNameList <- function() {
         )
     }
 
-    nameList <- as.data.frame(read.table(
+    nameList <- read.table(
         nameReducedFile,
         sep = "\t",
         header = TRUE,
         fill = TRUE
-    ))
+    )
     nameList$fullName <- as.character(nameList$fullName)
     nameList$rank <- as.character(nameList$rank)
     nameList <- nameList[!duplicated(nameList), ]
@@ -84,12 +84,12 @@ getTaxonomyMatrix <- function(subsetTaxaCheck, taxonIDs){
         )
     }
 
-    dt <- as.data.frame(read.table(
+    dt <- read.table(
         taxonomyMatrixFile,
         sep = "\t",
         header = TRUE,
         stringsAsFactors = TRUE
-    ))
+    )
     if (subsetTaxaCheck) {
         dt <- dt[dt$abbrName  %in% taxonIDs, ]
     }

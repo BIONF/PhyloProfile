@@ -412,11 +412,7 @@ highlightProfilePlot <- function(
             )
         }
 
-        taxaList <- as.data.frame(read.table(
-            nameReducedFile,
-            sep = "\t",
-            header = TRUE
-        ))
+        taxaList <- read.table(nameReducedFile, sep = "\t", header = TRUE)
 
         taxonHighlightID <- {
             taxaList$ncbiID[

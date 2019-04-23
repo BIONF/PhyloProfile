@@ -234,12 +234,10 @@ getIDsRank <- function(inputTaxa, currentNCBIinfo){
 
 rankIndexing <- function(rankListFile){
     ### input is a dataframe, where each row is a rank list of a taxon
-    rankList <- as.data.frame(
-        read.table(
-            rankListFile,
-            sep = '\t', header = FALSE, fill = TRUE,
-            stringsAsFactors = TRUE, na.strings = c("","NA")
-        )
+    rankList <- read.table(
+        rankListFile,
+        sep = '\t', header = FALSE, fill = TRUE,
+        stringsAsFactors = TRUE, na.strings = c("","NA")
     )
 
     ### get all available ranks from input rankList
@@ -353,14 +351,12 @@ taxonomyTableCreator <- function(idListFile, rankListFile){
 
     ### load idList file
     ncol <- max(count.fields(rankListFile, sep = '\t'))
-    idList <- as.data.frame(
-        read.table(
-            idListFile,
-            sep = '\t', header = FALSE, check.names = FALSE, comment.char = "",
-            fill = TRUE,
-            stringsAsFactors = TRUE, na.strings = c("","NA"),
-            col.names = paste0('X', seq_len(ncol))
-        )
+    idList <- read.table(
+        idListFile,
+        sep = '\t', header = FALSE, check.names = FALSE, comment.char = "",
+        fill = TRUE,
+        stringsAsFactors = TRUE, na.strings = c("","NA"),
+        col.names = paste0('X', seq_len(ncol))
     )
 
     colnames(idList)[1] <- "tip"

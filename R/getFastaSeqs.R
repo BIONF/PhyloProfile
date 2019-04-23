@@ -92,9 +92,6 @@ getFastaSeqs <- function(
                 seqID <- as.character(dataIn$orthoID[j])
                 groupID <- as.character(dataIn$geneID[j])
 
-                # seq <- as.character(
-                #     faDf$seq[faDf$seqID == paste0(">", seqID)]
-                # )
                 seq <- as.character(faFile[[match(seqID, names(faFile))]])
                 fastaOut <- paste(paste0(">", seqID), seq, sep = "\n")
                 fastaOutDf <- rbind(fastaOutDf, as.data.frame(fastaOut))

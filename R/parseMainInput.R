@@ -17,14 +17,14 @@
 #' checkInputValidity(filein)
 
 checkInputValidity <- function(filein) {
-    inputDt <- as.data.frame(read.table(
+    inputDt <- read.table(
         file = filein,
         sep = "\t",
         header = FALSE,
         check.names = FALSE,
         comment.char = "",
         fill = TRUE
-    ))
+    )
 
     if (is.na(inputDt[1, ncol(inputDt)])) {
         return("moreCol")
@@ -217,13 +217,13 @@ fastaParser <- function(inputFile){
 #' }
 
 wideToLong <- function(inputFile){
-    wideDataframe <- as.data.frame(read.table(
+    wideDataframe <- read.table(
         file = inputFile,
         sep = "\t",
         header = TRUE,
         check.names = FALSE,
         comment.char = ""
-    ))
+    )
     longDataframe <- data.frame()
     rowNrLong <- 0
     ncbiIDs <- colnames(wideDataframe)
@@ -302,14 +302,14 @@ createLongMatrix <- function(inputFile){
         }
         # LONG
         else if (inputType == "long") {
-            longDataframe <- as.data.frame(read.table(
+            longDataframe <- read.table(
                 file = filein,
                 sep = "\t",
                 header = TRUE,
                 check.names = FALSE,
                 comment.char = "",
                 stringsAsFactors = FALSE
-            ))
+            )
         }
         # WIDE
         else if (inputType == "wide") {

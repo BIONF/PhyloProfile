@@ -39,12 +39,14 @@ parseDomainInput <- function(seed, inputFile, type) {
     # parse domain file
     # for demo data
     if (type == "demo") {
-        domainDf <- as.data.frame(read.csv(file,
-                                            sep = "\t",
-                                            header = FALSE,
-                                            comment.char = "",
-                                            stringsAsFactors = FALSE,
-                                            quote = ""))
+        domainDf <- read.csv(
+            file,
+            sep = "\t",
+            header = FALSE,
+            comment.char = "",
+            stringsAsFactors = FALSE,
+            quote = ""
+        )
         domains <- rbind(domains, domainDf)
 
         if (ncol(domains) == 5) {
@@ -66,12 +68,9 @@ parseDomainInput <- function(seed, inputFile, type) {
         if (file != FALSE) {
             exeptions <- c("noFileInput", "noSelectHit", "noFileInFolder")
             if (!(file %in% exeptions)) {
-                domainDf <- as.data.frame(read.table(
-                    file,
-                    sep = "\t",
-                    header = FALSE,
-                    comment.char = ""
-                ))
+                domainDf <- read.table(
+                    file, sep = "\t", header = FALSE, comment.char = ""
+                )
                 domains <- rbind(domains, domainDf)
             }
         }
