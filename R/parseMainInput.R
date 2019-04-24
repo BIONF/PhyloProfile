@@ -91,70 +91,60 @@ xmlParser <- function(inputFile){
     # get all genes for each taxon
     species <- xml_find_all(data, ".//species")
     
+    geneSpec <- xml_find_all(species, ".//gene")
+    refGeneID <- xml_attr(geneSpec, "id")
+    
+    if (grepl("protId", geneSpec[1])) {
+        orthoID <- as.data.frame(unlist(strsplit(
+            xml_attr(geneSpec, "protId"), split = '|', fixed = TRUE
+        )), stringsAsFactors = FALSE)[,1]
+    } else if (grepl("geneId", geneSpec[1])) {
+        orthoID <- xml_attr(geneSpec, "id")
+    }
+    
+    speciesID <- xml_attr(species, "NCBITaxId")
+    speciesIDrep <- unlist(
+        lapply(species, function(x) length(xml_find_all(x, ".//gene")))
+    )
+    
     speciesDf <- data.frame(
-        "ncbiID" = character(),
-        "refGeneID" = character(),
-        "orthoID" = character(),
+        ncbiID = rep(paste0("ncbi", speciesID), speciesIDrep),
+        refGeneID = refGeneID,
+        orthoID = orthoID,
         stringsAsFactors=FALSE
     )
-    c <- 1
     
-    for (i in seq_len(length(species))) {
-        speciesName <- xml_attr(species[i], "name")
-        speciesID <- xml_attr(species[i], "NCBITaxId")
-        
-        gene <- xml_find_all(species[i], ".//gene")
-        for (j in seq_len(length(gene))) {
-            if (grepl("protId", gene[j])) {
-                refGeneID <- xml_attr(gene[j], "id")
-                orthoIDTmp <- unlist(
-                    strsplit(
-                        xml_attr(gene[j], "protId"), split = '|', fixed = TRUE
-                    )
-                )
-                orthoID <- orthoIDTmp[1]
-            } else if (grepl("geneId", gene[j])) {
-                refGeneID <- xml_attr(gene[j], "id")
-                orthoID <- xml_attr(gene[j], "protId")
-            }
-            speciesDf[c, ] <- c(paste0("ncbi", speciesID), refGeneID, orthoID)
-            c <- c + 1
-        }
-    }
-
     # get orthologs and their scores
-    orthoDf <- data.frame(
-        "geneID" = character(),
-        "refGeneID" = character(),
-        stringsAsFactors=FALSE
-    )
-    orthoDf[1,] <- c(NA,NA)
-    
-    scoreType <- xml_find_all(data, ".//scoreDef")
-    for(s in seq_len(length(scoreType))){
-        scoreID <- xml_attr(scoreType[s], "id")
-        orthoDf[scoreID] <- NA
-    }
-    
-    c <- 1
     orthoGroup <- xml_find_all(data, ".//orthologGroup")
-    for (i in seq_len(length(orthoGroup))) {
-        groupID <- xml_attr(orthoGroup[i], "id")
-        gene <- xml_find_all(orthoGroup[i], ".//geneRef")
-        for (j in seq_len(length(gene))) {
-            refGeneID <- xml_attr(gene[j], "id")
-            orthoDf[c, "geneID"] <- groupID
-            orthoDf[c, "refGeneID"] <- refGeneID
-            scores <- list()
-            score <- xml_find_all(gene[j], ".//score")
-            for (k in seq_len(length(score))) {
-                id <- xml_attr(score[k], "id")
-                value <- xml_attr(score[k], "value")
-                orthoDf[c, id] <- value
-            }
-            c <- c + 1
-        }
-    }
+    genes <- xml_find_all(orthoGroup, ".//geneRef")
+    refGeneID <- xml_attr(genes, "id")
+    
+    score <- xml_find_all(genes, ".//score")
+    scorePair <- lapply(
+        score, function(x) c(xml_attr(x, "id"), xml_attr(x, "value"))
+    )
+    scorePair <- as.data.frame(do.call(rbind, scorePair))
+    
+    groupID <- xml_attr(orthoGroup, "id")
+    groupIDrep <- unlist(
+        lapply(
+            orthoGroup, 
+            function(x) 
+                length(xml_find_all(data, ".//scoreDef")) * 
+                length(xml_find_all(x, ".//geneRef"))
+        )
+    )
+    
+    orthoDf <- data.frame(
+        geneID = rep(groupID, groupIDrep),
+        refGeneID = rep(
+            refGeneID, each = length(xml_find_all(data, ".//scoreDef"))
+        ),
+        scoreType = scorePair$V1,
+        scoreValue = scorePair$V2,
+        stringsAsFactors = FALSE
+    )
+    orthoDf <- spread(orthoDf, scoreType, scoreValue)
     
     # merge into final dataframe
     finalDf <- merge(speciesDf, orthoDf, all.y = TRUE, by = "refGeneID")
@@ -187,19 +177,19 @@ fastaParser <- function(inputFile){
     # split sequence IDs into columns
     fastaFile <- Biostrings::readAAStringSet(inputFile)
     seqID <- names(fastaFile)
-    faDf <- data.frame(seqID)
-
-    finalDf <- data.frame(
-        do.call('rbind', strsplit(as.character(faDf$seqID),'|',fixed=TRUE))
+    
+    faDf <- as.data.frame(
+        stringr::str_split_fixed(seqID, "\\|", 5),
+        stringsAsFactors = FALSE
     )
     
     # rename columns
-    colnames(finalDf) <- c("geneID", "ncbiID", "orthoID")
+    colnames(faDf) <- c("geneID", "ncbiID", "orthoID")
     
-    cidx <- seq_len(ncol(finalDf) - 3)
-    colnames(finalDf)[cidx + 3] <- paste0("value_", cidx)
+    cidx <- seq_len(ncol(faDf) - 3)
+    colnames(faDf)[cidx + 3] <- paste0("var", cidx)
     
-    return(finalDf)
+    return(faDf)
 }
 
 #' Transform input file in wide matrix into long matrix format
@@ -220,27 +210,28 @@ wideToLong <- function(inputFile){
         sep = "\t",
         header = TRUE,
         check.names = FALSE,
-        comment.char = ""
+        comment.char = "",
+        stringsAsFactors = FALSE
     )
-    longDataframe <- data.frame()
-    rowNrLong <- 0
-    ncbiIDs <- colnames(wideDataframe)
-
-    for (rowNr in seq_len(nrow(wideDataframe))) {
-        geneID <- wideDataframe[rowNr, 1]
-        for (columnNr in 2:ncol(wideDataframe)) {
-            currentCell <- as.character(wideDataframe[rowNr, columnNr])
-            newRowInfo <- unlist(strsplit(currentCell, "#"))
-            rowNrLong <- rowNrLong + 1
-            longDataframe[rowNrLong, 1] <- geneID
-            longDataframe[rowNrLong, 2] <- ncbiIDs[columnNr]
-            longDataframe[rowNrLong, 3] <- newRowInfo[1]
-            longDataframe[rowNrLong, 4] <- newRowInfo[2]
-            longDataframe[rowNrLong, 5] <- newRowInfo[3]
-        }
-    }
-
-    colnames(longDataframe) <- c("geneID", "ncbiID", "orthoID", "var1", "var2")
+    
+    ncbiIDs <- colnames(wideDataframe[, c(-1)])
+    
+    orthoInfo <- as.data.frame(
+        stringr::str_split_fixed(
+            as.character(unlist(wideDataframe[, c(-1)])), "#", 3
+        ),
+        stringsAsFactors = FALSE
+    )
+    
+    longDataframe <- data.frame(
+        geneID = rep(wideDataframe$geneID, time = ncol(wideDataframe) - 1),
+        ncbiID = rep(ncbiIDs, time = 1, each = nrow(wideDataframe)),
+        orthoID = orthoInfo$V1,
+        var1 = suppressWarnings(as.numeric(orthoInfo$V2)),
+        var2 = suppressWarnings(as.numeric(orthoInfo$V3)),
+        stringsAsFactors = FALSE
+    )
+    
     return(longDataframe)
 }
 
@@ -324,7 +315,9 @@ createLongMatrix <- function(inputFile){
     }
     if (ncol(longDataframe) > 3) {
         for (j in seq(4, ncol(longDataframe))){
-            longDataframe[,j] <- suppressWarnings(as.numeric(longDataframe[,j]))
+            longDataframe[,j] <- suppressWarnings(
+                as.numeric(as.character(longDataframe[,j]))
+            )
         }
     }
     
