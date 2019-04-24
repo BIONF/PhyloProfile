@@ -188,18 +188,16 @@ fastaParser <- function(inputFile){
     fastaFile <- Biostrings::readAAStringSet(inputFile)
     seqID <- names(fastaFile)
     faDf <- data.frame(seqID)
-    faDf
+
     finalDf <- data.frame(
         do.call('rbind', strsplit(as.character(faDf$seqID),'|',fixed=TRUE))
     )
     
     # rename columns
     colnames(finalDf) <- c("geneID", "ncbiID", "orthoID")
-    for (i in seq_len(ncol(finalDf))) {
-        if (i > 3) {
-            colnames(finalDf)[i] <- paste0("value_", i - 3)
-        }
-    }
+    
+    cidx <- seq_len(ncol(finalDf) - 3)
+    colnames(finalDf)[cidx + 3] <- paste0("value_", cidx)
     
     return(finalDf)
 }
