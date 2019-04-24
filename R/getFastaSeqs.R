@@ -17,9 +17,9 @@
 #' @param idFormat fasta header format (">speciesID:seqID",
 #' ">speciesID@seqID", ">speciesID|seqID" or only "seqID")
 #' @return A dataframe contains fasta sequences
+#' @importFrom IRanges reverse
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
-#' @seealso \code{\link{checkInputValidity}}, \code{\link{strReverse}},
-#' \code{\link{mainLongRaw}}
+#' @seealso \code{\link{checkInputValidity}}, \code{\link{mainLongRaw}}
 #' @examples
 #' data("mainLongRaw", package="PhyloProfile")
 #' dataIn <- mainLongRaw
@@ -85,23 +85,14 @@ getFastaSeqs <- function(
 
         if (RCurl::url.exists(fastaURL)) {
             # load fasta file
-            faFile <- as.data.frame(read.table(fastaURL,
-                                                sep = "\t",
-                                                header = FALSE,
-                                                fill = TRUE,
-                                                stringsAsFactors = FALSE,
-                                                quote = ""))
-            faDf <- data.frame("seqID" = faFile$V1[grepl(">", faFile$V1)],
-                                "seq" = faFile$V1[!grepl(">", faFile$V1)],
-                                stringsAsFactors = FALSE)
+            faFile <- Biostrings::readAAStringSet(fastaURL)
+            
             # get sequences
             for (j in seq_len(nrow(dataIn))) {
                 seqID <- as.character(dataIn$orthoID[j])
                 groupID <- as.character(dataIn$geneID[j])
 
-                seq <- as.character(
-                    faDf$seq[faDf$seqID == paste0(">", seqID)]
-                )
+                seq <- as.character(faFile[[match(seqID, names(faFile))]])
                 fastaOut <- paste(paste0(">", seqID), seq, sep = "\n")
                 fastaOutDf <- rbind(fastaOutDf, as.data.frame(fastaOut))
             }
@@ -233,29 +224,29 @@ getFastaSeqs <- function(
                     specDf <-
                         as.data.frame(
                             stringr::str_split_fixed(
-                                strReverse(as.character(dataIn$orthoID)),
+                                reverse(as.character(dataIn$orthoID)),
                                 ":", 2
                             )
                         )
-                    specDf$specID <- strReverse(as.character(specDf$V2))
+                    specDf$specID <- reverse(as.character(specDf$V2))
                 } else if (idFormat == 2) {
                     specDf <-
                         as.data.frame(
                             stringr::str_split_fixed(
-                                strReverse(as.character(dataIn$orthoID)),
+                                reverse(as.character(dataIn$orthoID)),
                                 "@", 2
                             )
                         )
-                    specDf$specID <- strReverse(as.character(specDf$V2))
+                    specDf$specID <- reverse(as.character(specDf$V2))
                 } else if (idFormat == 3) {
                     specDf <-
                         as.data.frame(
                             stringr::str_split_fixed(
-                                strReverse(as.character(dataIn$orthoID)),
+                                reverse(as.character(dataIn$orthoID)),
                                 "|", 2
                             )
                         )
-                    specDf$specID <- strReverse(as.character(specDf$V2))
+                    specDf$specID <- reverse(as.character(specDf$V2))
                 }
 
                 # read all specices FASTA files at once
@@ -354,19 +345,4 @@ getFastaSeqs <- function(
     fastaOutDf <- fastaOutDf[!duplicated(fastaOutDf), ]
 
     return(fastaOutDf)
-}
-
-#' Reverse string
-#' @return a reversed string
-#' @param x input string
-#' @examples
-#' \dontrun{
-#' strReverse("abc")
-#' }
-
-strReverse <- function(x) {
-    vapply(
-        lapply(strsplit(x, NULL), rev), paste, collapse = "",
-        FUN.VALUE = character(1)
-    )
 }

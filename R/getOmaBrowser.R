@@ -213,7 +213,12 @@ createDomainDf <- function(domainID, orthoID, length, domainList) {
     
     for (i in seq_len(length(domainList))) {
         annoInfo <- strsplit(domainList[i], "#")[[1]]
-        domainDf[i,] <- c( domainID, orthoID, length, annoInfo)
+        domainDf[i,]$seedID <- domainID
+        domainDf[i,]$orthoID <- orthoID
+        domainDf[i,]$length <- as.numeric(length)
+        domainDf[i,]$feature <- annoInfo[1]
+        domainDf[i,]$start <- as.numeric(annoInfo[2])
+        domainDf[i,]$end <- as.numeric(annoInfo[3])
     }
     
     return(domainDf)
@@ -256,10 +261,6 @@ getAllDomainsOma <- function(finalOmaDf) {
         )
         omaDomainDf <- rbind(omaDomainDf, orthoDomainDf)
     }
-    
-    omaDomainDf$length <- as.numeric(omaDomainDf$length)
-    omaDomainDf$start <- as.numeric(omaDomainDf$start)
-    omaDomainDf$end <- as.numeric(omaDomainDf$end)
     return(omaDomainDf)
 }
 

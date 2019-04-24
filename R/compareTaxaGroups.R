@@ -134,7 +134,7 @@ getSignificantGenes <- function(
 
     # Check for each gene if it is significant
     for (gene in genes) {
-        print(paste("Analyzing the distribution of", gene, "..."))
+        message("Analyzing the distribution of ", gene, "...")
         # Processing the dataframes for in- and out-group
         selectedGeneDf <- subset(dataFull, dataFull$geneID == gene)
 
@@ -363,9 +363,6 @@ getPValues <- function(inGroup, outGroup, variable, gene, parameters){
 
     # get the p-values for both variables
     if (variable == "Both") {
-        var1 <- parameters$var1
-        var2 <- parameters$var2
-
         pvalues1 <- calculatePValue(
             inGroup$var1,
             outGroup$var1,
@@ -510,7 +507,7 @@ taxaSelectGC <- function(rankSelectGC, inputTaxonID){
         else dt <- getTaxonomyMatrix(TRUE, inputTaxonID)
 
         # load list of taxon name
-        nameList <- PhyloProfile::getNameList()
+        nameList <- getNameList()
 
         # get rank name from rankSelect
         if (substr(rankSelectGC,3,3) == "_") {

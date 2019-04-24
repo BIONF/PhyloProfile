@@ -4,7 +4,7 @@ author:
 -   name: Vinh Tran
     affiliation: Goethe University Frankfurt, Frankfurt am Main, Germany
     email: tran@bio.uni-frankfurt.de
-date: "Mar. 2019"
+date: "Apr. 2019"
 output:
     BiocStyle::html_document:
         toc_float: true
@@ -140,14 +140,14 @@ cluster genes according to the distance of their phylogenetic profiles.
 
 ```{r, fig.show='hold', dev='CairoPNG'}
 ### An example for plotting the clustered profiles tree.
-### See ?PhyloProfile::getDendrogram for more details.
+### See ?getDendrogram for more details.
 
 #' Load built-in data
 data("fullProcessedProfileLarge", package="PhyloProfile")
 data <- fullProcessedProfileLarge
 
 #' Calculate distance matrix
-#' Check ?PhyloProfile::getDistanceMatrix
+#' Check ?getDistanceMatrix
 profileType <- "binary"
 profiles <- getDataClustering(
     data, profileType, var1AggregateBy, var2AggregateBy)
@@ -169,7 +169,7 @@ upon filtering of the data.
 
 ```{r}
 ### An example for calculating gene age for the built-in data set.
-### See ?PhyloProfile::estimateGeneAge for more details.
+### See ?estimateGeneAge for more details.
 
 #' Load built-in data
 data("fullProcessedProfile", package="PhyloProfile")
@@ -199,7 +199,7 @@ their core genes.
 
 ```{r}
 ### An example for calculating core gene set for the built-in data set.
-### See ?PhyloProfile::getCoreGene for more details.
+### See ?getCoreGene for more details.
 
 #' Load built-in data
 data("fullProcessedProfile", package="PhyloProfile")
@@ -238,7 +238,7 @@ level (*0.05 by default*). Genes that have a significantly different
 distribution will be shown in the candidate gene list for further analysis.
 
 ```{r}
-?PhyloProfile::getSignificantGenes
+?getSignificantGenes
 ```
 
 ### Distribution analysis
@@ -250,13 +250,13 @@ layers.
 
 ```{r, fig.show='hold', dev='CairoPNG'}
 ### An example for plotting the distribution of the 1st additional variable.
-### See ?PhyloProfile::createVarDistPlot for more details.
+### See ?createVarDistPlot for more details.
 
 #' Load built-in data
 data("mainLongRaw", package="PhyloProfile")
 
 #' Process data for distribution analysis
-#' See ?PhyloProfile::createVariableDistributionData
+#' See ?createVariableDistributionData
 data <- createVariableDistributionData(
     mainLongRaw, 0, 1, 0.5, 1
 )
@@ -290,7 +290,7 @@ required information for the phylogenetic profile analysis.
 ```{r}
 #' Load built-in data
 #' If input data is in other format (e.g. fasta, OrthoXML, or wide matrix),
-#' see ?PhyloProfile::createLongMatrix
+#' see ?createLongMatrix
 rawInput <- system.file(
     "extdata", "test.main.long", package = "PhyloProfile", mustWork = TRUE
 )
@@ -388,7 +388,7 @@ heatmapPlotting(plotDf, plotParameter)
 taxonHighlight <- "Mammalia"
 rankName <- "class"
 geneHighlight <- "OG_1019"
-#' Then use ?PhyloProfile::highlightProfilePlot function
+#' Then use ?highlightProfilePlot function
 # highlightProfilePlot(
 #    plotDf, plotParameter, taxonHighlight, rankName, geneHighlight
 # )
@@ -428,8 +428,8 @@ inputDf <- mainLongRaw
 rankName <- "phylum"
 
 #' Get taxonomy IDs and names for the input data
-inputTaxonID <- PhyloProfile::getInputTaxaID(inputDf)
-inputTaxonName <- PhyloProfile::getInputTaxaName(rankName, inputTaxonID)
+inputTaxonID <- getInputTaxaID(inputDf)
+inputTaxonName <- getInputTaxaName(rankName, inputTaxonID)
 
 head(inputTaxonName)
 ```
@@ -441,8 +441,8 @@ head(inputTaxonName)
 data("mainLongRaw", package="PhyloProfile")
 inputDf <- mainLongRaw
 rankName <- "phylum"
-inputTaxonID <- PhyloProfile::getInputTaxaID(inputDf)
-inputTaxonName <- PhyloProfile::getInputTaxaName(rankName, inputTaxonID)
+inputTaxonID <- getInputTaxaID(inputDf)
+inputTaxonName <- getInputTaxaName(rankName, inputTaxonID)
 
 #' Input a user-defined taxonomy tree to replace NCBI taxonomy tree (optional)
 inputTaxaTree <- NULL

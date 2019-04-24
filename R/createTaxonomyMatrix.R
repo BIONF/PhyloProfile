@@ -234,12 +234,10 @@ getIDsRank <- function(inputTaxa, currentNCBIinfo){
 
 rankIndexing <- function(rankListFile){
     ### input is a dataframe, where each row is a rank list of a taxon
-    rankList <- as.data.frame(
-        read.table(
-            rankListFile,
-            sep = '\t', header = FALSE, fill = TRUE,
-            stringsAsFactors = TRUE, na.strings = c("","NA")
-        )
+    rankList <- read.table(
+        rankListFile,
+        sep = '\t', header = FALSE, fill = TRUE,
+        stringsAsFactors = TRUE, na.strings = c("","NA")
     )
 
     ### get all available ranks from input rankList
@@ -312,14 +310,14 @@ rankIndexing <- function(rankListFile){
 
     ### output a list of indexed ranks
     index2RankDf <- data.frame(
-        "index" = character(), "rank" = character(), stringsAsFactors = FALSE
+        "index" = numeric(), "rank" = character(), stringsAsFactors = FALSE
     )
 
     for (i in seq_len(length(allInputRank))) {
-        index2RankDf[i,] = c(rank2Index[[allInputRank[i]]], allInputRank[i])
+        index2RankDf[i,]$index <- rank2Index[[allInputRank[i]]]
+        index2RankDf[i,]$rank <- allInputRank[i]
     }
 
-    index2RankDf$index <- as.numeric(index2RankDf$index)
     index2RankDf <- index2RankDf[with(index2RankDf, order(index2RankDf$index)),]
 
     return(index2RankDf)
@@ -353,14 +351,12 @@ taxonomyTableCreator <- function(idListFile, rankListFile){
 
     ### load idList file
     ncol <- max(count.fields(rankListFile, sep = '\t'))
-    idList <- as.data.frame(
-        read.table(
-            idListFile,
-            sep = '\t', header = FALSE, check.names = FALSE, comment.char = "",
-            fill = TRUE,
-            stringsAsFactors = TRUE, na.strings = c("","NA"),
-            col.names = paste0('X', seq_len(ncol))
-        )
+    idList <- read.table(
+        idListFile,
+        sep = '\t', header = FALSE, check.names = FALSE, comment.char = "",
+        fill = TRUE,
+        stringsAsFactors = TRUE, na.strings = c("","NA"),
+        col.names = paste0('X', seq_len(ncol))
     )
 
     colnames(idList)[1] <- "tip"

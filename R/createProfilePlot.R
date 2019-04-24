@@ -56,7 +56,7 @@ dataCustomizedPlot <- function(dataHeat, selectedTaxa, selectedSeq){
     geneID <- NULL
     supertaxonMod <- NULL
     paralogNew <- NULL
-    
+
     # process data
     dataHeat$supertaxonMod <- {
         substr(
@@ -76,14 +76,14 @@ dataCustomizedPlot <- function(dataHeat, selectedTaxa, selectedSeq){
                             geneID %in% selectedSeq
                             & supertaxonMod %in% selectedTaxa)
     }
-    
+
     # reduce number of inparalogs based on filtered dataHeat
     dataHeatTb <- data.table(na.omit(dataHeat))
     dataHeatTb[, paralogNew := .N, by = c("geneID", "supertaxon")]
     dataHeatTb <- data.frame(dataHeatTb[, c("geneID",
                                             "supertaxon",
                                             "paralogNew")])
-    
+
     dataHeat <- merge(
         dataHeat, dataHeatTb,
         by = c("geneID", "supertaxon"),
@@ -96,7 +96,7 @@ dataCustomizedPlot <- function(dataHeat, selectedTaxa, selectedSeq){
     dataHeat$presSpec[dataHeat$presSpec == 0] <- NA
     dataHeat$paralog[dataHeat$presSpec < 1] <- NA
     dataHeat$paralog[dataHeat$paralog == 1] <- NA
-    
+
     return(dataHeat)
 }
 
@@ -179,7 +179,6 @@ heatmapPlotting <- function(data, plotParameter){
     colorByGroup <- plotParameter$colorByGroup
 
     # rescale numbers of paralogs
-    data$paralog <- as.numeric(data$paralog)
     if (length(unique(na.omit(data$paralog))) > 0) {
         maxParalog <- max(na.omit(data$paralog))
         data$paralogSize <- (data$paralog / maxParalog) * 3
@@ -413,11 +412,7 @@ highlightProfilePlot <- function(
             )
         }
 
-        taxaList <- as.data.frame(read.table(
-            nameReducedFile,
-            sep = "\t",
-            header = TRUE
-        ))
+        taxaList <- read.table(nameReducedFile, sep = "\t", header = TRUE)
 
         taxonHighlightID <- {
             taxaList$ncbiID[

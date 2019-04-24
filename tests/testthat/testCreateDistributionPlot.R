@@ -2,7 +2,7 @@ context("test creating data and plots for distritbution analysis function")
 
 test_that("test distritbution analyze functions", {
     # raw input
-    inputData <- PhyloProfile::createLongMatrix("mainWideTest.txt")
+    inputData <- createLongMatrix("mainWideTest.txt")
 
     # selected rank name
     rankName <- "species"
@@ -30,22 +30,21 @@ test_that("test distritbution analyze functions", {
     expect_true(nrow(distributionData) == 6)
 
     # distribution data for 2 additional variables of a subset of taxa
-    inputTaxonID <- PhyloProfile::getInputTaxaID(inputData)
-    inputTaxonName <- PhyloProfile::getInputTaxaName(rankName,
-                                                         inputTaxonID)
+    inputTaxonID <- getInputTaxaID(inputData)
+    inputTaxonName <- getInputTaxaName(rankName, inputTaxonID)
     refTaxon <- inputTaxonName$fullName[1]
     taxaTree <- NULL
 
-    sortedTaxa <- PhyloProfile::sortInputTaxa(inputTaxonID,
-                                                 inputTaxonName,
-                                                 rankName,
-                                                 refTaxon,
-                                                 taxaTree)
+    sortedTaxa <- sortInputTaxa(inputTaxonID,
+                                inputTaxonName,
+                                rankName,
+                                refTaxon,
+                                taxaTree)
 
-    fullProfileData <- PhyloProfile::parseInfoProfile(inputData,
-                                                          sortedTaxa,
-                                                          "max",
-                                                          "mean")
+    fullProfileData <- parseInfoProfile(inputData,
+                                        sortedTaxa,
+                                        "max",
+                                        "mean")
     selectedGenes <- c("OG_1017", "OG_1019")
     selectedTaxa <- c("Arabidopsis thaliana", "Encephalitozoon intestinalis")
     subsetDistributionData <- createVariableDistributionDataSubset(

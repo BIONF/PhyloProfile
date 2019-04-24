@@ -192,7 +192,7 @@ shinyServer(function(input, output, session) {
     output$inputCheck.ui <- renderUI({
         filein <- input$mainInput
         if (is.null(filein)) return()
-        inputType <- PhyloProfile::checkInputValidity(filein$datapath)
+        inputType <- checkInputValidity(filein$datapath)
 
         if (inputType[1] == "noGeneID") {
             updateButton(session, "do", disabled = TRUE)
@@ -324,7 +324,7 @@ shinyServer(function(input, output, session) {
     output$checkOmaInput <- reactive({
         filein <- input$mainInput
         if (is.null(filein)) return()
-        inputType <- PhyloProfile::checkInputValidity(filein$datapath)
+        inputType <- checkInputValidity(filein$datapath)
         inputType == "oma"
     })
     outputOptions(output, "checkOmaInput", suspendWhenHidden = FALSE)
@@ -448,11 +448,13 @@ shinyServer(function(input, output, session) {
         req(input$mainInput)
 
         filein <- input$inputTree
-        tree <- read.table(file = filein$datapath,
-                           header = FALSE,
-                           check.names = FALSE,
-                           comment.char = "",
-                           fill = FALSE)
+        tree <- read.table(
+            file = filein$datapath,
+            header = FALSE,
+            check.names = FALSE,
+            comment.char = "",
+            fill = FALSE
+        )
 
         checkNewick <- checkNewick(tree, inputTaxonID())
         if (checkNewick == 0) {
@@ -1029,11 +1031,13 @@ shinyServer(function(input, output, session) {
     newTaxaFromFile <- reactive({
         filein <- input$newTaxaFile
         if (is.null(filein)) return()
-        tmpDf <- as.data.frame(read.table(file = filein$datapath,
-                                           sep = "\t",
-                                           header = TRUE,
-                                           check.names = FALSE,
-                                           comment.char = ""))
+        tmpDf <- read.table(
+            file = filein$datapath,
+            sep = "\t",
+            header = TRUE,
+            check.names = FALSE,
+            comment.char = ""
+        )
         if (ncol(tmpDf) != 4) {
             createAlert(session, "wrongNewTaxa", "wrongNewTaxaMsg",
                         content = "Wrong format. Please check your file!",
@@ -1083,18 +1087,20 @@ shinyServer(function(input, output, session) {
 
         filein <- input$mainInput
         if (is.null(filein)) return()
-        inputType <- PhyloProfile::checkInputValidity(filein$datapath)
+        inputType <- checkInputValidity(filein$datapath)
 
         if (inputType == "xml" |
             inputType == "long" |
             inputType == "wide" |
             inputType == "fasta" |
             inputType == "oma") {
-            inputDf <- as.data.frame(read.table(file = filein$datapath,
-                                                sep = "\t",
-                                                header = TRUE,
-                                                check.names = FALSE,
-                                                comment.char = ""))
+            inputDf <- read.table(
+                file = filein$datapath,
+                sep = "\t",
+                header = TRUE,
+                check.names = FALSE,
+                comment.char = ""
+            )
 
             if (v1$parse == FALSE) return()
             else {
@@ -1170,40 +1176,39 @@ shinyServer(function(input, output, session) {
                     # open existing files
                     # (idList, rankList and taxonNamesReduced.txt)
                     ncol <- max(count.fields("data/rankList.txt", sep = "\t"))
-                    oldIDList <-
-                        as.data.frame(read.table(
-                            "data/idList.txt",
-                            sep = "\t",
-                            header = FALSE,
-                            check.names = FALSE,
-                            comment.char = "",
-                            fill = TRUE,
-                            stringsAsFactors = TRUE,
-                            na.strings = c("", "NA"),
-                            col.names = paste0("X", seq_len(ncol))
-                        ))
+                    oldIDList <- read.table(
+                        "data/idList.txt",
+                        sep = "\t",
+                        header = FALSE,
+                        check.names = FALSE,
+                        comment.char = "",
+                        fill = TRUE,
+                        stringsAsFactors = TRUE,
+                        na.strings = c("", "NA"),
+                        col.names = paste0("X", seq_len(ncol))
+                    )
 
-                    oldRankList <-
-                        as.data.frame(read.table(
-                            "data/rankList.txt",
-                            sep = "\t",
-                            header = FALSE,
-                            check.names = FALSE,
-                            comment.char = "",
-                            fill = TRUE,
-                            stringsAsFactors = TRUE,
-                            na.strings = c("", "NA"),
-                            col.names = paste0("X", seq_len(ncol))
-                        ))
+                    oldRankList <- read.table(
+                        "data/rankList.txt",
+                        sep = "\t",
+                        header = FALSE,
+                        check.names = FALSE,
+                        comment.char = "",
+                        fill = TRUE,
+                        stringsAsFactors = TRUE,
+                        na.strings = c("", "NA"),
+                        col.names = paste0("X", seq_len(ncol))
+                    )
 
-                    oldNameList <-
-                        as.data.frame(read.table("data/taxonNamesReduced.txt",
-                                                 sep = "\t",
-                                                 header = TRUE,
-                                                 check.names = FALSE,
-                                                 comment.char = "",
-                                                 fill = TRUE,
-                                                 stringsAsFactors = TRUE))
+                    oldNameList <- read.table(
+                        "data/taxonNamesReduced.txt",
+                        sep = "\t",
+                        header = TRUE,
+                        check.names = FALSE,
+                        comment.char = "",
+                        fill = TRUE,
+                        stringsAsFactors = TRUE
+                    )
 
 
                     # and append new info into those files
@@ -1356,15 +1361,17 @@ shinyServer(function(input, output, session) {
     finalOmaDf <- reactive({
         filein <- input$mainInput
         if (is.null(filein)) return()
-        inputType <- PhyloProfile::checkInputValidity(filein$datapath)
+        inputType <- checkInputValidity(filein$datapath)
 
         if (inputType == "oma") {
             if (input$getDataOma[1] == 0) return()
-            omaIDs <- as.data.frame(read.table(file = filein$datapath,
-                                                sep = "\t",
-                                                header = FALSE,
-                                                check.names = FALSE,
-                                                comment.char = ""))
+            omaIDs <- read.table(
+                file = filein$datapath,
+                sep = "\t",
+                header = FALSE,
+                check.names = FALSE,
+                comment.char = ""
+            )
             omaIDs[,1] <- as.character(omaIDs[,1])
             finalOmaDf <- getOmaBrowser(omaIDs[,1],
                                             input$selectedOmaType)
@@ -1383,7 +1390,7 @@ shinyServer(function(input, output, session) {
         } else {
             filein <- input$mainInput
             if (is.null(filein)) return()
-            inputType <- PhyloProfile::checkInputValidity(filein$datapath)
+            inputType <- checkInputValidity(filein$datapath)
             if (inputType == "oma") {
                 if (input$getDataOma[1] == 0) return()
                 longDataframe <- createProfileFromOma(finalOmaDf())
@@ -1401,7 +1408,7 @@ shinyServer(function(input, output, session) {
     getDomainInformation <- reactive({
         if (input$demoData == "none") {
             filein <- input$mainInput
-            inputType <- PhyloProfile::checkInputValidity(filein$datapath)
+            inputType <- checkInputValidity(filein$datapath)
         } else {
             inputType <- "demo"
         }
@@ -1409,11 +1416,11 @@ shinyServer(function(input, output, session) {
         if (inputType == "oma") {
             domainDf <- getAllDomainsOma(finalOmaDf())
         } else {
-            print("Getting the domains...")
+            message("Getting the domains...")
             mainInput <- getMainInput()
 
             if (inputType == "demo") {
-                domainDf <- PhyloProfile::parseDomainInput(
+                domainDf <- parseDomainInput(
                     unlist(mainInput$geneID),
                     input$demoData,
                     "demo"
@@ -1421,7 +1428,7 @@ shinyServer(function(input, output, session) {
             } else {
                 if (input$annoLocation == "from file") {
                     inputDomain <- input$fileDomainInput
-                    domainDf <- PhyloProfile::parseDomainInput(
+                    domainDf <- parseDomainInput(
                         NULL,
                         inputDomain$datapath,
                         "file"
@@ -1434,7 +1441,7 @@ shinyServer(function(input, output, session) {
                     } else if (input$tabs == "Customized profile") {
                         info <- selectedpointInfo()
                     }
-                    domainDf <- PhyloProfile::parseDomainInput(
+                    domainDf <- parseDomainInput(
                         info[1],
                         input$domainPath,
                         "folder"
@@ -1522,8 +1529,7 @@ shinyServer(function(input, output, session) {
         if (input$geneListSelected == "from file") {
             listIn <- input$list
             if (!is.null(listIn)) {
-                list <- as.data.frame(read.table(file = listIn$datapath,
-                                                 header = FALSE))
+                list <- read.table(file = listIn$datapath, header = FALSE)
                 listGeneOri <- list$V1
                 if (startIndex <= length(listGeneOri)) {
                     listGene <-
@@ -1630,13 +1636,13 @@ shinyServer(function(input, output, session) {
             # get gene category
             geneCategoryFile <- input$geneCategory
             if (!is.null(geneCategoryFile)) {
-                inputCatDt <- as.data.frame(
-                    read.table(file = geneCategoryFile$datapath,
-                               sep = "\t",
-                               header = TRUE,
-                               check.names = FALSE,
-                               comment.char = "",
-                               fill = TRUE)
+                inputCatDt <-  read.table(
+                    file = geneCategoryFile$datapath,
+                    sep = "\t",
+                    header = TRUE,
+                    check.names = FALSE,
+                    comment.char = "",
+                    fill = TRUE
                 )
                 colnames(inputCatDt) <- c("geneID","group")
             } else {
@@ -1694,8 +1700,7 @@ shinyServer(function(input, output, session) {
 
         listIn <- input$list
         if (!is.null(listIn)) {
-            list <- as.data.frame(read.table(file = listIn$datapath,
-                                             header = FALSE))
+            list <- read.table(file = listIn$datapath, header = FALSE)
             out <- as.list(list$V1)
         }
 
@@ -1856,9 +1861,10 @@ shinyServer(function(input, output, session) {
                 out <- as.list(geneListGC())
             } else {
                 if (!is.null(fileCustom)) {
-                    customList <- as.data.frame(
-                        read.table(file = fileCustom$datapath, header = FALSE)
+                    customList <- read.table(
+                        file = fileCustom$datapath, header = FALSE
                     )
+                    
                     customList$V1 <- as.factor(customList$V1)
                     out <- as.list(levels(customList$V1))
                 }
@@ -2161,7 +2167,7 @@ shinyServer(function(input, output, session) {
 
             if (input$demoData == "none") {
                 filein <- input$mainInput
-                inputType <- PhyloProfile::checkInputValidity(
+                inputType <- checkInputValidity(
                     filein$datapath
                 )
             } else {
@@ -2220,7 +2226,7 @@ shinyServer(function(input, output, session) {
                                      disabled = FALSE)
                     }
                 } else {
-                    domainDf <- PhyloProfile::parseDomainInput(
+                    domainDf <- parseDomainInput(
                         info[1],
                         input$domainPath,
                         "folder"
@@ -2285,7 +2291,7 @@ shinyServer(function(input, output, session) {
     mainFastaDownload <- reactive({
         if (input$demoData == "none") {
             filein <- input$mainInput
-            inputType <- PhyloProfile::checkInputValidity(filein$datapath)
+            inputType <- checkInputValidity(filein$datapath)
         } else {
             inputType <- "demo"
         }
@@ -2329,7 +2335,7 @@ shinyServer(function(input, output, session) {
     customizedFastaDownload <- reactive({
         if (input$demoData == "none") {
             filein <- input$mainInput
-            inputType <- PhyloProfile::checkInputValidity(filein$datapath)
+            inputType <- checkInputValidity(filein$datapath)
         } else {
             inputType <- "demo"
         }
@@ -2855,8 +2861,7 @@ shinyServer(function(input, output, session) {
                             multiple = TRUE,
                             selectize = FALSE)
             } else {
-                listGC <- as.data.frame(read.table(file = fileGC$datapath,
-                                                    header = FALSE))
+                listGC <- read.table(file = fileGC$datapath, header = FALSE)
                 listGC$V1 <- as.factor(listGC$V1)
                 out <- as.list(levels(listGC$V1))
                 selectInput("listSelectedGenesGC", "Select sequence(s):",
@@ -2910,7 +2915,7 @@ shinyServer(function(input, output, session) {
                 higherRank <- ranks[pos + 1] # take the next higher rank
                 higherRankName <- as.character(higherRank[1])
 
-                nameList <- PhyloProfile::getNameList() # get the taxon names
+                nameList <- getNameList() # get the taxon names
                 dt <- getTaxonomyMatrix(FALSE, NULL) # get the taxa
 
                 #' get the info for the reference protein from the namelist

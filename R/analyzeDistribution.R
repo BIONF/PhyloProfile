@@ -10,8 +10,7 @@
 #' data("mainLongRaw", package="PhyloProfile")
 #' createPercentageDistributionData(mainLongRaw, "class")
 
-createPercentageDistributionData <- function(inputData,
-                                                rankName) {
+createPercentageDistributionData <- function(inputData, rankName) {
     mdData <- inputData
     if (ncol(mdData) < 4) {
         colnames(mdData) <- c("geneID", "ncbiID", "orthoID")
@@ -27,14 +26,14 @@ createPercentageDistributionData <- function(inputData,
     colnames(mdData)[ncol(mdData)] <- "paralog"
 
     # (3) GET SORTED TAXONOMY LIST (3)
-    inputTaxonID <- PhyloProfile::getInputTaxaID(inputData)
-    inputTaxonName <- PhyloProfile::getInputTaxaName(
+    inputTaxonID <- getInputTaxaID(inputData)
+    inputTaxonName <- getInputTaxaName(
         rankName, inputTaxonID
     )
     refTaxon <- inputTaxonName$fullName[1]
     taxaTree <- NULL
 
-    taxaList <- PhyloProfile::sortInputTaxa(
+    taxaList <- sortInputTaxa(
         inputTaxonID, inputTaxonName, rankName, refTaxon, taxaTree
     )
 
@@ -43,14 +42,7 @@ createPercentageDistributionData <- function(inputData,
 
     # merge mdData, mdDatavar2 and taxaList to get taxonomy info
     taxaMdData <- merge(mdData, taxaList, by = "ncbiID")
-    if ("var1" %in% colnames(taxaMdData)) {
-        taxaMdData$var1 <-
-            suppressWarnings(as.numeric(as.character(taxaMdData$var1)))
-    }
-    if ("var2" %in% colnames(taxaMdData)) {
-        taxaMdData$var2 <-
-            suppressWarnings(as.numeric(as.character(taxaMdData$var2)))
-    }
+    
     # calculate % present species
     finalPresSpecDt <- calcPresSpec(taxaMdData, taxaCount)
 
@@ -115,15 +107,13 @@ createVariableDistributionData <- function(
         }
     }
 
-    # convert factor into numeric for "var1" & "var2" column
+    # Filter based on variable cutoffs
     if ("var1" %in% colnames(splitDt)) {
-        splitDt$var1 <- suppressWarnings(as.numeric(as.character(splitDt$var1)))
         # filter splitDt based on selected var1 cutoff
         splitDt <- splitDt[splitDt$var1 >= var1CutoffMin
                             & splitDt$var1 <= var1CutoffMax, ]
     }
     if ("var2" %in% colnames(splitDt)) {
-        splitDt$var2 <- suppressWarnings(as.numeric(as.character(splitDt$var2)))
         # filter splitDt based on selected var2 cutoff
         splitDt <- splitDt[splitDt$var2 >= var2CutoffMin
                             & splitDt$var2 <= var2CutoffMax, ]

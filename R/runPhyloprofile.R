@@ -1,6 +1,6 @@
-#' @title Run PhyloProfile app
+#' Run PhyloProfile app
 #' @export
-#' @return shiny application of PhyloProfile
+#' @return shiny application - GUI version of PhyloProfile
 #' @import bioDist
 #' @import Cairo
 #' @importFrom colourpicker colourInput
@@ -17,12 +17,12 @@
 #' @import shinycssloaders
 #' @import tidyr
 #' @import knitr
-#' @rawNamespace import(rmarkdown, except = c(pdf_document, md_document, 
+#' @rawNamespace import(rmarkdown, except = c(pdf_document, md_document,
 #'     html_document))
 #' @import BiocStyle
 #' @rawNamespace import(shinyjs, except = colourInput)
 #' @examples
-#' ?PhyloProfile::runPhyloProfile
+#' ?runPhyloProfile
 #' \dontrun{
 #' runPhyloProfile()
 #' }

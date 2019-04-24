@@ -31,12 +31,12 @@ getNameList <- function() {
         )
     }
 
-    nameList <- as.data.frame(read.table(
+    nameList <- read.table(
         nameReducedFile,
         sep = "\t",
         header = TRUE,
         fill = TRUE
-    ))
+    )
     nameList$fullName <- as.character(nameList$fullName)
     nameList$rank <- as.character(nameList$rank)
     nameList <- nameList[!duplicated(nameList), ]
@@ -84,12 +84,12 @@ getTaxonomyMatrix <- function(subsetTaxaCheck, taxonIDs){
         )
     }
 
-    dt <- as.data.frame(read.table(
+    dt <- read.table(
         taxonomyMatrixFile,
         sep = "\t",
         header = TRUE,
         stringsAsFactors = TRUE
-    ))
+    )
     if (subsetTaxaCheck) {
         dt <- dt[dt$abbrName  %in% taxonIDs, ]
     }
@@ -187,21 +187,15 @@ sortInputTaxa <- function(taxonIDs,
     # get selected supertaxon ID(s)
     rankNameTMP <- taxonNames$rank[taxonNames$fullName == refTaxon]
     if (rankName == "strain") {
-        superID <-
-            as.numeric(
-                fullnameList$ncbiID[
-                    fullnameList$fullName == refTaxon
-                    & fullnameList$rank == "norank"
-                ]
-            )
+        superID <- fullnameList$ncbiID[
+            fullnameList$fullName == refTaxon
+            & fullnameList$rank == "norank"
+            ]
     } else {
-        superID <-
-            as.numeric(
-                fullnameList$ncbiID[
-                    fullnameList$fullName == refTaxon
-                    & fullnameList$rank == rankNameTMP[1]
-                ]
-            )
+        superID <- fullnameList$ncbiID[
+            fullnameList$fullName == refTaxon 
+            & fullnameList$rank == rankNameTMP[1]
+            ]
     }
 
     # get full taxonomy data
@@ -297,8 +291,7 @@ sortInputTaxa <- function(taxonIDs,
         "rank",
         "category"
     )
-
-    sortedOut$taxonID <- as.numeric(sortedOut$taxonID)
+    
     sortedOut$ncbiID <- as.factor(sortedOut$ncbiID)
     sortedOut$supertaxon <- as.factor(sortedOut$supertaxon)
     sortedOut$category <- as.factor(sortedOut$category)
@@ -441,10 +434,6 @@ parseInfoProfile <- function(
 
     # merge mdData, mdDataVar2 and taxaList to get taxonomy info
     taxaMdData <- merge(mdData, taxaList, by = "ncbiID")
-    taxaMdData$var1 <-
-        suppressWarnings(as.numeric(as.character(taxaMdData$var1)))
-    taxaMdData$var2 <-
-        suppressWarnings(as.numeric(as.character(taxaMdData$var2)))
 
     # (2) calculate PERCENTAGE of PRESENT SPECIES
     finalPresSpecDt <- calcPresSpec(taxaMdData, taxaCount)
@@ -907,7 +896,7 @@ fromInputToProfile <- function(
     catDt
 ) {
     # convert raw input into long format
-    inputDf <- PhyloProfile::createLongMatrix(rawInput)
+    inputDf <- createLongMatrix(rawInput)
 
     # get input taxon IDs and names
     inputTaxonID <- getInputTaxaID(inputDf)

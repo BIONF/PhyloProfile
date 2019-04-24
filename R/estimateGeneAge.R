@@ -43,14 +43,11 @@ estimateGeneAge <- function(
     )
 
     # get selected (super)taxon ID
-    taxaList <- PhyloProfile::getNameList()
-    superID <- {
-        as.numeric(
-            taxaList[
-                taxaList$fullName == refTaxon & taxaList$rank == rankName,
-            ]$ncbiID
-        )
-    }
+    taxaList <- getNameList()
+    superID <- 
+        taxaList[
+            taxaList$fullName == refTaxon & taxaList$rank == rankName,
+        ]$ncbiID
 
     # full non-duplicated taxonomy data
     Dt <- getTaxonomyMatrix(FALSE, NULL)

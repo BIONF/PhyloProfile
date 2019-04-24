@@ -17,14 +17,14 @@
 #' checkInputValidity(filein)
 
 checkInputValidity <- function(filein) {
-    inputDt <- as.data.frame(read.table(
+    inputDt <- read.table(
         file = filein,
         sep = "\t",
         header = FALSE,
         check.names = FALSE,
         comment.char = "",
         fill = TRUE
-    ))
+    )
 
     if (is.na(inputDt[1, ncol(inputDt)])) {
         return("moreCol")
@@ -188,18 +188,16 @@ fastaParser <- function(inputFile){
     fastaFile <- Biostrings::readAAStringSet(inputFile)
     seqID <- names(fastaFile)
     faDf <- data.frame(seqID)
-    faDf
+
     finalDf <- data.frame(
         do.call('rbind', strsplit(as.character(faDf$seqID),'|',fixed=TRUE))
     )
     
     # rename columns
     colnames(finalDf) <- c("geneID", "ncbiID", "orthoID")
-    for (i in seq_len(ncol(finalDf))) {
-        if (i > 3) {
-            colnames(finalDf)[i] <- paste0("value_", i - 3)
-        }
-    }
+    
+    cidx <- seq_len(ncol(finalDf) - 3)
+    colnames(finalDf)[cidx + 3] <- paste0("value_", cidx)
     
     return(finalDf)
 }
@@ -217,13 +215,13 @@ fastaParser <- function(inputFile){
 #' }
 
 wideToLong <- function(inputFile){
-    wideDataframe <- as.data.frame(read.table(
+    wideDataframe <- read.table(
         file = inputFile,
         sep = "\t",
         header = TRUE,
         check.names = FALSE,
         comment.char = ""
-    ))
+    )
     longDataframe <- data.frame()
     rowNrLong <- 0
     ncbiIDs <- colnames(wideDataframe)
@@ -302,13 +300,14 @@ createLongMatrix <- function(inputFile){
         }
         # LONG
         else if (inputType == "long") {
-            longDataframe <- as.data.frame(read.table(
+            longDataframe <- read.table(
                 file = filein,
                 sep = "\t",
                 header = TRUE,
                 check.names = FALSE,
-                comment.char = ""
-            ))
+                comment.char = "",
+                stringsAsFactors = FALSE
+            )
         }
         # WIDE
         else if (inputType == "wide") {
@@ -319,9 +318,14 @@ createLongMatrix <- function(inputFile){
         }
     }
 
-    # make sure all columns have the same type (factor)
-    for (i in seq_len(ncol(longDataframe))) {
+    # convert geneID, ncbiID and orthoID into factor and var1, var2 into numeric
+    for (i in seq_len(3)) {
         longDataframe[, i] <- as.factor(longDataframe[, i])
+    }
+    if (ncol(longDataframe) > 3) {
+        for (j in seq(4, ncol(longDataframe))){
+            longDataframe[,j] <- suppressWarnings(as.numeric(longDataframe[,j]))
+        }
     }
     
     # remove duplicated lines

@@ -39,12 +39,14 @@ parseDomainInput <- function(seed, inputFile, type) {
     # parse domain file
     # for demo data
     if (type == "demo") {
-        domainDf <- as.data.frame(read.csv(file,
-                                            sep = "\t",
-                                            header = FALSE,
-                                            comment.char = "",
-                                            stringsAsFactors = FALSE,
-                                            quote = ""))
+        domainDf <- read.csv(
+            file,
+            sep = "\t",
+            header = FALSE,
+            comment.char = "",
+            stringsAsFactors = FALSE,
+            quote = ""
+        )
         domains <- rbind(domains, domainDf)
 
         if (ncol(domains) == 5) {
@@ -66,12 +68,9 @@ parseDomainInput <- function(seed, inputFile, type) {
         if (file != FALSE) {
             exeptions <- c("noFileInput", "noSelectHit", "noFileInFolder")
             if (!(file %in% exeptions)) {
-                domainDf <- as.data.frame(read.table(
-                    file,
-                    sep = "\t",
-                    header = FALSE,
-                    comment.char = ""
-                ))
+                domainDf <- read.table(
+                    file, sep = "\t", header = FALSE, comment.char = ""
+                )
                 domains <- rbind(domains, domainDf)
             }
         }
@@ -121,20 +120,16 @@ parseDomainInput <- function(seed, inputFile, type) {
 getDomainOnline <- function(demoData) {
     if (demoData == "lca-micros") {
         fileDomain <- {
-            suppressWarnings(
-                paste0(
-                    "https://github.com/BIONF/phyloprofile-data/blob/master/",
-                    "demo/domainFiles/concatenate.domains?raw=true"
-                )
+            paste0(
+                "https://github.com/BIONF/phyloprofile-data/blob/master/",
+                "demo/domainFiles/concatenate.domains?raw=true"
             )
         }
     } else {
         fileDomain <- {
-            suppressWarnings(
-                paste0(
-                    "https://raw.githubusercontent.com/BIONF/phyloprofile-data",
-                    "/master/expTestData/ampk-tor/ampk-tor.domains_F?raw=true"
-                )
+            paste0(
+                "https://raw.githubusercontent.com/BIONF/phyloprofile-data",
+                "/master/expTestData/ampk-tor/ampk-tor.domains_F?raw=true"
             )
         }
     }
