@@ -163,9 +163,9 @@ getDomainFile <- function(inputFile) {
 #' @examples
 #' \dontrun{
 #' domainPath <- paste0(
-#'     path.package("PhyloProfile", quiet = FALSE), "extdata/domainFiles"
+#'     path.package("PhyloProfile", quiet = FALSE), "/extdata/domainFiles"
 #' )
-#' getDomainOnline("OG_1009", domainPath)
+#' getDomainFolder("OG_1009", domainPath)
 #' }
 
 getDomainFolder <- function(seed, domainPath){
@@ -174,22 +174,15 @@ getDomainFolder <- function(seed, domainPath){
     } else {
         # check file extension
         allExtension <- c("txt", "csv", "list", "domains", "architecture")
-        flag <- 0
-
-        for (i in seq_len(length(allExtension))) {
-            fileDomain <- paste0(
-                domainPath, "/", seed, ".", allExtension[i]
-            )
-            if (file.exists(fileDomain) == TRUE) {
-                flag <- 1
-                break()
-            }
-        }
-
-        if (flag == 0) {
+        fileDomain <- paste0(domainPath, "/", seed, ".", allExtension)
+        
+        checkExistance <- lapply(fileDomain, function(x) file.exists(x))
+        fileDomain <- fileDomain[match(TRUE, checkExistance)]
+        
+        if (is.na(fileDomain)) {
             fileDomain <- "noFileInFolder"
         }
     }
-
+    
     return(fileDomain)
 }

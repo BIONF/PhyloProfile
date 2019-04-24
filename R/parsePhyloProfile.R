@@ -181,9 +181,9 @@ sortInputTaxa <- function(taxonIDs,
     ncbiID <- NULL
     fullName <- NULL
     abbrName <- NULL
-
+    
     fullnameList <- getNameList()
-
+    
     # get selected supertaxon ID(s)
     rankNameTMP <- taxonNames$rank[taxonNames$fullName == refTaxon]
     if (rankName == "strain") {
@@ -197,13 +197,13 @@ sortInputTaxa <- function(taxonIDs,
             & fullnameList$rank == rankNameTMP[1]
             ]
     }
-
+    
     # get full taxonomy data
     Dt <- getTaxonomyMatrix(FALSE, NULL)
-
+    
     # representative taxon
     repTaxon <- Dt[Dt[, rankName] == superID, ][1, ]
-
+    
     # THEN, SORT TAXON LIST BASED ON TAXONOMY TREE
     if (is.null(taxaTree)) {
         # prepare Df for calculating distance matrix
@@ -219,13 +219,13 @@ sortInputTaxa <- function(taxonIDs,
             resolve.root = TRUE
         )
     }
-
+    
     taxonList <- sortTaxaFromTree(taxaTree)
     sortedDt <- Dt[match(taxonList, Dt$abbrName), ]
-
+    
     # subset to get list of input taxa only
     sortedDt <- subset(sortedDt, abbrName %in% taxonIDs)
-
+    
     # get only taxonIDs list of selected rank and rename columns
     sortedOut <- subset(
         sortedDt,
@@ -234,7 +234,7 @@ sortInputTaxa <- function(taxonIDs,
         )
     )
     colnames(sortedOut) <- c("abbrName", "species", "fullName", "ncbiID")
-
+    
     # add name of supertaxa into sortedOut list
     sortedOut <- merge(
         sortedOut, fullnameList,
@@ -242,32 +242,20 @@ sortInputTaxa <- function(taxonIDs,
         all.x = TRUE,
         sort = FALSE
     )
-    sortedOut$species <- as.character(sortedOut$species)
-
-    # add orderPrefix to supertaxon name
-    # and add prefix "ncbi" to taxonNcbiID (column "species")
-    prefix <- 1001
-
+    sortedOut$species <- paste0("ncbi", sortedOut$species)
+    
     ## create new column for sorted supertaxon
-    sortedOut$sortedSupertaxon <- 0
-    sortedOut$sortedSupertaxon[1] <- paste0(prefix,
-                                            "_",
-                                            sortedOut$fullName.y[1])
-    sortedOut$species[1] <- paste0("ncbi", sortedOut$species[1])
-
-    if (nrow(sortedOut) > 1) {
-        for (i in 2:nrow(sortedOut)) {
-            ## increase prefix if changing to another supertaxon
-            if (sortedOut$fullName.y[i] != sortedOut$fullName.y[i - 1]) {
-                prefix <- prefix + 1
-            }
-            sortedOut$sortedSupertaxon[i] <- paste0(prefix,
-                                                    "_",
-                                                    sortedOut$fullName.y[i])
-            sortedOut$species[i] <- paste0("ncbi", sortedOut$species[i])
-        }
-    }
-
+    indexSpec <- unlist(lapply(
+        seq_len(nlevels(as.factor(sortedOut$fullName.y))), 
+        function (x) 1000 + x
+    ))
+    indexSpecDf <- data.frame(
+        fullName.y = levels(as.factor(sortedOut$fullName.y)),
+        sortedSupertaxon = paste0(indexSpec, "_", levels(as.factor(sortedOut$fullName.y))),
+        stringsAsFactors = FALSE
+    )
+    sortedOut <- merge(sortedOut, indexSpecDf, by = "fullName.y", all.x = TRUE)
+    
     # final sorted supertaxa list
     sortedOut$taxonID <- 0
     sortedOut$category <- "cat"
@@ -295,7 +283,7 @@ sortInputTaxa <- function(taxonIDs,
     sortedOut$ncbiID <- as.factor(sortedOut$ncbiID)
     sortedOut$supertaxon <- as.factor(sortedOut$supertaxon)
     sortedOut$category <- as.factor(sortedOut$category)
-
+    
     return(sortedOut)
 }
 
