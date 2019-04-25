@@ -10,7 +10,7 @@ getAllFastaOma(finalOmaDf)
 \item{finalOmaDf}{raw OMA data for a list of input IDs}
 }
 \value{
-dataframe contains all fasta sequences
+A list contains all fasta sequences
 }
 \description{
 Get all fasta sequences from a raw OMA dataframe

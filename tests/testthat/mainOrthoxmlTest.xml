@@ -44,21 +44,22 @@
       </geneRef>
       <geneRef id="2">
         <score id="inparalog" value="1" />
-        <score id="bootstrap" value="1.00" />
+        <score id="bootstrap" value="0.90" />
       </geneRef>
     </orthologGroup>
     <orthologGroup id="3">
       <score id="bit" value="3795" />
       <geneRef id="5">
-        <score id="inparalog" value="1" />
+        <score id="inparalog" value="0.89" />
         <score id="bootstrap" value="1.00" />
       </geneRef>
       <geneRef id="6">
+        <score id="inparalog" value="1" />
         <score id="bootstrap" value="1.00" />
-				<score id="inparalog" value="1" />
       </geneRef>
       <geneRef id="7">
         <score id="inparalog" value="0.4781" />
+		<score id="bootstrap" value="0.881" />
       </geneRef>
     </orthologGroup>
   </groups>

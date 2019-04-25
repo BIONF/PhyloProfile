@@ -86,6 +86,9 @@ checkInputValidity <- function(filein) {
 #' xmlParser(inputFile)
 
 xmlParser <- function(inputFile){
+    scoreType <- NULL
+    scoreValue <- NULL
+    
     data <- read_xml(inputFile)
     
     # get all genes for each taxon
@@ -130,16 +133,13 @@ xmlParser <- function(inputFile){
         lapply(
             orthoGroup, 
             function(x) 
-                length(xml_find_all(data, ".//scoreDef")) * 
-                length(xml_find_all(x, ".//geneRef"))
+                ncol(scorePair) * length(xml_find_all(x, ".//geneRef"))
         )
     )
     
     orthoDf <- data.frame(
         geneID = rep(groupID, groupIDrep),
-        refGeneID = rep(
-            refGeneID, each = length(xml_find_all(data, ".//scoreDef"))
-        ),
+        refGeneID = rep(refGeneID, each = ncol(scorePair)),
         scoreType = scorePair$V1,
         scoreValue = scorePair$V2,
         stringsAsFactors = FALSE
