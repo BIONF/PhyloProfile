@@ -12,13 +12,9 @@
 #' checkOmaID("HUMAN29398")
 
 checkOmaID <- function(ids) {
-    invalid <- list()
-    for (id in ids) {
-        id <- as.character(id)
-        data <- OmaDB::getProtein(id)
-        if (is.null(data$entry_nr)) invalid <- c(invalid, id)
-    }
-    return(invalid)
+    ids <- as.character(ids)
+    getOma <- OmaDB::getProtein(ids)
+    return(setdiff(ids, names(getOma)))
 }
 
 #' Get OMA members
@@ -74,27 +70,27 @@ getOmaDomainFromURL <- function(domainURL) {
         domains <- domainURL$regions
     }
     
-    domains$feature <- NA
-    domains$start <- NA
-    domains$end <- NA
-    for (i in seq_len(nrow(domains))) {
-        pos <- unlist(strsplit(domains$location[i], ":"))
-        domains[i,]$start <- pos[1]
-        domains[i,]$end <- pos[2]
-        
-        if (nchar(domains$name[i]) > 0) {
-            domains[i,]$feature <- paste0(
-                domains$source[i],"_",domains$domainid[i],
-                " (",domains$name[i],")"
-            )
-        } else {
-            domains[i,]$feature <- paste0(
-                domains$source[i],"_",domains$domainid[i]
-            )
-        }
-        domains[i,]$feature <- gsub("#", "-", domains[i,]$feature)
-    }
-    return(domains[, c("feature","start","end")])
+    pos <- strsplit(domains$location, ":")
+    
+    allPos <- unlist(pos)
+    start <- allPos[c(TRUE, FALSE)]
+    end <- allPos[c(FALSE, TRUE)]
+    
+    feature <- ifelse(
+        nchar(domains$name) > 0,
+        paste0(domains$source, "_", domains$domainid,
+               " (",domains$name,")"),
+        paste0(domains$source, "_", domains$domainid)
+    )
+    feature <- gsub("#", "-", feature)
+    featureRep <- vapply(pos, FUN.VALUE = numeric(1), function(x) length(x) / 2)
+    
+    return(data.frame(
+        feature = rep(feature, featureRep),
+        start, 
+        end,
+        stringsAsFactors = FALSE
+    ))
 }
 
 #' Get taxonomy ID, sequence and annotation for one OMA sequence
@@ -192,38 +188,6 @@ createProfileFromOma <- function(finalOmaDf) {
     return(profileDf[!duplicated(profileDf), ])
 }
 
-#' Create domain annotation dataframe for one OMA protein
-#' @param domainID protein domain ID
-#' @param orthoID protein ID
-#' @param length protein length
-#' @param domainList list of all domains and their positions for this protein
-#' @return domain annotation in a dataframe
-#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
-
-createDomainDf <- function(domainID, orthoID, length, domainList) {
-    domainDf = data.frame(
-        seedID = character(),
-        orthoID = character(),
-        length = numeric(),
-        feature = character(),
-        start = numeric(),
-        end = numeric(),
-        stringsAsFactors = FALSE
-    )
-    
-    for (i in seq_len(length(domainList))) {
-        annoInfo <- strsplit(domainList[i], "#")[[1]]
-        domainDf[i,]$seedID <- domainID
-        domainDf[i,]$orthoID <- orthoID
-        domainDf[i,]$length <- as.numeric(length)
-        domainDf[i,]$feature <- annoInfo[1]
-        domainDf[i,]$start <- as.numeric(annoInfo[2])
-        domainDf[i,]$end <- as.numeric(annoInfo[3])
-    }
-    
-    return(domainDf)
-}
-
 #' Create domain annotation dataframe from a raw OMA dataframe
 #' @export
 #' @param finalOmaDf raw OMA data for a list of input IDs
@@ -237,37 +201,46 @@ createDomainDf <- function(domainID, orthoID, length, domainList) {
 #' @seealso \code{\link{getDataForOneOma}}
 
 getAllDomainsOma <- function(finalOmaDf) {
-    omaDomainDf <- data.frame()
-    for (i in seq_len(nrow(finalOmaDf))) {
-        domainID <- paste0(
-            finalOmaDf[i,]$seed, "#", finalOmaDf[i,]$orthoID
-        )
-        
-        seedLine <-
-            finalOmaDf[finalOmaDf$orthoID == finalOmaDf[i,]$seed, ]
-        seedDomains <- strsplit(as.character(seedLine$domains), "\t")[[1]]
-        seedDomainDf <- createDomainDf(
-            domainID, seedLine$orthoID, seedLine$length, seedDomains
-        )
-        omaDomainDf <- rbind(omaDomainDf, seedDomainDf)
-        
-        orthoDomains <-
-            strsplit(as.character(finalOmaDf[i,]$domains), "\t")[[1]]
-        orthoDomainDf <- createDomainDf(
-            domainID,
-            finalOmaDf[i,]$orthoID,
-            finalOmaDf[i,]$length,
-            orthoDomains
-        )
-        omaDomainDf <- rbind(omaDomainDf, orthoDomainDf)
-    }
-    return(omaDomainDf)
+    seedID <- finalOmaDf$seed
+    orthoID <- finalOmaDf$orthoID
+    length <- finalOmaDf$length
+    feature <- finalOmaDf$domains
+    
+    featureCount <- sapply(
+        feature,
+        function (x) length(unlist(strsplit(x, "\t")))
+    )
+    
+    domainDf <- as.data.frame(
+        str_split_fixed((unlist(strsplit(feature, "\t"))), "#", 3)
+    )
+    colnames(domainDf) <- c("feature", "start", "end")
+    domainDf$seedID <- rep(paste0(seedID, "#", orthoID), featureCount)
+    domainDf$orthoID <- rep(orthoID, featureCount)
+    domainDf$length <- rep(length, featureCount)
+    
+    seedDf <- domainDf[domainDf$orthoID %in% levels(as.factor(seedID)),]
+    seedDfFull <- data.frame(
+        feature = rep(seedDf$feature, nlevels(as.factor(domainDf$seedID))),
+        start = rep(seedDf$start, nlevels(as.factor(domainDf$seedID))),
+        end = rep(seedDf$end, nlevels(as.factor(domainDf$seedID))),
+        seedID = rep(levels(as.factor(domainDf$seedID)), each = nrow(seedDf)),
+        orthoID = rep(seedDf$orthoID, nlevels(as.factor(domainDf$seedID))),
+        length = rep(seedDf$length, nlevels(as.factor(domainDf$seedID))),
+        stringsAsFactors = FALSE
+    )
+    
+    return(
+        rbind(
+            domainDf, seedDfFull
+        )[, c("seedID", "orthoID", "length", "feature", "start", "end")]
+    )
 }
 
 #' Get all fasta sequences from a raw OMA dataframe
 #' @export
 #' @param finalOmaDf raw OMA data for a list of input IDs
-#' @return dataframe contains all fasta sequences
+#' @return A list contains all fasta sequences
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @examples
 #' omaData <- getDataForOneOma("HUMAN29397", "OG")
@@ -275,17 +248,9 @@ getAllDomainsOma <- function(finalOmaDf) {
 #' @seealso \code{\link{getDataForOneOma}}
 
 getAllFastaOma <- function(finalOmaDf) {
-    omaFastaDf <- data.frame()
-    
     fastaDf <- finalOmaDf[, c("orthoID", "seq")]
-    for (i in seq_len(nrow(fastaDf))) {
-        seqID <- as.character(fastaDf$orthoID[i])
-        seq <- as.character(fastaDf$seq[i])
-        fastaOut <- paste(paste0(">", seqID), seq, sep = "\n")
-        omaFastaDf <- rbind(omaFastaDf, as.data.frame(fastaOut))
-    }
-    
-    return(omaFastaDf[!duplicated(omaFastaDf), ])
+    fastaOut <- paste(paste0(">", fastaDf$orthoID), fastaDf$seq, sep = "\n")
+    return(unique(fastaOut))
 }
 
 #' Get selected fasta sequences from a raw OMA dataframe

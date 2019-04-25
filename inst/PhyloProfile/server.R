@@ -335,7 +335,7 @@ shinyServer(function(input, output, session) {
             "omaDataToPhyloprofileInput.zip"
         },
         content <- function(file) {
-            write.table(getMainInput(), "long.txt",
+            write.table(getMainInput(), "phyloprofile.txt",
                         sep = "\t",
                         row.names = FALSE,
                         col.names = TRUE,
@@ -354,7 +354,7 @@ shinyServer(function(input, output, session) {
                         quote = FALSE)
 
             zip(zipfile = file,
-                files = c("long.txt", "domain.txt", "fasta.txt"))
+                files = c("phyloprofile.txt", "domain.txt", "fasta.txt"))
         },
         contentType = "application/zip"
     )
