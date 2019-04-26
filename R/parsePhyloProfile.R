@@ -183,7 +183,7 @@ sortInputTaxa <- function(taxonIDs,
     abbrName <- NULL
     
     fullnameList <- getNameList()
-    
+
     # get selected supertaxon ID(s)
     rankNameTMP <- taxonNames$rank[taxonNames$fullName == refTaxon]
     if (rankName == "strain") {
@@ -250,11 +250,13 @@ sortInputTaxa <- function(taxonIDs,
         function (x) 1000 + x
     ))
     indexSpecDf <- data.frame(
-        fullName.y = levels(as.factor(sortedOut$fullName.y)),
-        sortedSupertaxon = paste0(indexSpec, "_", levels(as.factor(sortedOut$fullName.y))),
+        fullName.y = unique(as.character(sortedOut$fullName.y)),
+        sortedSupertaxon = paste0(
+            indexSpec, "_", unique(as.character(sortedOut$fullName.y))
+        ),
         stringsAsFactors = FALSE
     )
-    sortedOut <- merge(sortedOut, indexSpecDf, by = "fullName.y", all.x = TRUE)
+    sortedOut <- plyr::join(indexSpecDf, sortedOut, by = "fullName.y")
     
     # final sorted supertaxa list
     sortedOut$taxonID <- 0
@@ -269,6 +271,7 @@ sortInputTaxa <- function(taxonIDs,
         "rank",
         "category"
     )]
+    
     colnames(sortedOut) <- c(
         "abbrName",
         "taxonID",
@@ -283,7 +286,7 @@ sortInputTaxa <- function(taxonIDs,
     sortedOut$ncbiID <- as.factor(sortedOut$ncbiID)
     sortedOut$supertaxon <- as.factor(sortedOut$supertaxon)
     sortedOut$category <- as.factor(sortedOut$category)
-    
+
     return(sortedOut)
 }
 
