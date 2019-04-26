@@ -148,28 +148,51 @@ getOmaDataForOneOrtholog <- function(id) {
 #' getDataForOneOma("HUMAN29397", "OG")
 
 getDataForOneOma <- function(seedID, orthoType){
-    finalOmaDf <- data.frame()
-    
     # get members
-    members <- getOmaMembers(seedID, orthoType)
-    omaSeedID <- OmaDB::getProtein(seedID)$omaid
+    idList <- getOmaMembers(seedID, orthoType)
+    specName <- substr(idList, 1, 5)
     
-    # get all data
-    j <- 1
-    for (ortho in members) {
-        orthoDf <- getOmaDataForOneOrtholog(ortho)
-        orthoDf$seed <- seedID
-        if (ortho == omaSeedID) {
-            orthoDf$orthoID <- seedID
-        }
-        finalOmaDf <- rbind(finalOmaDf, orthoDf)
-        
-        p <- j / length(members) * 100
-        svMisc::progress(p)
-        j <- j + 1
-    }
+    # get taxonomy IDs
+    taxonID <- paste0(
+        "ncbi",
+        lapply(
+            specName,
+            function(x) OmaDB::getTaxonomy(members = x, newick = FALSE)$id
+        )
+    )
     
-    return(finalOmaDf)
+    # get sequences, protein lengths and their domain annotations
+    raw <- OmaDB::getProtein(idList)
+    
+    seq <- lapply(
+        seq(length(raw)),
+        function (x) as.character(raw[[x]]$sequence)
+    )
+    
+    length <- lapply(
+        seq(length(raw)),
+        function (x) raw[[x]]$sequence_length
+    )
+    
+    domains <- lapply(
+        seq(length(raw)),
+        function (x) {
+            rawDomains <- suppressWarnings(raw[[x]]$domains)
+            domainDf <- suppressWarnings(getOmaDomainFromURL(rawDomains))
+            domainDfJoin <- c(domainDf, sep = "#")
+            paste(unlist(do.call(paste, domainDfJoin)), collapse = "\t")
+        } 
+    )
+    
+    # return data frame
+    return(data.frame(
+        orthoID = idList,
+        taxonID = taxonID,
+        seq = unlist(seq),
+        length = unlist(length),
+        domains = unlist(domains),
+        stringsAsFactors = FALSE
+    ))
 }
 
 #' Create phylogenetic profile from a raw OMA dataframe
