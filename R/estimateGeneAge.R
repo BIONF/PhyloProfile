@@ -62,16 +62,21 @@ estimateGeneAge <- function(
 
     # compare each taxon ncbi IDs with selected taxon
     # and create a "category" data frame
-    catDf <- data.frame("ncbiID" = character(),
-                        "cat" = character(),
-                        stringsAsFactors = FALSE)
-    for (i in seq_len(nrow(subDt))) {
-        cat <- subDt[i, ] %in% subFirstLine
-        cat[cat == FALSE] <- 0
-        cat[cat == TRUE] <- 1
-        cat <- paste0(cat, collapse = "")
-        catDf[i, ] <- c(as.character(subDt[i, ]$abbrName), cat)
-    }
+    catList <- lapply(
+        seq(nrow(subDt)),
+        function (x) {
+            cat <- subDt[x, ] %in% subFirstLine
+            cat <- paste0(cat, collapse = "")
+            cat <- gsub("TRUE", "1", cat)
+            gsub("FALSE", "0", cat)
+        }
+    )
+    
+    catDf <- data.frame(
+        ncbiID = as.character(subDt$abbrName),
+        cat = do.call(rbind, catList),
+        stringsAsFactors = FALSE
+    )
 
     # get main input data
     mdData <- droplevels(processedProfileData)

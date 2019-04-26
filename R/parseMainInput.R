@@ -88,15 +88,15 @@ checkInputValidity <- function(filein) {
 xmlParser <- function(inputFile){
     scoreType <- NULL
     scoreValue <- NULL
-    
+
     data <- read_xml(inputFile)
-    
+
     # get all genes for each taxon
     species <- xml_find_all(data, ".//species")
-    
+
     geneSpec <- xml_find_all(species, ".//gene")
     refGeneID <- xml_attr(geneSpec, "id")
-    
+
     if (grepl("protId", geneSpec[1])) {
         orthoID <- as.data.frame(unlist(strsplit(
             xml_attr(geneSpec, "protId"), split = '|', fixed = TRUE
@@ -104,39 +104,39 @@ xmlParser <- function(inputFile){
     } else if (grepl("geneId", geneSpec[1])) {
         orthoID <- xml_attr(geneSpec, "id")
     }
-    
+
     speciesID <- xml_attr(species, "NCBITaxId")
     speciesIDrep <- unlist(
-        lapply(species, function(x) length(xml_find_all(x, ".//gene")))
+        lapply(species, function (x) length(xml_find_all(x, ".//gene")))
     )
-    
+
     speciesDf <- data.frame(
         ncbiID = rep(paste0("ncbi", speciesID), speciesIDrep),
         refGeneID = refGeneID,
         orthoID = orthoID,
         stringsAsFactors=FALSE
     )
-    
+
     # get orthologs and their scores
     orthoGroup <- xml_find_all(data, ".//orthologGroup")
     genes <- xml_find_all(orthoGroup, ".//geneRef")
     refGeneID <- xml_attr(genes, "id")
-    
+
     score <- xml_find_all(genes, ".//score")
     scorePair <- lapply(
-        score, function(x) c(xml_attr(x, "id"), xml_attr(x, "value"))
+        score, function (x) c(xml_attr(x, "id"), xml_attr(x, "value"))
     )
     scorePair <- as.data.frame(do.call(rbind, scorePair))
-    
+
     groupID <- xml_attr(orthoGroup, "id")
     groupIDrep <- unlist(
         lapply(
-            orthoGroup, 
-            function(x) 
+            orthoGroup,
+            function (x) 
                 ncol(scorePair) * length(xml_find_all(x, ".//geneRef"))
         )
     )
-    
+
     orthoDf <- data.frame(
         geneID = rep(groupID, groupIDrep),
         refGeneID = rep(refGeneID, each = ncol(scorePair)),
@@ -145,18 +145,18 @@ xmlParser <- function(inputFile){
         stringsAsFactors = FALSE
     )
     orthoDf <- spread(orthoDf, scoreType, scoreValue)
-    
+
     # merge into final dataframe
     finalDf <- merge(speciesDf, orthoDf, all.y = TRUE, by = "refGeneID")
-    
+
     # remove refGeneID column and reorder columns
     finalDf <- finalDf[, -1]
     refcols <- c("geneID", "ncbiID", "orthoID")
     finalDf <- finalDf[, c(refcols, setdiff(names(finalDf), refcols))]
-    
+
     # remove columns that contains only NA
     finalDf <- finalDf[, colSums(is.na(finalDf)) < nrow(finalDf)]
-    
+
     # return final long dataframe
     return(finalDf)
 }
@@ -177,18 +177,18 @@ fastaParser <- function(inputFile){
     # split sequence IDs into columns
     fastaFile <- Biostrings::readAAStringSet(inputFile)
     seqID <- names(fastaFile)
-    
+
     faDf <- as.data.frame(
         stringr::str_split_fixed(seqID, "\\|", 5),
         stringsAsFactors = FALSE
     )
-    
+
     # rename columns
     colnames(faDf) <- c("geneID", "ncbiID", "orthoID")
-    
+
     cidx <- seq_len(ncol(faDf) - 3)
     colnames(faDf)[cidx + 3] <- paste0("var", cidx)
-    
+
     return(faDf)
 }
 
@@ -213,16 +213,16 @@ wideToLong <- function(inputFile){
         comment.char = "",
         stringsAsFactors = FALSE
     )
-    
+
     ncbiIDs <- colnames(wideDataframe[, c(-1)])
-    
+
     orthoInfo <- as.data.frame(
         stringr::str_split_fixed(
             as.character(unlist(wideDataframe[, c(-1)])), "#", 3
         ),
         stringsAsFactors = FALSE
     )
-    
+
     longDataframe <- data.frame(
         geneID = rep(wideDataframe$geneID, time = ncol(wideDataframe) - 1),
         ncbiID = rep(ncbiIDs, time = 1, each = nrow(wideDataframe)),
@@ -231,7 +231,7 @@ wideToLong <- function(inputFile){
         var2 = suppressWarnings(as.numeric(orthoInfo$V3)),
         stringsAsFactors = FALSE
     )
-    
+
     return(longDataframe)
 }
 
@@ -320,7 +320,7 @@ createLongMatrix <- function(inputFile){
             )
         }
     }
-    
+
     # remove duplicated lines
     longDataframe <- longDataframe[!duplicated(longDataframe),]
 

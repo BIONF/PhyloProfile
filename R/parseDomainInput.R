@@ -175,14 +175,14 @@ getDomainFolder <- function(seed, domainPath){
         # check file extension
         allExtension <- c("txt", "csv", "list", "domains", "architecture")
         fileDomain <- paste0(domainPath, "/", seed, ".", allExtension)
-        
-        checkExistance <- lapply(fileDomain, function(x) file.exists(x))
+
+        checkExistance <- lapply(fileDomain, function (x) file.exists(x))
         fileDomain <- fileDomain[match(TRUE, checkExistance)]
-        
+
         if (is.na(fileDomain)) {
             fileDomain <- "noFileInFolder"
         }
     }
-    
+
     return(fileDomain)
 }

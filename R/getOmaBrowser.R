@@ -49,7 +49,7 @@ getOmaMembers <- function(id, orthoType) {
     #   seed <- OmaDB::getData("protein",id)$omaid
     #   members <- c(seed,members)
     # }
-    
+
     return(members)
 }
 
@@ -69,13 +69,13 @@ getOmaDomainFromURL <- function(domainURL) {
     } else {
         domains <- domainURL$regions
     }
-    
+
     pos <- strsplit(domains$location, ":")
-    
+
     allPos <- unlist(pos)
     start <- allPos[c(TRUE, FALSE)]
     end <- allPos[c(FALSE, TRUE)]
-    
+
     feature <- ifelse(
         nchar(domains$name) > 0,
         paste0(domains$source, "_", domains$domainid,
@@ -83,11 +83,11 @@ getOmaDomainFromURL <- function(domainURL) {
         paste0(domains$source, "_", domains$domainid)
     )
     feature <- gsub("#", "-", feature)
-    featureRep <- vapply(pos, FUN.VALUE = numeric(1), function(x) length(x) / 2)
-    
+    featureRep <- vapply(pos, FUN.VALUE = numeric(1), function (x) length(x) / 2)
+
     return(data.frame(
         feature = rep(feature, featureRep),
-        start, 
+        start,
         end,
         stringsAsFactors = FALSE
     ))
@@ -109,19 +109,19 @@ getOmaDataForOneOrtholog <- function(id) {
     )
     # get raw data
     raw <- OmaDB::getProtein(id)
-    
+
     # get sequence
     seq <- as.character(raw$sequence)
-    
+
     # get sequence length
     length <- raw$sequence_length
-    
+
     # get annotation
     rawDomains <- suppressWarnings(raw$domains)
     domainDf <- suppressWarnings(getOmaDomainFromURL(rawDomains))
     domainDfJoin <- c(domainDf, sep = "#")
     domains <- paste(unlist(do.call(paste, domainDfJoin)), collapse = "\t")
-    
+
     # return data frame contains all info
     omaDf <- data.frame(
         orthoID = id,
@@ -149,29 +149,29 @@ getDataForOneOma <- function(seedID, orthoType){
     # get members
     idList <- getOmaMembers(seedID, orthoType)
     specName <- substr(idList, 1, 5)
-    
+
     # get taxonomy IDs
     taxonID <- paste0(
         "ncbi",
         lapply(
             specName,
-            function(x) OmaDB::getTaxonomy(members = x, newick = FALSE)$id
+            function (x) OmaDB::getTaxonomy(members = x, newick = FALSE)$id
         )
     )
-    
+
     # get sequences, protein lengths and their domain annotations
     raw <- OmaDB::getProtein(idList)
-    
+
     seq <- lapply(
         seq(length(raw)),
         function (x) as.character(raw[[x]]$sequence)
     )
-    
+
     length <- lapply(
         seq(length(raw)),
         function (x) raw[[x]]$sequence_length
     )
-    
+
     domains <- lapply(
         seq(length(raw)),
         function (x) {
@@ -179,9 +179,9 @@ getDataForOneOma <- function(seedID, orthoType){
             domainDf <- suppressWarnings(getOmaDomainFromURL(rawDomains))
             domainDfJoin <- c(domainDf, sep = "#")
             paste(unlist(do.call(paste, domainDfJoin)), collapse = "\t")
-        } 
+        }
     )
-    
+
     # return data frame
     return(data.frame(
         orthoID = idList,
@@ -227,12 +227,12 @@ getAllDomainsOma <- function(finalOmaDf) {
     orthoID <- finalOmaDf$orthoID
     length <- finalOmaDf$length
     feature <- finalOmaDf$domains
-    
+
     featureCount <- sapply(
         feature,
         function (x) length(unlist(strsplit(x, "\t")))
     )
-    
+
     domainDf <- as.data.frame(
         stringr::str_split_fixed((unlist(strsplit(feature, "\t"))), "#", 3)
     )
@@ -240,7 +240,7 @@ getAllDomainsOma <- function(finalOmaDf) {
     domainDf$seedID <- rep(paste0(seedID, "#", orthoID), featureCount)
     domainDf$orthoID <- rep(orthoID, featureCount)
     domainDf$length <- rep(length, featureCount)
-    
+
     seedDf <- domainDf[domainDf$orthoID %in% levels(as.factor(seedID)),]
     seedDfFull <- data.frame(
         feature = rep(seedDf$feature, nlevels(as.factor(domainDf$seedID))),
@@ -251,7 +251,7 @@ getAllDomainsOma <- function(finalOmaDf) {
         length = rep(seedDf$length, nlevels(as.factor(domainDf$seedID))),
         stringsAsFactors = FALSE
     )
-    
+
     return(
         rbind(
             domainDf, seedDfFull
