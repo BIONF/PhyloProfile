@@ -102,15 +102,6 @@ getOmaDomainFromURL <- function(domainURL) {
 #' getOmaDataForOneOrtholog("HUMAN29397")
 
 getOmaDataForOneOrtholog <- function(id) {
-    omaDf <- data.frame(
-        "orthoID" = character(),
-        "taxonID" = character(),
-        "seq" = character(),
-        "length" = numeric(),
-        "domains" = character(),
-        stringsAsFactors = FALSE
-    )
-    
     # get ncbi taxonomy id
     specName <- substr(id, 1, 5)
     taxonID <- paste0(
@@ -132,7 +123,14 @@ getOmaDataForOneOrtholog <- function(id) {
     domains <- paste(unlist(do.call(paste, domainDfJoin)), collapse = "\t")
     
     # return data frame contains all info
-    omaDf[1,] <- c(id, taxonID, seq, length, domains)
+    omaDf <- data.frame(
+        orthoID = id,
+        taxonID = taxonID,
+        seq = seq,
+        length = length,
+        domains = domains,
+        stringsAsFactors = FALSE
+    )
     return(omaDf)
 }
 
@@ -191,6 +189,7 @@ getDataForOneOma <- function(seedID, orthoType){
         seq = unlist(seq),
         length = unlist(length),
         domains = unlist(domains),
+        seed = seedID,
         stringsAsFactors = FALSE
     ))
 }

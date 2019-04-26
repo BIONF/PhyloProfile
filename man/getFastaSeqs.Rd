@@ -23,13 +23,13 @@ or "Fasta folder")}
 
 \item{path}{path to fasta folder}
 
-\item{dirFormat}{directory format (either "path/speciesID.fa*" or
+\item{dirFormat}{directory format (either 1 for "path/speciesID.fa*" or 2 for
 "path/speciesID/speciesID.fa*")}
 
 \item{fileExt}{fasta file extension ("fa", "fasta", "fas" or "txt")}
 
-\item{idFormat}{fasta header format (">speciesID:seqID",
-">speciesID@seqID", ">speciesID|seqID" or only "seqID")}
+\item{idFormat}{fasta header format (1 for ">speciesID:seqID", 2 for
+">speciesID@seqID", 3 for ">speciesID|seqID" or 4 for "seqID")}
 }
 \value{
 A dataframe contains fasta sequences

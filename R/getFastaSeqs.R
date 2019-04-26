@@ -11,11 +11,11 @@
 #' or "Fasta folder")
 #' @param concatFasta input concatenated fasta file
 #' @param path path to fasta folder
-#' @param dirFormat directory format (either "path/speciesID.fa*" or
+#' @param dirFormat directory format (either 1 for "path/speciesID.fa*" or 2 for
 #' "path/speciesID/speciesID.fa*")
 #' @param fileExt fasta file extension ("fa", "fasta", "fas" or "txt")
-#' @param idFormat fasta header format (">speciesID:seqID",
-#' ">speciesID@seqID", ">speciesID|seqID" or only "seqID")
+#' @param idFormat fasta header format (1 for ">speciesID:seqID", 2 for
+#' ">speciesID@seqID", 3 for ">speciesID|seqID" or 4 for "seqID")
 #' @return A dataframe contains fasta sequences
 #' @importFrom IRanges reverse
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
@@ -88,49 +88,46 @@ getFastaSeqs <- function(
             faFile <- Biostrings::readAAStringSet(fastaURL)
             
             # get sequences
-            for (j in seq_len(nrow(dataIn))) {
-                seqID <- as.character(dataIn$orthoID[j])
-                groupID <- as.character(dataIn$geneID[j])
-
-                seq <- as.character(faFile[[match(seqID, names(faFile))]])
-                fastaOut <- paste(paste0(">", seqID), seq, sep = "\n")
-                fastaOutDf <- rbind(fastaOutDf, as.data.frame(fastaOut))
-            }
+            seqIDs <- as.character(dataIn$orthoID)
+            return(data.frame(
+                fasta = paste(
+                    paste0(">", seqIDs),
+                    lapply(
+                        pmatch(seqIDs, names(faFile)),
+                        function (x) as.character(faFile[[x]])
+                    ),
+                    sep = "\n"
+                ), stringsAsFactors = FALSE
+            ))
         } else {
-            fastaOut <- paste0(fastaURL, " not found!!!")
-            fastaOutDf <- rbind(fastaOutDf, as.data.frame(fastaOut))
+            return(data.frame(
+                fasta = paste0(fastaURL, " not found!!!"),
+                stringsAsFactors = FALSE
+            ))
         }
     }
 
     # get seqs for fasta main input --------------------------------------------
     if (inputType == "fasta") {
         file <- filein
-        fastaFile <- Biostrings::readAAStringSet(file)
-
-        seqName <- names(fastaFile)
-        sequence <- paste(fastaFile)
-        # data frame contains all sequences from input file
-        fa <- data.frame(seqName, sequence)
-
-        for (j in seq_len(nrow(dataIn))) {
-            seqID <- paste0(
-                as.character(dataIn$geneID[j]), "|ncbi",
-                as.character(dataIn$ncbiID[j]), "|",
-                as.character(dataIn$orthoID[j])
-            )
-
-            seq <- fa$sequence[pmatch(seqID, fa$seqName)]
-
-            if (length(seq[1]) < 1) {
-                fastaOut <- paste0(seqID,
-                                    " not found in ",
-                                    file,
-                                    "! Please check again!")
-            } else{
-                fastaOut <- paste(paste0(">", seqID), seq[1], sep = "\n")
-            }
-            fastaOutDf <- rbind(fastaOutDf, as.data.frame(fastaOut))
-        }
+        faFile <- Biostrings::readAAStringSet(file)
+        
+        seqIDs <- paste0(
+            as.character(dataIn$geneID), "|ncbi",
+            as.character(dataIn$ncbiID), "|",
+            as.character(dataIn$orthoID)
+        )
+        
+        return(data.frame(
+            fasta = paste(
+                paste0(">", seqIDs),
+                lapply(
+                    pmatch(seqIDs, names(faFile)),
+                    function (x) as.character(faFile[[x]])
+                ),
+                sep = "\n"
+            ), stringsAsFactors = FALSE
+        ))
     }
 
     # get seqs for main input in other formats ---------------------------------
@@ -143,73 +140,48 @@ getFastaSeqs <- function(
                 file <- toString(fasIn)
 
                 # read fasta file and save sequences into dataframe
-                fastaFile <- Biostrings::readAAStringSet(file)
+                faFile <- Biostrings::readAAStringSet(file)
 
-                seqName <- names(fastaFile)
-                sequence <- paste(fastaFile)
-                # data frame contains all sequences from input file
-                fa <- data.frame(seqName, sequence)
-
-                # get selected sequences
-                for (j in seq_len(nrow(dataIn))) {
-                    seqID <- as.character(dataIn$orthoID[j])
-                    groupID <- as.character(dataIn$geneID[j])
-                    seq <- fa$sequence[pmatch(seqID, fa$seqName)]
-                    flag <- 1
-                    if (is.na(seq)) {
-                        seqID <- paste0(
-                            as.character(dataIn$geneID[j]), "|ncbi",
-                            as.character(dataIn$ncbiID[j]), "|",
-                            as.character(dataIn$orthoID[j])
-                        )
-                        seq <- fa$sequence[pmatch(seqID, fa$seqName)]
-                        flag <- 0
-                    }
-                    if (length(seq[1]) < 1) {
-                        fastaOut <-
-                            paste0(
-                                seqID,
-                                " not found in ",
-                                file,
-                                "! Please check the header format in
-                                FASTA file!"
-                            )
-                    } else {
-                        if (!is.na(seq[1])) {
-                            if (flag == 1) {
-                                fastaOut <- paste(
-                                    paste0(">", seqID), seq[1], sep = "\n"
-                                )
-                            } else {
-                                fastaOut <- paste(
-                                    paste0(">", seqID), seq[1], sep = "\n"
-                                )
-                            }
-
-                        } else {
-                            fastaOut <-
-                                paste0(
-                                    seqID,
-                                    " not found in uploaded FASTA file!!! ",
-                                    "Please check again!!!"
-                                )
-                        }
-                    }
-                    fastaOutDf <- rbind(
-                        fastaOutDf, as.data.frame(fastaOut)
+                seqIDs <- as.character(dataIn$orthoID)
+                if (
+                    length(unique(pmatch(seqIDs, names(faFile)))) == 1 & 
+                    is.na(unique(pmatch(seqIDs, names(faFile)))[1])
+                ) {
+                    seqIDs <- paste0(
+                        as.character(dataIn$geneID), "|ncbi",
+                        as.character(dataIn$ncbiID), "|",
+                        as.character(dataIn$orthoID)
                     )
+                } 
+                if (
+                    length(unique(pmatch(seqIDs, names(faFile)))) == 1 & 
+                    is.na(unique(pmatch(seqIDs, names(faFile)))[1])
+                ) {
+                    return(data.frame(
+                        fasta = paste0("Please check FASTA header format!"),
+                        stringsAsFactors = FALSE
+                    ))
+                } else {
+                    return(data.frame(
+                        fasta = paste(
+                            paste0(">", seqIDs),
+                            lapply(
+                                pmatch(seqIDs, names(faFile)),
+                                function (x) as.character(faFile[[x]])
+                            ),
+                            sep = "\n"
+                        ), stringsAsFactors = FALSE
+                    ))
                 }
             } else {
                 if (inputType != "fasta") {
-                    fastaOut <- {
-                        paste0(
+                    return(data.frame(
+                        fasta = paste0(
                             "Please provide FASTA file(s) in ",
                             "Input & settings page!"
-                        )
-                    }
-                    fastaOutDf <- rbind(
-                        fastaOutDf, as.data.frame(fastaOut)
-                    )
+                        ),
+                        stringsAsFactors = FALSE
+                    ))
                 }
             }
         }
@@ -250,94 +222,73 @@ getFastaSeqs <- function(
                 }
 
                 # read all specices FASTA files at once
-                fa <- data.frame()
                 if (idFormat == 4) {
                     fileList <- list.files(path, pattern = fileExt)
-                    for (file in fileList){
-                        fileWithPath = paste0(path, "/", file)
-                        fastaFile <-
-                            Biostrings::readAAStringSet(fileWithPath)
-
-                        seqName <- names(fastaFile)
-                        sequence <- paste(fastaFile)
-                        # data frame contains all sequences from input file
-                        fa <- rbind(fa, data.frame(seqName, sequence))
+                    if(length(fileList) == 0) {
+                        return(data.frame(
+                            fasta = paste0("No FASTA files with ", fileExt, 
+                                           "found in ", path),
+                            stringsAsFactors = FALSE
+                        ))
+                    } else {
+                        fileWithPath <- paste0(path, "/", fileList)
+                        faFile <- Biostrings::readAAStringSet(fileWithPath)
                     }
                 } else {
-                    for (
-                        i in
-                        seq_len(length(levels(as.factor(specDf$specID))))
-                    ) {
-                        specID <- as.character(
-                            levels(as.factor(specDf$specID))[i]
+                    specID <- as.character(
+                        levels(as.factor(specDf$specID))
+                    )
+                    specID <- specID[specID != ""]
+                    
+                    file <- paste0(path, "/", specID, ".", fileExt)
+                    if (dirFormat == 2) {
+                        file <- paste0(
+                            path, "/", specID, "/", specID, ".", fileExt
                         )
-
-                        # full path fasta file
-                        file <- paste0(path, "/", specID, ".", fileExt)
-                        if (dirFormat == 2) {
-                            file <- paste0(
-                                path, "/", specID, "/", specID, ".", fileExt
-                            )
-                        }
-
-                        # read fasta file and save sequences into dataframe
-                        if (file.exists(file)) {
-                            fastaFile <- Biostrings::readAAStringSet(file)
-                            seqName <- names(fastaFile)
-                            sequence <- paste(fastaFile)
-                            # data frame contains all sequences from input file
-                            fa <- rbind(fa, data.frame(seqName, sequence))
-                        }
+                    }
+                    file <- file[file.exists(file)]
+                    if(length(file) == 0) {
+                        return(data.frame(
+                            fasta = paste0("No FASTA files found in ", path,
+                                           "! Please check settings for file",
+                                           " extension and ID format again."),
+                            stringsAsFactors = FALSE
+                        ))
+                    } else {
+                        faFile <- Biostrings::readAAStringSet(file)
                     }
                 }
 
                 # now get selected sequences
-                if (nrow(fa) > 0) {
-                    for (j in seq_len(nrow(dataIn))) {
-                        seqID <- as.character(dataIn$orthoID[j])
-                        groupID <- as.character(dataIn$geneID[j])
-
-                        seq <- fa$sequence[pmatch(seqID, fa$seqName)]
-
-                        if (length(seq[1]) < 1) {
-                            fastaOut <- {
-                                paste0(
-                                    seqID,
-                                    " not found in ",
-                                    file,
-                                    "! Please check idFormat in FASTA config ",
-                                    "again!"
-                                )
-                            }
-                        } else {
-                            fastaOut <- paste(
-                                paste0(">", seqID), seq[1], sep = "\n"
-                            )
-                        }
-                        fastaOutDf <- rbind(
-                            fastaOutDf, as.data.frame(fastaOut)
-                        )
-                    }
+                seqIDs <- as.character(dataIn$orthoID)
+                
+                if (
+                    length(unique(pmatch(seqIDs, names(faFile)))) == 1 & 
+                    is.na(unique(pmatch(seqIDs, names(faFile)))[1])
+                ) {
+                    return(data.frame(
+                        fasta = paste0("Please check FASTA header format!"),
+                        stringsAsFactors = FALSE
+                    ))
                 } else {
-                    fastaOut <-
-                        paste0(
-                            "No fasta file has been found in ",
-                            path,
-                            "!!! Please check the full path to FASTA folder ",
-                            "and the idFormat (header format) in FASTA config",
-                            " again!!!"
-                        )
-                    fastaOutDf <- rbind(
-                        fastaOutDf, as.data.frame(fastaOut)
-                    )
+                    return(data.frame(
+                        fasta = paste(
+                            paste0(">", seqIDs),
+                            lapply(
+                                pmatch(seqIDs, names(faFile)),
+                                function (x) as.character(faFile[[x]])
+                            ),
+                            sep = "\n"
+                        ), stringsAsFactors = FALSE
+                    ))
                 }
             } else {
-                fastaOut <- {
-                    paste0(
-                        "Please provide FASTA files in Input & settings page!"
-                    )
-                }
-                fastaOutDf <- rbind(fastaOutDf, as.data.frame(fastaOut))
+                return(data.frame(
+                    fasta = paste0(
+                        "Please provide FASTA file(s) in Input & settings page!"
+                    ),
+                    stringsAsFactors = FALSE
+                ))
             }
         }
     }
