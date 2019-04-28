@@ -1,6 +1,4 @@
 #' Detailed plot
-#'
-#' @export
 #' @param data (from reactive fn "detailPlotDt")
 #' @param var1ID name of variable 1 (from input$var1ID)
 #' @param var2ID name of variable 2 (from input$var2ID)
@@ -125,7 +123,6 @@ createDetailedPlot <- function(input, output, session, data,
 
 
 #' create detailed plot
-#' @export
 #' @param selDf data for plotting  (from reactive fn "detailPlotDt")
 #' @param detailedText text size (input$detailedText)
 #' @param var1ID name of variable 1 (input$var1ID)

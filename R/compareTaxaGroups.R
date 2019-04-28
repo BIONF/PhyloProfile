@@ -110,6 +110,7 @@ getSignificantGenes <- function(
     )
 
     # Check for each gene if it is significant
+    gene <- NULL
     calculatePvalue <- function (gene) {
         message("Analyzing the distribution of ", gene, "...")
         # Processing the dataframes for in- and out-group
@@ -165,7 +166,7 @@ getSignificantGenes <- function(
     
     ll <- lapply(
         genes,
-        function (x) calculatePvalue(gene)
+        function (x) calculatePvalue(x)
     )
     significantGenesDf <- data.frame(do.call(rbind, ll))
 
@@ -220,7 +221,11 @@ getSignificantGenes <- function(
         significantGenesDf$rank <- rank
         return(significantGenesDf)
     } else {
-        return("No candidate genes found")
+        return(
+            data.frame(
+                msg = "No candidate genes found", stringsAsFactors = FALSE
+            )
+        )
     }
 }
 

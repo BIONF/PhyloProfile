@@ -57,9 +57,6 @@ getFastaSeqs <- function(
     fileExt,
     idFormat
 ){
-
-    fastaOutDf <- data.frame()
-
     # check main input
     if (!is.null(filein)) {
         inputType <- checkInputValidity(filein)
@@ -292,8 +289,4 @@ getFastaSeqs <- function(
             }
         }
     }
-    # remove duplicated sequences
-    fastaOutDf <- fastaOutDf[!duplicated(fastaOutDf), ]
-
-    return(fastaOutDf)
 }

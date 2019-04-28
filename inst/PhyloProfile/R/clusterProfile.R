@@ -1,5 +1,4 @@
 #' Profile clustering
-#'
 #' @param distanceMatrix
 #' @param clusterMethod Method to cluster the distances (input$clusterMethod)
 #' @param plotWidth Width of the generated plot (input$clusterPlot.width)

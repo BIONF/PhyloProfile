@@ -1341,21 +1341,16 @@ shinyServer(function(input, output, session) {
 
     # * get OMA data for input list --------------------------------------------
     getOmaBrowser <- function(idList, orthoType) {
-        finalOmaDf <- data.frame()
-
-        withProgress(value = 0, {
-            i = 1
-            for (seedID in idList) {
-                incProgress(1 / length(idList),
-                            message = paste0("Retrieving OMA for ", seedID),
-                            detail = paste(i, "/", length(idList)))
-
-                tmpOmaDf <- getDataForOneOma(seedID, orthoType)
-                finalOmaDf <- rbind(finalOmaDf, tmpOmaDf)
-                i <- i + 1
+        withProgress(
+            message = "Retrieving OMA data",
+            value = 0, {
+                omaDf <- pbapply::pblapply(
+                    idList,
+                    function (x) getDataForOneOma(x, orthoType)
+                )
             }
-        })
-        return(finalOmaDf)
+        )
+        return(data.frame(rbindlist(tmp, use.names = TRUE)))
     }
 
     finalOmaDf <- reactive({
@@ -1394,9 +1389,7 @@ shinyServer(function(input, output, session) {
             if (inputType == "oma") {
                 if (input$getDataOma[1] == 0) return()
                 longDataframe <- createProfileFromOma(finalOmaDf())
-                for (i in 1:ncol(longDataframe)) {
-                    longDataframe[, i] <- as.factor(longDataframe[, i])
-                }
+                longDataframe <- as.data.frame(unclass(longDataframe))
             } else {
                 longDataframe <- createLongMatrix(filein$datapath)
             }
@@ -1562,7 +1555,7 @@ shinyServer(function(input, output, session) {
             }
 
             if (ncol(data) < 5) {
-                for (i in 1:(5 - ncol(data))) {
+                for (i in seq_len(5 - ncol(data))) {
                     data[paste0("newVar", i)] <- 1
                 }
             }

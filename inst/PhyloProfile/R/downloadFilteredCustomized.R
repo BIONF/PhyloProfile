@@ -1,6 +1,4 @@
 #' Download filtered data from customized profile
-#'
-#' @export
 #' @param data MAIN data for downloading (from module "downloadFilteredMain.R"
 #' @param fasta fasta sequences (from reactive fn "customizedFastaDownload")
 #' @param inSeq selected sequences in customized profile (from input$inSeq)

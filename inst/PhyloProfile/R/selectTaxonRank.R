@@ -1,6 +1,4 @@
 #' Popup windows for (sub-)selecting rank & (super)taxon of interest
-#'
-#' @export
 #' @param rankSelect initial selected taxonomy rank (input$rankSelect)
 #' @param inputTaxonID list of all input taxon IDs
 #' (from reactive fn inputTaxonID)

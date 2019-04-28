@@ -90,21 +90,21 @@ getDistanceMatrix <- function(profiles, method) {
 
     distMethods <- c("euclidean", "maximum", "manhattan", "canberra", "binary")
     if (method %in% distMethods) {
-        distanceMatrix <- dist(profiles, method = method)
+        distanceMatrix <- stats::dist(profiles, method = method)
     } else if (method == "distanceCorrelation") {
-        matrix <- data.frame()
+        n <- seq_len(nrow(profiles))
+        matrix[cbind(n, n)] <- 0
         for (i in seq_len(nrow(profiles))) { # rows
+            p_i <- unlist(profiles[i,])
             for (j in seq_len(nrow(profiles))) { # columns
-                if (i == j) {
-                    matrix[i,i] = 1 # if this cell NA as.dist not work probably
+                if (i == j)
                     break
-                }
-                dist <- dcor(unlist(profiles[i,]), unlist(profiles[j,]))
-                # Swich the value so that the profiles with a high correlation
-                # are clustered together
-                matrix[i,j] <- 1 - dist
+                matrix[i, j] <- dcor(p_i, unlist(profiles[j,]))
             }
         }
+        # Swich the value so that the profiles with a high correlation
+        # are clustered together
+        matrix <- 1 - matrix
 
         profileNames <- rownames(profiles)
         colnames(matrix) <- profileNames[seq_len(length(profileNames)) - 1]

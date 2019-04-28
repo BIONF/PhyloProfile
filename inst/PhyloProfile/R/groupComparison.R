@@ -1,6 +1,4 @@
 #' Group Comparison
-#'
-#' @export
 #' @param selectedInGroup selected In-group (input$selectedInGroupGC)
 #' @param selectedGenesList list of genes to calculate the plots for
 #'  (input$listSelectedGenesGC)
@@ -158,7 +156,7 @@ groupComparison <- function(input, output, session,
                             selected = NULL,
                             multiple = TRUE,
                             selectize = FALSE)
-            } else{
+            } else {
                 significantGenes <- candidateGenes$plots
                 choices <- c("all")
                 if (gene == "all") {
@@ -173,12 +171,10 @@ groupComparison <- function(input, output, session,
                     # show each database only once
                     choices <- choices[!duplicated(choices)]
                 } else {
-
                     subsetGene <- subset(significantGenes,
                                           significantGenes$geneID == gene)
 
                     choices <- append(choices, unlist(subsetGene$databases))
-
                 }
                 selectInput(ns("interestingFeatures"),
                             "Feature type(s) of interest:",
@@ -209,7 +205,7 @@ groupComparison <- function(input, output, session,
                 fs <- c(fs, path)
                 pdf(path)
                 getPlotsToDownload(
-                    gene, parameter(), input$interestingFeatures, 
+                    gene, parameter(), input$interestingFeatures,
                     significantGenes,input$domainsThreshold, selectedPoint()
                 )
                 dev.off()
@@ -274,8 +270,7 @@ groupComparison <- function(input, output, session,
 
 # FUNCTIONS ===================================================================
 
-#' Generate the list with all plots -------------------------------------------
-#' @export
+#' Generate the list with all plots
 #' @param genes list of genes
 #' @param parameters contains "showPValue","highlightSignificant",
 #' "significance", "var1ID", "var2ID", "xSizeGC", "ySizeGC",
@@ -299,8 +294,7 @@ getPlotOutputList <- function(genes, parameters, interestingFeatures,
     return(plotOutputList)
 }
 
-#' Put the plots for one spicific gene in one multiplot -----------------------
-#' @export
+#' Put the plots for one spicific gene in one multiplot
 #' @param geneInfo contains "geneID",  "inGroup",  "outGroup", "pvalues",
 #' "features",  "databases", "var", "rank"
 #' @param parameters contains "showPValue","highlightSignificant",
@@ -312,7 +306,7 @@ getPlotOutputList <- function(genes, parameters, interestingFeatures,
 getMultiplot <- function(
     geneInfo, parameters, interestingFeatures, domainsThreshold, selectedPoint
 ){
-    #' Sorting the information to the selected gene ----------------------------
+    #' Sorting the information to the selected gene
     gene <- as.character(geneInfo$geneID)
     inGroup <- as.data.frame(geneInfo$inGroup)
     outGroup <- as.data.frame(geneInfo$outGroup)
@@ -320,7 +314,7 @@ getMultiplot <- function(
 
     var <- geneInfo$var
 
-    #' Get the barplot ---------------------------------------------------------
+    #' Get the barplot
     barplot <-  getBarplotGC(gene,
                                inGroup,
                                outGroup,
@@ -333,7 +327,7 @@ getMultiplot <- function(
         barplot <- textGrob("The selected domains are not found in the gene")
     }
 
-    #' Get the boxplots  for two variables  ------------------------------------
+    #' Get the boxplots  for two variables
     if (var == "Both") {
         pValue1 <- round(geneInfo$pvalues1, 2)
         pValue2 <- round(geneInfo$pvalues2, 2)
@@ -385,7 +379,7 @@ getMultiplot <- function(
                               barplot,
                               heights = c(0.02, 0.45, 0.458), ncol = 1)
     }
-    #' get the boxplot if one varibale is selected  ----------------------------
+    #' get the boxplot if one varibale is selected
     else {
         p <- round(geneInfo$pvalue, 2)
 
@@ -412,12 +406,11 @@ getMultiplot <- function(
                               heights = c(0.02, 0.45, 0.458), ncol = 1)
     }
 
-    #' return the plots --------------------------------------------------------
+    #' return the plots
     return(plots)
 }
 
-#' Create a Boxplot -----------------------------------------------------------
-#' @export
+#' Create a Boxplot
 #' @param inGroupDf contains "supertaxon", "geneID", "ncbiID", "orthoID",
 #'  "var1", "var2", "paralog", "abbrName", "taxonID", "fullname",
 #'  "supertaxonID", "rank", "category", "presSpec", "mVar1", "mVar2"
@@ -442,7 +435,7 @@ getBoxplotGC <- function(inGroupDf,
                            parameters,
                            selectedPoint){
 
-    #' pre-processing the data for the boxplot ---------------------------------
+    #' pre-processing the data for the boxplot
     if (var == parameters$var1ID) {
         inGroup <- inGroupDf$var1
         outGroup <- outGroupDf$var1
@@ -471,7 +464,7 @@ getBoxplotGC <- function(inGroupDf,
     names <- c(paste("In-Group \n n=", lengthInGroup, sep = ""),
                paste("Out-Group \n n=", lengthOutGroup, sep = ""))
 
-    #' Generate the boxplot ----------------------------------------------------
+    #' Generate the boxplot
     boxplotGC <- ggplot(dataBoxplot, aes(group, values)) +
         geom_violin(position = position_dodge(), scale = "width",
                     fill = colour) +
@@ -492,13 +485,12 @@ getBoxplotGC <- function(inGroupDf,
               legend.title = element_text(size = parameters$legendSizeGC)) +
         scale_color_manual("", values = c("green"))
 
-    #' return the boxplot ------------------------------------------------------
+    #' return the boxplot
     return(boxplotGC)
 }
 
 
-#' Create a Barplot -----------------------------------------------------------
-#' @export
+#' Create a Barplot
 #' @param  selectedGene gene for which the plot is generated
 #' @param inGroupDf contains "supertaxon", "geneID", "ncbiID", "orthoID",
 #'  "var1", "var2", "paralog", "abbrName", "taxonID", "fullname",
@@ -520,10 +512,10 @@ getBarplotGC <- function(selectedGene,
                            interestingFeatures,
                            domainsThreshold){
 
-    #' information about the features ------------------------------------------
+    #' information about the features
     features$feature <- as.character(features$feature)
 
-    #' part in inGroup and out-group  -----------------------------------------
+    #' part in inGroup and out-group
     inGroup$orthoID <- gsub("\\|", ":", inGroup$orthoID)
     inGroupDomainDf  <-  {
         subset(features, features$orthoID %in% inGroup$orthoID)
@@ -533,7 +525,7 @@ getBarplotGC <- function(selectedGene,
         subset(features, features$orthoID %in% outGroup$orthoID)
     }
 
-    #' get the dataframes for in- and out-group --------------------------------
+    #' get the dataframes for in- and out-group
     if (nrow(inGroupDomainDf) == 0) {
         dataIn <- NULL
     } else {
@@ -555,11 +547,11 @@ getBarplotGC <- function(selectedGene,
     seeds <- features$seedID
     seeds <- unique(seeds)
 
-    #' Get the values for the boxplot ------------------ -----------------------
+    #' Get the values for the boxplot
     inNotEmpty <- 0
     outNotEmpty <- 0
 
-    #' Count for each feature how often it is present in each seed -------------
+    #' Count for each feature how often it is present in each seed
     for (seed in seeds) {
         #' count the features in the in-group
         if (!is.null(dataIn)) {
@@ -636,7 +628,7 @@ getBarplotGC <- function(selectedGene,
         dataOut <- dataOut[dataOut$feature %in% keep$feature,]
     }
 
-    #' Calculate the average of appearances for each feature -------------------
+    #' Calculate the average of appearances for each feature
     if (!is.null(dataIn)) {
         dataIn$amount <- as.numeric(dataIn$amount)
         dataIn$amount <- dataIn$amount / inNotEmpty
@@ -649,7 +641,7 @@ getBarplotGC <- function(selectedGene,
         dataOut$type <- "Out-Group"
     }
 
-    #' Get the data for teh barplot --------------------------------------------
+    #' Get the data for teh barplot
     if (is.null(dataIn) & !is.null(dataOut)) {
         dataBarplot <- dataOut
     }  else if (is.null(dataOut) & !is.null(dataIn)) {
@@ -680,7 +672,7 @@ getBarplotGC <- function(selectedGene,
 
     dataBarplot <- dataBarplot[sort(dataBarplot$feature),]
 
-    #' generate the barplot ----------------------------------------------------
+    #' generate the barplot
     if (!is.null(dataBarplot)) {
         barplotGC <- ggplot(dataBarplot,
                              aes(x = feature, y = amount, fill = type ),
@@ -702,13 +694,12 @@ getBarplotGC <- function(selectedGene,
                   legend.text = element_text(size = parameters$legendSizeGC ),
                   legend.title = element_text(size = parameters$legendSizeGC))
 
-        #' return the barplot --------------------------------------------------
+        #' return the barplot
         return(barplotGC)
     } else (return(NULL))
 }
 
-#' get the plots to download --------------------------------------------------
-#' @export
+#' get the plots to download
 #' @param  gene gene for which the plot is generated
 #' @param interestingFeatures list of databases for which the features should
 #' be included
@@ -728,8 +719,7 @@ getPlotsToDownload <- function(
                          selectedPoint))
 }
 
-#' Get the pValues to print under the plot -----------------------------------
-#' @export
+#' Get the pValues to print under the plot
 #' @param pvalues list contianing the p-values for a specific gene
 #' @return string containing the information about the p-values
 #' @author Carla Mölbert (carla.moelbert@gmx.de)

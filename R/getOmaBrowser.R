@@ -71,7 +71,6 @@ getOmaDomainFromURL <- function(domainURL) {
     }
 
     pos <- strsplit(domains$location, ":")
-
     allPos <- unlist(pos)
     start <- allPos[c(TRUE, FALSE)]
     end <- allPos[c(FALSE, TRUE)]
