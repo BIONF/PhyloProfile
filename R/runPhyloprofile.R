@@ -15,6 +15,7 @@
 #' @import scales
 #' @import shinyBS
 #' @import shinycssloaders
+#' @import svMisc
 #' @import tidyr
 #' @import knitr
 #' @rawNamespace import(rmarkdown, except = c(pdf_document, md_document,

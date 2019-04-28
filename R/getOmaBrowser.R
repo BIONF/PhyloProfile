@@ -77,12 +77,15 @@ getOmaDomainFromURL <- function(domainURL) {
 
     feature <- ifelse(
         nchar(domains$name) > 0,
-        paste0(domains$source, "_", domains$domainid,
-               " (",domains$name,")"),
+        paste0(
+            domains$source, "_", domains$domainid, " (",domains$name,")"
+        ),
         paste0(domains$source, "_", domains$domainid)
     )
     feature <- gsub("#", "-", feature)
-    featureRep <- vapply(pos, FUN.VALUE = numeric(1), function (x) length(x) / 2)
+    featureRep <- vapply(
+        pos, FUN.VALUE = numeric(1), function (x) length(x) / 2
+    )
 
     return(data.frame(
         feature = rep(feature, featureRep),
@@ -227,9 +230,10 @@ getAllDomainsOma <- function(finalOmaDf) {
     length <- finalOmaDf$length
     feature <- finalOmaDf$domains
 
-    featureCount <- sapply(
+    featureCount <- vapply(
         feature,
-        function (x) length(unlist(strsplit(x, "\t")))
+        function (x) length(unlist(strsplit(x, "\t"))),
+        FUN.VALUE = numeric(1)
     )
 
     domainDf <- as.data.frame(

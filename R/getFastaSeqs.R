@@ -223,8 +223,10 @@ getFastaSeqs <- function(
                     fileList <- list.files(path, pattern = fileExt)
                     if(length(fileList) == 0) {
                         return(data.frame(
-                            fasta = paste0("No FASTA files with ", fileExt, 
-                                           "found in ", path),
+                            fasta = paste0(
+                                "No FASTA files with ", fileExt, 
+                                "found in ", path
+                            ),
                             stringsAsFactors = FALSE
                         ))
                     } else {
@@ -246,9 +248,11 @@ getFastaSeqs <- function(
                     file <- file[file.exists(file)]
                     if(length(file) == 0) {
                         return(data.frame(
-                            fasta = paste0("No FASTA files found in ", path,
-                                           "! Please check settings for file",
-                                           " extension and ID format again."),
+                            fasta = paste0(
+                                "No FASTA files found in ", path,
+                                "! Please check settings for file",
+                                " extension and ID format again."
+                            ),
                             stringsAsFactors = FALSE
                         ))
                     } else {

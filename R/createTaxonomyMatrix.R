@@ -49,6 +49,8 @@ getIDsRank <- function(inputTaxa, currentNCBIinfo){
     reducedInfoDf <- unique(rbindlist(inputTaxaInfo))
     
     ## get list of all ranks and rank IDs
+    rankMod <- NULL
+    ncbiID <- NULL
     inputRankIDDf <- lapply(
         seq_len(length(inputTaxaInfo)),
         function (x) {
@@ -259,9 +261,9 @@ taxonomyTableCreator <- function(idListFile, rankListFile){
     
     ### create a dataframe containing ordered ranks
     fullRankIDdf <- data.frame(
-        rank = matrix(unlist(orderedRank),
-                      nrow = length(orderedRank),
-                      byrow = TRUE),
+        rank = matrix(
+            unlist(orderedRank), nrow = length(orderedRank), byrow = TRUE
+        ),
         stringsAsFactors = FALSE
     )
     fullRankIDdf$index <- as.numeric(rownames(fullRankIDdf))
