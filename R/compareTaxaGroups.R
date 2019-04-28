@@ -91,31 +91,8 @@ getSignificantGenes <- function(
         if (is.null(ancestor)) return("No common ancestor found")
         inGroup <- ancestor[1]
         rank <- ancestor[2]
-    } else {
-        # rank <- substring(rank, 4)
-        rank <- rank
     }
     if (is.na(rank)) return("No common ancestor found")
-
-    # provide the empty data frame
-    if (var == "Both") {
-        significantGenesDf <- data.frame(
-            geneID = character(),
-            inGroup = I(list()),
-            outGroup = I(list()),
-            pvalues1 = I(list()),
-            pvalues2 = I(list()),
-            features = I(list()),
-            databases = I(list()))
-    } else {
-        significantGenesDf <- data.frame(
-            geneID = character(),
-            inGroup = I(list()),
-            outGroup = I(list()),
-            pvalues = I(list()),
-            features = I(list()),
-            databases = I(list()))
-    }
 
     # Get the list of genes to look at
     if (is.element("all", selectedGenesList)) {
@@ -133,11 +110,11 @@ getSignificantGenes <- function(
     )
 
     # Check for each gene if it is significant
-    for (gene in genes) {
+    calculatePvalue <- function (gene) {
         message("Analyzing the distribution of ", gene, "...")
         # Processing the dataframes for in- and out-group
         selectedGeneDf <- subset(dataFull, dataFull$geneID == gene)
-
+        
         inGroupDf <- {
             subset(
                 selectedGeneDf,
@@ -153,33 +130,44 @@ getSignificantGenes <- function(
         outGroupDf <- {
             subset(outGroupDf, !outGroupDf$fullName == referenceTaxon)
         }
-
+        
+        # Get gene features 
+        features  <- getFeatures(gene, domains)
+        
         # Generate and check the pValues for the gene
         pvalue <- getPValues(inGroupDf, outGroupDf, var, gene, parameters)
-        newRow <- data.frame(
-            geneID = gene,
-            inGroup = NA,
-            outGroup = NA,
-            pvalues = NA,
-            features = NA
-        )
-        newRow$inGroup <- list(inGroupDf)
-        newRow$outGroup <- list(outGroupDf)
-
+        list(inGroupDf)
         if (var == "Both") {
-            newRow$pvalues1 <- pvalue[1]
-            newRow$pvalues2 <- pvalue[2]
+            newRow <- list(
+                geneID = gene,
+                inGroup = I(list(inGroupDf)),
+                outGroup = I(list(outGroupDf)),
+                pvalues1 = I(pvalue[1]),
+                pvalues2 = I(pvalue[2]),
+                features = I(list(features))
+            )
         } else {
-            newRow$pvalues <- pvalue
+            newRow <- list(
+                geneID = gene,
+                inGroup = I(list(inGroupDf)),
+                outGroup = I(list(outGroupDf)),
+                pvalues = I(pvalue),
+                features = I(list(features))
+            )
         }
-
-        features  <- getFeatures(gene, domains)
-        newRow$features <- list(features)
+        
         if (rightFormatFeatures) {
-            newRow$databases <- list(getPrefixFeatures(features))
+            newRow$databases <- I(list(getPrefixFeatures(features)))
         }
-        significantGenesDf <- rbind(significantGenesDf, newRow)
+        
+        return(newRow)
     }
+    
+    ll <- lapply(
+        genes,
+        function (x) calculatePvalue(gene)
+    )
+    significantGenesDf <- data.frame(do.call(rbind, ll))
 
     if (var == "Both") {
         significantGenesDf$pvalues1 <- {
