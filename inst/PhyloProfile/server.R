@@ -1165,12 +1165,18 @@ shinyServer(function(input, output, session) {
                 }
 
                 ## parse taxonomy info
-                taxonomyInfo <- getIDsRank(titleline[2:length(titleline)],
-                                              allTaxonInfo)
-                rankList <- as.data.frame(taxonomyInfo[2])
-                idList <- as.data.frame(taxonomyInfo[1])
-                reducedInfoList <- as.data.frame(taxonomyInfo[3])
-
+                withProgress(
+                    message = "Parsing new taxa...",
+                    value = 0, {
+                        taxonomyInfo <- getIDsRank(
+                            titleline[2:length(titleline)], allTaxonInfo
+                        )
+                        rankList <- as.data.frame(taxonomyInfo[2])
+                        idList <- as.data.frame(taxonomyInfo[1])
+                        reducedInfoList <- as.data.frame(taxonomyInfo[3])
+                    }
+                )
+                
                 withProgress(message = "Generating taxonomy file...",
                              value = 0, {
                     # open existing files
@@ -1210,16 +1216,10 @@ shinyServer(function(input, output, session) {
                         stringsAsFactors = TRUE
                     )
 
-
                     # and append new info into those files
                     newIDList <- rbind.fill(oldIDList, idList)
                     newRankList <- rbind.fill(oldRankList, rankList)
-                    colnames(reducedInfoList) <- c("ncbiID",
-                                                   "fullName",
-                                                   "rank",
-                                                   "parentID")
-                    newNameList <- rbind.fill(oldNameList,
-                                               reducedInfoList)
+                    newNameList <- rbind.fill(oldNameList, reducedInfoList)
 
                     # write output files
                     # (idList, rankList and taxonNamesReduced)

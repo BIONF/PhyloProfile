@@ -17,9 +17,9 @@ biocViews: Software, Visualization, DataRepresentation, MultipleComparison, Func
 Imports:
     ape, bioDist, BiocStyle, Biostrings, Cairo, colourpicker, data.table,
     dendextend, devtools, dplyr, DT, energy, IRanges, GenomeInfoDbData, ggplot2,
-    gplots, GO.db, grDevices, gridExtra, gtable, knitr, RColorBrewer, RCurl, 
-    reshape2, rmarkdown, scales, shiny, shinyBS, shinycssloaders, shinyjs, 
-    stats, stringr, svMisc, tidyr, utils, OmaDB, plyr, xml2, zoo
+    gplots, GO.db, grDevices, gridExtra, gtable, knitr, pbapply, RColorBrewer,
+    RCurl, reshape2, rmarkdown, scales, shiny, shinyBS, shinycssloaders,
+    shinyjs, stats, stringr, svMisc, tidyr, utils, OmaDB, plyr, xml2, zoo
 RoxygenNote: 6.1.1
 Suggests:
     testthat
