@@ -35,16 +35,15 @@ test_that("test distritbution analyze functions", {
     refTaxon <- inputTaxonName$fullName[1]
     taxaTree <- NULL
 
-    sortedTaxa <- sortInputTaxa(inputTaxonID,
-                                inputTaxonName,
-                                rankName,
-                                refTaxon,
-                                taxaTree)
+    sortedTaxa <- sortInputTaxa(
+        inputTaxonID, inputTaxonName, rankName, refTaxon, taxaTree
+    )
 
-    fullProfileData <- parseInfoProfile(inputData,
-                                        sortedTaxa,
-                                        "max",
-                                        "mean")
+    fullProfileData <- parseInfoProfile(
+        inputData,
+        sortedTaxa,
+        "max", "mean"
+    )
     selectedGenes <- c("OG_1017", "OG_1019")
     selectedTaxa <- c("Arabidopsis thaliana", "Encephalitozoon intestinalis")
     subsetDistributionData <- createVariableDistributionDataSubset(
@@ -56,10 +55,8 @@ test_that("test distritbution analyze functions", {
     expect_true(ncol(subsetDistributionData) == 5)
 
     # plot distribution of var1
-    p <- createVarDistPlot(distributionData,
-                              "variable 1 name",
-                              "var1",
-                              NULL,
-                              12)
+    p <- createVarDistPlot(
+        distributionData, "variable 1 name", "var1", NULL, 12
+    )
     expect_true(nrow(p$data) == 6)
 })

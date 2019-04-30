@@ -1,7 +1,9 @@
-filterProfileData#' Import function files
-sourceFiles = list.files(path = "R",
-                          pattern = "*.R$",
-                          full.names = TRUE)
+#' Import function files
+sourceFiles = list.files(
+    path = "R",
+    pattern = "*.R$",
+    full.names = TRUE
+)
 lapply(sourceFiles, source, .GlobalEnv)
 
 #' set size limit for input (9999mb)
