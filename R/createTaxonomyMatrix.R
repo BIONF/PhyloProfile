@@ -82,15 +82,12 @@ getIDsRank <- function(inputTaxa, currentNCBIinfo){
         function (x) {
             ll <- c(
                 paste0("ncbi", titleline[x]),
-                reducedInfoDf$fullName[
-                    reducedInfoDf$ncbiID == titleline[x]
-                    ],
+                reducedInfoDf$fullName[reducedInfoDf$ncbiID == titleline[x]],
                 inputRankIDDf[[x]]$rank,
                 "norank_1"
             )
             return(data.frame(
-                matrix(ll, nrow = 1, byrow = TRUE),
-                stringsAsFactors = FALSE
+                matrix(ll, nrow = 1, byrow = TRUE), stringsAsFactors = FALSE
             ))
         }
     )
@@ -102,17 +99,14 @@ getIDsRank <- function(inputTaxa, currentNCBIinfo){
         function (x) {
             ll <- c(
                 paste0(
-                    reducedInfoDf$fullName[
-                        reducedInfoDf$ncbiID == titleline[x]
-                        ],
+                    reducedInfoDf$fullName[reducedInfoDf$ncbiID ==titleline[x]],
                     "#name"
                 ),
                 inputRankIDDf[[x]]$id,
                 "1#norank_1"
             )
             return(data.frame(
-                matrix(ll, nrow = 1, byrow = TRUE),
-                stringsAsFactors = FALSE
+                matrix(ll, nrow = 1, byrow = TRUE), stringsAsFactors = FALSE
             ))
         }
     )
@@ -172,8 +166,7 @@ rankIndexing <- function(rankListFile){
         ## which contains only ranks existing in allInputRank
         subList <- rankList[k,][!is.na(rankList[k,])]
         filter <- vapply(
-            subList, function(x) x %in% allInputRank,
-            FUN.VALUE = logical(1)
+            subList, function(x) x %in% allInputRank, FUN.VALUE = logical(1)
         )
         subList <- subList[filter]
 
@@ -299,10 +292,7 @@ taxonomyTableCreator <- function(idListFile, rankListFile){
             splitCol <- data.frame(
                 do.call(
                     'rbind',
-                    strsplit(
-                        as.character(mTaxonDf$value), '#',
-                        fixed = TRUE
-                    )
+                    strsplit(as.character(mTaxonDf$value), '#', fixed = TRUE)
                 )
             )
             mTaxonDf <- cbind(mTaxonDf, splitCol)

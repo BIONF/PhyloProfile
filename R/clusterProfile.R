@@ -99,8 +99,7 @@ getDistanceMatrix <- function(profiles, method) {
         for (i in seq_len(nrow(profiles))) { # rows
             p_i <- unlist(profiles[i,])
             for (j in seq_len(nrow(profiles))) { # columns
-                if (i == j)
-                    break
+                if (i == j) break
                 matrix[i, j] <- dcor(p_i, unlist(profiles[j,]))
             }
         }

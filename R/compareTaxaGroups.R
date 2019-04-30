@@ -177,10 +177,7 @@ getSignificantGenes <- function(
         return(newRow)
     }
 
-    ll <- lapply(
-        genes,
-        function (x) calculatePvalue(x)
-    )
+    ll <- lapply(genes, function (x) calculatePvalue(x))
     significantGenesDf <- data.frame(do.call(rbind, ll))
 
     if (var == "Both") {
@@ -280,16 +277,12 @@ getCommonAncestor <- function(inGroup,
                                 ncbiIDList){
 
     allRanks <- getTaxonomyRanks()
-
-    taxonomyMatrix <- {
-        taxonomyMatrix[!duplicated(taxonomyMatrix), ]
-    }
+    taxonomyMatrix <- taxonomyMatrix[!duplicated(taxonomyMatrix), ]
 
     # ranks were all elements of the inGroup might be in the same taxon
     # possibleRanks <- allRanks[allRanks >= rank]
     possibleRanks <- allRanks[match(rank, allRanks):(length(allRanks)-1)]
     position <-  1
-    if (length(inGroup) == 1) rank <- rank #substring(rank, 4)
 
     # find the common ancestor of all taxa in the inGroup
     while (length(inGroup) > 1 & position < length(possibleRanks)) {
@@ -304,8 +297,9 @@ getCommonAncestor <- function(inGroup,
         dfInGroup <- subset(dfInGroup, dfInGroup$fullName %in% inGroup)
 
         # get all elements which could belong to the in-group
-        possibleInGroup <- subset(taxonomyMatrix,
-                                    select = c(currentRank, nextRank))
+        possibleInGroup <- subset(
+            taxonomyMatrix, select = c(currentRank, nextRank)
+        )
         possibleInGroup <- {
             possibleInGroup[
                 possibleInGroup[,currentRank] %in% dfInGroup$ncbiID,
@@ -316,12 +310,10 @@ getCommonAncestor <- function(inGroup,
         # only consider elements that have the next higher rank
         subsetNextRank <- taxaSelectGC(nextRank, ncbiIDList)
         subsetNextRank <- subsetNextRank[!duplicated(subsetNextRank), ]
-        subsetNextRank <- {
-            subset(
-                subsetNextRank,
-                subsetNextRank$ncbiID %in% possibleInGroup[, nextRank]
-            )
-        }
+        subsetNextRank <- subset(
+            subsetNextRank, 
+            subsetNextRank$ncbiID %in% possibleInGroup[, nextRank]
+        )
         inGroup <- subsetNextRank$fullName
         position <- position + 1
         rank <- nextRank
@@ -371,15 +363,10 @@ getPValues <- function(inGroup, outGroup, variable, gene, parameters){
     # get the p-values for both variables
     if (variable == "Both") {
         pvalues1 <- calculatePValue(
-            inGroup$var1,
-            outGroup$var1,
-            significanceLevel
+            inGroup$var1, outGroup$var1, significanceLevel
         )
-
         pvalues2 <- calculatePValue(
-            inGroup$var2,
-            outGroup$var2,
-            significanceLevel
+            inGroup$var2, outGroup$var2, significanceLevel
         )
         pvalues <- list(pvalues1, pvalues2)
         return(pvalues)
@@ -389,18 +376,13 @@ getPValues <- function(inGroup, outGroup, variable, gene, parameters){
         # Check which variable is selected and get the pValues
         if (variable == parameters$var1ID) {
             pvalues <- calculatePValue(
-                inGroup$var1,
-                outGroup$var1,
-                significanceLevel
+                inGroup$var1, outGroup$var1, significanceLevel
             )
         } else {
             pvalues <- calculatePValue(
-                inGroup$var2,
-                outGroup$var2,
-                significanceLevel
+                inGroup$var2, outGroup$var2, significanceLevel
             )
         }
-
         return(pvalues)
     }
 }
@@ -428,21 +410,16 @@ calculatePValue <- function(varIn, varOut, significanceLevel){
         ks <- suppressWarnings(
             ks.test(unique(varIn), unique(varOut), exact = FALSE)
         )
-
         pValue <- ks$p.value # probabilitiy to recet H0, if it is correct
 
         if (pValue < significanceLevel) pvalue <- c(pValue)
-
         else {
             # * Wilcoxon-Mann-Whitney Test
             # H0: the samples have the same location parameters
-
             wilcox <- suppressWarnings(
-                wilcox.test(varIn,
-                            varOut,
-                            alternative = "two.sided",
-                            #exact = FALSE,
-                            paired = FALSE)
+                wilcox.test(
+                    varIn, varOut, alternative = "two.sided", paired = FALSE
+                )
             )
             pValueWilcox <- wilcox$p.value
             # pvalue <- c(pValue, pValueWilcox)
@@ -461,7 +438,7 @@ calculatePValue <- function(varIn, varOut, significanceLevel){
         # ) # compaires the means of the distributions
         # pvalue <- perm$p.value
 
-        # return the calculated pvalues ----------------------------------------
+        # return the calculated pvalues
         return(pvalue)
     }
 }
@@ -473,16 +450,12 @@ calculatePValue <- function(varIn, varOut, significanceLevel){
 #' "feature", "start",   "end"
 #' @author Carla Mölbert (carla.moelbert@gmx.de)
 getFeatures <- function(selectedGene, domains){
-    subsetDomains <- {
-        subset(
-            domains,
-            substr(
-                domains$seedID,
-                1,
-                nchar(as.character(selectedGene))
-            ) == selectedGene
-        )
-    }
+    subsetDomains <- subset(
+        domains,
+        substr(
+            domains$seedID, 1, nchar(as.character(selectedGene))
+        ) == selectedGene
+    )
     subsetDomains <- subsetDomains[!duplicated(subsetDomains), ]
     return(subsetDomains)
 }
@@ -508,19 +481,14 @@ taxaSelectGC <- function(rankSelectGC, inputTaxonID){
     if (length(rankSelectGC) == 0) return()
     else{
         # load list of unsorted taxa
-        if (is.null(inputTaxonID)) dt <- getTaxonomyMatrix(
-            FALSE, inputTaxonID
-        )
+        if (is.null(inputTaxonID)) dt <- getTaxonomyMatrix(FALSE, inputTaxonID)
         else dt <- getTaxonomyMatrix(TRUE, inputTaxonID)
 
         # load list of taxon name
         nameList <- getNameList()
 
         # get rank name from rankSelect
-        if (substr(rankSelectGC,3,3) == "_") {
-            # rankName <- substr(rankSelectGC, 4, nchar(rankSelectGC))
-            rankName <- rankSelectGC
-        }
+        if (substr(rankSelectGC,3,3) == "_") rankName <- rankSelectGC
         else rankName <- rankSelectGC
 
         choice <- as.data.frame

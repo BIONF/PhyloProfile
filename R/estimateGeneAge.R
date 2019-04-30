@@ -86,10 +86,7 @@ estimateGeneAge <- function(
     )]
 
     ### add "category" into mdData
-    mdDataExtended <- merge(mdData,
-                            catDf,
-                            by = "ncbiID",
-                            all.x = TRUE)
+    mdDataExtended <- merge(mdData, catDf, by = "ncbiID", all.x = TRUE)
 
     mdDataExtended$var1[mdDataExtended$var1 == "NA"
                         | is.na(mdDataExtended$var1)] <- 0

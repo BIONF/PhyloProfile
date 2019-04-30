@@ -49,16 +49,12 @@ createArchiPlot <- function(
     subdomainDf <- domainDf[grep(grepID, domainDf$seedID), ]
     subdomainDf$feature <- as.character(subdomainDf$feature)
 
-    if (nrow(subdomainDf) < 1) {
-        return(paste0("ERR-0"))
-    } else {
-
+    if (nrow(subdomainDf) < 1) return(paste0("ERR-0"))
+    else {
         # ortho domains df
         orthoDf <- dplyr::filter(subdomainDf, orthoID == ortho)
-
         # seed domains df
         seedDf <- dplyr::filter(subdomainDf, orthoID != ortho)
-
         if (nrow(seedDf) == 0) seedDf <- orthoDf
 
         seed <- as.character(seedDf$orthoID[1])
@@ -104,11 +100,7 @@ createArchiPlot <- function(
         featureOrtho <- levels(as.factor(orderedOrthoDf$feature))
         allFeatures <- c(featureSeed, featureOrtho)
         allColors <- getQualColForVector(allFeatures)
-
-        colorScheme <- structure(
-            allColors,
-            .Names = allFeatures
-        )
+        colorScheme <- structure(allColors, .Names = allFeatures)
 
         # plotting
         sep <- "|"
@@ -267,31 +259,24 @@ domainPlotting <- function(df,
 
     # draw line and points
     gg <- gg + geom_segment(
-        data = df,
-        aes(x = start, xend = end, y = feature, yend = feature),
+        data = df, aes(x = start, xend = end, y = feature, yend = feature),
         size = 1.5
     )
     gg <- gg + geom_point(
-        data = df,
-        aes(y = feature, x = start),
-        color = "#b2b2b2",
-        size = 3,
-        shape = 3
+        data = df, aes(y = feature, x = start), 
+        color = "#b2b2b2", size = 3, shape = 3
     )
     gg <- gg + geom_point(
-        data = df,
-        aes(y = feature, x = end),
-        color = "#edae52",
-        size = 3,
-        shape = 5
+        data = df, aes(y = feature, x = end),
+        color = "#edae52", size = 3, shape = 5
     )
 
     # draw dashed line for domain path
-    gg <- gg + geom_segment(data = df[df$path == "Y", ],
-                            aes(x = start, xend = end,
-                                y = feature, yend = feature),
-                            size = 3,
-                            linetype = "dashed")
+    gg <- gg + geom_segment(
+        data = df[df$path == "Y", ],
+        aes(x = start, xend = end, y = feature, yend = feature),
+        size = 3, linetype = "dashed"
+    )
 
     # # add text above
     # gg <- gg + geom_text(data = df,
@@ -305,9 +290,9 @@ domainPlotting <- function(df,
 
     # theme format
     titleMod <- gsub(":", sep, geneID)
-    gg <- gg + scale_y_discrete(expand = c(0.075, 0),
-                                breaks = df$feature,
-                                labels = df$yLabel)
+    gg <- gg + scale_y_discrete(
+        expand = c(0.075, 0), breaks = df$feature, labels = df$yLabel
+    )
     gg <- gg + labs(title = paste0(titleMod), y = "Feature")
     gg <- gg + theme_minimal()
     gg <- gg + theme(panel.border = element_blank())
@@ -370,8 +355,7 @@ sortDomains <- function(seedDf, orthoDf){
     orderedOrthoDf$feature <- as.character(orderedOrthoDf$feature)
     #then turn it back into an ordered factor (to keep this order when plotting)
     orderedOrthoDf$feature <- factor(
-        orderedOrthoDf$feature,
-        levels = unique(orderedOrthoDf$feature)
+        orderedOrthoDf$feature, levels = unique(orderedOrthoDf$feature)
     )
     #return sorted df
     return(orderedOrthoDf)

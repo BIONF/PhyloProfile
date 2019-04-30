@@ -30,9 +30,7 @@ createPercentageDistributionData <- function(inputData, rankName) {
 
     # (3) GET SORTED TAXONOMY LIST (3)
     inputTaxonID <- getInputTaxaID(inputData)
-    inputTaxonName <- getInputTaxaName(
-        rankName, inputTaxonID
-    )
+    inputTaxonName <- getInputTaxaName(rankName, inputTaxonID)
     refTaxon <- inputTaxonName$fullName[1]
     taxaTree <- NULL
 
@@ -83,23 +81,13 @@ createVariableDistributionData <- function(
 ) {
     dataOrig <- inputData
     if (ncol(dataOrig) < 4) {
-        colnames(dataOrig) <- c("geneID",
-                                "ncbiID",
-                                "orthoID")
+        colnames(dataOrig) <- c("geneID", "ncbiID", "orthoID")
         splitDt <- dataOrig[, c("orthoID")]
     } else if (ncol(dataOrig) < 5) {
-        colnames(dataOrig) <- c("geneID",
-                                "ncbiID",
-                                "orthoID",
-                                "var1")
-        splitDt <- dataOrig[, c("orthoID",
-                                "var1")]
+        colnames(dataOrig) <- c("geneID", "ncbiID", "orthoID", "var1")
+        splitDt <- dataOrig[, c("orthoID", "var1")]
     } else {
-        colnames(dataOrig) <- c("geneID",
-                                "ncbiID",
-                                "orthoID",
-                                "var1",
-                                "var2")
+        colnames(dataOrig) <- c("geneID", "ncbiID", "orthoID", "var1", "var2")
         splitDt <- dataOrig[, c("orthoID", "var1", "var2")]
     }
 
@@ -107,21 +95,21 @@ createVariableDistributionData <- function(
     splitDt <- splitDt[complete.cases(splitDt), ]
 
     if (length(levels(as.factor(splitDt$var2))) == 1) {
-        if (levels(as.factor(splitDt$var2)) == "") {
-            splitDt$var2 <- 0
-        }
+        if (levels(as.factor(splitDt$var2)) == "") splitDt$var2 <- 0
     }
 
     # Filter based on variable cutoffs
     if ("var1" %in% colnames(splitDt)) {
         # filter splitDt based on selected var1 cutoff
-        splitDt <- splitDt[splitDt$var1 >= var1CutoffMin
-                            & splitDt$var1 <= var1CutoffMax, ]
+        splitDt <- splitDt[
+            splitDt$var1 >= var1CutoffMin & splitDt$var1 <= var1CutoffMax, 
+        ]
     }
     if ("var2" %in% colnames(splitDt)) {
         # filter splitDt based on selected var2 cutoff
-        splitDt <- splitDt[splitDt$var2 >= var2CutoffMin
-                            & splitDt$var2 <= var2CutoffMax, ]
+        splitDt <- splitDt[
+            splitDt$var2 >= var2CutoffMin & splitDt$var2 <= var2CutoffMax, 
+        ]
     }
 
     return(splitDt)
@@ -176,33 +164,17 @@ createVariableDistributionDataSubset <- function(
     splitDt <- distributionData
 
     # get geneID and supertaxon name for splitDt
-    splitDtName <- merge(
-        splitDt, allData,
-        by = "orthoID",
-        all.x = TRUE
+    splitDtName <- merge(splitDt, allData, by = "orthoID", all.x = TRUE)
+    splitDtName$supertaxonMod <- substr(
+        splitDtName$supertaxon, 6, nchar(as.character(splitDtName$supertaxon))
     )
-    splitDtName$supertaxonMod <-
-        substr(
-            splitDtName$supertaxon,
-            6,
-            nchar(as.character(splitDtName$supertaxon))
-        )
     splitDtName <- subset(
         splitDtName,
-        select = c(
-            orthoID,
-            var1.x,
-            var2.y,
-            supertaxonMod,
-            geneID
+        select = c(orthoID, var1.x, var2.y, supertaxonMod, geneID
         )
     )
     colnames(splitDtName) <- c(
-        "orthoID",
-        "var1",
-        "var2",
-        "supertaxonMod",
-        "geneID"
+        "orthoID", "var1", "var2", "supertaxonMod", "geneID"
     )
 
     # filter
@@ -215,9 +187,8 @@ createVariableDistributionDataSubset <- function(
     } else {
         # select data from dataHeat for selected sequences and taxa
         splitDt <- subset(
-            splitDtName,
-            geneID %in% selectedGenes
-            & supertaxonMod %in% selectedTaxa
+            splitDtName, 
+            geneID %in% selectedGenes & supertaxonMod %in% selectedTaxa
         )
     }
 
@@ -271,8 +242,9 @@ createVarDistPlot <- function(
     if (varType == "presSpec") {
         # remove presSpec < cutoffMin or > cutoffMax
         if (percent[1] > 0) {
-            data <- data[data$presSpec >= percent[1]
-                        & data$presSpec <= percent[2], ]
+            data <- data[
+                data$presSpec >= percent[1] & data$presSpec <= percent[2], 
+            ]
         } else {
             if (percent[2] > 0) {
                 data <- data[data$presSpec > 0 & data$presSpec <= percent[2], ]
@@ -280,9 +252,7 @@ createVarDistPlot <- function(
                 data <- data[data$presSpec > 0, ]
             }
         }
-    } else {
-        data <- data[!is.na(data[,varType]), ]
-    }
+    } else data <- data[!is.na(data[,varType]), ]
 
     data.mean <- mean(data[,varType])
 
@@ -295,21 +265,14 @@ createVarDistPlot <- function(
             size = 1
         ) +
         theme_minimal()
-    p <- p +
-        theme(
+    p <- p + theme(
             legend.position = "none",
             axis.title = element_text(size = distTextSize),
             axis.text = element_text(size = distTextSize)
         ) +
         labs(
-            x = paste0(
-                varName,
-                " (mean = ",
-                round(mean(data[,varType]), 3),
-                ")"
-            ),
+            x = paste0(varName," (mean = ", round(mean(data[,varType]), 3),")"),
             y = "Frequency"
         )
-
     return(p)
 }

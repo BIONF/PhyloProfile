@@ -78,21 +78,14 @@ getOmaDomainFromURL <- function(domainURL) {
 
     feature <- ifelse(
         nchar(domains$name) > 0,
-        paste0(
-            domains$source, "_", domains$domainid, " (",domains$name,")"
-        ),
+        paste0(domains$source, "_", domains$domainid, " (",domains$name,")"),
         paste0(domains$source, "_", domains$domainid)
     )
     feature <- gsub("#", "-", feature)
-    featureRep <- vapply(
-        pos, FUN.VALUE = numeric(1), function (x) length(x) / 2
-    )
+    featureRep <- vapply(pos, FUN.VALUE = numeric(1), function (x) length(x)/2)
 
     return(data.frame(
-        feature = rep(feature, featureRep),
-        start,
-        end,
-        stringsAsFactors = FALSE
+        feature = rep(feature, featureRep), start, end, stringsAsFactors = FALSE
     ))
 }
 
@@ -169,13 +162,11 @@ getDataForOneOma <- function(seedID, orthoType){
     raw <- OmaDB::getProtein(idList)
 
     seq <- lapply(
-        seq(length(raw)),
-        function (x) as.character(raw[[x]]$sequence)
+        seq(length(raw)), function (x) as.character(raw[[x]]$sequence)
     )
 
     length <- lapply(
-        seq(length(raw)),
-        function (x) raw[[x]]$sequence_length
+        seq(length(raw)), function (x) raw[[x]]$sequence_length
     )
 
     domains <- lapply(

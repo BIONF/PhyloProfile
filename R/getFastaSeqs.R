@@ -62,11 +62,8 @@ getFastaSeqs <- function(
     idFormat = NULL
 ){
     # check main input
-    if (!is.null(filein)) {
-        inputType <- checkInputValidity(filein)
-    } else{
-        inputType <- "NA"
-    }
+    if (!is.null(filein)) inputType <- checkInputValidity(filein)
+    else inputType <- "NA"
 
     # get seqs for AMPK-TOR and microsporidia ONLINE demo data -----------------
     if (demoData == "ampk-tor" | demoData == "lca-micros") {
@@ -238,9 +235,7 @@ getFastaSeqs <- function(
                         faFile <- Biostrings::readAAStringSet(fileWithPath)
                     }
                 } else {
-                    specID <- as.character(
-                        levels(as.factor(specDf$specID))
-                    )
+                    specID <- as.character(levels(as.factor(specDf$specID)))
                     specID <- specID[specID != ""]
                     
                     file <- paste0(path, "/", specID, ".", fileExt)

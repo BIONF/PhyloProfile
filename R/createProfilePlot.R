@@ -22,9 +22,7 @@ dataMainPlot <- function(dataHeat){
     )])
 
     dataHeat <- merge(
-        dataHeat, dataHeatTb,
-        by = c("geneID", "supertaxon"),
-        all.x = TRUE
+        dataHeat, dataHeatTb, by = c("geneID", "supertaxon"), all.x = TRUE
     )
     dataHeat$paralog <- dataHeat$paralogNew
     dataHeat <- dataHeat[!duplicated(dataHeat), ]
@@ -74,22 +72,20 @@ dataCustomizedPlot <- function(dataHeat, selectedTaxa, selectedSeq){
         dataHeat <- subset(dataHeat, supertaxonMod %in% selectedTaxa)
     } else {
         # select data from dataHeat for selected sequences and taxa
-        dataHeat <- subset(dataHeat,
-                            geneID %in% selectedSeq
-                            & supertaxonMod %in% selectedTaxa)
+        dataHeat <- subset(
+            dataHeat, geneID %in% selectedSeq & supertaxonMod %in% selectedTaxa
+        )
     }
 
     # reduce number of inparalogs based on filtered dataHeat
     dataHeatTb <- data.table(na.omit(dataHeat))
     dataHeatTb[, paralogNew := .N, by = c("geneID", "supertaxon")]
-    dataHeatTb <- data.frame(dataHeatTb[, c("geneID",
-                                            "supertaxon",
-                                            "paralogNew")])
+    dataHeatTb <- data.frame(
+        dataHeatTb[, c("geneID", "supertaxon", "paralogNew")]
+    )
 
     dataHeat <- merge(
-        dataHeat, dataHeatTb,
-        by = c("geneID", "supertaxon"),
-        all.x = TRUE
+        dataHeat, dataHeatTb, by = c("geneID", "supertaxon"), all.x = TRUE
     )
     dataHeat$paralog <- dataHeat$paralogNew
     dataHeat <- dataHeat[!duplicated(dataHeat), ]
@@ -193,9 +189,11 @@ heatmapPlotting <- function(data, plotParameter){
             warn_missing = FALSE,
             data$supertaxon,
             from = as.character(data$supertaxon),
-            to = substr(as.character(data$supertaxon),
-                        6,
-                        nchar(as.character(data$supertaxon)))
+            to = substr(
+                as.character(data$supertaxon),
+                6,
+                nchar(as.character(data$supertaxon))
+            )
         )
     }
 
@@ -233,16 +231,13 @@ heatmapPlotting <- function(data, plotParameter){
                                 na.rm = TRUE)
             # color of the corresponding aes (var1)
             p <- p + scale_color_gradient(
-                low = lowColorVar1,
-                high = highColorVar1,
-                limits = c(0, 1)
+                low = lowColorVar1, high = highColorVar1, limits = c(0, 1)
             )
         }
     } else {
         if (length(unique(na.omit(data$var1))) == 1) {
             # geom_point for circle illusion (var1 and presence/absence)
-            p <- p + geom_point(aes(size = presSpec),
-                                color = "#336a98",
+            p <- p + geom_point(aes(size = presSpec), color = "#336a98",
                                 na.rm = TRUE)
         } else {
             # geom_point for circle illusion (var1 and presence/absence)
@@ -251,19 +246,17 @@ heatmapPlotting <- function(data, plotParameter){
             # color of the corresponding aes (var1)
             p <- p +
                 scale_color_gradient(
-                    low = lowColorVar1, high = highColorVar1,
-                    limits = c(0, 1)
+                    low = lowColorVar1, high = highColorVar1, limits = c(0, 1)
                 )
         }
     }
 
     # plot inparalogs (if available)
     if (length(unique(na.omit(data$paralog))) > 0) {
-        p <- p + geom_point(data = data,
-                            aes(size = paralog),
-                            color = paraColor,
-                            na.rm = TRUE,
-                            show.legend = TRUE)
+        p <- p + geom_point(
+            data = data, aes(size = paralog), color = paraColor,
+            na.rm = TRUE, show.legend = TRUE
+        )
         p <- p + guides(size = guide_legend(title = "# of co-orthologs"))
 
         # to tune the size of circles
@@ -408,9 +401,7 @@ highlightProfilePlot <- function(
             )
             res <- tryCatch(
                 utils::download.file(
-                    fileURL,
-                    destfile = nameReducedFile,
-                    method="auto"
+                    fileURL, destfile = nameReducedFile, method="auto"
                 ),
                 error=function(e) 1
             )
@@ -420,8 +411,7 @@ highlightProfilePlot <- function(
 
         taxonHighlightID <- {
             taxaList$ncbiID[
-                taxaList$fullName == taxonHighlight
-                & taxaList$rank == rankName
+                taxaList$fullName == taxonHighlight & taxaList$rank == rankName
             ]
         }
 

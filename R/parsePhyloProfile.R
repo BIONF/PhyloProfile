@@ -25,19 +25,14 @@ getNameList <- function() {
         )
         res <- tryCatch(
             utils::download.file(
-                fileURL,
-                destfile = nameReducedFile,
-                method="auto"
+                fileURL, destfile = nameReducedFile, method="auto"
             ),
             error=function(e) 1
         )
     }
 
     nameList <- read.table(
-        nameReducedFile,
-        sep = "\t",
-        header = TRUE,
-        fill = TRUE
+        nameReducedFile, sep = "\t", header = TRUE, fill = TRUE
     )
     nameList$fullName <- as.character(nameList$fullName)
     nameList$rank <- as.character(nameList$rank)
@@ -79,19 +74,14 @@ getTaxonomyMatrix <- function(subsetTaxaCheck, taxonIDs){
         )
         res <- tryCatch(
             utils::download.file(
-                fileURL,
-                destfile = taxonomyMatrixFile,
-                method="auto"
+                fileURL, destfile = taxonomyMatrixFile, method="auto"
             ),
             error=function(e) 1
         )
     }
 
     dt <- read.table(
-        taxonomyMatrixFile,
-        sep = "\t",
-        header = TRUE,
-        stringsAsFactors = TRUE
+        taxonomyMatrixFile, sep = "\t", header = TRUE, stringsAsFactors = TRUE
     )
     if (subsetTaxaCheck) dt <- dt[dt$abbrName  %in% taxonIDs, ]
     return(dt)
@@ -141,8 +131,7 @@ getInputTaxaName <- function(rankName, taxonIDs){
 
     # return
     choice <- data.frame(
-        "ncbiID" = unlist(Dt[rankName]),
-        stringsAsFactors = FALSE
+        "ncbiID" = unlist(Dt[rankName]), stringsAsFactors = FALSE
     )
     choice <- merge(choice, nameList, by = "ncbiID", all = FALSE)
     return(choice)
@@ -182,12 +171,11 @@ sortInputTaxa <- function(taxonIDs, taxonNames, rankName, refTaxon, taxaTree){
     rankNameTMP <- taxonNames$rank[taxonNames$fullName == refTaxon]
     if (rankName == "strain") {
         superID <- fullnameList$ncbiID[
-            fullnameList$fullName == refTaxon
-            & fullnameList$rank == "norank"
+            fullnameList$fullName == refTaxon & fullnameList$rank == "norank"
             ]
     } else {
         superID <- fullnameList$ncbiID[
-            fullnameList$fullName == refTaxon 
+            fullnameList$fullName == refTaxon  
             & fullnameList$rank == rankNameTMP[1]
             ]
     }
@@ -223,18 +211,13 @@ sortInputTaxa <- function(taxonIDs, taxonNames, rankName, refTaxon, taxaTree){
     # get only taxonIDs list of selected rank and rename columns
     sortedOut <- subset(
         sortedDt,
-        select = c(
-            "abbrName", "ncbiID", "fullName", as.character(rankName)
-        )
+        select = c("abbrName", "ncbiID", "fullName", as.character(rankName))
     )
     colnames(sortedOut) <- c("abbrName", "species", "fullName", "ncbiID")
     
     # add name of supertaxa into sortedOut list
     sortedOut <- merge(
-        sortedOut, fullnameList,
-        by = "ncbiID",
-        all.x = TRUE,
-        sort = FALSE
+        sortedOut, fullnameList, by = "ncbiID", all.x = TRUE, sort = FALSE
     )
     sortedOut$species <- paste0("ncbi", sortedOut$species)
     
@@ -318,8 +301,7 @@ calcPresSpec <- function(profileWithTax, taxaCount){
 
     # count present frequency of supertaxon for each gene
     geneSupertaxonCount <- plyr::count(
-        profileWithTaxNoNA,
-        c("geneID", "supertaxon")
+        profileWithTaxNoNA, c("geneID", "supertaxon")
     )
 
     # merge with taxaCount to get total number of species of each supertaxon
@@ -344,10 +326,8 @@ calcPresSpec <- function(profileWithTax, taxaCount){
         geneIDSupertaxon, select = -c(paralog, abbrName)
     )
     finalPresSpecDt <- merge(
-        presSpecDt,
-        geneIDSupertaxon,
-        by = c("geneID", "supertaxon"),
-        all.y = TRUE
+        presSpecDt, geneIDSupertaxon,
+        by = c("geneID", "supertaxon"), all.y = TRUE
     )
     finalPresSpecDt$presSpec[is.na(finalPresSpecDt$presSpec)] <- 0
 
@@ -403,11 +383,8 @@ parseInfoProfile <- function(
     mdData <- inputDf
     # rename columns of 2 additional variables
     if (ncol(mdData) > 3) {
-        if (ncol(mdData) < 5) {
-            colnames(mdData)[4] <- "var1"
-        } else {
-            colnames(mdData)[c(4,5)] <- c("var1", "var2")
-        }
+        if (ncol(mdData) < 5) colnames(mdData)[4] <- "var1"
+        else colnames(mdData)[c(4,5)] <- c("var1", "var2")
     }
 
     # count number of inparalogs
@@ -460,17 +437,12 @@ parseInfoProfile <- function(
     )
 
     # (2+3+4) add presSpec and mVar1 into taxaMdData
-    presMdData <- merge(taxaMdData,
-                        finalPresSpecDt,
-                        by = c("geneID", "supertaxon"),
-                        all.x = TRUE)
-    fullMdData <- merge(presMdData,
-                        scoreDf,
-                        by = c("geneID", "supertaxon"),
-                        all.x = TRUE)
-    fullMdData <- merge(fullMdData,
-                        taxaCount, by = ("supertaxon"),
-                        all.x = TRUE)
+    presMdData <- merge(taxaMdData, finalPresSpecDt,
+                        by = c("geneID", "supertaxon"), all.x = TRUE)
+    fullMdData <- merge(presMdData, scoreDf, 
+                        by = c("geneID", "supertaxon"), all.x = TRUE)
+    fullMdData <- merge(fullMdData, taxaCount, 
+                        by = ("supertaxon"), all.x = TRUE)
     # rename "freq" into "numberSpec"
     names(fullMdData)[names(fullMdData) == "freq"] <- "numberSpec"
 
@@ -507,15 +479,8 @@ reduceProfile <- function(fullProfile) {
     if (length(unique(levels(as.factor(fullMdData$numberSpec)))) == 1) {
         if (unique(levels(as.factor(fullMdData$numberSpec))) == 1) {
             superDfExt <- fullMdData[, c(
-                "geneID",
-                "supertaxon",
-                "supertaxonID",
-                "var1",
-                "presSpec",
-                "category",
-                "orthoID",
-                "var2",
-                "paralog"
+                "geneID", "supertaxon", "supertaxonID",
+                "var1", "presSpec", "category", "orthoID", "var2", "paralog"
             )]
             flag <- 0
         }
@@ -524,19 +489,11 @@ reduceProfile <- function(fullProfile) {
     if (flag == 1) {
         # get representative orthoID that has m VAR1 for each supertaxon
         mOrthoID <- fullMdData[, c(
-            "geneID",
-            "supertaxon",
-            "var1",
-            "mVar1",
-            "orthoID"
+            "geneID", "supertaxon", "var1", "mVar1", "orthoID"
         )]
         mOrthoID <- subset(mOrthoID, mOrthoID$var1 == mOrthoID$mVar1)
         colnames(mOrthoID) <- c(
-            "geneID",
-            "supertaxon",
-            "var1",
-            "mVar1",
-            "orthoID"
+            "geneID", "supertaxon", "var1", "mVar1", "orthoID"
         )
         mOrthoID <- mOrthoID[!is.na(mOrthoID$orthoID), ]
         mOrthoID <- mOrthoID[, c("geneID", "supertaxon", "orthoID")]
@@ -544,30 +501,17 @@ reduceProfile <- function(fullProfile) {
 
         # get data set for PhyloProfile plotting (contains only supertaxa info)
         superDf <- subset(fullMdData, select = c(
-            "geneID",
-            "supertaxon",
-            "supertaxonID",
-            "mVar1",
-            "presSpec",
-            "category",
-            "mVar2",
-            "paralog"
+            "geneID", "supertaxon", "supertaxonID",
+            "mVar1", "presSpec", "category", "mVar2", "paralog"
         ))
         superDf$paralog <- 1
         superDf <- superDf[!duplicated(superDf), ]
 
-        superDfExt <- merge(superDf, mOrthoID, by = c("geneID", "supertaxon"),
-                            all.x = TRUE)
+        superDfExt <- merge(superDf, mOrthoID, 
+                            by = c("geneID", "supertaxon"), all.x = TRUE)
         superDfExt <- superDfExt[, c(
-            "geneID",
-            "supertaxon",
-            "supertaxonID",
-            "mVar1",
-            "presSpec",
-            "category",
-            "orthoID",
-            "mVar2",
-            "paralog"
+            "geneID", "supertaxon", "supertaxonID",
+            "mVar1", "presSpec", "category", "orthoID", "mVar2", "paralog"
         )]
 
         # rename mVar to var
@@ -898,15 +842,13 @@ fromInputToProfile <- function(
     inputTaxonName <- getInputTaxaName(rankName, inputTaxonID)
 
     # sort input taxa based on selected reference taxon or input taxonomy tree
-    sortedtaxaList <- sortInputTaxa(
+    sortedInputTaxa <- sortInputTaxa(
         inputTaxonID, inputTaxonName, rankName, refTaxon, taxaTree
     )
 
     # parse info (additional values...) into profile df
     fullMdData <- parseInfoProfile(
-        inputDf,
-        sortedInputTaxa = sortedtaxaList,
-        var1AggregateBy, var2AggregateBy
+        inputDf, sortedInputTaxa, var1AggregateBy, var2AggregateBy
     )
 
     # reduce profile df into supertaxon level

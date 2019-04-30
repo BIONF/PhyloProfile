@@ -136,13 +136,8 @@ getQualColForVector <- function(x) {
     countColors <- 1
 
     while (countTypes <= length(types)) {
-        if (countColors > length(typeColors)) {
-            countColors <- 1
-        }
-
-        colorsTypes[colorsTypes == types[countTypes]] <-
-            typeColors[countColors]
-
+        if (countColors > length(typeColors)) countColors <- 1
+        colorsTypes[colorsTypes == types[countTypes]] <- typeColors[countColors]
         countColors <- countColors + 1
         countTypes <- countTypes + 1
     }

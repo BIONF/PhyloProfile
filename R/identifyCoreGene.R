@@ -86,12 +86,10 @@ getCoreGene <- function(
     if (!is.null(var1CutoffMax)) {
         if (!is.na(var1CutoffMax)) {
             mdData <- subset(
-                mdData, supertaxonID %in% superID
-                & mVar1 >= var1CutoffMin
+                mdData, supertaxonID %in% superID & mVar1 >= var1CutoffMin
             )
             mdData <- subset(
-                mdData, supertaxonID %in% superID
-                & mVar1 <= var1CutoffMax
+                mdData, supertaxonID %in% superID & mVar1 <= var1CutoffMax
             )
         }
     }
@@ -99,26 +97,22 @@ getCoreGene <- function(
     if (!is.null(var2CutoffMax)) {
         if (!is.na(var2CutoffMax)) {
             mdData <- subset(
-                mdData, supertaxonID %in% superID
-                & mVar2 >= var2CutoffMin
+                mdData, supertaxonID %in% superID & mVar2 >= var2CutoffMin
             )
             mdData <- subset(
-                mdData, supertaxonID %in% superID
-                & mVar2 <= var2CutoffMax
+                mdData, supertaxonID %in% superID & mVar2 <= var2CutoffMax
             )
         }
     }
 
     # filter by selecting taxa
-    if (is.na(superID[1])) return(NULL) #mdData <- NULL
+    if (is.na(superID[1])) return(NULL)
     else {
         data <- subset(
-            mdData, supertaxonID %in% superID
-            & presSpec >= percentCutoff[1]
+            mdData, supertaxonID %in% superID & presSpec >= percentCutoff[1]
         )
         data <- subset(
-            data, supertaxonID %in% superID
-            & presSpec <= percentCutoff[2]
+            data, supertaxonID %in% superID & presSpec <= percentCutoff[2]
         )
 
         # get supertaxa present in each geneID
