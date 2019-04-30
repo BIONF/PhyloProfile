@@ -7,7 +7,8 @@
 heatmapPlotting(data, plotParameter)
 }
 \arguments{
-\item{data}{data for heatmap plot}
+\item{data}{dataframe for plotting the heatmap phylogentic profile (either
+full or subset profiles)}
 
 \item{plotParameter}{plot parameters (type of x-axis "taxa" or "genes";
 names of 2 variables; colors for lowest and highest value of variable 1;
@@ -19,7 +20,7 @@ show/hide separate line for reference taxon 1/0;
 enable/disable coloring gene categories TRUE/FALSE)}
 }
 \value{
-A profile heatmap plot as ggplot object.
+A profile heatmap plot as a ggplot object.
 }
 \description{
 Create profile heatmap plot

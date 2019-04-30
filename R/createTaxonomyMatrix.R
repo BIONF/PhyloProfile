@@ -1,10 +1,16 @@
 #' Get taxonomy info for a list of taxa
-#' @description Get NCBI taxonomy IDs, ranks and names for an input
-#' taxon list
-#' @param inputTaxa input taxon list
-#' @param currentNCBIinfo table/dataframe of the current taxonomy data
-#' (taxonNamesFull.txt)
-#' @return A list of 3 dataframes: idList, rankList and reducedInfoList
+#' @description Get NCBI taxonomy IDs, ranks and names for an input taxon list.
+#' @param inputTaxa NCBI ID list of input taxa.
+#' @param currentNCBIinfo table/dataframe of the pre-processed NCBI taxonomy 
+#' data (/PhyloProfile/data/taxonNamesFull.txt)
+#' @return A list of 3 dataframes: idList, rankList and reducedInfoList. The
+#' "rankList" contains taxon names and all taxonomy ranks of the input taxa 
+#' including also the noranks from the input rank to the taxonomy root. The
+#' "idList" contains input taxon IDs, taxon names, all the ranks from current
+#' rank to the taxonomy root together with their IDs (with the format 
+#' "id#rank"). The reducedInfoList is a subset of taxonNamesFull.txt file, 
+#' containing the NCBI IDs, taxon fullnames, their current rank and their 
+#' direct parent ID.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @export
 #' @examples
@@ -118,8 +124,10 @@ getIDsRank <- function(inputTaxa, currentNCBIinfo){
 
 #' Indexing all available ranks (including norank)
 #' @param rankListFile Input file, where each row is a rank list of a taxon
+#' (see rankListFile in example)
 #' @importFrom utils read.table
-#' @return A dataframe containing a list of indexed ranks
+#' @return A dataframe containing a list of all possible ranks and their indexed
+#' values.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' rankListFile <- system.file(
 #'     "extdata", "data/rankList.txt", package = "PhyloProfile", mustWork = TRUE
@@ -219,18 +227,24 @@ rankIndexing <- function(rankListFile){
     return(index2RankDf)
 }
 
-#' Align ncbi taxonomy IDs of all taxa into a sorted rank list
+#' Align NCBI taxonomy IDs of list of taxa into a sorted rank list.
 #' @export
 #' @param idListFile a text file whose each row is a rank+ID list of a taxon
+#' (see idListFile in example)
 #' @param rankListFile a text file whose each row is a rank list of a taxon
+#' (see rankListFile in example)
 #' @importFrom data.table transpose
 #' @importFrom reshape2 melt
 #' @importFrom stats complete.cases
 #' @importFrom utils count.fields
 #' @importFrom utils read.table
-#' @return An aligned taxonomy dataframe
+#' @return An aligned taxonomy dataframe which contains all the available 
+#' taxonomy ranks from the id and rank list file. This dataframe can be used for
+#' creating a well resolved taxonomy tree (see ?createRootedTree) and sorting
+#' taxa based on a selected reference taxon (see ?sortInputTaxa).
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
-#' @seealso \code{\link{rankIndexing}}
+#' @seealso \code{\link{rankIndexing}}, \code{\link{createRootedTree}}, 
+#' \code{\link{sortInputTaxa}}
 #' @examples
 #' idListFile <- system.file(
 #'     "extdata", "data/idList.txt", package = "PhyloProfile", mustWork = TRUE

@@ -1,17 +1,22 @@
 #' Identify core genes for a list of selected taxa
+#' @description Identify core genes for a list of selected (super)taxa. The 
+#' identified core genes must be present in at least a certain proportion of 
+#' species in each selected (super)taxon (identified via percentCutoff) and 
+#' that criteria must be fullfilled for a certain percentage of selected taxa 
+#' or all of them (determined via coreCoverage).
 #' @export
 #' @usage getCoreGene(rankName, taxaCore, processedProfileData,
 #'     var1Cutoff, var2Cutoff, percentCutoff, coreCoverage)
-#' @param rankName taxonomy rank (e.g. "species", "genus", "family")
-#' @param taxaCore name list of selected taxa
+#' @param rankName working taxonomy rank (e.g. "species", "genus", "family")
+#' @param taxaCore list of selected taxon names
 #' @param processedProfileData dataframe contains the full processed
-#' phylogenetic profiles
+#' phylogenetic profiles (see ?fullProcessedProfile or ?parseInfoProfile)
 #' @param var1Cutoff cutoff for var1
 #' @param var2Cutoff cutoff for var2
 #' @param percentCutoff cutoff for percentage of species present in each
 #' supertaxon
 #' @param coreCoverage the least number of selected taxa should be considered
-#' @return A list of core genes
+#' @return A list of identified core genes.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{parseInfoProfile}} for creating a full processed
 #' profile dataframe

@@ -2,7 +2,7 @@
 % Please edit documentation in R/parsePhyloProfile.R
 \name{fromInputToProfile}
 \alias{fromInputToProfile}
-\title{Create data for plotting profiles (from raw input to final dataframe)}
+\title{Complete processing of raw input phylogenetic profiles}
 \usage{
 fromInputToProfile(rawInput, rankName, refTaxon, taxaTree,
     var1AggregateBy, var2AggregateBy, percentCutoff,
@@ -14,11 +14,11 @@ fromInputToProfile(rawInput, rankName, refTaxon, taxaTree,
 
 \item{rankName}{taxonomy rank (e.g. "species","phylum",...)}
 
-\item{refTaxon}{selected reference taxon}
+\item{refTaxon}{selected reference taxon name}
 
-\item{taxaTree}{input taxonomy tree (optional)}
+\item{taxaTree}{input taxonomy tree for taxa in input profiles (optional)}
 
-\item{var1AggregateBy}{aggregate method for VAR1 (min, max, mean or median)}
+\item{var1AggregateBy}{aggregate method for var1 (min, max, mean or median)}
 
 \item{var2AggregateBy}{aggregate method for VAR2 (min, max, mean or median)}
 
@@ -42,11 +42,17 @@ in a supertaxon}
 \item{catDt}{dataframe contains gene categories}
 }
 \value{
-dataframe for generating profile plot
+Dataframe required for generating phylogenetic profile plot or 
+clustering analysis. It contains seed gene IDs (or orthologous group IDs), 
+their ortholog IDs and the corresponding (super)taxa, (super)taxon IDs, 
+number of co-orthologs in each (super)taxon, values for two additional 
+variables var1, var2, % of species present in each supertaxon, and the 
+categories of seed genes (or ortholog groups).
 }
 \description{
-Create data needed for plotting phylogenetic profile
-from raw input file.
+Create a processed and filtered data for plotting or analysing 
+phylogenetic profiles from raw input file (from raw input to final filtered
+dataframe)
 }
 \examples{
 rawInput <- system.file(
@@ -86,7 +92,7 @@ fromInputToProfile(
 \code{\link{createLongMatrix}}, \code{\link{getInputTaxaID}},
 \code{\link{getInputTaxaName}}, \code{\link{sortInputTaxa}},
 \code{\link{parseInfoProfile}}, \code{\link{reduceProfile}},
-\code{\link{createProfileData}}
+\code{\link{filterProfileData}}
 }
 \author{
 Vinh Tran {tran@bio.uni-frankfurt.de}

@@ -2,18 +2,19 @@
 % Please edit documentation in R/estimateGeneAge.R
 \name{estimateGeneAge}
 \alias{estimateGeneAge}
-\title{Calculate the phylogenetic gene age from profiles}
+\title{Calculate the phylogenetic gene age from the phylogenetic profiles}
 \usage{
 estimateGeneAge(processedProfileData, rankName, refTaxon,
     var1Cutoff, var2Cutoff, percentCutoff)
 }
 \arguments{
 \item{processedProfileData}{dataframe contains the full processed
-phylogenetic profiles}
+phylogenetic profiles (see ?fullProcessedProfile or ?parseInfoProfile)}
 
-\item{rankName}{taxonomy rank (e.g. "species", "genus", "family")}
+\item{rankName}{working taxonomy rank (e.g. "species", "genus", "family")}
 
-\item{refTaxon}{reference taxon (e.g. "Homo sapiens", "Homo", "Hominidae")}
+\item{refTaxon}{reference taxon name (e.g. "Homo sapiens", "Homo" or
+"Hominidae")}
 
 \item{var1Cutoff}{cutoff for var1}
 
@@ -23,10 +24,10 @@ phylogenetic profiles}
 supertaxon}
 }
 \value{
-A dataframe contains estimated gene ages
+A dataframe contains estimated gene ages for the seed proteins.
 }
 \description{
-Calculate the phylogenetic gene age from profiles
+Calculate the phylogenetic gene age from the phylogenetic profiles
 }
 \examples{
 data("fullProcessedProfile", package="PhyloProfile")

@@ -2,20 +2,25 @@
 % Please edit documentation in R/createTaxonomyMatrix.R
 \name{taxonomyTableCreator}
 \alias{taxonomyTableCreator}
-\title{Align ncbi taxonomy IDs of all taxa into a sorted rank list}
+\title{Align NCBI taxonomy IDs of list of taxa into a sorted rank list.}
 \usage{
 taxonomyTableCreator(idListFile, rankListFile)
 }
 \arguments{
-\item{idListFile}{a text file whose each row is a rank+ID list of a taxon}
+\item{idListFile}{a text file whose each row is a rank+ID list of a taxon
+(see idListFile in example)}
 
-\item{rankListFile}{a text file whose each row is a rank list of a taxon}
+\item{rankListFile}{a text file whose each row is a rank list of a taxon
+(see rankListFile in example)}
 }
 \value{
-An aligned taxonomy dataframe
+An aligned taxonomy dataframe which contains all the available 
+taxonomy ranks from the id and rank list file. This dataframe can be used for
+creating a well resolved taxonomy tree (see ?createRootedTree) and sorting
+taxa based on a selected reference taxon (see ?sortInputTaxa).
 }
 \description{
-Align ncbi taxonomy IDs of all taxa into a sorted rank list
+Align NCBI taxonomy IDs of list of taxa into a sorted rank list.
 }
 \examples{
 idListFile <- system.file(
@@ -27,7 +32,8 @@ rankListFile <- system.file(
 taxonomyTableCreator(idListFile, rankListFile)
 }
 \seealso{
-\code{\link{rankIndexing}}
+\code{\link{rankIndexing}}, \code{\link{createRootedTree}}, 
+\code{\link{sortInputTaxa}}
 }
 \author{
 Vinh Tran {tran@bio.uni-frankfurt.de}

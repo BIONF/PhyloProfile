@@ -2,9 +2,9 @@
 # These functions check the validity of the main input file
 # and convert different input format into long format.
 
-#' Check the validity of the main input file
+#' Check the validity of the input phylogenetic profile file
 #' @description Check if input file has one of the following format: orthoXML,
-#' multiple FASTA, wide or long matrix, or a list of OMA IDs.
+#' multiple FASTA, tab-delimited matrix (wide or long), or list of OMA IDs.
 #' @export
 #' @param filein input file
 #' @return The format of the input file format, or type of error
@@ -74,7 +74,9 @@ checkInputValidity <- function(filein) {
 #' Parse orthoXML input file
 #' @export
 #' @param inputFile input file in xml format
-#' @return A data frame containing input data in long-format
+#' @return A data frame of input data in long-format containing seed gene IDs (
+#' or orthologous group IDs), their orthologous proteins together with the
+#' corresponding taxonomy IDs and values of (up to) two additional variables.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @importFrom xml2 read_xml
 #' @importFrom xml2 xml_find_all
@@ -132,8 +134,7 @@ xmlParser <- function(inputFile){
     groupIDrep <- unlist(
         lapply(
             orthoGroup,
-            function (x) 
-                ncol(scorePair) * length(xml_find_all(x, ".//geneRef"))
+            function (x) ncol(scorePair) * length(xml_find_all(x, ".//geneRef"))
         )
     )
 
@@ -163,8 +164,12 @@ xmlParser <- function(inputFile){
 
 #' Parse multi-fasta input file
 #' @export
-#' @param inputFile input multiple fasta file
-#' @return A data frame containing input data in long-format
+#' @param inputFile input multiple fasta file. Check extdata/test.main.fasta or
+#' https://github.com/BIONF/PhyloProfile/wiki/Input-Data#multi-fasta-format for 
+#' the supported FASTA header.
+#' @return A data frame of input data in long-format containing seed gene IDs (
+#' or orthologous group IDs), their orthologous proteins together with the
+#' corresponding taxonomy IDs and values of (up to) two additional variables.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @importFrom Biostrings readAAStringSet
 #' @examples
@@ -193,16 +198,17 @@ fastaParser <- function(inputFile){
 }
 
 #' Transform input file in wide matrix into long matrix format
+#' @export
 #' @param inputFile input file in wide matrix format
-#' @return A data frame containing input data in long-format
+#' @return A data frame of input data in long-format containing seed gene IDs (
+#' or orthologous group IDs), their orthologous proteins together with the
+#' corresponding taxonomy IDs and values of (up to) two additional variables.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @examples
-#' \dontrun{
 #' inputFile <- system.file(
 #'     "extdata", "test.main.wide", package = "PhyloProfile", mustWork = TRUE
 #' )
 #' wideToLong(inputFile)
-#' }
 
 wideToLong <- function(inputFile){
     wideDataframe <- read.table(
@@ -235,11 +241,13 @@ wideToLong <- function(inputFile){
     return(longDataframe)
 }
 
-#' Create a long matrix format for all kinds of input file
+#' Create a long matrix format for all kinds of input phylogenetic profiles
 #' @export
-#' @param inputFile input file in orthoXML, multiple FASTA, wide or long
-#' matrix format.
-#' @return A data frame that contains input data in long-format
+#' @param inputFile input profile file in orthoXML, multiple FASTA, 
+#' tab-delimited matrix format (wide or long).
+#' @return A data frame of input data in long-format containing seed gene IDs (
+#' or orthologous group IDs), their orthologous proteins together with the
+#' corresponding taxonomy IDs and values of (up to) two additional variables.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{xmlParser}}, \code{\link{fastaParser}},
 #' \code{\link{wideToLong}}

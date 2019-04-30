@@ -2,20 +2,21 @@
 % Please edit documentation in R/compareTaxaGroups.R
 \name{getCommonAncestor}
 \alias{getCommonAncestor}
-\title{Generate the inGroup}
+\title{Get common ancestor for a selected taxa}
 \usage{
-getCommonAncestor(inGroup, rank, nameList, selectedInGroup,
+getCommonAncestor(inGroup, rank, nameList, taxonomyMatrix,
     ncbiIDList)
 }
 \arguments{
-\item{inGroup}{list of taxa}
+\item{inGroup}{list of selected taxa}
 
-\item{rank}{selected rank}
+\item{rank}{taxonomy rank of input taxa (e.g. "species", "family", ...)}
 
-\item{nameList}{contains "ncbiID", "fullName", "rank", "parentID"}
+\item{nameList}{list contains "ncbiID", "fullName", "rank", "parentID" of all
+pre-calculated taxa (from /PhyloProfile/data/taxonNamesReduced.txt)}
 
-\item{selectedInGroup}{contains "abbrName, "ncbiID", fullName", "strain",
-"genus"..}
+\item{taxonomyMatrix}{pre-calculated taxonomy matrix (see 
+/PhyloProfile/data/taxonomyMatrix.txt)}
 
 \item{ncbiIDList}{list of input taxon IDs}
 }
@@ -23,7 +24,7 @@ getCommonAncestor(inGroup, rank, nameList, selectedInGroup,
 common anchestor
 }
 \description{
-Generate the inGroup
+Get common ancestor for a selected taxa
 }
 \examples{
 inGroup <- c("Aeropyrum pernix", "Agrobacterium fabrum")
@@ -32,14 +33,14 @@ nameListFile <- system.file(
     "extdata", "data/taxonNamesFull.txt",
     package = "PhyloProfile", mustWork = TRUE
 )
-nameList <- as.data.frame(data.table::fread(nameListFile))
-selectedInGroup <- getTaxonomyMatrix(FALSE, NULL)
+nameList <- data.table::fread(nameListFile)
+taxonomyMatrix <- getTaxonomyMatrix(FALSE, NULL)
 ncbiIDList <- c(56636, 1176649)
 getCommonAncestor(
     inGroup,
     rank,
     nameList,
-    selectedInGroup,
+    taxonomyMatrix,
     ncbiIDList
 )
 }

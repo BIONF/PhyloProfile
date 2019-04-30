@@ -1,22 +1,26 @@
 #' Get fasta sequences
+#' @description Get fasta sequences for the input phylogenetic profiles. 
 #' @export
 #' @usage getFastaSeqs(dataIn, filein, demoData, inputTypeFasta,
 #'     concatFasta, path, dirFormat, fileExt, idFormat)
 #' @param dataIn a dataframe of the input phylogenetic profiles, that contains
-#' at least 3 columns: geneIDs, orthoIDs and ncbiIDs
-#' @param filein main input file (for checking input type)
+#' at least 3 columns: geneIDs, orthoIDs and ncbiIDs (see ?mainLongRaw or 
+#' ?fromInputToProfile)
+#' @param filein raw phylogenetic profile input file (for checking input type)
 #' @param demoData name of demo data set (either "ampk-tor", "lca-micros",
 #' or "none")
-#' @param inputTypeFasta source of fasta sequences ("Concatenated fasta file"
-#' or "Fasta folder")
-#' @param concatFasta input concatenated fasta file
-#' @param path path to fasta folder
+#' @param inputTypeFasta source type of fasta sequences ("Concatenated fasta 
+#' file" or "Fasta folder")
+#' @param concatFasta input concatenated fasta file (NULL if not available)
+#' @param path path to fasta folder (NULL if concatFasta already given)
 #' @param dirFormat directory format (either 1 for "path/speciesID.fa*" or 2 for
-#' "path/speciesID/speciesID.fa*")
-#' @param fileExt fasta file extension ("fa", "fasta", "fas" or "txt")
+#' "path/speciesID/speciesID.fa*") (NULL if concatFasta already given)
+#' @param fileExt fasta file extension ("fa", "fasta", "fas" or "txt") (NULL if 
+#' concatFasta already given)
 #' @param idFormat fasta header format (1 for ">speciesID:seqID", 2 for
-#' ">speciesID@seqID", 3 for ">speciesID|seqID" or 4 for "seqID")
-#' @return A dataframe contains fasta sequences
+#' ">speciesID@seqID", 3 for ">speciesID|seqID" or 4 for "seqID") (NULL if 
+#' concatFasta already given)
+#' @return A dataframe with one column contains sequences in fasta format.
 #' @importFrom IRanges reverse
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{checkInputValidity}}, \code{\link{mainLongRaw}}
@@ -51,11 +55,11 @@
 getFastaSeqs <- function(
     dataIn, filein, demoData,
     inputTypeFasta,
-    concatFasta,
-    path,
-    dirFormat,
-    fileExt,
-    idFormat
+    concatFasta = NULL,
+    path = NULL,
+    dirFormat = NULL,
+    fileExt = NULL,
+    idFormat = NULL
 ){
     # check main input
     if (!is.null(filein)) {

@@ -7,14 +7,15 @@
 dataCustomizedPlot(dataHeat, selectedTaxa, selectedSeq)
 }
 \arguments{
-\item{dataHeat}{a data frame contains processed profiles}
+\item{dataHeat}{a data frame contains processed profiles (see
+?fullProcessedProfile, ?filterProfileData)}
 
-\item{selectedTaxa}{subset of taxa}
+\item{selectedTaxa}{selected subset of taxa}
 
-\item{selectedSeq}{subset of sequences}
+\item{selectedSeq}{selected subset of genes}
 }
 \value{
-A data frame contains data for customized profile plot.
+A dataframe contains data for plotting the customized profile.
 }
 \description{
 Create data for customized profile plot based on a selected
@@ -27,7 +28,7 @@ selectedSeq <- "all"
 dataCustomizedPlot(fullProcessedProfile, selectedTaxa, selectedSeq)
 }
 \seealso{
-\code{\link{fromInputToProfile}}
+\code{\link{filterProfileData}}
 }
 \author{
 Vinh Tran {tran@bio.uni-frankfurt.de}

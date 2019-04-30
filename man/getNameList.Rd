@@ -7,10 +7,12 @@
 getNameList()
 }
 \value{
-List of taxon IDs, their full names, taxonomy ranks and parent IDs
+List of taxon IDs, their full names, taxonomy ranks and parent IDs 
+obtained from "PhyloProfile/data/taxonNamesReduced.txt"
 }
 \description{
-Get all NCBI taxon names from "data/taxonNamesReduced.txt"
+Get all NCBI taxon names from 
+"PhyloProfile/data/taxonNamesReduced.txt"
 }
 \examples{
 getNameList()

@@ -7,10 +7,10 @@
 getDendrogram(dd)
 }
 \arguments{
-\item{dd}{dendrogram object}
+\item{dd}{dendrogram object (see ?clusterDataDend)}
 }
 \value{
-A dendrogram plot
+A dendrogram plot for the genes in the input phylogenetic profiles.
 }
 \description{
 Plot dendrogram tree

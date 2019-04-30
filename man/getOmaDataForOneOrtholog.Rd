@@ -2,18 +2,19 @@
 % Please edit documentation in R/getOmaBrowser.R
 \name{getOmaDataForOneOrtholog}
 \alias{getOmaDataForOneOrtholog}
-\title{Get taxonomy ID, sequence and annotation for one OMA sequence}
+\title{Get taxonomy ID, sequence and annotation for one OMA protein}
 \usage{
 getOmaDataForOneOrtholog(id)
 }
 \arguments{
-\item{id}{oma ID of a ortholog}
+\item{id}{oma ID of one protein}
 }
 \value{
-data frame
+Data frame contains the input protein ID with its taxonomy ID, 
+sequence, length and domain annotations (tab delimited) for input OMA protein
 }
 \description{
-Get taxonomy ID, sequence and annotation for one OMA sequence
+Get taxonomy ID, sequence and annotation for one OMA protein
 }
 \examples{
 getOmaDataForOneOrtholog("HUMAN29397")

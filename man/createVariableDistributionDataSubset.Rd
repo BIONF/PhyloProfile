@@ -8,17 +8,20 @@ createVariableDistributionDataSubset(fullProfileData,
     distributionData, selectedGenes, selectedTaxa)
 }
 \arguments{
-\item{fullProfileData}{dataframe contains the full processed profiles}
+\item{fullProfileData}{dataframe contains the full processed profiles (see
+?fullProcessedProfile, ?filterProfileData or ?fromInputToProfile)}
 
-\item{distributionData}{dataframe contains the full distribution data}
+\item{distributionData}{dataframe contains the full distribution data (see
+?createVariableDistributionData)}
 
 \item{selectedGenes}{list of genes of interst}
 
 \item{selectedTaxa}{list of taxa of interest}
 }
 \value{
-A dataframe ready for analysing the distribution of the additional
-variable(s) for a subset of genes and/or taxa.
+A dataframe for analysing the distribution of the additional
+variable(s) for a subset of genes and/or taxa containing the protein
+(ortholog) IDs and the values of their variables (var1 and var2).
 }
 \description{
 Create data for additional variable distribution (for a subset data)

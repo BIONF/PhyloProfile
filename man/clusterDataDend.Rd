@@ -7,14 +7,14 @@
 clusterDataDend(distanceMatrix, clusterMethod)
 }
 \arguments{
-\item{distanceMatrix}{calculated distance matrix}
+\item{distanceMatrix}{calculated distance matrix (see ?getDistanceMatrix)}
 
 \item{clusterMethod}{clustering method ("single", "complete",
 "average" for UPGMA, "mcquitty" for WPGMA, "median" for WPGMC,
 or "centroid" for UPGMC)}
 }
 \value{
-A dendrogram tree object
+A dendrogram tree object generated based on input distance matrix.
 }
 \description{
 Create a dendrogram tree from the distance matrix

@@ -10,18 +10,18 @@ sortInputTaxa(taxonIDs, taxonNames, rankName, refTaxon, taxaTree)
 \item{taxonIDs}{list of taxon IDs (e.g.: ncbi1234, ncbi9999, ...)}
 
 \item{taxonNames}{list of taxon names and their corresponding taxonomy
-ranks, IDs,...}
+ranks, IDs, parent IDs for the input taxa (taxonIDs)}
 
 \item{rankName}{working taxonomy rank (e.g. "species", "phylum",...)}
 
 \item{refTaxon}{selected reference taxon}
 
-\item{taxaTree}{input taxonomy tree (optional)}
+\item{taxaTree}{taxonomy tree for the input taxa (optional)}
 }
 \value{
-Taxonomy matrix for the input taxa ordered by the selected reference
-taxon. This matrix is sorted either based on the NCBI taxonomy info, or
-based on an user-defined taxonomy tree (if provided).
+A taxonomy matrix for the input taxa ordered by the selected 
+reference taxon. This matrix is sorted either based on the NCBI taxonomy 
+info, or based on an user-defined taxonomy tree (if provided).
 }
 \description{
 Sort list of (super)taxa based on a selected reference (super)taxon

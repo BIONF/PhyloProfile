@@ -2,19 +2,21 @@
 % Please edit documentation in R/parseMainInput.R
 \name{createLongMatrix}
 \alias{createLongMatrix}
-\title{Create a long matrix format for all kinds of input file}
+\title{Create a long matrix format for all kinds of input phylogenetic profiles}
 \usage{
 createLongMatrix(inputFile)
 }
 \arguments{
-\item{inputFile}{input file in orthoXML, multiple FASTA, wide or long
-matrix format.}
+\item{inputFile}{input profile file in orthoXML, multiple FASTA, 
+tab-delimited matrix format (wide or long).}
 }
 \value{
-A data frame that contains input data in long-format
+A data frame of input data in long-format containing seed gene IDs (
+or orthologous group IDs), their orthologous proteins together with the
+corresponding taxonomy IDs and values of (up to) two additional variables.
 }
 \description{
-Create a long matrix format for all kinds of input file
+Create a long matrix format for all kinds of input phylogenetic profiles
 }
 \examples{
 inputFile <- system.file(

@@ -7,10 +7,10 @@
 getInputTaxaID(rawProfile)
 }
 \arguments{
-\item{rawProfile}{long dataframe of input profile}
+\item{rawProfile}{A dataframe of input phylogenetic profile in long format}
 }
 \value{
-List of all input taxon IDs
+List of all input taxon IDs (e.g. ncbi1234)
 }
 \description{
 Get ID list of input taxa from the main input

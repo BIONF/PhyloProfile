@@ -18,14 +18,16 @@ parseInfoProfile( inputDf, sortedInputTaxa, var1AggregateBy,
 \item{var2AggregateBy}{aggregate method for VAR2 (min, max, mean or median)}
 }
 \value{
-Dataframe contains all info for input profiles (a full processed
-profile)
+A dataframe contains all info for the input phylogenetic profiles. 
+This full processed profile that is required for several profiling analyses 
+e.g. estimation of gene age (?estimateGeneAge) or identification of core gene
+(?getCoreGene).
 }
 \description{
-Creating main dataframe for the input phylogenetic profiles with
-the selected input taxonomy level (e.g. strain, species) and reference taxon.
-The output contains the number of paralogs, percentage of species presence
-in each supertaxon, and the max/min/mean/median of VAR1 and VAR2.
+Creating main dataframe for the input phylogenetic profiles 
+based on selected input taxonomy level (e.g. strain, species) and reference 
+taxon. The output contains the number of paralogs, percentage of species 
+presence in each supertaxon, and the max/min/mean/median of VAR1 and VAR2.
 }
 \examples{
 data("mainLongRaw", package="PhyloProfile")

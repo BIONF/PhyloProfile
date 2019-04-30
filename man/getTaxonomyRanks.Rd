@@ -2,7 +2,7 @@
 % Please edit documentation in R/compareTaxaGroups.R
 \name{getTaxonomyRanks}
 \alias{getTaxonomyRanks}
-\title{Create a list with all main taxanomy ranks}
+\title{Create a list containing all main taxanomy ranks}
 \usage{
 getTaxonomyRanks()
 }
@@ -10,7 +10,7 @@ getTaxonomyRanks()
 A list of all main ranks (from strain to superkingdom)
 }
 \description{
-Create a list with all main taxanomy ranks
+Create a list containing all main taxanomy ranks
 }
 \examples{
 getTaxonomyRanks()

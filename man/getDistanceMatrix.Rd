@@ -7,7 +7,8 @@
 getDistanceMatrix(profiles, method)
 }
 \arguments{
-\item{profiles}{profile data for distance calculating}
+\item{profiles}{dataframe contains profile data for distance calculating
+(see ?getDataClustering)}
 
 \item{method}{distance calculation method ("euclidean", "maximum",
 "manhattan", "canberra", "binary", "distanceCorrelation",
@@ -15,13 +16,10 @@ getDistanceMatrix(profiles, method)
 "mutualInformation" for non-binary data)}
 }
 \value{
-A distance matrix for input phylogenetic profiles.
+A calculated distance matrix for input phylogenetic profiles.
 }
 \description{
 Calculate the distance matrix
-}
-\note{
-Documented by Vinh Tran (tran@bio.uni-frankfurt.de)
 }
 \examples{
 data("fullProcessedProfileLarge", package="PhyloProfile")
@@ -36,5 +34,6 @@ getDistanceMatrix(profiles, method)
 \code{\link{getDataClustering}}
 }
 \author{
-Carla Mölbert (carla.moelbert@gmx.de)
+Carla Mölbert (carla.moelbert@gmx.de), Vinh Tran
+(tran@bio.uni-frankfurt.de)
 }

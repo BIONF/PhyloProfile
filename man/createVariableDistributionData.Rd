@@ -8,7 +8,8 @@ createVariableDistributionData(inputData, var1CutoffMin,
     var1CutoffMax, var2CutoffMin, var2CutoffMax)
 }
 \arguments{
-\item{inputData}{dataframe contains raw input data in long format}
+\item{inputData}{dataframe contains raw input data in long format
+(see ?mainLongRaw)}
 
 \item{var1CutoffMin}{min cutoff for var1}
 
@@ -19,8 +20,9 @@ createVariableDistributionData(inputData, var1CutoffMin,
 \item{var2CutoffMax}{max cutoff for var2}
 }
 \value{
-A dataframe ready for analysing the distribution of the additional
-variable(s)
+A dataframe for analysing the distribution of the additional
+variable(s) containing the protein (ortholog) IDs and the values of their
+variables (var1 and var2).
 }
 \description{
 Create data for additional variable distribution

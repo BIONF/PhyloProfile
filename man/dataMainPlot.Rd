@@ -7,10 +7,11 @@
 dataMainPlot(dataHeat)
 }
 \arguments{
-\item{dataHeat}{a data frame contains processed profiles}
+\item{dataHeat}{a data frame contains processed profiles (see
+?fullProcessedProfile, ?filterProfileData)}
 }
 \value{
-A data frame contains data for main profile plot.
+A dataframe contains data for plotting the phylogenetic profile.
 }
 \description{
 Create data for main profile plot
@@ -20,7 +21,7 @@ data("fullProcessedProfile", package="PhyloProfile")
 dataMainPlot(fullProcessedProfile)
 }
 \seealso{
-\code{\link{fromInputToProfile}}
+\code{\link{filterProfileData}}
 }
 \author{
 Vinh Tran {tran@bio.uni-frankfurt.de}

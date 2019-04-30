@@ -7,7 +7,7 @@
 runPhyloProfile()
 }
 \value{
-shiny application - GUI version of PhyloProfile
+A shiny application - GUI version of PhyloProfile
 }
 \description{
 Run PhyloProfile app

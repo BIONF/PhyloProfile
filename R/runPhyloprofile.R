@@ -1,6 +1,6 @@
 #' Run PhyloProfile app
 #' @export
-#' @return shiny application - GUI version of PhyloProfile
+#' @return A shiny application - GUI version of PhyloProfile
 #' @import bioDist
 #' @import Cairo
 #' @importFrom colourpicker colourInput

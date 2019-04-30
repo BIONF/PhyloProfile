@@ -7,10 +7,14 @@
 fastaParser(inputFile)
 }
 \arguments{
-\item{inputFile}{input multiple fasta file}
+\item{inputFile}{input multiple fasta file. Check extdata/test.main.fasta or
+https://github.com/BIONF/PhyloProfile/wiki/Input-Data#multi-fasta-format for 
+the supported FASTA header.}
 }
 \value{
-A data frame containing input data in long-format
+A data frame of input data in long-format containing seed gene IDs (
+or orthologous group IDs), their orthologous proteins together with the
+corresponding taxonomy IDs and values of (up to) two additional variables.
 }
 \description{
 Parse multi-fasta input file

@@ -30,7 +30,7 @@
 #' }
 "mainLongRaw"
 
-#' An example of a raw long input file together with taxonomy info.
+#' An example of a raw long input file together with the taxonomy info.
 #'
 #' @format A data frame with 20 rows and 12 variables:
 #' \itemize{

@@ -10,18 +10,18 @@ wideToLong(inputFile)
 \item{inputFile}{input file in wide matrix format}
 }
 \value{
-A data frame containing input data in long-format
+A data frame of input data in long-format containing seed gene IDs (
+or orthologous group IDs), their orthologous proteins together with the
+corresponding taxonomy IDs and values of (up to) two additional variables.
 }
 \description{
 Transform input file in wide matrix into long matrix format
 }
 \examples{
-\dontrun{
 inputFile <- system.file(
     "extdata", "test.main.wide", package = "PhyloProfile", mustWork = TRUE
 )
 wideToLong(inputFile)
-}
 }
 \author{
 Vinh Tran {tran@bio.uni-frankfurt.de}

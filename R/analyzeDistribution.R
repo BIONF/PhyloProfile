@@ -1,8 +1,11 @@
 #' Create data for percentage present taxa distribution
 #' @param inputData dataframe contains raw input data in long format
+#' (see ?mainLongRaw)
 #' @param rankName name of the working taxonomy rank (e.g. "species", "family")
-#' @return A dataframe ready for analysing the distribution of the percentage of
-#' species in the selected supertaxa
+#' @return A dataframe for analysing the distribution of the percentage of
+#' species in the selected supertaxa, containing the seed protein IDs,
+#' percentage of their orthologs in each supertaxon and the corresponding
+#' supertaxon names.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @export
 #' @seealso \code{\link{mainLongRaw}}
@@ -42,7 +45,7 @@ createPercentageDistributionData <- function(inputData, rankName) {
 
     # merge mdData, mdDatavar2 and taxaList to get taxonomy info
     taxaMdData <- merge(mdData, taxaList, by = "ncbiID")
-    
+
     # calculate % present species
     finalPresSpecDt <- calcPresSpec(taxaMdData, taxaCount)
 
@@ -54,12 +57,14 @@ createPercentageDistributionData <- function(inputData, rankName) {
 #' @usage createVariableDistributionData(inputData, var1CutoffMin,
 #'     var1CutoffMax, var2CutoffMin, var2CutoffMax)
 #' @param inputData dataframe contains raw input data in long format
+#' (see ?mainLongRaw)
 #' @param var1CutoffMin min cutoff for var1
 #' @param var1CutoffMax max cutoff for var1
 #' @param var2CutoffMin min cutoff for var2
 #' @param var2CutoffMax max cutoff for var2
-#' @return A dataframe ready for analysing the distribution of the additional
-#' variable(s)
+#' @return A dataframe for analysing the distribution of the additional
+#' variable(s) containing the protein (ortholog) IDs and the values of their
+#' variables (var1 and var2).
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @export
 #' @seealso \code{\link{mainLongRaw}}
@@ -125,12 +130,15 @@ createVariableDistributionData <- function(
 #' Create data for additional variable distribution (for a subset data)
 #' @usage createVariableDistributionDataSubset(fullProfileData,
 #'     distributionData, selectedGenes, selectedTaxa)
-#' @param fullProfileData dataframe contains the full processed profiles
-#' @param distributionData dataframe contains the full distribution data
+#' @param fullProfileData dataframe contains the full processed profiles (see
+#' ?fullProcessedProfile, ?filterProfileData or ?fromInputToProfile)
+#' @param distributionData dataframe contains the full distribution data (see
+#' ?createVariableDistributionData)
 #' @param selectedGenes list of genes of interst
 #' @param selectedTaxa list of taxa of interest
-#' @return A dataframe ready for analysing the distribution of the additional
-#' variable(s) for a subset of genes and/or taxa.
+#' @return A dataframe for analysing the distribution of the additional
+#' variable(s) for a subset of genes and/or taxa containing the protein
+#' (ortholog) IDs and the values of their variables (var1 and var2).
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @export
 #' @seealso \code{\link{parseInfoProfile}},
@@ -219,13 +227,15 @@ createVariableDistributionDataSubset <- function(
 #' Create distribution plot
 #' @description Create distribution plot for one of the additional variable or
 #' the percentage of the species present in the supertaxa.
-#' @param data dataframe contains data for plotting
+#' @param data dataframe contains data for plotting (see
+#' ?createVariableDistributionData, ?createVariableDistributionDataSubset or
+#' ?createPercentageDistributionData)
 #' @param varName name of the variable that need to be analyzed (either name of
 #' variable 1 or variable 2 or "percentage of present taxa")
 #' @param varType type of variable (either "var1", "var2" or "presSpec")
-#' @param percent range of percentage cutoff
-#' @param distTextSize text size of the distribution plot
-#' @return A distribution plot as a ggplot object
+#' @param percent range of percentage cutoff (between 0 and 1)
+#' @param distTextSize text size of the distribution plot (in px)
+#' @return A distribution plot for the selected variable as a ggplot object
 #' @importFrom ggplot2 geom_histogram
 #' @importFrom ggplot2 geom_vline
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}

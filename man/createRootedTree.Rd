@@ -7,12 +7,13 @@
 createRootedTree(df, rootTaxon)
 }
 \arguments{
-\item{df}{data frame contains taxonomy matrix used for creating tree}
+\item{df}{data frame contains taxonomy matrix used for generating the tree 
+(see example)}
 
-\item{rootTaxon}{taxon used for rooting tree}
+\item{rootTaxon}{taxon used for rooting the taxonomy tree}
 }
 \value{
-rooted tree based on rootTaxon
+A rooted taxonomy tree as an object of class "phylo".
 }
 \description{
 Create rooted tree from a taxonomy matrix

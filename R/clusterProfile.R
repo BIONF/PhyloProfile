@@ -1,16 +1,17 @@
-#' Get data for calculating the distance matrix
+#' Get data for calculating distance matrix from phylogenetic profiles
 #' @export
 #' @usage getDataClustering(data, profileType, var1AggregateBy,
 #'     var2AggregateBy)
-#' @param data processed profile data
+#' @param data a data frame contains processed and filtered profiles (see
+#' ?fullProcessedProfile and ?filterProfileData, ?fromInputToProfile)
 #' @param profileType type of data used for calculating the distance matrix.
 #' Either "binary" (consider only the presence/absence status of orthlogs), or
 #' "var1"/"var2" for taking values of the additional variables into account.
 #' @param var1AggregateBy aggregate method for VAR1 (min, max, mean or median)
 #' @param var2AggregateBy aggregate method for VAR2 (min, max, mean or median)
 #' @return A wide dataframe contains values for calculating distance matrix.
-#' @author Carla Mölbert (carla.moelbert@gmx.de)
-#' @note Documented by Vinh Tran (tran@bio.uni-frankfurt.de)
+#' @author Carla Mölbert (carla.moelbert@gmx.de), Vinh Tran
+#' (tran@bio.uni-frankfurt.de)
 #' @seealso \code{\link{fromInputToProfile}}
 #' @examples
 #' data("fullProcessedProfile", package="PhyloProfile")
@@ -65,14 +66,15 @@ getDataClustering <- function(
 
 #' Calculate the distance matrix
 #' @export
-#' @param profiles profile data for distance calculating
+#' @param profiles dataframe contains profile data for distance calculating
+#' (see ?getDataClustering)
 #' @param method distance calculation method ("euclidean", "maximum",
 #' "manhattan", "canberra", "binary", "distanceCorrelation",
 #' "mutualInformation" or "pearson" for binary data; "distanceCorrelation" or
 #' "mutualInformation" for non-binary data)
-#' @return A distance matrix for input phylogenetic profiles.
-#' @author Carla Mölbert (carla.moelbert@gmx.de)
-#' @note Documented by Vinh Tran (tran@bio.uni-frankfurt.de)
+#' @return A calculated distance matrix for input phylogenetic profiles.
+#' @author Carla Mölbert (carla.moelbert@gmx.de), Vinh Tran
+#' (tran@bio.uni-frankfurt.de)
 #' @seealso \code{\link{getDataClustering}}
 #' @examples
 #' data("fullProcessedProfileLarge", package="PhyloProfile")
@@ -122,11 +124,11 @@ getDistanceMatrix <- function(profiles, method) {
 
 #' Create a dendrogram tree from the distance matrix
 #' @export
-#' @param distanceMatrix calculated distance matrix
+#' @param distanceMatrix calculated distance matrix (see ?getDistanceMatrix)
 #' @param clusterMethod clustering method ("single", "complete",
 #' "average" for UPGMA, "mcquitty" for WPGMA, "median" for WPGMC,
 #' or "centroid" for UPGMC)
-#' @return A dendrogram tree object
+#' @return A dendrogram tree object generated based on input distance matrix.
 #' @importFrom stats as.dendrogram
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{getDataClustering}},
@@ -150,8 +152,8 @@ clusterDataDend <- function(distanceMatrix, clusterMethod) {
 
 #' Plot dendrogram tree
 #' @export
-#' @param dd dendrogram object
-#' @return A dendrogram plot
+#' @param dd dendrogram object (see ?clusterDataDend)
+#' @return A dendrogram plot for the genes in the input phylogenetic profiles.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{clusterDataDend}}
 #' @examples

@@ -2,7 +2,7 @@
 % Please edit documentation in R/getOmaBrowser.R
 \name{checkOmaID}
 \alias{checkOmaID}
-\title{Check OMA IDs}
+\title{Check the validity of input OMA IDs}
 \usage{
 checkOmaID(ids)
 }
@@ -10,11 +10,10 @@ checkOmaID(ids)
 \item{ids}{list of ids needs to be checked}
 }
 \value{
-list of invalid IDs (not readable for OMA)
+List of invalid IDs (not readable for OMA)
 }
 \description{
-Check if input IDs are valid IDs for OMA Browser
-(either OMA IDs or UniProt IDs)
+Check if input IDs are valid OMA IDs for OMA Browser
 }
 \examples{
 checkOmaID("HUMAN29398")

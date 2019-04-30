@@ -7,17 +7,22 @@
 parseDomainInput(seed, inputFile, type)
 }
 \arguments{
-\item{seed}{seed ID(s)}
+\item{seed}{seed protein ID}
 
-\item{inputFile}{name of input data (demo data, file name or path to folder)}
+\item{inputFile}{name of input file ("lca-micros" or "ampk-tor" for demo 
+data, file name or path to folder contains individual domain files)}
 
-\item{type}{type of data (demo, file or folder)}
+\item{type}{type of data ("demo", "file" or "folder")}
 }
 \value{
-A dataframe containing protein domain info
+A dataframe for protein domains including seed ID, its orthologs IDs,
+sequence lengths, feature names, start and end positions, feature weights 
+(optional) and the status to determine if that feature is important for 
+comparison the architecture between 2 proteins* (e.g. seed protein vs 
+ortholog) (optional).
 }
 \description{
-Parse domain input file
+Get all domain annotations for one seed protein IDs.
 }
 \examples{
 seed <- "OG_1009"
@@ -29,8 +34,7 @@ type <- "file"
 parseDomainInput(seed, inputFile, type)
 }
 \seealso{
-\code{\link{getDomainOnline}}, \code{\link{getDomainFile}},
-\code{\link{getDomainFolder}}
+\code{\link{getDomainOnline}}, \code{\link{getDomainFolder}}
 }
 \author{
 Vinh Tran {tran@bio.uni-frankfurt.de}

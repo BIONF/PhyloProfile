@@ -7,10 +7,10 @@
 getAllFastaOma(finalOmaDf)
 }
 \arguments{
-\item{finalOmaDf}{raw OMA data for a list of input IDs}
+\item{finalOmaDf}{raw OMA data for a list of proteins (see ?getDataForOneOma)}
 }
 \value{
-A list contains all fasta sequences
+A list contains all protein sequences in fasta format.
 }
 \description{
 Get all fasta sequences from a raw OMA dataframe

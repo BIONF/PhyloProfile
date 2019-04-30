@@ -2,13 +2,14 @@
 % Please edit documentation in R/clusterProfile.R
 \name{getDataClustering}
 \alias{getDataClustering}
-\title{Get data for calculating the distance matrix}
+\title{Get data for calculating distance matrix from phylogenetic profiles}
 \usage{
 getDataClustering(data, profileType, var1AggregateBy,
     var2AggregateBy)
 }
 \arguments{
-\item{data}{processed profile data}
+\item{data}{a data frame contains processed and filtered profiles (see
+?fullProcessedProfile and ?filterProfileData, ?fromInputToProfile)}
 
 \item{profileType}{type of data used for calculating the distance matrix.
 Either "binary" (consider only the presence/absence status of orthlogs), or
@@ -22,10 +23,7 @@ Either "binary" (consider only the presence/absence status of orthlogs), or
 A wide dataframe contains values for calculating distance matrix.
 }
 \description{
-Get data for calculating the distance matrix
-}
-\note{
-Documented by Vinh Tran (tran@bio.uni-frankfurt.de)
+Get data for calculating distance matrix from phylogenetic profiles
 }
 \examples{
 data("fullProcessedProfile", package="PhyloProfile")
@@ -39,5 +37,6 @@ getDataClustering(data, profileType, var1AggregateBy, var2AggregateBy)
 \code{\link{fromInputToProfile}}
 }
 \author{
-Carla Mölbert (carla.moelbert@gmx.de)
+Carla Mölbert (carla.moelbert@gmx.de), Vinh Tran
+(tran@bio.uni-frankfurt.de)
 }

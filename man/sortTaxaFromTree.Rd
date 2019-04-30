@@ -7,10 +7,10 @@
 sortTaxaFromTree(tree)
 }
 \arguments{
-\item{tree}{rooted taxonomy tree}
+\item{tree}{an "phylo" object for a rooted taxonomy tree}
 }
 \value{
-list of taxa sorted according to the taxonomy tree
+A list of sorted taxa obtained the input taxonomy tree.
 }
 \description{
 Get sorted supertaxon list based on a rooted taxonomy tree

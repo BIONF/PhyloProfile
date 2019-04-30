@@ -1,4 +1,4 @@
-#' Import function files
+filterProfileData#' Import function files
 sourceFiles = list.files(path = "R",
                           pattern = "*.R$",
                           full.names = TRUE)
@@ -1176,7 +1176,7 @@ shinyServer(function(input, output, session) {
                         reducedInfoList <- as.data.frame(taxonomyInfo[3])
                     }
                 )
-                
+
                 withProgress(message = "Generating taxonomy file...",
                              value = 0, {
                     # open existing files
@@ -1487,16 +1487,16 @@ shinyServer(function(input, output, session) {
         # get input taxonomy tree
         inputTaxaTree <- NULL
         treeIn <- input$inputTree
-        if (!is.null(treeIn)) {
-            inputTaxaTree <- read.tree(file = treeIn$datapath)
-        }
+        if (!is.null(treeIn)) inputTaxaTree <- read.tree(file = treeIn$datapath)
 
         # sort taxonomy matrix based on selected refTaxon
-        sortedOut <- sortInputTaxa(taxonIDs = inputTaxonID(),
-                                     taxonNames = inputTaxonName(),
-                                     rankName = rankName,
-                                     refTaxon = input$inSelect,
-                                     taxaTree = inputTaxaTree)
+        sortedOut <- sortInputTaxa(
+            taxonIDs = inputTaxonID(),
+            taxonNames = inputTaxonName(),
+            rankName = rankName,
+            refTaxon = input$inSelect,
+            taxaTree = inputTaxaTree
+        )
         # return
         return(sortedOut)
     })
@@ -1644,7 +1644,7 @@ shinyServer(function(input, output, session) {
         }
 
         # create data for heatmap plotting
-        dataHeat <- createProfileData(
+        dataHeat <- filterProfileData(
             superTaxonData = dataSupertaxa(),
             refTaxon = inSelect,
             percentCutoff,
@@ -1857,7 +1857,7 @@ shinyServer(function(input, output, session) {
                     customList <- read.table(
                         file = fileCustom$datapath, header = FALSE
                     )
-                    
+
                     customList$V1 <- as.factor(customList$V1)
                     out <- as.list(levels(customList$V1))
                 }
@@ -2664,10 +2664,12 @@ shinyServer(function(input, output, session) {
     # ** data for gene age estimation ------------------------------------------
     geneAgeDf <- reactive({
         if (v$doPlot == FALSE) return()
-        geneAgeDf <- estimateGeneAge(getDataFiltered(),
-                                        toString(input$rankSelect),
-                                        input$inSelect,
-                                        input$var1, input$var2, input$percent)
+        geneAgeDf <- estimateGeneAge(
+            getDataFiltered(),
+            toString(input$rankSelect),
+            input$inSelect,
+            input$var1, input$var2, input$percent
+        )
         return(geneAgeDf)
     })
 

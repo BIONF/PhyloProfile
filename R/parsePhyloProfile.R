@@ -1,9 +1,11 @@
 # Functions for parsing and pre-processing PhyloProfile input
 
 #' Get list of pre-installed NCBI taxon names
-#' @description Get all NCBI taxon names from "data/taxonNamesReduced.txt"
+#' @description Get all NCBI taxon names from 
+#' "PhyloProfile/data/taxonNamesReduced.txt"
 #' @export
-#' @return List of taxon IDs, their full names, taxonomy ranks and parent IDs
+#' @return List of taxon IDs, their full names, taxonomy ranks and parent IDs 
+#' obtained from "PhyloProfile/data/taxonNamesReduced.txt"
 #' @importFrom utils download.file
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @examples
@@ -45,13 +47,14 @@ getNameList <- function() {
 }
 
 #' Get taxonomy matrix
-#' @description Get full taxonomy matrix from "data/taxonomyMatrix.txt" or
-#' only a subset of matrix based on an input taxon list
+#' @description Get the (full or subset) taxonomy matrix from 
+#' "data/taxonomyMatrix.txt" based on an input taxon list
 #' @export
 #' @param subsetTaxaCheck subset taxonomy matrix based on input taxon IDs
 #' (TRUE/FALSE)
-#' @param taxonIDs list of input taxon IDs
-#' @return Data frame contains the (subset of) taxonomy matrix
+#' @param taxonIDs list of input taxon IDs (e.g. ncbi1234)
+#' @return Data frame contains the (subset of) taxonomy matrix for list of 
+#' input taxa.
 #' @importFrom utils download.file
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @examples
@@ -90,15 +93,13 @@ getTaxonomyMatrix <- function(subsetTaxaCheck, taxonIDs){
         header = TRUE,
         stringsAsFactors = TRUE
     )
-    if (subsetTaxaCheck) {
-        dt <- dt[dt$abbrName  %in% taxonIDs, ]
-    }
+    if (subsetTaxaCheck) dt <- dt[dt$abbrName  %in% taxonIDs, ]
     return(dt)
 }
 
 #' Get ID list of input taxa from the main input
-#' @param rawProfile long dataframe of input profile
-#' @return List of all input taxon IDs
+#' @param rawProfile A dataframe of input phylogenetic profile in long format
+#' @return List of all input taxon IDs (e.g. ncbi1234)
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @export
 #' @seealso \code{\link{createLongMatrix}}, \code{\link{mainLongRaw}}
@@ -109,22 +110,20 @@ getTaxonomyMatrix <- function(subsetTaxaCheck, taxonIDs){
 getInputTaxaID <- function(rawProfile){
     if (is.null(rawProfile)) return()
     inputTaxa <- levels(as.factor(rawProfile$ncbiID))
-
     inputTaxa <- unlist(strsplit(inputTaxa, split = "\t"))
-    if (inputTaxa[1] == "geneID") {
-        # remove "geneID" element from vector inputTaxa
-        inputTaxa <- inputTaxa[-1]
-    }
+    # remove "geneID" element from vector inputTaxa
+    if (inputTaxa[1] == "geneID") inputTaxa <- inputTaxa[-1]
     # return input taxa
     return(inputTaxa)
 }
 
 #' Get NCBI taxon names for a selected list of taxa
-#' @description Get NCBI taxon names from "data/taxonNamesReduced.txt" for
-#' a selected list of taxon
+#' @description Get NCBI taxon names from 
+#' "PhyloProfile/data/taxonNamesReduced.txt" for a list of input taxa
 #' @param rankName taxonomy rank (e.g. "species","phylum",...)
-#' @param taxonIDs list of taxon IDs (check getInputTaxaID())
-#' @return List of full names, taxonomy ranks and parent IDs for the input taxa
+#' @param taxonIDs list of taxon IDs (e.g. ncbi1234)
+#' @return Data frame contains a list of full names, taxonomy ranks and parent
+#' IDs for the input taxa.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @export
 #' @seealso \code{\link{getInputTaxaID}} for getting input taxon IDs,
@@ -140,26 +139,25 @@ getInputTaxaName <- function(rankName, taxonIDs){
     # load list of taxon name
     nameList <- getNameList()
 
-    choice <- as.data.frame
-    choice <- rbind(Dt[rankName])
-    colnames(choice) <- "ncbiID"
-    choice <- merge(choice,
-                    nameList,
-                    by = "ncbiID",
-                    all = FALSE)
+    # return
+    choice <- data.frame(
+        "ncbiID" = unlist(Dt[rankName]),
+        stringsAsFactors = FALSE
+    )
+    choice <- merge(choice, nameList, by = "ncbiID", all = FALSE)
     return(choice)
 }
 
 #' Sort list of (super)taxa based on a selected reference (super)taxon
 #' @param taxonIDs list of taxon IDs (e.g.: ncbi1234, ncbi9999, ...)
 #' @param taxonNames list of taxon names and their corresponding taxonomy
-#' ranks, IDs,...
+#' ranks, IDs, parent IDs for the input taxa (taxonIDs)
 #' @param rankName working taxonomy rank (e.g. "species", "phylum",...)
 #' @param refTaxon selected reference taxon
-#' @param taxaTree input taxonomy tree (optional)
-#' @return Taxonomy matrix for the input taxa ordered by the selected reference
-#' taxon. This matrix is sorted either based on the NCBI taxonomy info, or
-#' based on an user-defined taxonomy tree (if provided).
+#' @param taxaTree taxonomy tree for the input taxa (optional)
+#' @return A taxonomy matrix for the input taxa ordered by the selected 
+#' reference taxon. This matrix is sorted either based on the NCBI taxonomy 
+#' info, or based on an user-defined taxonomy tree (if provided).
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @export
 #' @seealso \code{\link{getNameList}}, \code{\link{getTaxonomyMatrix}},
@@ -173,11 +171,7 @@ getInputTaxaName <- function(rankName, taxonIDs){
 #' taxonNames <- getInputTaxaName("species", taxonIDs)
 #' sortInputTaxa(taxonIDs, taxonNames, "species", "Homo sapiens", NULL)
 
-sortInputTaxa <- function(taxonIDs,
-                            taxonNames,
-                            rankName,
-                            refTaxon,
-                            taxaTree){
+sortInputTaxa <- function(taxonIDs, taxonNames, rankName, refTaxon, taxaTree){
     ncbiID <- NULL
     fullName <- NULL
     abbrName <- NULL
@@ -290,13 +284,13 @@ sortInputTaxa <- function(taxonIDs,
     return(sortedOut)
 }
 
-#' Calculate percentage of present species in each ortholog group
+#' Calculate percentage of present species in each super taxon
 #' @export
-#' @param profileWithTax long data frame of main PhyloProfile input together
-#' with their taxonomy info
-#' @param taxaCount number of species occur in each supertaxon
-#' @return A data frame with % of present species for each seed protein in
-#' each supertaxon
+#' @param profileWithTax data frame of main PhyloProfile input together
+#' with their taxonomy info (see ?profileWithTaxonomy)
+#' @param taxaCount number of species occur in each supertaxon (e.g. phylum 
+#' or kingdom)
+#' @return A data frame with % of present species in each supertaxon
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{profileWithTaxonomy}} for a demo input data
 #' @examples
@@ -320,8 +314,7 @@ calcPresSpec <- function(profileWithTax, taxaCount){
     geneIDSupertaxon <- geneIDSupertaxon[!duplicated(geneIDSupertaxon), ]
 
     # remove NA rows from profileWithTax
-    profileWithTaxNoNA <-
-        profileWithTax[profileWithTax$orthoID != "NA", ]
+    profileWithTaxNoNA <- profileWithTax[profileWithTax$orthoID != "NA", ]
 
     # count present frequency of supertaxon for each gene
     geneSupertaxonCount <- plyr::count(
@@ -350,24 +343,27 @@ calcPresSpec <- function(profileWithTax, taxaCount){
     geneIDSupertaxon <- subset(
         geneIDSupertaxon, select = -c(paralog, abbrName)
     )
-    finalPresSpecDt <- merge(presSpecDt,
-                                geneIDSupertaxon,
-                                by = c("geneID", "supertaxon"),
-                                all.y = TRUE)
+    finalPresSpecDt <- merge(
+        presSpecDt,
+        geneIDSupertaxon,
+        by = c("geneID", "supertaxon"),
+        all.y = TRUE
+    )
     finalPresSpecDt$presSpec[is.na(finalPresSpecDt$presSpec)] <- 0
 
-    # remove duplicated rows
+    # remove duplicated and NA rows
     finalPresSpecDt <- finalPresSpecDt[!duplicated(finalPresSpecDt), ]
+    finalPresSpecDt <- finalPresSpecDt[complete.cases(finalPresSpecDt), ]
 
     # return finalPresSpecDt
     return(finalPresSpecDt)
 }
 
 #' Parsing info for phylogenetic profiles
-#' @description Creating main dataframe for the input phylogenetic profiles with
-#' the selected input taxonomy level (e.g. strain, species) and reference taxon.
-#' The output contains the number of paralogs, percentage of species presence
-#' in each supertaxon, and the max/min/mean/median of VAR1 and VAR2.
+#' @description Creating main dataframe for the input phylogenetic profiles 
+#' based on selected input taxonomy level (e.g. strain, species) and reference 
+#' taxon. The output contains the number of paralogs, percentage of species 
+#' presence in each supertaxon, and the max/min/mean/median of VAR1 and VAR2.
 #' @usage parseInfoProfile( inputDf, sortedInputTaxa, var1AggregateBy,
 #'     var2AggregateBy)
 #' @param inputDf input profiles in long format
@@ -376,8 +372,10 @@ calcPresSpec <- function(profileWithTax, taxaCount){
 #' @param var1AggregateBy aggregate method for VAR1 (min, max, mean or median)
 #' @param var2AggregateBy aggregate method for VAR2 (min, max, mean or median)
 #' @importFrom stats aggregate
-#' @return Dataframe contains all info for input profiles (a full processed
-#' profile)
+#' @return A dataframe contains all info for the input phylogenetic profiles. 
+#' This full processed profile that is required for several profiling analyses 
+#' e.g. estimation of gene age (?estimateGeneAge) or identification of core gene
+#' (?getCoreGene).
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @export
 #' @seealso \code{\link{createLongMatrix}}, \code{\link{sortInputTaxa}},
@@ -484,13 +482,14 @@ parseInfoProfile <- function(
     return(fullMdData)
 }
 
-#' Reduce the full processed profile into supertaxon level
-#' @description Reduce data of the phylogenetic profiles from input taxonomy
-#' rank into supertaxon level (e.g. from species to phylum)
-#' @param fullProfile dataframe contains the full processed profiles
-#' @return A reduced dataframe contains only profiles for the selected rank.
-#' This dataframe contains only supertaxa and their value (%present, mVar1 &
-#' mVar2) for each gene.
+#' Reduce the full processed profile data into supertaxon level
+#' @description Reduce data of the processed phylogenetic profiles from input 
+#' taxonomy rank into supertaxon level (e.g. from species to phylum)
+#' @param fullProfile dataframe contains the full processed profiles (see
+#' ?fullProcessedProfile)
+#' @return A reduced dataframe contains only profile data for the selected 
+#' supertaxon rank. This dataframe contains only supertaxa and their value 
+#' (%present, mVar1 & mVar2) for each gene.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @export
 #' @seealso \code{\link{parseInfoProfile}} for creating a full processed
@@ -579,12 +578,17 @@ reduceProfile <- function(fullProfile) {
     return(superDfExt)
 }
 
-#' Create data for plotting the phylogentic profiles
-#' @usage createProfileData(superTaxonData, refTaxon, percentCutoff,
+#' Filter phylogentic profiles
+#' @description Create a filtered data needed for plotting or clustering 
+#' phylogenetic profiles. NOTE: this function require some intermediate steps 
+#' using the results from other functions. If you would like to get a full 
+#' processed data from the raw input, please use the function 
+#' fromInputToProfile() instead!
+#' @usage filterProfileData(superTaxonData, refTaxon, percentCutoff,
 #'     coorthologCutoffMax, var1Cutoff, var2Cutoff, var1Relation,
 #'     var2Relation, groupByCat, catDt)
-#' @param superTaxonData a reduced dataframe contains info for all profiles in
-#' the selected taxonomy rank.
+#' @param superTaxonData a reduced dataframe contains info for all phylogenetic
+#' profiles in the selected taxonomy rank.
 #' @param refTaxon selected reference taxon
 #' @param percentCutoff min and max cutoffs for percentage of species present
 #' in a supertaxon
@@ -598,13 +602,21 @@ reduceProfile <- function(fullProfile) {
 #' @param groupByCat group genes by their categories (TRUE or FALSE)
 #' @param catDt dataframe contains gene categories
 #' (optional, NULL if groupByCat = FALSE or no info provided)
-#' @return A dataframe ready for generating profile plot.
+#' @return A filtered dataframe for generating profile plot including seed gene 
+#' IDs (or orthologous group IDs), their ortholog IDs and the corresponding 
+#' (super)taxa, (super)taxon IDs, number of co-orthologs in each (super)taxon, 
+#' values for two additional variables var1, var2, % of species present in each 
+#' supertaxon, and the categories of seed genes (or ortholog groups).
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @export
 #' @seealso \code{\link{parseInfoProfile}} and \code{\link{reduceProfile}}
 #' for generating input dataframe, \code{\link{fullProcessedProfile}} for a
-#' demo full processed profile dataframe
+#' demo full processed profile dataframe, \code{\link{fromInputToProfile}} for
+#' generating fully processed data from raw input.
 #' @examples
+#' # NOTE: this function require some intermediate steps using the results from
+#' # other functions. If you would like to get a full processed data from the
+#' # raw input, please use the function fromInputToProfile() instead!
 #' data("fullProcessedProfile", package="PhyloProfile")
 #' superTaxonData <- reduceProfile(fullProcessedProfile)
 #' refTaxon <- "Mammalia"
@@ -616,7 +628,7 @@ reduceProfile <- function(fullProfile) {
 #' var2Relation <- "species"
 #' groupByCat <- FALSE
 #' catDt <- NULL
-#' createProfileData(
+#' filterProfileData(
 #'     superTaxonData,
 #'     refTaxon,
 #'     percentCutoff,
@@ -629,7 +641,7 @@ reduceProfile <- function(fullProfile) {
 #'     catDt
 #' )
 
-createProfileData <- function(
+filterProfileData <- function(
     superTaxonData,
     refTaxon,
     percentCutoff,
@@ -691,71 +703,57 @@ createProfileData <- function(
     }
 
     dataHeat$presSpec[
-        dataHeat$supertaxon != inSelect
-        & dataHeat$var1 < var1CutoffMin
+        dataHeat$supertaxon != inSelect & dataHeat$var1 < var1CutoffMin
     ] <- 0
     dataHeat$presSpec[
-        dataHeat$supertaxon != inSelect
-        & dataHeat$var1 > var1CutoffMax
+        dataHeat$supertaxon != inSelect & dataHeat$var1 > var1CutoffMax
     ] <- 0
     if (var1Relation == "protein") {
         if (var2Relation == "protein") {
             # prot-prot: remove complete cell if one variable not sufficient
             dataHeat$presSpec[
-                dataHeat$supertaxon != inSelect
-                & dataHeat$var2 < var2CutoffMin
+                dataHeat$supertaxon != inSelect & dataHeat$var2 < var2CutoffMin
             ] <- 0
             dataHeat$presSpec[
-                dataHeat$supertaxon != inSelect
-                & dataHeat$var2 > var2CutoffMax
+                dataHeat$supertaxon != inSelect & dataHeat$var2 > var2CutoffMax
             ] <- 0
             dataHeat$var2[
-                dataHeat$supertaxon != inSelect
-                & dataHeat$var1 < var1CutoffMin
+                dataHeat$supertaxon != inSelect & dataHeat$var1 < var1CutoffMin
             ] <- NA
             dataHeat$var2[
-                dataHeat$supertaxon != inSelect
-                & dataHeat$var1 > var1CutoffMax
+                dataHeat$supertaxon != inSelect & dataHeat$var1 > var1CutoffMax
             ] <- NA
             dataHeat$var1[
-                dataHeat$supertaxon != inSelect
-                & dataHeat$var2 < var2CutoffMin
+                dataHeat$supertaxon != inSelect & dataHeat$var2 < var2CutoffMin
             ] <- NA
             dataHeat$var1[
-                dataHeat$supertaxon != inSelect
-                & dataHeat$var2 > var2CutoffMax
+                dataHeat$supertaxon != inSelect & dataHeat$var2 > var2CutoffMax
             ] <- NA
         } else {
             # prot-spec: var1 depend on var2
             dataHeat$presSpec[
-                dataHeat$supertaxon != inSelect
-                & dataHeat$var2 < var2CutoffMin
+                dataHeat$supertaxon != inSelect & dataHeat$var2 < var2CutoffMin
             ] <- 0
             dataHeat$presSpec[
-                dataHeat$supertaxon != inSelect
-                & dataHeat$var2 > var2CutoffMax
+                dataHeat$supertaxon != inSelect & dataHeat$var2 > var2CutoffMax
             ] <- 0
         }
     } else {
         if (var2Relation == "species") {
             # spec-spec: remove var1 and var2 independently
             dataHeat$presSpec[
-                dataHeat$supertaxon != inSelect
-                & dataHeat$var1 < var1CutoffMin
+                dataHeat$supertaxon != inSelect & dataHeat$var1 < var1CutoffMin
             ] <- 0
             dataHeat$presSpec[
-                dataHeat$supertaxon != inSelect
-                & dataHeat$var1 > var1CutoffMax
+                dataHeat$supertaxon != inSelect & dataHeat$var1 > var1CutoffMax
             ] <- 0
         } else {
             # spec-prot: var2 depend on var1
             dataHeat$var2[
-                dataHeat$supertaxon != inSelect
-                & dataHeat$var1 < var1CutoffMin
+                dataHeat$supertaxon != inSelect & dataHeat$var1 < var1CutoffMin
             ] <- NA
             dataHeat$var2[
-                dataHeat$supertaxon != inSelect
-                & dataHeat$var1 > var1CutoffMax
+                dataHeat$supertaxon != inSelect & dataHeat$var1 > var1CutoffMax
             ] <- NA
         }
     }
@@ -805,18 +803,19 @@ createProfileData <- function(
     return(dataHeat)
 }
 
-#' Create data for plotting profiles (from raw input to final dataframe)
-#' @description Create data needed for plotting phylogenetic profile
-#' from raw input file.
+#' Complete processing of raw input phylogenetic profiles
+#' @description Create a processed and filtered data for plotting or analysing 
+#' phylogenetic profiles from raw input file (from raw input to final filtered
+#' dataframe)
 #' @usage fromInputToProfile(rawInput, rankName, refTaxon, taxaTree,
 #'     var1AggregateBy, var2AggregateBy, percentCutoff,
 #'     coorthologCutoffMax, var1Cutoff, var2Cutoff, var1Relation,
 #'     var2Relation, groupByCat, catDt)
 #' @param rawInput input file (in long, wide, multi-fasta or orthoxml format)
 #' @param rankName taxonomy rank (e.g. "species","phylum",...)
-#' @param refTaxon selected reference taxon
-#' @param taxaTree input taxonomy tree (optional)
-#' @param var1AggregateBy aggregate method for VAR1 (min, max, mean or median)
+#' @param refTaxon selected reference taxon name
+#' @param taxaTree input taxonomy tree for taxa in input profiles (optional)
+#' @param var1AggregateBy aggregate method for var1 (min, max, mean or median)
 #' @param var2AggregateBy aggregate method for VAR2 (min, max, mean or median)
 #' @param percentCutoff min and max cutoffs for percentage of species present
 #' in a supertaxon
@@ -829,13 +828,18 @@ createProfileData <- function(
 #' "species" for protein-species)
 #' @param groupByCat group genes by their categories (TRUE or FALSE)
 #' @param catDt dataframe contains gene categories
-#' @return dataframe for generating profile plot
+#' @return Dataframe required for generating phylogenetic profile plot or 
+#' clustering analysis. It contains seed gene IDs (or orthologous group IDs), 
+#' their ortholog IDs and the corresponding (super)taxa, (super)taxon IDs, 
+#' number of co-orthologs in each (super)taxon, values for two additional 
+#' variables var1, var2, % of species present in each supertaxon, and the 
+#' categories of seed genes (or ortholog groups).
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @export
 #' @seealso \code{\link{createLongMatrix}}, \code{\link{getInputTaxaID}},
 #' \code{\link{getInputTaxaName}}, \code{\link{sortInputTaxa}},
 #' \code{\link{parseInfoProfile}}, \code{\link{reduceProfile}},
-#' \code{\link{createProfileData}}
+#' \code{\link{filterProfileData}}
 #' @examples
 #' rawInput <- system.file(
 #'     "extdata", "test.main.long", package = "PhyloProfile", mustWork = TRUE
@@ -874,7 +878,7 @@ fromInputToProfile <- function(
     rawInput,
     rankName,
     refTaxon,
-    taxaTree,
+    taxaTree = NULL,
     var1AggregateBy,
     var2AggregateBy,
     percentCutoff,
@@ -883,8 +887,8 @@ fromInputToProfile <- function(
     var2Cutoff,
     var1Relation,
     var2Relation,
-    groupByCat,
-    catDt
+    groupByCat = FALSE,
+    catDt = NULL
 ) {
     # convert raw input into long format
     inputDf <- createLongMatrix(rawInput)
@@ -917,16 +921,18 @@ fromInputToProfile <- function(
     var2CutoffMax <- var2Cutoff[2]
 
     # create final df
-    dataHeat <- createProfileData(superTaxonData = dataSupertaxa,
-                                    refTaxon = refTaxon,
-                                    percentCutoff,
-                                    coorthologCutoffMax,
-                                    var1Cutoff,
-                                    var2Cutoff,
-                                    var1Relation,
-                                    var2Relation,
-                                    groupByCat = FALSE,
-                                    catDt = NULL)
+    dataHeat <- filterProfileData(
+        superTaxonData = dataSupertaxa,
+        refTaxon = refTaxon,
+        percentCutoff,
+        coorthologCutoffMax,
+        var1Cutoff,
+        var2Cutoff,
+        var1Relation,
+        var2Relation,
+        groupByCat = FALSE,
+        catDt = NULL
+    )
 
     return(dataHeat)
 }

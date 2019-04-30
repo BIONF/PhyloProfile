@@ -9,33 +9,36 @@ getFastaSeqs(dataIn, filein, demoData, inputTypeFasta,
 }
 \arguments{
 \item{dataIn}{a dataframe of the input phylogenetic profiles, that contains
-at least 3 columns: geneIDs, orthoIDs and ncbiIDs}
+at least 3 columns: geneIDs, orthoIDs and ncbiIDs (see ?mainLongRaw or 
+?fromInputToProfile)}
 
-\item{filein}{main input file (for checking input type)}
+\item{filein}{raw phylogenetic profile input file (for checking input type)}
 
 \item{demoData}{name of demo data set (either "ampk-tor", "lca-micros",
 or "none")}
 
-\item{inputTypeFasta}{source of fasta sequences ("Concatenated fasta file"
-or "Fasta folder")}
+\item{inputTypeFasta}{source type of fasta sequences ("Concatenated fasta 
+file" or "Fasta folder")}
 
-\item{concatFasta}{input concatenated fasta file}
+\item{concatFasta}{input concatenated fasta file (NULL if not available)}
 
-\item{path}{path to fasta folder}
+\item{path}{path to fasta folder (NULL if concatFasta already given)}
 
 \item{dirFormat}{directory format (either 1 for "path/speciesID.fa*" or 2 for
-"path/speciesID/speciesID.fa*")}
+"path/speciesID/speciesID.fa*") (NULL if concatFasta already given)}
 
-\item{fileExt}{fasta file extension ("fa", "fasta", "fas" or "txt")}
+\item{fileExt}{fasta file extension ("fa", "fasta", "fas" or "txt") (NULL if 
+concatFasta already given)}
 
 \item{idFormat}{fasta header format (1 for ">speciesID:seqID", 2 for
-">speciesID@seqID", 3 for ">speciesID|seqID" or 4 for "seqID")}
+">speciesID@seqID", 3 for ">speciesID|seqID" or 4 for "seqID") (NULL if 
+concatFasta already given)}
 }
 \value{
-A dataframe contains fasta sequences
+A dataframe with one column contains sequences in fasta format.
 }
 \description{
-Get fasta sequences
+Get fasta sequences for the input phylogenetic profiles.
 }
 \examples{
 data("mainLongRaw", package="PhyloProfile")

@@ -7,19 +7,21 @@
 createVarDistPlot(data, varName, varType, percent, distTextSize)
 }
 \arguments{
-\item{data}{dataframe contains data for plotting}
+\item{data}{dataframe contains data for plotting (see
+?createVariableDistributionData, ?createVariableDistributionDataSubset or
+?createPercentageDistributionData)}
 
 \item{varName}{name of the variable that need to be analyzed (either name of
 variable 1 or variable 2 or "percentage of present taxa")}
 
 \item{varType}{type of variable (either "var1", "var2" or "presSpec")}
 
-\item{percent}{range of percentage cutoff}
+\item{percent}{range of percentage cutoff (between 0 and 1)}
 
-\item{distTextSize}{text size of the distribution plot}
+\item{distTextSize}{text size of the distribution plot (in px)}
 }
 \value{
-A distribution plot as a ggplot object
+A distribution plot for the selected variable as a ggplot object
 }
 \description{
 Create distribution plot for one of the additional variable or

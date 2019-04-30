@@ -13,10 +13,11 @@ getOmaMembers(id, orthoType)
 (orthologous group) or "PAIR" (orthologous pair - CURRENTLY NOT WORKING)}
 }
 \value{
-list of ortholog members
+List of OMA orthologs for an input seed protein.
 }
 \description{
-Get OMA orthologs for a seed protein from OMA Browser
+Get OMA ortholog group, OMA HOG or OMA pair's members for a 
+seed protein from OMA Browser.
 }
 \examples{
 getOmaMembers("HUMAN29397", "OG")

@@ -2,13 +2,14 @@
 % Please edit documentation in R/createProfilePlot.R
 \name{highlightProfilePlot}
 \alias{highlightProfilePlot}
-\title{Highlight gene and/or taxon of interest on the profile plot}
+\title{Highlight gene and/or taxon of interest on the phylogenetic profile plot}
 \usage{
 highlightProfilePlot(data, plotParameter, taxonHighlight,
     rankName, geneHighlight)
 }
 \arguments{
-\item{data}{data for heatmap plot}
+\item{data}{dataframe for plotting the heatmap phylogentic profile (either
+full or subset profiles)}
 
 \item{plotParameter}{plot parameters (type of x-axis "taxa" or "genes";
 names of 2 variables; colors for lowest and highest value of variable 1;
@@ -30,7 +31,7 @@ A profile heatmap plot with highlighted gene and/or taxon of interest
 as ggplot object.
 }
 \description{
-Highlight gene and/or taxon of interest on the profile plot
+Highlight gene and/or taxon of interest on the phylogenetic profile plot
 }
 \examples{
 data("fullProcessedProfile", package="PhyloProfile")

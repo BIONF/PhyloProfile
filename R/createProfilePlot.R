@@ -1,11 +1,12 @@
 #' Create data for main profile plot
 #' @export
-#' @param dataHeat a data frame contains processed profiles
-#' @return A data frame contains data for main profile plot.
+#' @param dataHeat a data frame contains processed profiles (see
+#' ?fullProcessedProfile, ?filterProfileData)
+#' @return A dataframe contains data for plotting the phylogenetic profile.
 #' @importFrom stats na.omit
 #' @rawNamespace import(data.table, except = c(set, melt))
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
-#' @seealso \code{\link{fromInputToProfile}}
+#' @seealso \code{\link{filterProfileData}}
 #' @examples
 #' data("fullProcessedProfile", package="PhyloProfile")
 #' dataMainPlot(fullProcessedProfile)
@@ -16,9 +17,9 @@ dataMainPlot <- function(dataHeat){
     # reduce number of inparalogs based on filtered dataHeat
     dataHeatTb <- data.table(na.omit(dataHeat))
     dataHeatTb[, paralogNew := .N, by = c("geneID", "supertaxon")]
-    dataHeatTb <- data.frame(dataHeatTb[, c("geneID",
-                                                "supertaxon",
-                                                "paralogNew")])
+    dataHeatTb <- data.frame(dataHeatTb[, c(
+        "geneID", "supertaxon", "paralogNew"
+    )])
 
     dataHeat <- merge(
         dataHeat, dataHeatTb,
@@ -40,12 +41,13 @@ dataMainPlot <- function(dataHeat){
 #' @description Create data for customized profile plot based on a selected
 #' list of genes and/or taxa.
 #' @export
-#' @param dataHeat a data frame contains processed profiles
-#' @param selectedTaxa subset of taxa
-#' @param selectedSeq subset of sequences
-#' @return A data frame contains data for customized profile plot.
+#' @param dataHeat a data frame contains processed profiles (see
+#' ?fullProcessedProfile, ?filterProfileData)
+#' @param selectedTaxa selected subset of taxa
+#' @param selectedSeq selected subset of genes
+#' @return A dataframe contains data for plotting the customized profile.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
-#' @seealso \code{\link{fromInputToProfile}}
+#' @seealso \code{\link{filterProfileData}}
 #' @examples
 #' data("fullProcessedProfile", package="PhyloProfile")
 #' selectedTaxa <- c("Mammalia", "Echinoidea", "Gunneridae")
@@ -103,7 +105,8 @@ dataCustomizedPlot <- function(dataHeat, selectedTaxa, selectedSeq){
 
 #' Create profile heatmap plot
 #' @export
-#' @param data data for heatmap plot
+#' @param data dataframe for plotting the heatmap phylogentic profile (either
+#' full or subset profiles)
 #' @param plotParameter plot parameters (type of x-axis "taxa" or "genes";
 #' names of 2 variables; colors for lowest and highest value of variable 1;
 #' colors for lowest and highest value of variable 2; color of co-orthologs;
@@ -112,7 +115,7 @@ dataCustomizedPlot <- function(dataHeat, selectedTaxa, selectedSeq){
 #' angle of x-axis from 0 to 90;
 #' show/hide separate line for reference taxon 1/0;
 #' enable/disable coloring gene categories TRUE/FALSE)
-#' @return A profile heatmap plot as ggplot object.
+#' @return A profile heatmap plot as a ggplot object.
 #' @importFrom plyr mapvalues
 #' @importFrom ggplot2 scale_fill_gradient
 #' @importFrom ggplot2 scale_color_gradient
@@ -325,11 +328,12 @@ heatmapPlotting <- function(data, plotParameter){
     return(p)
 }
 
-#' Highlight gene and/or taxon of interest on the profile plot
+#' Highlight gene and/or taxon of interest on the phylogenetic profile plot
 #' @export
 #' @usage highlightProfilePlot(data, plotParameter, taxonHighlight,
 #'     rankName, geneHighlight)
-#' @param data data for heatmap plot
+#' @param data dataframe for plotting the heatmap phylogentic profile (either
+#' full or subset profiles)
 #' @param plotParameter plot parameters (type of x-axis "taxa" or "genes";
 #' names of 2 variables; colors for lowest and highest value of variable 1;
 #' colors for lowest and highest value of variable 2; color of co-orthologs;

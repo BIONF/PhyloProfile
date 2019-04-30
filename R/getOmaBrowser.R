@@ -1,12 +1,11 @@
 # Get OMA information functions
 # using OmaDB package (https://github.com/klarakaleb/OmaDB)
 
-#' Check OMA IDs
-#' @description Check if input IDs are valid IDs for OMA Browser
-#' (either OMA IDs or UniProt IDs)
+#' Check the validity of input OMA IDs
+#' @description Check if input IDs are valid OMA IDs for OMA Browser
 #' @export
 #' @param ids list of ids needs to be checked
-#' @return list of invalid IDs (not readable for OMA)
+#' @return List of invalid IDs (not readable for OMA)
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @examples
 #' checkOmaID("HUMAN29398")
@@ -18,12 +17,13 @@ checkOmaID <- function(ids) {
 }
 
 #' Get OMA members
-#' @description Get OMA orthologs for a seed protein from OMA Browser
+#' @description Get OMA ortholog group, OMA HOG or OMA pair's members for a 
+#' seed protein from OMA Browser.
 #' @export
 #' @param id ID of the seed protein (OMA or UniProt ID)
 #' @param orthoType type of OMA orthologs: either "HOG", "OG"
 #' (orthologous group) or "PAIR" (orthologous pair - CURRENTLY NOT WORKING)
-#' @return list of ortholog members
+#' @return List of OMA orthologs for an input seed protein.
 #' @author Carla Mölbert {carla.moelbert@gmx.de}
 #' @examples
 #' getOmaMembers("HUMAN29397", "OG")
@@ -57,8 +57,9 @@ getOmaMembers <- function(id, orthoType) {
 #' @export
 #' @description Get domain annotation from OMA Browser based on a URL or a
 #' raw data frame contains annotation info from OMA
-#' @param domainURL URL address for domain annotation of ONE OMA id
-#' @return data frame contains feature names, start and end positions
+#' @param domainURL URL address for domain annotation of ONE OMA id or a
+#' raw data frame contains annotation info from OMA
+#' @return Data frame contains feature names with their start and end positions
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @examples
 #' getOmaDomainFromURL("https://omabrowser.org/api/protein/7916808/domains/")
@@ -95,10 +96,11 @@ getOmaDomainFromURL <- function(domainURL) {
     ))
 }
 
-#' Get taxonomy ID, sequence and annotation for one OMA sequence
+#' Get taxonomy ID, sequence and annotation for one OMA protein
 #' @export
-#' @param id oma ID of a ortholog
-#' @return data frame
+#' @param id oma ID of one protein
+#' @return Data frame contains the input protein ID with its taxonomy ID, 
+#' sequence, length and domain annotations (tab delimited) for input OMA protein
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @examples
 #' getOmaDataForOneOrtholog("HUMAN29397")
@@ -137,12 +139,14 @@ getOmaDataForOneOrtholog <- function(id) {
 }
 
 #' Get OMA info for a query protein and its orthologs
-#' @description Get taxonomy IDs, sequences and annotations for an OMA
+#' @description Get taxonomy IDs, sequences, length and annotations for an OMA
 #' orthologous group (or OMA HOG).
 #' @export
-#' @param seedID protein query ID in OMA or UniProt format
-#' @param orthoType type of OMA orthologs
-#' @return data frame contains info for all sequences of that OMA group (or HOG)
+#' @param seedID OMA protein ID
+#' @param orthoType type of OMA orthologs ("OG" or "HOG")
+#' @return Data frame contains info for all sequences of the input OMA group 
+#' (or HOG). That info contains the protein IDs, taxonomy IDs, sequences, 
+#' lengths, domain annotations (tab delimited) and the corresponding seed ID.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @examples
 #' getDataForOneOma("HUMAN29397", "OG")
@@ -196,15 +200,17 @@ getDataForOneOma <- function(seedID, orthoType){
     ))
 }
 
-#' Create phylogenetic profile from a raw OMA dataframe
+#' Create a phylogenetic profile from a raw OMA dataframe
 #' @export
-#' @param finalOmaDf raw OMA data for a list of input IDs
-#' @return phylogenetic profiles in long format
+#' @param finalOmaDf raw OMA data for a list of proteins (see ?getDataForOneOma)
+#' @return Dataframe of the phylogenetic profiles in long format, which 
+#' contains the seed protein IDs, their orthologous proteins and the 
+#' corresponding taxononmy IDs of the orthologs.
+#' @seealso \code{\link{getDataForOneOma}}
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @examples
 #' omaData <- getDataForOneOma("HUMAN29397", "OG")
 #' createProfileFromOma(omaData)
-#' @seealso \code{\link{getDataForOneOma}}
 
 createProfileFromOma <- function(finalOmaDf) {
     profileDf <- finalOmaDf[, c("seed", "taxonID", "orthoID")]
@@ -214,15 +220,15 @@ createProfileFromOma <- function(finalOmaDf) {
 
 #' Create domain annotation dataframe from a raw OMA dataframe
 #' @export
-#' @param finalOmaDf raw OMA data for a list of input IDs
-#' @return domain annotation in a dataframe to input into PhyloProfile, which
-#' contains seed ID, ortholog ID, ortholog length, annotated feature, start
-#' and end position of that feature.
+#' @param finalOmaDf raw OMA data for a list of proteins (see ?getDataForOneOma)
+#' @return Dataframe of the domain annotation used for PhyloProfile, which
+#' contains seed IDs, ortholog IDs, ortholog lengths, annotated features, start
+#' and end positions of those features.
+#' @seealso \code{\link{getDataForOneOma}}
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @examples
 #' omaData <- getDataForOneOma("HUMAN29397", "OG")
 #' getAllDomainsOma(omaData)
-#' @seealso \code{\link{getDataForOneOma}}
 
 getAllDomainsOma <- function(finalOmaDf) {
     seedID <- finalOmaDf$seed
@@ -264,8 +270,8 @@ getAllDomainsOma <- function(finalOmaDf) {
 
 #' Get all fasta sequences from a raw OMA dataframe
 #' @export
-#' @param finalOmaDf raw OMA data for a list of input IDs
-#' @return A list contains all fasta sequences
+#' @param finalOmaDf raw OMA data for a list of proteins (see ?getDataForOneOma)
+#' @return A list contains all protein sequences in fasta format.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @examples
 #' omaData <- getDataForOneOma("HUMAN29397", "OG")
@@ -280,9 +286,9 @@ getAllFastaOma <- function(finalOmaDf) {
 
 #' Get selected fasta sequences from a raw OMA dataframe
 #' @export
-#' @param finalOmaDf raw OMA data for a list of input IDs
-#' @param seqID sequence need to be returned
-#' @return required sequence in fasta format
+#' @param finalOmaDf raw OMA data for a list of proteins (see ?getDataForOneOma)
+#' @param seqID OMA ID of selected protein
+#' @return Required protein sequence in fasta format.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @examples
 #' omaData <- getDataForOneOma("HUMAN29397", "OG")

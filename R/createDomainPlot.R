@@ -4,13 +4,18 @@
 #' be plotted. NOTE: seed protein ID is the one being shown in the profile plot,
 #' which normally is also the orthologous group ID.
 #' @export
-#' @param info a list contains seed and orthologs IDs
-#' @param domainDf dataframe contains domain info
+#' @param info a list contains seed and ortholog's IDs
+#' @param domainDf dataframe contains domain info for the seed and ortholog. 
+#' This including the seed ID, orthologs IDs, sequence lengths, feature names, 
+#' start and end positions, feature weights (optional) and the status to 
+#' determine if that feature is important for comparison the architecture 
+#' between 2 proteins* (e.g. seed protein vs ortholog) (optional).
 #' @param labelArchiSize lable size (in px)
 #' @param titleArchiSize title size (in px)
 #' @importFrom dplyr filter
 #' @importFrom gridExtra arrangeGrob
-#' @return A plot as arrangeGrob object. Use grid::grid.draw(plot) to render.
+#' @return A domain plot as arrangeGrob object. Use grid::grid.draw(plot) to 
+#' render.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{domainPlotting}}, \code{\link{sortDomains}},
 #' \code{\link{parseDomainInput}}, \code{\link{getQualColForVector}}
@@ -170,7 +175,11 @@ createArchiPlot <- function(
 #' Create architecure plot for a single protein
 #' @usage domainPlotting(df, geneID, sep, labelSize, titleSize, minStart,
 #'     maxEnd, colorScheme)
-#' @param df domain dataframe for ploting
+#' @param df domain dataframe for ploting containing the seed ID, ortholog ID, 
+#' ortholog sequence length, feature names, start and end positions, 
+#' feature weights (optional) and the status to determine if that feature is 
+#' important for comparison the architecture between 2 proteins* (e.g. seed 
+#' protein vs ortholog) (optional).
 #' @param geneID ID of seed or orthologous protein
 #' @param sep separate indicator for title
 #' @param labelSize lable size
@@ -178,7 +187,7 @@ createArchiPlot <- function(
 #' @param minStart the smallest start position of all domains
 #' @param maxEnd the highest stop position of all domains
 #' @param colorScheme color scheme for all domain types
-#' @return A ggplot object
+#' @return Domain plot of a single protein as a ggplot object.
 #' @importFrom ggplot2 ggplot
 #' @importFrom ggplot2 aes
 #' @importFrom ggplot2 geom_segment
@@ -226,7 +235,6 @@ createArchiPlot <- function(
 #'     colorScheme
 #' )
 #' }
-
 
 domainPlotting <- function(df,
                             geneID,
@@ -325,7 +333,7 @@ domainPlotting <- function(df,
 #' common domain feature in the same order which make it easy for comparing.
 #' @param seedDf data of seed protein
 #' @param orthoDf data of ortholog protein
-#' @return sorted domain list (dataframe)
+#' @return Dataframe contains sorted domain list.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @examples
 #' \dontrun{

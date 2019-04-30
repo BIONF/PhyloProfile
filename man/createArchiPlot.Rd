@@ -7,16 +7,21 @@
 createArchiPlot(info, domainDf, labelArchiSize, titleArchiSize)
 }
 \arguments{
-\item{info}{a list contains seed and orthologs IDs}
+\item{info}{a list contains seed and ortholog's IDs}
 
-\item{domainDf}{dataframe contains domain info}
+\item{domainDf}{dataframe contains domain info for the seed and ortholog. 
+This including the seed ID, orthologs IDs, sequence lengths, feature names, 
+start and end positions, feature weights (optional) and the status to 
+determine if that feature is important for comparison the architecture 
+between 2 proteins* (e.g. seed protein vs ortholog) (optional).}
 
 \item{labelArchiSize}{lable size (in px)}
 
 \item{titleArchiSize}{title size (in px)}
 }
 \value{
-A plot as arrangeGrob object. Use grid::grid.draw(plot) to render.
+A domain plot as arrangeGrob object. Use grid::grid.draw(plot) to 
+render.
 }
 \description{
 Create architecture plot for both seed and orthologous protein.

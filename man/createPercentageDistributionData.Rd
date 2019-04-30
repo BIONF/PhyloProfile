@@ -7,13 +7,16 @@
 createPercentageDistributionData(inputData, rankName)
 }
 \arguments{
-\item{inputData}{dataframe contains raw input data in long format}
+\item{inputData}{dataframe contains raw input data in long format
+(see ?mainLongRaw)}
 
 \item{rankName}{name of the working taxonomy rank (e.g. "species", "family")}
 }
 \value{
-A dataframe ready for analysing the distribution of the percentage of
-species in the selected supertaxa
+A dataframe for analysing the distribution of the percentage of
+species in the selected supertaxa, containing the seed protein IDs,
+percentage of their orthologs in each supertaxon and the corresponding
+supertaxon names.
 }
 \description{
 Create data for percentage present taxa distribution

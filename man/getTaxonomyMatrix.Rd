@@ -10,14 +10,15 @@ getTaxonomyMatrix(subsetTaxaCheck, taxonIDs)
 \item{subsetTaxaCheck}{subset taxonomy matrix based on input taxon IDs
 (TRUE/FALSE)}
 
-\item{taxonIDs}{list of input taxon IDs}
+\item{taxonIDs}{list of input taxon IDs (e.g. ncbi1234)}
 }
 \value{
-Data frame contains the (subset of) taxonomy matrix
+Data frame contains the (subset of) taxonomy matrix for list of 
+input taxa.
 }
 \description{
-Get full taxonomy matrix from "data/taxonomyMatrix.txt" or
-only a subset of matrix based on an input taxon list
+Get the (full or subset) taxonomy matrix from 
+"data/taxonomyMatrix.txt" based on an input taxon list
 }
 \examples{
 # get full pre-installed taxonomy matrix

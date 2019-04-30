@@ -3,9 +3,11 @@
 #' Check the validity of input newick tree
 #' @export
 #' @param tree input newick tree
-#' @param inputTaxonID list of all input taxon ID
-#' @return checking result (1 = missing parenthesis; 2 = missing comma;
-#' 3 = tree has singleton; or list of missing taxa in profile)
+#' @param inputTaxonID list of all input taxon IDs for the phylogenetic profiles
+#' @return Possible formatting error of input tree. 0 = suitable tree for using
+#' with PhyloProfile, 1 = missing parenthesis; 2 = missing comma; 
+#' 3 = tree has singleton; or a list of taxa that do not exist in the input 
+#' phylogenetic profile.
 #' @importFrom stringr regex
 #' @importFrom stringr str_count
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
@@ -24,9 +26,8 @@ checkNewick <- function(tree, inputTaxonID){
     comma <- stringr::str_count(treeStruc, "\\,")
     singleton <- stringr::str_count(treeStruc, "\\(\\)")
 
-    if (singleton > 0) {
-        return(3) # tree contains singleton
-    }
+    if (singleton > 0) return(3) # tree contains singleton
+    
     if (open != close) {
         return(1) # missing parenthesis
     } else {
@@ -52,18 +53,18 @@ checkNewick <- function(tree, inputTaxonID){
             }
         }
     }
-
     return(0)
 }
 
 #' Create rooted tree from a taxonomy matrix
 #' @export
-#' @param df data frame contains taxonomy matrix used for creating tree
-#' @param rootTaxon taxon used for rooting tree
+#' @param df data frame contains taxonomy matrix used for generating the tree 
+#' (see example)
+#' @param rootTaxon taxon used for rooting the taxonomy tree
 #' @importFrom stats hclust
 #' @importFrom ape as.phylo
 #' @importFrom ape root
-#' @return rooted tree based on rootTaxon
+#' @return A rooted taxonomy tree as an object of class "phylo".
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{taxa2dist}} for distance matrix generation from a
 #' taxonomy matrix, \code{\link{getTaxonomyMatrix}} for getting taxonomy
@@ -90,8 +91,8 @@ createRootedTree <- function(df, rootTaxon){
 
 #' Get sorted supertaxon list based on a rooted taxonomy tree
 #' @export
-#' @param tree rooted taxonomy tree
-#' @return list of taxa sorted according to the taxonomy tree
+#' @param tree an "phylo" object for a rooted taxonomy tree
+#' @return A list of sorted taxa obtained the input taxonomy tree.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{ppTaxonomyMatrix}} for a demo taxonomy matrix data
 #' @examples
