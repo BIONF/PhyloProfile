@@ -17,7 +17,8 @@
 #' data("ppTree", package="PhyloProfile")
 #' checkNewick(ppTree, c("ncbi3702", "ncbi3711", "ncbi7029"))
 
-checkNewick <- function(tree, inputTaxonID){
+checkNewick <- function(tree, inputTaxonID = NULL){
+    if (missing(tree)) return("No tree given!")
     # get tree structure
     treeStruc <- gsub(stringr::regex("\\w"), "", as.character(tree$V1))
 
@@ -27,10 +28,8 @@ checkNewick <- function(tree, inputTaxonID){
     singleton <- stringr::str_count(treeStruc, "\\(\\)")
 
     if (singleton > 0) return(3) # tree contains singleton
-    
-    if (open != close) {
-        return(1) # missing parenthesis
-    } else {
+    if (open != close) return(1) # missing parenthesis
+    else {
         if ((comma - open) > 1 | (comma - open) < 0) {
             # return(2) # missing comma
         } else {
@@ -48,9 +47,7 @@ checkNewick <- function(tree, inputTaxonID){
             if (length(missingTaxa) > 0) {
                 # contains taxa that not exist in main input
                 return(paste(missingTaxa, collapse = "; "))
-            } else {
-                return(0)
-            }
+            } else return(0)
         }
     }
     return(0)
@@ -58,8 +55,8 @@ checkNewick <- function(tree, inputTaxonID){
 
 #' Create rooted tree from a taxonomy matrix
 #' @export
-#' @param df data frame contains taxonomy matrix used for generating the tree 
-#' (see example)
+#' @param df data frame contains taxonomy matrix used for generating tree 
+#' (see distDf in example)
 #' @param rootTaxon taxon used for rooting the taxonomy tree
 #' @importFrom stats hclust
 #' @importFrom ape as.phylo
@@ -79,11 +76,13 @@ checkNewick <- function(tree, inputTaxonID){
 #' createRootedTree(distDf, "ncbi10090")
 
 createRootedTree <- function(df, rootTaxon){
+    if (missing(df)) return("No taxonomy matrix given!")
     # calculate distance matrix
     taxdis <- tryCatch(taxa2dist(df), error = function(e) e)
     # create tree
     tree <- ape::as.phylo(stats::hclust(taxdis))
     # root tree
+    if (missing(rootTaxon)) rootTaxon = tree$tip.label[1]
     tree <- ape::root(tree, outgroup = rootTaxon, resolve.root = TRUE)
     # return
     return(tree)
@@ -107,6 +106,7 @@ createRootedTree <- function(df, rootTaxon){
 #' sortTaxaFromTree(rootedTree)
 
 sortTaxaFromTree <- function(tree){
+    if (missing(tree)) return("No tree given!")
     isTip <- tree$edge[, 2] <= length(tree$tip.label)
     orderedTips <- tree$edge[isTip, 2]
     taxonList <- rev(tree$tip.label[orderedTips])

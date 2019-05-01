@@ -4,20 +4,20 @@
 \alias{getTaxonomyMatrix}
 \title{Get taxonomy matrix}
 \usage{
-getTaxonomyMatrix(subsetTaxaCheck, taxonIDs)
+getTaxonomyMatrix(subsetTaxaCheck = FALSE, taxonIDs = NULL)
 }
 \arguments{
-\item{subsetTaxaCheck}{subset taxonomy matrix based on input taxon IDs
-(TRUE/FALSE)}
+\item{subsetTaxaCheck}{TRUE/FALSE subset taxonomy matrix based on input taxon
+IDs. Default = FALSE.}
 
-\item{taxonIDs}{list of input taxon IDs (e.g. ncbi1234)}
+\item{taxonIDs}{list of input taxon IDs (e.g. ncbi1234). Default = NULL.}
 }
 \value{
-Data frame contains the (subset of) taxonomy matrix for list of 
+Data frame contains the (subset of) taxonomy matrix for list of
 input taxa.
 }
 \description{
-Get the (full or subset) taxonomy matrix from 
+Get the (full or subset) taxonomy matrix from
 "data/taxonomyMatrix.txt" based on an input taxon list
 }
 \examples{

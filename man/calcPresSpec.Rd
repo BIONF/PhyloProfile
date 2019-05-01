@@ -10,7 +10,7 @@ calcPresSpec(profileWithTax, taxaCount)
 \item{profileWithTax}{data frame of main PhyloProfile input together
 with their taxonomy info (see ?profileWithTaxonomy)}
 
-\item{taxaCount}{number of species occur in each supertaxon (e.g. phylum 
+\item{taxaCount}{number of species occur in each supertaxon (e.g. phylum
 or kingdom)}
 }
 \value{

@@ -4,7 +4,7 @@
 \alias{getOmaDataForOneOrtholog}
 \title{Get taxonomy ID, sequence and annotation for one OMA protein}
 \usage{
-getOmaDataForOneOrtholog(id)
+getOmaDataForOneOrtholog(id = NULL)
 }
 \arguments{
 \item{id}{oma ID of one protein}

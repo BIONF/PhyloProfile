@@ -4,19 +4,19 @@
 \alias{getInputTaxaName}
 \title{Get NCBI taxon names for a selected list of taxa}
 \usage{
-getInputTaxaName(rankName, taxonIDs)
+getInputTaxaName(rankName, taxonIDs = NULL)
 }
 \arguments{
 \item{rankName}{taxonomy rank (e.g. "species","phylum",...)}
 
-\item{taxonIDs}{list of taxon IDs (e.g. ncbi1234)}
+\item{taxonIDs}{list of taxon IDs (e.g. ncbi1234). Default = NULL}
 }
 \value{
 Data frame contains a list of full names, taxonomy ranks and parent
 IDs for the input taxa.
 }
 \description{
-Get NCBI taxon names from 
+Get NCBI taxon names from
 "PhyloProfile/data/taxonNamesReduced.txt" for a list of input taxa
 }
 \examples{

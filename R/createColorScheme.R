@@ -125,7 +125,8 @@ qualitativeColours <- function(n, light = FALSE) {
 #' items <- c("a", "b", "c")
 #' getQualColForVector(items)
 
-getQualColForVector <- function(x) {
+getQualColForVector <- function(x = NULL) {
+    if (is.null(x)) return()
     types <- unique(x)
     types <- types[!is.na(types)]
     typeColors <- qualitativeColours(length(types))

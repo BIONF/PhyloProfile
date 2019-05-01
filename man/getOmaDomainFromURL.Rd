@@ -4,7 +4,7 @@
 \alias{getOmaDomainFromURL}
 \title{Get domain annotation from OMA Browser}
 \usage{
-getOmaDomainFromURL(domainURL)
+getOmaDomainFromURL(domainURL = NULL)
 }
 \arguments{
 \item{domainURL}{URL address for domain annotation of ONE OMA id or a

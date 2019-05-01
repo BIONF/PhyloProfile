@@ -511,10 +511,17 @@ getBarplotGC <- function(selectedGene,
                            features, parameters,
                            interestingFeatures,
                            domainsThreshold){
+print(selectedGene)
+print(inGroup)
+print(outGroup)
+print(features)
+print(interestingFeatures)
+print(domainsThreshold)
+print("next")
 
     #' information about the features
     features$feature <- as.character(features$feature)
-
+print(as.character(features$feature))
     #' part in inGroup and out-group
     inGroup$orthoID <- gsub("\\|", ":", inGroup$orthoID)
     inGroupDomainDf  <-  {
@@ -712,8 +719,7 @@ getPlotsToDownload <- function(
     gene, parameters, interestingFeatures, significantGenes, domainThreshold,
     selectedPoint
 ){
-    infoGene <- subset(significantGenes,
-                        significantGenes$geneID == gene)
+    infoGene <- subset(significantGenes, significantGenes$geneID == gene)
     return(getMultiplot(infoGene, parameters, interestingFeatures,
                          domainsThreshold,
                          selectedPoint))

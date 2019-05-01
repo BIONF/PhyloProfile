@@ -4,7 +4,7 @@
 \alias{createPercentageDistributionData}
 \title{Create data for percentage present taxa distribution}
 \usage{
-createPercentageDistributionData(inputData, rankName)
+createPercentageDistributionData(inputData, rankName = NULL)
 }
 \arguments{
 \item{inputData}{dataframe contains raw input data in long format

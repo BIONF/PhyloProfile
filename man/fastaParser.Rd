@@ -4,7 +4,7 @@
 \alias{fastaParser}
 \title{Parse multi-fasta input file}
 \usage{
-fastaParser(inputFile)
+fastaParser(inputFile = NULL)
 }
 \arguments{
 \item{inputFile}{input multiple fasta file. Check extdata/test.main.fasta or

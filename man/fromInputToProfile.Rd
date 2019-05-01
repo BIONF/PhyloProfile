@@ -4,53 +4,60 @@
 \alias{fromInputToProfile}
 \title{Complete processing of raw input phylogenetic profiles}
 \usage{
-fromInputToProfile(rawInput, rankName, refTaxon, taxaTree,
-    var1AggregateBy, var2AggregateBy, percentCutoff,
-    coorthologCutoffMax, var1Cutoff, var2Cutoff, var1Relation,
-    var2Relation, groupByCat, catDt)
+fromInputToProfile(rawInput, rankName, refTaxon = NULL,
+    taxaTree = NULL, var1AggregateBy = "max", var2AggregateBy = "max",
+    percentCutoff = c(0, 1), coorthologCutoffMax = 9999,
+    var1Cutoff = c(0, 1), var2Cutoff = c(0, 1), var1Relation = "protein",
+    var2Relation = "protein", groupByCat = FALSE, catDt = NULL)
 }
 \arguments{
 \item{rawInput}{input file (in long, wide, multi-fasta or orthoxml format)}
 
 \item{rankName}{taxonomy rank (e.g. "species","phylum",...)}
 
-\item{refTaxon}{selected reference taxon name}
+\item{refTaxon}{selected reference taxon name (used for sorting and will be
+protected from filtering). Default = NULL.}
 
-\item{taxaTree}{input taxonomy tree for taxa in input profiles (optional)}
+\item{taxaTree}{input taxonomy tree for taxa in input profiles (optional).
+Default = NULL.}
 
-\item{var1AggregateBy}{aggregate method for var1 (min, max, mean or median)}
+\item{var1AggregateBy}{aggregate method for var1 (min, max, mean or median).
+Default = "max".}
 
-\item{var2AggregateBy}{aggregate method for VAR2 (min, max, mean or median)}
+\item{var2AggregateBy}{aggregate method for VAR2 (min, max, mean or median).
+Default = "max".}
 
 \item{percentCutoff}{min and max cutoffs for percentage of species present
-in a supertaxon}
+in a supertaxon. Default = c(0, 1).}
 
-\item{coorthologCutoffMax}{maximum number of co-orthologs allowed}
+\item{coorthologCutoffMax}{maximum number of co-orthologs allowed. Default =
+9999.}
 
-\item{var1Cutoff}{min and max cutoffs for var1}
+\item{var1Cutoff}{min and max cutoffs for var1. Default = c(0, 1).}
 
-\item{var2Cutoff}{min and max cutoffs for var2}
+\item{var2Cutoff}{min and max cutoffs for var2. Default = c(0, 1).}
 
 \item{var1Relation}{relation of var1 ("protein" for protein-protein or
-"species" for protein-species)}
+"species" for protein-species). Default = "protein".}
 
 \item{var2Relation}{relation of var2 ("protein" for protein-protein or
-"species" for protein-species)}
+"species" for protein-species). Default = "protein".}
 
-\item{groupByCat}{group genes by their categories (TRUE or FALSE)}
+\item{groupByCat}{group genes by their categories (TRUE or FALSE). Default =
+FALSE.}
 
-\item{catDt}{dataframe contains gene categories}
+\item{catDt}{dataframe contains gene categories. Default = NULL.}
 }
 \value{
-Dataframe required for generating phylogenetic profile plot or 
-clustering analysis. It contains seed gene IDs (or orthologous group IDs), 
-their ortholog IDs and the corresponding (super)taxa, (super)taxon IDs, 
-number of co-orthologs in each (super)taxon, values for two additional 
-variables var1, var2, % of species present in each supertaxon, and the 
+Dataframe required for generating phylogenetic profile plot or
+clustering analysis. It contains seed gene IDs (or orthologous group IDs),
+their ortholog IDs and the corresponding (super)taxa, (super)taxon IDs,
+number of co-orthologs in each (super)taxon, values for two additional
+variables var1, var2, % of species present in each supertaxon, and the
 categories of seed genes (or ortholog groups).
 }
 \description{
-Create a processed and filtered data for plotting or analysing 
+Create a processed and filtered data for plotting or analysing
 phylogenetic profiles from raw input file (from raw input to final filtered
 dataframe)
 }

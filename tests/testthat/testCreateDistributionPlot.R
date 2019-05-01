@@ -7,12 +7,6 @@ test_that("test distritbution analyze functions", {
     # selected rank name
     rankName <- "species"
 
-    # variable thresholds
-    var1CutoffMin <- 0.0
-    var1CutoffMax <- 1.0
-    var2CutoffMin <- 0.0
-    var2CutoffMax <- 1.0
-
     # distribution data for percentage of species present in supertaxa
     percentDistributionData <- createPercentageDistributionData(
         inputData, rankName
@@ -21,13 +15,9 @@ test_that("test distritbution analyze functions", {
 
     # distribution data for 2 additional variables
     distributionData <- createVariableDistributionData(
-        inputData,
-        var1CutoffMin,
-        var1CutoffMax,
-        var2CutoffMin,
-        var2CutoffMax
+        inputData, c(0, 1), c(0.5, 1)
     )
-    expect_true(nrow(distributionData) == 6)
+    expect_true(nrow(distributionData) == 4)
 
     # distribution data for 2 additional variables of a subset of taxa
     inputTaxonID <- getInputTaxaID(inputData)
@@ -36,7 +26,7 @@ test_that("test distritbution analyze functions", {
     taxaTree <- NULL
 
     sortedTaxa <- sortInputTaxa(
-        inputTaxonID, inputTaxonName, rankName, refTaxon, taxaTree
+        inputTaxonID, rankName, refTaxon, taxaTree
     )
 
     fullProfileData <- parseInfoProfile(
@@ -58,5 +48,5 @@ test_that("test distritbution analyze functions", {
     p <- createVarDistPlot(
         distributionData, "variable 1 name", "var1", NULL, 12
     )
-    expect_true(nrow(p$data) == 6)
+    expect_true(nrow(p$data) == 4)
 })

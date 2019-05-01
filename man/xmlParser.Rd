@@ -4,7 +4,7 @@
 \alias{xmlParser}
 \title{Parse orthoXML input file}
 \usage{
-xmlParser(inputFile)
+xmlParser(inputFile = NULL)
 }
 \arguments{
 \item{inputFile}{input file in xml format}

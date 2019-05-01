@@ -4,7 +4,7 @@
 \alias{parseDomainInput}
 \title{Parse domain input file}
 \usage{
-parseDomainInput(seed, inputFile, type)
+parseDomainInput(seed = NULL, inputFile = NULL, type = "file")
 }
 \arguments{
 \item{seed}{seed protein ID}
@@ -12,7 +12,7 @@ parseDomainInput(seed, inputFile, type)
 \item{inputFile}{name of input file ("lca-micros" or "ampk-tor" for demo 
 data, file name or path to folder contains individual domain files)}
 
-\item{type}{type of data ("demo", "file" or "folder")}
+\item{type}{type of data ("demo", "file" or "folder"). Default = "file".}
 }
 \value{
 A dataframe for protein domains including seed ID, its orthologs IDs,

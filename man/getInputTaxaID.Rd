@@ -4,13 +4,13 @@
 \alias{getInputTaxaID}
 \title{Get ID list of input taxa from the main input}
 \usage{
-getInputTaxaID(rawProfile)
+getInputTaxaID(rawProfile = NULL)
 }
 \arguments{
 \item{rawProfile}{A dataframe of input phylogenetic profile in long format}
 }
 \value{
-List of all input taxon IDs (e.g. ncbi1234)
+List of all input taxon IDs (e.g. ncbi1234). Default = NULL.
 }
 \description{
 Get ID list of input taxa from the main input

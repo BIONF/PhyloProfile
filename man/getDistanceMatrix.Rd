@@ -4,7 +4,7 @@
 \alias{getDistanceMatrix}
 \title{Calculate the distance matrix}
 \usage{
-getDistanceMatrix(profiles, method)
+getDistanceMatrix(profiles = NULL, method = "mutualInformation")
 }
 \arguments{
 \item{profiles}{dataframe contains profile data for distance calculating
@@ -13,7 +13,7 @@ getDistanceMatrix(profiles, method)
 \item{method}{distance calculation method ("euclidean", "maximum",
 "manhattan", "canberra", "binary", "distanceCorrelation",
 "mutualInformation" or "pearson" for binary data; "distanceCorrelation" or
-"mutualInformation" for non-binary data)}
+"mutualInformation" for non-binary data). Default = "mutualInformation".}
 }
 \value{
 A calculated distance matrix for input phylogenetic profiles.

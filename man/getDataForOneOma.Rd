@@ -4,12 +4,12 @@
 \alias{getDataForOneOma}
 \title{Get OMA info for a query protein and its orthologs}
 \usage{
-getDataForOneOma(seedID, orthoType)
+getDataForOneOma(seedID = NULL, orthoType = "OG")
 }
 \arguments{
 \item{seedID}{OMA protein ID}
 
-\item{orthoType}{type of OMA orthologs ("OG" or "HOG")}
+\item{orthoType}{type of OMA orthologs ("OG" or "HOG"). Default = "OG".}
 }
 \value{
 Data frame contains info for all sequences of the input OMA group 

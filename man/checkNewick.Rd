@@ -4,7 +4,7 @@
 \alias{checkNewick}
 \title{Check the validity of input newick tree}
 \usage{
-checkNewick(tree, inputTaxonID)
+checkNewick(tree, inputTaxonID = NULL)
 }
 \arguments{
 \item{tree}{input newick tree}

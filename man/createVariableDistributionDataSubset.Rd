@@ -14,9 +14,9 @@ createVariableDistributionDataSubset(fullProfileData,
 \item{distributionData}{dataframe contains the full distribution data (see
 ?createVariableDistributionData)}
 
-\item{selectedGenes}{list of genes of interst}
+\item{selectedGenes}{list of genes of interest. Default = "all".}
 
-\item{selectedTaxa}{list of taxa of interest}
+\item{selectedTaxa}{list of taxa of interest Default = "all".}
 }
 \value{
 A dataframe for analysing the distribution of the additional
@@ -30,7 +30,7 @@ Create data for additional variable distribution (for a subset data)
 data("fullProcessedProfile", package="PhyloProfile")
 data("mainLongRaw", package="PhyloProfile")
 distributionData <- createVariableDistributionData(
-    mainLongRaw, 0, 1, 0.5, 1
+    mainLongRaw, c(0, 1), c(0.5, 1)
 )
 selectedGenes <- "OG_1019"
 selectedTaxa <- c("Mammalia", "Echinoidea", "Gunneridae", "Mucorales",

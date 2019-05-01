@@ -22,13 +22,15 @@ checkOmaID <- function(ids) {
 #' @export
 #' @param id ID of the seed protein (OMA or UniProt ID)
 #' @param orthoType type of OMA orthologs: either "HOG", "OG"
-#' (orthologous group) or "PAIR" (orthologous pair - CURRENTLY NOT WORKING)
+#' (orthologous group) or "PAIR" (orthologous pair - CURRENTLY NOT WORKING). 
+#' Default = "OG".
 #' @return List of OMA orthologs for an input seed protein.
 #' @author Carla Mölbert {carla.moelbert@gmx.de}
 #' @examples
 #' getOmaMembers("HUMAN29397", "OG")
 
-getOmaMembers <- function(id, orthoType) {
+getOmaMembers <- function(id = NULL, orthoType = "OG") {
+    if (is.null(id)) return()
     # get the members of the Hierarchical Orthologous Group
     if (orthoType == "HOG") {
         members <- suppressWarnings(
@@ -64,7 +66,8 @@ getOmaMembers <- function(id, orthoType) {
 #' @examples
 #' getOmaDomainFromURL("https://omabrowser.org/api/protein/7916808/domains/")
 
-getOmaDomainFromURL <- function(domainURL) {
+getOmaDomainFromURL <- function(domainURL = NULL) {
+    if (is.null(domainURL)) return()
     if (grepl("https://", domainURL[1])) {
         domains <- OmaDB::resolveURL(domainURL)$regions
     } else {
@@ -98,7 +101,8 @@ getOmaDomainFromURL <- function(domainURL) {
 #' @examples
 #' getOmaDataForOneOrtholog("HUMAN29397")
 
-getOmaDataForOneOrtholog <- function(id) {
+getOmaDataForOneOrtholog <- function(id = NULL) {
+    if (is.null(id)) return()
     # get ncbi taxonomy id
     specName <- substr(id, 1, 5)
     taxonID <- paste0(
@@ -136,7 +140,7 @@ getOmaDataForOneOrtholog <- function(id) {
 #' orthologous group (or OMA HOG).
 #' @export
 #' @param seedID OMA protein ID
-#' @param orthoType type of OMA orthologs ("OG" or "HOG")
+#' @param orthoType type of OMA orthologs ("OG" or "HOG"). Default = "OG".
 #' @return Data frame contains info for all sequences of the input OMA group 
 #' (or HOG). That info contains the protein IDs, taxonomy IDs, sequences, 
 #' lengths, domain annotations (tab delimited) and the corresponding seed ID.
@@ -144,7 +148,8 @@ getOmaDataForOneOrtholog <- function(id) {
 #' @examples
 #' getDataForOneOma("HUMAN29397", "OG")
 
-getDataForOneOma <- function(seedID, orthoType){
+getDataForOneOma <- function(seedID = NULL, orthoType = "OG"){
+    if (is.null(seedID)) return()
     # get members
     idList <- getOmaMembers(seedID, orthoType)
     specName <- substr(idList, 1, 5)
@@ -203,7 +208,8 @@ getDataForOneOma <- function(seedID, orthoType){
 #' omaData <- getDataForOneOma("HUMAN29397", "OG")
 #' createProfileFromOma(omaData)
 
-createProfileFromOma <- function(finalOmaDf) {
+createProfileFromOma <- function(finalOmaDf = NULL) {
+    if (is.null(finalOmaDf)) return()
     profileDf <- finalOmaDf[, c("seed", "taxonID", "orthoID")]
     colnames(profileDf) <- c("geneID", "ncbiID", "orthoID")
     return(profileDf[!duplicated(profileDf), ])
@@ -221,7 +227,9 @@ createProfileFromOma <- function(finalOmaDf) {
 #' omaData <- getDataForOneOma("HUMAN29397", "OG")
 #' getAllDomainsOma(omaData)
 
-getAllDomainsOma <- function(finalOmaDf) {
+getAllDomainsOma <- function(finalOmaDf = NULL) {
+    if (is.null(finalOmaDf)) return()
+    
     seedID <- finalOmaDf$seed
     orthoID <- finalOmaDf$orthoID
     length <- finalOmaDf$length
@@ -264,12 +272,13 @@ getAllDomainsOma <- function(finalOmaDf) {
 #' @param finalOmaDf raw OMA data for a list of proteins (see ?getDataForOneOma)
 #' @return A list contains all protein sequences in fasta format.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+#' @seealso \code{\link{getDataForOneOma}}
 #' @examples
 #' omaData <- getDataForOneOma("HUMAN29397", "OG")
 #' getAllFastaOma(omaData)
-#' @seealso \code{\link{getDataForOneOma}}
 
-getAllFastaOma <- function(finalOmaDf) {
+getAllFastaOma <- function(finalOmaDf = NULL) {
+    if (is.null(finalOmaDf)) return()
     fastaDf <- finalOmaDf[, c("orthoID", "seq")]
     fastaOut <- paste(paste0(">", fastaDf$orthoID), fastaDf$seq, sep = "\n")
     return(unique(fastaOut))
@@ -281,12 +290,13 @@ getAllFastaOma <- function(finalOmaDf) {
 #' @param seqID OMA ID of selected protein
 #' @return Required protein sequence in fasta format.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+#' @seealso \code{\link{getDataForOneOma}}
 #' @examples
 #' omaData <- getDataForOneOma("HUMAN29397", "OG")
 #' getSelectedFastaOma(omaData, "HUMAN29397")
-#' @seealso \code{\link{getDataForOneOma}}
 
-getSelectedFastaOma <- function(finalOmaDf, seqID) {
+getSelectedFastaOma <- function(finalOmaDf = NULL, seqID = NULL) {
+    if (is.null(finalOmaDf)) return()
     selectedDf <- subset(
         finalOmaDf[, c("orthoID", "seq")],
         finalOmaDf$orthoID == seqID

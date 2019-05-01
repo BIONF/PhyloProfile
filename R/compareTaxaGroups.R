@@ -477,47 +477,24 @@ getPrefixFeatures <- function(data){
 #' @return avilable taxa containing "ncbiID", "fullName", "rank", "parentID"
 #' @author Carla Mölbert (carla.moelbert@gmx.de)
 taxaSelectGC <- function(rankSelectGC, inputTaxonID){
-    # if there is no rank set, there can not be any available taxa
+    if (is.null(rankSelectGC)) return()
     if (length(rankSelectGC) == 0) return()
-    else{
-        # load list of unsorted taxa
-        if (is.null(inputTaxonID)) dt <- getTaxonomyMatrix(FALSE, inputTaxonID)
-        else dt <- getTaxonomyMatrix(TRUE, inputTaxonID)
-
-        # load list of taxon name
-        nameList <- getNameList()
-
-        # get rank name from rankSelect
-        if (substr(rankSelectGC,3,3) == "_") rankName <- rankSelectGC
-        else rankName <- rankSelectGC
-
-        choice <- as.data.frame
-        choice <- rbind(dt[rankName])
-        colnames(choice) <- "ncbiID"
-        choice <- merge(choice, nameList, by = "ncbiID", all = FALSE)
-        return(choice)
-    }
-}
-
-#' Create a list containing all main taxanomy ranks
-#' @export
-#' @return A list of all main ranks (from strain to superkingdom)
-#' @author Carla Mölbert (carla.moelbert@gmx.de)
-#' @examples
-#' getTaxonomyRanks()
-
-getTaxonomyRanks <- function(){
-    allRanks <- list(
-        "Strain " = "strain",
-        "Species" = "species",
-        "Genus" = "genus",
-        "Family" = "family",
-        "Order" = "order",
-        "Class" = "class",
-        "Phylum" = "phylum",
-        "Kingdom" = "kingdom",
-        "Superkingdom" = "superkingdom",
-        "unselected" = ""
-    )
-    return(allRanks)
+    
+    # load list of unsorted taxa
+    if (is.null(inputTaxonID)) dt <- getTaxonomyMatrix(FALSE, inputTaxonID)
+    else dt <- getTaxonomyMatrix(TRUE, inputTaxonID)
+    
+    # load list of taxon name
+    nameList <- getNameList()
+    
+    # get rank name from rankSelect
+    if (substr(rankSelectGC, 3, 3) == "_") rankName <- rankSelectGC
+    else rankName <- rankSelectGC
+    
+    # choice <- data.frame(ncbiID = dt[rankName])
+    choice <- as.data.frame
+    choice <- rbind(dt[rankName])
+    colnames(choice) <- "ncbiID"
+    choice <- merge(choice, nameList, by = "ncbiID", all = FALSE)
+    return(choice)
 }

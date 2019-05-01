@@ -11,12 +11,12 @@ reduceProfile(fullProfile)
 ?fullProcessedProfile)}
 }
 \value{
-A reduced dataframe contains only profile data for the selected 
-supertaxon rank. This dataframe contains only supertaxa and their value 
+A reduced dataframe contains only profile data for the selected
+supertaxon rank. This dataframe contains only supertaxa and their value
 (%present, mVar1 & mVar2) for each gene.
 }
 \description{
-Reduce data of the processed phylogenetic profiles from input 
+Reduce data of the processed phylogenetic profiles from input
 taxonomy rank into supertaxon level (e.g. from species to phylum)
 }
 \examples{

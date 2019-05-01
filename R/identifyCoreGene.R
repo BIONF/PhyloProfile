@@ -5,17 +5,19 @@
 #' that criteria must be fullfilled for a certain percentage of selected taxa 
 #' or all of them (determined via coreCoverage).
 #' @export
-#' @usage getCoreGene(rankName, taxaCore, processedProfileData,
-#'     var1Cutoff, var2Cutoff, percentCutoff, coreCoverage)
+#' @usage getCoreGene(rankName, taxaCore = c("none"), processedProfileData,
+#'     var1Cutoff = c(0, 1), var2Cutoff = c(0, 1), percentCutoff = c(0, 1), 
+#'     coreCoverage = 1)
 #' @param rankName working taxonomy rank (e.g. "species", "genus", "family")
 #' @param taxaCore list of selected taxon names
 #' @param processedProfileData dataframe contains the full processed
 #' phylogenetic profiles (see ?fullProcessedProfile or ?parseInfoProfile)
-#' @param var1Cutoff cutoff for var1
-#' @param var2Cutoff cutoff for var2
+#' @param var1Cutoff cutoff for var1. Default = c(0, 1).
+#' @param var2Cutoff cutoff for var2. Default = c(0, 1).
 #' @param percentCutoff cutoff for percentage of species present in each
-#' supertaxon
-#' @param coreCoverage the least number of selected taxa should be considered
+#' supertaxon. Default = c(0, 1).
+#' @param coreCoverage the least percentage of selected taxa should be 
+#' considered. Default = 1.
 #' @return A list of identified core genes.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{parseInfoProfile}} for creating a full processed
@@ -38,12 +40,13 @@
 #' )
 
 getCoreGene <- function(
-    rankName,
-    taxaCore,
-    processedProfileData,
-    var1Cutoff, var2Cutoff,
-    percentCutoff, coreCoverage
+    rankName = NULL, taxaCore = c("none"), processedProfileData = NULL,
+    var1Cutoff = c(0, 1), var2Cutoff = c(0, 1), 
+    percentCutoff = c(0, 1), coreCoverage = 1
 ) {
+    if (is.null(processedProfileData)) return()
+    if (is.null(rankName)) return()
+    
     supertaxonID <- NULL
     mVar1 <- NULL
     mVar2 <- NULL
@@ -63,9 +66,7 @@ getCoreGene <- function(
     }
 
     # get main input data
-    mdData <- processedProfileData
-    if (is.null(mdData)) return()
-    mdData <- mdData[, c(
+    processedProfileData <- processedProfileData[, c(
         "geneID",
         "ncbiID",
         "fullName",
@@ -85,22 +86,26 @@ getCoreGene <- function(
 
     if (!is.null(var1CutoffMax)) {
         if (!is.na(var1CutoffMax)) {
-            mdData <- subset(
-                mdData, supertaxonID %in% superID & mVar1 >= var1CutoffMin
+            processedProfileData <- subset(
+                processedProfileData, 
+                supertaxonID %in% superID & mVar1 >= var1CutoffMin
             )
-            mdData <- subset(
-                mdData, supertaxonID %in% superID & mVar1 <= var1CutoffMax
+            processedProfileData <- subset(
+                processedProfileData, 
+                supertaxonID %in% superID & mVar1 <= var1CutoffMax
             )
         }
     }
 
     if (!is.null(var2CutoffMax)) {
         if (!is.na(var2CutoffMax)) {
-            mdData <- subset(
-                mdData, supertaxonID %in% superID & mVar2 >= var2CutoffMin
+            processedProfileData <- subset(
+                processedProfileData, 
+                supertaxonID %in% superID & mVar2 >= var2CutoffMin
             )
-            mdData <- subset(
-                mdData, supertaxonID %in% superID & mVar2 <= var2CutoffMax
+            processedProfileData <- subset(
+                processedProfileData, 
+                supertaxonID %in% superID & mVar2 <= var2CutoffMax
             )
         }
     }
@@ -109,10 +114,12 @@ getCoreGene <- function(
     if (is.na(superID[1])) return(NULL)
     else {
         data <- subset(
-            mdData, supertaxonID %in% superID & presSpec >= percentCutoff[1]
+            processedProfileData, 
+            supertaxonID %in% superID & presSpec >= percentCutoff[1]
         )
         data <- subset(
-            data, supertaxonID %in% superID & presSpec <= percentCutoff[2]
+            data, 
+            supertaxonID %in% superID & presSpec <= percentCutoff[2]
         )
 
         # get supertaxa present in each geneID

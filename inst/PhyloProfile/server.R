@@ -1494,7 +1494,6 @@ shinyServer(function(input, output, session) {
         # sort taxonomy matrix based on selected refTaxon
         sortedOut <- sortInputTaxa(
             taxonIDs = inputTaxonID(),
-            taxonNames = inputTaxonName(),
             rankName = rankName,
             refTaxon = input$inSelect,
             taxaTree = inputTaxaTree
@@ -1647,7 +1646,7 @@ shinyServer(function(input, output, session) {
 
         # create data for heatmap plotting
         dataHeat <- filterProfileData(
-            superTaxonData = dataSupertaxa(),
+            superTaxonDf = dataSupertaxa(),
             refTaxon = inSelect,
             percentCutoff,
             coorthologCutoffMax,
@@ -2154,38 +2153,41 @@ shinyServer(function(input, output, session) {
 
         if (is.null(info)) return()
         else {
-            data <- getDataFiltered()
-
             seqID <- toString(info[2])
-            groupID <- toString(info[1])
-            ncbiID <- gsub("ncbi", "", toString(info[5]))
-
+            
             if (input$demoData == "none") {
                 filein <- input$mainInput
-                inputType <- checkInputValidity(
-                    filein$datapath
-                )
+                inputType <- checkInputValidity(filein$datapath)
+                # get fata from oma
+                if (inputType == "oma") {
+                    fastaOut <- getSelectedFastaOma(finalOmaDf(), seqID)
+                }
+                # get fasta from main input
+                else if (inputType == "fasta") {
+                    seqIDMod <- paste0(info[1], "|", info[5], "|", info[2])
+                    fastaOut <- getFastaFromFasInput(
+                        seqIDMod, file = filein$datapath
+                    )
+                } else {
+                    # get from concaternated file
+                    if (input$inputType == "Concatenated fasta file") {
+                        fastain <- input$concatFasta
+                        fastaOut <- getFastaFromFile(seqID, fastain$datapath)
+                    }
+                    # get from folder
+                    else {
+                        fastaOut <- getFastaFromFolder(
+                            seqID, 
+                            input$path, 
+                            input$dirFormat,
+                            input$fileExt,
+                            input$idFormat
+                        )
+                    }
+                }
             } else {
-                inputType <- "demo"
-            }
-
-            if (inputType == "oma") {
-                fastaOut <- getSelectedFastaOma(finalOmaDf(), seqID)
-            } else {
-                seqDf <- data.frame("geneID" = groupID,
-                                    "orthoID" = seqID,
-                                    "ncbiID" = ncbiID)
-
-                filein <- input$mainInput
-                fastain <- input$concatFasta
-                fastaOut <- getFastaSeqs(
-                    seqDf, filein$datapath, input$demoData,
-                    input$inputType, fastain$datapath,
-                    input$path,
-                    input$dirFormat,
-                    input$fileExt,
-                    input$idFormat
-                )
+                # get fasta from demo online data
+                fastaOut <- getFastaDemo(seqID, demoData = input$demoData)
             }
 
             return(paste(fastaOut[1]))
@@ -2284,33 +2286,53 @@ shinyServer(function(input, output, session) {
 
     # * for main profile =======================================================
     mainFastaDownload <- reactive({
+        downloadDf <- as.data.frame(downloadData())
+        seqIDs <- downloadDf$orthoID
+        
         if (input$demoData == "none") {
             filein <- input$mainInput
             inputType <- checkInputValidity(filein$datapath)
+            # get fata from oma
+            if (inputType == "oma") {
+                allOmaDf <- finalOmaDf()
+                filteredDownloadDf <- as.data.frame(downloadData())
+                filteredOmaDf <-
+                    subset(allOmaDf,
+                           allOmaDf$orthoID %in% filteredDownloadDf$orthoID &
+                               allOmaDf$seed %in% filteredDownloadDf$geneID)
+                mainFastaOut <- getAllFastaOma(filteredOmaDf)
+            }
+            # get fasta from main input
+            else if (inputType == "fasta") {
+                seqIDMod <- paste0(
+                    as.character(downloadDf$geneID), "|",
+                    as.character(downloadDf$ncbiID), "|",
+                    as.character(downloadDf$orthoID)
+                )
+                mainFastaOut <- getFastaFromFasInput(
+                    seqIDMod, file = filein$datapath
+                )
+            } else {
+                # get from concaternated file
+                if (input$inputType == "Concatenated fasta file") {
+                    fastain <- input$concatFasta
+                    mainFastaOut <- getFastaFromFile(seqIDs, fastain$datapath)
+                }
+                # get from folder
+                else {
+                    mainFastaOut <- getFastaFromFolder(
+                        seqIDs, 
+                        input$path, 
+                        input$dirFormat,
+                        input$fileExt,
+                        input$idFormat
+                    )
+                }
+            }
         } else {
-            inputType <- "demo"
+            # get fasta from demo online data
+            mainFastaOut <- getFastaDemo(seqIDs, demoData = input$demoData)
         }
-
-        if (inputType == "oma") {
-            allOmaDf <- finalOmaDf()
-            filteredDownloadDf <- as.data.frame(downloadData())
-            filteredOmaDf <-
-                subset(allOmaDf,
-                       allOmaDf$orthoID %in% filteredDownloadDf$orthoID &
-                           allOmaDf$seed %in% filteredDownloadDf$geneID)
-            mainFastaOut <- getAllFastaOma(filteredOmaDf)
-        } else {
-            mainFastaOut <- getFastaSeqs(
-                as.data.frame(downloadData()),
-                input$mainInput, input$demoData,
-                input$inputType, input$concatFasta,
-                input$path,
-                input$dirFormat,
-                input$fileExt,
-                input$idFormat
-            )
-        }
-
         return(mainFastaOut)
     })
 
@@ -2328,31 +2350,52 @@ shinyServer(function(input, output, session) {
 
     # * for customized profile =================================================
     customizedFastaDownload <- reactive({
+        downloadDf <- as.data.frame(downloadCustomData())
+        seqIDs <- downloadDf$orthoID
+        
         if (input$demoData == "none") {
             filein <- input$mainInput
             inputType <- checkInputValidity(filein$datapath)
+            # get fata from oma
+            if (inputType == "oma") {
+                allOmaDf <- finalOmaDf()
+                filteredDownloadDf <- as.data.frame(downloadCustomData())
+                filteredOmaDf <-
+                    subset(allOmaDf,
+                           allOmaDf$orthoID %in% filteredDownloadDf$orthoID &
+                               allOmaDf$seed %in% filteredDownloadDf$geneID)
+                fastaOutDf <- getAllFastaOma(filteredOmaDf)
+            }
+            # get fasta from main input
+            else if (inputType == "fasta") {
+                seqIDMod <- paste0(
+                    as.character(downloadDf$geneID), "|",
+                    as.character(downloadDf$ncbiID), "|",
+                    as.character(downloadDf$orthoID)
+                )
+                fastaOutDf <- getFastaFromFasInput(
+                    seqIDMod, file = filein$datapath
+                )
+            } else {
+                # get from concaternated file
+                if (input$inputType == "Concatenated fasta file") {
+                    fastain <- input$concatFasta
+                    fastaOutDf <- getFastaFromFile(seqIDs, fastain$datapath)
+                }
+                # get from folder
+                else {
+                    fastaOutDf <- getFastaFromFolder(
+                        seqIDs, 
+                        input$path, 
+                        input$dirFormat,
+                        input$fileExt,
+                        input$idFormat
+                    )
+                }
+            }
         } else {
-            inputType <- "demo"
-        }
-
-        if (inputType == "oma") {
-            allOmaDf <- finalOmaDf()
-            filteredDownloadDf <- as.data.frame(downloadCustomData())
-            filteredOmaDf <-
-                subset(allOmaDf,
-                       allOmaDf$orthoID %in% filteredDownloadDf$orthoID &
-                           allOmaDf$seed %in% filteredDownloadDf$geneID)
-            fastaOutDf <- getAllFastaOma(filteredOmaDf)
-        } else {
-            fastaOutDf <- getFastaSeqs(
-                as.data.frame(downloadCustomData()),
-                input$mainInput, input$demoData,
-                input$inputType, input$concatFasta,
-                input$path,
-                input$dirFormat,
-                input$fileExt,
-                input$idFormat
-            )
+            # get fasta from demo online data
+            fastaOutDf <- getFastaDemo(seqIDs, demoData = input$demoData)
         }
         return(fastaOutDf)
     })
@@ -2538,11 +2581,7 @@ shinyServer(function(input, output, session) {
         dataOrig <- getMainInput()
 
         splitDt <- createVariableDistributionData(
-            dataOrig,
-            input$var1[1],
-            input$var1[2],
-            input$var2[1],
-            input$var1[2]
+            dataOrig, input$var1, input$var2
         )
 
         # filter data base on customized plot (if chosen)

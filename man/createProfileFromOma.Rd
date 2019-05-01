@@ -4,7 +4,7 @@
 \alias{createProfileFromOma}
 \title{Create a phylogenetic profile from a raw OMA dataframe}
 \usage{
-createProfileFromOma(finalOmaDf)
+createProfileFromOma(finalOmaDf = NULL)
 }
 \arguments{
 \item{finalOmaDf}{raw OMA data for a list of proteins (see ?getDataForOneOma)}

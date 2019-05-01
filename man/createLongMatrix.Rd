@@ -4,7 +4,7 @@
 \alias{createLongMatrix}
 \title{Create a long matrix format for all kinds of input phylogenetic profiles}
 \usage{
-createLongMatrix(inputFile)
+createLongMatrix(inputFile = NULL)
 }
 \arguments{
 \item{inputFile}{input profile file in orthoXML, multiple FASTA, 

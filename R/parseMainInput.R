@@ -17,6 +17,7 @@
 #' checkInputValidity(filein)
 
 checkInputValidity <- function(filein) {
+    if (missing(filein)) return("No input file given!")
     inputDt <- read.table(
         file = filein,
         sep = "\t",
@@ -87,7 +88,8 @@ checkInputValidity <- function(filein) {
 #' )
 #' xmlParser(inputFile)
 
-xmlParser <- function(inputFile){
+xmlParser <- function(inputFile = NULL){
+    if (is.null(inputFile)) return()
     scoreType <- NULL
     scoreValue <- NULL
 
@@ -178,7 +180,8 @@ xmlParser <- function(inputFile){
 #' )
 #' fastaParser(inputFile)
 
-fastaParser <- function(inputFile){
+fastaParser <- function(inputFile = NULL){
+    if (is.null(inputFile)) return()
     # split sequence IDs into columns
     fastaFile <- Biostrings::readAAStringSet(inputFile)
     seqID <- names(fastaFile)
@@ -210,7 +213,8 @@ fastaParser <- function(inputFile){
 #' )
 #' wideToLong(inputFile)
 
-wideToLong <- function(inputFile){
+wideToLong <- function(inputFile = NULL){
+    if (is.null(inputFile)) return()
     wideDataframe <- read.table(
         file = inputFile,
         sep = "\t",
@@ -257,66 +261,45 @@ wideToLong <- function(inputFile){
 #' )
 #' createLongMatrix(inputFile)
 
-createLongMatrix <- function(inputFile){
+createLongMatrix <- function(inputFile = NULL){
+    if (is.null(inputFile)) return()
     if (inputFile[1] == "lca-micros") {
         inputURL <- paste0(
             "https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/",
             "demo/test.main.long"
         )
-        longDataframe <-
-            read.table(
-                inputURL,
-                sep = "\t",
-                header = TRUE,
-                fill = TRUE,
-                stringsAsFactors = FALSE
-            )
+        longDataframe <- read.table(
+            inputURL, sep = "\t", header = TRUE, fill = TRUE,
+            stringsAsFactors = FALSE
+        )
     } else if (inputFile[1] == "ampk-tor") {
         inputURL <- paste0(
             "https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/",
             "expTestData/ampk-tor/ampk-tor.phyloprofile"
         )
-        longDataframe <-
-            read.table(
-                inputURL,
-                sep = "\t",
-                header = TRUE,
-                fill = TRUE,
-                stringsAsFactors = FALSE
-            )
+        longDataframe <- read.table(
+            inputURL, sep = "\t", header = TRUE, fill = TRUE,
+            stringsAsFactors = FALSE
+        )
     } else {
-        filein <- inputFile
-        if (is.null(filein)) return()
-        inputType <- checkInputValidity(filein)
-
+        if (is.null(inputFile)) return()
+        inputType <- checkInputValidity(inputFile)
         # XML
-        if (inputType == "xml") {
-            longDataframe <- xmlParser(filein)
-        }
+        if (inputType == "xml") longDataframe <- xmlParser(inputFile)
         # FASTA
-        else if (inputType == "fasta") {
-            longDataframe <- fastaParser(filein)
-        }
+        else if (inputType == "fasta") longDataframe <- fastaParser(inputFile)
         # LONG
         else if (inputType == "long") {
             longDataframe <- read.table(
-                file = filein,
-                sep = "\t",
-                header = TRUE,
-                check.names = FALSE,
-                comment.char = "",
-                stringsAsFactors = FALSE
+                file = inputFile, sep = "\t", header = TRUE,
+                check.names = FALSE, comment.char = "", stringsAsFactors = FALSE
             )
         }
         # WIDE
-        else if (inputType == "wide") {
-            longDataframe <- wideToLong(filein)
-        }
-        else {
-            return(NULL)
-        }
+        else if (inputType == "wide") longDataframe <- wideToLong(inputFile)
+        else return(NULL)
     }
-
+    
     # convert geneID, ncbiID and orthoID into factor and var1, var2 into numeric
     for (i in seq_len(3)) {
         longDataframe[, i] <- as.factor(longDataframe[, i])
@@ -328,7 +311,7 @@ createLongMatrix <- function(inputFile){
             )
         }
     }
-
+    
     # remove duplicated lines
     longDataframe <- longDataframe[!duplicated(longDataframe),]
     # longDataframe$orthoID <- gsub("\\|",":",longDataframe$orthoID)

@@ -4,7 +4,7 @@
 \alias{rankIndexing}
 \title{Indexing all available ranks (including norank)}
 \usage{
-rankIndexing(rankListFile)
+rankIndexing(rankListFile = NULL)
 }
 \arguments{
 \item{rankListFile}{Input file, where each row is a rank list of a taxon

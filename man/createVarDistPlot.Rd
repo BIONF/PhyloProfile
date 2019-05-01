@@ -4,7 +4,8 @@
 \alias{createVarDistPlot}
 \title{Create distribution plot}
 \usage{
-createVarDistPlot(data, varName, varType, percent, distTextSize)
+createVarDistPlot(data, varName = "var", varType = "var1", 
+    percent = c(0, 1), distTextSize = 12)
 }
 \arguments{
 \item{data}{dataframe contains data for plotting (see
@@ -12,13 +13,14 @@ createVarDistPlot(data, varName, varType, percent, distTextSize)
 ?createPercentageDistributionData)}
 
 \item{varName}{name of the variable that need to be analyzed (either name of
-variable 1 or variable 2 or "percentage of present taxa")}
+variable 1 or variable 2 or "percentage of present taxa"). Default = "var".}
 
-\item{varType}{type of variable (either "var1", "var2" or "presSpec")}
+\item{varType}{type of variable (either "var1", "var2" or "presSpec"). 
+Default = "var1".}
 
-\item{percent}{range of percentage cutoff (between 0 and 1)}
+\item{percent}{range of percentage cutoff (between 0 and 1). Default = c(0,1)}
 
-\item{distTextSize}{text size of the distribution plot (in px)}
+\item{distTextSize}{text size of the distribution plot (in px). Default = 12.}
 }
 \value{
 A distribution plot for the selected variable as a ggplot object
@@ -30,7 +32,7 @@ the percentage of the species present in the supertaxa.
 \examples{
 data("mainLongRaw", package="PhyloProfile")
 data <- createVariableDistributionData(
-    mainLongRaw, 0, 1, 0.5, 1
+    mainLongRaw, c(0, 1), c(0.5, 1)
 )
 varName <- "Variable abc"
 varType <- "var1"

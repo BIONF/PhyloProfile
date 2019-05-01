@@ -4,7 +4,7 @@
 \alias{getSelectedFastaOma}
 \title{Get selected fasta sequences from a raw OMA dataframe}
 \usage{
-getSelectedFastaOma(finalOmaDf, seqID)
+getSelectedFastaOma(finalOmaDf = NULL, seqID = NULL)
 }
 \arguments{
 \item{finalOmaDf}{raw OMA data for a list of proteins (see ?getDataForOneOma)}

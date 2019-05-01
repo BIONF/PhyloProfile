@@ -4,7 +4,7 @@
 \alias{getAllDomainsOma}
 \title{Create domain annotation dataframe from a raw OMA dataframe}
 \usage{
-getAllDomainsOma(finalOmaDf)
+getAllDomainsOma(finalOmaDf = NULL)
 }
 \arguments{
 \item{finalOmaDf}{raw OMA data for a list of proteins (see ?getDataForOneOma)}

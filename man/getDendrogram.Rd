@@ -4,7 +4,7 @@
 \alias{getDendrogram}
 \title{Plot dendrogram tree}
 \usage{
-getDendrogram(dd)
+getDendrogram(dd = NULL)
 }
 \arguments{
 \item{dd}{dendrogram object (see ?clusterDataDend)}

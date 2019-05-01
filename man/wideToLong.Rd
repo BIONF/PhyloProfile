@@ -4,7 +4,7 @@
 \alias{wideToLong}
 \title{Transform input file in wide matrix into long matrix format}
 \usage{
-wideToLong(inputFile)
+wideToLong(inputFile = NULL)
 }
 \arguments{
 \item{inputFile}{input file in wide matrix format}

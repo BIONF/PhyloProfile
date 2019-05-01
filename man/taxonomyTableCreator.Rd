@@ -4,7 +4,7 @@
 \alias{taxonomyTableCreator}
 \title{Align NCBI taxonomy IDs of list of taxa into a sorted rank list.}
 \usage{
-taxonomyTableCreator(idListFile, rankListFile)
+taxonomyTableCreator(idListFile = NULL, rankListFile = NULL)
 }
 \arguments{
 \item{idListFile}{a text file whose each row is a rank+ID list of a taxon
@@ -14,7 +14,7 @@ taxonomyTableCreator(idListFile, rankListFile)
 (see rankListFile in example)}
 }
 \value{
-An aligned taxonomy dataframe which contains all the available 
+An aligned taxonomy dataframe which contains all the available
 taxonomy ranks from the id and rank list file. This dataframe can be used for
 creating a well resolved taxonomy tree (see ?createRootedTree) and sorting
 taxa based on a selected reference taxon (see ?sortInputTaxa).
@@ -32,7 +32,7 @@ rankListFile <- system.file(
 taxonomyTableCreator(idListFile, rankListFile)
 }
 \seealso{
-\code{\link{rankIndexing}}, \code{\link{createRootedTree}}, 
+\code{\link{rankIndexing}}, \code{\link{createRootedTree}},
 \code{\link{sortInputTaxa}}
 }
 \author{

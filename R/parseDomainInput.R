@@ -4,7 +4,7 @@
 #' @param seed seed protein ID
 #' @param inputFile name of input file ("lca-micros" or "ampk-tor" for demo 
 #' data, file name or path to folder contains individual domain files)
-#' @param type type of data ("demo", "file" or "folder")
+#' @param type type of data ("demo", "file" or "folder"). Default = "file".
 #' @importFrom utils read.csv
 #' @return A dataframe for protein domains including seed ID, its orthologs IDs,
 #' sequence lengths, feature names, start and end positions, feature weights 
@@ -22,8 +22,11 @@
 #' type <- "file"
 #' parseDomainInput(seed, inputFile, type)
 
-parseDomainInput <- function(seed, inputFile, type) {
+parseDomainInput <- function(seed = NULL, inputFile = NULL, type = "file") {
     file <- NULL
+    # check parameters
+    if (type == "folder" & is.null(seed)) return()
+    if (is.null(inputFile)) return()
     
     # get domain file(s) from online data
     if (type == "demo") {
@@ -111,7 +114,7 @@ parseDomainInput <- function(seed, inputFile, type) {
 }
 
 #' Get domain file(s) for online data set
-#' @param demoData demo data name (either "lca-micros" or "ampk-tor")
+#' @param demoData demo data name (either "lca-micros" or "ampk-tor").
 #' @return URL for the domain file of the selected data set.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @examples

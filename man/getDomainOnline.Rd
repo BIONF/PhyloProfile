@@ -7,7 +7,7 @@
 getDomainOnline(demoData)
 }
 \arguments{
-\item{demoData}{demo data name (either "lca-micros" or "ampk-tor")}
+\item{demoData}{demo data name (either "lca-micros" or "ampk-tor").}
 }
 \value{
 URL for the domain file of the selected data set.

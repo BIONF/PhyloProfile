@@ -258,7 +258,7 @@ data("mainLongRaw", package="PhyloProfile")
 #' Process data for distribution analysis
 #' See ?createVariableDistributionData
 data <- createVariableDistributionData(
-    mainLongRaw, 0, 1, 0.5, 1
+    mainLongRaw, c(0, 1), c(0.5, 1)
 )
 head(data, 6)
 
@@ -442,7 +442,6 @@ data("mainLongRaw", package="PhyloProfile")
 inputDf <- mainLongRaw
 rankName <- "phylum"
 inputTaxonID <- getInputTaxaID(inputDf)
-inputTaxonName <- getInputTaxaName(rankName, inputTaxonID)
 
 #' Input a user-defined taxonomy tree to replace NCBI taxonomy tree (optional)
 inputTaxaTree <- NULL
@@ -451,7 +450,6 @@ inputTaxaTree <- NULL
 refTaxon <- "Microsporidia"
 sortedTaxonomy <- sortInputTaxa(
     taxonIDs = inputTaxonID,
-    taxonNames = inputTaxonName,
     rankName = rankName,
     refTaxon = refTaxon,
     taxaTree = inputTaxaTree
