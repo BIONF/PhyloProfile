@@ -640,7 +640,7 @@ filterProfileData <- function(
     if (is.null(refTaxon)) refTaxon = "NA"
 
     ### remove index from supertaxon names
-    superTaxonDf$taxonMod <- superTaxonDf$taxonMod
+    superTaxonDf$taxonMod <- gsub("^[[:digit:]]*_", "", superTaxonDf$supertaxon)
 
     ### replace insufficient values according to the thresholds by NA or 0
     # based on presSpec or # of co-orthologs
