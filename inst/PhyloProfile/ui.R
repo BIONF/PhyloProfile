@@ -1,7 +1,5 @@
 #' Import function files
-sourceFiles = list.files(
-    path = "R", pattern = "*.R$", full.names = TRUE
-)
+sourceFiles = list.files(path = "R", pattern = "*.R$", full.names = TRUE)
 lapply(sourceFiles, source, .GlobalEnv)
 
 #' MAIN UI ====================================================================
@@ -42,21 +40,16 @@ shinyUI(
                         actionButton("mainPlotConfig", "Appearance")
                     ),
                     column(
-                        1,
-                        createPlotSize("height", "Height (px)", 600)
-                    ),
-
-                    column(
-                        2,
-                        uiOutput("var1Cutoff.ui")
+                        1, createPlotSize("height", "Height (px)", 600)
                     ),
                     column(
-                        2,
-                        uiOutput("var2Cutoff.ui")
+                        2, uiOutput("var1Cutoff.ui")
                     ),
                     column(
-                        2,
-                        uiOutput("percentCutoff.ui")
+                        2, uiOutput("var2Cutoff.ui")
+                    ),
+                    column(
+                        2, uiOutput("percentCutoff.ui")
                     ),
                     column(
                         2,
@@ -69,7 +62,7 @@ shinyUI(
                             value = 999,
                             width = 150
                         ),
-                        shinyBS::bsButton(
+                        bsButton(
                             "resetMain",
                             "Reset cutoffs",
                             style = "danger",
@@ -107,26 +100,21 @@ shinyUI(
                         actionButton("selectedPlotConfig", "Appearance")
                     ),
                     column(
-                        1,
-                        createPlotSize("selectedHeight", "Height (px)", 600)
-                    ),
-
-                    column(
-                        2,
-                        uiOutput("var1Filter.ui")
+                        1, createPlotSize("selectedHeight", "Height (px)", 600)
                     ),
                     column(
-                        2,
-                        uiOutput("var2Filter.ui")
+                        2, uiOutput("var1Filter.ui")
                     ),
                     column(
-                        2,
-                        uiOutput("percentFilter.ui")
+                        2, uiOutput("var2Filter.ui")
+                    ),
+                    column(
+                        2, uiOutput("percentFilter.ui")
                     ),
                     column(
                         2,
                         uiOutput("coorthologFilter.ui"),
-                        shinyBS::bsButton(
+                        bsButton(
                             "resetSelected",
                             "Reset cutoffs",
                             style = "danger",
@@ -157,17 +145,20 @@ shinyUI(
                     conditionalPanel(
                         condition = "input.do",
                         em(
-                            strong("RELOAD THIS TOOL TO UPLOAD A NEW INPUT
-                                   FILE!!!",
-                                   style = "color:red")
+                            strong(
+                                "RELOAD THIS TOOL TO UPLOAD A NEW INPUT
+                                FILE!!!", style = "color:red"
+                            )
                         )
                     ),
 
                     selectInput(
                         "demoData", label = h5("Use online demo data:"),
-                        choices = list("None" = "none",
-                                       "AMPK-TOR" = "ampk-tor",
-                                       "LCA Microsporidia" = "lca-micros"),
+                        choices = list(
+                            "None" = "none",
+                            "AMPK-TOR" = "ampk-tor",
+                            "LCA Microsporidia" = "lca-micros"
+                        ),
                         selected = "none",
                         width = "80%"
                     ),
@@ -182,8 +173,7 @@ shinyUI(
                             6,
                             conditionalPanel(
                                 condition = "output.checkOmaInput",
-                                shinyBS::bsButton("openOmaWindows",
-                                                  "Get data from OMA"),
+                                bsButton("openOmaWindows", "Get data from OMA"),
                                 br()
                             )
                         )
@@ -192,18 +182,19 @@ shinyUI(
                     # ** Variable 1 --------------------------------------------
                     fluidRow(
                         column(
-                            4,
-                            uiOutput("var1ID.ui")
+                            4, uiOutput("var1ID.ui")
                         ),
                         column(
                             4,
                             selectInput(
                                 "var1AggregateBy",
                                 label = h5("Aggregate by:"),
-                                choices = list("Max" = "max",
-                                               "Min" = "min",
-                                               "Mean" = "mean",
-                                               "Median" = "median"),
+                                choices = list(
+                                    "Max" = "max",
+                                    "Min" = "min",
+                                    "Mean" = "mean",
+                                    "Median" = "median"
+                                ),
                                 selected = "max",
                                 width = 130
                             )
@@ -212,8 +203,10 @@ shinyUI(
                             4,
                             selectInput(
                                 "var1Relation", label = h5("Relationship:"),
-                                choices = list("Prot-Prot" = "protein",
-                                               "Prot-Spec" = "species"),
+                                choices = list(
+                                    "Prot-Prot" = "protein",
+                                    "Prot-Spec" = "species"
+                                ),
                                 selected = "protein",
                                 width = 130
                             ),
@@ -231,28 +224,27 @@ shinyUI(
                     # ** Variable 2 --------------------------------------------
                     fluidRow(
                         column(
-                            4,
-                            uiOutput("var2ID.ui")
+                            4, uiOutput("var2ID.ui")
                         ),
                         column(
                             4,
                             selectInput(
                                 "var2AggregateBy",
                                 label = h5("Aggregate by:"),
-                                choices = list("Max" = "max",
-                                               "Min" = "min",
-                                               "Mean" = "mean",
-                                               "Median" = "median"),
+                                choices = list(
+                                    "Max" = "max",
+                                    "Min" = "min",
+                                    "Mean" = "mean",
+                                    "Median" = "median"
+                                ),
                                 selected = "max",
                                 width = 130
                             )
                         ),
                         column(
-                            4,
-                            uiOutput("var2Relation.ui")
+                            4, uiOutput("var2Relation.ui")
                         )
                     ),
-
                     hr(),
 
                     # ** Domain input ------------------------------------------
@@ -267,11 +259,11 @@ shinyUI(
                     uiOutput("domainInputFile.ui"),
 
                     hr(),
-                    em(
-                        a("Click here to download demo files",
-                          href = "https://github.com/BIONF/phyloprofile-data",
-                          target = "_blank")
-                    )
+                    em(a(
+                        "Click here to download demo files",
+                        href = "https://github.com/BIONF/phyloprofile-data",
+                        target = "_blank"
+                    ))
                 ),
 
                 # * 2nd column -------------------------------------------------
@@ -303,13 +295,11 @@ shinyUI(
                         ),
 
                         conditionalPanel(
-                            condition = "input.geneListSelected
-                                        == 'from file'",
+                            condition = "input.geneListSelected == 'from file'",
                             fileInput("list", "")
                         ),
 
                         hr(),
-
                         checkboxInput(
                             "ordering",
                             strong("Order sequence IDs"),
@@ -317,20 +307,21 @@ shinyUI(
                         ),
 
                         hr(),
-
                         HTML("<b>Order taxa</b>"),
 
                         radioButtons(
                             inputId = "orderTaxa",
                             label = "",
-                            choices = list("automatically",
-                                           "by user defined tree"),
+                            choices = list(
+                                "automatically", "by user defined tree"
+                            ),
                             selected = "automatically",
                             inline = TRUE
                         ),
 
-                        bsPopover("orderTaxa", "",
-                                  "in newick format", "bottom"),
+                        bsPopover(
+                            "orderTaxa", "", "in newick format", "bottom"
+                        ),
 
                         conditionalPanel(
                             condition = "input.orderTaxa
@@ -343,21 +334,18 @@ shinyUI(
 
                         strong(h4("Other optional input:")),
 
-                        shinyBS::bsButton("fastaUpload", "FASTA file(s)"),
+                        bsButton("fastaUpload", "FASTA file(s)"),
                         h5(""),
 
-                        shinyBS::bsButton("uploadGeneCategory",
-                                          "Gene categories"),
+                        bsButton("uploadGeneCategory", "Gene categories"),
                         h5(""),
                         hr(),
 
                         strong(h4("Color configuration:")),
                         actionButton(
-                            "setColor",
-                            "Change colors",
+                            "setColor", "Change colors",
                             style = "padding:4px; font-size:100%"
                         ),
-
                         hr()
                     )
                 ),
@@ -365,7 +353,6 @@ shinyUI(
                 # * 3rd column -------------------------------------------------
                 column(
                     4,
-
                     # ** Msg for parsing new taxa ------------------------------
                     conditionalPanel(
                         condition = "output.unkTaxaStatus == 'unknown' ||
@@ -402,7 +389,7 @@ shinyUI(
                                 </span> to continue!</em></strong></p>'
                             ),
                             h5(""),
-                            shinyBS::bsButton(
+                            bsButton(
                                 "addTaxa",
                                 "Add taxonomy info",
                                 disabled = FALSE,
@@ -426,7 +413,7 @@ shinyUI(
                                 taxa!</em></strong></p>'
                             ),
                             h5(""),
-                            shinyBS::bsButton(
+                            bsButton(
                                 "butParse",
                                 "Get taxonomy info",
                                 disabled = FALSE,
@@ -440,8 +427,9 @@ shinyUI(
                             conditionalPanel(
                                 condition = "output.unkTaxaStatus
                                             == 'invalid'",
-                                downloadButton("invalidID.download",
-                                               "Download invalid IDs")
+                                downloadButton(
+                                    "invalidID.download", "Download invalid IDs"
+                                )
                             )
                         )
                     ),
@@ -470,7 +458,7 @@ shinyUI(
                         ),
                         br(),
 
-                        shinyBS::bsButton(
+                        bsButton(
                             "do",
                             "PLOT",
                             type = "action",
@@ -518,8 +506,7 @@ shinyUI(
                         ),
 
                         column(
-                            4,
-                            uiOutput("highlightGeneUI")
+                            4, uiOutput("highlightGeneUI")
                         ),
 
                         bsPopover(
@@ -544,7 +531,6 @@ shinyUI(
                         ),
 
                         br(),
-
                         uiOutput("highlightTaxonUI"),
 
                         checkboxInput(
@@ -555,7 +541,7 @@ shinyUI(
 
                         conditionalPanel(
                             condition = "input.autoUpdate == false",
-                            shinyBS::bsButton(
+                            bsButton(
                                 "updateBtn",
                                 "Update plot",
                                 style = "warning",
@@ -569,21 +555,6 @@ shinyUI(
                             condition = "input.do > 0",
                             createProfilePlotUI("mainProfile")
                         )
-                        # ,
-                        # conditionalPanel(
-                        #   condition = "input.mainXAxisGuide == true |
-                        #   input.mainYAxisGuide == true",
-                        #   absolutePanel(
-                        #     id = "absAxis",
-                        #     bottom = 0, left = 0,
-                        #     heigh = NULL, width = NULL,
-                        #     fixed = TRUE,
-                        #     draggable = TRUE,
-                        #     style = "opacity: 0.80",
-                        #
-                        #     uiOutput("mainAxisRender")
-                        #   )
-                        # )
                     )
                 )
             ),
@@ -634,7 +605,7 @@ shinyUI(
                                 column(
                                     4,
                                     h3(""),
-                                    shinyBS::bsButton("cusTaxa", "Browse...")
+                                    bsButton("cusTaxa", "Browse...")
                                 )
                             )
                         ),
@@ -642,7 +613,7 @@ shinyUI(
                         h5(""),
                         conditionalPanel(
                             condition = "input.autoUpdate == false",
-                            shinyBS::bsButton(
+                            bsButton(
                                 "plotCustom",
                                 "Update plot",
                                 style = "warning",
@@ -681,12 +652,10 @@ shinyUI(
                     wellPanel(
                         fluidRow(
                             column(
-                                2,
-                                uiOutput("selectProfileType")
+                                2, uiOutput("selectProfileType")
                             ),
                             column(
-                                3,
-                                uiOutput("selectDistMethod")
+                                3, uiOutput("selectDistMethod")
                             ),
 
                             column(
@@ -713,7 +682,6 @@ shinyUI(
                                 )
                             ),
                             column(
-
                                 1,
                                 createPlotSize(
                                     "clusterPlot.height", "Height (px)", 600
@@ -768,16 +736,13 @@ shinyUI(
                                 uiOutput("selected.distribution")
                             ),
                             column(
-                                2,
-                                uiOutput("var1Dist.ui")
+                                2, uiOutput("var1Dist.ui")
                             ),
                             column(
-                                2,
-                                uiOutput("var2Dist.ui")
+                                2, uiOutput("var2Dist.ui")
                             ),
                             column(
-                                2,
-                                uiOutput("percentDist.ui")
+                                2, uiOutput("percentDist.ui")
                             ),
                             column(
                                 2,
@@ -806,16 +771,13 @@ shinyUI(
                     wellPanel(
                         fluidRow(
                             column(
-                                2,
-                                uiOutput("var1Age.ui")
+                                2, uiOutput("var1Age.ui")
                             ),
                             column(
-                                2,
-                                uiOutput("var2Age.ui")
+                                2, uiOutput("var2Age.ui")
                             ),
                             column(
-                                2,
-                                uiOutput("percentAge.ui")
+                                2, uiOutput("percentAge.ui")
                             ),
                             column(
                                 2,
@@ -850,16 +812,13 @@ shinyUI(
                     wellPanel(
                         fluidRow(
                             column(
-                                3,
-                                uiOutput("var1Core.ui")
+                                3, uiOutput("var1Core.ui")
                             ),
                             column(
-                                3,
-                                uiOutput("var2Core.ui")
+                                3, uiOutput("var2Core.ui")
                             ),
                             column(
-                                3,
-                                uiOutput("percentCore.ui")
+                                3, uiOutput("percentCore.ui")
                             ),
                             column(
                                 3,
@@ -875,7 +834,7 @@ shinyUI(
                             column(
                                 12,
                                 uiOutput("taxaListCore.ui"),
-                                shinyBS::bsButton("browseTaxaCore", "Browse")
+                                bsButton("browseTaxaCore", "Browse")
                             )
                         )
                     ),
@@ -883,8 +842,9 @@ shinyUI(
 
                     column(
                         4,
-                        downloadButton("coreGeneTableDownload",
-                                       "Download gene list"),
+                        downloadButton(
+                            "coreGeneTableDownload", "Download gene list"
+                        ),
                         checkboxInput(
                             "addCoreGeneCustomProfile",
                             strong(em("Add core genes to Customized profile",
@@ -972,14 +932,16 @@ shinyUI(
                             column(
                                 2,
                                 popify(
-                                    actionButton("gcPlotConfig",
-                                                 "Plot config"),
+                                    actionButton(
+                                        "gcPlotConfig", "Plot config"
+                                    ),
                                     "",
                                     "Change the appearance of the plots"
                                 ),
                                 hr(),
-                                bsButton("doCompare", "COMPARE!",
-                                         style = "danger"),
+                                bsButton(
+                                    "doCompare", "COMPARE!", style = "danger"
+                                ),
                                 h5(),
                                 bsButton(
                                     "updateGC",
@@ -1029,18 +991,17 @@ shinyUI(
             "Get OMA data",
             "openOmaWindows",
             size = "small",
-
             selectInput(
                 "selectedOmaType",
                 label = "Select type of OMA orthologs:",
                 choices = list("HOG", "OG"),# "PAIR"),
                 selected = "HOG"
             ),
-            shinyBS::bsButton("getDataOma", "Get data", style = "danger"),
+            bsButton("getDataOma", "Get data", style = "danger"),
             downloadButton("downloadFilesOma", "Save data"),
             br(),
-            em("This windows will close automatically when eveything
-           is done!", style = "color:red")
+            em("This windows will close automatically when eveything is done!", 
+               style = "color:red")
         ),
 
         # * popup for adding new taxa from input file --------------------------
@@ -1049,7 +1010,6 @@ shinyUI(
             "Add new taxa",
             "addTaxa",
             size = "medium",
-
             HTML(
                 "<p><em>Use this form to add taxon that does not exist in NCBI
                 taxonomy database (or alternatively you can manually prepare the
@@ -1062,7 +1022,6 @@ shinyUI(
                 <span style=\"text-decoration: underline;\">different</span>
                 from any existing NCBI taxa.</strong></em></span></p>"
             ),
-
             textInput(
                 "newID",
                 "ID (must be a number and greater than 2268208,
@@ -1090,7 +1049,6 @@ shinyUI(
                 width = 500
             ),
             actionButton("newAdd", "Add new taxon"),
-
             hr(),
             fileInput("newTaxaFile",
                       "Or upload file contains IDs for new taxa"),
@@ -1101,10 +1059,10 @@ shinyUI(
                 &nbsp;parentID</p>"
             ),
             bsAlert("wrongNewTaxa"),
-
             hr(),
-            shinyBS::bsButton("newDone", "Finish adding", style = "warning",
-                              disabled = TRUE)
+            bsButton(
+                "newDone", "Finish adding", style = "warning", disabled = TRUE
+            )
         ),
 
         # * popup for confirming parsing taxa from input file ------------------
@@ -1113,7 +1071,6 @@ shinyUI(
             "Get taxonomy info",
             "butParse",
             size = "small",
-
             HTML(
                 '<p>Fetching Missing Taxonomy Information and
                 Post-processing.</p><p><em>This windows will close
@@ -1129,15 +1086,12 @@ shinyUI(
             "Detailed plot",
             "detailedBtn",
             size = "large",
-
             fluidRow(
                 column(
-                    2,
-                    createPlotSize("detailedHeight", "Height (px)", 100)
+                    2, createPlotSize("detailedHeight", "Height (px)", 100)
                 ),
                 column(
-                    3,
-                    createTextSize("detailedText", "Text size (px)", 12, 150)
+                    3, createTextSize("detailedText", "Text size (px)", 12, 150)
                 ),
                 column(
                     7,
@@ -1150,15 +1104,12 @@ shinyUI(
                 )
             ),
             hr(),
-
             createDetailedPlotUI("detailedPlot"),
-
-            shinyBS::bsButton("doDomainPlot",
-                              "Show domain architecture",
-                              disabled = TRUE),
+            bsButton(
+                "doDomainPlot", "Show domain architecture", disabled = TRUE
+            ),
             uiOutput("checkDomainFiles"),
             br(),
-
             h4("Sequence:"),
             verbatimTextOutput("fasta")
         ),
@@ -1169,25 +1120,20 @@ shinyUI(
             "Domain architecture",
             "doDomainPlot",
             size = "large",
-
             fluidRow(
                 column(
-                    2,
-                    createPlotSize("archiHeight", "Plot height(px)", 400)
+                    2, createPlotSize("archiHeight", "Plot height(px)", 400)
+                ),
+                column(
+                    2, createPlotSize("archiWidth", "Plot width(px)", 800)
                 ),
                 column(
                     2,
-                    createPlotSize("archiWidth", "Plot width(px)", 800)
+                    createTextSize("titleArchiSize", "Title size(px)", 11, 150)
                 ),
                 column(
                     2,
-                    createTextSize("titleArchiSize", "Title size(px)",
-                                     11, 150)
-                ),
-                column(
-                    2,
-                    createTextSize("labelArchiSize", "SeqID size(px)",
-                                     11, 150)
+                    createTextSize("labelArchiSize", "SeqID size(px)", 11, 150)
                 )
             ),
             uiOutput("test.ui"),
@@ -1200,7 +1146,6 @@ shinyUI(
             "Set colors for profile",
             "setColor",
             size = "small",
-
             colourpicker::colourInput(
                 "lowColorVar1",
                 "Low variable 1 (dot)",
@@ -1217,7 +1162,6 @@ shinyUI(
                 style = "padding:4px; font-size:100%"
             ),
             hr(),
-
             colourpicker::colourInput(
                 "lowColorVar2",
                 "Low variable 2 (background)",
@@ -1234,7 +1178,6 @@ shinyUI(
                 style = "padding:4px; font-size:100%"
             ),
             hr(),
-
             colourpicker::colourInput(
                 "paraColor",
                 "Color for inparalogs",
@@ -1253,15 +1196,12 @@ shinyUI(
             "FASTA upload",
             "fastaUpload",
             size = "small",
-
             selectInput(
                 "inputType", "Choose location for:",
                 c("Concatenated fasta file", "Fasta folder")
             ),
             hr(),
-
             uiOutput("defaultColorPara.ui"),
-
             conditionalPanel(
                 condition = "input.inputType == 'Concatenated fasta file'",
                 fileInput("concatFasta", ""),
@@ -1311,20 +1251,15 @@ shinyUI(
             "Plot appearance configuration",
             "mainPlotConfig",
             size = "small",
-
             column(
-                6,
-                createTextSize("xSize", "X-axis label size (px)", 8, 100)
+                6, createTextSize("xSize", "X-axis label size (px)", 8, 100)
+            ),
+            column(
+                6, createTextSize("ySize", "Y-axis label size (px)", 8, 100)
             ),
             column(
                 6,
-                createTextSize("ySize", "Y-axis label size (px)", 8, 100)
-            ),
-
-            column(
-                6,
-                createTextSize("legendSize", "Legend label size (px)",
-                                 8, 150)
+                createTextSize("legendSize", "Legend label size (px)", 8, 150)
             ),
             column(
                 6,
@@ -1353,7 +1288,6 @@ shinyUI(
                 ),
                 br()
             ),
-
             column(
                 12,
                 HTML("<strong>Zooming factor (α) for dots on
@@ -1371,11 +1305,10 @@ shinyUI(
                 uiOutput("dotSizeInfo"),
                 br()
             ),
-
             br(),
             hr(),
-            shinyBS::bsButton("resetMainConfig", "Reset", style = "danger"),
-            shinyBS::bsButton("applyMainConfig", "Done", style = "warning")
+            bsButton("resetMainConfig", "Reset", style = "danger"),
+            bsButton("applyMainConfig", "Done", style = "warning")
         ),
 
         # * popup for setting Customized plot configurations -------------------
@@ -1384,22 +1317,19 @@ shinyUI(
             "Plot appearance configuration",
             "selectedPlotConfig",
             size = "small",
-
             column(
                 6,
-                createTextSize("xSizeSelect", "X-axis label size (px)",
-                                 8, 100)
+                createTextSize("xSizeSelect", "X-axis label size (px)", 8, 100)
             ),
             column(
                 6,
-                createTextSize("ySizeSelect", "Y-axis label size (px)",
-                                 8, 100)
+                createTextSize("ySizeSelect", "Y-axis label size (px)", 8, 100)
             ),
 
             column(
                 6,
-                createTextSize("legendSizeSelect", "Legend label size (px)",
-                                 8, 150)
+                createTextSize("legendSizeSelect", "Legend label size (px)", 
+                               8, 150)
             ),
             column(
                 6,
@@ -1427,7 +1357,6 @@ shinyUI(
                 ),
                 br()
             ),
-
             column(
                 12,
                 HTML("<strong>Zooming factor (α) for dots on
@@ -1445,13 +1374,10 @@ shinyUI(
                 uiOutput("dotSizeInfoSelect"),
                 br()
             ),
-
             br(),
             hr(),
-            shinyBS::bsButton("resetSelectedConfig", "Reset",
-                              style = "danger"),
-            shinyBS::bsButton("applySelectedConfig", "Done",
-                              style = "warning")
+            bsButton("resetSelectedConfig", "Reset", style = "danger"),
+            bsButton("applySelectedConfig", "Done", style = "warning")
         ),
 
         # * popup for setting Gene age plot configurations ---------------------
@@ -1460,7 +1386,6 @@ shinyUI(
             "Plot appearance configuration",
             "geneAgeProtConfig",
             size = "small",
-
             sliderInput(
                 "geneAgeWidth",
                 "Width zoom (*600px)",
@@ -1488,7 +1413,7 @@ shinyUI(
             ),
             br(),
             hr(),
-            shinyBS::bsButton(
+            bsButton(
                 "resetGeneAgeProtConfig",
                 "Reset",
                 style = "danger"
@@ -1501,7 +1426,6 @@ shinyUI(
             "Plot appearance configuration",
             "gcPlotConfig",
             size = "large",
-
             column(
                 6,
                 createTextSize("xSizeGC", "X-axis label size (px)", 12, '100%')
@@ -1512,13 +1436,12 @@ shinyUI(
             ),
             column(
                 6,
-                createTextSize("titleSizeGC", "Title size (px)",
-                               15, '100%')
+                createTextSize("titleSizeGC", "Title size (px)", 15, '100%')
             ),
             column(
                 6,
                 createTextSize("legendSizeGC", "Legend label size (px)",
-                                 12, '100%')
+                               12, '100%')
             ),
             hr(),
             column(
@@ -1527,12 +1450,10 @@ shinyUI(
                      for variable plot only:</em></strong></span></p>")
             ),
             column(
-                6,
-                createPlotSize("widthVarGC", "Width (px)", 600)
+                6, createPlotSize("widthVarGC", "Width (px)", 600)
             ),
             column(
-                6,
-                createPlotSize("heightVarGC", "Height (px)", 400)
+                6, createPlotSize("heightVarGC", "Height (px)", 400)
             ),
             column(
                 6,
@@ -1561,12 +1482,10 @@ shinyUI(
                      for feature plot only:</em></strong></span></p>")
             ),
             column(
-                6,
-                createPlotSize("widthFeatureGC", "Width (px)", 600)
+                6, createPlotSize("widthFeatureGC", "Width (px)", 600)
             ),
             column(
-                6,
-                createPlotSize("heightFeatureGC", "Height (px)", 400)
+                6, createPlotSize("heightFeatureGC", "Height (px)", 400)
             ),
             column(
                 6,
@@ -1611,12 +1530,10 @@ shinyUI(
                           width = "100%",
                           placeholder = "Name of in-group taxa")
             ),
-            
-
             br(),
             hr(),
-            shinyBS::bsButton("resetConfigGC", "Reset", style = "danger"),
-            shinyBS::bsButton("applyConfigGC", "Done", style = "warning")
+            bsButton("resetConfigGC", "Reset", style = "danger"),
+            bsButton("applyConfigGC", "Done", style = "warning")
         ),
 
         # * popup for select taxa on Customized Profile ------------------------
@@ -1625,7 +1542,6 @@ shinyUI(
             "Select taxon/taxa of interest",
             "cusTaxa",
             size = "small",
-
             selectTaxonRankUI("selectTaxonRank"),
             checkboxInput(
                 "applyCusTaxa",
@@ -1641,7 +1557,6 @@ shinyUI(
             "Select taxon/taxa of interest",
             "browseTaxaCore",
             size = "small",
-
             selectTaxonRankUI("selectTaxonRankCore"),
             checkboxInput(
                 "applyCoreTaxa",
@@ -1656,7 +1571,6 @@ shinyUI(
             "Select taxon/taxa of interest",
             "taxaGC",
             size = "small",
-
             selectTaxonRankUI("selectTaxonRankGC"),
             checkboxInput(
                 "applyTaxonGC",
@@ -1677,7 +1591,6 @@ shinyUI(
                  phylogenetic profiles!</em></p>"),
             fileInput("gcFile", NULL),
             hr(),
-            
             h4(strong("In-group and out-group taxa")),
             HTML("<p><em>Please upload an <strong>tab-delimited ID list</strong>
                  of in-group and out-group taxa. The ID must follow the format
@@ -1696,7 +1609,6 @@ shinyUI(
                 h5(strong("Invalid taxa were found:")),
                 dataTableOutput("invalidTaxonGroupGC")
             )
-            
         ),
 
         # POINT INFO BOX =======================================================
@@ -1704,7 +1616,6 @@ shinyUI(
             condition =
                 "input.tabs=='Main profile' ||
                 input.tabs=='Customized profile'",
-
             absolutePanel(
                 bottom = 5, left = 30,
                 fixed = TRUE,
@@ -1713,7 +1624,7 @@ shinyUI(
                 verbatimTextOutput("pointInfo"),
                 conditionalPanel(
                     condition = "output.pointInfoStatus == 0",
-                    shinyBS::bsButton(
+                    bsButton(
                         "detailedBtn",
                         "Detailed plot",
                         style = "success",

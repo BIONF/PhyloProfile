@@ -217,28 +217,25 @@ groupComparison <- function (
     ### List with possible features for the selected gene
     output$featureTypeSelect.ui <- renderUI({
         ns <- session$ns
-        doUpdate()
-        isolate({
-            if (is.null(featureDf())) {
-                selectInput(ns("featureTypeSelect"),
-                            "Feature type(s) of interest:",
-                            choices = "ALL",
-                            selected = "ALL",
-                            multiple = TRUE,
-                            selectize = FALSE)
-            } else {
-                featureDf <- str_split_fixed(
-                    as.character(featureDf()$Feature), "_", 2
-                )
-                featureList <- unique(featureDf[,1])
-                selectInput(ns("featureTypeSelect"),
-                            "Feature type(s) of interest:",
-                            choices = c("ALL", featureList),
-                            selected = "ALL",
-                            multiple = TRUE,
-                            selectize = FALSE)
-            }
-        })
+        if (is.null(featureDf())) {
+            selectInput(ns("featureTypeSelect"),
+                        "Feature type(s) of interest:",
+                        choices = "ALL",
+                        selected = "ALL",
+                        multiple = TRUE,
+                        selectize = FALSE)
+        } else {
+            featureDf <- str_split_fixed(
+                as.character(featureDf()$Feature), "_", 2
+            )
+            featureList <- unique(featureDf[,1])
+            selectInput(ns("featureTypeSelect"),
+                        "Feature type(s) of interest:",
+                        choices = c("ALL", featureList),
+                        selected = "ALL",
+                        multiple = TRUE,
+                        selectize = FALSE)
+        }
     })
     
     ### filter feature data based on selected type of features
