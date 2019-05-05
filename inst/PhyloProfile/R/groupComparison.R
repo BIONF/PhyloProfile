@@ -35,8 +35,14 @@ groupComparisonUI <- function(id){
             #     saved in the right format: featuretype_featurename"
             # ),
 
-            downloadButton(ns("downloadPlots"), "Download plots"),
+            downloadButton(ns("downloadPlots"),"Download plot(s)",
+                           class = "butDL"),
+            tags$head(
+                tags$style(HTML(
+                    ".butDL{background-color:#476ba3;} .butDL{color: white;}"))
+            ),
             hr(),
+            uiOutput(ns("featureTypeSelect.ui")),
             sliderInput(
                 ns("featureThreshold"),
                 "% cutoff of proteins feature instances",
@@ -51,7 +57,7 @@ groupComparisonUI <- function(id){
             ),
             sliderInput(
                 ns("dInstanceThreshold"),
-                "Delta instances per protein cutoff",
+                "Delta instances per protein cutoff??",
                 min = 0 , max = 100, value = 0,
                 step = 1, round = FALSE
             )
@@ -81,18 +87,10 @@ groupComparison <- function (
     doCompare,
     doUpdate
 ) {
-    v <- reactiveValues(doCompare = FALSE)
-    observeEvent(doCompare(), {
-        # 0 will be coerced to FALSE
-        # 1+ will be coerced to TRUE
-        v$doCompare <- doCompare()
-    })
-    
     ### get candidate genes and their p-values
     candidateGenes <- reactive({
         if (is.null(inGroup())) return()
         if (is.null(variable()) | variable()[1] == "none") return()
-        if (v$doCompare == FALSE) return()
         
         if (compareType() == "Statistical tests") {
             pvalues <- compareTaxonGroups(
@@ -201,18 +199,65 @@ groupComparison <- function (
         if (length(input$candidateGenes) == 0 | input$candidateGenes == "none") 
             return()
         
-        return(
-            dataFeatureTaxGroup(
-                filteredDf(), domainDf(), inGroup(), 
-                input$candidateGenes, isolate(input$featureThreshold)
-            )
+        featureDf <- dataFeatureTaxGroup(
+            filteredDf(), domainDf(), inGroup(), 
+            input$candidateGenes, isolate(input$featureThreshold)
         )
-    }) 
+        
+        if (input$filterGainLoss == "loss") {
+            loss <- featureDf$Feature[featureDf$Taxon_group == "Out-group"]
+            return(featureDf[featureDf$Feature %in% loss,])
+        } else if (input$filterGainLoss == "gain") {
+            gain <- featureDf$Feature[featureDf$Taxon_group == "In-group"]
+            return(featureDf[featureDf$Feature %in% gain,])
+        } else return(featureDf)
+    })
+    
+    ### List with possible features for the selected gene
+    output$featureTypeSelect.ui <- renderUI({
+        ns <- session$ns
+        doUpdate()
+        isolate({
+            if (is.null(featureDf())) {
+                selectInput(ns("featureTypeSelect"),
+                            "Feature type(s) of interest:",
+                            choices = "ALL",
+                            selected = "ALL",
+                            multiple = TRUE,
+                            selectize = FALSE)
+            } else {
+                featureDf <- str_split_fixed(
+                    as.character(featureDf()$Feature), "_", 2
+                )
+                featureList <- unique(featureDf[,1])
+                selectInput(ns("featureTypeSelect"),
+                            "Feature type(s) of interest:",
+                            choices = c("ALL", featureList),
+                            selected = "ALL",
+                            multiple = TRUE,
+                            selectize = FALSE)
+            }
+        })
+    })
+    
+    ### filter feature data based on selected type of features
+    featureDfSelected <- reactive({
+        if (is.null(featureDf())) return()
+        if ("ALL" %in% input$featureTypeSelect) return(featureDf())
+        else {
+            featureDf <- featureDf()
+            selectedDf <- lapply(
+                input$featureTypeSelect,
+                function (x) featureDf[grep(x, featureDf$Feature),]
+            )
+            return(do.call(rbind, selectedDf))
+        }
+    })
     
     ### render feature distribution plot(s)
     output$featurePlot <- renderPlot({
-        if (is.null(featureDf())) return()
-        featureDistTaxPlot(featureDf(), plotParameters())
+        if (is.null(featureDfSelected())) return()
+        featureDistTaxPlot(featureDfSelected(), plotParameters())
     })
     
     output$featurePlots.ui <- renderUI({
