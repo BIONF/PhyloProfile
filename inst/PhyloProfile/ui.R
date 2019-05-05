@@ -649,7 +649,6 @@ shinyUI(
                                 icon("refresh")
                             )
                         )
-
                     ),
 
                     # * main panel for customized profile plot -----------------
@@ -907,31 +906,7 @@ shinyUI(
                         fluidRow(
                             column(
                                 3,
-                                uiOutput("variableButtonGC"),
-                                popify(
-                                    checkboxInput(
-                                        "rightFormatFeatures",
-                                        "Annotation format: ’TypeName’",
-                                        value = TRUE,
-                                        width = NULL
-                                    ),
-                                    "",
-                                    "E.g.: pfam_ApbA, smart_SRP54"
-                                )
-                            ),
-                            column(
-                                2,
-                                uiOutput("listGenesGC"),
-                                popify(
-                                    fileInput("gcFile", NULL, width = "100%"),
-                                    "",
-                                    "Upload list of genes of interest"
-                                )
-                            ),
-                            column(
-                                2,
-                                uiOutput("taxaListGC"), # Select In-Group
-                                shinyBS::bsButton("taxaGC", "Browse"),
+                                uiOutput("taxaListGC"),
                                 checkboxInput(
                                     "useCommonAncestor",
                                     "Use common ancestor",
@@ -945,11 +920,43 @@ shinyUI(
                                     with the selected taxa above will be
                                     considered as the in-group",
                                     "top"
-                                )
+                                ),
+                                h5(strong("Select in-group by supertaxon")),
+                                actionButton("taxaGC", "Browse")
                             ),
                             column(
                                 3,
-                                uiOutput("significance.ui"),
+                                uiOutput("listGenesGC"),
+                                h5(strong("Upload sequence(s) / In-group taxa")),
+                                bsButton("uploadGC", "Upload")
+                            ),
+                            column(
+                                2,
+                                uiOutput("variableGC"),
+                                selectInput(
+                                    "compareType", "Compare using:",
+                                    choices = c("Statistical tests", "Mean values"),
+                                    selected = "Statistical tests"
+                                )
+                            ),
+                            column(
+                                2,
+                                sliderInput(
+                                    "significance",
+                                    paste("Significance level:"),
+                                    min = 0,
+                                    max = 1,
+                                    step = 0.01,
+                                    value = c(0.05),
+                                    width = 300
+                                ),
+                                bsPopover(
+                                    "significance",
+                                    "",
+                                    "P-value cut-off of the statistic test, OR
+                                    cut-off of delta means between 2 groups",
+                                    "bottom"
+                                ),
                                 checkboxInput(
                                     "addGCGenesCustomProfile",
                                     strong(em(
@@ -971,8 +978,15 @@ shinyUI(
                                     "Change the appearance of the plots"
                                 ),
                                 hr(),
-                                bsButton("plotGC", "COMPARE!",
-                                         style = "warning")
+                                bsButton("doCompare", "COMPARE!",
+                                         style = "danger"),
+                                h5(),
+                                bsButton(
+                                    "updateGC",
+                                    "Update plot",
+                                    style = "warning",
+                                    icon("refresh")
+                                )
                             )
                         )
                     ),
@@ -1486,82 +1500,118 @@ shinyUI(
             "gcPlotConfigBs",
             "Plot appearance configuration",
             "gcPlotConfig",
-            size = "small",
+            size = "large",
 
             column(
                 6,
-                createTextSize("xSizeGC", "X-axis label size (px)", 10, 100)
+                createTextSize("xSizeGC", "X-axis label size (px)", 12, '100%')
             ),
             column(
                 6,
-                createTextSize("ySizeGC", "Y-axis label size (px)", 10, 100)
+                createTextSize("ySizeGC", "Y-axis label size (px)", 12, '100%')
+            ),
+            column(
+                6,
+                createTextSize("titleSizeGC", "Title size (px)",
+                               15, '100%')
             ),
             column(
                 6,
                 createTextSize("legendSizeGC", "Legend label size (px)",
-                                 10, 150)
+                                 12, '100%')
+            ),
+            hr(),
+            column(
+                12,
+                HTML("<p><span style=\"color: #ff0000;\"><strong><em>Options 
+                     for variable plot only:</em></strong></span></p>")
+            ),
+            column(
+                6,
+                createPlotSize("widthVarGC", "Width (px)", 600)
+            ),
+            column(
+                6,
+                createPlotSize("heightVarGC", "Height (px)", 400)
             ),
             column(
                 6,
                 selectInput(
                     "legendGC", label = "Legend position:",
                     choices = list("Right" = "right",
-                                   "Left" = "left",
-                                   "Top" = "top",
                                    "Bottom" = "bottom",
                                    "Hide" = "none"),
                     selected = "right",
-                    width = 150
+                    width = '100%'
                 )
             ),
             column(
                 6,
-                createTextSize("pValuesSizeGC", "P-value label size (px)",
-                                 10, 100)
-            ),
-            column(
-                6,
                 selectInput(
-                    "showPointGC", label = "Show location parameter:",
+                    "mValueGC", label = "Show mean/median point:",
                     choices = list("Mean" = "mean",
                                    "Median" = "median"),
                     selected = "mean",
-                    width = 150)
+                    width = '100%')
             ),
+            hr(),
             column(
                 12,
+                HTML("<p><span style=\"color: #ff0000;\"><strong><em>Options 
+                     for feature plot only:</em></strong></span></p>")
+            ),
+            column(
+                6,
+                createPlotSize("widthFeatureGC", "Width (px)", 600)
+            ),
+            column(
+                6,
+                createPlotSize("heightFeatureGC", "Height (px)", 400)
+            ),
+            column(
+                6,
+                radioButtons(
+                    inputId = "xAxisGC",
+                    label = "Flip coordinates",
+                    choices = list("Yes", "No"),
+                    selected = "No",
+                    inline = TRUE
+                )
+            ),
+            column(
+                6,
                 sliderInput(
                     "angleGC", "Angle of the X-axis label",
                     min = 0,
                     max = 180,
                     step = 1,
-                    value = 90,
+                    value = 60,
                     width = 250
                 )
             ),
+            hr(),
             column(
                 12,
-                checkboxInput(
-                    "showPValue",
-                    strong("Show P-Values"),
-                    value = TRUE,
-                    width = 250
-                )
+                HTML("<p><span style=\"color: #ff0000;\"><strong><em>Names 
+                     of in-group and out-group taxa:</em></strong></span></p>")
             ),
             column(
-                12,
-                popify(
-                    checkboxInput(
-                        "highlightSignificant",
-                        strong("Highlight significant plots"),
-                        value = TRUE,
-                        width = 250
-                    ),
-                    "",
-                    "If both variables are selected the significant plot
-                    is colored"
-                )
+                6,
+                textInput("inGroupName",
+                          NULL,
+                          value = "In-group",
+                          width = "100%",
+                          placeholder = "Name of in-group taxa")
             ),
+            column(
+                6,
+                textInput("outGroupName",
+                          NULL,
+                          value = "Out-group",
+                          width = "100%",
+                          placeholder = "Name of in-group taxa")
+            ),
+            
 
             br(),
             hr(),
@@ -1609,11 +1659,44 @@ shinyUI(
 
             selectTaxonRankUI("selectTaxonRankGC"),
             checkboxInput(
-                "applyTaxaGC",
+                "applyTaxonGC",
                 strong("Apply",
                        style = "color:red"),
                 value = FALSE
             )
+        ),
+        
+        # * popup for input in-group and out-group on Group comparison ---------
+        bsModal(
+            "uploadGCBs",
+            "Upload files for group comparison",
+            "uploadGC",
+            size = "large",
+            h4(strong("Sequence(s) that need to be compared")),
+            HTML("<p><em>Please use the same sequence IDs as being shown in the
+                 phylogenetic profiles!</em></p>"),
+            fileInput("gcFile", NULL),
+            hr(),
+            
+            h4(strong("In-group and out-group taxa")),
+            HTML("<p><em>Please upload an <strong>tab-delimited ID list</strong>
+                 of in-group and out-group taxa. The ID must follow the format
+                 \"<span style=\"text-decoration: underline;\">
+                 <strong>ncbi12345</strong></span>\".
+                 Example:</em></p>
+                     <p><code>
+                     ncbi12345 &nbsp; &nbsp;in-group</code></p>
+                     <p><code>ncbi24242 &nbsp; &nbsp;in-group</code></p>
+                     <p><code>ncbi33333 &nbsp; &nbsp;out-group
+                 </code></p>"),
+            
+            fileInput("taxonGroupGC", NULL),
+            conditionalPanel(
+                condition = "output.checkTaxonGroupGC == false",
+                h5(strong("Invalid taxa were found:")),
+                dataTableOutput("invalidTaxonGroupGC")
+            )
+            
         ),
 
         # POINT INFO BOX =======================================================

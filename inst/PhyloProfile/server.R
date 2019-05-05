@@ -1401,6 +1401,7 @@ shinyServer(function(input, output, session) {
 
     # * parse domain info into data frame --------------------------------------
     getDomainInformation <- reactive({
+        if (v$doPlot == FALSE) return()
         if (input$demoData == "none") {
             filein <- input$mainInput
             inputType <- checkInputValidity(filein$datapath)
@@ -1411,7 +1412,6 @@ shinyServer(function(input, output, session) {
         if (inputType == "oma") {
             domainDf <- getAllDomainsOma(finalOmaDf())
         } else {
-            message("Getting the domains...")
             mainInput <- getMainInput()
 
             if (inputType == "demo") {
@@ -1872,7 +1872,7 @@ shinyServer(function(input, output, session) {
         }
     })
 
-    # * render popup for selecting taxon rank and return list of subset taxa ---
+    # * render popup for selecting rank and return list of subset taxa ---------
     cusTaxaName <- callModule(
         selectTaxonRank,
         "selectTaxonRank",
@@ -2863,186 +2863,24 @@ shinyServer(function(input, output, session) {
                         content = desc, append = FALSE)
         }
     })
-
-    # ** list of all available genes -------------------------------------------
-    output$listGenesGC <- renderUI({
-        filein <- input$mainInput
-
-        fileGC <- input$gcFile
-        if (input$demoData == "lca-micros" | input$demoData == "ampk-tor") {
-            filein <- 1
-        }
-
-        if (v$doPlot == FALSE) {
-            return(selectInput(
-                "listSelectedGenesGC", "Select sequence(s):", "none"
-            ))
-        }
-
-        if (is.null(filein) & is.null(fileGC)) {
-            return(selectInput(
-                "listSelectedGenesGC", "Select sequence(s):", "none"
-            ))
-        } else {
-            # full list
-            data <- as.data.frame(getDataFiltered())
-            data$geneID <- as.factor(data$geneID)
-            outAll <- as.list(levels(data$geneID))
-            outAll <- append("all", outAll)
-
-            if (is.null(fileGC)) {
-                selectInput("listSelectedGenesGC", "Select sequence(s):",
-                            outAll,
-                            selected = outAll[1],
-                            multiple = TRUE,
-                            selectize = FALSE)
-            } else {
-                listGC <- read.table(file = fileGC$datapath, header = FALSE)
-                listGC$V1 <- as.factor(listGC$V1)
-                out <- as.list(levels(listGC$V1))
-                selectInput("listSelectedGenesGC", "Select sequence(s):",
-                            out,
-                            selected = NULL,
-                            multiple = FALSE,
-                            selectize = FALSE)
-            }
-        }
-    })
-
-    # ** popup for selecting taxon rank and return list of belonging taxa ------
-    gcTaxaName <- callModule(
-        selectTaxonRank,
-        "selectTaxonRankGC",
-        rankSelect = reactive(input$rankSelect),
-        inputTaxonID = inputTaxonID
-    )
-
-    # ** list of available taxa (for selecting as inGroup) --------------------
-    output$taxaListGC <- renderUI({
-        filein <- input$mainInput
-        if (input$demoData == "lca-micros" | input$demoData == "ampk-tor") {
-            filein <- 1
-        }
-        if (is.null(filein)) {
-            return(selectInput("inTaxa", "Select inGroup taxa:", "none"))
-        }
-        if (v$doPlot == FALSE) {
-            return(selectInput("inTaxa", "Select inGroup taxa:", "none"))
-        } else {
-            choice <- inputTaxonName()
-            choice$fullName <- as.factor(choice$fullName)
-
-            out <- as.list(levels(choice$fullName))
-
-            #' when the taxonomy rank was changed ------------------------------
-            if (input$applyTaxaGC == TRUE) {
-                out <- gcTaxaName()
-                selectInput("selectedInGroupGC", "Select inGroup taxa:",
-                            out,
-                            selected = out,
-                            multiple = TRUE,
-                            selectize = FALSE)
-            }
-            #' when the taxonomy is the same as the initially chosen one -------
-            else {
-                #' check for the rank of the rank in the input
-                ranks <- getTaxonomyRanks()
-                pos <- which(ranks == input$rankSelect) # position in the list
-                higherRank <- ranks[pos + 1] # take the next higher rank
-                higherRankName <- as.character(higherRank[1])
-
-                nameList <- getNameList() # get the taxon names
-                dt <- getTaxonomyMatrix(FALSE, NULL) # get the taxa
-
-                #' get the info for the reference protein from the namelist
-                reference <- subset(
-                    nameList, nameList$fullName == input$inSelect
-                )
-
-                #' get the id for every rank for the reference protein
-                rankName <- input$rankSelect
-                referenceDt <- dt[dt[, rankName] == reference$ncbiID, ]
-
-                #' save the next higher rank
-                referenceHigherRank <- referenceDt[higherRankName]
-                referenceHigherRank <-
-                    referenceHigherRank[!duplicated(referenceHigherRank), ]
-
-                #' get all the taxa with the same id in the next higher rank
-                selectedTaxaDt <-
-                    subset(
-                        dt, dt[, higherRankName] %in% referenceHigherRank
-                    )
-                selectedTaxaDt <-
-                    selectedTaxaDt[!duplicated(selectedTaxaDt[rankName]), ]
-
-                #' get list with all ids with referenceHigherRank as parent
-                selectedTaxaIDs <- selectedTaxaDt[rankName]
-                if (length(selectedTaxaIDs[[1]]) >= 1) {
-                    selectedTaxaIDs <- selectedTaxaIDs[[1]]
-                }
-
-                selectedTaxa <- subset(nameList, nameList$rank == rankName)
-                selectedTaxa <-
-                    subset(
-                        selectedTaxa,
-                        selectedTaxa$ncbiID %in% selectedTaxaIDs
-                    )
-
-                defaultSelect <- selectedTaxa$fullName
-
-                selectInput("selectedInGroupGC", "Select inGroup taxa:",
-                            out,
-                            selected = defaultSelect,
-                            multiple = TRUE,
-                            selectize = FALSE)
-            }
-        }
-    })
-
-    # ** buttons to choose the variable ----------------------------------------
-    output$variableButtonGC <- renderUI({
-        radioButtons(
-            inputId = "varNameGC",
-            label = "Select variable(s) to compare:",
-            choices = list(input$var1ID, input$var2ID, "Both"),
-            selected = input$var1ID,
-            inline = FALSE
-        )
-    })
-
-    # ** slider to set significance level --------------------------------------
-    output$significance.ui <- renderUI({
-        msg <- paste0(
-            "P-value cut-off of the statistic test"
-        )
-        popify(
-            sliderInput(
-                "significance",
-                paste("Significance level:"),
-                min = 0,
-                max = 1,
-                step = 0.005,
-                value = c(0.05),
-                width = 200
-            ),
-            "",
-            msg
-        )
-    })
-
-    # ** reset plots config ----------------------------------------------------
+    
+    # ** reset configuration windows for GC plot config ------------------------
     observeEvent(input$resetConfigGC, {
         shinyjs::reset("xSizeGC")
         shinyjs::reset("ySizeGC")
-        shinyjs::reset("angleGC")
+        shinyjs::reset("titleSizeGC")
         shinyjs::reset("legendSizeGC")
+        shinyjs::reset("widthVarGC")
+        shinyjs::reset("heightVarGC")
+        shinyjs::reset("legendGC")
+        shinyjs::reset("widthFeatureGC")
+        shinyjs::reset("heightFeatureGC")
     })
-
+    
     observeEvent(input$applyConfigGC, {
         toggleModal(session, "gcPlotConfigBs", toggle = "close")
     })
-
+    
     # ** check if genes are added anywhere else to the customized profile ------
     observe({
         if (input$addGeneAgeCustomProfile == TRUE |
@@ -3053,52 +2891,319 @@ shinyServer(function(input, output, session) {
             shinyjs::enable("addGCGenesCustomProfile")
         }
     })
-
+    
     output$addGCCustomProfileCheck <- renderUI({
         if (input$addGeneAgeCustomProfile == TRUE |
             input$addCoreGeneCustomProfile == TRUE |
             input$addClusterCustomProfile == TRUE) {
-            HTML('<p><em>(Uncheck "Add to Customized profile" check box in
-           <strong>Gene age estimation</strong> or
-           <strong>Profile clustering</strong> or
-           <strong>Core genes finding</strong>&nbsp;to enable this function)
-           </em></p>')
+            HTML(
+                '<p><em>(Uncheck "Add to Customized profile" check box in
+                 <strong>Gene age estimation</strong> or
+                <strong>Profile clustering</strong> or
+                <strong>Core genes finding</strong>
+                &nbsp;to enable this function)</em></p>'
+            )
+        }
+    })
+    
+    # ** render list of variables ----------------------------------------------
+    output$variableGC <- renderUI({
+        if (input$var1ID == "") 
+            variableList <- list("none" = "none")
+        else if (input$var2ID == "") 
+            variableList <- list("1st Variable" = "var1")
+        else 
+            variableList <- list("1st Variable" = "var1", "2nd Variable" = "var2", "Both" = "both")
+        selectInput(
+            inputId = "varNameGC",
+            label = "Variable to compare:",
+            choices = variableList,
+            selected = "var1"
+        )
+    })
+    
+    # ** render list of all sequence IDs (same as customized profile) ----------
+    output$listGenesGC <- renderUI({
+        filein <- input$mainInput
+        fileGC <- input$gcFile
+        
+        if (input$demoData == "lca-micros" | input$demoData == "ampk-tor") {
+            filein <- 1
+        }
+        
+        if (v$doPlot == FALSE) {
+            return(selectInput("selectedGeneGC", "Sequence(s) of interest:", "none"))
+        } else {
+            # full list
+            data <- as.data.frame(getDataFiltered())
+            data$geneID <- as.character(data$geneID)
+            data$geneID <- as.factor(data$geneID)
+            outAll <- as.list(levels(data$geneID))
+            outAll <- append("all", outAll)
+            
+            if (is.null(fileGC)) {
+                selectInput("selectedGeneGC", "Sequence(s) of interest:",
+                            outAll,
+                            selected = outAll[1],
+                            multiple = TRUE,
+                            selectize = FALSE)
+            } else {
+                listGC <- read.table(file = fileGC$datapath, header = FALSE)
+                out <- as.list(levels(listGC$V1))
+                selectInput("selectedGeneGC", "Sequence(s) of interest:",
+                            out,
+                            selected = NULL,
+                            multiple = FALSE,
+                            selectize = FALSE)
+            }
+        }
+    })
+    
+    # ** render popup for selecting rank and return list of belonging taxa -----
+    # ** (same as core gene identification)
+    gcTaxaName <- callModule(
+        selectTaxonRank,
+        "selectTaxonRankGC",
+        rankSelect = reactive(input$rankSelect),
+        inputTaxonID = inputTaxonID
+    )
+    
+    # ** check the validity of input in-group/out-group taxa -------------------
+    inputTaxonGroupGC <- reactive({
+        if (is.null(input$taxonGroupGC)) return()
+        taxonGroupGCin <- input$taxonGroupGC
+        uploadTaxonGC <- read.table(
+            file = taxonGroupGCin$datapath,
+            sep = "\t",
+            header = FALSE,
+            stringsAsFactors = FALSE
+        )
+        colnames(uploadTaxonGC) <- c("ncbiID", "type")
+        return(uploadTaxonGC)
+    })
+
+    invalidTaxonGroupGC <- reactive({
+        uploadTaxonGC <- inputTaxonGroupGC()
+        if (is.null(uploadTaxonGC)) return()
+        # compare with input taxa IDs
+        invalidID <- setdiff(uploadTaxonGC$ncbiID, inputTaxonID())
+        if (length(invalidID) > 0)
+            return(uploadTaxonGC[uploadTaxonGC$ncbiID %in% invalidID,])
+    })
+
+    output$checkTaxonGroupGC <- reactive({
+        if (is.null(invalidTaxonGroupGC())) {
+            return(TRUE)
+        } else {
+            return(FALSE)
+        }
+    })
+    outputOptions(output, "checkTaxonGroupGC", suspendWhenHidden = FALSE)
+
+    output$invalidTaxonGroupGC <- renderDataTable({
+        if (is.null(invalidTaxonGroupGC())) return()
+        else {
+            return(invalidTaxonGroupGC())
+        }
+    })
+
+    # ** render list of taxa (and default in-group taxa are selected) ----------
+    output$taxaListGC <- renderUI({
+        filein <- input$mainInput
+        if (input$demoData == "lca-micros" | input$demoData == "ampk-tor") {
+            filein <- 1
+        }
+        if (is.null(filein)) {
+            return(
+                selectInput("selectedInGroupGC", "In-group taxa:", "none")
+            )
+        }
+        if (v$doPlot == FALSE) {
+            return(
+                selectInput("selectedInGroupGC", "In-group taxa:", "none")
+            )
+        } else {
+            if (is.null(input$taxonGroupGC)) {
+                choice <- inputTaxonName()
+                choice$fullName <- as.factor(choice$fullName)
+                
+                out <- as.list(levels(choice$fullName))
+                
+                #' when the taxonomy rank was changed ------------------------------
+                if (input$applyTaxonGC == TRUE) {
+                    out <- gcTaxaName()
+                    selectInput("selectedInGroupGC", "In-group taxa:",
+                                out,
+                                selected = out,
+                                multiple = TRUE,
+                                selectize = FALSE)
+                }
+                #' when the taxonomy is the same as the initially chosen one -------
+                else {
+                    #' check for the rank of the rank in the input
+                    ranks <- getTaxonomyRanks()
+                    pos <- which(ranks == input$rankSelect) # position in the list
+                    higherRank <- ranks[pos + 1] # take the next higher rank
+                    higherRankName <- as.character(higherRank[1])
+                    
+                    nameList <- getNameList() # get the taxon names
+                    dt <- getTaxonomyMatrix(FALSE, NULL) # get the taxa
+                    
+                    #' get the info for the reference protein from the namelist
+                    reference <- subset(
+                        nameList, nameList$fullName == input$inSelect
+                    )
+                    
+                    #' get the id for every rank for the reference protein
+                    rankName <- input$rankSelect
+                    referenceDt <- dt[dt[, rankName] == reference$ncbiID, ]
+                    
+                    #' save the next higher rank
+                    referenceHigherRank <- referenceDt[higherRankName]
+                    referenceHigherRank <-
+                        referenceHigherRank[!duplicated(referenceHigherRank), ]
+                    
+                    #' get all the taxa with the same id in the next higher rank
+                    selectedTaxaDt <-
+                        subset(
+                            dt, dt[, higherRankName] %in% referenceHigherRank
+                        )
+                    selectedTaxaDt <-
+                        selectedTaxaDt[!duplicated(selectedTaxaDt[rankName]), ]
+                    
+                    #' get list with all ids with referenceHigherRank as parent
+                    selectedTaxaIDs <- selectedTaxaDt[rankName]
+                    if (length(selectedTaxaIDs[[1]]) >= 1) {
+                        selectedTaxaIDs <- selectedTaxaIDs[[1]]
+                    }
+                    
+                    selectedTaxa <- subset(nameList, nameList$rank == rankName)
+                    selectedTaxa <-
+                        subset(
+                            selectedTaxa,
+                            selectedTaxa$ncbiID %in% selectedTaxaIDs
+                        )
+                    
+                    defaultSelect <- selectedTaxa$fullName
+                    selectInput("selectedInGroupGC", "Select inGroup taxa:",
+                                out,
+                                selected = defaultSelect,
+                                multiple = TRUE,
+                                selectize = FALSE)
+                }
+            } else {
+                if (is.null(invalidTaxonGroupGC())) {
+                    return(
+                        selectInput("selectedInGroupGC", "In-group taxa:", "From file")
+                    )
+                } else {
+                    return(
+                        selectInput("selectedInGroupGC", "In-group taxa:", "none")
+                    )
+                }
+            }
+        }
+    })
+
+    # ** get the ID list of in-group taxa --------------------------------------
+    getInGroup <- reactive({
+        if (is.null(input$selectedInGroupGC)) return()
+        
+        # list of selected in-group taxa names and working rank
+        selectedTaxa <- input$selectedInGroupGC
+        selectedRank <- input$rankSelect
+
+        if (selectedTaxa[1] == "none") return()
+        if (selectedTaxa[1] == "From file") {
+            taxonGroupGC <- inputTaxonGroupGC()
+            return(taxonGroupGC$ncbiID[taxonGroupGC$type == "in-group"])
+        } else {
+            # get IDs for selected in-group taxa
+            nameList <- getNameList()
+            selectedTaxaID <- nameList$ncbiID[
+                nameList$fullName %in% selectedTaxa & nameList$rank == selectedRank
+                ]
+            
+            # get in-group IDs from the raw input (regardless to the working rank)
+            taxMatrix <- getTaxonomyMatrix(TRUE, inputTaxonID())
+            
+            inGroup <- as.character(
+                taxMatrix$abbrName[taxMatrix[, selectedRank] %in% selectedTaxaID]
+            )
+            
+            if (length(inGroup) == 0) return()
+            else {
+                if (input$useCommonAncestor == TRUE) {
+                    inGroupTMP <- getCommonAncestor(inputTaxonID(), inGroup)
+                    inGroup <- inGroupTMP[[3]]$abbrName
+                }
+                return(as.character(inGroup))
+            }
         }
     })
 
     # ** parameters for the plots in Group Comparison --------------------------
-    getParameterInputGC <- reactive({
+    plotParametersGC <- reactive({
+        input$updateGC # for trigger changes
         inputData <- list(
-            "showPValue" = input$showPValue,
-            "highlightSignificant" = input$highlightSignificant,
-            "significance" = input$significance,
-            "var1ID" = input$var1ID,
-            "var2ID" = input$var2ID,
-            "xSizeGC" = input$xSizeGC,
-            "ySizeGC" = input$ySizeGC,
-            "interestingFeatures" = input$interestingFeatures,
-            "angleGC" = input$angleGC,
-            "legendGC" = input$legendGC,
-            "legendSizeGC" = input$legendSizeGC,
-            "pValuesSize" = input$pValuesSizeGC
+            "xSize" = isolate(input$xSizeGC),
+            "ySize" = isolate(input$ySizeGC),
+            "angle" = isolate(input$angleGC),
+            "legendPosition" = isolate(input$legendGC),
+            "legendSize" = isolate(input$legendSizeGC),
+            "titleSize" = isolate(input$titleSizeGC),
+            "flipPlot" = isolate(input$xAxisGC),
+            "mValue" = isolate(input$mValueGC),
+            "widthVar" = isolate(input$widthVarGC),
+            "heightVar" = isolate(input$heightVarGC),
+            "widthFeature" = isolate(input$widthFeatureGC),
+            "heightFeature" = isolate(input$heightFeatureGC),
+            "inGroupName" = isolate(input$inGroupName),
+            "outGroupName" = isolate(input$outGroupName)
         )
+    })
+    
+    # ** data for group comparison ---------------------------------------------
+    groupComparisonData <- reactive({
+        if (is.null(getDataFiltered())) return()
+        if (is.null(input$taxonGroupGC)) {
+            return(getDataFiltered())
+        } else {
+            taxonGroupGC <- inputTaxonGroupGC()
+            dataFiltered <- getDataFiltered()
+            return(dataFiltered[dataFiltered$ncbiID %in% taxonGroupGC$ncbiID,])
+        }
     })
 
     # ** render plots for group comparison -------------------------------------
-    geneListGC <- callModule(
+    # geneListGC <- callModule(
+    #     groupComparison, "groupComparison",
+    #     selectedInGroup = reactive(input$selectedInGroupGC),
+    #     selectedGenesList = reactive(input$selectedGeneGC),
+    #     mainRank = reactive(input$rankSelect),
+    #     selectedVariable = reactive(input$varNameGC),
+    #     useCommonAncestor = reactive(input$useCommonAncestor),
+    #     referenceTaxon = reactive(input$inSelect),
+    #     ncbiIDList = inputTaxonID,
+    #     filteredData = getDataFiltered,
+    #     # rightFormatFeatures = reactive(input$rightFormatFeatures),
+    #     domainInformation = getDomainInformation,
+    #     plot = reactive(input$plotGC),
+    #     parameter = getParameterInputGC,
+    #     selectedPoint = reactive(input$mValueGC)
+    # )
+    
+    candidateGenes <- callModule(
         groupComparison, "groupComparison",
-        selectedInGroup = reactive(input$selectedInGroupGC),
-        selectedGenesList = reactive(input$listSelectedGenesGC),
-        mainRank = reactive(input$rankSelect),
-        selectedVariable = reactive(input$varNameGC),
-        useCommonAncestor = reactive(input$useCommonAncestor),
-        referenceTaxon = reactive(input$inSelect),
-        ncbiIDList = inputTaxonID,
-        filteredData = getDataFiltered,
-        rightFormatFeatures = reactive(input$rightFormatFeatures),
-        domainInformation = getDomainInformation,
-        plot = reactive(input$plotGC),
-        parameter = getParameterInputGC,
-        selectedPoint = reactive(input$showPointGC)
+        filteredDf = groupComparisonData,
+        inGroup = getInGroup,
+        variable = reactive(input$varNameGC),
+        varName = reactive(c(input$var1ID, input$var2ID)),
+        compareType = reactive(input$compareType),
+        significanceLevel = reactive(input$significance),
+        plotParameters = plotParametersGC,
+        domainDf = getDomainInformation,
+        doCompare = reactive(input$doCompare),
+        doUpdate = reactive(input$updateGC)
     )
 })

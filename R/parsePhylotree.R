@@ -75,7 +75,7 @@ checkNewick <- function(tree, inputTaxonID = NULL){
 #' # create taxonomy tree rooted by ncbi10090
 #' createRootedTree(distDf, "ncbi10090")
 
-createRootedTree <- function(df, rootTaxon){
+createRootedTree <- function(df, rootTaxon = NULL){
     if (missing(df)) return("No taxonomy matrix given!")
     # calculate distance matrix
     taxdis <- tryCatch(taxa2dist(df), error = function(e) e)

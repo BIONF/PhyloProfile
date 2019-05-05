@@ -2,48 +2,32 @@
 % Please edit documentation in R/compareTaxaGroups.R
 \name{getCommonAncestor}
 \alias{getCommonAncestor}
-\title{Get common ancestor for a selected taxa}
+\title{Get all taxa that share a common ancestor}
 \usage{
-getCommonAncestor(inGroup, rank, nameList, taxonomyMatrix,
-    ncbiIDList)
+getCommonAncestor(inputTaxa = NULL, inGroup = NULL)
 }
 \arguments{
-\item{inGroup}{list of selected taxa}
+\item{inputTaxa}{ID list of all input taxa (e.g. "ncbi12345")}
 
-\item{rank}{taxonomy rank of input taxa (e.g. "species", "family", ...)}
-
-\item{nameList}{list contains "ncbiID", "fullName", "rank", "parentID" of all
-pre-calculated taxa (from /PhyloProfile/data/taxonNamesReduced.txt)}
-
-\item{taxonomyMatrix}{pre-calculated taxonomy matrix (see 
-/PhyloProfile/data/taxonomyMatrix.txt)}
-
-\item{ncbiIDList}{list of input taxon IDs}
+\item{inGroup}{ID list of selected taxa used for identify the common ancestor
+(e.g.: "ncbi55555")}
 }
 \value{
-common anchestor
+A list containing the taxonomy rank and name of the common ancestor,
+together with a dataframe storing the full taxonomy info of all taxa that
+share that corresponding common ancestor.
 }
 \description{
-Get common ancestor for a selected taxa
+Identify the common ancestor for a selected taxa and return a 
+list of all taxa that have that common ancestor from an large input taxa set.
 }
 \examples{
-inGroup <- c("Aeropyrum pernix", "Agrobacterium fabrum")
-rank <- "species"
-nameListFile <- system.file(
-    "extdata", "data/taxonNamesFull.txt",
-    package = "PhyloProfile", mustWork = TRUE
-)
-nameList <- data.table::fread(nameListFile)
-taxonomyMatrix <- getTaxonomyMatrix(FALSE, NULL)
-ncbiIDList <- c(56636, 1176649)
-getCommonAncestor(
-    inGroup,
-    rank,
-    nameList,
-    taxonomyMatrix,
-    ncbiIDList
-)
+inputTaxa <- c("ncbi103449", "ncbi1288291", "ncbi278021", "ncbi27973",
+    "ncbi31281", "ncbi40302", "ncbi586133", "ncbi6035", "ncbi70536",
+    "ncbi876142", "ncbi993615")
+inGroup <-  c("ncbi27973", "ncbi6035")
+getCommonAncestor(inputTaxa, inGroup)
 }
 \author{
-Carla Mölbert (carla.moelbert@gmx.de)
+Vinh Tran (tran@bio.uni-frankfurt.de)
 }

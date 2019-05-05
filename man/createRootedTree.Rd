@@ -4,7 +4,7 @@
 \alias{createRootedTree}
 \title{Create rooted tree from a taxonomy matrix}
 \usage{
-createRootedTree(df, rootTaxon)
+createRootedTree(df, rootTaxon = NULL)
 }
 \arguments{
 \item{df}{data frame contains taxonomy matrix used for generating tree 

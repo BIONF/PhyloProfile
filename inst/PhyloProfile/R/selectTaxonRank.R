@@ -81,7 +81,6 @@ selectTaxonRank <- function(input, output, session, rankSelect, inputTaxonID) {
     # get list of all taxa of the current taxonomy rank (from input$rankSelect)
     # based on selected supertaxon from input$taxaSelectCus
     cusTaxaName <- reactive({
-
         taxaSelectCus <- input$taxaSelectCus
         rankName <- input$rankSelectCus
         if (taxaSelectCus == "") return()
@@ -103,9 +102,7 @@ selectTaxonRank <- function(input, output, session, rankSelect, inputTaxonID) {
         cusTaxaName <-
             taxaList$fullName[taxaList$rank %in% c(mainRankName, "norank")
                                & taxaList$ncbiID %in% customizedtaxaID]
-
         return(cusTaxaName)
     })
-
     return(cusTaxaName)
 }
