@@ -183,7 +183,13 @@ getInputTaxaName <- function(rankName, taxonIDs = NULL){
 #' @importFrom utils download.file
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @examples
-#' getNameList()
+#' inputTaxonIDs <- c("103449", "1288291", "278021", "27973", "31281", "40302", 
+#' "586133", "6035", "70536", "876142", "993615")
+#' rank <- "species"
+#' higherRank <- "genus"
+#' higherID <- 6033
+#' higherName <- "Encephalitozoon"
+#' getSelectedTaxonNames(inputTaxonIDs, rank, higherRank, higherID, higherName)
 
 getSelectedTaxonNames <- function(
     inputTaxonIDs = NULL, rank = NULL, 
@@ -204,22 +210,20 @@ getSelectedTaxonNames <- function(
             taxDf$fullName[taxDf$abbrName %in% paste0("ncbi", inputTaxonIDs)]
         ))
     } else {
-        taxaList <- getNameList()
-        if (!is.null(higherName)) {
+        if (!is.null(higherName) & is.null(higherID)) {
+            taxaList <- getNameList()
             superID <- taxaList$ncbiID[
                 taxaList$fullName == higherName
-                & taxaList$rank %in% c(rankName, "norank")
-                ]
+                & taxaList$rank %in% c(higherRank, "norank")]
             customizedtaxaID <- levels(
-                as.factor(taxDf[rank][taxDf[rankName] == superID, ])
+                as.factor(taxDf[rank][taxDf[higherRank] == superID, ])
             )
             return(
                 as.character(taxaList$fullName[
                     taxaList$rank %in% c(rank, "norank")
                     & taxaList$ncbiID %in% customizedtaxaID])
             )
-        }
-        if (!is.null(higherID)) {
+        } else if (!is.null(higherID)) {
             return(as.character(taxDf$fullName[taxDf[,higherRank] == higherID]))
         }
     }

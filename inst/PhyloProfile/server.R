@@ -2913,7 +2913,9 @@ shinyServer(function(input, output, session) {
         else if (input$var2ID == "") 
             variableList <- list("1st Variable" = "var1")
         else 
-            variableList <- list("1st Variable" = "var1", "2nd Variable" = "var2", "Both" = "both")
+            variableList <- list(
+                "1st Variable" = "var1", "2nd Variable" = "var2"
+            )
         selectInput(
             inputId = "varNameGC",
             label = "Variable to compare:",
@@ -2932,7 +2934,9 @@ shinyServer(function(input, output, session) {
         }
         
         if (v$doPlot == FALSE) {
-            return(selectInput("selectedGeneGC", "Sequence(s) of interest:", "none"))
+            return(selectInput(
+                "selectedGeneGC", "Sequence(s) of interest:", "none"
+            ))
         } else {
             # full list
             data <- as.data.frame(getDataFiltered())
@@ -3008,6 +3012,7 @@ shinyServer(function(input, output, session) {
     })
 
     # ** render list of taxa (and default in-group taxa are selected) ----------
+    # ======= NOTE REPLACE THIS BY getSelectedTaxonNames =======================
     output$taxaListGC <- renderUI({
         filein <- input$mainInput
         if (input$demoData == "lca-micros" | input$demoData == "ampk-tor") {
@@ -3029,7 +3034,7 @@ shinyServer(function(input, output, session) {
                 
                 out <- as.list(levels(choice$fullName))
                 
-                #' when the taxonomy rank was changed ------------------------------
+                #' when the taxonomy rank was changed --------------------------
                 if (input$applyTaxonGC == TRUE) {
                     out <- gcTaxaName()
                     selectInput("selectedInGroupGC", "In-group taxa:",
@@ -3038,11 +3043,11 @@ shinyServer(function(input, output, session) {
                                 multiple = TRUE,
                                 selectize = FALSE)
                 }
-                #' when the taxonomy is the same as the initially chosen one -------
+                #' when the taxonomy is the same as the initially chosen one ---
                 else {
                     #' check for the rank of the rank in the input
                     ranks <- getTaxonomyRanks()
-                    pos <- which(ranks == input$rankSelect) # position in the list
+                    pos <- which(ranks == input$rankSelect) # pos in the list
                     higherRank <- ranks[pos + 1] # take the next higher rank
                     higherRankName <- as.character(higherRank[1])
                     
@@ -3094,11 +3099,15 @@ shinyServer(function(input, output, session) {
             } else {
                 if (is.null(invalidTaxonGroupGC())) {
                     return(
-                        selectInput("selectedInGroupGC", "In-group taxa:", "From file")
+                        selectInput(
+                            "selectedInGroupGC", "In-group taxa:", "From file"
+                        )
                     )
                 } else {
                     return(
-                        selectInput("selectedInGroupGC", "In-group taxa:", "none")
+                        selectInput(
+                            "selectedInGroupGC", "In-group taxa:", "none"
+                        )
                     )
                 }
             }
@@ -3121,14 +3130,15 @@ shinyServer(function(input, output, session) {
             # get IDs for selected in-group taxa
             nameList <- getNameList()
             selectedTaxaID <- nameList$ncbiID[
-                nameList$fullName %in% selectedTaxa & nameList$rank == selectedRank
-                ]
+                nameList$fullName %in% selectedTaxa 
+                & nameList$rank == selectedRank]
             
-            # get in-group IDs from the raw input (regardless to the working rank)
+            # get in-group IDs from raw input (regardless to the working rank)
             taxMatrix <- getTaxonomyMatrix(TRUE, inputTaxonID())
             
             inGroup <- as.character(
-                taxMatrix$abbrName[taxMatrix[, selectedRank] %in% selectedTaxaID]
+                taxMatrix$abbrName[
+                    taxMatrix[, selectedRank] %in% selectedTaxaID]
             )
             
             if (length(inGroup) == 0) return()
@@ -3176,23 +3186,6 @@ shinyServer(function(input, output, session) {
     })
 
     # ** render plots for group comparison -------------------------------------
-    # geneListGC <- callModule(
-    #     groupComparison, "groupComparison",
-    #     selectedInGroup = reactive(input$selectedInGroupGC),
-    #     selectedGenesList = reactive(input$selectedGeneGC),
-    #     mainRank = reactive(input$rankSelect),
-    #     selectedVariable = reactive(input$varNameGC),
-    #     useCommonAncestor = reactive(input$useCommonAncestor),
-    #     referenceTaxon = reactive(input$inSelect),
-    #     ncbiIDList = inputTaxonID,
-    #     filteredData = getDataFiltered,
-    #     # rightFormatFeatures = reactive(input$rightFormatFeatures),
-    #     domainInformation = getDomainInformation,
-    #     plot = reactive(input$plotGC),
-    #     parameter = getParameterInputGC,
-    #     selectedPoint = reactive(input$mValueGC)
-    # )
-    
     candidateGenes <- callModule(
         groupComparison, "groupComparison",
         filteredDf = groupComparisonData,

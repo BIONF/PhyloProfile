@@ -1,19 +1,22 @@
 #' Group Comparison
-#' @param filteredDf
-#' @param inGroup
-#' @param variable
-#' @param varName
-#' @param compareType
-#' @param significanceLevel
-#' @param plotParameters (mValueGC)
-#' @param domainDf
-#' @param doCompare input$doCompare
-#' @param doUpdate input$updateGC
-#' @return list of candidate genes
+#' @param filteredDf phylogenetic profile data after filtering 
+#' @param inGroup list of taxon IDs for the in-group taxa
+#' @param variable selected variable for calculating the differences betwee 
+#' in- and out-group ("var1" or "var2")
+#' @param varName names of the additional variables
+#' @param compareType type of comparison (statistical tests or mean comparison)
+#' @param significanceLevel confidence level for stat tests or delta mean cutoff
+#' @param plotParameters plot parameters including xSize, ySize, angle (x-axis 
+#' angle), legendPosition and legendSize, titleSize, flipPlot, mValue (mean or 
+#' median point), widthVar and heightVar (width and height for variable 
+#' distribution plot), widthFeature and heightFeature (width and height for 
+#' feature distribution plot), inGroupName and outGroupName.
+#' @param domainDf dataframe of domain architectures
+#' @param doCompare check if Compare button clicked (input$doCompare)
+#' @param doUpdate check if Update button clicked (input$updateGC)
+#' @return list of candidate genes and their p-values (or delta means)
 #' @authors Carla Mölbert {carla.moelbert@gmx.de}, Vinh Tran 
 #' {tran@bio.uni-frankfurt.de}
-
-# source("R/functions.R")
 
 groupComparisonUI <- function(id){
     ns <- NS(id)
@@ -27,13 +30,6 @@ groupComparisonUI <- function(id){
                 "Select gene to show the plots",
                 "right"
             ),
-            # shinycssloaders::withSpinner(uiOutput(ns("featuresOfInterestUI"))),
-            # bsPopover(
-            #     "featuresOfInterestUI",
-            #     "",
-            #     "This function is only useful if the features are
-            #     saved in the right format: featuretype_featurename"
-            # ),
 
             downloadButton(ns("downloadPlots"),"Download plot(s)",
                            class = "butDL"),
@@ -164,9 +160,13 @@ groupComparison <- function (
             match(input$candidateGenes, names(candidateGenes()))
         ]
         if (compareType() == "Statistical tests") {
-            title = paste0(input$candidateGenes, "   p-value = ", round(pValue, 3))
+            title = paste0(
+                input$candidateGenes, "   p-value = ", round(pValue, 3)
+            )
         } else {
-            title <- paste0(input$candidateGenes, "   delta-mean = ", round(pValue, 3))
+            title <- paste0(
+                input$candidateGenes, "   delta-mean = ", round(pValue, 3)
+            )
         }
         
         g <- varDistTaxPlot(plotDf(), c(plotParameters(), title = title))
@@ -188,7 +188,8 @@ groupComparison <- function (
         ns <- session$ns
         if (is.null(input$candidateGenes)) return()
         if (input$candidateGenes[1] == "all") {
-            h3(em("For analyzing all candidate genes, please download them to your computer!"))
+            h3(em("For analyzing all candidate genes, please download them to 
+                  your computer!"))
         }
     })
     

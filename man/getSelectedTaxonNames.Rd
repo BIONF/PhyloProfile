@@ -29,7 +29,13 @@ Get a subset of taxon names from an input list of taxa based on
 a selected supertaxon (identified by its taxonomy rank and supertaxon name).
 }
 \examples{
-getNameList()
+inputTaxonIDs <- c("103449", "1288291", "278021", "27973", "31281", "40302", 
+"586133", "6035", "70536", "876142", "993615")
+rank <- "species"
+higherRank <- "genus"
+higherID <- 6033
+higherName <- "Encephalitozoon"
+getSelectedTaxonNames(inputTaxonIDs, rank, higherRank, higherID, higherName)
 }
 \author{
 Vinh Tran {tran@bio.uni-frankfurt.de}
