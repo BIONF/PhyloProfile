@@ -32,7 +32,7 @@ inputFile <- system.file(
 type <- "file"
 domainDf <- parseDomainInput(gene, inputFile, type)
 inGroup <- c("ncbi876142", "ncbi586133")
-plotDf <- dataFeatureTaxGroup(data, domainDf, inGroup, gene, 15)
+plotDf <- dataFeatureTaxGroup(data, domainDf, inGroup, gene)
 plotParameters <- list(
     "xSize" = 12,
     "ySize" = 12,

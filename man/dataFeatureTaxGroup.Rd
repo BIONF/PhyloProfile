@@ -4,7 +4,7 @@
 \alias{dataFeatureTaxGroup}
 \title{Create data for feature distribution comparison plot}
 \usage{
-dataFeatureTaxGroup(mainDf, domainDf, inGroup, gene, featureThreshold)
+dataFeatureTaxGroup(mainDf, domainDf, inGroup, gene)
 }
 \arguments{
 \item{mainDf}{input phylogenetic profile in long format (see ?mainLongRaw 
@@ -21,21 +21,20 @@ between 2 proteins* (e.g. seed protein vs ortholog) (optional). (see
 
 \item{gene}{ID of gene that need to be plotted the feature distribution 
 comparison between in- and out-group taxa.}
-
-\item{featureThreshold}{cutoff for occurence frequencies of the protein 
-feature instances in each taxon group (in percentage). Default = 0.}
 }
 \value{
 Dataframe containing all feature names, their frequencies (absolute 
-count and percentage) in each taxon group and the corresponding taxa group.
+count and the average instances per protein - IPP) in each taxon group and 
+the corresponding taxa group type (in- or out-group).
 }
 \description{
 Create data for plotting the distribution of the protein domain 
-features between 2 group of taxa for a selected gene.
+features between 2 group of taxa for a selected gene (average number of 
+feature occurrency per protein/ortholog).
 }
 \examples{
 data("mainLongRaw", package="PhyloProfile")
-data <- mainLongRaw
+mainDf <- mainLongRaw
 gene <- "OG_1017"
 inputFile <- system.file(
     "extdata", "domainFiles/OG_1017.domains",
@@ -44,8 +43,7 @@ inputFile <- system.file(
 type <- "file"
 domainDf <- parseDomainInput(gene, inputFile, type)
 inGroup <- c("ncbi876142", "ncbi586133")
-featureThreshold <- 15
-dataFeatureTaxGroup(data, domainDf, inGroup, gene, featureThreshold)
+dataFeatureTaxGroup(mainDf, domainDf, inGroup, gene)
 }
 \seealso{
 \code{\link{createLongMatrix}}, \code{\link{parseDomainInput}}

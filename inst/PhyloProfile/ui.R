@@ -210,7 +210,7 @@ shinyUI(
                                 selected = "protein",
                                 width = 130
                             ),
-                            bsPopover(
+                            shinyBS::bsPopover(
                                 "var1Relation",
                                 "",
                                 "select if variable is the comparison between
@@ -319,7 +319,7 @@ shinyUI(
                             inline = TRUE
                         ),
 
-                        bsPopover(
+                        shinyBS::bsPopover(
                             "orderTaxa", "", "in newick format", "bottom"
                         ),
 
@@ -509,21 +509,21 @@ shinyUI(
                             4, uiOutput("highlightGeneUI")
                         ),
 
-                        bsPopover(
+                        shinyBS::bsPopover(
                             "highlightGeneUI",
                             "",
                             "Select gene to highlight",
                             "bottom"
                         ),
 
-                        bsPopover(
+                        shinyBS::bsPopover(
                             "stIndex",
                             "",
                             "Set start index for sequence range",
                             "bottom"
                         ),
 
-                        bsPopover(
+                        shinyBS::bsPopover(
                             "endIndex",
                             "",
                             "Set end index for sequence range",
@@ -873,7 +873,7 @@ shinyUI(
                                     value = TRUE,
                                     width = NULL
                                 ),
-                                bsPopover(
+                                shinyBS::bsPopover(
                                     "useCommonAncestor",
                                     "",
                                     "All taxa that have the same common ancestor
@@ -887,7 +887,9 @@ shinyUI(
                             column(
                                 3,
                                 uiOutput("listGenesGC"),
-                                h5(strong("Upload sequence(s) / In-group taxa")),
+                                h5(strong(
+                                    "Upload sequence(s) / In-group taxa"
+                                )),
                                 bsButton("uploadGC", "Upload")
                             ),
                             column(
@@ -895,27 +897,27 @@ shinyUI(
                                 uiOutput("variableGC"),
                                 selectInput(
                                     "compareType", "Compare using:",
-                                    choices = c("Statistical tests", "Mean values"),
+                                    choices = c(
+                                        "Statistical tests", "Median values"
+                                    ),
                                     selected = "Statistical tests"
                                 )
                             ),
                             column(
                                 2,
-                                sliderInput(
-                                    "significance",
-                                    paste("Significance level:"),
-                                    min = 0,
-                                    max = 1,
-                                    step = 0.01,
-                                    value = c(0.05),
-                                    width = 300
-                                ),
-                                bsPopover(
-                                    "significance",
+                                popify(
+                                    sliderInput(
+                                        "significance",
+                                        paste("Significance level:"),
+                                        min = 0,
+                                        max = 1,
+                                        step = 0.01,
+                                        value = c(0.05),
+                                        width = 300
+                                    ),
                                     "",
                                     "P-value cut-off of the statistic test, OR
-                                    cut-off of delta means between 2 groups",
-                                    "bottom"
+                                    cut-off of delta means between 2 groups"
                                 ),
                                 checkboxInput(
                                     "addGCGenesCustomProfile",

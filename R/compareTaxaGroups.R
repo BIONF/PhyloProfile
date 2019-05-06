@@ -173,15 +173,15 @@ distributionTest <- function(
     }
 }
 
-#' Compare the mean values of a variable between 2 taxon groups
+#' Compare the median values of a variable between 2 taxon groups
 #' @description Given the phylogenetic profiles that contains up to 2 additional
 #' variables besides the presence/absence information of the orthologous 
-#' proteins. This function will compare the mean scores of those variables 
+#' proteins. This function will compare the median scores of those variables 
 #' between 2 different taxon groups (e.g. parasitic species vs non-parasitic 
 #' species), which are defined as in-group and out-group. In-group is identified
 #' by the user. Out-group contains all taxa in the input phylogenetic profiles
 #' that are not part of the in-group.
-#' @usage compareMeansTaxonGroups(data, inGroup, useCommonAncestor, variable)
+#' @usage compareMedianTaxonGroups(data, inGroup, useCommonAncestor, variable)
 #' @export
 #' @param data input phylogenetic profile in long format (see ?mainLongRaw and 
 #' ?createLongMatrix)
@@ -190,17 +190,18 @@ distributionTest <- function(
 #' common ancestor with the pre-selected in-group as the in-group taxa. 
 #' Default = TRUE.
 #' @param variable name of the variable that need to be compared
-#' @return List of genes that have a difference in the variable's mean scores
-#' between the in-group and out-group taxa and their corresponding delta-mean.
+#' @return List of genes that have a difference in the variable's median scores
+#' between the in-group and out-group taxa and their corresponding delta-median.
 #' @author Vinh Tran (tran@bio.uni-frankfurt.de)
+#' @importFrom stats median
 #' @examples
 #' data("mainLongRaw", package="PhyloProfile")
 #' data <- mainLongRaw
 #' inGroup <- c("ncbi876142", "ncbi586133")
 #' variable <- colnames(data)[4]
-#' compareMeansTaxonGroups(data, inGroup, TRUE, variable)
+#' compareMedianTaxonGroups(data, inGroup, TRUE, variable)
 
-compareMeansTaxonGroups <- function(
+compareMedianTaxonGroups <- function(
     data = NULL, inGroup = NULL, useCommonAncestor = TRUE, variable = NULL
 ) {
     if (is.null(data) | is.null(inGroup) | is.null(variable)) return()
@@ -215,21 +216,21 @@ compareMeansTaxonGroups <- function(
         inGroup <- as.character(commonTaxa[[3]]$abbrName)
     }
     
-    # return delta-mean scores for two taxa groups
+    # return delta-median scores for two taxa groups
     data$geneID <- as.character(data$geneID)
-    deltaMean <- vapply(
+    deltaMedian <- vapply(
         unique(data$geneID),
         function (x) {
             varIn <- data[data$geneID == x & data$ncbiID %in% inGroup, variable]
             varOut <- data[
                 data$geneID == x & !(data$ncbiID %in% inGroup), variable]
             return(
-                abs(mean(varIn[!is.na(varIn)]) - mean(varOut[!is.na(varOut)]))
+                abs(median(varIn[!is.na(varIn)])-median(varOut[!is.na(varOut)]))
             )
         },
         FUN.VALUE = numeric(1)
     )
-    return(sort(unlist(deltaMean)))
+    return(sort(unlist(deltaMedian)))
 }
 
 
@@ -468,8 +469,9 @@ varDistTaxPlot <- function(data, plotParameters) {
 
 #' Create data for feature distribution comparison plot
 #' @description Create data for plotting the distribution of the protein domain 
-#' features between 2 group of taxa for a selected gene.
-#' @usage dataFeatureTaxGroup(mainDf, domainDf, inGroup, gene, featureThreshold)
+#' features between 2 group of taxa for a selected gene (average number of 
+#' feature occurrency per protein/ortholog).
+#' @usage dataFeatureTaxGroup(mainDf, domainDf, inGroup, gene)
 #' @export
 #' @param mainDf input phylogenetic profile in long format (see ?mainLongRaw 
 #' and ?createLongMatrix)
@@ -482,15 +484,14 @@ varDistTaxPlot <- function(data, plotParameters) {
 #' @param inGroup ID list of in-group taxa (e.g. "ncbi1234")
 #' @param gene ID of gene that need to be plotted the feature distribution 
 #' comparison between in- and out-group taxa.
-#' @param featureThreshold cutoff for occurence frequencies of the protein 
-#' feature instances in each taxon group (in percentage). Default = 0.
 #' @return Dataframe containing all feature names, their frequencies (absolute 
-#' count and percentage) in each taxon group and the corresponding taxa group.
+#' count and the average instances per protein - IPP) in each taxon group and 
+#' the corresponding taxa group type (in- or out-group).
 #' @author Vinh Tran (tran@bio.uni-frankfurt.de)
 #' @seealso \code{\link{createLongMatrix}}, \code{\link{parseDomainInput}}
 #' @examples
 #' data("mainLongRaw", package="PhyloProfile")
-#' data <- mainLongRaw
+#' mainDf <- mainLongRaw
 #' gene <- "OG_1017"
 #' inputFile <- system.file(
 #'     "extdata", "domainFiles/OG_1017.domains",
@@ -499,19 +500,18 @@ varDistTaxPlot <- function(data, plotParameters) {
 #' type <- "file"
 #' domainDf <- parseDomainInput(gene, inputFile, type)
 #' inGroup <- c("ncbi876142", "ncbi586133")
-#' featureThreshold <- 15
-#' dataFeatureTaxGroup(data, domainDf, inGroup, gene, featureThreshold)
+#' dataFeatureTaxGroup(mainDf, domainDf, inGroup, gene)
 
 dataFeatureTaxGroup <- function(
     mainDf = NULL,
     domainDf = NULL,
     inGroup = NULL,
-    gene = NULL,
-    featureThreshold = 0
+    gene = NULL
 ) {
     if (is.null(mainDf) | is.null(inGroup) | is.null(gene) | is.null(domainDf)) 
         return()
     
+    # get ncbiIDs for the domain data
     mainDf$orthoID <- gsub("\\|", ":", mainDf$orthoID)
     domainDfSub <- merge(
         domainDf[grep(gene, domainDf$seedID),],
@@ -520,21 +520,44 @@ dataFeatureTaxGroup <- function(
     )
     domainDfSub <- domainDfSub[complete.cases(domainDfSub),]
     
+    # identify in-group and out-group
+    domainDfSub$type[domainDfSub$ncbiID %in% inGroup] <- "In-group"
+    domainDfSub$type[!(domainDfSub$ncbiID %in% inGroup)] <- "Out-group"
+    
+    # count number of orthologs for each taxon group
+    nInGroup <- length(
+        unique(domainDfSub$seedID[domainDfSub$type == "In-group"])
+    )
+    nOutGroup <- length(
+        unique(domainDfSub$seedID[domainDfSub$type == "Out-group"])
+    )
+    
+    # get intances and count the number of intances for each taxon group
     domainIn <- domainDfSub$feature[domainDfSub$ncbiID %in% inGroup]
     domainOut <- domainDfSub$feature[!(domainDfSub$ncbiID %in% inGroup)]
     
     countDomainIn <- data.frame(table(unlist(as.character(domainIn))))
     countDomainIn$type <- "In-group"
-    countDomainIn$percentage <- (countDomainIn$Freq/sum(countDomainIn$Freq))*100
+    countDomainIn$ipp <- countDomainIn$Freq/nInGroup
     
     countDomainOut <- data.frame(table(unlist(as.character(domainOut))))
     countDomainOut$type <- "Out-group"
-    countDomainOut$percentage <- 
-        (countDomainOut$Freq/sum(countDomainOut$Freq))*100
+    countDomainOut$ipp <- countDomainOut$Freq/nOutGroup
     
-    outDf <- rbind(countDomainIn, countDomainOut)
-    colnames(outDf) <- c("Feature", "Count", "Taxon_group", "Percentage")
-    return(outDf[outDf$Percentage >= featureThreshold,])
+    
+    # calculate delta IPP
+    mergedDf <- merge(countDomainIn, countDomainOut, by = "Var1", all = TRUE)
+    mergedDf[is.na(mergedDf)] <- 0
+    mergedDf$dIPPtmp <- mergedDf$ipp.x - mergedDf$ipp.y
+    mergedDf$dIPP <- mergedDf$dIPPtmp / (mergedDf$ipp.x + mergedDf$ipp.y)
+    
+    # return
+    outDf <- merge(
+        rbind(countDomainIn, countDomainOut), mergedDf[, c("Var1", "dIPP")], 
+        by = "Var1", all.x = TRUE
+    )
+    colnames(outDf) <- c("Feature", "Count", "Taxon_group", "IPP", "dIPP")
+    return(outDf)
 }
 
 #' Create feature distribution comparison plot
@@ -560,7 +583,7 @@ dataFeatureTaxGroup <- function(
 #' type <- "file"
 #' domainDf <- parseDomainInput(gene, inputFile, type)
 #' inGroup <- c("ncbi876142", "ncbi586133")
-#' plotDf <- dataFeatureTaxGroup(data, domainDf, inGroup, gene, 15)
+#' plotDf <- dataFeatureTaxGroup(data, domainDf, inGroup, gene)
 #' plotParameters <- list(
 #'     "xSize" = 12,
 #'     "ySize" = 12,
@@ -574,7 +597,7 @@ dataFeatureTaxGroup <- function(
 
 featureDistTaxPlot <- function(data, plotParameters) {
     Feature <- NULL
-    Percentage <- NULL
+    IPP <- NULL
     Taxon_group <- NULL
     if (is.null(data)) return()
     if (missing(plotParameters)) return()
@@ -584,7 +607,7 @@ featureDistTaxPlot <- function(data, plotParameters) {
     data$Taxon_group[data$Taxon_group == "Out-group"] <- 
         plotParameters$outGroupName
     
-    plot <- ggplot(data, aes(x = Feature, y = Percentage, fill = Taxon_group)) +
+    plot <- ggplot(data, aes(x = Feature, y = IPP, fill = Taxon_group)) +
         geom_bar(stat="identity", width=.5, position = "dodge") +
         theme_minimal() +
         theme(
@@ -599,9 +622,7 @@ featureDistTaxPlot <- function(data, plotParameters) {
             legend.text = element_text(size = plotParameters$legendSize),
             legend.title = element_blank()
         )
-    if (plotParameters$flipPlot == "Yes")
-        plot <- plot + coord_flip()
-    
+    if (plotParameters$flipPlot == "Yes") plot <- plot + coord_flip()
     return(plot)
 }
 

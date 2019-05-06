@@ -851,7 +851,7 @@ shinyServer(function(input, output, session) {
                     if (identical(unkTaxa, character(0))) return()
 
                     # get non-ncbi taxa
-                    unkTaxa <- data.frame("TaxonID" = unkTaxa)
+                    unkTaxa <- data.frame(TaxonID = unkTaxa)
                     unkTaxa$id <- substring(unkTaxa$TaxonID, 5)
                     unkTaxa$Source <- "ncbi"
 
@@ -867,11 +867,11 @@ shinyServer(function(input, output, session) {
                     ncbiID <- levels(ncbiTaxa)
                     maxNCBI <- max(sort(as.numeric(ncbiID[ncbiID != "ncbiID"])))
 
-                    if (nrow(unkTaxa[!(unkTaxa$id %in% ncbiTaxa),]) > 0) {
-                        unkTaxa <- unkTaxa[!(unkTaxa$id %in% ncbiTaxa),]$id
-                        unkTaxa[unkTaxa$id %in% unkTaxa,]$Source <- "unknown"
-                        if (any(unkTaxa < maxNCBI)) {
-                            unkTaxa[unkTaxa$id %in% unkTaxa &
+                    if (nrow(unkTaxa[!(unkTaxa[,"id"] %in% ncbiTaxa),]) > 0) {
+                        unkTaxaId <- unkTaxa[!(unkTaxa$id %in% ncbiTaxa),]$id
+                        unkTaxa[unkTaxa$id %in% unkTaxaId,]$Source <- "unknown"
+                        if (any(unkTaxaId < maxNCBI)) {
+                            unkTaxa[unkTaxa$id %in% unkTaxaId &
                                     unkTaxa$id < maxNCBI,]$Source <- "invalid"
                         }
                     }
