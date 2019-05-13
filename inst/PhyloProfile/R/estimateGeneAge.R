@@ -1,6 +1,4 @@
 #' Gene age estimation plot
-#'
-#' @export
 #' @param data for gene age plot (from reactive fn geneAgeDf)
 #' @param geneAgeWidth plot width (from input$geneAgeWidth)
 #' @param geneAgeHeight plot width (from input$geneAgeHeight)

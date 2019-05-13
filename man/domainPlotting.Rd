@@ -4,19 +4,23 @@
 \alias{domainPlotting}
 \title{Create architecure plot for a single protein}
 \usage{
-domainPlotting(df, geneID, sep, labelSize, titleSize, minStart,
-    maxEnd, colorScheme)
+domainPlotting(df, geneID = "GeneID", sep = "|", labelSize = 12, 
+    titleSize = 12, minStart = NULL, maxEnd = NULL, colorScheme)
 }
 \arguments{
-\item{df}{domain dataframe for ploting}
+\item{df}{domain dataframe for ploting containing the seed ID, ortholog ID, 
+ortholog sequence length, feature names, start and end positions, 
+feature weights (optional) and the status to determine if that feature is 
+important for comparison the architecture between 2 proteins* (e.g. seed 
+protein vs ortholog) (optional).}
 
 \item{geneID}{ID of seed or orthologous protein}
 
-\item{sep}{separate indicator for title}
+\item{sep}{separate indicator for title. Default = "|".}
 
-\item{labelSize}{lable size}
+\item{labelSize}{lable size. Default = 12.}
 
-\item{titleSize}{title size}
+\item{titleSize}{title size. Default = 12.}
 
 \item{minStart}{the smallest start position of all domains}
 
@@ -25,7 +29,7 @@ domainPlotting(df, geneID, sep, labelSize, titleSize, minStart,
 \item{colorScheme}{color scheme for all domain types}
 }
 \value{
-A ggplot object
+Domain plot of a single protein as a ggplot object.
 }
 \description{
 Create architecure plot for a single protein

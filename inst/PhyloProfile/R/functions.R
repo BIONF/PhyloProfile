@@ -1,5 +1,4 @@
 #' Function to keep user defined geneID order
-#' @export
 #' @param data data frame contains gene ID column
 #' @param order TRUE or FALSE (from input$ordering)
 #' @return data either sorted or non-sorted
@@ -46,11 +45,6 @@ installPackagesBioconductor <- function(packages){
 hasInternet <- function(){
     !is.null(curl::nslookup("r-project.org", error = FALSE))
 }
-
-#' #' Get last n characters from string x
-#' substrRight <- function(x, n){
-#'   substr(x, nchar(x) - n + 1, nchar(x))
-#' }
 
 # FUNCTIONS FOR RENDER UI ELEMENTS ============================================
 createSliderCutoff <- function(id, title, start, stop, varID){

@@ -1,6 +1,4 @@
 #' Download filtered data from main profile
-#'
-#' @export
 #' @param full processed main data (from reactive fn "getDataFiltered")
 #' @param fasta fasta sequences (from reactive fn "mainFastaDownload")
 #' @param var1ID name of 1st variable (from input$var1ID)

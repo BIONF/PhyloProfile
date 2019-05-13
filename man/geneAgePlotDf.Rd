@@ -7,10 +7,12 @@
 geneAgePlotDf(geneAgeDf)
 }
 \arguments{
-\item{geneAgeDf}{data of estimated gene age}
+\item{geneAgeDf}{data frame containing estimated gene ages for seed proteins}
 }
 \value{
-A dataframe for plotting gene age plot
+A dataframe for plotting gene age plot containing the absolute number
+and percentage of genes for each calculated evolutionary ages and the 
+corresponding position for writting those number on the plot.
 }
 \description{
 Create data for plotting gene ages

@@ -1,10 +1,16 @@
 #' Get taxonomy info for a list of taxa
-#' @description Get NCBI taxonomy IDs, ranks and names for an input
-#' taxon list
-#' @param inputTaxa input taxon list
-#' @param currentNCBIinfo table/dataframe of the current taxonomy data
-#' (taxonNamesFull.txt)
-#' @return A list of 3 dataframes: idList, rankList and reducedInfoList
+#' @description Get NCBI taxonomy IDs, ranks and names for an input taxon list.
+#' @param inputTaxa NCBI ID list of input taxa.
+#' @param currentNCBIinfo table/dataframe of the pre-processed NCBI taxonomy
+#' data (/PhyloProfile/data/taxonNamesFull.txt)
+#' @return A list of 3 dataframes: idList, rankList and reducedInfoList. The
+#' "rankList" contains taxon names and all taxonomy ranks of the input taxa
+#' including also the noranks from the input rank to the taxonomy root. The
+#' "idList" contains input taxon IDs, taxon names, all the ranks from current
+#' rank to the taxonomy root together with their IDs (with the format
+#' "id#rank"). The reducedInfoList is a subset of taxonNamesFull.txt file,
+#' containing the NCBI IDs, taxon fullnames, their current rank and their
+#' direct parent ID.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @export
 #' @examples
@@ -16,223 +22,111 @@
 #' currentNCBIinfo <- as.data.frame(data.table::fread(ncbiFilein))
 #' getIDsRank(inputTaxa, currentNCBIinfo)
 
-getIDsRank <- function(inputTaxa, currentNCBIinfo){
-    titleline <- inputTaxa
-    allTaxonInfo <- currentNCBIinfo
+getIDsRank <- function(inputTaxa = NULL, currentNCBIinfo = NULL){
+    if (is.null(currentNCBIinfo)) return()
+    ## get all taxonomy info for input taxa
+    inputTaxaInfo <- pbapply::pblapply(
+        seq_len(length(inputTaxa)),
+        function (x) {
+            refID <- inputTaxa[x]
+            # get info for this taxon
+            refEntry <- currentNCBIinfo[currentNCBIinfo$ncbiID == refID, ]
+            lastID <- refEntry$parentID
+            inputTaxaInfo <- refEntry
 
-    ## get unique norank IDs and unique rank
-    ## (which are uninformative for sorting taxa)
-    allNorankIDs <- list()
-    allRanks <- list()
-
-    for (i in seq_len(length(titleline))) {
-        # taxon ID
-        refID <- titleline[i]
-        # get info for this taxon
-        refEntry <- allTaxonInfo[allTaxonInfo$ncbiID == refID, ]
-        # parent ID
-        lastID <- refEntry$parentID
-
-        if (refEntry$rank == "norank") {
-            allNorankIDs <- c(allNorankIDs, refEntry$ncbiID)
-        }
-        allRanks <- c(allRanks, refEntry$rank)
-
-        while (lastID != 1) {
-            nextEntry <- allTaxonInfo[allTaxonInfo$ncbiID == lastID, ]
-            if (nextEntry$rank == "norank") {
-                allNorankIDs <- c(allNorankIDs, nextEntry$ncbiID)
+            while (lastID != 1) {
+                nextEntry <- currentNCBIinfo[currentNCBIinfo$ncbiID == lastID, ]
+                inputTaxaInfo <- rbindlist(
+                    list(inputTaxaInfo, nextEntry),
+                    use.names = TRUE,
+                    fill = TRUE,
+                    idcol = NULL
+                )
+                lastID <- nextEntry$parentID
             }
-            allRanks <- c(allRanks, nextEntry$rank)
-            lastID <- nextEntry$parentID
+            return(inputTaxaInfo)
         }
-
-        p <- i / length(titleline) * 100
-        svMisc::progress(p)
-        if (p == 100) message("Getting taxonomy info done!")
-    }
-    uniqueRank <- names(which(table(as.character(allRanks)) == 1))
-    uniqueID <- names(which(table(as.character(allNorankIDs)) == 1))
-    overID <- names(
-        which(table(as.character(allNorankIDs)) == length(titleline))
     )
-    uniqueID <- c(uniqueID, overID)
 
-    ## parse taxonomy info
-    rankList <- data.frame()
-    idList <- data.frame()
-    reducedInfoList <- data.frame()
+    ## get reduced taxonomy info (subset of taxonNamesFull.txt)
+    reducedInfoDf <- unique(rbindlist(inputTaxaInfo))
 
-    for (i in seq_len(length(titleline))) {
-        ## taxon ID
-        refID <- titleline[i]
+    ## get list of all ranks and rank IDs
+    rankMod <- NULL
+    ncbiID <- NULL
+    inputRankIDDf <- lapply(
+        seq_len(length(inputTaxaInfo)),
+        function (x) {
+            inputTaxaInfo[[x]]$rankMod <- inputTaxaInfo[[x]]$rank
+            if (inputTaxaInfo[[x]]$rank[1] == "norank") {
+                inputTaxaInfo[[x]]$rankMod[1] <-
+                    paste0("strain_", inputTaxaInfo[[x]]$ncbiID[1])
+            }
+            inputTaxaInfo[[x]]$rankMod <- with(
+                inputTaxaInfo[[x]],
+                ifelse(rankMod == "norank", paste0("norank_", ncbiID), rankMod)
+            )
+            inputTaxaInfo[[x]]$id <- paste0(
+                inputTaxaInfo[[x]]$ncbiID, "#", inputTaxaInfo[[x]]$rankMod
+            )
+            return(inputTaxaInfo[[x]][ , c("rankMod", "id")])
+        }
+    )
 
-        ## get info for this taxon
-        refEntry <- allTaxonInfo[allTaxonInfo$ncbiID == refID, ]
+    ## create matrix of all ranks
+    inputRankList <- lapply(
+        seq_len(length(inputRankIDDf)),
+        function (x) {
+            ll <- c(
+                paste0("ncbi", inputTaxa[x]),
+                reducedInfoDf$fullName[reducedInfoDf$ncbiID == inputTaxa[x]],
+                inputRankIDDf[[x]]$rank,
+                "norank_1"
+            )
+            return(data.frame(
+                matrix(ll, nrow = 1, byrow = TRUE), stringsAsFactors = FALSE
+            ))
+        }
+    )
+    inputRankDf <- do.call(plyr::rbind.fill, inputRankList)
 
-        if (
-            nrow(reducedInfoList[
-                reducedInfoList$X1 == refEntry$ncbiID, ]) == 0
-        ) {
-            refInfoList <- data.frame(
-                matrix(
-                    c(
-                        refEntry$ncbiID,
-                        refEntry$fullName,
-                        refEntry$rank,
-                        refEntry$parentID
-                    ),
-                    nrow = 1,
-                    byrow = TRUE
+    ## create matrix of all ID#ranks
+    inputIDList <- lapply(
+        seq_len(length(inputRankIDDf)),
+        function (x) {
+            ll <- c(
+                paste0(
+                    reducedInfoDf$fullName[reducedInfoDf$ncbiID ==inputTaxa[x]],
+                    "#name"
                 ),
-                stringsAsFactors = FALSE
+                inputRankIDDf[[x]]$id,
+                "1#norank_1"
             )
-            reducedInfoList <- rbind(reducedInfoList, refInfoList)
+            return(data.frame(
+                matrix(ll, nrow = 1, byrow = TRUE), stringsAsFactors = FALSE
+            ))
         }
+    )
+    inputIDDf <- do.call(plyr::rbind.fill, inputIDList)
 
-        # parentID (used to check if hitting last rank, i.e. norank_1)
-        lastID <- refEntry$parentID
-
-        # create list of rank for this taxon
-        rank <- c(paste0("ncbi", refID), refEntry$fullName)
-        if (refEntry$rank == "norank") {
-            rank <- c(rank, paste0("strain"))
-        } else {
-            rank <- c(rank, refEntry$rank)
-        }
-
-        # create list of IDs for this taxon
-        ids <- list(paste0(refEntry$fullName, "#name"))
-        if (refEntry$rank == "norank") {
-            ids <- c(
-                ids,
-                paste0(
-                    refEntry$ncbiID,
-                    "#",
-                    "strain",
-                    "_",
-                    refEntry$ncbiID
-                )
-            )
-        } else {
-            ids <- c(
-                ids,
-                paste0(
-                    refEntry$ncbiID,
-                    "#",
-                    refEntry$rank
-                )
-            )
-        }
-
-        # append info into rank and ids
-        while (lastID != 1) {
-            nextEntry <- allTaxonInfo[allTaxonInfo$ncbiID == lastID, ]
-
-            if (
-                nrow(reducedInfoList[
-                    reducedInfoList$X1 == nextEntry$ncbiID, ]) == 0
-            ) {
-                nextEntryList <-
-                    data.frame(
-                        matrix(
-                            c(
-                                nextEntry$ncbiID,
-                                nextEntry$fullName,
-                                nextEntry$rank,
-                                nextEntry$parentID
-                            ),
-                            nrow = 1, byrow = TRUE
-                        ),
-                        stringsAsFactors = FALSE
-                    )
-
-                reducedInfoList <- rbind(
-                    reducedInfoList,
-                    nextEntryList
-                )
-            }
-
-            lastID <- nextEntry$parentID
-
-            if ("norank" %in% nextEntry$rank) {
-                rank <- c(
-                    rank,
-                    paste0(
-                        nextEntry$rank,
-                        "_",
-                        nextEntry$ncbiID
-                    )
-                )
-                ids <- c(
-                    ids,
-                    paste0(
-                        nextEntry$ncbiID,
-                        "#",
-                        nextEntry$rank,
-                        "_",
-                        nextEntry$ncbiID
-                    )
-                )
-            } else {
-                rank <- c(rank, nextEntry$rank)
-                ids <- c(
-                    ids,
-                    paste0(
-                        nextEntry$ncbiID,
-                        "#",
-                        nextEntry$rank
-                    )
-                )
-            }
-        }
-
-        # last rank and id
-        rank <- c(rank, "norank_1")
-        ids <- c(ids, "1#norank_1")
-
-        # change "noRank" before species into "strain"
-        if (rank[3] == "norank" & any(rank == "species")) {
-            rank[3] = "strain"
-            tmpID <- unlist(strsplit(as.character(ids[2]), split = "#"))
-            ids[2] <- paste0(tmpID[1],"#","strain")
-        }
-
-        # append into rankList and idList files
-        rankListTMP <- data.frame(
-            matrix(
-                unlist(rank), nrow = 1, byrow = TRUE
-            ),
-            stringsAsFactors = FALSE
-        )
-        rankList <- plyr::rbind.fill(rankList, rankListTMP)
-        idListTMP <- data.frame(
-            matrix(unlist(ids), nrow = 1, byrow = TRUE),
-            stringsAsFactors = FALSE
-        )
-        idList <- plyr::rbind.fill(idList, idListTMP)
-
-        # Increment the progress bar, and update the detail text.
-        p <- i / length(titleline) * 100
-        svMisc::progress(p)
-        if (p == 100) message("Creating dataframe done!")
-    }
-
-    # return idList, rankList and reducedInfoList
-    return(list(idList, rankList, reducedInfoList))
+    # return
+    return(list(inputIDDf, inputRankDf, as.data.frame(reducedInfoDf)))
 }
 
 #' Indexing all available ranks (including norank)
 #' @param rankListFile Input file, where each row is a rank list of a taxon
+#' (see rankListFile in example)
 #' @importFrom utils read.table
-#' @return A dataframe containing a list of indexed ranks
+#' @return A dataframe containing a list of all possible ranks and their indexed
+#' values.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' rankListFile <- system.file(
 #'     "extdata", "data/rankList.txt", package = "PhyloProfile", mustWork = TRUE
 #' )
 #' rankIndexing(rankListFile)
 
-rankIndexing <- function(rankListFile){
+rankIndexing <- function(rankListFile = NULL){
+    if (is.null(rankListFile)) return()
     ### input is a dataframe, where each row is a rank list of a taxon
     rankList <- read.table(
         rankListFile,
@@ -270,8 +164,7 @@ rankIndexing <- function(rankListFile){
         ## which contains only ranks existing in allInputRank
         subList <- rankList[k,][!is.na(rankList[k,])]
         filter <- vapply(
-            subList, function(x) x %in% allInputRank,
-            FUN.VALUE = logical(1)
+            subList, function(x) x %in% allInputRank, FUN.VALUE = logical(1)
         )
         subList <- subList[filter]
 
@@ -282,7 +175,6 @@ rankIndexing <- function(rankListFile){
                 # then set index for this rank = the [available] index
                 # of prev rank + 1
                 for (j in seq_len(length(subList))) {
-                    # print(subList[i - j])
                     if (j < i) {
                         if (!is.null(rank2Index[[subList[i - j]]])) {
                             rank2Index[[subList[i]]] =
@@ -309,32 +201,40 @@ rankIndexing <- function(rankListFile){
     }
 
     ### output a list of indexed ranks
-    index2RankDf <- data.frame(
-        "index" = numeric(), "rank" = character(), stringsAsFactors = FALSE
+    index2RankList <- lapply(
+        seq_len(length(allInputRank)),
+        function (x) {
+            data.frame(
+                index = rank2Index[[allInputRank[x]]],
+                rank = allInputRank[x],
+                stringsAsFactors = FALSE
+            )
+        }
     )
-
-    for (i in seq_len(length(allInputRank))) {
-        index2RankDf[i,]$index <- rank2Index[[allInputRank[i]]]
-        index2RankDf[i,]$rank <- allInputRank[i]
-    }
-
+    index2RankDf <- do.call(rbind, index2RankList)
     index2RankDf <- index2RankDf[with(index2RankDf, order(index2RankDf$index)),]
 
     return(index2RankDf)
 }
 
-#' Align ncbi taxonomy IDs of all taxa into a sorted rank list
+#' Align NCBI taxonomy IDs of list of taxa into a sorted rank list.
 #' @export
 #' @param idListFile a text file whose each row is a rank+ID list of a taxon
+#' (see idListFile in example)
 #' @param rankListFile a text file whose each row is a rank list of a taxon
+#' (see rankListFile in example)
 #' @importFrom data.table transpose
 #' @importFrom reshape2 melt
 #' @importFrom stats complete.cases
 #' @importFrom utils count.fields
 #' @importFrom utils read.table
-#' @return An aligned taxonomy dataframe
+#' @return An aligned taxonomy dataframe which contains all the available
+#' taxonomy ranks from the id and rank list file. This dataframe can be used for
+#' creating a well resolved taxonomy tree (see ?createRootedTree) and sorting
+#' taxa based on a selected reference taxon (see ?sortInputTaxa).
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
-#' @seealso \code{\link{rankIndexing}}
+#' @seealso \code{\link{rankIndexing}}, \code{\link{createRootedTree}},
+#' \code{\link{sortInputTaxa}}
 #' @examples
 #' idListFile <- system.file(
 #'     "extdata", "data/idList.txt", package = "PhyloProfile", mustWork = TRUE
@@ -344,7 +244,8 @@ rankIndexing <- function(rankListFile){
 #' )
 #' taxonomyTableCreator(idListFile, rankListFile)
 
-taxonomyTableCreator <- function(idListFile, rankListFile){
+taxonomyTableCreator <- function(idListFile = NULL, rankListFile = NULL){
+    if (is.null(idListFile) | is.null(rankListFile)) return()
     index <- NULL
     ### get indexed rank list
     index2RankDf <- rankIndexing(rankListFile)
@@ -358,7 +259,6 @@ taxonomyTableCreator <- function(idListFile, rankListFile){
         stringsAsFactors = TRUE, na.strings = c("","NA"),
         col.names = paste0('X', seq_len(ncol))
     )
-
     colnames(idList)[1] <- "tip"
 
     ### get ordered rank list
@@ -366,65 +266,70 @@ taxonomyTableCreator <- function(idListFile, rankListFile){
 
     ### create a dataframe containing ordered ranks
     fullRankIDdf <- data.frame(
-        "rank" = matrix(unlist(orderedRank),
-                        nrow = length(orderedRank),
-                        byrow = TRUE),
+        rank = matrix(
+            unlist(orderedRank), nrow = length(orderedRank), byrow = TRUE
+        ),
         stringsAsFactors = FALSE
     )
     fullRankIDdf$index <- as.numeric(rownames(fullRankIDdf))
+    fullRankIDdf <- data.table(fullRankIDdf)
+    setkey(fullRankIDdf, rank)
 
-    for (i in seq_len(nrow(idList))) {
-        ### get list of all IDs for this taxon
-        taxonDf <- data.frame(idList[i,])
-        taxonName <- unlist(
-            strsplit(as.character(idList[i,]$tip), "#", fixed = TRUE)
-        )
-        ### convert into long format
-        mTaxonDf <- suppressWarnings(melt(taxonDf, id = "tip"))
+    mTaxonDf <- pbapply::pblapply(
+        seq_len(nrow(idList)),
+        function (x) {
+            ### get list of all IDs for this taxon
+            taxonDf <- data.frame(idList[x,])
+            taxonName <- unlist(
+                strsplit(as.character(idList[x,]$tip), "#", fixed = TRUE)
+            )
+            ### convert into long format
+            mTaxonDf <- suppressWarnings(melt(taxonDf, id = "tip"))
 
-        ### get rank names and corresponding IDs
-        splitCol <- data.frame(
-            do.call(
-                'rbind',
-                strsplit(
-                    as.character(mTaxonDf$value), '#',
-                    fixed = TRUE
+            ### get rank names and corresponding IDs
+            splitCol <- data.frame(
+                do.call(
+                    'rbind',
+                    strsplit(as.character(mTaxonDf$value), '#', fixed = TRUE)
                 )
             )
-        )
-        mTaxonDf <- cbind(mTaxonDf, splitCol)
+            mTaxonDf <- cbind(mTaxonDf, splitCol)
 
-        ### remove NA cases
-        mTaxonDf <- mTaxonDf[complete.cases(mTaxonDf),]
+            ### remove NA cases
+            mTaxonDf <- mTaxonDf[complete.cases(mTaxonDf),]
 
-        ### subselect mTaxonDf to keep only 2 column rank id and rank name
-        mTaxonDf <- mTaxonDf[, c("X1","X2")]
-        if (mTaxonDf$X2[1] != index2RankDf$rank[1]) {
-            mTaxonDf <- rbind(
-                data.frame("X1" = mTaxonDf$X1[1], "X2" = index2RankDf$rank[1]),
-                mTaxonDf
-            )
+            ### subselect mTaxonDf to keep only 2 column rank id and rank name
+            mTaxonDf <- mTaxonDf[, c("X1","X2")]
+            if (mTaxonDf$X2[1] != index2RankDf$rank[1]) {
+                mTaxonDf <- rbind(
+                    data.frame(
+                        "X1" = mTaxonDf$X1[1], "X2" = index2RankDf$rank[1]
+                    ),
+                    mTaxonDf
+                )
+            }
+
+            ### rename columns
+            colnames(mTaxonDf) <- c(taxonName[1], "rank")
+
+            # return
+            mTaxonDf <- data.table(mTaxonDf)
+            setkey(mTaxonDf, rank)
+            return(mTaxonDf)
         }
+    )
 
-        ### rename columns
-        colnames(mTaxonDf) <- c(taxonName[1], "rank")
+    ### merge into data frame contains all available ranks from input
+    mTaxonDfFull <- c(list(fullRankIDdf), mTaxonDf)
+    fullRankIDdf <- Reduce(
+        function (x, y) merge(x, y, all.x = TRUE), mTaxonDfFull
+    )
 
-        ### merge with index2RankDf (contains all available ranks from input)
-        fullRankIDdf <- merge(
-            fullRankIDdf, mTaxonDf, by = c("rank"), all.x = TRUE
-        )
+    ### reorder ranks
+    fullRankIDdf <- fullRankIDdf[order(fullRankIDdf$index),]
 
-        ### reorder ranks
-        fullRankIDdf <- fullRankIDdf[order(fullRankIDdf$index),]
-
-        ### replace NA id by id of previous rank
-        fullRankIDdf <- zoo::na.locf(fullRankIDdf)
-
-        ### print process
-        p <- i / nrow(idList) * 100
-        svMisc::progress(p)
-        if (p == 100) message("Creating taxonomy matrix done!")
-    }
+    ### replace NA id by id of previous rank
+    fullRankIDdf <- zoo::na.locf(fullRankIDdf)
 
     ### remove index column
     fullRankIDdf <- subset(fullRankIDdf, select = -c(index))
@@ -437,19 +342,19 @@ taxonomyTableCreator <- function(idListFile, rankListFile){
     tFullRankIDdf <- tFullRankIDdf[-1,]
 
     ### add "abbrName  ncbiID  fullName" columns
-    abbrName <- paste0("ncbi", tFullRankIDdf[,1])
-    ncbiID <- tFullRankIDdf[,1]
-    fullName <- colnames(fullRankIDdf)[-c(1)]
-
-    fullRankIDdf <- cbind(abbrName, ncbiID)
-    fullRankIDdf <- cbind(fullRankIDdf, fullName)
-    fullRankIDdf <- cbind(fullRankIDdf, tFullRankIDdf)
+    fullRankIDdfOut <- data.frame(
+        abbrName = paste0("ncbi", unlist(tFullRankIDdf[,1])),
+        ncbiID = unlist(tFullRankIDdf[,1]),
+        fullName = colnames(fullRankIDdf)[-c(1)],
+        stringsAsFactors = FALSE
+    )
+    fullRankIDdfOut <- cbind(fullRankIDdfOut, tFullRankIDdf)
 
     ### rename last column to "root"
-    names(fullRankIDdf)[ncol(fullRankIDdf)] <- "root"
+    names(fullRankIDdfOut)[ncol(fullRankIDdfOut)] <- "root"
 
     ### return
-    return(fullRankIDdf)
+    return(fullRankIDdfOut)
 }
 
 #' TAXA2DIST

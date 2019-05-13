@@ -12,7 +12,7 @@ sortDomains(seedDf, orthoDf)
 \item{orthoDf}{data of ortholog protein}
 }
 \value{
-sorted domain list (dataframe)
+Dataframe contains sorted domain list.
 }
 \description{
 Sort domain dataframe of one protein (either seed or ortholog)

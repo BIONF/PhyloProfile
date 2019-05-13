@@ -4,13 +4,21 @@
 #' be plotted. NOTE: seed protein ID is the one being shown in the profile plot,
 #' which normally is also the orthologous group ID.
 #' @export
-#' @param info a list contains seed and orthologs IDs
-#' @param domainDf dataframe contains domain info
-#' @param labelArchiSize lable size (in px)
-#' @param titleArchiSize title size (in px)
+#' @usage createArchiPlot(info = NULL, domainDf = NULL, labelArchiSize = 12, 
+#'     titleArchiSize = 12)
+#' @param info a list contains seed and ortholog's IDs
+#' @param domainDf dataframe contains domain info for the seed and ortholog. 
+#' This including the seed ID, orthologs IDs, sequence lengths, feature names, 
+#' start and end positions, feature weights (optional) and the status to 
+#' determine if that feature is important for comparison the architecture 
+#' between 2 proteins* (e.g. seed protein vs ortholog) (optional).
+#' @param labelArchiSize lable size (in px). Default = 12.
+#' @param titleArchiSize title size (in px). Default = 12.
 #' @importFrom dplyr filter
 #' @importFrom gridExtra arrangeGrob
-#' @return A plot as arrangeGrob object. Use grid::grid.draw(plot) to render.
+#' @importFrom ggplot2 theme_void
+#' @return A domain plot as arrangeGrob object. Use grid::grid.draw(plot) to 
+#' render.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{domainPlotting}}, \code{\link{sortDomains}},
 #' \code{\link{parseDomainInput}}, \code{\link{getQualColForVector}}
@@ -27,10 +35,11 @@
 #' grid::grid.draw(plot)
 
 createArchiPlot <- function(
-    info,
-    domainDf,
-    labelArchiSize, titleArchiSize
+    info = NULL,
+    domainDf = NULL,
+    labelArchiSize = 12, titleArchiSize = 12
 ){
+    if (is.null(info) | is.null(domainDf)) return(ggplot() + theme_void())
     orthoID <- NULL
 
     # info
@@ -44,16 +53,12 @@ createArchiPlot <- function(
     subdomainDf <- domainDf[grep(grepID, domainDf$seedID), ]
     subdomainDf$feature <- as.character(subdomainDf$feature)
 
-    if (nrow(subdomainDf) < 1) {
-        return(paste0("ERR-0"))
-    } else {
-
+    if (nrow(subdomainDf) < 1) return(paste0("ERR-0"))
+    else {
         # ortho domains df
         orthoDf <- dplyr::filter(subdomainDf, orthoID == ortho)
-
         # seed domains df
         seedDf <- dplyr::filter(subdomainDf, orthoID != ortho)
-
         if (nrow(seedDf) == 0) seedDf <- orthoDf
 
         seed <- as.character(seedDf$orthoID[1])
@@ -99,11 +104,7 @@ createArchiPlot <- function(
         featureOrtho <- levels(as.factor(orderedOrthoDf$feature))
         allFeatures <- c(featureSeed, featureOrtho)
         allColors <- getQualColForVector(allFeatures)
-
-        colorScheme <- structure(
-            allColors,
-            .Names = allFeatures
-        )
+        colorScheme <- structure(allColors, .Names = allFeatures)
 
         # plotting
         sep <- "|"
@@ -168,17 +169,21 @@ createArchiPlot <- function(
 }
 
 #' Create architecure plot for a single protein
-#' @usage domainPlotting(df, geneID, sep, labelSize, titleSize, minStart,
-#'     maxEnd, colorScheme)
-#' @param df domain dataframe for ploting
+#' @usage domainPlotting(df, geneID = "GeneID", sep = "|", labelSize = 12, 
+#'     titleSize = 12, minStart = NULL, maxEnd = NULL, colorScheme)
+#' @param df domain dataframe for ploting containing the seed ID, ortholog ID, 
+#' ortholog sequence length, feature names, start and end positions, 
+#' feature weights (optional) and the status to determine if that feature is 
+#' important for comparison the architecture between 2 proteins* (e.g. seed 
+#' protein vs ortholog) (optional).
 #' @param geneID ID of seed or orthologous protein
-#' @param sep separate indicator for title
-#' @param labelSize lable size
-#' @param titleSize title size
+#' @param sep separate indicator for title. Default = "|".
+#' @param labelSize lable size. Default = 12.
+#' @param titleSize title size. Default = 12.
 #' @param minStart the smallest start position of all domains
 #' @param maxEnd the highest stop position of all domains
 #' @param colorScheme color scheme for all domain types
-#' @return A ggplot object
+#' @return Domain plot of a single protein as a ggplot object.
 #' @importFrom ggplot2 ggplot
 #' @importFrom ggplot2 aes
 #' @importFrom ggplot2 geom_segment
@@ -187,6 +192,7 @@ createArchiPlot <- function(
 #' @importFrom ggplot2 scale_y_discrete
 #' @importFrom ggplot2 labs
 #' @importFrom ggplot2 theme_minimal
+#' @importFrom ggplot2 theme_void
 #' @importFrom ggplot2 theme
 #' @importFrom ggplot2 element_blank
 #' @importFrom ggplot2 element_text
@@ -227,16 +233,29 @@ createArchiPlot <- function(
 #' )
 #' }
 
-
-domainPlotting <- function(df,
-                            geneID,
-                            sep,
-                            labelSize, titleSize,
-                            minStart, maxEnd,
-                            colorScheme){
+domainPlotting <- function(
+    df = NULL,
+    geneID = "GeneID",
+    sep = "|",
+    labelSize = 12, titleSize = 12,
+    minStart = NULL, maxEnd = NULL,
+    colorScheme = NULL
+){
     feature <- NULL
     end <- NULL
     start <- NULL
+    # parse parameters
+    if (is.null(df)) return(ggplot() + theme_void())
+    if (is.null(minStart)) minStart <- min(df$start)
+    if (is.null(maxEnd)) maxEnd <- max(df$end)
+    if (is.null(colorScheme)) {
+        allFeatures <- levels(as.factor(df$feature))
+        allColors <- getQualColForVector(allFeatures)
+        colorScheme <- structure(
+            allColors,
+            .Names = allFeatures
+        )
+    }
 
     gg <- ggplot(df, aes(y = feature, x = end, color = as.factor(feature))) +
         geom_segment(
@@ -259,31 +278,24 @@ domainPlotting <- function(df,
 
     # draw line and points
     gg <- gg + geom_segment(
-        data = df,
-        aes(x = start, xend = end, y = feature, yend = feature),
+        data = df, aes(x = start, xend = end, y = feature, yend = feature),
         size = 1.5
     )
     gg <- gg + geom_point(
-        data = df,
-        aes(y = feature, x = start),
-        color = "#b2b2b2",
-        size = 3,
-        shape = 3
+        data = df, aes(y = feature, x = start), 
+        color = "#b2b2b2", size = 3, shape = 3
     )
     gg <- gg + geom_point(
-        data = df,
-        aes(y = feature, x = end),
-        color = "#edae52",
-        size = 3,
-        shape = 5
+        data = df, aes(y = feature, x = end),
+        color = "#edae52", size = 3, shape = 5
     )
 
     # draw dashed line for domain path
-    gg <- gg + geom_segment(data = df[df$path == "Y", ],
-                            aes(x = start, xend = end,
-                                y = feature, yend = feature),
-                            size = 3,
-                            linetype = "dashed")
+    gg <- gg + geom_segment(
+        data = df[df$path == "Y", ],
+        aes(x = start, xend = end, y = feature, yend = feature),
+        size = 3, linetype = "dashed"
+    )
 
     # # add text above
     # gg <- gg + geom_text(data = df,
@@ -297,9 +309,9 @@ domainPlotting <- function(df,
 
     # theme format
     titleMod <- gsub(":", sep, geneID)
-    gg <- gg + scale_y_discrete(expand = c(0.075, 0),
-                                breaks = df$feature,
-                                labels = df$yLabel)
+    gg <- gg + scale_y_discrete(
+        expand = c(0.075, 0), breaks = df$feature, labels = df$yLabel
+    )
     gg <- gg + labs(title = paste0(titleMod), y = "Feature")
     gg <- gg + theme_minimal()
     gg <- gg + theme(panel.border = element_blank())
@@ -325,7 +337,7 @@ domainPlotting <- function(df,
 #' common domain feature in the same order which make it easy for comparing.
 #' @param seedDf data of seed protein
 #' @param orthoDf data of ortholog protein
-#' @return sorted domain list (dataframe)
+#' @return Dataframe contains sorted domain list.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @examples
 #' \dontrun{
@@ -344,6 +356,7 @@ domainPlotting <- function(df,
 #' }
 
 sortDomains <- function(seedDf, orthoDf){
+    if (is.null(seedDf) | is.null(orthoDf)) return()
     orderNo <- NULL
     # get list of features in seedDf
     featureList <- as.data.frame(levels(as.factor(seedDf$feature)))
@@ -362,8 +375,7 @@ sortDomains <- function(seedDf, orthoDf){
     orderedOrthoDf$feature <- as.character(orderedOrthoDf$feature)
     #then turn it back into an ordered factor (to keep this order when plotting)
     orderedOrthoDf$feature <- factor(
-        orderedOrthoDf$feature,
-        levels = unique(orderedOrthoDf$feature)
+        orderedOrthoDf$feature, levels = unique(orderedOrthoDf$feature)
     )
     #return sorted df
     return(orderedOrthoDf)

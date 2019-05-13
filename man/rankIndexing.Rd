@@ -4,13 +4,15 @@
 \alias{rankIndexing}
 \title{Indexing all available ranks (including norank)}
 \usage{
-rankIndexing(rankListFile)
+rankIndexing(rankListFile = NULL)
 }
 \arguments{
-\item{rankListFile}{Input file, where each row is a rank list of a taxon}
+\item{rankListFile}{Input file, where each row is a rank list of a taxon
+(see rankListFile in example)}
 }
 \value{
-A dataframe containing a list of indexed ranks
+A dataframe containing a list of all possible ranks and their indexed
+values.
 }
 \description{
 Indexing all available ranks (including norank)

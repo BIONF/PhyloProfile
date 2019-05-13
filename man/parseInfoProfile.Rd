@@ -4,8 +4,8 @@
 \alias{parseInfoProfile}
 \title{Parsing info for phylogenetic profiles}
 \usage{
-parseInfoProfile( inputDf, sortedInputTaxa, var1AggregateBy,
-    var2AggregateBy)
+parseInfoProfile(inputDf, sortedInputTaxa, var1AggregateBy = "max",
+    var2AggregateBy = "max")
 }
 \arguments{
 \item{inputDf}{input profiles in long format}
@@ -13,32 +13,34 @@ parseInfoProfile( inputDf, sortedInputTaxa, var1AggregateBy,
 \item{sortedInputTaxa}{sorted taxonomy data for the input taxa
 (check sortInputTaxa())}
 
-\item{var1AggregateBy}{aggregate method for VAR1 (min, max, mean or median)}
+\item{var1AggregateBy}{aggregate method for VAR1 (max, min, mean
+or median), applied for calculating var1 of supertaxa. Default = "max".}
 
-\item{var2AggregateBy}{aggregate method for VAR2 (min, max, mean or median)}
+\item{var2AggregateBy}{aggregate method for VAR2 (max, min, mean
+or median), applied for calculating var2 of supertaxa. Default = "max".}
 }
 \value{
-Dataframe contains all info for input profiles (a full processed
-profile)
+A dataframe contains all info for the input phylogenetic profiles.
+This full processed profile that is required for several profiling analyses
+e.g. estimation of gene age (?estimateGeneAge) or identification of core gene
+(?getCoreGene).
 }
 \description{
-Creating main dataframe for the input phylogenetic profiles with
-the selected input taxonomy level (e.g. strain, species) and reference taxon.
-The output contains the number of paralogs, percentage of species presence
-in each supertaxon, and the max/min/mean/median of VAR1 and VAR2.
+Creating main dataframe for the input phylogenetic profiles
+based on selected input taxonomy level (e.g. strain, species) and reference
+taxon. The output contains the number of paralogs, percentage of species
+presence in each supertaxon, and the max/min/mean/median of VAR1 and VAR2.
 }
 \examples{
 data("mainLongRaw", package="PhyloProfile")
-inputDf <- mainLongRaw
-taxonIDs <- getInputTaxaID(inputDf)
-taxonNames <- getInputTaxaName("class", taxonIDs)
+taxonIDs <- getInputTaxaID(mainLongRaw)
 sortedInputTaxa <- sortInputTaxa(
-    taxonIDs, taxonNames, "class", "Mammalia", NULL
+    taxonIDs, "class", "Mammalia", NULL
 )
 var1AggregateBy <- "max"
 var2AggregateBy <- "mean"
 parseInfoProfile(
-    inputDf, sortedInputTaxa, var1AggregateBy, var2AggregateBy
+    mainLongRaw, sortedInputTaxa, var1AggregateBy, var2AggregateBy
 )
 }
 \seealso{

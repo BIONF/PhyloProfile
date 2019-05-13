@@ -1,6 +1,4 @@
 #' Core gene identification
-#'
-#' @export
 #' @param filteredData full processed main data
 #' (from reactive fn "getDataFiltered")
 #' @param rankSelect selected taxonomy rank (input$rankSelect)

@@ -7,12 +7,6 @@ test_that("test distritbution analyze functions", {
     # selected rank name
     rankName <- "species"
 
-    # variable thresholds
-    var1CutoffMin <- 0.0
-    var1CutoffMax <- 1.0
-    var2CutoffMin <- 0.0
-    var2CutoffMax <- 1.0
-
     # distribution data for percentage of species present in supertaxa
     percentDistributionData <- createPercentageDistributionData(
         inputData, rankName
@@ -21,13 +15,9 @@ test_that("test distritbution analyze functions", {
 
     # distribution data for 2 additional variables
     distributionData <- createVariableDistributionData(
-        inputData,
-        var1CutoffMin,
-        var1CutoffMax,
-        var2CutoffMin,
-        var2CutoffMax
+        inputData, c(0, 1), c(0.5, 1)
     )
-    expect_true(nrow(distributionData) == 6)
+    expect_true(nrow(distributionData) == 4)
 
     # distribution data for 2 additional variables of a subset of taxa
     inputTaxonID <- getInputTaxaID(inputData)
@@ -35,16 +25,15 @@ test_that("test distritbution analyze functions", {
     refTaxon <- inputTaxonName$fullName[1]
     taxaTree <- NULL
 
-    sortedTaxa <- sortInputTaxa(inputTaxonID,
-                                inputTaxonName,
-                                rankName,
-                                refTaxon,
-                                taxaTree)
+    sortedTaxa <- sortInputTaxa(
+        inputTaxonID, rankName, refTaxon, taxaTree
+    )
 
-    fullProfileData <- parseInfoProfile(inputData,
-                                        sortedTaxa,
-                                        "max",
-                                        "mean")
+    fullProfileData <- parseInfoProfile(
+        inputData,
+        sortedTaxa,
+        "max", "mean"
+    )
     selectedGenes <- c("OG_1017", "OG_1019")
     selectedTaxa <- c("Arabidopsis thaliana", "Encephalitozoon intestinalis")
     subsetDistributionData <- createVariableDistributionDataSubset(
@@ -56,10 +45,8 @@ test_that("test distritbution analyze functions", {
     expect_true(ncol(subsetDistributionData) == 5)
 
     # plot distribution of var1
-    p <- createVarDistPlot(distributionData,
-                              "variable 1 name",
-                              "var1",
-                              NULL,
-                              12)
-    expect_true(nrow(p$data) == 6)
+    p <- createVarDistPlot(
+        distributionData, "variable 1 name", "var1", NULL, 12
+    )
+    expect_true(nrow(p$data) == 4)
 })

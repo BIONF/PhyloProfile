@@ -1,6 +1,4 @@
 #' Protein domain architecture plot
-#'
-#' @export
 #' @param pointInfo() info of clicked point
 #' (from reactive fn "pointInfoDetail")
 #' @param domainInfo() domain information
@@ -9,7 +7,6 @@
 #' @param titleArchiSize title size (from input$titleArchiSize)
 #' @param archiHeight plot height (from input$archiHeight)
 #' @param archiWidth plot width (from input$archiWidth)
-#' @return
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 
 source("R/functions.R")
@@ -92,8 +89,6 @@ createArchitecturePlot <- function(
 }
 
 #' plot error message
-#' @export
-#' @param
 #' @return error message in a ggplot object
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 

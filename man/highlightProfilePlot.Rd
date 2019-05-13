@@ -2,35 +2,40 @@
 % Please edit documentation in R/createProfilePlot.R
 \name{highlightProfilePlot}
 \alias{highlightProfilePlot}
-\title{Highlight gene and/or taxon of interest on the profile plot}
+\title{Highlight gene and/or taxon of interest on the phylogenetic profile plot}
 \usage{
-highlightProfilePlot(data, plotParameter, taxonHighlight,
-    rankName, geneHighlight)
+highlightProfilePlot(data, plotParameter = NULL, taxonHighlight = 
+    "none", rankName = "none", geneHighlight = "none")
 }
 \arguments{
-\item{data}{data for heatmap plot}
+\item{data}{dataframe for plotting the heatmap phylogentic profile (either
+full or subset profiles)}
 
-\item{plotParameter}{plot parameters (type of x-axis "taxa" or "genes";
-names of 2 variables; colors for lowest and highest value of variable 1;
-colors for lowest and highest value of variable 2; color of co-orthologs;
-text sizes for x, y axis and legend; legend position "top", "bottom",
-"right", "left" or "none"; zoom ratio of the co-ortholog dots from -1 to 3;
-angle of x-axis from 0 to 90;
-show/hide separate line for reference taxon 1/0;
-enable/disable coloring gene categories TRUE/FALSE)}
+\item{plotParameter}{plot parameters, including (1) type of x-axis "taxa" or 
+"genes" - default = "taxa"; (2+3) names of 2 variables var1ID and var2ID - 
+default = "var1" & "var2"; (4) color for lowest var1 - default = "#FF8C00";
+(5) color for highest var1 - default = "#4682B4"; (6) color for lowest var2 -
+default = "#FFFFFF", (7) color for highest var2 - default = "#F0E68C", (8) 
+color of co-orthologs - default = "#07D000"; (9+10+11) text sizes for x, y 
+axis and legend - default = 9 for each; (12) legend position "top", "bottom",
+"right", "left" or "none" - default = "top"; (13) zoom ratio of the 
+co-ortholog dots from -1 to 3 - default = 0; (14) angle of x-axis from 0 to 
+90 - default = 60; (14) show/hide separate line for reference taxon 1/0 - 
+default = 0; (15) enable/disable coloring gene categories TRUE/FALSE - 
+default = FALSE). NOTE: Leave blank or NULL to use default values.}
 
-\item{taxonHighlight}{taxon of interst}
+\item{taxonHighlight}{taxon of interst. Default = "none".}
 
-\item{rankName}{working taxonomy rank}
+\item{rankName}{working taxonomy rank (needed only for highlight taxon).}
 
-\item{geneHighlight}{gene of interest}
+\item{geneHighlight}{gene of interest. Default = "none".}
 }
 \value{
 A profile heatmap plot with highlighted gene and/or taxon of interest
 as ggplot object.
 }
 \description{
-Highlight gene and/or taxon of interest on the profile plot
+Highlight gene and/or taxon of interest on the phylogenetic profile plot
 }
 \examples{
 data("fullProcessedProfile", package="PhyloProfile")

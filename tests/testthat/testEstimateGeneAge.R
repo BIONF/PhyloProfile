@@ -10,9 +10,11 @@ test_that("test estimation of gene ages", {
     var1Cutoff <- c(0,1)
     var2Cutoff <- c(0,1)
     percentCutoff <- c(0,1)
-    geneAge <- estimateGeneAge(fullProcessedProfile,
-                                  rankName, refTaxon,
-                                  var1Cutoff, var2Cutoff, percentCutoff)
+    geneAge <- estimateGeneAge(
+        fullProcessedProfile,
+        rankName, refTaxon,
+        var1Cutoff, var2Cutoff, percentCutoff
+    )
 
     expect_true(geneAge$age[geneAge$geneID == "OG_1019"] == "07_LUCA")
 })

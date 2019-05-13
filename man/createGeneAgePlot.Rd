@@ -4,10 +4,11 @@
 \alias{createGeneAgePlot}
 \title{Create gene age plot}
 \usage{
-createGeneAgePlot(countDf, geneAgeText)
+createGeneAgePlot(geneAgePlotDf, geneAgeText)
 }
 \arguments{
-\item{countDf}{data for plotting gene age}
+\item{geneAgePlotDf}{data frame required for plotting gene age (see 
+?geneAgePlotDf)}
 
 \item{geneAgeText}{text size}
 }
@@ -18,14 +19,14 @@ A gene age distribution plot as a ggplot2 object
 Create gene age plot
 }
 \examples{
-countDf <- data.frame(
+geneAgePlotDf <- data.frame(
     age = "OG_1017",
     frea = 2,
     percentage = 100,
     pos = 50
 )
 geneAgeText <- 1
-createGeneAgePlot(countDf, geneAgeText)
+createGeneAgePlot(geneAgePlotDf, geneAgeText)
 }
 \seealso{
 \code{\link{estimateGeneAge}} and \code{\link{geneAgePlotDf}}

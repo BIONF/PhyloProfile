@@ -4,7 +4,7 @@
 \alias{getQualColForVector}
 \title{Get color for a list of items}
 \usage{
-getQualColForVector(x)
+getQualColForVector(x = NULL)
 }
 \arguments{
 \item{x}{input list}

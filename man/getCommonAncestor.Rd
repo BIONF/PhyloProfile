@@ -2,47 +2,32 @@
 % Please edit documentation in R/compareTaxaGroups.R
 \name{getCommonAncestor}
 \alias{getCommonAncestor}
-\title{Generate the inGroup}
+\title{Get all taxa that share a common ancestor}
 \usage{
-getCommonAncestor(inGroup, rank, nameList, selectedInGroup,
-    ncbiIDList)
+getCommonAncestor(inputTaxa = NULL, inGroup = NULL)
 }
 \arguments{
-\item{inGroup}{list of taxa}
+\item{inputTaxa}{ID list of all input taxa (e.g. "ncbi12345")}
 
-\item{rank}{selected rank}
-
-\item{nameList}{contains "ncbiID", "fullName", "rank", "parentID"}
-
-\item{selectedInGroup}{contains "abbrName, "ncbiID", fullName", "strain",
-"genus"..}
-
-\item{ncbiIDList}{list of input taxon IDs}
+\item{inGroup}{ID list of selected taxa used for identify the common ancestor
+(e.g.: "ncbi55555")}
 }
 \value{
-common anchestor
+A list containing the taxonomy rank and name of the common ancestor,
+together with a dataframe storing the full taxonomy info of all taxa that
+share that corresponding common ancestor.
 }
 \description{
-Generate the inGroup
+Identify the common ancestor for a selected taxa and return a
+list of all taxa that have that common ancestor from an large input taxa set.
 }
 \examples{
-inGroup <- c("Aeropyrum pernix", "Agrobacterium fabrum")
-rank <- "species"
-nameListFile <- system.file(
-    "extdata", "data/taxonNamesFull.txt",
-    package = "PhyloProfile", mustWork = TRUE
-)
-nameList <- as.data.frame(data.table::fread(nameListFile))
-selectedInGroup <- getTaxonomyMatrix(FALSE, NULL)
-ncbiIDList <- c(56636, 1176649)
-getCommonAncestor(
-    inGroup,
-    rank,
-    nameList,
-    selectedInGroup,
-    ncbiIDList
-)
+inputTaxa <- c("ncbi103449", "ncbi1288291", "ncbi278021", "ncbi27973",
+    "ncbi31281", "ncbi40302", "ncbi586133", "ncbi6035", "ncbi70536",
+    "ncbi876142", "ncbi993615")
+inGroup <-  c("ncbi27973", "ncbi6035")
+getCommonAncestor(inputTaxa, inGroup)
 }
 \author{
-Carla Mölbert (carla.moelbert@gmx.de)
+Vinh Tran (tran@bio.uni-frankfurt.de)
 }

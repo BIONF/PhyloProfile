@@ -4,24 +4,23 @@
 \alias{sortInputTaxa}
 \title{Sort list of (super)taxa based on a selected reference (super)taxon}
 \usage{
-sortInputTaxa(taxonIDs, taxonNames, rankName, refTaxon, taxaTree)
+sortInputTaxa(taxonIDs = NULL, rankName, refTaxon = NULL,
+    taxaTree = NULL)
 }
 \arguments{
-\item{taxonIDs}{list of taxon IDs (e.g.: ncbi1234, ncbi9999, ...)}
-
-\item{taxonNames}{list of taxon names and their corresponding taxonomy
-ranks, IDs,...}
+\item{taxonIDs}{list of taxon IDs (e.g.: ncbi1234, ncbi9999, ...). Default =
+NULL.}
 
 \item{rankName}{working taxonomy rank (e.g. "species", "phylum",...)}
 
-\item{refTaxon}{selected reference taxon}
+\item{refTaxon}{selected reference taxon. Default = NULL.}
 
-\item{taxaTree}{input taxonomy tree (optional)}
+\item{taxaTree}{taxonomy tree for the input taxa (optional). Default = NULL.}
 }
 \value{
-Taxonomy matrix for the input taxa ordered by the selected reference
-taxon. This matrix is sorted either based on the NCBI taxonomy info, or
-based on an user-defined taxonomy tree (if provided).
+A taxonomy matrix for the input taxa ordered by the selected
+reference taxon. This matrix is sorted either based on the NCBI taxonomy
+info, or based on an user-defined taxonomy tree (if provided).
 }
 \description{
 Sort list of (super)taxa based on a selected reference (super)taxon
@@ -30,8 +29,7 @@ Sort list of (super)taxa based on a selected reference (super)taxon
 taxonIDs <- c(
     "ncbi272557", "ncbi176299", "ncbi3702", "ncbi876142", "ncbi9606"
 )
-taxonNames <- getInputTaxaName("species", taxonIDs)
-sortInputTaxa(taxonIDs, taxonNames, "species", "Homo sapiens", NULL)
+sortInputTaxa(taxonIDs, "species", "Homo sapiens", NULL)
 }
 \seealso{
 \code{\link{getNameList}}, \code{\link{getTaxonomyMatrix}},

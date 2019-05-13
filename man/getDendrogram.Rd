@@ -4,13 +4,13 @@
 \alias{getDendrogram}
 \title{Plot dendrogram tree}
 \usage{
-getDendrogram(dd)
+getDendrogram(dd = NULL)
 }
 \arguments{
-\item{dd}{dendrogram object}
+\item{dd}{dendrogram object (see ?clusterDataDend)}
 }
 \value{
-A dendrogram plot
+A dendrogram plot for the genes in the input phylogenetic profiles.
 }
 \description{
 Plot dendrogram tree

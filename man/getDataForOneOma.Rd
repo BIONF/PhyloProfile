@@ -4,18 +4,20 @@
 \alias{getDataForOneOma}
 \title{Get OMA info for a query protein and its orthologs}
 \usage{
-getDataForOneOma(seedID, orthoType)
+getDataForOneOma(seedID = NULL, orthoType = "OG")
 }
 \arguments{
-\item{seedID}{protein query ID in OMA or UniProt format}
+\item{seedID}{OMA protein ID}
 
-\item{orthoType}{type of OMA orthologs}
+\item{orthoType}{type of OMA orthologs ("OG" or "HOG"). Default = "OG".}
 }
 \value{
-data frame contains info for all sequences of that OMA group (or HOG)
+Data frame contains info for all sequences of the input OMA group 
+(or HOG). That info contains the protein IDs, taxonomy IDs, sequences, 
+lengths, domain annotations (tab delimited) and the corresponding seed ID.
 }
 \description{
-Get taxonomy IDs, sequences and annotations for an OMA
+Get taxonomy IDs, sequences, length and annotations for an OMA
 orthologous group (or OMA HOG).
 }
 \examples{

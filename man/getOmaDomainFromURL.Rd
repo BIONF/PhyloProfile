@@ -4,13 +4,14 @@
 \alias{getOmaDomainFromURL}
 \title{Get domain annotation from OMA Browser}
 \usage{
-getOmaDomainFromURL(domainURL)
+getOmaDomainFromURL(domainURL = NULL)
 }
 \arguments{
-\item{domainURL}{URL address for domain annotation of ONE OMA id}
+\item{domainURL}{URL address for domain annotation of ONE OMA id or a
+raw data frame contains annotation info from OMA}
 }
 \value{
-data frame contains feature names, start and end positions
+Data frame contains feature names with their start and end positions
 }
 \description{
 Get domain annotation from OMA Browser based on a URL or a

@@ -4,23 +4,21 @@
 \alias{createVariableDistributionData}
 \title{Create data for additional variable distribution}
 \usage{
-createVariableDistributionData(inputData, var1CutoffMin,
-    var1CutoffMax, var2CutoffMin, var2CutoffMax)
+createVariableDistributionData(inputData, var1Cutoff = c(0 ,1),
+    var2Cutoff = c(0, 1))
 }
 \arguments{
-\item{inputData}{dataframe contains raw input data in long format}
+\item{inputData}{dataframe contains raw input data in long format
+(see ?mainLongRaw)}
 
-\item{var1CutoffMin}{min cutoff for var1}
+\item{var1Cutoff}{min and max cutoff for var1. Default = c(0, 1).}
 
-\item{var1CutoffMax}{max cutoff for var1}
-
-\item{var2CutoffMin}{min cutoff for var2}
-
-\item{var2CutoffMax}{max cutoff for var2}
+\item{var2Cutoff}{min and max cutoff for var2. Default = c(0, 1).}
 }
 \value{
-A dataframe ready for analysing the distribution of the additional
-variable(s)
+A dataframe for analysing the distribution of the additional
+variable(s) containing the protein (ortholog) IDs and the values of their
+variables (var1 and var2).
 }
 \description{
 Create data for additional variable distribution
@@ -28,7 +26,7 @@ Create data for additional variable distribution
 \examples{
 data("mainLongRaw", package="PhyloProfile")
 createVariableDistributionData(
-    mainLongRaw, 0, 1, 0.5, 1
+    mainLongRaw, c(0, 1), c(0.5, 1)
 )
 }
 \seealso{

@@ -1,29 +1,36 @@
 #' Create data for main profile plot
 #' @export
-#' @param dataHeat a data frame contains processed profiles
-#' @return A data frame contains data for main profile plot.
+#' @param dataHeat a data frame contains processed profiles (see
+#' ?fullProcessedProfile, ?filterProfileData)
+#' @return A dataframe for plotting the phylogenetic profile, containing seed
+#' protein IDs (geneID), ortholog IDs (orthoID) together with their ncbi
+#' taxonomy IDs (ncbiID and abbrName), full names (fullName), indexed supertaxa
+#' (supertaxon), values for additional variables (var1, var2) and the aggregated
+#' values of those additional variables for each supertaxon (mVar1, mVar2),
+#' number of original and filtered co-orthologs in each supertaxon (paralog and
+#' paralogNew), number of species in each supertaxon (numberSpec) and the % of
+#' species that have orthologs in each supertaxon (presSpec).
 #' @importFrom stats na.omit
 #' @rawNamespace import(data.table, except = c(set, melt))
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
-#' @seealso \code{\link{fromInputToProfile}}
+#' @seealso \code{\link{filterProfileData}}
 #' @examples
 #' data("fullProcessedProfile", package="PhyloProfile")
 #' dataMainPlot(fullProcessedProfile)
 
-dataMainPlot <- function(dataHeat){
+dataMainPlot <- function(dataHeat = NULL){
+    if (is.null(dataHeat)) return()
     paralogNew <- NULL
 
     # reduce number of inparalogs based on filtered dataHeat
     dataHeatTb <- data.table(na.omit(dataHeat))
     dataHeatTb[, paralogNew := .N, by = c("geneID", "supertaxon")]
-    dataHeatTb <- data.frame(dataHeatTb[, c("geneID",
-                                                "supertaxon",
-                                                "paralogNew")])
+    dataHeatTb <- data.frame(dataHeatTb[, c(
+        "geneID", "supertaxon", "paralogNew"
+    )])
 
     dataHeat <- merge(
-        dataHeat, dataHeatTb,
-        by = c("geneID", "supertaxon"),
-        all.x = TRUE
+        dataHeat, dataHeatTb, by = c("geneID", "supertaxon"), all.x = TRUE
     )
     dataHeat$paralog <- dataHeat$paralogNew
     dataHeat <- dataHeat[!duplicated(dataHeat), ]
@@ -38,21 +45,34 @@ dataMainPlot <- function(dataHeat){
 
 #' Create data for customized profile plot
 #' @description Create data for customized profile plot based on a selected
-#' list of genes and/or taxa.
+#' list of genes and/or taxa, containing seed protein IDs (geneID), ortholog IDs
+#' (orthoID) together with their ncbi taxonomy IDs (ncbiID and abbrName), full
+#' names (fullName), indexed supertaxa (supertaxon), values for additional
+#' variables (var1, var2) and the aggregated values of those additional
+#' variables for each supertaxon (mVar1, mVar2), number of original and filtered
+#' co-orthologs in each supertaxon (paralog and paralogNew), number of species
+#' in each supertaxon (numberSpec) and the % of species that have orthologs in
+#' each supertaxon (presSpec).
 #' @export
-#' @param dataHeat a data frame contains processed profiles
-#' @param selectedTaxa subset of taxa
-#' @param selectedSeq subset of sequences
-#' @return A data frame contains data for customized profile plot.
+#' @usage dataCustomizedPlot(dataHeat = NULL, selectedTaxa = "all",
+#'     selectedSeq = "all")
+#' @param dataHeat a data frame contains processed profiles (see
+#' ?fullProcessedProfile, ?filterProfileData)
+#' @param selectedTaxa selected subset of taxa. Default = "all".
+#' @param selectedSeq selected subset of genes. Default = "all".
+#' @return A dataframe contains data for plotting the customized profile.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
-#' @seealso \code{\link{fromInputToProfile}}
+#' @seealso \code{\link{filterProfileData}}
 #' @examples
 #' data("fullProcessedProfile", package="PhyloProfile")
 #' selectedTaxa <- c("Mammalia", "Echinoidea", "Gunneridae")
 #' selectedSeq <- "all"
 #' dataCustomizedPlot(fullProcessedProfile, selectedTaxa, selectedSeq)
 
-dataCustomizedPlot <- function(dataHeat, selectedTaxa, selectedSeq){
+dataCustomizedPlot <- function(
+    dataHeat = NULL, selectedTaxa = "all", selectedSeq = "all"
+){
+    if (is.null(dataHeat)) return()
     geneID <- NULL
     supertaxonMod <- NULL
     paralogNew <- NULL
@@ -72,22 +92,21 @@ dataCustomizedPlot <- function(dataHeat, selectedTaxa, selectedSeq){
         dataHeat <- subset(dataHeat, supertaxonMod %in% selectedTaxa)
     } else {
         # select data from dataHeat for selected sequences and taxa
-        dataHeat <- subset(dataHeat,
-                            geneID %in% selectedSeq
-                            & supertaxonMod %in% selectedTaxa)
+        dataHeat <- subset(
+            dataHeat, geneID %in% selectedSeq & supertaxonMod %in% selectedTaxa
+        )
     }
 
     # reduce number of inparalogs based on filtered dataHeat
     dataHeatTb <- data.table(na.omit(dataHeat))
     dataHeatTb[, paralogNew := .N, by = c("geneID", "supertaxon")]
-    dataHeatTb <- data.frame(dataHeatTb[, c("geneID",
-                                            "supertaxon",
-                                            "paralogNew")])
+
+    dataHeatTb <- data.frame(
+        dataHeatTb[, c("geneID", "supertaxon", "paralogNew")]
+    )
 
     dataHeat <- merge(
-        dataHeat, dataHeatTb,
-        by = c("geneID", "supertaxon"),
-        all.x = TRUE
+        dataHeat, dataHeatTb, by = c("geneID", "supertaxon"), all.x = TRUE
     )
     dataHeat$paralog <- dataHeat$paralogNew
     dataHeat <- dataHeat[!duplicated(dataHeat), ]
@@ -103,16 +122,21 @@ dataCustomizedPlot <- function(dataHeat, selectedTaxa, selectedSeq){
 
 #' Create profile heatmap plot
 #' @export
-#' @param data data for heatmap plot
-#' @param plotParameter plot parameters (type of x-axis "taxa" or "genes";
-#' names of 2 variables; colors for lowest and highest value of variable 1;
-#' colors for lowest and highest value of variable 2; color of co-orthologs;
-#' text sizes for x, y axis and legend; legend position "top", "bottom",
-#' "right", "left" or "none"; zoom ratio of the co-ortholog dots from -1 to 3;
-#' angle of x-axis from 0 to 90;
-#' show/hide separate line for reference taxon 1/0;
-#' enable/disable coloring gene categories TRUE/FALSE)
-#' @return A profile heatmap plot as ggplot object.
+#' @param data dataframe for plotting the heatmap phylogentic profile (either
+#' full or subset profiles)
+#' @param plotParameter plot parameters, including (1) type of x-axis "taxa" or
+#' "genes" - default = "taxa"; (2+3) names of 2 variables var1ID and var2ID -
+#' default = "var1" & "var2"; (4) color for lowest var1 - default = "#FF8C00";
+#' (5) color for highest var1 - default = "#4682B4"; (6) color for lowest var2 -
+#' default = "#FFFFFF", (7) color for highest var2 - default = "#F0E68C", (8)
+#' color of co-orthologs - default = "#07D000"; (9+10+11) text sizes for x, y
+#' axis and legend - default = 9 for each; (12) legend position "top", "bottom",
+#' "right", "left" or "none" - default = "top"; (13) zoom ratio of the
+#' co-ortholog dots from -1 to 3 - default = 0; (14) angle of x-axis from 0 to
+#' 90 - default = 60; (14) show/hide separate line for reference taxon 1/0 -
+#' default = 0; (15) enable/disable coloring gene categories TRUE/FALSE -
+#' default = FALSE). NOTE: Leave blank or NULL to use default values.
+#' @return A profile heatmap plot as a ggplot object.
 #' @importFrom plyr mapvalues
 #' @importFrom ggplot2 scale_fill_gradient
 #' @importFrom ggplot2 scale_color_gradient
@@ -147,7 +171,24 @@ dataCustomizedPlot <- function(dataHeat, selectedTaxa, selectedSeq){
 #'
 #' heatmapPlotting(plotDf, plotParameter)
 
-heatmapPlotting <- function(data, plotParameter){
+heatmapPlotting <- function(data = NULL, plotParameter = NULL){
+    if (is.null(data)) return()
+    if (is.null(plotParameter)) {
+        plotParameter <- list(
+            "xAxis" = "taxa",
+            "var1ID" = "var1", "var2ID"  = "var2",
+            "lowColorVar1" =  "#FF8C00", "highColorVar1" = "#4682B4",
+            "lowColorVar2" = "#FFFFFF", "highColorVar2" = "#F0E68C",
+            "paraColor" = "#07D000",
+            "xSize" = 8, "ySize" = 8,
+            "legendSize" = 8, "mainLegend" = "top",
+            "dotZoom" = 0,
+            "xAngle" = 60,
+            "guideline" = 0,
+            "colorByGroup" = FALSE
+        )
+    }
+
     geneID <- NULL
     supertaxon <- NULL
     group <- NULL
@@ -190,9 +231,11 @@ heatmapPlotting <- function(data, plotParameter){
             warn_missing = FALSE,
             data$supertaxon,
             from = as.character(data$supertaxon),
-            to = substr(as.character(data$supertaxon),
-                        6,
-                        nchar(as.character(data$supertaxon)))
+            to = substr(
+                as.character(data$supertaxon),
+                6,
+                nchar(as.character(data$supertaxon))
+            )
         )
     }
 
@@ -230,16 +273,13 @@ heatmapPlotting <- function(data, plotParameter){
                                 na.rm = TRUE)
             # color of the corresponding aes (var1)
             p <- p + scale_color_gradient(
-                low = lowColorVar1,
-                high = highColorVar1,
-                limits = c(0, 1)
+                low = lowColorVar1, high = highColorVar1, limits = c(0, 1)
             )
         }
     } else {
         if (length(unique(na.omit(data$var1))) == 1) {
             # geom_point for circle illusion (var1 and presence/absence)
-            p <- p + geom_point(aes(size = presSpec),
-                                color = "#336a98",
+            p <- p + geom_point(aes(size = presSpec), color = "#336a98",
                                 na.rm = TRUE)
         } else {
             # geom_point for circle illusion (var1 and presence/absence)
@@ -248,19 +288,17 @@ heatmapPlotting <- function(data, plotParameter){
             # color of the corresponding aes (var1)
             p <- p +
                 scale_color_gradient(
-                    low = lowColorVar1, high = highColorVar1,
-                    limits = c(0, 1)
+                    low = lowColorVar1, high = highColorVar1, limits = c(0, 1)
                 )
         }
     }
 
     # plot inparalogs (if available)
     if (length(unique(na.omit(data$paralog))) > 0) {
-        p <- p + geom_point(data = data,
-                            aes(size = paralog),
-                            color = paraColor,
-                            na.rm = TRUE,
-                            show.legend = TRUE)
+        p <- p + geom_point(
+            data = data, aes(size = paralog), color = paraColor,
+            na.rm = TRUE, show.legend = TRUE
+        )
         p <- p + guides(size = guide_legend(title = "# of co-orthologs"))
 
         # to tune the size of circles
@@ -325,22 +363,27 @@ heatmapPlotting <- function(data, plotParameter){
     return(p)
 }
 
-#' Highlight gene and/or taxon of interest on the profile plot
+#' Highlight gene and/or taxon of interest on the phylogenetic profile plot
 #' @export
-#' @usage highlightProfilePlot(data, plotParameter, taxonHighlight,
-#'     rankName, geneHighlight)
-#' @param data data for heatmap plot
-#' @param plotParameter plot parameters (type of x-axis "taxa" or "genes";
-#' names of 2 variables; colors for lowest and highest value of variable 1;
-#' colors for lowest and highest value of variable 2; color of co-orthologs;
-#' text sizes for x, y axis and legend; legend position "top", "bottom",
-#' "right", "left" or "none"; zoom ratio of the co-ortholog dots from -1 to 3;
-#' angle of x-axis from 0 to 90;
-#' show/hide separate line for reference taxon 1/0;
-#' enable/disable coloring gene categories TRUE/FALSE)
-#' @param taxonHighlight taxon of interst
-#' @param rankName working taxonomy rank
-#' @param geneHighlight gene of interest
+#' @usage highlightProfilePlot(data, plotParameter = NULL, taxonHighlight =
+#'     "none", rankName = "none", geneHighlight = "none")
+#' @param data dataframe for plotting the heatmap phylogentic profile (either
+#' full or subset profiles)
+#' @param plotParameter plot parameters, including (1) type of x-axis "taxa" or
+#' "genes" - default = "taxa"; (2+3) names of 2 variables var1ID and var2ID -
+#' default = "var1" & "var2"; (4) color for lowest var1 - default = "#FF8C00";
+#' (5) color for highest var1 - default = "#4682B4"; (6) color for lowest var2 -
+#' default = "#FFFFFF", (7) color for highest var2 - default = "#F0E68C", (8)
+#' color of co-orthologs - default = "#07D000"; (9+10+11) text sizes for x, y
+#' axis and legend - default = 9 for each; (12) legend position "top", "bottom",
+#' "right", "left" or "none" - default = "top"; (13) zoom ratio of the
+#' co-ortholog dots from -1 to 3 - default = 0; (14) angle of x-axis from 0 to
+#' 90 - default = 60; (14) show/hide separate line for reference taxon 1/0 -
+#' default = 0; (15) enable/disable coloring gene categories TRUE/FALSE -
+#' default = FALSE). NOTE: Leave blank or NULL to use default values.
+#' @param taxonHighlight taxon of interst. Default = "none".
+#' @param rankName working taxonomy rank (needed only for highlight taxon).
+#' @param geneHighlight gene of interest. Default = "none".
 #' @return A profile heatmap plot with highlighted gene and/or taxon of interest
 #' as ggplot object.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
@@ -374,12 +417,13 @@ heatmapPlotting <- function(data, plotParameter){
 #' )
 
 highlightProfilePlot <- function(
-    data,
-    plotParameter,
-    taxonHighlight,
-    rankName,
-    geneHighlight
+    data = NULL,
+    plotParameter = NULL,
+    taxonHighlight = "none",
+    rankName = "none",
+    geneHighlight = "none"
 ){
+    if (is.null(data)) return()
     xmin <- NULL
     xmax <- NULL
     ymin <- NULL
@@ -404,9 +448,7 @@ highlightProfilePlot <- function(
             )
             res <- tryCatch(
                 utils::download.file(
-                    fileURL,
-                    destfile = nameReducedFile,
-                    method="auto"
+                    fileURL, destfile = nameReducedFile, method="auto"
                 ),
                 error=function(e) 1
             )
@@ -416,8 +458,7 @@ highlightProfilePlot <- function(
 
         taxonHighlightID <- {
             taxaList$ncbiID[
-                taxaList$fullName == taxonHighlight
-                & taxaList$rank == rankName
+                taxaList$fullName == taxonHighlight & taxaList$rank == rankName
             ]
         }
 

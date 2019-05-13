@@ -1,13 +1,18 @@
 #' Parse domain input file
+#' @description Get all domain annotations for one seed protein IDs.
 #' @export
-#' @param seed seed ID(s)
-#' @param inputFile name of input data (demo data, file name or path to folder)
-#' @param type type of data (demo, file or folder)
+#' @param seed seed protein ID
+#' @param inputFile name of input file ("lca-micros" or "ampk-tor" for demo
+#' data, file name or path to folder contains individual domain files)
+#' @param type type of data ("demo", "file" or "folder"). Default = "file".
 #' @importFrom utils read.csv
-#' @return A dataframe containing protein domain info
+#' @return A dataframe for protein domains including seed ID, its orthologs IDs,
+#' sequence lengths, feature names, start and end positions, feature weights
+#' (optional) and the status to determine if that feature is important for
+#' comparison the architecture between 2 proteins* (e.g. seed protein vs
+#' ortholog) (optional).
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
-#' @seealso \code{\link{getDomainOnline}}, \code{\link{getDomainFile}},
-#' \code{\link{getDomainFolder}}
+#' @seealso \code{\link{getDomainOnline}}, \code{\link{getDomainFolder}}
 #' @examples
 #' seed <- "OG_1009"
 #' inputFile <- system.file(
@@ -17,9 +22,11 @@
 #' type <- "file"
 #' parseDomainInput(seed, inputFile, type)
 
-parseDomainInput <- function(seed, inputFile, type) {
-    domains <- data.frame()
+parseDomainInput <- function(seed = NULL, inputFile = NULL, type = "file") {
     file <- NULL
+    # check parameters
+    if (type == "folder" & is.null(seed)) return()
+    if (is.null(inputFile)) return()
 
     # get domain file(s) from online data
     if (type == "demo") {
@@ -27,7 +34,7 @@ parseDomainInput <- function(seed, inputFile, type) {
     }
     # or from single file
     else if (type == "file") {
-        file <- getDomainFile(inputFile)
+        file <- inputFile
     }
     # or from a domain folder
     else {
@@ -39,7 +46,7 @@ parseDomainInput <- function(seed, inputFile, type) {
     # parse domain file
     # for demo data
     if (type == "demo") {
-        domainDf <- read.csv(
+        domains <- read.csv(
             file,
             sep = "\t",
             header = FALSE,
@@ -47,7 +54,6 @@ parseDomainInput <- function(seed, inputFile, type) {
             stringsAsFactors = FALSE,
             quote = ""
         )
-        domains <- rbind(domains, domainDf)
 
         if (ncol(domains) == 5) {
             colnames(domains) <- c(
@@ -68,10 +74,9 @@ parseDomainInput <- function(seed, inputFile, type) {
         if (file != FALSE) {
             exeptions <- c("noFileInput", "noSelectHit", "noFileInFolder")
             if (!(file %in% exeptions)) {
-                domainDf <- read.table(
+                domains <- read.table(
                     file, sep = "\t", header = FALSE, comment.char = ""
                 )
-                domains <- rbind(domains, domainDf)
             }
         }
 
@@ -109,12 +114,12 @@ parseDomainInput <- function(seed, inputFile, type) {
 }
 
 #' Get domain file(s) for online data set
-#' @param demoData demo data name (either lca-micros or ampk-tor)
-#' @return Domain file and its complete directory path
+#' @param demoData demo data name (either "lca-micros" or "ampk-tor").
+#' @return URL for the domain file of the selected data set.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @examples
 #' \dontrun{
-#' getDomainOnline("lca-micors")
+#' getDomainOnline("lca-micros")
 #' }
 
 getDomainOnline <- function(demoData) {
@@ -133,39 +138,20 @@ getDomainOnline <- function(demoData) {
             )
         }
     }
-
     return(fileDomain)
 }
 
-#' Get domain file from a single (concatenate) file
-#' @param inputFile concatenate domain file
-#' @return Domain file and its complete directory path
-#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
-#' @examples
-#' \dontrun{
-#' inputFile <- system.file(
-#'     "extdata", "domainFiles/OG_1009.domains",
-#'     package = "PhyloProfile", mustWork = TRUE
-#' )
-#' getDomainFile("lca-micors")
-#' }
-
-getDomainFile <- function(inputFile) {
-    fileDomain <- inputFile
-    return(fileDomain)
-}
-
-#' Get domain files from a folder
-#' @param seed seed ID
+#' Get domain file from a folder for a seed protein
+#' @param seed seed protein ID
 #' @param domainPath path to domain folder
-#' @return Domain file and its complete directory path
+#' @return Domain file and its complete directory path for the selected protein.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @examples
 #' \dontrun{
 #' domainPath <- paste0(
-#'     path.package("PhyloProfile", quiet = FALSE), "extdata/domainFiles"
+#'     path.package("PhyloProfile", quiet = FALSE), "/extdata/domainFiles"
 #' )
-#' getDomainOnline("OG_1009", domainPath)
+#' getDomainFolder("OG_1009", domainPath)
 #' }
 
 getDomainFolder <- function(seed, domainPath){
@@ -174,22 +160,12 @@ getDomainFolder <- function(seed, domainPath){
     } else {
         # check file extension
         allExtension <- c("txt", "csv", "list", "domains", "architecture")
-        flag <- 0
+        fileDomain <- paste0(domainPath, "/", seed, ".", allExtension)
 
-        for (i in seq_len(length(allExtension))) {
-            fileDomain <- paste0(
-                domainPath, "/", seed, ".", allExtension[i]
-            )
-            if (file.exists(fileDomain) == TRUE) {
-                flag <- 1
-                break()
-            }
-        }
+        checkExistance <- lapply(fileDomain, function (x) file.exists(x))
+        fileDomain <- fileDomain[match(TRUE, checkExistance)]
 
-        if (flag == 0) {
-            fileDomain <- "noFileInFolder"
-        }
+        if (is.na(fileDomain)) fileDomain <- "noFileInFolder"
     }
-
     return(fileDomain)
 }

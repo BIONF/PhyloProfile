@@ -4,13 +4,21 @@
 \alias{dataMainPlot}
 \title{Create data for main profile plot}
 \usage{
-dataMainPlot(dataHeat)
+dataMainPlot(dataHeat = NULL)
 }
 \arguments{
-\item{dataHeat}{a data frame contains processed profiles}
+\item{dataHeat}{a data frame contains processed profiles (see
+?fullProcessedProfile, ?filterProfileData)}
 }
 \value{
-A data frame contains data for main profile plot.
+A dataframe for plotting the phylogenetic profile, containing seed 
+protein IDs (geneID), ortholog IDs (orthoID) together with their ncbi 
+taxonomy IDs (ncbiID and abbrName), full names (fullName), indexed supertaxa
+(supertaxon), values for additional variables (var1, var2) and the aggregated
+values of those additional variables for each supertaxon (mVar1, mVar2), 
+number of original and filtered co-orthologs in each supertaxon (paralog and 
+paralogNew), number of species in each supertaxon (numberSpec) and the % of 
+species that have orthologs in each supertaxon (presSpec).
 }
 \description{
 Create data for main profile plot
@@ -20,7 +28,7 @@ data("fullProcessedProfile", package="PhyloProfile")
 dataMainPlot(fullProcessedProfile)
 }
 \seealso{
-\code{\link{fromInputToProfile}}
+\code{\link{filterProfileData}}
 }
 \author{
 Vinh Tran {tran@bio.uni-frankfurt.de}
