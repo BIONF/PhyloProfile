@@ -9,7 +9,7 @@ featureDistTaxPlot(data, plotParameters)
 \arguments{
 \item{data}{dataframe for plotting (see ?dataFeatureTaxGroup)}
 
-\item{plotParameters}{plot parameters, including size of x-axis, y-axis, 
+\item{plotParameters}{plot parameters, including size of x-axis, y-axis,
 legend and title; position of legend ("right", "bottom" or "none"); names of
 in-group and out-group; flip the plot coordinate ("Yes" or "No").
 NOTE: Leave blank or NULL to use default values.}
@@ -18,7 +18,7 @@ NOTE: Leave blank or NULL to use default values.}
 Distribution plots as a ggplot2 object.
 }
 \description{
-Create protein feature distribution plots between 2 groups of 
+Create protein feature distribution plots between 2 groups of
 taxa for a selected gene.
 }
 \examples{

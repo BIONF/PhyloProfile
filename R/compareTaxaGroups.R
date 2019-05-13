@@ -1,5 +1,5 @@
 #' Get all taxa that share a common ancestor
-#' @description Identify the common ancestor for a selected taxa and return a 
+#' @description Identify the common ancestor for a selected taxa and return a
 #' list of all taxa that have that common ancestor from an large input taxa set.
 #' @export
 #' @param inputTaxa ID list of all input taxa (e.g. "ncbi12345")
@@ -18,15 +18,14 @@
 
 getCommonAncestor <- function(inputTaxa = NULL, inGroup = NULL) {
     if (is.null(inputTaxa) | is.null(inGroup)) return()
-    
+
     # get list of pre-calculated taxonomy info
     taxMatrix <- getTaxonomyMatrix(TRUE, inputTaxa)
     # get subset taxonomy info for selected in-group taxa
     selectedTaxMatrix <- taxMatrix[
-        taxMatrix$abbrName %in% inGroup, 
+        taxMatrix$abbrName %in% inGroup,
         which(!duplicated(t(taxMatrix)))
     ]
-    # identify common ancestor
     # identify common ancestor
     V1 <- vapply(
         selectedTaxMatrix[,c(seq(4, ncol(selectedTaxMatrix)))], max,
@@ -41,31 +40,31 @@ getCommonAncestor <- function(inputTaxa = NULL, inGroup = NULL) {
     commonRank <- rownames(checkDf[V1 == V2,])[1]
     commonID <- checkDf[V1 == V2,][1]
     commonTaxa <- taxMatrix[taxMatrix[, commonRank] == commonID, ]
-    
+
     return(list(commonRank, commonID, commonTaxa))
 }
 
 #' Compare the score distributions between 2 taxon groups
 #' @description Given the phylogenetic profiles that contains up to 2 additional
-#' variables besides the presence/absence information of the orthologous 
-#' proteins. This function will compare the distribution of those variables 
-#' between 2 different taxon groups (e.g. parasitic species vs non-parasitic 
+#' variables besides the presence/absence information of the orthologous
+#' proteins. This function will compare the distribution of those variables
+#' between 2 different taxon groups (e.g. parasitic species vs non-parasitic
 #' species), which are defined as in-group and out-group. In-group is identified
 #' by the user. Out-group contains all taxa in the input phylogenetic profiles
 #' that are not part of the in-group.
-#' @usage compareTaxonGroups(data, inGroup, useCommonAncestor, variable, 
+#' @usage compareTaxonGroups(data, inGroup, useCommonAncestor, variable,
 #'     significanceLevel)
 #' @export
-#' @param data input phylogenetic profile in long format (see ?mainLongRaw and 
+#' @param data input phylogenetic profile in long format (see ?mainLongRaw and
 #' ?createLongMatrix)
 #' @param inGroup ID list of in-group taxa (e.g. "ncbi1234")
-#' @param useCommonAncestor TRUE/FALSE if using all taxa that share the same 
-#' common ancestor with the pre-selected in-group as the in-group taxa. 
+#' @param useCommonAncestor TRUE/FALSE if using all taxa that share the same
+#' common ancestor with the pre-selected in-group as the in-group taxa.
 #' Default = TRUE.
 #' @param variable name of the variable that need to be compared
-#' @param significanceLevel significant cutoff for the statistic test (between 
+#' @param significanceLevel significant cutoff for the statistic test (between
 #' 0 and 1). Default = 0.05.
-#' @return list of genes that have a significant difference in the variable 
+#' @return list of genes that have a significant difference in the variable
 #' distributions between the in-group and out-group taxa and their corresponding
 #' p-values.
 #' @author Vinh Tran (tran@bio.uni-frankfurt.de)
@@ -77,10 +76,10 @@ getCommonAncestor <- function(inputTaxa = NULL, inGroup = NULL) {
 #' compareTaxonGroups(data, inGroup, TRUE, variable, 0.05)
 
 compareTaxonGroups <- function(
-    data = NULL, 
-    inGroup = NULL, 
-    useCommonAncestor = TRUE, 
-    variable = NULL, 
+    data = NULL,
+    inGroup = NULL,
+    useCommonAncestor = TRUE,
+    variable = NULL,
     significanceLevel = 0.05
 ) {
     if (is.null(data) | is.null(inGroup) | is.null(variable)) return()
@@ -88,13 +87,13 @@ compareTaxonGroups <- function(
         message("Invalid variable")
         return()
     }
-    
+
     # add other taxa that share a common ancestor with the given in-group
     commonTaxa <- getCommonAncestor(levels(as.factor(data$ncbiID)), inGroup)
     if (useCommonAncestor == TRUE) {
         inGroup <- as.character(commonTaxa[[3]]$abbrName)
     }
-    
+
     # perform distribution comparison test
     data$geneID <- as.character(data$geneID)
     pvalues <- vapply(
@@ -115,15 +114,15 @@ compareTaxonGroups <- function(
 }
 
 #' Compare the distribution of 2 numeric vectors
-#' @description This function tests the difference between the distributions of 
-#' two input numeric samples using the statistical tess. First the 
+#' @description This function tests the difference between the distributions of
+#' two input numeric samples using the statistical tess. First the
 #' Kolmogorov-Smirnov is used to check if 2 samples have the same distribution.
-#' If yes, Wilcoxon-Mann-Whitney will be used to compare the distribution 
+#' If yes, Wilcoxon-Mann-Whitney will be used to compare the distribution
 #' difference.
 #' @usage distributionTest(varIn, varOut, significanceLevel)
 #' @param varIn first numeric vector
 #' @param varOut second numeric vector
-#' @param significanceLevel significant cutoff of the Kolmogorov-Smirnov test. 
+#' @param significanceLevel significant cutoff of the Kolmogorov-Smirnov test.
 #' Default = 0.05.
 #' @return p-value of the comparison test.
 #' @importFrom stats ks.test
@@ -137,7 +136,7 @@ distributionTest <- function(
     # remove NA values
     varIn <- varIn[!is.na(varIn)]
     varOut <- varOut[!is.na(varOut)]
-    
+
     # if there is no data in one of the groups the p-value is NULL
     if (length(varIn) == 0 | length(varOut) == 0) return()
     else {
@@ -146,7 +145,7 @@ distributionTest <- function(
         ks <- suppressWarnings(
             ks.test(unique(varIn), unique(varOut), exact = FALSE)
         )
-        
+
         if (ks$p.value <= significanceLevel) return(ks$p.value)
         else {
             # * Wilcoxon-Mann-Whitney Test
@@ -158,7 +157,7 @@ distributionTest <- function(
             )
             return(wilcox$p.value)
         }
-        
+
         # perm <- jmuOutlier:: perm.test(
         #     unique(varIn), unique(varOut),
         #     alternative = c("two.sided"),
@@ -175,19 +174,19 @@ distributionTest <- function(
 
 #' Compare the median values of a variable between 2 taxon groups
 #' @description Given the phylogenetic profiles that contains up to 2 additional
-#' variables besides the presence/absence information of the orthologous 
-#' proteins. This function will compare the median scores of those variables 
-#' between 2 different taxon groups (e.g. parasitic species vs non-parasitic 
+#' variables besides the presence/absence information of the orthologous
+#' proteins. This function will compare the median scores of those variables
+#' between 2 different taxon groups (e.g. parasitic species vs non-parasitic
 #' species), which are defined as in-group and out-group. In-group is identified
 #' by the user. Out-group contains all taxa in the input phylogenetic profiles
 #' that are not part of the in-group.
 #' @usage compareMedianTaxonGroups(data, inGroup, useCommonAncestor, variable)
 #' @export
-#' @param data input phylogenetic profile in long format (see ?mainLongRaw and 
+#' @param data input phylogenetic profile in long format (see ?mainLongRaw and
 #' ?createLongMatrix)
 #' @param inGroup ID list of in-group taxa (e.g. "ncbi1234")
-#' @param useCommonAncestor TRUE/FALSE if using all taxa that share the same 
-#' common ancestor with the pre-selected in-group as the in-group taxa. 
+#' @param useCommonAncestor TRUE/FALSE if using all taxa that share the same
+#' common ancestor with the pre-selected in-group as the in-group taxa.
 #' Default = TRUE.
 #' @param variable name of the variable that need to be compared
 #' @return List of genes that have a difference in the variable's median scores
@@ -209,13 +208,13 @@ compareMedianTaxonGroups <- function(
         message("Invalid variable")
         return()
     }
-    
+
     # add other taxa that share a common ancestor with the given in-group
     commonTaxa <- getCommonAncestor(levels(as.factor(data$ncbiID)), inGroup)
     if (useCommonAncestor == TRUE) {
         inGroup <- as.character(commonTaxa[[3]]$abbrName)
     }
-    
+
     # return delta-median scores for two taxa groups
     data$geneID <- as.character(data$geneID)
     deltaMedian <- vapply(
@@ -235,17 +234,17 @@ compareMedianTaxonGroups <- function(
 
 
 #' Create data for variable distribution comparison plot
-#' @description Create data for plotting the distribution comparison between 2 
+#' @description Create data for plotting the distribution comparison between 2
 #' groups of taxa for a selected gene.
 #' @usage dataVarDistTaxGroup(data, inGroup, gene, variable)
 #' @export
-#' @param data input phylogenetic profile in long format (see ?mainLongRaw and 
+#' @param data input phylogenetic profile in long format (see ?mainLongRaw and
 #' ?createLongMatrix)
 #' @param inGroup ID list of in-group taxa (e.g. "ncbi1234")
-#' @param gene ID of gene that need to be plotted the distribution comparison 
+#' @param gene ID of gene that need to be plotted the distribution comparison
 #' between in- and out-group taxa.
 #' @param variable var1 or c(var1, var2)
-#' @return Dataframe containing list of values for all available variables for 
+#' @return Dataframe containing list of values for all available variables for
 #' the selected genes in in-group and out-group taxa (max. 3 columns).
 #' @author Vinh Tran (tran@bio.uni-frankfurt.de)
 #' @seealso \code{\link{createLongMatrix}}
@@ -262,7 +261,7 @@ dataVarDistTaxGroup <- function(
     gene = NULL,
     variable = NULL
 ) {
-    if (is.null(data) | is.null(inGroup) | is.null(gene) | is.null(variable)) 
+    if (is.null(data) | is.null(inGroup) | is.null(gene) | is.null(variable))
         return()
     # remove "empty" variable (char "")
     variable <- variable[unlist(lapply(variable, function (x) x != ""))]
@@ -276,22 +275,22 @@ dataVarDistTaxGroup <- function(
     )
     colnames(varOut) <- variable
     if (nrow(varIn) == 0 & nrow(varOut) == 0) return()
-    
+
     varIn$type <- "In-group"
     varOut$type <- "Out-group"
     out <- rbind(varIn[complete.cases(varIn),], varOut[complete.cases(varOut),])
     return(out[, c(variable, "type")])
 }
 
-#' Create variable distribution comparison plot 
+#' Create variable distribution comparison plot
 #' @description Create variable distribution plots between 2 groups of taxa for
 #' a selected gene.
 #' @export
-#' @param data dataframe for plotting. Last column 
+#' @param data dataframe for plotting. Last column
 #' indicates what type of taxon group (in- or out-group). The first (or first 2)
 #' column contains values of the variables. See ?dataVarDistTaxGroup
-#' @param plotParameters plot parameters, including size of x-axis, y-axis, 
-#' legend and title; position of legend ("right", "bottom" or "none"); 
+#' @param plotParameters plot parameters, including size of x-axis, y-axis,
+#' legend and title; position of legend ("right", "bottom" or "none");
 #' mean/median point; names of in-group and out-group; and plot title.
 #' NOTE: Leave blank or NULL to use default values.
 #' @return Distribution plots as a grob (gtable) object. Use grid.draw to plot.
@@ -330,29 +329,29 @@ dataVarDistTaxGroup <- function(
 varDistTaxPlot <- function(data, plotParameters) {
     if (is.null(data)) return()
     if (missing(plotParameters)) return()
-    
+
     # rename in-group and out-group
     data$type[data$type == "In-group"] <- plotParameters$inGroupName
     data$type[data$type == "Out-group"] <- plotParameters$outGroupName
-    
+
     # function for plotting a single plot
     generatePlot <- function(plotDf, parameters, variable) {
         type <- NULL
         .data <- NULL
         xNames <- c(
             paste(
-                parameters$inGroupName, " \n n = ", 
+                parameters$inGroupName, " \n n = ",
                 nrow(plotDf[plotDf$type == parameters$inGroupName,]), sep = ""
             ),
             paste(
-                parameters$outGroupName, " \n n = ", 
+                parameters$outGroupName, " \n n = ",
                 nrow(plotDf[plotDf$type == parameters$outGroupName,]), sep = ""
             )
         )
-        
+
         plot <- ggplot(plotDf, aes(x = factor(type), y = .data[[variable]])) +
             geom_violin(
-                aes(fill = factor(type)), position = position_dodge(), 
+                aes(fill = factor(type)), position = position_dodge(),
                 scale = "width", alpha = .5) +
             geom_boxplot(width = 0.1) +
             scale_x_discrete(labels = xNames) +
@@ -375,10 +374,10 @@ varDistTaxPlot <- function(data, plotParameters) {
             )
         return(plot)
     }
-    
+
     # adapted from http://rpubs.com/sjackman/grid_arrange_shared_legend
     gridArrangeSharedLegend <- function(
-        ...,  ncol = length(list(...)), nrow = 1, 
+        ...,  ncol = length(list(...)), nrow = 1,
         position = c("bottom", "right"), title = NA
     ) {
         plots <- list(...)
@@ -391,7 +390,7 @@ varDistTaxPlot <- function(data, plotParameters) {
         lwidth <- sum(legend$width)
         gl <- lapply(plots, function(x) x + theme(legend.position="none"))
         gl <- c(gl, ncol = ncol, nrow = nrow)
-        
+
         combined <- switch(
             position,
             "bottom" = arrangeGrob(
@@ -400,8 +399,8 @@ varDistTaxPlot <- function(data, plotParameters) {
                 ncol = 1,
                 heights = unit.c(unit(1, "npc") - lheight, lheight),
                 top = textGrob(
-                    title, 
-                    vjust = 1, 
+                    title,
+                    vjust = 1,
                     gp = gpar(
                         fontface = "bold", fontsize = plotParameters$titleSize
                     )
@@ -413,8 +412,8 @@ varDistTaxPlot <- function(data, plotParameters) {
                 ncol = 2,
                 widths = unit.c(unit(1, "npc") - lwidth, lwidth),
                 top = textGrob(
-                    title, 
-                    vjust = 1, 
+                    title,
+                    vjust = 1,
                     gp = gpar(
                         fontface = "bold", fontsize = plotParameters$titleSize
                     )
@@ -423,7 +422,7 @@ varDistTaxPlot <- function(data, plotParameters) {
         )
         return(combined)
     }
-    
+
     # return plot(s)
     if (ncol(data) == 2) {
         plotVar1 <- generatePlot(data, plotParameters, colnames(data)[1])
@@ -431,7 +430,7 @@ varDistTaxPlot <- function(data, plotParameters) {
             arrangeGrob(
                 plotVar1,
                 top = textGrob(
-                    plotParameters$title, vjust = 1, 
+                    plotParameters$title, vjust = 1,
                     gp = gpar(
                         fontface = "bold", fontsize = plotParameters$titleSize
                     )
@@ -447,9 +446,9 @@ varDistTaxPlot <- function(data, plotParameters) {
                     plotVar1, plotVar2,
                     nrow = 1,
                     top = textGrob(
-                        plotParameters$title, vjust = 1, 
+                        plotParameters$title, vjust = 1,
                         gp = gpar(
-                            fontface = "bold", 
+                            fontface = "bold",
                             fontsize = plotParameters$titleSize
                         )
                     )
@@ -458,8 +457,8 @@ varDistTaxPlot <- function(data, plotParameters) {
         } else {
             return(
                 gridArrangeSharedLegend(
-                    plotVar1, plotVar2, 
-                    position = plotParameters$legendPosition, 
+                    plotVar1, plotVar2,
+                    position = plotParameters$legendPosition,
                     title = plotParameters$title
                 )
             )
@@ -468,24 +467,24 @@ varDistTaxPlot <- function(data, plotParameters) {
 }
 
 #' Create data for feature distribution comparison plot
-#' @description Create data for plotting the distribution of the protein domain 
-#' features between 2 group of taxa for a selected gene (average number of 
+#' @description Create data for plotting the distribution of the protein domain
+#' features between 2 group of taxa for a selected gene (average number of
 #' feature occurrency per protein/ortholog).
 #' @usage dataFeatureTaxGroup(mainDf, domainDf, inGroup, gene)
 #' @export
-#' @param mainDf input phylogenetic profile in long format (see ?mainLongRaw 
+#' @param mainDf input phylogenetic profile in long format (see ?mainLongRaw
 #' and ?createLongMatrix)
-#' @param domainDf dataframe contains domain info for the seed and ortholog. 
-#' This including the seed ID, orthologs IDs, sequence lengths, feature names, 
-#' start and end positions, feature weights (optional) and the status to 
-#' determine if that feature is important for comparison the architecture 
-#' between 2 proteins* (e.g. seed protein vs ortholog) (optional). (see 
+#' @param domainDf dataframe contains domain info for the seed and ortholog.
+#' This including the seed ID, orthologs IDs, sequence lengths, feature names,
+#' start and end positions, feature weights (optional) and the status to
+#' determine if that feature is important for comparison the architecture
+#' between 2 proteins* (e.g. seed protein vs ortholog) (optional). (see
 #' ?parseDomainInput)
 #' @param inGroup ID list of in-group taxa (e.g. "ncbi1234")
-#' @param gene ID of gene that need to be plotted the feature distribution 
+#' @param gene ID of gene that need to be plotted the feature distribution
 #' comparison between in- and out-group taxa.
-#' @return Dataframe containing all feature names, their frequencies (absolute 
-#' count and the average instances per protein - IPP) in each taxon group and 
+#' @return Dataframe containing all feature names, their frequencies (absolute
+#' count and the average instances per protein - IPP) in each taxon group and
 #' the corresponding taxa group type (in- or out-group).
 #' @author Vinh Tran (tran@bio.uni-frankfurt.de)
 #' @seealso \code{\link{createLongMatrix}}, \code{\link{parseDomainInput}}
@@ -508,9 +507,9 @@ dataFeatureTaxGroup <- function(
     inGroup = NULL,
     gene = NULL
 ) {
-    if (is.null(mainDf) | is.null(inGroup) | is.null(gene) | is.null(domainDf)) 
+    if (is.null(mainDf) | is.null(inGroup) | is.null(gene) | is.null(domainDf))
         return()
-    
+
     # get ncbiIDs for the domain data
     mainDf$orthoID <- gsub("\\|", ":", mainDf$orthoID)
     domainDfSub <- merge(
@@ -519,11 +518,11 @@ dataFeatureTaxGroup <- function(
         by = "orthoID", all.x = TRUE
     )
     domainDfSub <- domainDfSub[complete.cases(domainDfSub),]
-    
+
     # identify in-group and out-group
     domainDfSub$type[domainDfSub$ncbiID %in% inGroup] <- "In-group"
     domainDfSub$type[!(domainDfSub$ncbiID %in% inGroup)] <- "Out-group"
-    
+
     # count number of orthologs for each taxon group
     nInGroup <- length(
         unique(domainDfSub$seedID[domainDfSub$type == "In-group"])
@@ -531,29 +530,29 @@ dataFeatureTaxGroup <- function(
     nOutGroup <- length(
         unique(domainDfSub$seedID[domainDfSub$type == "Out-group"])
     )
-    
+
     # get intances and count the number of intances for each taxon group
     domainIn <- domainDfSub$feature[domainDfSub$ncbiID %in% inGroup]
     domainOut <- domainDfSub$feature[!(domainDfSub$ncbiID %in% inGroup)]
-    
+
     countDomainIn <- data.frame(table(unlist(as.character(domainIn))))
     countDomainIn$type <- "In-group"
     countDomainIn$ipp <- countDomainIn$Freq/nInGroup
-    
+
     countDomainOut <- data.frame(table(unlist(as.character(domainOut))))
     countDomainOut$type <- "Out-group"
     countDomainOut$ipp <- countDomainOut$Freq/nOutGroup
-    
-    
+
+
     # calculate delta IPP
     mergedDf <- merge(countDomainIn, countDomainOut, by = "Var1", all = TRUE)
     mergedDf[is.na(mergedDf)] <- 0
     mergedDf$dIPPtmp <- mergedDf$ipp.x - mergedDf$ipp.y
     mergedDf$dIPP <- mergedDf$dIPPtmp / (mergedDf$ipp.x + mergedDf$ipp.y)
-    
+
     # return
     outDf <- merge(
-        rbind(countDomainIn, countDomainOut), mergedDf[, c("Var1", "dIPP")], 
+        rbind(countDomainIn, countDomainOut), mergedDf[, c("Var1", "dIPP")],
         by = "Var1", all.x = TRUE
     )
     colnames(outDf) <- c("Feature", "Count", "Taxon_group", "IPP", "dIPP")
@@ -561,11 +560,11 @@ dataFeatureTaxGroup <- function(
 }
 
 #' Create feature distribution comparison plot
-#' @description Create protein feature distribution plots between 2 groups of 
+#' @description Create protein feature distribution plots between 2 groups of
 #' taxa for a selected gene.
 #' @export
 #' @param data dataframe for plotting (see ?dataFeatureTaxGroup)
-#' @param plotParameters plot parameters, including size of x-axis, y-axis, 
+#' @param plotParameters plot parameters, including size of x-axis, y-axis,
 #' legend and title; position of legend ("right", "bottom" or "none"); names of
 #' in-group and out-group; flip the plot coordinate ("Yes" or "No").
 #' NOTE: Leave blank or NULL to use default values.
@@ -601,12 +600,12 @@ featureDistTaxPlot <- function(data, plotParameters) {
     Taxon_group <- NULL
     if (is.null(data)) return()
     if (missing(plotParameters)) return()
-    
-    data$Taxon_group[data$Taxon_group == "In-group"] <- 
+
+    data$Taxon_group[data$Taxon_group == "In-group"] <-
         plotParameters$inGroupName
-    data$Taxon_group[data$Taxon_group == "Out-group"] <- 
+    data$Taxon_group[data$Taxon_group == "Out-group"] <-
         plotParameters$outGroupName
-    
+
     plot <- ggplot(data, aes(x = Feature, y = IPP, fill = Taxon_group)) +
         geom_bar(stat="identity", width=.5, position = "dodge") +
         theme_minimal() +
@@ -615,8 +614,8 @@ featureDistTaxPlot <- function(data, plotParameters) {
             axis.text.y = element_text(size = plotParameters$ySize),
             axis.title.x = element_text(size = plotParameters$xSize),
             axis.text.x = element_text(
-                size = plotParameters$xSize, 
-                angle = plotParameters$angle, 
+                size = plotParameters$xSize,
+                angle = plotParameters$angle,
                 hjust = 1
             ),
             legend.text = element_text(size = plotParameters$legendSize),

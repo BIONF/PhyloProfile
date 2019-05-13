@@ -1383,8 +1383,7 @@ shinyServer(function(input, output, session) {
                 stringsAsFactors = FALSE,
                 select = 1
             )
-            finalOmaDf <- getOmaBrowser(omaIDs, input$selectedOmaType)
-            return(finalOmaDf)
+            return(getOmaBrowser(omaIDs, input$selectedOmaType))
         } else return()
     })
 

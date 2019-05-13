@@ -7,29 +7,29 @@
 dataFeatureTaxGroup(mainDf, domainDf, inGroup, gene)
 }
 \arguments{
-\item{mainDf}{input phylogenetic profile in long format (see ?mainLongRaw 
+\item{mainDf}{input phylogenetic profile in long format (see ?mainLongRaw
 and ?createLongMatrix)}
 
-\item{domainDf}{dataframe contains domain info for the seed and ortholog. 
-This including the seed ID, orthologs IDs, sequence lengths, feature names, 
-start and end positions, feature weights (optional) and the status to 
-determine if that feature is important for comparison the architecture 
-between 2 proteins* (e.g. seed protein vs ortholog) (optional). (see 
+\item{domainDf}{dataframe contains domain info for the seed and ortholog.
+This including the seed ID, orthologs IDs, sequence lengths, feature names,
+start and end positions, feature weights (optional) and the status to
+determine if that feature is important for comparison the architecture
+between 2 proteins* (e.g. seed protein vs ortholog) (optional). (see
 ?parseDomainInput)}
 
 \item{inGroup}{ID list of in-group taxa (e.g. "ncbi1234")}
 
-\item{gene}{ID of gene that need to be plotted the feature distribution 
+\item{gene}{ID of gene that need to be plotted the feature distribution
 comparison between in- and out-group taxa.}
 }
 \value{
-Dataframe containing all feature names, their frequencies (absolute 
-count and the average instances per protein - IPP) in each taxon group and 
+Dataframe containing all feature names, their frequencies (absolute
+count and the average instances per protein - IPP) in each taxon group and
 the corresponding taxa group type (in- or out-group).
 }
 \description{
-Create data for plotting the distribution of the protein domain 
-features between 2 group of taxa for a selected gene (average number of 
+Create data for plotting the distribution of the protein domain
+features between 2 group of taxa for a selected gene (average number of
 feature occurrency per protein/ortholog).
 }
 \examples{

@@ -7,12 +7,12 @@
 varDistTaxPlot(data, plotParameters)
 }
 \arguments{
-\item{data}{dataframe for plotting. Last column 
+\item{data}{dataframe for plotting. Last column
 indicates what type of taxon group (in- or out-group). The first (or first 2)
 column contains values of the variables. See ?dataVarDistTaxGroup}
 
-\item{plotParameters}{plot parameters, including size of x-axis, y-axis, 
-legend and title; position of legend ("right", "bottom" or "none"); 
+\item{plotParameters}{plot parameters, including size of x-axis, y-axis,
+legend and title; position of legend ("right", "bottom" or "none");
 mean/median point; names of in-group and out-group; and plot title.
 NOTE: Leave blank or NULL to use default values.}
 }

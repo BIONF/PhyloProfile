@@ -56,10 +56,10 @@ selectTaxonRank <- function(input, output, session, rankSelect, inputTaxonID) {
             nameList <- getNameList()
             # get rank name from rankSelect
             rankName <- rankSelectCus
-
-            choice <- as.data.frame
-            choice <- rbind(Dt[rankName])
-            colnames(choice) <- "ncbiID"
+            
+            choice <- data.frame(
+                ncbiID = unlist(Dt[rankName]), stringsAsFactors = FALSE
+            )
             choice <- merge(choice, nameList, by = "ncbiID", all = FALSE)
             return(choice)
         }

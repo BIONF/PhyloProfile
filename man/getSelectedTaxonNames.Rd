@@ -21,12 +21,13 @@ name is required, not neccessary to give both.}
 supertaxon ID or name is required, not neccessary to give both.}
 }
 \value{
-A list of taxa from the input taxon list that belong to the selected
-supertaxon.
+A data frame contains ncbi IDs and names of taxa from the input taxon
+list that belong to the selected supertaxon.
 }
 \description{
-Get a subset of taxon names from an input list of taxa based on
-a selected supertaxon (identified by its taxonomy rank and supertaxon name).
+Get a subset of taxon ncbi IDs and names from an input list of 
+taxa based on a selected supertaxon (identified by its taxonomy rank and 
+supertaxon name or supertaxon ID).
 }
 \examples{
 inputTaxonIDs <- c("103449", "1288291", "278021", "27973", "31281", "40302", 

@@ -42,25 +42,23 @@ estimateGeneAge <- function(
     rankList <- c(
         "family", "class", "phylum", "kingdom", "superkingdom", "root"
     )
-
+    
     # get selected (super)taxon ID
     taxaList <- getNameList()
-    superID <- 
-        taxaList[
-            taxaList$fullName == refTaxon & taxaList$rank == rankName,
-        ]$ncbiID
-
+    superID <- taxaList[
+        taxaList$fullName == refTaxon & taxaList$rank == rankName,]$ncbiID
+    
     # full non-duplicated taxonomy data
     Dt <- getTaxonomyMatrix(FALSE, NULL)
-
+    
     # subset of taxonomy data, containing only ranks from rankList
     subDt <- Dt[, c("abbrName", rankList)]
-
+    
     # get (super)taxa IDs for one of representative species
     # get all taxon info for 1 representative
     firstLine <- Dt[Dt[, rankName] == superID, ][1, ]
     subFirstLine <- firstLine[, c("abbrName", rankList)]
-
+    
     # compare each taxon ncbi IDs with selected taxon
     # and create a "category" data frame
     catList <- lapply(
@@ -68,8 +66,6 @@ estimateGeneAge <- function(
         function (x) {
             cat <- subDt[x, ] %in% subFirstLine
             cat <- paste0(cat, collapse = "")
-            cat <- gsub("TRUE", "1", cat)
-            gsub("FALSE", "0", cat)
         }
     )
     
@@ -78,31 +74,34 @@ estimateGeneAge <- function(
         cat = do.call(rbind, catList),
         stringsAsFactors = FALSE
     )
-
+    catDf$cat <- gsub("TRUE", "1", catDf$cat)
+    catDf$cat <- gsub("FALSE", "0", catDf$cat)
+    
+    
     # get main input data
     mdData <- droplevels(processedProfileData)
     mdData <- mdData[, c(
-        "geneID", "ncbiID", "orthoID", "var1", "var2", "presSpec"
-    )]
-
+        "geneID", "ncbiID", "orthoID", "var1", "var2", "presSpec")]
+    
     ### add "category" into mdData
     mdDataExtended <- merge(mdData, catDf, by = "ncbiID", all.x = TRUE)
-
+    
     mdDataExtended$var1[mdDataExtended$var1 == "NA"
                         | is.na(mdDataExtended$var1)] <- 0
     mdDataExtended$var2[mdDataExtended$var2 == "NA"
                         | is.na(mdDataExtended$var2)] <- 0
-
+    
     # remove cat for "NA" orthologs
     # and also for orthologs that do not fit cutoffs
     if (nrow(mdDataExtended[mdDataExtended$orthoID == "NA"
-        | is.na(mdDataExtended$orthoID), ]) > 0) {
-        mdDataExtended[mdDataExtended$orthoID == "NA"
-        | is.na(mdDataExtended$orthoID), ]$cat <- NA
+                            | is.na(mdDataExtended$orthoID), ]) > 0) {
+        mdDataExtended[
+            mdDataExtended$orthoID == "NA" | is.na(mdDataExtended$orthoID), 
+        ]$cat <- NA
     }
-
+    
     mdDataExtended <- mdDataExtended[complete.cases(mdDataExtended), ]
-
+    
     # filter by %specpres, var1, var2 ..
     mdDataExtended$cat[mdDataExtended$var1 < var1Cutoff[1]] <- NA
     mdDataExtended$cat[mdDataExtended$var1 > var1Cutoff[2]] <- NA
@@ -110,18 +109,18 @@ estimateGeneAge <- function(
     mdDataExtended$cat[mdDataExtended$var2 > var2Cutoff[2]] <- NA
     mdDataExtended$cat[mdDataExtended$presSpec < percentCutoff[1]] <- NA
     mdDataExtended$cat[mdDataExtended$presSpec > percentCutoff[2]] <- NA
-
+    
     mdDataExtended <- mdDataExtended[complete.cases(mdDataExtended), ]
-
+    
     ### get the furthest common taxon with selected taxon for each gene
     geneAgeDf <- as.data.frame(
         tapply(mdDataExtended$cat, mdDataExtended$geneID, min)
     )
-
+    
     setDT(geneAgeDf, keep.rownames = TRUE)[]
     setnames(geneAgeDf, seq_len(2), c("geneID", "cat"))  # rename columns
     row.names(geneAgeDf) <- NULL   # remove row names
-
+    
     ### convert cat into geneAge
     geneAgeDf$age[geneAgeDf$cat == "0000001"] <- "07_LUCA"
     geneAgeDf$age[geneAgeDf$cat == "0000011" | geneAgeDf$cat == "0000010"] <-
@@ -130,70 +129,59 @@ estimateGeneAge <- function(
             as.character(
                 taxaList$fullName[
                     taxaList$ncbiID == subFirstLine$superkingdom
-                    & taxaList$rank == "superkingdom"
-                ]
+                    & taxaList$rank == "superkingdom"]
             )
         )
-
-    geneAgeDf$age[geneAgeDf$cat == "0000111"] <-
-        paste0(
-            "05_",
-            as.character(
-                taxaList$fullName[
-                    taxaList$ncbiID == subFirstLine$kingdom
-                    & taxaList$rank == "kingdom"
-                ]
-            )
+    
+    geneAgeDf$age[geneAgeDf$cat == "0000111"] <- paste0(
+        "05_",
+        as.character(
+            taxaList$fullName[
+                taxaList$ncbiID == subFirstLine$kingdom
+                & taxaList$rank == "kingdom"]
         )
-
-    geneAgeDf$age[geneAgeDf$cat == "0001111"] <-
-        paste0(
-            "04_",
-            as.character(
-                taxaList$fullName[
-                    taxaList$ncbiID == subFirstLine$phylum
-                    & taxaList$rank == "phylum"
-                ]
-            )
+    )
+    
+    geneAgeDf$age[geneAgeDf$cat == "0001111"] <- paste0(
+        "04_",
+        as.character(
+            taxaList$fullName[
+                taxaList$ncbiID == subFirstLine$phylum
+                & taxaList$rank == "phylum"]
         )
-
-    geneAgeDf$age[geneAgeDf$cat == "0011111"] <-
-        paste0(
-            "03_",
-            as.character(
-                taxaList$fullName[
-                    taxaList$ncbiID == subFirstLine$class
-                    & taxaList$rank == "class"
-                ]
-            )
+    )
+    
+    geneAgeDf$age[geneAgeDf$cat == "0011111"] <- paste0(
+        "03_",
+        as.character(
+            taxaList$fullName[
+                taxaList$ncbiID == subFirstLine$class
+                & taxaList$rank == "class"]
         )
-
-    geneAgeDf$age[geneAgeDf$cat == "0111111"] <-
-        paste0(
-            "02_",
-            as.character(
-                taxaList$fullName[
-                    taxaList$ncbiID == subFirstLine$family
-                    & taxaList$rank == "family"
-                ]
-            )
+    )
+    
+    geneAgeDf$age[geneAgeDf$cat == "0111111"] <- paste0(
+        "02_",
+        as.character(
+            taxaList$fullName[
+                taxaList$ncbiID == subFirstLine$family
+                & taxaList$rank == "family"]
         )
-
-    geneAgeDf$age[geneAgeDf$cat == "1111111"] <-
-        paste0(
-            "01_",
-            as.character(
-                taxaList$fullName[
-                    taxaList$fullName == refTaxon
-                    & taxaList$rank == rankName
-                ]
-            )
+    )
+    
+    geneAgeDf$age[geneAgeDf$cat == "1111111"] <- paste0(
+        "01_",
+        as.character(
+            taxaList$fullName[
+                taxaList$fullName == refTaxon
+                & taxaList$rank == rankName]
         )
-
+    )
+    
     # return geneAge data frame
     geneAgeDf <- geneAgeDf[, c("geneID", "cat", "age")]
     geneAgeDf$age[is.na(geneAgeDf$age)] <- "Undef"
-
+    
     return(geneAgeDf)
 }
 

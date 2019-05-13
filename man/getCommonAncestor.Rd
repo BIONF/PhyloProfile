@@ -18,7 +18,7 @@ together with a dataframe storing the full taxonomy info of all taxa that
 share that corresponding common ancestor.
 }
 \description{
-Identify the common ancestor for a selected taxa and return a 
+Identify the common ancestor for a selected taxa and return a
 list of all taxa that have that common ancestor from an large input taxa set.
 }
 \examples{

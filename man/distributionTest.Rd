@@ -11,17 +11,17 @@ distributionTest(varIn, varOut, significanceLevel)
 
 \item{varOut}{second numeric vector}
 
-\item{significanceLevel}{significant cutoff of the Kolmogorov-Smirnov test. 
+\item{significanceLevel}{significant cutoff of the Kolmogorov-Smirnov test.
 Default = 0.05.}
 }
 \value{
 p-value of the comparison test.
 }
 \description{
-This function tests the difference between the distributions of 
-two input numeric samples using the statistical tess. First the 
+This function tests the difference between the distributions of
+two input numeric samples using the statistical tess. First the
 Kolmogorov-Smirnov is used to check if 2 samples have the same distribution.
-If yes, Wilcoxon-Mann-Whitney will be used to compare the distribution 
+If yes, Wilcoxon-Mann-Whitney will be used to compare the distribution
 difference.
 }
 \author{

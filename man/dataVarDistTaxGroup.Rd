@@ -7,22 +7,22 @@
 dataVarDistTaxGroup(data, inGroup, gene, variable)
 }
 \arguments{
-\item{data}{input phylogenetic profile in long format (see ?mainLongRaw and 
+\item{data}{input phylogenetic profile in long format (see ?mainLongRaw and
 ?createLongMatrix)}
 
 \item{inGroup}{ID list of in-group taxa (e.g. "ncbi1234")}
 
-\item{gene}{ID of gene that need to be plotted the distribution comparison 
+\item{gene}{ID of gene that need to be plotted the distribution comparison
 between in- and out-group taxa.}
 
 \item{variable}{var1 or c(var1, var2)}
 }
 \value{
-Dataframe containing list of values for all available variables for 
+Dataframe containing list of values for all available variables for
 the selected genes in in-group and out-group taxa (max. 3 columns).
 }
 \description{
-Create data for plotting the distribution comparison between 2 
+Create data for plotting the distribution comparison between 2
 groups of taxa for a selected gene.
 }
 \examples{

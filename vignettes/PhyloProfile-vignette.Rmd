@@ -4,7 +4,7 @@ author:
 -   name: Vinh Tran
     affiliation: Goethe University Frankfurt, Frankfurt am Main, Germany
     email: tran@bio.uni-frankfurt.de
-date: "Apr. 2019"
+date: "May 2019"
 output:
     BiocStyle::html_document:
         toc_float: true

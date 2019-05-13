@@ -7,13 +7,13 @@
 compareMedianTaxonGroups(data, inGroup, useCommonAncestor, variable)
 }
 \arguments{
-\item{data}{input phylogenetic profile in long format (see ?mainLongRaw and 
+\item{data}{input phylogenetic profile in long format (see ?mainLongRaw and
 ?createLongMatrix)}
 
 \item{inGroup}{ID list of in-group taxa (e.g. "ncbi1234")}
 
-\item{useCommonAncestor}{TRUE/FALSE if using all taxa that share the same 
-common ancestor with the pre-selected in-group as the in-group taxa. 
+\item{useCommonAncestor}{TRUE/FALSE if using all taxa that share the same
+common ancestor with the pre-selected in-group as the in-group taxa.
 Default = TRUE.}
 
 \item{variable}{name of the variable that need to be compared}
@@ -24,9 +24,9 @@ between the in-group and out-group taxa and their corresponding delta-median.
 }
 \description{
 Given the phylogenetic profiles that contains up to 2 additional
-variables besides the presence/absence information of the orthologous 
-proteins. This function will compare the median scores of those variables 
-between 2 different taxon groups (e.g. parasitic species vs non-parasitic 
+variables besides the presence/absence information of the orthologous
+proteins. This function will compare the median scores of those variables
+between 2 different taxon groups (e.g. parasitic species vs non-parasitic
 species), which are defined as in-group and out-group. In-group is identified
 by the user. Out-group contains all taxa in the input phylogenetic profiles
 that are not part of the in-group.
