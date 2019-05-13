@@ -210,13 +210,16 @@ shinyUI(
                                 selected = "protein",
                                 width = 130
                             ),
-                            shinyBS::bsPopover(
+                            bsPopover(
                                 "var1Relation",
                                 "",
-                                "select if variable is the comparison between
-                                *seed protein - ortholog protein* or
-                                *seed protein - search taxon*",
-                                "top"
+                                paste(
+                                    "select if variable is the value between ",
+                                    "seed protein - ortholog protein",
+                                    " or seed protein - search taxon",
+                                    sep = "<br>"
+                                ),
+                                "bottom"
                             )
                         )
                     ),
@@ -319,7 +322,7 @@ shinyUI(
                             inline = TRUE
                         ),
 
-                        shinyBS::bsPopover(
+                        bsPopover(
                             "orderTaxa", "", "in newick format", "bottom"
                         ),
 
@@ -509,21 +512,21 @@ shinyUI(
                             4, uiOutput("highlightGeneUI")
                         ),
 
-                        shinyBS::bsPopover(
+                        bsPopover(
                             "highlightGeneUI",
                             "",
                             "Select gene to highlight",
                             "bottom"
                         ),
 
-                        shinyBS::bsPopover(
+                        bsPopover(
                             "stIndex",
                             "",
                             "Set start index for sequence range",
                             "bottom"
                         ),
 
-                        shinyBS::bsPopover(
+                        bsPopover(
                             "endIndex",
                             "",
                             "Set end index for sequence range",
@@ -873,13 +876,15 @@ shinyUI(
                                     value = TRUE,
                                     width = NULL
                                 ),
-                                shinyBS::bsPopover(
+                                bsPopover(
                                     "useCommonAncestor",
                                     "",
-                                    "All taxa that have the same common ancestor
-                                    with the selected taxa above will be
-                                    considered as the in-group",
-                                    "top"
+                                    paste0(
+                                        "All taxa that have the same common ",
+                                        "ancestor with the selected taxa above",
+                                        " will be considered as the in-group"
+                                    ),
+                                    "bottom"
                                 ),
                                 h5(strong("Select in-group by supertaxon")),
                                 actionButton("taxaGC", "Browse")
