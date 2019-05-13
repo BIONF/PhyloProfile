@@ -24,7 +24,6 @@ def get_names_dict(names):
 		if ("scientific name" in name):
 			tmp = name.split("\t|\t")
 			names_dict[tmp[0]] = tmp[1]
-			#names_dict = names_dict.update({name[0]: name[1]})
 	return(names_dict)
 
 # Get a new line for the output file
@@ -33,12 +32,15 @@ def get_new_line (node, names_dict):
 	ncbiID = tmp[0]
 	parentID = tmp[1]
 	rank = tmp[2]
+	rank = rank.replace("'", "")
+	rank = rank.replace(" ", "")
 	fullName = names_dict[ncbiID]
-	new_line = new_line = ncbiID + "\t" + fullName + "\t" + rank + "\t" + parentID + "\n"
+	fullName = fullName.replace("'", "")
+	new_line = ncbiID + "\t" + fullName + "\t" + rank + "\t" + parentID + "\n"
 	return(new_line)
 
 ########################################
-output = "taxonNamesFull.txt"
+output = args.input + "taxonNamesFull.txt"
 file = open(output,"w")
 file.write("ncbiID\tfullName\trank\tparentID\n") # header
 
@@ -62,8 +64,5 @@ for node in nodes:
 	new_line = get_new_line(node, names_dict)
 	file.write(new_line)
 
-# replace "no rank" by "norank"
-cmd = "sed -i -e 's/no rank/norank/g' ./taxonNamesFull.txt"
-subprocess.call(cmd, shell = True)
-
-print("Finished! Please replace phyloprofile/data/taxonNamesFull.txt by the new taxonNamesFull.txt file!")
+msg = "Finished! Please replace phyloprofile/data/taxonNamesFull.txt by \n" + output + "!"
+print(msg)
