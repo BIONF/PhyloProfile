@@ -3,7 +3,7 @@
 \docType{data}
 \name{profileWithTaxonomy}
 \alias{profileWithTaxonomy}
-\title{An example of a raw long input file together with taxonomy info.}
+\title{An example of a raw long input file together with the taxonomy info.}
 \format{A data frame with 20 rows and 12 variables:
 \itemize{
     \item{geneID}{ Seed or ortholog group ID, e.g. "OG_1017"}
@@ -24,6 +24,6 @@
 profileWithTaxonomy
 }
 \description{
-An example of a raw long input file together with taxonomy info.
+An example of a raw long input file together with the taxonomy info.
 }
 \keyword{datasets}

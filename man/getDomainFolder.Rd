@@ -2,27 +2,27 @@
 % Please edit documentation in R/parseDomainInput.R
 \name{getDomainFolder}
 \alias{getDomainFolder}
-\title{Get domain files from a folder}
+\title{Get domain file from a folder for a seed protein}
 \usage{
 getDomainFolder(seed, domainPath)
 }
 \arguments{
-\item{seed}{seed ID}
+\item{seed}{seed protein ID}
 
 \item{domainPath}{path to domain folder}
 }
 \value{
-Domain file and its complete directory path
+Domain file and its complete directory path for the selected protein.
 }
 \description{
-Get domain files from a folder
+Get domain file from a folder for a seed protein
 }
 \examples{
 \dontrun{
 domainPath <- paste0(
-    path.package("PhyloProfile", quiet = FALSE), "extdata/domainFiles"
+    path.package("PhyloProfile", quiet = FALSE), "/extdata/domainFiles"
 )
-getDomainOnline("OG_1009", domainPath)
+getDomainFolder("OG_1009", domainPath)
 }
 }
 \author{

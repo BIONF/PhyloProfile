@@ -1,6 +1,4 @@
 #' Profile plot
-#'
-#' @export
 #' @param data data for heatmap plot (from reactive fn "dataHeat")
 #' @param clusteredDataHeat clustered data (from reactive fn "clusteredDataHeat"
 #' @param applyCluster choose clustered data or not (from input$applyCluster)

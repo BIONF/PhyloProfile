@@ -4,15 +4,15 @@
 \alias{getAllDomainsOma}
 \title{Create domain annotation dataframe from a raw OMA dataframe}
 \usage{
-getAllDomainsOma(finalOmaDf)
+getAllDomainsOma(finalOmaDf = NULL)
 }
 \arguments{
-\item{finalOmaDf}{raw OMA data for a list of input IDs}
+\item{finalOmaDf}{raw OMA data for a list of proteins (see ?getDataForOneOma)}
 }
 \value{
-domain annotation in a dataframe to input into PhyloProfile, which
-contains seed ID, ortholog ID, ortholog length, annotated feature, start
-and end position of that feature.
+Dataframe of the domain annotation used for PhyloProfile, which
+contains seed IDs, ortholog IDs, ortholog lengths, annotated features, start
+and end positions of those features.
 }
 \description{
 Create domain annotation dataframe from a raw OMA dataframe

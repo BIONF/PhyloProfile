@@ -2,18 +2,20 @@
 % Please edit documentation in R/getOmaBrowser.R
 \name{createProfileFromOma}
 \alias{createProfileFromOma}
-\title{Create phylogenetic profile from a raw OMA dataframe}
+\title{Create a phylogenetic profile from a raw OMA dataframe}
 \usage{
-createProfileFromOma(finalOmaDf)
+createProfileFromOma(finalOmaDf = NULL)
 }
 \arguments{
-\item{finalOmaDf}{raw OMA data for a list of input IDs}
+\item{finalOmaDf}{raw OMA data for a list of proteins (see ?getDataForOneOma)}
 }
 \value{
-phylogenetic profiles in long format
+Dataframe of the phylogenetic profiles in long format, which 
+contains the seed protein IDs, their orthologous proteins and the 
+corresponding taxononmy IDs of the orthologs.
 }
 \description{
-Create phylogenetic profile from a raw OMA dataframe
+Create a phylogenetic profile from a raw OMA dataframe
 }
 \examples{
 omaData <- getDataForOneOma("HUMAN29397", "OG")

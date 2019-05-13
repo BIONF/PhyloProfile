@@ -87,8 +87,8 @@ We would like to thank
 * [Bastian](https://github.com/gedankenstuecke)
 * [Carla](https://github.com/CarlaMoelbert)
 
-# Code of Conduct & License
-This tool is released with a [Contributor Code of Conduct](https://github.com/BIONF/PhyloProfile/blob/master/CODE_OF_CONDUCT.md) & under [MIT license](https://github.com/BIONF/PhyloProfile/blob/master/LICENSE).
+# License
+This tool is released under [MIT license](https://github.com/BIONF/PhyloProfile/blob/master/LICENSE).
 
 # How-To Cite
 Ngoc-Vinh Tran, Bastian Greshake Tzovaras, Ingo Ebersberger; PhyloProfile: Dynamic visualization and exploration of multi-layered phylogenetic profiles, Bioinformatics, , bty225, https://doi.org/10.1093/bioinformatics/bty225

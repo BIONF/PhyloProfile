@@ -2,7 +2,7 @@
 % Please edit documentation in R/parseMainInput.R
 \name{checkInputValidity}
 \alias{checkInputValidity}
-\title{Check the validity of the main input file}
+\title{Check the validity of the input phylogenetic profile file}
 \usage{
 checkInputValidity(filein)
 }
@@ -14,7 +14,7 @@ The format of the input file format, or type of error
 }
 \description{
 Check if input file has one of the following format: orthoXML,
-multiple FASTA, wide or long matrix, or a list of OMA IDs.
+multiple FASTA, tab-delimited matrix (wide or long), or list of OMA IDs.
 }
 \examples{
 filein <- system.file(

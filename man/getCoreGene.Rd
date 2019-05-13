@@ -4,31 +4,37 @@
 \alias{getCoreGene}
 \title{Identify core genes for a list of selected taxa}
 \usage{
-getCoreGene(rankName, taxaCore, processedProfileData,
-    var1Cutoff, var2Cutoff, percentCutoff, coreCoverage)
+getCoreGene(rankName, taxaCore = c("none"), processedProfileData,
+    var1Cutoff = c(0, 1), var2Cutoff = c(0, 1), percentCutoff = c(0, 1), 
+    coreCoverage = 1)
 }
 \arguments{
-\item{rankName}{taxonomy rank (e.g. "species", "genus", "family")}
+\item{rankName}{working taxonomy rank (e.g. "species", "genus", "family")}
 
-\item{taxaCore}{name list of selected taxa}
+\item{taxaCore}{list of selected taxon names}
 
 \item{processedProfileData}{dataframe contains the full processed
-phylogenetic profiles}
+phylogenetic profiles (see ?fullProcessedProfile or ?parseInfoProfile)}
 
-\item{var1Cutoff}{cutoff for var1}
+\item{var1Cutoff}{cutoff for var1. Default = c(0, 1).}
 
-\item{var2Cutoff}{cutoff for var2}
+\item{var2Cutoff}{cutoff for var2. Default = c(0, 1).}
 
 \item{percentCutoff}{cutoff for percentage of species present in each
-supertaxon}
+supertaxon. Default = c(0, 1).}
 
-\item{coreCoverage}{the least number of selected taxa should be considered}
+\item{coreCoverage}{the least percentage of selected taxa should be 
+considered. Default = 1.}
 }
 \value{
-A list of core genes
+A list of identified core genes.
 }
 \description{
-Identify core genes for a list of selected taxa
+Identify core genes for a list of selected (super)taxa. The 
+identified core genes must be present in at least a certain proportion of 
+species in each selected (super)taxon (identified via percentCutoff) and 
+that criteria must be fullfilled for a certain percentage of selected taxa 
+or all of them (determined via coreCoverage).
 }
 \examples{
 data("fullProcessedProfile", package="PhyloProfile")

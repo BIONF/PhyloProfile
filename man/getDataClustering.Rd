@@ -2,30 +2,31 @@
 % Please edit documentation in R/clusterProfile.R
 \name{getDataClustering}
 \alias{getDataClustering}
-\title{Get data for calculating the distance matrix}
+\title{Get data for calculating distance matrix from phylogenetic profiles}
 \usage{
-getDataClustering(data, profileType, var1AggregateBy,
-    var2AggregateBy)
+getDataClustering(data, profileType = "binary", 
+    var1AggregateBy = "max", var2AggregateBy = "max")
 }
 \arguments{
-\item{data}{processed profile data}
+\item{data}{a data frame contains processed and filtered profiles (see
+?fullProcessedProfile and ?filterProfileData, ?fromInputToProfile)}
 
 \item{profileType}{type of data used for calculating the distance matrix.
 Either "binary" (consider only the presence/absence status of orthlogs), or
-"var1"/"var2" for taking values of the additional variables into account.}
+"var1"/"var2" for taking values of the additional variables into account. 
+Default = "binary".}
 
-\item{var1AggregateBy}{aggregate method for VAR1 (min, max, mean or median)}
+\item{var1AggregateBy}{aggregate method for VAR1 (min, max, mean or median).
+Default = "max".}
 
-\item{var2AggregateBy}{aggregate method for VAR2 (min, max, mean or median)}
+\item{var2AggregateBy}{aggregate method for VAR2 (min, max, mean or median).
+Default = "max".}
 }
 \value{
 A wide dataframe contains values for calculating distance matrix.
 }
 \description{
-Get data for calculating the distance matrix
-}
-\note{
-Documented by Vinh Tran (tran@bio.uni-frankfurt.de)
+Get data for calculating distance matrix from phylogenetic profiles
 }
 \examples{
 data("fullProcessedProfile", package="PhyloProfile")
@@ -39,5 +40,6 @@ getDataClustering(data, profileType, var1AggregateBy, var2AggregateBy)
 \code{\link{fromInputToProfile}}
 }
 \author{
-Carla Mölbert (carla.moelbert@gmx.de)
+Carla Mölbert (carla.moelbert@gmx.de), Vinh Tran
+(tran@bio.uni-frankfurt.de)
 }

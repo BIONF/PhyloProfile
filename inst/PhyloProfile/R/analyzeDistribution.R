@@ -1,6 +1,4 @@
 #' Distribution plots
-#'
-#' @export
 #' @param data data for plotting (from reactive fn "presSpecAllDt")
 #' @param varID name of variable (either input$var1ID, input$var2ID or
 #' "% present taxa"; from input$selectedDist)
@@ -9,7 +7,6 @@
 #' @param distTextSize text size of distribution plot
 #' @param distWidth width of distribution plot
 #' (from input$distTextSize)
-#' @return
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 
 analyzeDistributionUI <- function(id) {

@@ -1,6 +1,6 @@
 #' Run PhyloProfile app
 #' @export
-#' @return shiny application - GUI version of PhyloProfile
+#' @return A shiny application - GUI version of PhyloProfile
 #' @import bioDist
 #' @import Cairo
 #' @importFrom colourpicker colourInput
@@ -15,6 +15,7 @@
 #' @import scales
 #' @import shinyBS
 #' @import shinycssloaders
+#' @import svMisc
 #' @import tidyr
 #' @import knitr
 #' @rawNamespace import(rmarkdown, except = c(pdf_document, md_document,

@@ -4,19 +4,21 @@
 \alias{getOmaMembers}
 \title{Get OMA members}
 \usage{
-getOmaMembers(id, orthoType)
+getOmaMembers(id = NULL, orthoType = "OG")
 }
 \arguments{
 \item{id}{ID of the seed protein (OMA or UniProt ID)}
 
 \item{orthoType}{type of OMA orthologs: either "HOG", "OG"
-(orthologous group) or "PAIR" (orthologous pair - CURRENTLY NOT WORKING)}
+(orthologous group) or "PAIR" (orthologous pair - CURRENTLY NOT WORKING). 
+Default = "OG".}
 }
 \value{
-list of ortholog members
+List of OMA orthologs for an input seed protein.
 }
 \description{
-Get OMA orthologs for a seed protein from OMA Browser
+Get OMA ortholog group, OMA HOG or OMA pair's members for a 
+seed protein from OMA Browser.
 }
 \examples{
 getOmaMembers("HUMAN29397", "OG")

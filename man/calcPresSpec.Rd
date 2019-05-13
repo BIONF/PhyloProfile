@@ -2,22 +2,22 @@
 % Please edit documentation in R/parsePhyloProfile.R
 \name{calcPresSpec}
 \alias{calcPresSpec}
-\title{Calculate percentage of present species in each ortholog group}
+\title{Calculate percentage of present species in each super taxon}
 \usage{
 calcPresSpec(profileWithTax, taxaCount)
 }
 \arguments{
-\item{profileWithTax}{long data frame of main PhyloProfile input together
-with their taxonomy info}
+\item{profileWithTax}{data frame of main PhyloProfile input together
+with their taxonomy info (see ?profileWithTaxonomy)}
 
-\item{taxaCount}{number of species occur in each supertaxon}
+\item{taxaCount}{number of species occur in each supertaxon (e.g. phylum
+or kingdom)}
 }
 \value{
-A data frame with % of present species for each seed protein in
-each supertaxon
+A data frame with % of present species in each supertaxon
 }
 \description{
-Calculate percentage of present species in each ortholog group
+Calculate percentage of present species in each super taxon
 }
 \examples{
 # NOTE: for internal testing only - not recommended for outside using

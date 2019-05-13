@@ -4,21 +4,30 @@
 \alias{dataCustomizedPlot}
 \title{Create data for customized profile plot}
 \usage{
-dataCustomizedPlot(dataHeat, selectedTaxa, selectedSeq)
+dataCustomizedPlot(dataHeat = NULL, selectedTaxa = "all", 
+    selectedSeq = "all")
 }
 \arguments{
-\item{dataHeat}{a data frame contains processed profiles}
+\item{dataHeat}{a data frame contains processed profiles (see
+?fullProcessedProfile, ?filterProfileData)}
 
-\item{selectedTaxa}{subset of taxa}
+\item{selectedTaxa}{selected subset of taxa. Default = "all".}
 
-\item{selectedSeq}{subset of sequences}
+\item{selectedSeq}{selected subset of genes. Default = "all".}
 }
 \value{
-A data frame contains data for customized profile plot.
+A dataframe contains data for plotting the customized profile.
 }
 \description{
 Create data for customized profile plot based on a selected
-list of genes and/or taxa.
+list of genes and/or taxa, containing seed protein IDs (geneID), ortholog IDs
+(orthoID) together with their ncbi taxonomy IDs (ncbiID and abbrName), full 
+names (fullName), indexed supertaxa (supertaxon), values for additional 
+variables (var1, var2) and the aggregated values of those additional 
+variables for each supertaxon (mVar1, mVar2), number of original and filtered
+co-orthologs in each supertaxon (paralog and paralogNew), number of species 
+in each supertaxon (numberSpec) and the % of species that have orthologs in 
+each supertaxon (presSpec).
 }
 \examples{
 data("fullProcessedProfile", package="PhyloProfile")
@@ -27,7 +36,7 @@ selectedSeq <- "all"
 dataCustomizedPlot(fullProcessedProfile, selectedTaxa, selectedSeq)
 }
 \seealso{
-\code{\link{fromInputToProfile}}
+\code{\link{filterProfileData}}
 }
 \author{
 Vinh Tran {tran@bio.uni-frankfurt.de}

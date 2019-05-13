@@ -4,16 +4,18 @@
 \alias{checkNewick}
 \title{Check the validity of input newick tree}
 \usage{
-checkNewick(tree, inputTaxonID)
+checkNewick(tree, inputTaxonID = NULL)
 }
 \arguments{
 \item{tree}{input newick tree}
 
-\item{inputTaxonID}{list of all input taxon ID}
+\item{inputTaxonID}{list of all input taxon IDs for the phylogenetic profiles}
 }
 \value{
-checking result (1 = missing parenthesis; 2 = missing comma;
-3 = tree has singleton; or list of missing taxa in profile)
+Possible formatting error of input tree. 0 = suitable tree for using
+with PhyloProfile, 1 = missing parenthesis; 2 = missing comma; 
+3 = tree has singleton; or a list of taxa that do not exist in the input 
+phylogenetic profile.
 }
 \description{
 Check the validity of input newick tree

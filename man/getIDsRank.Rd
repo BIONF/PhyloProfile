@@ -4,20 +4,26 @@
 \alias{getIDsRank}
 \title{Get taxonomy info for a list of taxa}
 \usage{
-getIDsRank(inputTaxa, currentNCBIinfo)
+getIDsRank(inputTaxa = NULL, currentNCBIinfo = NULL)
 }
 \arguments{
-\item{inputTaxa}{input taxon list}
+\item{inputTaxa}{NCBI ID list of input taxa.}
 
-\item{currentNCBIinfo}{table/dataframe of the current taxonomy data
-(taxonNamesFull.txt)}
+\item{currentNCBIinfo}{table/dataframe of the pre-processed NCBI taxonomy
+data (/PhyloProfile/data/taxonNamesFull.txt)}
 }
 \value{
-A list of 3 dataframes: idList, rankList and reducedInfoList
+A list of 3 dataframes: idList, rankList and reducedInfoList. The
+"rankList" contains taxon names and all taxonomy ranks of the input taxa
+including also the noranks from the input rank to the taxonomy root. The
+"idList" contains input taxon IDs, taxon names, all the ranks from current
+rank to the taxonomy root together with their IDs (with the format
+"id#rank"). The reducedInfoList is a subset of taxonNamesFull.txt file,
+containing the NCBI IDs, taxon fullnames, their current rank and their
+direct parent ID.
 }
 \description{
-Get NCBI taxonomy IDs, ranks and names for an input
-taxon list
+Get NCBI taxonomy IDs, ranks and names for an input taxon list.
 }
 \examples{
 inputTaxa <- c("272557", "176299")
