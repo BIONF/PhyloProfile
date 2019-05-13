@@ -110,6 +110,8 @@ getIDsRank <- function(inputTaxa = NULL, currentNCBIinfo = NULL){
     inputIDDf <- do.call(plyr::rbind.fill, inputIDList)
 
     # return
+    newCol <- seq(ncol(inputIDDf) + 1, ncol(inputRankDf))
+    inputIDDf[newCol] <- NA
     return(list(inputIDDf, inputRankDf, as.data.frame(reducedInfoDf)))
 }
 
