@@ -89,7 +89,6 @@ getTaxonomyMatrix <- function(subsetTaxaCheck = FALSE, taxonIDs = NULL){
         sep="/"
     )
 
-    file.exists(taxonomyMatrixFile)
     if (!file.exists(taxonomyMatrixFile)) {
         fileURL <- paste0(
             "https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/",

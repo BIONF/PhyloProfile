@@ -238,7 +238,15 @@ level (*0.05 by default*). Genes that have a significantly different
 distribution will be shown in the candidate gene list for further analysis.
 
 ```{r}
-?getSignificantGenes
+#' Load built-in data
+data("mainLongRaw", package="PhyloProfile")
+data <- mainLongRaw
+#' choose the in-group taxa
+inGroup <- c("ncbi876142", "ncbi586133")
+#' choose variable to be compared
+variable <- colnames(data)[4]
+#' compare the selected variable between the in-group and out-group taxa
+compareTaxonGroups(data, inGroup, TRUE, variable, 0.05)
 ```
 
 ### Distribution analysis

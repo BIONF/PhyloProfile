@@ -5,8 +5,8 @@
 #' @param tree input newick tree
 #' @param inputTaxonID list of all input taxon IDs for the phylogenetic profiles
 #' @return Possible formatting error of input tree. 0 = suitable tree for using
-#' with PhyloProfile, 1 = missing parenthesis; 2 = missing comma; 
-#' 3 = tree has singleton; or a list of taxa that do not exist in the input 
+#' with PhyloProfile, 1 = missing parenthesis; 2 = missing comma;
+#' 3 = tree has singleton; or a list of taxa that do not exist in the input
 #' phylogenetic profile.
 #' @importFrom stringr regex
 #' @importFrom stringr str_count
@@ -43,7 +43,7 @@ checkNewick <- function(tree, inputTaxonID = NULL){
             setdiff(inputTaxa, nodeList)
             missingTaxa <- setdiff(nodeList, inputTaxa)
             missingTaxa <- missingTaxa[lapply(missingTaxa, nchar) > 0]
-            
+
             if (length(missingTaxa) > 0) {
                 # contains taxa that not exist in main input
                 return(paste(missingTaxa, collapse = "; "))
@@ -55,7 +55,7 @@ checkNewick <- function(tree, inputTaxonID = NULL){
 
 #' Create rooted tree from a taxonomy matrix
 #' @export
-#' @param df data frame contains taxonomy matrix used for generating tree 
+#' @param df data frame contains taxonomy matrix used for generating tree
 #' (see distDf in example)
 #' @param rootTaxon taxon used for rooting the taxonomy tree
 #' @importFrom stats hclust
@@ -83,6 +83,7 @@ createRootedTree <- function(df, rootTaxon = NULL){
     tree <- ape::as.phylo(stats::hclust(taxdis))
     # root tree
     if (missing(rootTaxon)) rootTaxon = tree$tip.label[1]
+    if (!(rootTaxon %in% tree$tip.label)) rootTaxon = tree$tip.label[1]
     tree <- ape::root(tree, outgroup = rootTaxon, resolve.root = TRUE)
     # return
     return(tree)
@@ -111,4 +112,58 @@ sortTaxaFromTree <- function(tree){
     orderedTips <- tree$edge[isTip, 2]
     taxonList <- rev(tree$tip.label[orderedTips])
     return(taxonList)
+}
+
+#' taxa2dist
+#' @importFrom stats as.dist
+#' @param x taxa matrix
+#' @param varstep var-step
+#' @param check check
+#' @param labels labels
+#' @return a distance matrix
+#' @author function from taxize library
+
+taxa2dist <- function(x, varstep = FALSE, check = TRUE, labels) {
+    rich <- apply(x, 2, function(taxa) length(unique(taxa)))
+    S <- nrow(x)
+    if (check) {
+        keep <- rich < S & rich > 1
+        rich <- rich[keep]
+        x <- x[, keep]
+    }
+    i <- rev(order(rich))
+    x <- x[, i]
+    rich <- rich[i]
+    if (varstep) {
+        add <- -diff(c(nrow(x), rich, 1))
+        add <- add/c(S, rich)
+        add <- add/sum(add) * 100
+    }
+    else {
+        add <- rep(100/(ncol(x) + check), ncol(x) + check)
+    }
+    if (!is.null(names(add)))
+        names(add) <- c("Base", names(add)[-length(add)])
+    if (!check)
+        add <- c(0, add)
+    out <- matrix(add[1], nrow(x), nrow(x))
+    for (i in seq_len(ncol(x))) {
+        out <- out + add[i + 1] * outer(x[, i], x[, i], "!=")
+    }
+    out <- as.dist(out)
+    attr(out, "method") <- "taxa2dist"
+    attr(out, "steps") <- add
+    if (missing(labels)) {
+        attr(out, "Labels") <- rownames(x)
+    }
+    else {
+        if (length(labels) != nrow(x))
+            warning("Labels are wrong: needed ", nrow(x), " got ",
+                    length(labels))
+        attr(out, "Labels") <- as.character(labels)
+    }
+    if (!check && any(out <= 0))
+        warning("you used 'check=FALSE' and some distances are zero
+                -- was this intended?")
+    out
 }

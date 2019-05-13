@@ -7,7 +7,7 @@
 createRootedTree(df, rootTaxon = NULL)
 }
 \arguments{
-\item{df}{data frame contains taxonomy matrix used for generating tree 
+\item{df}{data frame contains taxonomy matrix used for generating tree
 (see distDf in example)}
 
 \item{rootTaxon}{taxon used for rooting the taxonomy tree}

@@ -13,8 +13,8 @@ checkNewick(tree, inputTaxonID = NULL)
 }
 \value{
 Possible formatting error of input tree. 0 = suitable tree for using
-with PhyloProfile, 1 = missing parenthesis; 2 = missing comma; 
-3 = tree has singleton; or a list of taxa that do not exist in the input 
+with PhyloProfile, 1 = missing parenthesis; 2 = missing comma;
+3 = tree has singleton; or a list of taxa that do not exist in the input
 phylogenetic profile.
 }
 \description{
