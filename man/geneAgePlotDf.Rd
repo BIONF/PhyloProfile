@@ -11,7 +11,7 @@ geneAgePlotDf(geneAgeDf)
 }
 \value{
 A dataframe for plotting gene age plot containing the absolute number
-and percentage of genes for each calculated evolutionary ages and the 
+and percentage of genes for each calculated evolutionary ages and the
 corresponding position for writting those number on the plot.
 }
 \description{

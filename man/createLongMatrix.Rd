@@ -7,7 +7,7 @@
 createLongMatrix(inputFile = NULL)
 }
 \arguments{
-\item{inputFile}{input profile file in orthoXML, multiple FASTA, 
+\item{inputFile}{input profile file in orthoXML, multiple FASTA,
 tab-delimited matrix format (wide or long).}
 }
 \value{

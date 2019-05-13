@@ -10,14 +10,14 @@ getOmaMembers(id = NULL, orthoType = "OG")
 \item{id}{ID of the seed protein (OMA or UniProt ID)}
 
 \item{orthoType}{type of OMA orthologs: either "HOG", "OG"
-(orthologous group) or "PAIR" (orthologous pair - CURRENTLY NOT WORKING). 
+(orthologous group) or "PAIR" (orthologous pair - CURRENTLY NOT WORKING).
 Default = "OG".}
 }
 \value{
 List of OMA orthologs for an input seed protein.
 }
 \description{
-Get OMA ortholog group, OMA HOG or OMA pair's members for a 
+Get OMA ortholog group, OMA HOG or OMA pair's members for a
 seed protein from OMA Browser.
 }
 \examples{

@@ -4,7 +4,7 @@
 \alias{dataCustomizedPlot}
 \title{Create data for customized profile plot}
 \usage{
-dataCustomizedPlot(dataHeat = NULL, selectedTaxa = "all", 
+dataCustomizedPlot(dataHeat = NULL, selectedTaxa = "all",
     selectedSeq = "all")
 }
 \arguments{
@@ -21,12 +21,12 @@ A dataframe contains data for plotting the customized profile.
 \description{
 Create data for customized profile plot based on a selected
 list of genes and/or taxa, containing seed protein IDs (geneID), ortholog IDs
-(orthoID) together with their ncbi taxonomy IDs (ncbiID and abbrName), full 
-names (fullName), indexed supertaxa (supertaxon), values for additional 
-variables (var1, var2) and the aggregated values of those additional 
+(orthoID) together with their ncbi taxonomy IDs (ncbiID and abbrName), full
+names (fullName), indexed supertaxa (supertaxon), values for additional
+variables (var1, var2) and the aggregated values of those additional
 variables for each supertaxon (mVar1, mVar2), number of original and filtered
-co-orthologs in each supertaxon (paralog and paralogNew), number of species 
-in each supertaxon (numberSpec) and the % of species that have orthologs in 
+co-orthologs in each supertaxon (paralog and paralogNew), number of species
+in each supertaxon (numberSpec) and the % of species that have orthologs in
 each supertaxon (presSpec).
 }
 \examples{

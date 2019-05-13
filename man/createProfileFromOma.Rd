@@ -10,8 +10,8 @@ createProfileFromOma(finalOmaDf = NULL)
 \item{finalOmaDf}{raw OMA data for a list of proteins (see ?getDataForOneOma)}
 }
 \value{
-Dataframe of the phylogenetic profiles in long format, which 
-contains the seed protein IDs, their orthologous proteins and the 
+Dataframe of the phylogenetic profiles in long format, which
+contains the seed protein IDs, their orthologous proteins and the
 corresponding taxononmy IDs of the orthologs.
 }
 \description{

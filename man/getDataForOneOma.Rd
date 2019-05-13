@@ -12,8 +12,8 @@ getDataForOneOma(seedID = NULL, orthoType = "OG")
 \item{orthoType}{type of OMA orthologs ("OG" or "HOG"). Default = "OG".}
 }
 \value{
-Data frame contains info for all sequences of the input OMA group 
-(or HOG). That info contains the protein IDs, taxonomy IDs, sequences, 
+Data frame contains info for all sequences of the input OMA group
+(or HOG). That info contains the protein IDs, taxonomy IDs, sequences,
 lengths, domain annotations (tab delimited) and the corresponding seed ID.
 }
 \description{

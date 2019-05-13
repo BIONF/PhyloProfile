@@ -7,10 +7,10 @@
 getFastaDemo(seqIDs = NULL, demoData = "lca-micros")
 }
 \arguments{
-\item{seqIDs}{list of sequences IDs. Set seqIDs = "all" if you want to get 
+\item{seqIDs}{list of sequences IDs. Set seqIDs = "all" if you want to get
 all fasta sequences from the data set.}
 
-\item{demoData}{name of demo data set (either "ampk-tor" or "lca-micros"). 
+\item{demoData}{name of demo data set (either "ampk-tor" or "lca-micros").
 Default = "lca-micros".}
 }
 \value{

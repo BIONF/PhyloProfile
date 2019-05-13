@@ -7,7 +7,7 @@
 createGeneAgePlot(geneAgePlotDf, geneAgeText)
 }
 \arguments{
-\item{geneAgePlotDf}{data frame required for plotting gene age (see 
+\item{geneAgePlotDf}{data frame required for plotting gene age (see
 ?geneAgePlotDf)}
 
 \item{geneAgeText}{text size}

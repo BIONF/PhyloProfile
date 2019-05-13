@@ -4,7 +4,7 @@
 \alias{getFastaFromFolder}
 \title{Get fasta sequences}
 \usage{
-getFastaFromFolder(seqIDs = NULL, path = NULL, dirFormat = NULL, 
+getFastaFromFolder(seqIDs = NULL, path = NULL, dirFormat = NULL,
     fileExt = NULL, idFormat = NULL)
 }
 \arguments{

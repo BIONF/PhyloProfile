@@ -4,7 +4,7 @@
 \alias{getSelectedTaxonNames}
 \title{Get a subset of input taxa based on a selected taxonomy rank}
 \usage{
-getSelectedTaxonNames(inputTaxonIDs, rank, higherRank, higherID, 
+getSelectedTaxonNames(inputTaxonIDs, rank, higherRank, higherID,
     higherName)
 }
 \arguments{
@@ -14,10 +14,10 @@ getSelectedTaxonNames(inputTaxonIDs, rank, higherRank, higherID,
 
 \item{higherRank}{selected taxonomy rank (e.g. "phylum")}
 
-\item{higherID}{supertaxon ID (e.g. 6029). NOTE: either supertaxon ID or 
+\item{higherID}{supertaxon ID (e.g. 6029). NOTE: either supertaxon ID or
 name is required, not neccessary to give both.}
 
-\item{higherName}{supertaxon name (e.g. "Microsporidia"). NOTE: either 
+\item{higherName}{supertaxon name (e.g. "Microsporidia"). NOTE: either
 supertaxon ID or name is required, not neccessary to give both.}
 }
 \value{
@@ -25,12 +25,12 @@ A data frame contains ncbi IDs and names of taxa from the input taxon
 list that belong to the selected supertaxon.
 }
 \description{
-Get a subset of taxon ncbi IDs and names from an input list of 
-taxa based on a selected supertaxon (identified by its taxonomy rank and 
+Get a subset of taxon ncbi IDs and names from an input list of
+taxa based on a selected supertaxon (identified by its taxonomy rank and
 supertaxon name or supertaxon ID).
 }
 \examples{
-inputTaxonIDs <- c("103449", "1288291", "278021", "27973", "31281", "40302", 
+inputTaxonIDs <- c("103449", "1288291", "278021", "27973", "31281", "40302",
 "586133", "6035", "70536", "876142", "993615")
 rank <- "species"
 higherRank <- "genus"

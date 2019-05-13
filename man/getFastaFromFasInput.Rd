@@ -7,7 +7,7 @@
 getFastaFromFasInput(seqIDs = NULL, file = NULL)
 }
 \arguments{
-\item{seqIDs}{list of sequences IDs. Set seqIDs = "all" if you want to get 
+\item{seqIDs}{list of sequences IDs. Set seqIDs = "all" if you want to get
 all fasta sequences from the input file.}
 
 \item{file}{raw phylogenetic profile input file in multi-fasta format.}

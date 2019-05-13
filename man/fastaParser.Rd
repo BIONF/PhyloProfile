@@ -8,7 +8,7 @@ fastaParser(inputFile = NULL)
 }
 \arguments{
 \item{inputFile}{input multiple fasta file. Check extdata/test.main.fasta or
-https://github.com/BIONF/PhyloProfile/wiki/Input-Data#multi-fasta-format for 
+https://github.com/BIONF/PhyloProfile/wiki/Input-Data#multi-fasta-format for
 the supported FASTA header.}
 }
 \value{

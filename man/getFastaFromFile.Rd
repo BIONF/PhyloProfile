@@ -7,7 +7,7 @@
 getFastaFromFile(seqIDs = NULL, concatFasta = NULL)
 }
 \arguments{
-\item{seqIDs}{list of sequences IDs. Set seqIDs = "all" if you want to get 
+\item{seqIDs}{list of sequences IDs. Set seqIDs = "all" if you want to get
 all fasta sequences from the concatenated input fasta file.}
 
 \item{concatFasta}{input concatenated fasta file.}

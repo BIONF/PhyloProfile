@@ -10,7 +10,7 @@ getOmaDataForOneOrtholog(id = NULL)
 \item{id}{oma ID of one protein}
 }
 \value{
-Data frame contains the input protein ID with its taxonomy ID, 
+Data frame contains the input protein ID with its taxonomy ID,
 sequence, length and domain annotations (tab delimited) for input OMA protein
 }
 \description{

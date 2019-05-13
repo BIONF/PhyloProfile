@@ -4,7 +4,7 @@
 \alias{createVarDistPlot}
 \title{Create distribution plot}
 \usage{
-createVarDistPlot(data, varName = "var", varType = "var1", 
+createVarDistPlot(data, varName = "var", varType = "var1",
     percent = c(0, 1), distTextSize = 12)
 }
 \arguments{
@@ -15,7 +15,7 @@ createVarDistPlot(data, varName = "var", varType = "var1",
 \item{varName}{name of the variable that need to be analyzed (either name of
 variable 1 or variable 2 or "percentage of present taxa"). Default = "var".}
 
-\item{varType}{type of variable (either "var1", "var2" or "presSpec"). 
+\item{varType}{type of variable (either "var1", "var2" or "presSpec").
 Default = "var1".}
 
 \item{percent}{range of percentage cutoff (between 0 and 1). Default = c(0,1)}

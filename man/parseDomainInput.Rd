@@ -9,16 +9,16 @@ parseDomainInput(seed = NULL, inputFile = NULL, type = "file")
 \arguments{
 \item{seed}{seed protein ID}
 
-\item{inputFile}{name of input file ("lca-micros" or "ampk-tor" for demo 
+\item{inputFile}{name of input file ("lca-micros" or "ampk-tor" for demo
 data, file name or path to folder contains individual domain files)}
 
 \item{type}{type of data ("demo", "file" or "folder"). Default = "file".}
 }
 \value{
 A dataframe for protein domains including seed ID, its orthologs IDs,
-sequence lengths, feature names, start and end positions, feature weights 
-(optional) and the status to determine if that feature is important for 
-comparison the architecture between 2 proteins* (e.g. seed protein vs 
+sequence lengths, feature names, start and end positions, feature weights
+(optional) and the status to determine if that feature is important for
+comparison the architecture between 2 proteins* (e.g. seed protein vs
 ortholog) (optional).
 }
 \description{
