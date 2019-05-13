@@ -100,7 +100,7 @@ getDistanceMatrix <- function(profiles = NULL, method = "mutualInformation") {
         distanceMatrix <- stats::dist(profiles, method = method)
     } else if (method == "distanceCorrelation") {
         n <- seq_len(nrow(profiles))
-        matrix[cbind(n, n)] <- 0
+        matrix <- matrix(0L, nrow = nrow(profiles), ncol = nrow(profiles))
         for (i in seq_len(nrow(profiles))) { # rows
             p_i <- unlist(profiles[i,])
             for (j in seq_len(nrow(profiles))) { # columns
@@ -111,7 +111,8 @@ getDistanceMatrix <- function(profiles = NULL, method = "mutualInformation") {
         # Swich the value so that the profiles with a high correlation
         # are clustered together
         matrix <- 1 - matrix
-
+        matrix <- as.data.frame(matrix)
+        
         profileNames <- rownames(profiles)
         colnames(matrix) <- profileNames[seq_len(length(profileNames)) - 1]
         rownames(matrix) <- profileNames
