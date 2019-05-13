@@ -166,8 +166,9 @@ getInputTaxaName <- function(rankName, taxonIDs = NULL){
 }
 
 #' Get a subset of input taxa based on a selected taxonomy rank
-#' @description Get a subset of taxon names from an input list of taxa based on
-#' a selected supertaxon (identified by its taxonomy rank and supertaxon name).
+#' @description Get a subset of taxon ncbi IDs and names from an input list of 
+#' taxa based on a selected supertaxon (identified by its taxonomy rank and 
+#' supertaxon name or supertaxon ID).
 #' @usage getSelectedTaxonNames(inputTaxonIDs, rank, higherRank, higherID, 
 #'     higherName)
 #' @param inputTaxonIDs list of input taxon IDs (e.g. 876142)
@@ -178,8 +179,8 @@ getInputTaxaName <- function(rankName, taxonIDs = NULL){
 #' @param higherName supertaxon name (e.g. "Microsporidia"). NOTE: either 
 #' supertaxon ID or name is required, not neccessary to give both.
 #' @export
-#' @return A list of taxa from the input taxon list that belong to the selected
-#' supertaxon.
+#' @return A data frame contains ncbi IDs and names of taxa from the input taxon
+#' list that belong to the selected supertaxon.
 #' @importFrom utils download.file
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @examples
@@ -201,14 +202,26 @@ getSelectedTaxonNames <- function(
     taxDf <- getTaxonomyMatrix(TRUE, paste0("ncbi", inputTaxonIDs))
     
     if (is.null(higherID) & is.null(higherName))
-        return(as.character(
-            taxDf$fullName[taxDf$abbrName %in% paste0("ncbi", inputTaxonIDs)]
-        ))
+        return(
+            data.frame(
+                ncbiID = taxDf$ncbiID[
+                    taxDf$abbrName %in% paste0("ncbi", inputTaxonIDs)],
+                name = taxDf$fullName[
+                    taxDf$abbrName %in% paste0("ncbi", inputTaxonIDs)],
+                stringsAsFactors = FALSE
+            )
+        )
     
     if (is.null(higherRank)) {
-        return(as.character(
-            taxDf$fullName[taxDf$abbrName %in% paste0("ncbi", inputTaxonIDs)]
-        ))
+        return(
+            data.frame(
+                ncbiID = taxDf$ncbiID[
+                    taxDf$abbrName %in% paste0("ncbi", inputTaxonIDs)],
+                name = taxDf$fullName[
+                    taxDf$abbrName %in% paste0("ncbi", inputTaxonIDs)],
+                stringsAsFactors = FALSE
+            )
+        )
     } else {
         if (!is.null(higherName) & is.null(higherID)) {
             taxaList <- getNameList()
@@ -219,12 +232,24 @@ getSelectedTaxonNames <- function(
                 as.factor(taxDf[rank][taxDf[higherRank] == superID, ])
             )
             return(
-                as.character(taxaList$fullName[
-                    taxaList$rank %in% c(rank, "norank")
-                    & taxaList$ncbiID %in% customizedtaxaID])
+                data.frame(
+                    ncbiID = taxaList$ncbiID[
+                        taxaList$rank %in% c(rank, "norank")
+                        & taxaList$ncbiID %in% customizedtaxaID],
+                    name = taxaList$fullName[
+                        taxaList$rank %in% c(rank, "norank")
+                        & taxaList$ncbiID %in% customizedtaxaID],
+                    stringsAsFactors = FALSE
+                )
             )
         } else if (!is.null(higherID)) {
-            return(as.character(taxDf$fullName[taxDf[,higherRank] == higherID]))
+            return(
+                data.frame(
+                    ncbiID = taxDf$ncbiID[taxDf[,higherRank] == higherID],
+                    name = taxDf$fullName[taxDf[,higherRank] == higherID],
+                    stringsAsFactors = FALSE
+                )
+            )
         }
     }
 }

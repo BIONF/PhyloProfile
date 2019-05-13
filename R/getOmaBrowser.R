@@ -259,11 +259,14 @@ getAllDomainsOma <- function(finalOmaDf = NULL) {
         length = rep(seedDf$length, nlevels(as.factor(domainDf$seedID))),
         stringsAsFactors = FALSE
     )
+    
+    outDf <- rbindlist(list(domainDf, seedDfFull))
+    outDf$length <- as.numeric(outDf$length)
+    outDf$start <- as.numeric(outDf$start)
+    outDf$end <- as.numeric(outDf$end)
 
     return(
-        rbind(
-            domainDf, seedDfFull
-        )[, c("seedID", "orthoID", "length", "feature", "start", "end")]
+        outDf[, c("seedID", "orthoID", "length", "feature", "start", "end")]
     )
 }
 

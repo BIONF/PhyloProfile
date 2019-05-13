@@ -1,1 +1,2 @@
 ncbiID	fullName	rank	parentID
+473542	test unknown species	species	39107

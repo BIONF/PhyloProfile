@@ -24,7 +24,8 @@ checkInputValidity <- function(filein) {
         header = FALSE,
         check.names = FALSE,
         comment.char = "",
-        fill = TRUE
+        fill = TRUE,
+        stringsAsFactors = FALSE
     )
 
     if (is.na(inputDt[1, ncol(inputDt)])) {
@@ -59,9 +60,10 @@ checkInputValidity <- function(filein) {
                     }
                 }
             }
-            # OMA ids
             else {
-                invalidOma <- checkOmaID(levels(inputDt[,1]))
+                if (grepl("\\s", inputDt[1, 1])) return("invalidFormat")
+                # OMA ids
+                invalidOma <- checkOmaID(unique(inputDt[,1]))
                 if (length(invalidOma) == 0) {
                     return("oma")
                 } else {
