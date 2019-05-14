@@ -83,6 +83,7 @@ getIDsRank <- function(inputTaxa = NULL, currentNCBIinfo = NULL){
                 inputRankIDDf[[x]]$rank,
                 "norank_1"
             )
+            ll <- gsub("strain_[[:digit:]]+", "strain", ll)
             return(data.frame(
                 matrix(ll, nrow = 1, byrow = TRUE), stringsAsFactors = FALSE
             ))

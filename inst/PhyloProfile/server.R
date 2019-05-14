@@ -63,7 +63,7 @@ shinyServer(function(input, output, session) {
             data(taxonNamesReduced)
             write.table(
                 taxonNamesReduced, file = "data/taxonNamesReduced.txt",
-                col.names = FALSE,
+                col.names = TRUE,
                 row.names = FALSE,
                 quote = FALSE,
                 sep = "\t"
@@ -76,7 +76,7 @@ shinyServer(function(input, output, session) {
             data(taxonomyMatrix)
             write.table(
                 taxonomyMatrix, file = "data/taxonomyMatrix.txt",
-                col.names = FALSE,
+                col.names = TRUE,
                 row.names = FALSE,
                 quote = FALSE,
                 sep = "\t"
@@ -1751,7 +1751,7 @@ shinyServer(function(input, output, session) {
             } else if (input$addCoreGeneCustomProfile == TRUE) {
                 outAll <- as.list(coreGeneDf())
             } else if (input$addGCGenesCustomProfile == TRUE) {
-                outAll <- as.list(geneListGC())
+                outAll <- as.list(candidateGenes())
             } else {
                 if (!is.null(fileCustom)) {
                     customList <- read.table(
@@ -2880,7 +2880,6 @@ shinyServer(function(input, output, session) {
     })
 
     # ** render list of taxa (and default in-group taxa are selected) ----------
-    # ======= NOTE REPLACE THIS BY getSelectedTaxonNames =======================
     output$taxaListGC <- renderUI({
         filein <- input$mainInput
         if (input$demoData == "lca-micros" | input$demoData == "ampk-tor") {

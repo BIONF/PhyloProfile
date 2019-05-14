@@ -346,6 +346,12 @@ groupComparison <- function (
             shinyjs::disable("downloadPlot")
         else shinyjs::enable("downloadPlot")
     })
+    
+    ### return list of candidate genes
+    outGenes <- reactive({
+        return(names(candidateGenes()))
+    })
+    if (!is.null(outGenes)) return(outGenes)
 }
 
 ################################# FUNCTIONS ####################################
