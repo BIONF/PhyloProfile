@@ -509,11 +509,13 @@ dataFeatureTaxGroup <- function(
 ) {
     if (is.null(mainDf) | is.null(inGroup) | is.null(gene) | is.null(domainDf))
         return()
-    
+
     # get ncbiIDs for the domain data
     mainDf$orthoID <- gsub("\\|", ":", mainDf$orthoID)
     domainDfSub <- merge(
-        domainDf[grep(gene, domainDf$seedID),],
+        domainDf[grep(gene, domainDf$seedID),][
+            , c("orthoID", "seedID", "length", "feature")
+        ],
         mainDf[, c("orthoID", "ncbiID")],
         by = "orthoID", all.x = TRUE
     )
@@ -522,7 +524,7 @@ dataFeatureTaxGroup <- function(
     # identify in-group and out-group
     domainDfSub$type[domainDfSub$ncbiID %in% inGroup] <- "In-group"
     domainDfSub$type[!(domainDfSub$ncbiID %in% inGroup)] <- "Out-group"
-    
+  
     # count number of orthologs for each taxon group
     nInGroup <- length(
         unique(domainDfSub$seedID[domainDfSub$type == "In-group"])
