@@ -1,3 +1,50 @@
+#' NCBI Taxonomy reduced data set
+#'
+#' A list of NCBI taxonomy info (including taxon IDs, taxon names, their
+#' systematic taxonomy rank and IDs of their next rank - parent IDs) for 95 taxa
+#' in two experimental sets included in PhyloProfilData package.
+#' @format A data frame with 4 columns:
+#' \itemize{
+#'     \item{ncbiID}{ e.g. "10090"}
+#'     \item{fullName}{ e.g. "Mus musculus"}
+#'     \item{rank}{ e.g. "species"}
+#'     \item{parentID}{ e.g. "862507"}
+#' }
+#' @usage data(taxonNamesReduced)
+"taxonNamesReduced"
+
+#' NCBI ID list for experimental data sets
+#'
+#' Data frame, in which each row contains the complete taxonomy ranks from the
+#' lowest systematic level (strain/species) upto the taxonomy root and the
+#' corresponding IDs for one taxon in the experimental data sets.
+#' @format A data frame with up to 37 columns and 94 rows corresponding to 94
+#' taxa in the 2 experimental data sets
+#' @usage data(idList)
+"idList"
+
+#' NCBI rank list for experimental data sets
+#'
+#' Data frame, in which each row contains the complete taxonomy ranks from the
+#' lowest systematic level (strain/species) upto the taxonomy root for one taxon
+#' in the experimental data sets.
+#' @format A data frame with up to 37 columns and 94 rows corresponding to 94
+#' taxa in the 2 experimental data sets
+#' @usage data(rankList)
+"rankList"
+
+#' Taxonomy matrix for experimental data sets
+#'
+#' Data frame containing the fully aligned taxonomy IDs of 94 taxa in the
+#' experimental data sets. By talking into account both the defined ranks (e.g.
+#' strain, This data is used for clustering and then creating a
+#' taxon tree. It is used also for cross-linking between different taxonomy
+#' ranks within a taxon.
+#' @format A data frame with up to 79 columns and 94 rows corresponding to 94
+#' taxa in the 2 experimental data sets
+#' @usage data(taxonomyMatrix)
+"taxonomyMatrix"
+
 #' An example of a taxonomy tree in newick format.
 #'
 #' @format A data frame with only one entry

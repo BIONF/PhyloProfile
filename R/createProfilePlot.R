@@ -442,30 +442,20 @@ highlightProfilePlot <- function(
         )
 
         if (!file.exists(nameReducedFile)) {
-            fileURL <- paste0(
-                "https://raw.githubusercontent.com/BIONF/phyloprofile-data/",
-                "master/taxonNamesReduced.txt"
-            )
-            res <- tryCatch(
-                utils::download.file(
-                    fileURL, destfile = nameReducedFile, method="auto"
-                ),
-                error=function(e) 1
+            data(taxonNamesReduced)
+        } else {
+            taxonNamesReduced <- read.table(
+                nameReducedFile, sep = "\t", header = TRUE
             )
         }
 
-        taxaList <- read.table(nameReducedFile, sep = "\t", header = TRUE)
-
-        taxonHighlightID <- {
-            taxaList$ncbiID[
-                taxaList$fullName == taxonHighlight & taxaList$rank == rankName
-            ]
-        }
+        taxonHighlightID <- taxonNamesReduced$ncbiID[
+            taxonNamesReduced$fullName == taxonHighlight 
+            & taxonNamesReduced$rank == rankName]
 
         if (length(taxonHighlightID) == 0L) {
-            taxonHighlightID <- {
-                taxaList$ncbiID[taxaList$fullName == taxonHighlight]
-            }
+            taxonHighlightID <- taxonNamesReduced$ncbiID[
+                taxonNamesReduced$fullName == taxonHighlight]
         }
 
         # get taxonID together with it sorted index

@@ -34,119 +34,66 @@ shinyServer(function(input, output, session) {
     # * check for the existence of taxonomy files ------------------------------
     observe({
         if (!file.exists(isolate("data/rankList.txt"))) {
-            if (hasInternet() == TRUE) {
-                fileUrl <- paste0(
-                    "https://raw.githubusercontent.com/BIONF/",
-                    "phyloprofile-data/master/rankList.txt"
-                )
-                ncol <- max(count.fields(fileUrl, sep = "\t"))
-                df <- fread(
-                    fileUrl,
-                    sep = "\t",
-                    quote = "",
-                    header = FALSE,
-                    fill = TRUE,
-                    na.strings = c("", "NA"),
-                    col.names = paste0("V", seq_len(ncol))
-                )
-                write.table(
-                    df, file = "data/rankList.txt",
-                    col.names = FALSE,
-                    row.names = FALSE,
-                    quote = FALSE,
-                    sep = "\t"
-                )
-            } else file.create("data/rankList.txt")
+            data(rankList)
+            write.table(
+                rankList, file = "data/rankList.txt",
+                col.names = FALSE,
+                row.names = FALSE,
+                quote = FALSE,
+                sep = "\t"
+            )
         }
     })
 
     observe({
         if (!file.exists(isolate("data/idList.txt"))) {
-            if (hasInternet() == TRUE) {
-                fileUrl <- paste0(
-                    "https://raw.githubusercontent.com/BIONF/",
-                    "phyloprofile-data/master/idList.txt"
-                )
-                ncol <- max(count.fields(fileUrl, comment.char = "",
-                                         sep = "\t"))
-                df <- fread(
-                    fileUrl,
-                    sep = "\t",
-                    header = FALSE,
-                    fill = TRUE,
-                    na.strings = c("", "NA"),
-                    col.names = paste0("V", seq_len(ncol))
-                )
-                write.table(
-                    df, file = "data/idList.txt",
-                    col.names = FALSE,
-                    row.names = FALSE,
-                    quote = FALSE,
-                    sep = "\t"
-                )
-            } else file.create("data/idList.txt")
+            data(idList)
+            write.table(
+                idList, file = "data/idList.txt",
+                col.names = FALSE,
+                row.names = FALSE,
+                quote = FALSE,
+                sep = "\t"
+            )
         }
     })
 
     observe({
         if (!file.exists(isolate("data/taxonNamesReduced.txt"))) {
-            if (hasInternet() == TRUE) {
-                fileUrl <- paste0(
-                    "https://raw.githubusercontent.com/BIONF/",
-                    "phyloprofile-data/master/taxonNamesReduced.txt"
-                )
-                ncol <- max(count.fields(fileUrl, sep = "\t"))
-                df <- fread(
-                    fileUrl,
-                    sep = "\t",
-                    quote = "",
-                    header = FALSE,
-                    fill = TRUE,
-                    na.strings = c("", "NA"),
-                    col.names = paste0("V", seq_len(ncol))
-                )
-                write.table(
-                    df, file = "data/taxonNamesReduced.txt",
-                    col.names = FALSE,
-                    row.names = FALSE,
-                    quote = FALSE,
-                    sep = "\t"
-                )
-            } else system("cp data/newTaxa.txt data/taxonNamesReduced.txt")
+            data(taxonNamesReduced)
+            write.table(
+                taxonNamesReduced, file = "data/taxonNamesReduced.txt",
+                col.names = FALSE,
+                row.names = FALSE,
+                quote = FALSE,
+                sep = "\t"
+            )
         }
     })
 
     observe({
         if (!file.exists(isolate("data/taxonomyMatrix.txt"))) {
-            if (hasInternet() == TRUE) {
-                fileUrl <- paste0(
-                    "https://raw.githubusercontent.com/BIONF/",
-                    "phyloprofile-data/master/taxonomyMatrix.txt"
-                )
-                ncol <- max(count.fields(fileUrl, sep = "\t"))
-                df <- fread(
-                    fileUrl,
-                    sep = "\t",
-                    quote = "",
-                    header = FALSE,
-                    fill = TRUE,
-                    na.strings = c("", "NA"),
-                    col.names = paste0("V", seq_len(ncol))
-                )
-
-                write.table(
-                    df, file = "data/taxonomyMatrix.txt",
-                    col.names = FALSE,
-                    row.names = FALSE,
-                    quote = FALSE,
-                    sep = "\t"
-                )
-            } else file.create("data/taxonomyMatrix.txt")
+            data(taxonomyMatrix)
+            write.table(
+                taxonomyMatrix, file = "data/taxonomyMatrix.txt",
+                col.names = FALSE,
+                row.names = FALSE,
+                quote = FALSE,
+                sep = "\t"
+            )
         }
     })
 
     observe({
         if (!file.exists(isolate("data/taxonNamesFull.txt"))) {
+            # data(ncbiTaxonNamesFull, package = "PhyloProfileData")
+            # write.table(
+            #     ncbiTaxonNamesFull, file = "data/taxonNamesFull.txt",
+            #     col.names = FALSE,
+            #     row.names = FALSE,
+            #     quote = FALSE,
+            #     sep = "\t"
+            # )
             if (hasInternet() == TRUE) {
                 fileUrl <- paste0(
                     "https://raw.githubusercontent.com/BIONF/",
@@ -1201,7 +1148,6 @@ shinyServer(function(input, output, session) {
                             na.strings = c("", "NA"),
                             col.names = paste0("X", seq_len(ncol))
                         )
-
                         oldRankList <- fread(
                             "data/rankList.txt",
                             sep = "\t",
@@ -1212,7 +1158,6 @@ shinyServer(function(input, output, session) {
                             na.strings = c("", "NA"),
                             col.names = paste0("X", seq_len(ncol))
                         )
-
                         oldNameList <- fread(
                             "data/taxonNamesReduced.txt",
                             sep = "\t",
@@ -1232,7 +1177,7 @@ shinyServer(function(input, output, session) {
                         newNameList <- rbindlist(
                             list(oldNameList, reducedInfoList), fill = TRUE
                         )
-
+                        
                         # write output files
                         # (idList, rankList and taxonNamesReduced)
                         write.table(

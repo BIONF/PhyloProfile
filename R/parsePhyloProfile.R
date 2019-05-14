@@ -42,26 +42,18 @@ getNameList <- function() {
     )
 
     if (!file.exists(nameReducedFile)) {
-        fileURL <- paste0(
-            "https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/",
-            "taxonNamesReduced.txt"
-        )
-        res <- tryCatch(
-            utils::download.file(
-                fileURL, destfile = nameReducedFile, method="auto"
-            ),
-            error=function(e) 1
+        data(taxonNamesReduced)
+    } else {
+        taxonNamesReduced <- read.table(
+            nameReducedFile, sep = "\t", header = TRUE, fill = TRUE
         )
     }
+    
+    taxonNamesReduced$fullName <- as.character(taxonNamesReduced$fullName)
+    taxonNamesReduced$rank <- as.character(taxonNamesReduced$rank)
+    taxonNamesReduced <- taxonNamesReduced[!duplicated(taxonNamesReduced), ]
 
-    nameList <- read.table(
-        nameReducedFile, sep = "\t", header = TRUE, fill = TRUE
-    )
-    nameList$fullName <- as.character(nameList$fullName)
-    nameList$rank <- as.character(nameList$rank)
-    nameList <- nameList[!duplicated(nameList), ]
-
-    return(nameList)
+    return(taxonNamesReduced)
 }
 
 #' Get taxonomy matrix
@@ -90,26 +82,20 @@ getTaxonomyMatrix <- function(subsetTaxaCheck = FALSE, taxonIDs = NULL){
     )
 
     if (!file.exists(taxonomyMatrixFile)) {
-        fileURL <- paste0(
-            "https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/",
-            "taxonomyMatrix.txt"
-        )
-        res <- tryCatch(
-            utils::download.file(
-                fileURL, destfile = taxonomyMatrixFile, method="auto"
-            ),
-            error=function(e) 1
+        data(taxonomyMatrix)
+    } else {
+        taxonomyMatrix <- read.table(
+            taxonomyMatrixFile, sep = "\t", header = TRUE, 
+            stringsAsFactors = TRUE
         )
     }
-
-    dt <- read.table(
-        taxonomyMatrixFile, sep = "\t", header = TRUE, stringsAsFactors = TRUE
-    )
+    
     if (subsetTaxaCheck) {
-        if (missing(taxonIDs)) return(dt)
-        dt <- dt[dt$abbrName  %in% taxonIDs, ]
+        if (missing(taxonIDs)) return(taxonomyMatrix)
+        taxonomyMatrix <- taxonomyMatrix[
+            taxonomyMatrix$abbrName  %in% taxonIDs, ]
     }
-    return(dt)
+    return(taxonomyMatrix)
 }
 
 #' Get ID list of input taxa from the main input
