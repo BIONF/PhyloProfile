@@ -2,27 +2,27 @@
 % Please edit documentation in R/getFastaSeqs.R
 \name{getFastaDemo}
 \alias{getFastaDemo}
-\title{Get fasta sequences for AMPK-TOR and Microsporidia online demo data}
+\title{Get fasta sequences for AMPK-TOR and BUSCO Arthropoda online demo data}
 \usage{
-getFastaDemo(seqIDs = NULL, demoData = "lca-micros")
+getFastaDemo(seqIDs = NULL, demoData = "arthropoda")
 }
 \arguments{
 \item{seqIDs}{list of sequences IDs. Set seqIDs = "all" if you want to get
 all fasta sequences from the data set.}
 
-\item{demoData}{name of demo data set (either "ampk-tor" or "lca-micros").
-Default = "lca-micros".}
+\item{demoData}{name of demo data set (either "ampk-tor" or "arthropoda").
+Default = "arthropoda".}
 }
 \value{
 A dataframe with one column contains sequences in fasta format.
 }
 \description{
-Get fasta sequences for AMPK-TOR and Microsporidia online demo data
+Get fasta sequences for AMPK-TOR and BUSCO Arthropoda online demo data
 }
 \examples{
 data("mainLongRaw", package="PhyloProfile")
 seqIDs <- unique(as.character(mainLongRaw$orthoID))
-getFastaDemo(seqIDs, "lca-micros")
+getFastaDemo(seqIDs, "arthropoda")
 }
 \seealso{
 \code{\link{mainLongRaw}}

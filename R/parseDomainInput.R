@@ -2,7 +2,7 @@
 #' @description Get all domain annotations for one seed protein IDs.
 #' @export
 #' @param seed seed protein ID
-#' @param inputFile name of input file ("lca-micros" or "ampk-tor" for demo
+#' @param inputFile name of input file ("arthropoda" or "ampk-tor" for demo
 #' data, file name or path to folder contains individual domain files)
 #' @param type type of data ("demo", "file" or "folder"). Default = "file".
 #' @importFrom utils read.csv
@@ -114,16 +114,16 @@ parseDomainInput <- function(seed = NULL, inputFile = NULL, type = "file") {
 }
 
 #' Get domain file(s) for online data set
-#' @param demoData demo data name (either "lca-micros" or "ampk-tor").
+#' @param demoData demo data name (either "arthropoda" or "ampk-tor").
 #' @return URL for the domain file of the selected data set.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @examples
 #' \dontrun{
-#' getDomainOnline("lca-micros")
+#' getDomainOnline("ampk-tor")
 #' }
 
 getDomainOnline <- function(demoData) {
-    if (demoData == "lca-micros") {
+    if (demoData == "arthropoda") {
         fileDomain <- {
             paste0(
                 "https://github.com/BIONF/phyloprofile-data/blob/master/",

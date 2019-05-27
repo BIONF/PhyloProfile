@@ -156,12 +156,12 @@ getInputTaxaName <- function(rankName, taxonIDs = NULL){
 #' supertaxon name or supertaxon ID).
 #' @usage getSelectedTaxonNames(inputTaxonIDs, rank, higherRank, higherID,
 #'     higherName)
-#' @param inputTaxonIDs list of input taxon IDs (e.g. 876142)
+#' @param inputTaxonIDs list of input taxon IDs (e.g. c("10116", "122586"))
 #' @param rank taxonomy rank of input taxa (e.g. "species")
 #' @param higherRank selected taxonomy rank (e.g. "phylum")
-#' @param higherID supertaxon ID (e.g. 6029). NOTE: either supertaxon ID or
+#' @param higherID supertaxon ID (e.g. 7711). NOTE: either supertaxon ID or
 #' name is required, not neccessary to give both.
-#' @param higherName supertaxon name (e.g. "Microsporidia"). NOTE: either
+#' @param higherName supertaxon name (e.g. "Chordata"). NOTE: either
 #' supertaxon ID or name is required, not neccessary to give both.
 #' @export
 #' @return A data frame contains ncbi IDs and names of taxa from the input taxon

@@ -186,54 +186,30 @@ shinyServer(function(input, output, session) {
 
     # * render download link for Demo online files -----------------------------
     output$mainInputFile.ui <- renderUI({
-        if (input$demoData == "lca-micros") {
+        if (input$demoData == "arthropoda") {
             url <- paste0(
                 "https://raw.githubusercontent.com/BIONF/",
-                "phyloprofile-data/master/demo/test.main.long"
+                "phyloprofile-data/master/arthropoda.zip"
             )
-            strong(a("Download demo input file", href = url, target = "_blank"))
+            strong(a("Download demo data", href = url, target = "_blank"))
         } else if (input$demoData == "ampk-tor") {
             url <- paste0(
                 "https://raw.githubusercontent.com/BIONF/phyloprofile-data/",
-                "master/expTestData/ampk-tor/ampk-tor.phyloprofile"
+                "master/ampk-tor.zip"
             )
-            strong(a("Download demo input file", href = url, target = "_blank"))
+            strong(a("Download demo data", href = url, target = "_blank"))
         } else fileInput("mainInput", h5("Upload input file:"))
     })
 
     output$domainInputFile.ui <- renderUI({
-        if (input$demoData == "lca-micros") {
-            url <- paste0(
-                "https://raw.githubusercontent.com/BIONF/phyloprofile-data/",
-                "master/demo/domainFiles"
-            )
-            strong(a("Download demo domains", href = url, target = "_blank"))
+        if (input$demoData == "arthropoda") {
+            strong("Download demo data (link above)")
         } else if (input$demoData == "ampk-tor") {
-            url <- paste0(
-                "https://raw.githubusercontent.com/BIONF/phyloprofile-data/",
-                "master/expTestData/ampk-tor/ampk-tor.domains_F"
-            )
-            strong(a("Download demo domains", href = url, target = "_blank"))
+            strong("Download demo data (link above)")
         } else {
             if (input$annoLocation == "from file") {
                 fileInput("fileDomainInput", "")
             } else textInput("domainPath", "", "")
-        }
-    })
-
-    output$downloadFastaDemo.ui <- renderUI({
-        if (input$demoData == "lca-micros") {
-            url <- paste0(
-                "https://raw.githubusercontent.com/BIONF/phyloprofile-data/",
-                "master/demo/fastaFile/concatenatedSeq.fa"
-            )
-            strong(a("Download demo fasta file", href = url, target = "_blank"))
-        } else if (input$demoData == "ampk-tor") {
-            url <- paste0(
-                "https://raw.githubusercontent.com/BIONF/phyloprofile-data/",
-                "master/expTestData/ampk-tor/ampk-tor.extended.fa"
-            )
-            strong(a("Download demo fasta file", href = url, target = "_blank"))
         }
     })
 
@@ -249,7 +225,7 @@ shinyServer(function(input, output, session) {
         } else {
             url <- paste0(
                 "https://github.com/BIONF/phyloprofile-data/blob/master/",
-                "demo/README.md"
+                "expTestData/arthropoda/README.md"
             )
             em(a("Data description", href = url, target = "_blank"))
         }
@@ -457,11 +433,11 @@ shinyServer(function(input, output, session) {
 
     # * render list of taxonomy ranks ------------------------------------------
     output$rankSelect <- renderUI({
-        if (input$demoData == "lca-micros") {
+        if (input$demoData == "arthropoda") {
             selectInput(
                 "rankSelect", label = "",
                 choices = getTaxonomyRanks(),
-                selected = "phylum"
+                selected = "class"
             )
         } else if (input$demoData == "ampk-tor") {
             selectInput(
@@ -483,17 +459,17 @@ shinyServer(function(input, output, session) {
         choice <- inputTaxonName()
         choice$fullName <- as.factor(choice$fullName)
 
-        if (input$demoData == "lca-micros") {
+        if (input$demoData == "arthropoda") {
             hellemDf <- data.frame(
                 "name" = c(
-                    "Encephalitozoon hellem",
-                    "Encephalitozoon hellem",
-                    "Encephalitozoon",
-                    "Unikaryonidae",
-                    "Apansporoblastina",
-                    "Apansporoblastina",
-                    "Microsporidia",
-                    "Fungi",
+                    "Drosophila melanogaster",
+                    "Drosophila melanogaster",
+                    "Drosophila",
+                    "Drosophilidae",
+                    "Diptera",
+                    "Insecta",
+                    "Arthropoda",
+                    "Metazoa",
                     "Eukaryota"
                 ),
                 "rank" = c(
@@ -580,23 +556,6 @@ shinyServer(function(input, output, session) {
             toggleState("mainInput")
             toggleState("geneListSelected")
             toggleState("demoData")
-        }
-    })
-
-    # * update var2AggregateBy to mean if using demo lca-micros data ---------
-    observe({
-        if (input$demoData == "lca-micros") {
-            ### update var2AggregateBy to mean
-            updateSelectInput(
-                session, "var2AggregateBy",
-                choices = list(
-                    "Max" = "max",
-                    "Min" = "min",
-                    "Mean" = "mean",
-                    "Median" = "median"
-                ),
-                selected = "mean"
-            )
         }
     })
 
@@ -1333,8 +1292,8 @@ shinyServer(function(input, output, session) {
 
     # * convert main input file in any format into long format dataframe -------
     getMainInput <- reactive({
-        if (input$demoData == "lca-micros") {
-            longDataframe <- createLongMatrix("lca-micros")
+        if (input$demoData == "arthropoda") {
+            longDataframe <- createLongMatrix("arthropoda")
         } else if (input$demoData == "ampk-tor") {
             longDataframe <- createLongMatrix("ampk-tor")
         } else {
@@ -1398,7 +1357,7 @@ shinyServer(function(input, output, session) {
 
     # * get ID list of input taxa from main input ------------------------------
     inputTaxonID <- reactive({
-        if (input$demoData == "lca-micros" |
+        if (input$demoData == "arthropoda" |
             input$demoData == "ampk-tor" |
             length(unkTaxa()) == 0) {
             longDataframe <- getMainInput()
@@ -1527,7 +1486,7 @@ shinyServer(function(input, output, session) {
 
         # check input file
         filein <- input$mainInput
-        if (input$demoData == "lca-micros" | input$demoData == "ampk-tor") {
+        if (input$demoData == "arthropoda" | input$demoData == "ampk-tor") {
             filein <- 1
         }
         req(filein)
@@ -1732,7 +1691,7 @@ shinyServer(function(input, output, session) {
         filein <- input$mainInput
         fileCustom <- input$customFile
 
-        if (input$demoData == "lca-micros" | input$demoData == "ampk-tor") {
+        if (input$demoData == "arthropoda" | input$demoData == "ampk-tor") {
             filein <- 1
         }
 
@@ -1777,7 +1736,7 @@ shinyServer(function(input, output, session) {
     # * get list of all taxa for customized profile ----------------------------
     output$taxaIn <- renderUI({
         filein <- input$mainInput
-        if (input$demoData == "lca-micros" | input$demoData == "ampk-tor") {
+        if (input$demoData == "arthropoda" | input$demoData == "ampk-tor") {
             filein <- 1
         }
 
@@ -2076,7 +2035,7 @@ shinyServer(function(input, output, session) {
             updateButton(session, "doDomainPlot", disabled = TRUE)
             return("noSelectHit")
         } else {
-            if (input$demoData == "lca-micros" |
+            if (input$demoData == "arthropoda" |
                 input$demoData == "ampk-tor") {
                 updateButton(session, "doDomainPlot", disabled = FALSE)
             } else {
@@ -2610,7 +2569,7 @@ shinyServer(function(input, output, session) {
     # ** render list of available taxa -----------------------------------------
     output$taxaListCore.ui <- renderUI({
         filein <- input$mainInput
-        if (input$demoData == "lca-micros" | input$demoData == "ampk-tor") {
+        if (input$demoData == "arthropoda" | input$demoData == "ampk-tor") {
             filein <- 1
         }
         if (is.null(filein)) {
@@ -2798,7 +2757,7 @@ shinyServer(function(input, output, session) {
         filein <- input$mainInput
         fileGC <- input$gcFile
 
-        if (input$demoData == "lca-micros" | input$demoData == "ampk-tor") {
+        if (input$demoData == "arthropoda" | input$demoData == "ampk-tor") {
             filein <- 1
         }
 
@@ -2881,7 +2840,7 @@ shinyServer(function(input, output, session) {
     # ** render list of taxa (and default in-group taxa are selected) ----------
     output$taxaListGC <- renderUI({
         filein <- input$mainInput
-        if (input$demoData == "lca-micros" | input$demoData == "ampk-tor") {
+        if (input$demoData == "arthropoda" | input$demoData == "ampk-tor") {
             filein <- 1
         }
         if (is.null(filein)) {

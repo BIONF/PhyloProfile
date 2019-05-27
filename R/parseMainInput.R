@@ -271,10 +271,10 @@ wideToLong <- function(inputFile = NULL){
 
 createLongMatrix <- function(inputFile = NULL){
     if (is.null(inputFile)) return()
-    if (inputFile[1] == "lca-micros") {
+    if (inputFile[1] == "arthropoda") {
         inputURL <- paste0(
             "https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/",
-            "demo/test.main.long"
+            "expTestData/arthropoda/arthropoda.phyloprofile"
         )
         longDataframe <- read.table(
             inputURL, sep = "\t", header = TRUE, fill = TRUE,

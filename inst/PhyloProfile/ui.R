@@ -157,7 +157,7 @@ shinyUI(
                         choices = list(
                             "None" = "none",
                             "AMPK-TOR" = "ampk-tor",
-                            "LCA Microsporidia" = "lca-micros"
+                            "BUSCO Arthropoda" = "arthropoda"
                         ),
                         selected = "none",
                         width = "80%"

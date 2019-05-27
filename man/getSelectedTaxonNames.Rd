@@ -8,16 +8,16 @@ getSelectedTaxonNames(inputTaxonIDs, rank, higherRank, higherID,
     higherName)
 }
 \arguments{
-\item{inputTaxonIDs}{list of input taxon IDs (e.g. 876142)}
+\item{inputTaxonIDs}{list of input taxon IDs (e.g. c("10116", "122586"))}
 
 \item{rank}{taxonomy rank of input taxa (e.g. "species")}
 
 \item{higherRank}{selected taxonomy rank (e.g. "phylum")}
 
-\item{higherID}{supertaxon ID (e.g. 6029). NOTE: either supertaxon ID or
+\item{higherID}{supertaxon ID (e.g. 7711). NOTE: either supertaxon ID or
 name is required, not neccessary to give both.}
 
-\item{higherName}{supertaxon name (e.g. "Microsporidia"). NOTE: either
+\item{higherName}{supertaxon name (e.g. "Chordata"). NOTE: either
 supertaxon ID or name is required, not neccessary to give both.}
 }
 \value{

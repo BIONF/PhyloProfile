@@ -514,7 +514,7 @@ dataFeatureTaxGroup <- function(
     mainDf$orthoID <- gsub("\\|", ":", mainDf$orthoID)
     domainDfSub <- merge(
         domainDf[grep(gene, domainDf$seedID),][
-            , c("orthoID", "seedID", "length", "feature")
+            , c("orthoID", "seedID", "feature")
         ],
         mainDf[, c("orthoID", "ncbiID")],
         by = "orthoID", all.x = TRUE
