@@ -2,6 +2,7 @@
 #' @export
 #' @return A shiny application - GUI version of PhyloProfile
 #' @import bioDist
+#' @import BiocStyle
 #' @importFrom colourpicker colourInput
 #' @import dendextend
 #' @import devtools
@@ -11,16 +12,15 @@
 #' @import gplots
 #' @import GO.db
 #' @import gtable
-#' @import scales
-#' @import shinyBS
-#' @import shinycssloaders
-#' @import svMisc
-#' @import tidyr
 #' @import knitr
 #' @rawNamespace import(rmarkdown, except = c(pdf_document, md_document,
 #'     html_document))
-#' @import BiocStyle
+#' @import scales
+#' @import shinyBS
 #' @rawNamespace import(shinyjs, except = colourInput)
+#' @import shinycssloaders
+#' @import svMisc
+#' @import tidyr
 #' @examples
 #' ?runPhyloProfile
 #' \dontrun{
