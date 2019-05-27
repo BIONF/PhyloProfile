@@ -1,3 +1,72 @@
+#' Pre-processing NCBI taxonomy data
+#' @description Download NCBI taxonomy database and parse information that are
+#' needed for PhyloProfile, including taxon IDs, their scientific names, 
+#' systematic ranks, and parent (next higher) rank IDs.
+#' @return A dataframe contains NCBI taxon IDs, taxon names, taxon ranks and the
+#' next higher taxon IDs (parent's IDs) of all taxa in the NCBI taxonomy 
+#' database.
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+#' @export
+#' @examples
+#' preProcessedTaxonomy <- processNcbiTaxonomy()
+#' # save to text (tab-delimited) file
+#' write.table(
+#'     preProcessedTaxonomy, 
+#'     file = "preProcessedTaxonomy.txt",
+#'     col.names = TRUE,
+#'     row.names = FALSE,
+#'     quote = FALSE,
+#'     sep = "\t"
+#' )
+#' # save to rdata file
+#' save(
+#'     preProcessedTaxonomy, file = "preProcessedTaxonomy.RData", compress='xz'
+#' )
+
+processNcbiTaxonomy <- function() {
+    temp <- tempfile()
+    download.file("ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdmp.zip", temp)
+    names <- read.table(
+        unz(temp, "names.dmp"),
+        header = FALSE,
+        fill = TRUE,
+        sep = "\t",
+        quote = "",
+        comment.char = "",
+        stringsAsFactors = FALSE
+    )
+    nodes <- read.table(
+        unz(temp, "nodes.dmp"),
+        header = FALSE,
+        fill = TRUE,
+        sep = "\t",
+        quote = "",
+        comment.char = "",
+        stringsAsFactors = FALSE
+    )
+    unlink(temp)
+    
+    # Create data frame containing taxon ID, the scientific name, its taxonomy
+    # rank and the taxon ID of the higer rank (parent's ID)
+    preProcessedTaxonomy <- merge(
+        names[names$V7 == "scientific name", c("V1", "V3")],
+        nodes[,c("V1", "V5", "V3")],
+        by = "V1"
+    )
+    colnames(preProcessedTaxonomy) <- c(
+        "ncbiID", "fullName", "rank", "parentID"
+    )
+    
+    # Remove "'" from taxon names and ranks, remove space from taxon ranks
+    preProcessedTaxonomy$fullName <- gsub(
+        "'", "", preProcessedTaxonomy$fullName
+    )
+    preProcessedTaxonomy$rank <- gsub("'", "", preProcessedTaxonomy$rank)
+    preProcessedTaxonomy$rank <- gsub(" ", "", preProcessedTaxonomy$rank)
+    
+    return(preProcessedTaxonomy)
+}
+
 #' Get taxonomy info for a list of taxa
 #' @description Get NCBI taxonomy IDs, ranks and names for an input taxon list.
 #' @param inputTaxa NCBI ID list of input taxa.
