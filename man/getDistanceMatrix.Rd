@@ -22,8 +22,8 @@ A calculated distance matrix for input phylogenetic profiles.
 Calculate the distance matrix
 }
 \examples{
-data("fullProcessedProfileLarge", package="PhyloProfile")
-data <- fullProcessedProfileLarge
+data("finalProcessedProfile", package="PhyloProfile")
+data <- finalProcessedProfile
 profileType <- "binary"
 profiles <- getDataClustering(
     data, profileType, var1AggregateBy, var2AggregateBy)

@@ -23,11 +23,11 @@
 #' @seealso \code{\link{domainPlotting}}, \code{\link{sortDomains}},
 #' \code{\link{parseDomainInput}}, \code{\link{getQualColForVector}}
 #' @examples
-#' seedID <- "OG_1009"
-#' orthoID <- "A.thaliana@3702@241736"
+#' seedID <- "101621at6656"
+#' orthoID <- "101621at6656|AGRPL@224129@0|224129_0:001955|1"
 #' info <- c(seedID, orthoID)
 #' domainFile <- system.file(
-#'     "extdata", "domainFiles/OG_1009.domains",
+#'     "extdata", "domainFiles/101621at6656.domains",
 #'     package = "PhyloProfile", mustWork = TRUE
 #' )
 #' domainDf <- parseDomainInput(seedID, domainFile, "file")
@@ -203,11 +203,12 @@ createArchiPlot <- function(
 #' \dontrun{
 #' # get domain data
 #' domainFile <- system.file(
-#'     "extdata", "domainFiles/OG_1009.domains",
+#'     "extdata", "domainFiles/101621at6656.domains",
 #'     package = "PhyloProfile", mustWork = TRUE
 #' )
 #' domainDf <- parseDomainInput(seedID, domainFile, "file")
-#' df <- domainDf[domainDf$orthoID == "A.thaliana@3702@241736",]
+#' df <- domainDf[
+#'     domainDf$orthoID == "101621at6656|AGRPL@224129@0|224129_0:001955|1",]
 #' # create color scheme for all domain types
 #' allFeatures <- levels(as.factor(df$feature))
 #' allColors <- getQualColForVector(allFeatures)
@@ -216,7 +217,7 @@ createArchiPlot <- function(
 #'     .Names = allFeatures
 #' )
 #' # other parameters
-#' geneID <- "A.thaliana@3702@241736"
+#' geneID <- "AGRPL@224129@0|224129_0:001955|1"
 #' sep <- "|"
 #' labelSize <- 9
 #' titleSize <- 9
@@ -343,14 +344,17 @@ domainPlotting <- function(
 #' \dontrun{
 #' # get domain data
 #' domainFile <- system.file(
-#'     "extdata", "domainFiles/OG_1009.domains",
+#'     "extdata", "domainFiles/101621at6656.domains",
 #'     package = "PhyloProfile", mustWork = TRUE
 #' )
 #' domainDf <- parseDomainInput(seedID, domainFile, "file")
 #' # get seedDf and orthoDf
-#' subDf <- domainDf[domainDf$seedID == "OG_1009#A.thaliana@3702@241736",]
-#' orthoDf <- dplyr::filter(subDf, orthoID == "A.thaliana@3702@241736")
-#' seedDf <- dplyr::filter(subDf, orthoID != "A.thaliana@3702@241736")
+#' subDf <- domainDf[
+#'     domainDf$seedID == "101621at6656#101621at6656|ANOGA@7165@1|Q7Q122|1",]
+#' orthoDf <- dplyr::filter(
+#'     subDf, orthoID == "101621at6656|ANOGA@7165@1|Q7Q122|1")
+#' seedDf <- dplyr::filter(
+#'     subDf, orthoID != "101621at6656|ANOGA@7165@1|Q7Q122|1")
 #' # sort
 #' sortDomains(seedDf, orthoDf)
 #' }

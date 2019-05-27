@@ -187,17 +187,23 @@ fastaParser <- function(inputFile = NULL){
     # split sequence IDs into columns
     fastaFile <- Biostrings::readAAStringSet(inputFile)
     seqID <- names(fastaFile)
-    faDf <- as.data.frame(
-        stringr::str_split_fixed(seqID, "\\|", 5),
+    tmpDf <- data.frame(
+        stringr::str_split_fixed(seqID, "\\|", 3),
         stringsAsFactors = FALSE
     )
-
-    # rename columns
-    colnames(faDf) <- c("geneID", "ncbiID", "orthoID")
-
-    cidx <- seq_len(ncol(faDf) - 3)
-    colnames(faDf)[cidx + 3] <- paste0("var", cidx)
-
+    scoreDf <- stringr::str_split_fixed(reverse(tmpDf[,3]), "\\|", 3)
+    faDf <- data.frame(
+        geneID = tmpDf[,1],
+        ncbiID = tmpDf[,2],
+        orthoID = reverse(scoreDf[,3]),
+        var1 = reverse(scoreDf[,2]),
+        var2 = reverse(scoreDf[,1]),
+        stringsAsFactors = FALSE
+    )
+    
+    # remove columns that contains only NA
+    faDf <- faDf[, colSums(is.na(faDf)) < nrow(faDf)]
+    
     return(faDf)
 }
 
@@ -233,6 +239,7 @@ wideToLong <- function(inputFile = NULL){
         ),
         stringsAsFactors = FALSE
     )
+    orthoInfo[orthoInfo$V1 == "",] <- c(NA, NA, NA)
 
     longDataframe <- data.frame(
         geneID = rep(wideDataframe$geneID, time = ncol(wideDataframe) - 1),

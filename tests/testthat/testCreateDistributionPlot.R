@@ -11,13 +11,13 @@ test_that("test distritbution analyze functions", {
     percentDistributionData <- createPercentageDistributionData(
         inputData, rankName
     )
-    expect_true(nrow(percentDistributionData) == 6)
+    expect_true(nrow(percentDistributionData) == 18)
 
     # distribution data for 2 additional variables
     distributionData <- createVariableDistributionData(
         inputData, c(0, 1), c(0.5, 1)
     )
-    expect_true(nrow(distributionData) == 4)
+    expect_true(nrow(distributionData) == 17)
 
     # distribution data for 2 additional variables of a subset of taxa
     inputTaxonID <- getInputTaxaID(inputData)
@@ -34,8 +34,8 @@ test_that("test distritbution analyze functions", {
         sortedTaxa,
         "max", "mean"
     )
-    selectedGenes <- c("OG_1017", "OG_1019")
-    selectedTaxa <- c("Arabidopsis thaliana", "Encephalitozoon intestinalis")
+    selectedGenes <- c("100136at6656", "103479at6656")
+    selectedTaxa <- c("Homo sapiens", "Branchiostoma floridae")
     subsetDistributionData <- createVariableDistributionDataSubset(
         fullProfileData,
         distributionData,
@@ -48,5 +48,5 @@ test_that("test distritbution analyze functions", {
     p <- createVarDistPlot(
         distributionData, "variable 1 name", "var1", NULL, 12
     )
-    expect_true(nrow(p$data) == 4)
+    expect_true(nrow(p$data) == 17)
 })

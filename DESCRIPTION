@@ -15,7 +15,7 @@ Depends: R (>= 3.6.0)
 Encoding: UTF-8
 biocViews: Software, Visualization, DataRepresentation, MultipleComparison, FunctionalPrediction
 Imports:
-    ape, bioDist, BiocStyle, Biostrings, Cairo, colourpicker, data.table,
+    ape, bioDist, BiocStyle, Biostrings, colourpicker, data.table,
     dendextend, devtools, dplyr, DT, energy, IRanges, GenomeInfoDbData, ggplot2,
     gplots, GO.db, grDevices, grid, gridExtra, gtable, knitr, pbapply,
     RColorBrewer, RCurl, reshape2, rmarkdown, scales, shiny, shinyBS, 

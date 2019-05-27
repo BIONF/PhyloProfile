@@ -1,12 +1,12 @@
 #' Identify core genes for a list of selected taxa
-#' @description Identify core genes for a list of selected (super)taxa. The 
-#' identified core genes must be present in at least a certain proportion of 
-#' species in each selected (super)taxon (identified via percentCutoff) and 
-#' that criteria must be fullfilled for a certain percentage of selected taxa 
+#' @description Identify core genes for a list of selected (super)taxa. The
+#' identified core genes must be present in at least a certain proportion of
+#' species in each selected (super)taxon (identified via percentCutoff) and
+#' that criteria must be fullfilled for a certain percentage of selected taxa
 #' or all of them (determined via coreCoverage).
 #' @export
 #' @usage getCoreGene(rankName, taxaCore = c("none"), processedProfileData,
-#'     var1Cutoff = c(0, 1), var2Cutoff = c(0, 1), percentCutoff = c(0, 1), 
+#'     var1Cutoff = c(0, 1), var2Cutoff = c(0, 1), percentCutoff = c(0, 1),
 #'     coreCoverage = 1)
 #' @param rankName working taxonomy rank (e.g. "species", "genus", "family")
 #' @param taxaCore list of selected taxon names
@@ -16,7 +16,7 @@
 #' @param var2Cutoff cutoff for var2. Default = c(0, 1).
 #' @param percentCutoff cutoff for percentage of species present in each
 #' supertaxon. Default = c(0, 1).
-#' @param coreCoverage the least percentage of selected taxa should be 
+#' @param coreCoverage the least percentage of selected taxa should be
 #' considered. Default = 1.
 #' @return A list of identified core genes.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
@@ -25,7 +25,7 @@
 #' @examples
 #' data("fullProcessedProfile", package="PhyloProfile")
 #' rankName <- "class"
-#' taxaCore <- c("Mammalia", "Mucorales", "Alphaproteobacteria")
+#' taxaCore <- c("Mammalia", "Saccharomycetes", "Insecta")
 #' processedProfileData <- fullProcessedProfile
 #' var1Cutoff <- c(0.75, 1.0)
 #' var2Cutoff <- c(0.75, 1.0)
@@ -41,12 +41,12 @@
 
 getCoreGene <- function(
     rankName = NULL, taxaCore = c("none"), processedProfileData = NULL,
-    var1Cutoff = c(0, 1), var2Cutoff = c(0, 1), 
+    var1Cutoff = c(0, 1), var2Cutoff = c(0, 1),
     percentCutoff = c(0, 1), coreCoverage = 1
 ) {
     if (is.null(processedProfileData)) return()
     if (is.null(rankName)) return()
-    
+
     supertaxonID <- NULL
     mVar1 <- NULL
     mVar2 <- NULL
@@ -87,11 +87,11 @@ getCoreGene <- function(
     if (!is.null(var1CutoffMax)) {
         if (!is.na(var1CutoffMax)) {
             processedProfileData <- subset(
-                processedProfileData, 
+                processedProfileData,
                 supertaxonID %in% superID & mVar1 >= var1CutoffMin
             )
             processedProfileData <- subset(
-                processedProfileData, 
+                processedProfileData,
                 supertaxonID %in% superID & mVar1 <= var1CutoffMax
             )
         }
@@ -100,11 +100,11 @@ getCoreGene <- function(
     if (!is.null(var2CutoffMax)) {
         if (!is.na(var2CutoffMax)) {
             processedProfileData <- subset(
-                processedProfileData, 
+                processedProfileData,
                 supertaxonID %in% superID & mVar2 >= var2CutoffMin
             )
             processedProfileData <- subset(
-                processedProfileData, 
+                processedProfileData,
                 supertaxonID %in% superID & mVar2 <= var2CutoffMax
             )
         }
@@ -114,11 +114,11 @@ getCoreGene <- function(
     if (is.na(superID[1])) return(NULL)
     else {
         data <- subset(
-            processedProfileData, 
+            processedProfileData,
             supertaxonID %in% superID & presSpec >= percentCutoff[1]
         )
         data <- subset(
-            data, 
+            data,
             supertaxonID %in% superID & presSpec <= percentCutoff[2]
         )
 

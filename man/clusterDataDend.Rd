@@ -20,8 +20,8 @@ A dendrogram tree object generated based on input distance matrix.
 Create a dendrogram tree from the distance matrix
 }
 \examples{
-data("fullProcessedProfileLarge", package="PhyloProfile")
-data <- fullProcessedProfileLarge
+data("finalProcessedProfile", package="PhyloProfile")
+data <- finalProcessedProfile
 profileType <- "binary"
 profiles <- getDataClustering(
     data, profileType, var1AggregateBy, var2AggregateBy)

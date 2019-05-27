@@ -8,7 +8,7 @@ reduceProfile(fullProfile)
 }
 \arguments{
 \item{fullProfile}{dataframe contains the full processed profiles (see
-?fullProcessedProfile)}
+?parseInfoProfile and ?fullProcessedProfile)}
 }
 \value{
 A reduced dataframe contains only profile data for the selected

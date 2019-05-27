@@ -48,7 +48,7 @@ getNameList <- function() {
             nameReducedFile, sep = "\t", header = TRUE, fill = TRUE
         )
     }
-    
+
     taxonNamesReduced$fullName <- as.character(taxonNamesReduced$fullName)
     taxonNamesReduced$rank <- as.character(taxonNamesReduced$rank)
     taxonNamesReduced <- taxonNamesReduced[!duplicated(taxonNamesReduced), ]
@@ -71,7 +71,7 @@ getNameList <- function() {
 #' # get full pre-installed taxonomy matrix
 #' getTaxonomyMatrix(FALSE, NULL)
 #' # get taxonomy matrix for a list of taxon IDs
-#' taxonIDs <- c("ncbi10020", "ncbi10090")
+#' taxonIDs <- c("ncbi9606", "ncbi10116")
 #' getTaxonomyMatrix(TRUE, taxonIDs)
 
 getTaxonomyMatrix <- function(subsetTaxaCheck = FALSE, taxonIDs = NULL){
@@ -85,11 +85,11 @@ getTaxonomyMatrix <- function(subsetTaxaCheck = FALSE, taxonIDs = NULL){
         data(taxonomyMatrix)
     } else {
         taxonomyMatrix <- read.table(
-            taxonomyMatrixFile, sep = "\t", header = TRUE, 
+            taxonomyMatrixFile, sep = "\t", header = TRUE,
             stringsAsFactors = TRUE
         )
     }
-    
+
     if (subsetTaxaCheck) {
         if (missing(taxonIDs)) return(taxonomyMatrix)
         taxonomyMatrix <- taxonomyMatrix[
@@ -130,7 +130,7 @@ getInputTaxaID <- function(rawProfile = NULL){
 #' @seealso \code{\link{getInputTaxaID}} for getting input taxon IDs,
 #' \code{\link{getNameList}} for getting the full taxon name list
 #' @examples
-#' taxonIDs <- c("ncbi10020", "ncbi10090")
+#' taxonIDs <- c("ncbi9606", "ncbi10116")
 #' getInputTaxaName("species", taxonIDs)
 
 getInputTaxaName <- function(rankName, taxonIDs = NULL){
@@ -169,13 +169,14 @@ getInputTaxaName <- function(rankName, taxonIDs = NULL){
 #' @importFrom utils download.file
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @examples
-#' inputTaxonIDs <- c("103449", "1288291", "278021", "27973", "31281", "40302",
-#' "586133", "6035", "70536", "876142", "993615")
+#' inputTaxonIDs <- c("10116", "122586", "123851", "13616", "188937", "189518",
+#' "208964", "224129", "224324", "237631", "243230")
 #' rank <- "species"
-#' higherRank <- "genus"
-#' higherID <- 6033
-#' higherName <- "Encephalitozoon"
-#' getSelectedTaxonNames(inputTaxonIDs, rank, higherRank, higherID, higherName)
+#' higherRank <- "phylum"
+#' higherID <- 7711
+#' getSelectedTaxonNames(inputTaxonIDs, rank, higherRank, higherID, NULL)
+#' higherName <- "Chordata"
+#' getSelectedTaxonNames(inputTaxonIDs, rank, higherRank, NULL, higherName)
 
 getSelectedTaxonNames <- function(
     inputTaxonIDs = NULL, rank = NULL,
@@ -258,7 +259,7 @@ getSelectedTaxonNames <- function(
 #' \code{\link{createLongMatrix}}
 #' @examples
 #' taxonIDs <- c(
-#'     "ncbi272557", "ncbi176299", "ncbi3702", "ncbi876142", "ncbi9606"
+#'     "ncbi10116", "ncbi123851", "ncbi3702", "ncbi13616", "ncbi9606"
 #' )
 #' sortInputTaxa(taxonIDs, "species", "Homo sapiens", NULL)
 
@@ -567,7 +568,7 @@ parseInfoProfile <- function(
 #' @description Reduce data of the processed phylogenetic profiles from input
 #' taxonomy rank into supertaxon level (e.g. from species to phylum)
 #' @param fullProfile dataframe contains the full processed profiles (see
-#' ?fullProcessedProfile)
+#' ?parseInfoProfile and ?fullProcessedProfile)
 #' @return A reduced dataframe contains only profile data for the selected
 #' supertaxon rank. This dataframe contains only supertaxa and their value
 #' (%present, mVar1 & mVar2) for each gene.

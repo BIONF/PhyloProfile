@@ -20,7 +20,7 @@ Create gene age plot
 }
 \examples{
 geneAgePlotDf <- data.frame(
-    age = "OG_1017",
+    age = "07_LUCA",
     frea = 2,
     percentage = 100,
     pos = 50

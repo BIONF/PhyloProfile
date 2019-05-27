@@ -14,9 +14,9 @@
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{getDomainOnline}}, \code{\link{getDomainFolder}}
 #' @examples
-#' seed <- "OG_1009"
+#' seed <- "101621at6656"
 #' inputFile <- system.file(
-#'     "extdata", "domainFiles/OG_1009.domains",
+#'     "extdata", "domainFiles/101621at6656.domains",
 #'     package = "PhyloProfile", mustWork = TRUE
 #' )
 #' type <- "file"

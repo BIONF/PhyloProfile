@@ -26,9 +26,9 @@ a selected gene.
 \examples{
 data("mainLongRaw", package="PhyloProfile")
 data <- mainLongRaw
-inGroup <- c("ncbi876142", "ncbi586133")
+inGroup <- c("ncbi9606", "ncbi10116")
 variable <- colnames(data)[c(4, 5)]
-plotDf <- dataVarDistTaxGroup(data, inGroup, "OG_1017", variable)
+plotDf <- dataVarDistTaxGroup(data, inGroup, "101621at6656", variable)
 plotParameters <- list(
     "xSize" = 12,
     "ySize" = 12,
@@ -38,7 +38,7 @@ plotParameters <- list(
     "mValue" = "mean",
     "inGroupName" = "In-group",
     "outGroupName" = "Out-group",
-    "title" = "OG_1017"
+    "title" = "101621at6656"
 )
 g <- varDistTaxPlot(plotDf, plotParameters)
 grid::grid.draw(g)

@@ -4,7 +4,7 @@
 \alias{getDataClustering}
 \title{Get data for calculating distance matrix from phylogenetic profiles}
 \usage{
-getDataClustering(data, profileType = "binary", 
+getDataClustering(data, profileType = "binary",
     var1AggregateBy = "max", var2AggregateBy = "max")
 }
 \arguments{
@@ -13,7 +13,7 @@ getDataClustering(data, profileType = "binary",
 
 \item{profileType}{type of data used for calculating the distance matrix.
 Either "binary" (consider only the presence/absence status of orthlogs), or
-"var1"/"var2" for taking values of the additional variables into account. 
+"var1"/"var2" for taking values of the additional variables into account.
 Default = "binary".}
 
 \item{var1AggregateBy}{aggregate method for VAR1 (min, max, mean or median).

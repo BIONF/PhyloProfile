@@ -38,11 +38,12 @@ Create architecure plot for a single protein
 \dontrun{
 # get domain data
 domainFile <- system.file(
-    "extdata", "domainFiles/OG_1009.domains",
+    "extdata", "domainFiles/101621at6656.domains",
     package = "PhyloProfile", mustWork = TRUE
 )
 domainDf <- parseDomainInput(seedID, domainFile, "file")
-df <- domainDf[domainDf$orthoID == "A.thaliana@3702@241736",]
+df <- domainDf[
+    domainDf$orthoID == "101621at6656|AGRPL@224129@0|224129_0:001955|1",]
 # create color scheme for all domain types
 allFeatures <- levels(as.factor(df$feature))
 allColors <- getQualColForVector(allFeatures)
@@ -51,7 +52,7 @@ colorScheme <- structure(
     .Names = allFeatures
 )
 # other parameters
-geneID <- "A.thaliana@3702@241736"
+geneID <- "AGRPL@224129@0|224129_0:001955|1"
 sep <- "|"
 labelSize <- 9
 titleSize <- 9

@@ -67,13 +67,13 @@
 
 #' An example of a raw long input file.
 #'
-#' @format A data frame with 20 rows and 5 variables:
+#' @format A data frame with 168 rows and 5 variables:
 #' \itemize{
-#'     \item{geneID}{ Seed or ortholog group ID, e.g. "OG_1017"}
-#'     \item{ncbiID}{ Taxon ID, e.g. "ncbi176299"}
-#'     \item{orthoID}{ Ortholog ID, e.g. "A.fabrum@176299@1582"}
-#'     \item{FAS}{ First additional variable}
-#'     \item{traceability}{ Second additional variable}
+#'     \item{geneID}{ Seed or ortholog group ID, e.g. "100136at6656"}
+#'     \item{ncbiID}{ Taxon ID, e.g. "ncbi36329"}
+#'     \item{orthoID}{ Ortholog ID, e.g. "100136at6656|PLAF7@36329@1|Q8ILT8|1"}
+#'     \item{FAS_F}{ First additional variable}
+#'     \item{FAS_B}{ Second additional variable}
 #' }
 "mainLongRaw"
 
@@ -99,19 +99,19 @@
 
 #' An example of a fully processed phylogenetic profile.
 #'
-#' @format A data frame with 20 rows and 17 variables:
+#' @format A data frame with 168 rows and 17 variables:
 #' \itemize{
 #'     \item{supertaxon}{ Supertaxon name together with its ordered index, e.g.
 #'     "1001_Mammalia"}
-#'     \item{geneID}{ Seed or ortholog group ID, e.g. "OG_1017"}
-#'     \item{ncbiID}{ Taxon ID, e.g. "ncbi10090"}
-#'     \item{orthoID}{ Ortholog ID, e.g. "M.musculus@10090@112934"}
+#'     \item{geneID}{ Seed or ortholog group ID, e.g. "100136at6656"}
+#'     \item{ncbiID}{ Taxon ID, e.g. "ncbi10116"}
+#'     \item{orthoID}{ Ortholog ID, e.g. "100136at6656|HUMAN@9606@1|Q9UNQ2|1"}
 #'     \item{var1}{ First additional variable}
 #'     \item{var2}{ Second additional variable}
 #'     \item{paralog}{ Number of co-orthologs in the current taxon}
-#'     \item{abbrName}{ NCBI ID of the ortholog, e.g. "ncbi10090"}
+#'     \item{abbrName}{ NCBI ID of the ortholog, e.g. "ncbi9606"}
 #'     \item{taxonID}{ Taxon ID of the ortholog, in this case: "0"}
-#'     \item{fullName}{ Full taxon name of the ortholog, e.g. "Mus musculus"}
+#'     \item{fullName}{ Full taxon name of the ortholog, e.g. "Homo sapiens"}
 #'     \item{supertaxonID}{ Supertaxon ID (only different than ncbiID in case
 #'     working with higher taxonomy rank than input's). e.g. "40674"}
 #'     \item{rank}{ Rank of the supertaxon, e.g. "class"}
@@ -123,11 +123,11 @@
 #' }
 "fullProcessedProfile"
 
-#' An example of a large processed phylogenetic profile.
+#' An example of a final processed & filtered phylogenetic profile.
 #'
-#' @format A data frame with 80 rows and 9 variables:
+#' @format A data frame with 91 rows and 10 variables:
 #' \itemize{
-#'     \item{geneID}{ Seed or ortholog group ID, e.g. "OG_1017"}
+#'     \item{geneID}{ Seed or ortholog group ID, e.g. "100136at6656"}
 #'     \item{supertaxon}{ Supertaxon name together with its ordered index, e.g.
 #'     "1001_Mammalia"}
 #'     \item{supertaxonID}{ Supertaxon ID (only different than ncbiID in case
@@ -135,8 +135,9 @@
 #'     \item{var1}{ First additional variable}
 #'     \item{presSpec}{ The percentage of species presenting in each supertaxon}
 #'     \item{category}{ "cat}
-#'     \item{orthoID}{ Ortholog ID, e.g. "M.musculus@10090@112934"}
+#'     \item{orthoID}{ Ortholog ID, e.g. "100136at6656|RAT@10116@1|G3V7R8|1"}
 #'     \item{var2}{ Second additional variable}
 #'     \item{paralog}{ Number of co-orthologs in the current taxon}
+#'     \item{taxonMon}{ Name of supertaxon but without index, e.g. "Mammalia"}
 #' }
-"fullProcessedProfileLarge"
+"finalProcessedProfile"

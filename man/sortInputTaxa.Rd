@@ -27,7 +27,7 @@ Sort list of (super)taxa based on a selected reference (super)taxon
 }
 \examples{
 taxonIDs <- c(
-    "ncbi272557", "ncbi176299", "ncbi3702", "ncbi876142", "ncbi9606"
+    "ncbi10116", "ncbi123851", "ncbi3702", "ncbi13616", "ncbi9606"
 )
 sortInputTaxa(taxonIDs, "species", "Homo sapiens", NULL)
 }

@@ -32,9 +32,8 @@ data("mainLongRaw", package="PhyloProfile")
 distributionData <- createVariableDistributionData(
     mainLongRaw, c(0, 1), c(0.5, 1)
 )
-selectedGenes <- "OG_1019"
-selectedTaxa <- c("Mammalia", "Echinoidea", "Gunneridae", "Mucorales",
-"Alphaproteobacteria")
+selectedGenes <- "100136at6656"
+selectedTaxa <- c("Mammalia", "Saccharomycetes", "Insecta")
 createVariableDistributionDataSubset(
     fullProcessedProfile,
     distributionData,

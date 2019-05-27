@@ -22,10 +22,10 @@ Identify the common ancestor for a selected taxa and return a
 list of all taxa that have that common ancestor from an large input taxa set.
 }
 \examples{
-inputTaxa <- c("ncbi103449", "ncbi1288291", "ncbi278021", "ncbi27973",
-    "ncbi31281", "ncbi40302", "ncbi586133", "ncbi6035", "ncbi70536",
-    "ncbi876142", "ncbi993615")
-inGroup <-  c("ncbi27973", "ncbi6035")
+inputTaxa <- c("ncbi34740", "ncbi9606", "ncbi374847", "ncbi123851",
+    "ncbi5664", "ncbi189518", "ncbi418459", "ncbi10116", "ncbi284812",
+    "ncbi35128", "ncbi7070")
+inGroup <-  c("ncbi9606", "ncbi10116")
 getCommonAncestor(inputTaxa, inGroup)
 }
 \author{

@@ -27,13 +27,13 @@ A dataframe with one column contains sequences in fasta format.
 Get fasta sequences for the input phylogenetic profiles.
 }
 \examples{
-seqIDs <- "A.pernix@272557@1694"
+seqIDs <- "72288at6656|RAT@10116@1|D3ZUE4"
 path <- system.file(
     "extdata", "fastaFiles", package = "PhyloProfile", mustWork = TRUE
 )
 dirFormat <- 1
 fileExt <- "fa"
-idFormat <- 2
+idFormat <- 3
 getFastaFromFolder(seqIDs, path, dirFormat, fileExt, idFormat)
 }
 \seealso{

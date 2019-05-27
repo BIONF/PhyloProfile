@@ -4,19 +4,19 @@
 \name{fullProcessedProfile}
 \alias{fullProcessedProfile}
 \title{An example of a fully processed phylogenetic profile.}
-\format{A data frame with 20 rows and 17 variables:
+\format{A data frame with 168 rows and 17 variables:
 \itemize{
     \item{supertaxon}{ Supertaxon name together with its ordered index, e.g.
     "1001_Mammalia"}
-    \item{geneID}{ Seed or ortholog group ID, e.g. "OG_1017"}
-    \item{ncbiID}{ Taxon ID, e.g. "ncbi10090"}
-    \item{orthoID}{ Ortholog ID, e.g. "M.musculus@10090@112934"}
+    \item{geneID}{ Seed or ortholog group ID, e.g. "100136at6656"}
+    \item{ncbiID}{ Taxon ID, e.g. "ncbi10116"}
+    \item{orthoID}{ Ortholog ID, e.g. "100136at6656|HUMAN@9606@1|Q9UNQ2|1"}
     \item{var1}{ First additional variable}
     \item{var2}{ Second additional variable}
     \item{paralog}{ Number of co-orthologs in the current taxon}
-    \item{abbrName}{ NCBI ID of the ortholog, e.g. "ncbi10090"}
+    \item{abbrName}{ NCBI ID of the ortholog, e.g. "ncbi9606"}
     \item{taxonID}{ Taxon ID of the ortholog, in this case: "0"}
-    \item{fullName}{ Full taxon name of the ortholog, e.g. "Mus musculus"}
+    \item{fullName}{ Full taxon name of the ortholog, e.g. "Homo sapiens"}
     \item{supertaxonID}{ Supertaxon ID (only different than ncbiID in case
     working with higher taxonomy rank than input's). e.g. "40674"}
     \item{rank}{ Rank of the supertaxon, e.g. "class"}

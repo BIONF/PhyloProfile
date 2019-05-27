@@ -31,11 +31,11 @@ be plotted. NOTE: seed protein ID is the one being shown in the profile plot,
 which normally is also the orthologous group ID.
 }
 \examples{
-seedID <- "OG_1009"
-orthoID <- "A.thaliana@3702@241736"
+seedID <- "101621at6656"
+orthoID <- "101621at6656|AGRPL@224129@0|224129_0:001955|1"
 info <- c(seedID, orthoID)
 domainFile <- system.file(
-    "extdata", "domainFiles/OG_1009.domains",
+    "extdata", "domainFiles/101621at6656.domains",
     package = "PhyloProfile", mustWork = TRUE
 )
 domainDf <- parseDomainInput(seedID, domainFile, "file")

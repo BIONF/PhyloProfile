@@ -34,8 +34,8 @@ data("fullProcessedProfile", package="PhyloProfile")
 plotDf <- dataMainPlot(fullProcessedProfile)
 plotParameter <- list(
     "xAxis" = "taxa",
-    "var1ID" = "FAS",
-    "var2ID"  = "Traceability",
+    "var1ID" = "FAS_FW",
+    "var2ID"  = "FAS_BW",
     "lowColorVar1" =  "#FF8C00",
     "highColorVar1" = "#4682B4",
     "lowColorVar2" = "#FFFFFF",

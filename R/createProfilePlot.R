@@ -65,7 +65,7 @@ dataMainPlot <- function(dataHeat = NULL){
 #' @seealso \code{\link{filterProfileData}}
 #' @examples
 #' data("fullProcessedProfile", package="PhyloProfile")
-#' selectedTaxa <- c("Mammalia", "Echinoidea", "Gunneridae")
+#' selectedTaxa <- c("Mammalia", "Saccharomycetes", "Insecta")
 #' selectedSeq <- "all"
 #' dataCustomizedPlot(fullProcessedProfile, selectedTaxa, selectedSeq)
 
@@ -152,8 +152,8 @@ dataCustomizedPlot <- function(
 #' plotDf <- dataMainPlot(fullProcessedProfile)
 #' plotParameter <- list(
 #'     "xAxis" = "taxa",
-#'     "var1ID" = "FAS",
-#'     "var2ID"  = "Traceability",
+#'     "var1ID" = "FAS_FW",
+#'     "var2ID"  = "FAS_BW",
 #'     "lowColorVar1" =  "#FF8C00",
 #'     "highColorVar1" = "#4682B4",
 #'     "lowColorVar2" = "#FFFFFF",
@@ -387,14 +387,15 @@ heatmapPlotting <- function(data = NULL, plotParameter = NULL){
 #' @return A profile heatmap plot with highlighted gene and/or taxon of interest
 #' as ggplot object.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+#' @importFrom utils data
 #' @seealso \code{\link{dataMainPlot}}, \code{\link{dataCustomizedPlot}}
 #' @examples
 #' data("fullProcessedProfile", package="PhyloProfile")
 #' plotDf <- dataMainPlot(fullProcessedProfile)
 #' plotParameter <- list(
 #'     "xAxis" = "taxa",
-#'     "var1ID" = "FAS",
-#'     "var2ID"  = "Traceability",
+#'     "var1ID" = "FAS_FW",
+#'     "var2ID"  = "FAS_BW",
 #'     "lowColorVar1" =  "#FF8C00",
 #'     "highColorVar1" = "#4682B4",
 #'     "lowColorVar2" = "#FFFFFF",
@@ -411,7 +412,8 @@ heatmapPlotting <- function(data = NULL, plotParameter = NULL){
 #' )
 #' taxonHighlight <- "Mammalia"
 #' rankName <- "class"
-#' geneHighlight <- "OG_1019"
+#' print(plotDf$geneID)
+#' geneHighlight <- "none"
 #' highlightProfilePlot(
 #'     plotDf, plotParameter, taxonHighlight, rankName, geneHighlight
 #' )
@@ -450,7 +452,7 @@ highlightProfilePlot <- function(
         }
 
         taxonHighlightID <- taxonNamesReduced$ncbiID[
-            taxonNamesReduced$fullName == taxonHighlight 
+            taxonNamesReduced$fullName == taxonHighlight
             & taxonNamesReduced$rank == rankName]
 
         if (length(taxonHighlightID) == 0L) {

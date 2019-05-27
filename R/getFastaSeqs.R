@@ -151,13 +151,13 @@ getFastaFromFile <- function(seqIDs = NULL, concatFasta = NULL) {
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{mainLongRaw}}
 #' @examples
-#' seqIDs <- "A.pernix@272557@1694"
+#' seqIDs <- "72288at6656|RAT@10116@1|D3ZUE4"
 #' path <- system.file(
 #'     "extdata", "fastaFiles", package = "PhyloProfile", mustWork = TRUE
 #' )
 #' dirFormat <- 1
 #' fileExt <- "fa"
-#' idFormat <- 2
+#' idFormat <- 3
 #' getFastaFromFolder(seqIDs, path, dirFormat, fileExt, idFormat)
 
 getFastaFromFolder <- function(
@@ -171,7 +171,7 @@ getFastaFromFolder <- function(
             stringsAsFactors = FALSE
         )
     )
-
+    
     if (path != "") {
         # get list of species IDs
         if (idFormat == 1) {
@@ -186,11 +186,11 @@ getFastaFromFolder <- function(
             specDf$specID <- reverse(as.character(specDf$V2))
         } else if (idFormat == 3) {
             specDf <- as.data.frame(
-                stringr::str_split_fixed(reverse(as.character(seqIDs)), "|", 2)
+                stringr::str_split_fixed(reverse(as.character(seqIDs)),"\\|",2)
             )
             specDf$specID <- reverse(as.character(specDf$V2))
         }
-
+        
         # read all specices FASTA files at once
         if (idFormat == 4) {
             fileList <- list.files(path, pattern = fileExt)
@@ -207,7 +207,7 @@ getFastaFromFolder <- function(
         } else {
             specID <- as.character(levels(as.factor(specDf$specID)))
             specID <- specID[specID != ""]
-
+            
             file <- paste0(path, "/", specID, ".", fileExt)
             if (dirFormat == 2) {
                 file <- paste0(path, "/", specID, "/", specID, ".", fileExt)
@@ -222,7 +222,7 @@ getFastaFromFolder <- function(
                 ))
             } else faFile <- Biostrings::readAAStringSet(file)
         }
-
+        
         # now get selected sequences
         if (
             length(unique(pmatch(seqIDs, names(faFile)))) == 1 &

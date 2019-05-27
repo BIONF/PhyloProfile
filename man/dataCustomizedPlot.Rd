@@ -31,7 +31,7 @@ each supertaxon (presSpec).
 }
 \examples{
 data("fullProcessedProfile", package="PhyloProfile")
-selectedTaxa <- c("Mammalia", "Echinoidea", "Gunneridae")
+selectedTaxa <- c("Mammalia", "Saccharomycetes", "Insecta")
 selectedSeq <- "all"
 dataCustomizedPlot(fullProcessedProfile, selectedTaxa, selectedSeq)
 }

@@ -7,7 +7,7 @@ test_that("test fasta input", {
 
 test_that("test wide input", {
     a <- createLongMatrix("mainWideTest.txt")
-    expect_true(nrow(a) == 8)
+    expect_true(nrow(a) == 20)
 })
 
 test_that("test xml input", {

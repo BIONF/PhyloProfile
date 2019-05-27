@@ -24,7 +24,7 @@ Get the (full or subset) taxonomy matrix from
 # get full pre-installed taxonomy matrix
 getTaxonomyMatrix(FALSE, NULL)
 # get taxonomy matrix for a list of taxon IDs
-taxonIDs <- c("ncbi10020", "ncbi10090")
+taxonIDs <- c("ncbi9606", "ncbi10116")
 getTaxonomyMatrix(TRUE, taxonIDs)
 }
 \author{

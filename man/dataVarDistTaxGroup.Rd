@@ -28,9 +28,9 @@ groups of taxa for a selected gene.
 \examples{
 data("mainLongRaw", package="PhyloProfile")
 data <- mainLongRaw
-inGroup <- c("ncbi876142", "ncbi586133")
+inGroup <- c("ncbi9606", "ncbi10116")
 variable <- colnames(data)[c(4, 5)]
-dataVarDistTaxGroup(data, inGroup, "OG_1017", variable)
+dataVarDistTaxGroup(data, inGroup, "101621at6656", variable)
 }
 \seealso{
 \code{\link{createLongMatrix}}

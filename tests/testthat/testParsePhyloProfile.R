@@ -5,8 +5,8 @@ test_that("test connection to taxonomy files and getting input taxa", {
     inputDf <- createLongMatrix("mainWideTest.txt")
 
     inputTaxonID <- getInputTaxaID(inputDf)
-    expect_true(length(inputTaxonID) == 4)
+    expect_true(length(inputTaxonID) == 5)
 
     inputTaxonName <- getInputTaxaName(rankName, inputTaxonID)
-    expect_true(nrow(inputTaxonName) == 4)
+    expect_true(nrow(inputTaxonName) == 5)
 })

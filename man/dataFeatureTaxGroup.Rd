@@ -35,14 +35,14 @@ feature occurrency per protein/ortholog).
 \examples{
 data("mainLongRaw", package="PhyloProfile")
 mainDf <- mainLongRaw
-gene <- "OG_1017"
+gene <- "101621at6656"
 inputFile <- system.file(
-    "extdata", "domainFiles/OG_1017.domains",
+    "extdata", "domainFiles/101621at6656.domains",
     package = "PhyloProfile", mustWork = TRUE
 )
 type <- "file"
 domainDf <- parseDomainInput(gene, inputFile, type)
-inGroup <- c("ncbi876142", "ncbi586133")
+inGroup <- c("ncbi9606", "ncbi10116")
 dataFeatureTaxGroup(mainDf, domainDf, inGroup, gene)
 }
 \seealso{

@@ -39,7 +39,7 @@ that are not part of the in-group.
 \examples{
 data("mainLongRaw", package="PhyloProfile")
 data <- mainLongRaw
-inGroup <- c("ncbi876142", "ncbi586133")
+inGroup <- c("ncbi9606", "ncbi10116")
 variable <- colnames(data)[4]
 compareTaxonGroups(data, inGroup, TRUE, variable, 0.05)
 }

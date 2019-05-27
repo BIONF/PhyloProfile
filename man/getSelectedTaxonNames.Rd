@@ -30,13 +30,14 @@ taxa based on a selected supertaxon (identified by its taxonomy rank and
 supertaxon name or supertaxon ID).
 }
 \examples{
-inputTaxonIDs <- c("103449", "1288291", "278021", "27973", "31281", "40302",
-"586133", "6035", "70536", "876142", "993615")
+inputTaxonIDs <- c("10116", "122586", "123851", "13616", "188937", "189518",
+"208964", "224129", "224324", "237631", "243230")
 rank <- "species"
-higherRank <- "genus"
-higherID <- 6033
-higherName <- "Encephalitozoon"
-getSelectedTaxonNames(inputTaxonIDs, rank, higherRank, higherID, higherName)
+higherRank <- "phylum"
+higherID <- 7711
+getSelectedTaxonNames(inputTaxonIDs, rank, higherRank, higherID, NULL)
+higherName <- "Chordata"
+getSelectedTaxonNames(inputTaxonIDs, rank, higherRank, NULL, higherName)
 }
 \author{
 Vinh Tran {tran@bio.uni-frankfurt.de}

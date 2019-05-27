@@ -1,12 +1,12 @@
 #' Get data for calculating distance matrix from phylogenetic profiles
 #' @export
-#' @usage getDataClustering(data, profileType = "binary", 
+#' @usage getDataClustering(data, profileType = "binary",
 #'     var1AggregateBy = "max", var2AggregateBy = "max")
 #' @param data a data frame contains processed and filtered profiles (see
 #' ?fullProcessedProfile and ?filterProfileData, ?fromInputToProfile)
 #' @param profileType type of data used for calculating the distance matrix.
 #' Either "binary" (consider only the presence/absence status of orthlogs), or
-#' "var1"/"var2" for taking values of the additional variables into account. 
+#' "var1"/"var2" for taking values of the additional variables into account.
 #' Default = "binary".
 #' @param var1AggregateBy aggregate method for VAR1 (min, max, mean or median).
 #' Default = "max".
@@ -25,7 +25,7 @@
 #' getDataClustering(data, profileType, var1AggregateBy, var2AggregateBy)
 
 getDataClustering <- function(
-    data = NULL, profileType = "binary", 
+    data = NULL, profileType = "binary",
     var1AggregateBy = "max", var2AggregateBy = "max"
 ) {
     if (is.null(data)) return()
@@ -82,8 +82,8 @@ getDataClustering <- function(
 #' (tran@bio.uni-frankfurt.de)
 #' @seealso \code{\link{getDataClustering}}
 #' @examples
-#' data("fullProcessedProfileLarge", package="PhyloProfile")
-#' data <- fullProcessedProfileLarge
+#' data("finalProcessedProfile", package="PhyloProfile")
+#' data <- finalProcessedProfile
 #' profileType <- "binary"
 #' profiles <- getDataClustering(
 #'     data, profileType, var1AggregateBy, var2AggregateBy)
@@ -112,7 +112,7 @@ getDistanceMatrix <- function(profiles = NULL, method = "mutualInformation") {
         # are clustered together
         matrix <- 1 - matrix
         matrix <- as.data.frame(matrix)
-        
+
         profileNames <- rownames(profiles)
         colnames(matrix) <- profileNames[seq_len(length(profileNames)) - 1]
         rownames(matrix) <- profileNames
@@ -139,8 +139,8 @@ getDistanceMatrix <- function(profiles = NULL, method = "mutualInformation") {
 #' @seealso \code{\link{getDataClustering}},
 #' \code{\link{getDistanceMatrix}}, \code{\link{hclust}}
 #' @examples
-#' data("fullProcessedProfileLarge", package="PhyloProfile")
-#' data <- fullProcessedProfileLarge
+#' data("finalProcessedProfile", package="PhyloProfile")
+#' data <- finalProcessedProfile
 #' profileType <- "binary"
 #' profiles <- getDataClustering(
 #'     data, profileType, var1AggregateBy, var2AggregateBy)
@@ -162,8 +162,8 @@ clusterDataDend <- function(distanceMatrix = NULL, clusterMethod = "complete") {
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{clusterDataDend}}
 #' @examples
-#' data("fullProcessedProfileLarge", package="PhyloProfile")
-#' data <- fullProcessedProfileLarge
+#' data("finalProcessedProfile", package="PhyloProfile")
+#' data <- finalProcessedProfile
 #' profileType <- "binary"
 #' profiles <- getDataClustering(
 #'     data, profileType, var1AggregateBy, var2AggregateBy)

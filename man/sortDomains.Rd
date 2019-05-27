@@ -23,14 +23,17 @@ common domain feature in the same order which make it easy for comparing.
 \dontrun{
 # get domain data
 domainFile <- system.file(
-    "extdata", "domainFiles/OG_1009.domains",
+    "extdata", "domainFiles/101621at6656.domains",
     package = "PhyloProfile", mustWork = TRUE
 )
 domainDf <- parseDomainInput(seedID, domainFile, "file")
 # get seedDf and orthoDf
-subDf <- domainDf[domainDf$seedID == "OG_1009#A.thaliana@3702@241736",]
-orthoDf <- dplyr::filter(subDf, orthoID == "A.thaliana@3702@241736")
-seedDf <- dplyr::filter(subDf, orthoID != "A.thaliana@3702@241736")
+subDf <- domainDf[
+    domainDf$seedID == "101621at6656#101621at6656|ANOGA@7165@1|Q7Q122|1",]
+orthoDf <- dplyr::filter(
+    subDf, orthoID == "101621at6656|ANOGA@7165@1|Q7Q122|1")
+seedDf <- dplyr::filter(
+    subDf, orthoID != "101621at6656|ANOGA@7165@1|Q7Q122|1")
 # sort
 sortDomains(seedDf, orthoDf)
 }

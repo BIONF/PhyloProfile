@@ -5,8 +5,7 @@ library(PhyloProfile)
 
 #' set size limit for input (9999mb)
 options(
-    shiny.maxRequestSize = 9999 * 1024 ^ 2, # size limit for input 9999mb
-    shiny.usecairo = TRUE
+    shiny.maxRequestSize = 9999 * 1024 ^ 2 # size limit for input 9999mb
 )
 
 #' MAIN SERVER ================================================================
@@ -1177,7 +1176,7 @@ shinyServer(function(input, output, session) {
                         newNameList <- rbindlist(
                             list(oldNameList, reducedInfoList), fill = TRUE
                         )
-                        
+
                         # write output files
                         # (idList, rankList and taxonNamesReduced)
                         write.table(

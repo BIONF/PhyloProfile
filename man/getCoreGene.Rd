@@ -5,7 +5,7 @@
 \title{Identify core genes for a list of selected taxa}
 \usage{
 getCoreGene(rankName, taxaCore = c("none"), processedProfileData,
-    var1Cutoff = c(0, 1), var2Cutoff = c(0, 1), percentCutoff = c(0, 1), 
+    var1Cutoff = c(0, 1), var2Cutoff = c(0, 1), percentCutoff = c(0, 1),
     coreCoverage = 1)
 }
 \arguments{
@@ -23,23 +23,23 @@ phylogenetic profiles (see ?fullProcessedProfile or ?parseInfoProfile)}
 \item{percentCutoff}{cutoff for percentage of species present in each
 supertaxon. Default = c(0, 1).}
 
-\item{coreCoverage}{the least percentage of selected taxa should be 
+\item{coreCoverage}{the least percentage of selected taxa should be
 considered. Default = 1.}
 }
 \value{
 A list of identified core genes.
 }
 \description{
-Identify core genes for a list of selected (super)taxa. The 
-identified core genes must be present in at least a certain proportion of 
-species in each selected (super)taxon (identified via percentCutoff) and 
-that criteria must be fullfilled for a certain percentage of selected taxa 
+Identify core genes for a list of selected (super)taxa. The
+identified core genes must be present in at least a certain proportion of
+species in each selected (super)taxon (identified via percentCutoff) and
+that criteria must be fullfilled for a certain percentage of selected taxa
 or all of them (determined via coreCoverage).
 }
 \examples{
 data("fullProcessedProfile", package="PhyloProfile")
 rankName <- "class"
-taxaCore <- c("Mammalia", "Mucorales", "Alphaproteobacteria")
+taxaCore <- c("Mammalia", "Saccharomycetes", "Insecta")
 processedProfileData <- fullProcessedProfile
 var1Cutoff <- c(0.75, 1.0)
 var2Cutoff <- c(0.75, 1.0)

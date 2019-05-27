@@ -10,15 +10,15 @@
 #' share that corresponding common ancestor.
 #' @author Vinh Tran (tran@bio.uni-frankfurt.de)
 #' @examples
-#' inputTaxa <- c("ncbi103449", "ncbi1288291", "ncbi278021", "ncbi27973",
-#'     "ncbi31281", "ncbi40302", "ncbi586133", "ncbi6035", "ncbi70536",
-#'     "ncbi876142", "ncbi993615")
-#' inGroup <-  c("ncbi27973", "ncbi6035")
+#' inputTaxa <- c("ncbi34740", "ncbi9606", "ncbi374847", "ncbi123851",
+#'     "ncbi5664", "ncbi189518", "ncbi418459", "ncbi10116", "ncbi284812",
+#'     "ncbi35128", "ncbi7070")
+#' inGroup <-  c("ncbi9606", "ncbi10116")
 #' getCommonAncestor(inputTaxa, inGroup)
 
 getCommonAncestor <- function(inputTaxa = NULL, inGroup = NULL) {
     if (is.null(inputTaxa) | is.null(inGroup)) return()
-    
+
     # get list of pre-calculated taxonomy info
     taxMatrix <- getTaxonomyMatrix(TRUE, inputTaxa)
     # get subset taxonomy info for selected in-group taxa
@@ -40,7 +40,7 @@ getCommonAncestor <- function(inputTaxa = NULL, inGroup = NULL) {
     commonRank <- rownames(checkDf[V1 == V2,])[1]
     commonID <- checkDf[V1 == V2,][1]
     commonTaxa <- taxMatrix[taxMatrix[, commonRank] == commonID, ]
-    
+
     return(list(commonRank, commonID, commonTaxa))
 }
 
@@ -71,7 +71,7 @@ getCommonAncestor <- function(inputTaxa = NULL, inGroup = NULL) {
 #' @examples
 #' data("mainLongRaw", package="PhyloProfile")
 #' data <- mainLongRaw
-#' inGroup <- c("ncbi876142", "ncbi586133")
+#' inGroup <- c("ncbi9606", "ncbi10116")
 #' variable <- colnames(data)[4]
 #' compareTaxonGroups(data, inGroup, TRUE, variable, 0.05)
 
@@ -87,13 +87,13 @@ compareTaxonGroups <- function(
         message("Invalid variable")
         return()
     }
-    
+
     # add other taxa that share a common ancestor with the given in-group
     commonTaxa <- getCommonAncestor(levels(as.factor(data$ncbiID)), inGroup)
     if (useCommonAncestor == TRUE) {
         inGroup <- as.character(commonTaxa[[3]]$abbrName)
     }
-    
+
     # perform distribution comparison test
     data$geneID <- as.character(data$geneID)
     pvalues <- vapply(
@@ -136,7 +136,7 @@ distributionTest <- function(
     # remove NA values
     varIn <- varIn[!is.na(varIn)]
     varOut <- varOut[!is.na(varOut)]
-    
+
     # if there is no data in one of the groups the p-value is NULL
     if (length(varIn) == 0 | length(varOut) == 0) return()
     else {
@@ -145,7 +145,7 @@ distributionTest <- function(
         ks <- suppressWarnings(
             ks.test(unique(varIn), unique(varOut), exact = FALSE)
         )
-        
+
         if (ks$p.value <= significanceLevel) return(ks$p.value)
         else {
             # * Wilcoxon-Mann-Whitney Test
@@ -157,7 +157,7 @@ distributionTest <- function(
             )
             return(wilcox$p.value)
         }
-        
+
         # perm <- jmuOutlier:: perm.test(
         #     unique(varIn), unique(varOut),
         #     alternative = c("two.sided"),
@@ -196,7 +196,7 @@ distributionTest <- function(
 #' @examples
 #' data("mainLongRaw", package="PhyloProfile")
 #' data <- mainLongRaw
-#' inGroup <- c("ncbi876142", "ncbi586133")
+#' inGroup <- c("ncbi9606", "ncbi10116")
 #' variable <- colnames(data)[4]
 #' compareMedianTaxonGroups(data, inGroup, TRUE, variable)
 
@@ -208,13 +208,13 @@ compareMedianTaxonGroups <- function(
         message("Invalid variable")
         return()
     }
-    
+
     # add other taxa that share a common ancestor with the given in-group
     commonTaxa <- getCommonAncestor(levels(as.factor(data$ncbiID)), inGroup)
     if (useCommonAncestor == TRUE) {
         inGroup <- as.character(commonTaxa[[3]]$abbrName)
     }
-    
+
     # return delta-median scores for two taxa groups
     data$geneID <- as.character(data$geneID)
     deltaMedian <- vapply(
@@ -251,9 +251,9 @@ compareMedianTaxonGroups <- function(
 #' @examples
 #' data("mainLongRaw", package="PhyloProfile")
 #' data <- mainLongRaw
-#' inGroup <- c("ncbi876142", "ncbi586133")
+#' inGroup <- c("ncbi9606", "ncbi10116")
 #' variable <- colnames(data)[c(4, 5)]
-#' dataVarDistTaxGroup(data, inGroup, "OG_1017", variable)
+#' dataVarDistTaxGroup(data, inGroup, "101621at6656", variable)
 
 dataVarDistTaxGroup <- function(
     data = NULL,
@@ -275,7 +275,7 @@ dataVarDistTaxGroup <- function(
     )
     colnames(varOut) <- variable
     if (nrow(varIn) == 0 & nrow(varOut) == 0) return()
-    
+
     varIn$type <- "In-group"
     varOut$type <- "Out-group"
     out <- rbind(varIn[complete.cases(varIn),], varOut[complete.cases(varOut),])
@@ -309,9 +309,9 @@ dataVarDistTaxGroup <- function(
 #' @examples
 #' data("mainLongRaw", package="PhyloProfile")
 #' data <- mainLongRaw
-#' inGroup <- c("ncbi876142", "ncbi586133")
+#' inGroup <- c("ncbi9606", "ncbi10116")
 #' variable <- colnames(data)[c(4, 5)]
-#' plotDf <- dataVarDistTaxGroup(data, inGroup, "OG_1017", variable)
+#' plotDf <- dataVarDistTaxGroup(data, inGroup, "101621at6656", variable)
 #' plotParameters <- list(
 #'     "xSize" = 12,
 #'     "ySize" = 12,
@@ -321,7 +321,7 @@ dataVarDistTaxGroup <- function(
 #'     "mValue" = "mean",
 #'     "inGroupName" = "In-group",
 #'     "outGroupName" = "Out-group",
-#'     "title" = "OG_1017"
+#'     "title" = "101621at6656"
 #' )
 #' g <- varDistTaxPlot(plotDf, plotParameters)
 #' grid::grid.draw(g)
@@ -329,11 +329,11 @@ dataVarDistTaxGroup <- function(
 varDistTaxPlot <- function(data, plotParameters) {
     if (is.null(data)) return()
     if (missing(plotParameters)) return()
-    
+
     # rename in-group and out-group
     data$type[data$type == "In-group"] <- plotParameters$inGroupName
     data$type[data$type == "Out-group"] <- plotParameters$outGroupName
-    
+
     # function for plotting a single plot
     generatePlot <- function(plotDf, parameters, variable) {
         type <- NULL
@@ -348,7 +348,7 @@ varDistTaxPlot <- function(data, plotParameters) {
                 nrow(plotDf[plotDf$type == parameters$outGroupName,]), sep = ""
             )
         )
-        
+
         plot <- ggplot(plotDf, aes(x = factor(type), y = .data[[variable]])) +
             geom_violin(
                 aes(fill = factor(type)), position = position_dodge(),
@@ -374,7 +374,7 @@ varDistTaxPlot <- function(data, plotParameters) {
             )
         return(plot)
     }
-    
+
     # adapted from http://rpubs.com/sjackman/grid_arrange_shared_legend
     gridArrangeSharedLegend <- function(
         ...,  ncol = length(list(...)), nrow = 1,
@@ -390,7 +390,7 @@ varDistTaxPlot <- function(data, plotParameters) {
         lwidth <- sum(legend$width)
         gl <- lapply(plots, function(x) x + theme(legend.position="none"))
         gl <- c(gl, ncol = ncol, nrow = nrow)
-        
+
         combined <- switch(
             position,
             "bottom" = arrangeGrob(
@@ -422,7 +422,7 @@ varDistTaxPlot <- function(data, plotParameters) {
         )
         return(combined)
     }
-    
+
     # return plot(s)
     if (ncol(data) == 2) {
         plotVar1 <- generatePlot(data, plotParameters, colnames(data)[1])
@@ -491,14 +491,14 @@ varDistTaxPlot <- function(data, plotParameters) {
 #' @examples
 #' data("mainLongRaw", package="PhyloProfile")
 #' mainDf <- mainLongRaw
-#' gene <- "OG_1017"
+#' gene <- "101621at6656"
 #' inputFile <- system.file(
-#'     "extdata", "domainFiles/OG_1017.domains",
+#'     "extdata", "domainFiles/101621at6656.domains",
 #'     package = "PhyloProfile", mustWork = TRUE
 #' )
 #' type <- "file"
 #' domainDf <- parseDomainInput(gene, inputFile, type)
-#' inGroup <- c("ncbi876142", "ncbi586133")
+#' inGroup <- c("ncbi9606", "ncbi10116")
 #' dataFeatureTaxGroup(mainDf, domainDf, inGroup, gene)
 
 dataFeatureTaxGroup <- function(
@@ -520,11 +520,11 @@ dataFeatureTaxGroup <- function(
         by = "orthoID", all.x = TRUE
     )
     domainDfSub <- domainDfSub[complete.cases(domainDfSub),]
-    
+
     # identify in-group and out-group
     domainDfSub$type[domainDfSub$ncbiID %in% inGroup] <- "In-group"
     domainDfSub$type[!(domainDfSub$ncbiID %in% inGroup)] <- "Out-group"
-  
+
     # count number of orthologs for each taxon group
     nInGroup <- length(
         unique(domainDfSub$seedID[domainDfSub$type == "In-group"])
@@ -532,26 +532,26 @@ dataFeatureTaxGroup <- function(
     nOutGroup <- length(
         unique(domainDfSub$seedID[domainDfSub$type == "Out-group"])
     )
-    
+
     # get intances and count the number of intances for each taxon group
     domainIn <- domainDfSub$feature[domainDfSub$ncbiID %in% inGroup]
     domainOut <- domainDfSub$feature[!(domainDfSub$ncbiID %in% inGroup)]
-    
+
     countDomainIn <- data.frame(table(unlist(as.character(domainIn))))
     countDomainIn$type <- "In-group"
     countDomainIn$ipp <- countDomainIn$Freq/nInGroup
-    
+
     countDomainOut <- data.frame(table(unlist(as.character(domainOut))))
     countDomainOut$type <- "Out-group"
     countDomainOut$ipp <- countDomainOut$Freq/nOutGroup
-    
-    
+
+
     # calculate delta IPP
     mergedDf <- merge(countDomainIn, countDomainOut, by = "Var1", all = TRUE)
     mergedDf[is.na(mergedDf)] <- 0
     mergedDf$dIPPtmp <- mergedDf$ipp.x - mergedDf$ipp.y
     mergedDf$dIPP <- mergedDf$dIPPtmp / (mergedDf$ipp.x + mergedDf$ipp.y)
-    
+
     # return
     outDf <- merge(
         rbind(countDomainIn, countDomainOut), mergedDf[, c("Var1", "dIPP")],
@@ -576,14 +576,14 @@ dataFeatureTaxGroup <- function(
 #' @examples
 #' data("mainLongRaw", package="PhyloProfile")
 #' data <- mainLongRaw
-#' gene <- "OG_1017"
+#' gene <- "101621at6656"
 #' inputFile <- system.file(
-#'     "extdata", "domainFiles/OG_1017.domains",
+#'     "extdata", "domainFiles/101621at6656.domains",
 #'     package = "PhyloProfile", mustWork = TRUE
 #' )
 #' type <- "file"
 #' domainDf <- parseDomainInput(gene, inputFile, type)
-#' inGroup <- c("ncbi876142", "ncbi586133")
+#' inGroup <- c("ncbi9606", "ncbi10116")
 #' plotDf <- dataFeatureTaxGroup(data, domainDf, inGroup, gene)
 #' plotParameters <- list(
 #'     "xSize" = 12,
@@ -602,12 +602,12 @@ featureDistTaxPlot <- function(data, plotParameters) {
     Taxon_group <- NULL
     if (is.null(data)) return()
     if (missing(plotParameters)) return()
-    
+
     data$Taxon_group[data$Taxon_group == "In-group"] <-
         plotParameters$inGroupName
     data$Taxon_group[data$Taxon_group == "Out-group"] <-
         plotParameters$outGroupName
-    
+
     plot <- ggplot(data, aes(x = Feature, y = IPP, fill = Taxon_group)) +
         geom_bar(stat="identity", width=.5, position = "dodge") +
         theme_minimal() +

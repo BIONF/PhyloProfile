@@ -16,8 +16,8 @@ A dendrogram plot for the genes in the input phylogenetic profiles.
 Plot dendrogram tree
 }
 \examples{
-data("fullProcessedProfileLarge", package="PhyloProfile")
-data <- fullProcessedProfileLarge
+data("finalProcessedProfile", package="PhyloProfile")
+data <- finalProcessedProfile
 profileType <- "binary"
 profiles <- getDataClustering(
     data, profileType, var1AggregateBy, var2AggregateBy)

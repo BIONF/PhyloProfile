@@ -6,7 +6,7 @@ test_that("test core gene estimation", {
 
     # calculate gene ages
     rankName <- "class"
-    taxaCore <- c("Mammalia", "Mucorales", "Alphaproteobacteria")
+    taxaCore <- c("Mammalia", "Saccharomycetes", "Insecta")
     var1Cutoff <- c(0,1)
     var2Cutoff <- c(0,1)
     percentCutoff <- c(0,1)
@@ -19,5 +19,5 @@ test_that("test core gene estimation", {
         percentCutoff, coreCoverage
     )
 
-    expect_true(length(coreGene) == 1)
+    expect_true(length(coreGene) == 3)
 })

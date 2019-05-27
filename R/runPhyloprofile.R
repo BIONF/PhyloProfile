@@ -2,7 +2,6 @@
 #' @export
 #' @return A shiny application - GUI version of PhyloProfile
 #' @import bioDist
-#' @import Cairo
 #' @importFrom colourpicker colourInput
 #' @import dendextend
 #' @import devtools

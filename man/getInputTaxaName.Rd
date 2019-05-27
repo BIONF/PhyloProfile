@@ -20,7 +20,7 @@ Get NCBI taxon names from
 "PhyloProfile/data/taxonNamesReduced.txt" for a list of input taxa
 }
 \examples{
-taxonIDs <- c("ncbi10020", "ncbi10090")
+taxonIDs <- c("ncbi9606", "ncbi10116")
 getInputTaxaName("species", taxonIDs)
 }
 \seealso{
