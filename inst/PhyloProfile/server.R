@@ -8,7 +8,7 @@ options(
     shiny.maxRequestSize = 9999 * 1024 ^ 2 # size limit for input 9999mb
 )
 
-#' MAIN SERVER ================================================================
+#' MAIN SERVER =================================================================
 shinyServer(function(input, output, session) {
     # Automatically stop a Shiny app when closing the browser tab
     # session$onSessionEnded(stopApp)
@@ -1275,9 +1275,23 @@ shinyServer(function(input, output, session) {
     # * convert main input file in any format into long format dataframe -------
     getMainInput <- reactive({
         if (input$demoData == "arthropoda") {
-            longDataframe <- createLongMatrix("arthropoda")
+            inputURL <- paste0(
+                "https://raw.githubusercontent.com/BIONF/phyloprofile-data/",
+                "master/expTestData/arthropoda/arthropoda.phyloprofile"
+            )
+            longDataframe <- read.table(
+                inputURL, sep = "\t", header = TRUE, fill = TRUE,
+                stringsAsFactors = FALSE
+            )
         } else if (input$demoData == "ampk-tor") {
-            longDataframe <- createLongMatrix("ampk-tor")
+            inputURL <- paste0(
+                "https://raw.githubusercontent.com/BIONF/phyloprofile-data/",
+                "master/expTestData/ampk-tor/ampk-tor.phyloprofile"
+            )
+            longDataframe <- read.table(
+                inputURL, sep = "\t", header = TRUE, fill = TRUE,
+                stringsAsFactors = FALSE
+            )
         } else {
             filein <- input$mainInput
             if (is.null(filein)) return()
@@ -1288,6 +1302,22 @@ shinyServer(function(input, output, session) {
                 longDataframe <- as.data.frame(unclass(longDataframe))
             } else longDataframe <- createLongMatrix(filein$datapath)
         }
+        
+        # convert geneID, ncbiID and orthoID into factor and 
+        # var1, var2 into numeric
+        for (i in seq_len(3)) {
+            longDataframe[, i] <- as.factor(longDataframe[, i])
+        }
+        if (ncol(longDataframe) > 3) {
+            for (j in seq(4, ncol(longDataframe))){
+                longDataframe[,j] <- suppressWarnings(
+                    as.numeric(as.character(longDataframe[,j]))
+                )
+            }
+        }
+        
+        # remove duplicated lines
+        longDataframe <- longDataframe[!duplicated(longDataframe),]
         return(longDataframe)
     })
 
@@ -1305,11 +1335,52 @@ shinyServer(function(input, output, session) {
             mainInput <- getMainInput()
 
             if (inputType == "demo") {
-                domainDf <- parseDomainInput(
-                    unlist(mainInput$geneID),
-                    input$demoData,
-                    "demo"
+                if (input$demoData == "arthropoda") {
+                    fileDomain <- {
+                        paste0(
+                            "https://github.com/BIONF/phyloprofile-data/blob",
+                            "/master/demo/domainFiles/",
+                            "concatenate.domains?raw=true"
+                        )
+                    }
+                } else {
+                    fileDomain <- {
+                        paste0(
+                            "https://raw.githubusercontent.com/BIONF/",
+                            "phyloprofile-data/master/expTestData/ampk-tor/",
+                            "ampk-tor.domains_F?raw=true"
+                        )
+                    }
+                }
+                
+                domainDf <- read.csv(
+                    fileDomain,
+                    sep = "\t",
+                    header = FALSE,
+                    comment.char = "",
+                    stringsAsFactors = FALSE,
+                    quote = ""
                 )
+                
+                if (ncol(domainDf) == 5) {
+                    colnames(domainDf) <- c(
+                        "seedID", "orthoID", "feature", "start", "end"
+                    )
+                } else if (ncol(domainDf) == 6) {
+                    colnames(domainDf) <- c(
+                        "seedID", "orthoID", "feature", "start", "end", "weight"
+                    )
+                } else if (ncol(domainDf) == 7) {
+                    colnames(domainDf) <- c(
+                        "seedID", "orthoID", "feature", "start", "end", 
+                        "weight", "path"
+                    )
+                }
+                
+                domainDf$seedID <- as.character(domainDf$seedID)
+                domainDf$orthoID <- as.character(domainDf$orthoID)
+                domainDf$seedID <- gsub("\\|",":",domainDf$seedID)
+                domainDf$orthoID <- gsub("\\|",":",domainDf$orthoID)
             } else {
                 if (input$annoLocation == "from file") {
                     inputDomain <- input$fileDomainInput

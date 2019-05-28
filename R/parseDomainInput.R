@@ -2,9 +2,9 @@
 #' @description Get all domain annotations for one seed protein IDs.
 #' @export
 #' @param seed seed protein ID
-#' @param inputFile name of input file ("arthropoda" or "ampk-tor" for demo
-#' data, file name or path to folder contains individual domain files)
-#' @param type type of data ("demo", "file" or "folder"). Default = "file".
+#' @param inputFile name of input file (file name or path to folder contains 
+#' individual domain files)
+#' @param type type of data (file" or "folder"). Default = "file".
 #' @importFrom utils read.csv
 #' @return A dataframe for protein domains including seed ID, its orthologs IDs,
 #' sequence lengths, feature names, start and end positions, feature weights
@@ -12,7 +12,7 @@
 #' comparison the architecture between 2 proteins* (e.g. seed protein vs
 #' ortholog) (optional).
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
-#' @seealso \code{\link{getDomainOnline}}, \code{\link{getDomainFolder}}
+#' @seealso \code{\link{getDomainFolder}}
 #' @examples
 #' seed <- "101621at6656"
 #' inputFile <- system.file(
@@ -28,12 +28,8 @@ parseDomainInput <- function(seed = NULL, inputFile = NULL, type = "file") {
     if (type == "folder" & is.null(seed)) return()
     if (is.null(inputFile)) return()
 
-    # get domain file(s) from online data
-    if (type == "demo") {
-        file <- getDomainOnline(inputFile)
-    }
-    # or from single file
-    else if (type == "file") {
+    # get domain from single file
+    if (type == "file") {
         file <- inputFile
     }
     # or from a domain folder
@@ -42,65 +38,36 @@ parseDomainInput <- function(seed = NULL, inputFile = NULL, type = "file") {
         if (file == "noSelectHit") return("noSelectHit")
         else if (file == "noFileInFolder") return("noFileInFolder")
     }
-
-    # parse domain file
-    # for demo data
-    if (type == "demo") {
-        domains <- read.csv(
-            file,
-            sep = "\t",
-            header = FALSE,
-            comment.char = "",
-            stringsAsFactors = FALSE,
-            quote = ""
-        )
-
-        if (ncol(domains) == 5) {
-            colnames(domains) <- c(
-                "seedID", "orthoID", "feature", "start", "end"
-            )
-        } else if (ncol(domains) == 6) {
-            colnames(domains) <- c(
-                "seedID", "orthoID", "feature", "start", "end", "weight"
-            )
-        } else if (ncol(domains) == 7) {
-            colnames(domains) <- c(
-                "seedID", "orthoID", "feature", "start", "end", "weight", "path"
+    
+    if (file != FALSE) {
+        exeptions <- c("noFileInput", "noSelectHit", "noFileInFolder")
+        if (!(file %in% exeptions)) {
+            domains <- read.table(
+                file, sep = "\t", header = FALSE, comment.char = ""
             )
         }
     }
-    # for user input data
-    else {
-        if (file != FALSE) {
-            exeptions <- c("noFileInput", "noSelectHit", "noFileInFolder")
-            if (!(file %in% exeptions)) {
-                domains <- read.table(
-                    file, sep = "\t", header = FALSE, comment.char = ""
-                )
-            }
-        }
-
-        if (ncol(domains) == 5) {
-            colnames(domains) <- c(
-                "seedID", "orthoID", "feature", "start", "end"
-            )
-        } else if (ncol(domains) == 6) {
-            colnames(domains) <- c(
-                "seedID", "orthoID", "length", "feature", "start", "end"
-            )
-        } else if (ncol(domains) == 7) {
-            colnames(domains) <- c(
-                "seedID", "orthoID", "length", "feature", "start", "end",
-                "weight"
-            )
-        } else if (ncol(domains) == 8) {
-            colnames(domains) <- c(
-                "seedID", "orthoID", "length", "feature", "start", "end",
-                "weight", "path"
-            )
-        } else {
-            return("ERR")
-        }
+    
+    if (ncol(domains) == 5) {
+        colnames(domains) <- c(
+            "seedID", "orthoID", "feature", "start", "end"
+        )
+    } else if (ncol(domains) == 6) {
+        colnames(domains) <- c(
+            "seedID", "orthoID", "length", "feature", "start", "end"
+        )
+    } else if (ncol(domains) == 7) {
+        colnames(domains) <- c(
+            "seedID", "orthoID", "length", "feature", "start", "end",
+            "weight"
+        )
+    } else if (ncol(domains) == 8) {
+        colnames(domains) <- c(
+            "seedID", "orthoID", "length", "feature", "start", "end",
+            "weight", "path"
+        )
+    } else {
+        return("ERR")
     }
 
     if (nrow(domains) == 0) return("ERR-0")
@@ -111,34 +78,6 @@ parseDomainInput <- function(seed = NULL, inputFile = NULL, type = "file") {
     domains$orthoID <- gsub("\\|",":",domains$orthoID)
 
     return(domains)
-}
-
-#' Get domain file(s) for online data set
-#' @param demoData demo data name (either "arthropoda" or "ampk-tor").
-#' @return URL for the domain file of the selected data set.
-#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
-#' @examples
-#' \dontrun{
-#' getDomainOnline("ampk-tor")
-#' }
-
-getDomainOnline <- function(demoData) {
-    if (demoData == "arthropoda") {
-        fileDomain <- {
-            paste0(
-                "https://github.com/BIONF/phyloprofile-data/blob/master/",
-                "demo/domainFiles/concatenate.domains?raw=true"
-            )
-        }
-    } else {
-        fileDomain <- {
-            paste0(
-                "https://raw.githubusercontent.com/BIONF/phyloprofile-data",
-                "/master/expTestData/ampk-tor/ampk-tor.domains_F?raw=true"
-            )
-        }
-    }
-    return(fileDomain)
 }
 
 #' Get domain file from a folder for a seed protein

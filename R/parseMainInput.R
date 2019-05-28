@@ -271,42 +271,22 @@ wideToLong <- function(inputFile = NULL){
 
 createLongMatrix <- function(inputFile = NULL){
     if (is.null(inputFile)) return()
-    if (inputFile[1] == "arthropoda") {
-        inputURL <- paste0(
-            "https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/",
-            "expTestData/arthropoda/arthropoda.phyloprofile"
-        )
+    
+    inputType <- checkInputValidity(inputFile)
+    # XML
+    if (inputType == "xml") longDataframe <- xmlParser(inputFile)
+    # FASTA
+    else if (inputType == "fasta") longDataframe <- fastaParser(inputFile)
+    # LONG
+    else if (inputType == "long") {
         longDataframe <- read.table(
-            inputURL, sep = "\t", header = TRUE, fill = TRUE,
-            stringsAsFactors = FALSE
+            file = inputFile, sep = "\t", header = TRUE,
+            check.names = FALSE, comment.char = "", stringsAsFactors = FALSE
         )
-    } else if (inputFile[1] == "ampk-tor") {
-        inputURL <- paste0(
-            "https://raw.githubusercontent.com/BIONF/phyloprofile-data/master/",
-            "expTestData/ampk-tor/ampk-tor.phyloprofile"
-        )
-        longDataframe <- read.table(
-            inputURL, sep = "\t", header = TRUE, fill = TRUE,
-            stringsAsFactors = FALSE
-        )
-    } else {
-        if (is.null(inputFile)) return()
-        inputType <- checkInputValidity(inputFile)
-        # XML
-        if (inputType == "xml") longDataframe <- xmlParser(inputFile)
-        # FASTA
-        else if (inputType == "fasta") longDataframe <- fastaParser(inputFile)
-        # LONG
-        else if (inputType == "long") {
-            longDataframe <- read.table(
-                file = inputFile, sep = "\t", header = TRUE,
-                check.names = FALSE, comment.char = "", stringsAsFactors = FALSE
-            )
-        }
-        # WIDE
-        else if (inputType == "wide") longDataframe <- wideToLong(inputFile)
-        else return(NULL)
     }
+    # WIDE
+    else if (inputType == "wide") longDataframe <- wideToLong(inputFile)
+    else return(NULL)
 
     # convert geneID, ncbiID and orthoID into factor and var1, var2 into numeric
     for (i in seq_len(3)) {

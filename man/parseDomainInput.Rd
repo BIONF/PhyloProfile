@@ -9,10 +9,10 @@ parseDomainInput(seed = NULL, inputFile = NULL, type = "file")
 \arguments{
 \item{seed}{seed protein ID}
 
-\item{inputFile}{name of input file ("arthropoda" or "ampk-tor" for demo
-data, file name or path to folder contains individual domain files)}
+\item{inputFile}{name of input file (file name or path to folder contains 
+individual domain files)}
 
-\item{type}{type of data ("demo", "file" or "folder"). Default = "file".}
+\item{type}{type of data (file" or "folder"). Default = "file".}
 }
 \value{
 A dataframe for protein domains including seed ID, its orthologs IDs,
