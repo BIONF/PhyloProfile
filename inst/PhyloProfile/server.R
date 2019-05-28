@@ -1538,7 +1538,7 @@ shinyServer(function(input, output, session) {
 
     # * get total number of genes ----------------------------------------------
     output$totalGeneNumber.ui <- renderUI({
-        geneList <- preData()
+        geneList <- getMainInput()
         out <- as.list(levels(factor(geneList$geneID)))
 
         listIn <- input$list
@@ -1546,7 +1546,6 @@ shinyServer(function(input, output, session) {
             list <- read.table(file = listIn$datapath, header = FALSE)
             out <- as.list(list$V1)
         }
-
         if (length(out) > 0) {
             strong(paste0("Total number of genes:  ", length(out)))
         }
