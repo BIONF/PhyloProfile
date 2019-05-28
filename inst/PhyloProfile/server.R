@@ -84,38 +84,18 @@ shinyServer(function(input, output, session) {
     })
 
     observe({
-        if (!file.exists(isolate("data/taxonNamesFull.txt"))) {
-            # data(ncbiTaxonNamesFull, package = "PhyloProfileData")
-            # write.table(
-            #     ncbiTaxonNamesFull, file = "data/taxonNamesFull.txt",
-            #     col.names = FALSE,
-            #     row.names = FALSE,
-            #     quote = FALSE,
-            #     sep = "\t"
-            # )
+        if (!file.exists(isolate("data/preProcessedTaxonomy.txt"))) {
             if (hasInternet() == TRUE) {
-                fileUrl <- paste0(
-                    "https://raw.githubusercontent.com/BIONF/",
-                    "phyloprofile-data/master/taxonNamesFull.txt"
-                )
-                ncol <- max(count.fields(fileUrl, sep = "\t"))
-                df <- fread(
-                    fileUrl,
-                    sep = "\t",
-                    quote = "",
-                    header = FALSE,
-                    fill = TRUE,
-                    na.strings = c("", "NA"),
-                    col.names = paste0("V", seq_len(ncol))
-                )
+                preProcessedTaxonomy <- processNcbiTaxonomy()
                 write.table(
-                    df, file = "data/taxonNamesFull.txt",
-                    col.names = FALSE,
+                    preProcessedTaxonomy,
+                    file = "data/preProcessedTaxonomy.txt",
+                    col.names = TRUE,
                     row.names = FALSE,
                     quote = FALSE,
                     sep = "\t"
                 )
-            } else system("cp data/newTaxa.txt data/taxonNamesFull.txt")
+            } else system("cp data/newTaxa.txt data/preProcessedTaxonomy.txt")
         }
     })
 
@@ -827,7 +807,9 @@ shinyServer(function(input, output, session) {
                 unkTaxa$id <- substring(unkTaxa$TaxonID, 5)
                 unkTaxa$Source <- "ncbi"
 
-                nameFullFile <- paste0(getwd(), "/data/taxonNamesFull.txt")
+                nameFullFile <- paste0(
+                    getwd(), "/data/preProcessedTaxonomy.txt"
+                )
                 ncbiTaxa <- as.factor(
                     unlist(fread(file = nameFullFile, select = 1))
                 )
@@ -1028,7 +1010,7 @@ shinyServer(function(input, output, session) {
                 )
 
                 ## join all ncbi taxa and new taxa together
-                ncbiTaxonInfo <- fread("data/taxonNamesFull.txt")
+                ncbiTaxonInfo <- fread("data/preProcessedTaxonomy.txt")
                 newTaxaFromFile <- fread(
                     "data/newTaxa.txt", colClasses = c("ncbiID" = "character")
                 )

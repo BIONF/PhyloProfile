@@ -45,6 +45,7 @@ processNcbiTaxonomy <- function() {
         stringsAsFactors = FALSE
     )
     unlink(temp)
+    message("Download NCBI taxonomy done!")
     
     # Create data frame containing taxon ID, the scientific name, its taxonomy
     # rank and the taxon ID of the higer rank (parent's ID)
@@ -64,6 +65,7 @@ processNcbiTaxonomy <- function() {
     preProcessedTaxonomy$rank <- gsub("'", "", preProcessedTaxonomy$rank)
     preProcessedTaxonomy$rank <- gsub(" ", "", preProcessedTaxonomy$rank)
     
+    message("Parsing NCBI taxonomy done!")
     return(preProcessedTaxonomy)
 }
 
@@ -71,13 +73,13 @@ processNcbiTaxonomy <- function() {
 #' @description Get NCBI taxonomy IDs, ranks and names for an input taxon list.
 #' @param inputTaxa NCBI ID list of input taxa.
 #' @param currentNCBIinfo table/dataframe of the pre-processed NCBI taxonomy
-#' data (/PhyloProfile/data/taxonNamesFull.txt)
+#' data (/PhyloProfile/data/preProcessedTaxonomy.txt)
 #' @return A list of 3 dataframes: idList, rankList and reducedInfoList. The
 #' "rankList" contains taxon names and all taxonomy ranks of the input taxa
 #' including also the noranks from the input rank to the taxonomy root. The
 #' "idList" contains input taxon IDs, taxon names, all the ranks from current
 #' rank to the taxonomy root together with their IDs (with the format
-#' "id#rank"). The reducedInfoList is a subset of taxonNamesFull.txt file,
+#' "id#rank"). The reducedInfoList is a subset of preProcessedTaxonomy.txt file,
 #' containing the NCBI IDs, taxon fullnames, their current rank and their
 #' direct parent ID.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
@@ -85,7 +87,7 @@ processNcbiTaxonomy <- function() {
 #' @examples
 #' inputTaxa <- c("272557", "176299")
 #' ncbiFilein <- system.file(
-#'     "extdata", "data/taxonNamesFull.txt",
+#'     "extdata", "data/preProcessedTaxonomy.txt",
 #'     package = "PhyloProfile", mustWork = TRUE
 #' )
 #' currentNCBIinfo <- as.data.frame(data.table::fread(ncbiFilein))
@@ -117,7 +119,7 @@ getIDsRank <- function(inputTaxa = NULL, currentNCBIinfo = NULL){
         }
     )
 
-    ## get reduced taxonomy info (subset of taxonNamesFull.txt)
+    ## get reduced taxonomy info (subset of preProcessedTaxonomy.txt)
     reducedInfoDf <- unique(rbindlist(inputTaxaInfo))
 
     ## get list of all ranks and rank IDs
