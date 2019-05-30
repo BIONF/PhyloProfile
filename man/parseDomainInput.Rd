@@ -34,7 +34,7 @@ type <- "file"
 parseDomainInput(seed, inputFile, type)
 }
 \seealso{
-\code{\link{getDomainOnline}}, \code{\link{getDomainFolder}}
+\code{\link{getDomainFolder}}
 }
 \author{
 Vinh Tran {tran@bio.uni-frankfurt.de}
