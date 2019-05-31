@@ -8,6 +8,7 @@
 #' @import devtools
 #' @import DT
 #' @import energy
+#' @import ExperimentHub
 #' @import GenomeInfoDbData
 #' @import gplots
 #' @import GO.db
