@@ -20,7 +20,7 @@
 #' @import shinyBS
 #' @rawNamespace import(shinyjs, except = colourInput)
 #' @import shinycssloaders
-#' @import svMisc
+#' @rawNamespace import(svMisc, except = package)
 #' @import tidyr
 #' @examples
 #' ?runPhyloProfile
