@@ -15,7 +15,6 @@
 #' @import knitr
 #' @rawNamespace import(rmarkdown, except = c(pdf_document, md_document,
 #'     html_document))
-#' @rawNamespace import(RCurl, except = c(reset, complete))
 #' @import scales
 #' @import shinyBS
 #' @rawNamespace import(shinyjs, except = colourInput)

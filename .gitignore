@@ -4,6 +4,7 @@ inst/phyloprofile/data/idList.txt
 inst/phyloprofile/data/taxonomyMatrix.txt
 inst/phyloprofile/data/taxonNamesReduced.txt
 inst/phyloprofile/data/taxonNamesFull.txt
+inst/PhyloProfile/data/preProcessedTaxonomy.txt
 inst/phyloprofile/data/newTaxa.txt
 tests/testthat/Rplots.pdf
 
@@ -25,6 +26,7 @@ rsconnect/
 # produced vignettes
 vignettes/*.html
 vignettes/*.pdf
+vignettes/*.R
 # OAuth2 token, see https://github.com/hadley/httr/releases/tag/v0.3
 .httr-oauth
 # DS_Store

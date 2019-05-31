@@ -33,8 +33,9 @@ installPackagesBioconductor <- function(packages){
     missingPackages <-
         packages[!(packages %in% installed.packages()[, "Package"])]
     if (length(missingPackages)) {
-        source("https://bioconductor.org/biocLite.R")
-        BiocInstaller::biocLite(missingPackages, ask = FALSE)
+        if (!requireNamespace("BiocManager", quietly = TRUE))
+            install.packages("BiocManager")
+        BiocManager::install(missingPackages, ask = FALSE)
     }
 }
 

@@ -14,40 +14,24 @@
 getFastaDemo <- function(seqIDs = NULL, demoData = "arthropoda") {
     if (is.null(seqIDs)) return()
     if (demoData == "ampk-tor" | demoData == "arthropoda") {
-        fastaURL <- paste0(
-            "https://raw.githubusercontent.com/BIONF/phyloprofile-data/",
-            "master/expTestData/arthropoda/arthropoda.extended.fa"
-        )
         if (demoData == "ampk-tor") {
-            fastaURL <- paste0(
-                "https://raw.githubusercontent.com/BIONF/",
-                "phyloprofile-data/master/expTestData/ampk-tor/",
-                "ampk-tor.extended.fa"
-            )
+            faFile <- myData[["EH2545"]]
+        } else {
+            faFile <- myData[["EH2548"]]
         }
         
-        if (RCurl::url.exists(fastaURL)) {
-            # load fasta file
-            faFile <- Biostrings::readAAStringSet(fastaURL)
-            
-            # get sequences
-            if (length(seqIDs) == 1 & seqIDs[1] == "all")
-                seqIDs <- names(faFile)
-            return(data.frame(
-                fasta = paste(
-                    paste0(">", seqIDs),
-                    lapply(
-                        pmatch(seqIDs, names(faFile)),
-                        function (x) as.character(faFile[[x]])
-                    ),
-                    sep = "\n"
-                ), stringsAsFactors = FALSE
-            ))
-        } else {
-            return(data.frame(
-                fasta = paste0(fastaURL, " not found!!!"),
-                stringsAsFactors = FALSE
-            ))
-        }
+        # get sequences
+        if (length(seqIDs) == 1 & seqIDs[1] == "all")
+            seqIDs <- names(faFile)
+        return(data.frame(
+            fasta = paste(
+                paste0(">", seqIDs),
+                lapply(
+                    pmatch(seqIDs, names(faFile)),
+                    function (x) as.character(faFile[[x]])
+                ),
+                sep = "\n"
+            ), stringsAsFactors = FALSE
+        ))
     }
 }

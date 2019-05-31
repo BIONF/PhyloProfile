@@ -1275,23 +1275,9 @@ shinyServer(function(input, output, session) {
     # * convert main input file in any format into long format dataframe -------
     getMainInput <- reactive({
         if (input$demoData == "arthropoda") {
-            inputURL <- paste0(
-                "https://raw.githubusercontent.com/BIONF/phyloprofile-data/",
-                "master/expTestData/arthropoda/arthropoda.phyloprofile"
-            )
-            longDataframe <- read.table(
-                inputURL, sep = "\t", header = TRUE, fill = TRUE,
-                stringsAsFactors = FALSE
-            )
+            longDataframe <- myData[["EH2547"]]
         } else if (input$demoData == "ampk-tor") {
-            inputURL <- paste0(
-                "https://raw.githubusercontent.com/BIONF/phyloprofile-data/",
-                "master/expTestData/ampk-tor/ampk-tor.phyloprofile"
-            )
-            longDataframe <- read.table(
-                inputURL, sep = "\t", header = TRUE, fill = TRUE,
-                stringsAsFactors = FALSE
-            )
+            longDataframe <- myData[["EH2544"]]
         } else {
             filein <- input$mainInput
             if (is.null(filein)) return()
@@ -1336,45 +1322,9 @@ shinyServer(function(input, output, session) {
 
             if (inputType == "demo") {
                 if (input$demoData == "arthropoda") {
-                    fileDomain <- {
-                        paste0(
-                            "https://github.com/BIONF/phyloprofile-data/blob",
-                            "/master/demo/domainFiles/",
-                            "concatenate.domains?raw=true"
-                        )
-                    }
+                    domainDf <- myData[["EH2549"]]
                 } else {
-                    fileDomain <- {
-                        paste0(
-                            "https://raw.githubusercontent.com/BIONF/",
-                            "phyloprofile-data/master/expTestData/ampk-tor/",
-                            "ampk-tor.domains_F?raw=true"
-                        )
-                    }
-                }
-                
-                domainDf <- read.csv(
-                    fileDomain,
-                    sep = "\t",
-                    header = FALSE,
-                    comment.char = "",
-                    stringsAsFactors = FALSE,
-                    quote = ""
-                )
-                
-                if (ncol(domainDf) == 5) {
-                    colnames(domainDf) <- c(
-                        "seedID", "orthoID", "feature", "start", "end"
-                    )
-                } else if (ncol(domainDf) == 6) {
-                    colnames(domainDf) <- c(
-                        "seedID", "orthoID", "feature", "start", "end", "weight"
-                    )
-                } else if (ncol(domainDf) == 7) {
-                    colnames(domainDf) <- c(
-                        "seedID", "orthoID", "feature", "start", "end", 
-                        "weight", "path"
-                    )
+                    domainDf <- myData[["EH2546"]]
                 }
                 
                 domainDf$seedID <- as.character(domainDf$seedID)

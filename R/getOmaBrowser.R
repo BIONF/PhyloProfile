@@ -1,5 +1,5 @@
 # Get OMA information functions
-# using OmaDB package (https://github.com/klarakaleb/OmaDB)
+# using OmaDB package (https://github.com/DessimozLab/OmaDB)
 
 #' Check the validity of input OMA IDs
 #' @description Check if input IDs are valid OMA IDs for OMA Browser
