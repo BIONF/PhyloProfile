@@ -17,6 +17,7 @@ needed for PhyloProfile, including taxon IDs, their scientific names,
 systematic ranks, and parent (next higher) rank IDs.
 }
 \examples{
+\dontrun{
 preProcessedTaxonomy <- processNcbiTaxonomy()
 # save to text (tab-delimited) file
 write.table(
@@ -31,6 +32,7 @@ write.table(
 save(
     preProcessedTaxonomy, file = "preProcessedTaxonomy.RData", compress='xz'
 )
+}
 }
 \author{
 Vinh Tran {tran@bio.uni-frankfurt.de}
