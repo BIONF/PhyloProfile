@@ -8,6 +8,7 @@
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @export
 #' @examples
+#' \dontrun{
 #' preProcessedTaxonomy <- processNcbiTaxonomy()
 #' # save to text (tab-delimited) file
 #' write.table(
@@ -22,6 +23,7 @@
 #' save(
 #'     preProcessedTaxonomy, file = "preProcessedTaxonomy.RData", compress='xz'
 #' )
+#' }
 
 processNcbiTaxonomy <- function() {
     temp <- tempfile()
