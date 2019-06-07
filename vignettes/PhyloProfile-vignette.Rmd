@@ -23,7 +23,9 @@ vignette: >
 knitr::opts_chunk$set(
     library(PhyloProfile),
     collapse = TRUE,
-    comment = "#>"
+    comment = "#>",
+    dev = 'png',
+    dev.args = list(type = 'cairo')
 )
 ```
 

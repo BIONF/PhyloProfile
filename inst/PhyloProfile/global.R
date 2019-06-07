@@ -6,8 +6,8 @@ source("R/functions.R")
 
 # List of dependent packages --------------------------------------------------
 packages <- c("ape", "colourpicker", "data.table", "dendextend", "devtools", 
-              "dplyr", "DT", "energy", "ggdendro", "ggplot2", "gplots", "grid", 
-              "gridExtra", "gtable", "plyr", "RCurl", "RColorBrewer", 
+              "plyr", "dplyr", "DT", "energy", "ggdendro", "ggplot2", "gplots", 
+              "grid", "gridExtra", "gtable", "RCurl", "RColorBrewer", 
               "reshape2", "scales", "shiny", "shinyBS", "shinyjs", "stringr",
               "tidyr", "zoo")
 

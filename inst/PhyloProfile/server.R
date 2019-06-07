@@ -199,13 +199,13 @@ shinyServer(function(input, output, session) {
         else if (input$demoData == "ampk-tor") {
             url <- paste0(
                 "https://github.com/BIONF/phyloprofile-data/blob/master/",
-                "expTestData/ampk-tor/README.md"
+                "ampk-tor.md"
             )
             em(a("Data description", href = url, target = "_blank"))
         } else {
             url <- paste0(
                 "https://github.com/BIONF/phyloprofile-data/blob/master/",
-                "expTestData/arthropoda/README.md"
+                "arthropoda.md"
             )
             em(a("Data description", href = url, target = "_blank"))
         }
