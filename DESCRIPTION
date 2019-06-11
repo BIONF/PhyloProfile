@@ -1,5 +1,5 @@
 Package: PhyloProfile
-Version: 0.99.17
+Version: 0.99.18
 Date: 2019-05-30
 Title: PhyloProfile
 Authors@R: c(
@@ -17,9 +17,9 @@ biocViews: Software, Visualization, DataRepresentation, MultipleComparison, Func
 Imports:
     ape, bioDist, BiocStyle, Biostrings, Cairo, colourpicker, data.table, 
     dendextend, devtools, dplyr, DT, energy, ExperimentHub, IRanges, 
-    GenomeInfoDbData, ggplot2, gplots, GO.db, grDevices, grid, gridExtra, 
-    gtable, knitr, pbapply, praise, RColorBrewer, reshape2, rmarkdown, scales, 
-    shiny, shinyBS, shinycssloaders, shinyjs, stats, stringr, svMisc, tidyr, 
-    testthat, tree, utils, OmaDB, plyr, xml2, zoo
+    GenomeInfoDbData, ggdendro, ggplot2, gplots, GO.db, grDevices, grid, 
+    gridExtra, gtable, knitr, pbapply, praise, RColorBrewer, reshape2, 
+    rmarkdown, scales, shiny, shinyBS, shinycssloaders, shinyjs, stats, stringr,
+    svMisc, tidyr, testthat, tree, utils, OmaDB, plyr, xml2, zoo
 RoxygenNote: 6.1.1
 VignetteBuilder: knitr

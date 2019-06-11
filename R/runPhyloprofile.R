@@ -11,6 +11,7 @@
 #' @import energy
 #' @import ExperimentHub
 #' @import GenomeInfoDbData
+#' @rawNamespace import(ggdendro, except = c(theme_dendro))
 #' @import gplots
 #' @import GO.db
 #' @import gtable
