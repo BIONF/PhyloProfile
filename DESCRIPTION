@@ -19,7 +19,7 @@ Imports:
     dendextend, devtools, dplyr, DT, energy, ExperimentHub, IRanges, 
     GenomeInfoDbData, ggdendro, ggplot2, gplots, GO.db, grDevices, grid, 
     gridExtra, gtable, knitr, pbapply, praise, RColorBrewer, reshape2, 
-    rmarkdown, scales, shiny, shinyBS, shinycssloaders, shinyjs, stats, stringr,
+    rmarkdown, scales, shiny, shinyBS, shinycssloaders, shinyjs, stats,
     svMisc, tidyr, testthat, tree, utils, OmaDB, plyr, xml2, zoo
 RoxygenNote: 6.1.1
 VignetteBuilder: knitr

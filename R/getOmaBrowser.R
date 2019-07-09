@@ -240,9 +240,8 @@ getAllDomainsOma <- function(finalOmaDf = NULL) {
         function (x) length(unlist(strsplit(x, "\t"))),
         FUN.VALUE = numeric(1)
     )
-
-    domainDf <- as.data.frame(
-        stringr::str_split_fixed((unlist(strsplit(feature, "\t"))), "#", 3)
+    domainDf <- data.frame(
+        do.call(rbind, strsplit(feature, "\t")), stringsAsFactors = FALSE
     )
     colnames(domainDf) <- c("feature", "start", "end")
     domainDf$seedID <- rep(paste0(seedID, "#", orthoID), featureCount)

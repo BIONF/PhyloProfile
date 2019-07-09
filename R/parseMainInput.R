@@ -188,18 +188,17 @@ fastaParser <- function(inputFile = NULL){
     fastaFile <- Biostrings::readAAStringSet(inputFile)
     seqID <- names(fastaFile)
     tmpDf <- data.frame(
-        stringr::str_split_fixed(seqID, "\\|", 3),
-        stringsAsFactors = FALSE
+        do.call(rbind, strsplit(seqID, "\\|")), stringsAsFactors = FALSE
     )
-    scoreDf <- stringr::str_split_fixed(reverse(tmpDf[,3]), "\\|", 3)
     faDf <- data.frame(
         geneID = tmpDf[,1],
         ncbiID = tmpDf[,2],
-        orthoID = reverse(scoreDf[,3]),
-        var1 = reverse(scoreDf[,2]),
-        var2 = reverse(scoreDf[,1]),
+        orthoID = do.call(paste, tmpDf[,-c(1,2, ncol(tmpDf) - 1, ncol(tmpDf))]),
+        var1 = tmpDf[, ncol(tmpDf) - 1],
+        var2 = tmpDf[, ncol(tmpDf)],
         stringsAsFactors = FALSE
     )
+    faDf$orthoID <- gsub(" ", "|", faDf$orthoID)
     
     # remove columns that contains only NA
     faDf <- faDf[, colSums(is.na(faDf)) < nrow(faDf)]
@@ -233,20 +232,20 @@ wideToLong <- function(inputFile = NULL){
 
     ncbiIDs <- colnames(wideDataframe[, c(-1)])
 
-    orthoInfo <- as.data.frame(
-        stringr::str_split_fixed(
-            as.character(unlist(wideDataframe[, c(-1)])), "#", 3
+    orthoInfo <- data.frame(
+        do.call(
+            rbind, strsplit(as.character(unlist(wideDataframe[, c(-1)])), "#")
         ),
         stringsAsFactors = FALSE
     )
-    orthoInfo[orthoInfo$V1 == "",] <- c(NA, NA, NA)
+    orthoInfo[orthoInfo$X1 == "",] <- c(NA, NA, NA)
 
     longDataframe <- data.frame(
         geneID = rep(wideDataframe$geneID, time = ncol(wideDataframe) - 1),
         ncbiID = rep(ncbiIDs, time = 1, each = nrow(wideDataframe)),
         orthoID = orthoInfo$V1,
-        var1 = suppressWarnings(as.numeric(orthoInfo$V2)),
-        var2 = suppressWarnings(as.numeric(orthoInfo$V3)),
+        var1 = suppressWarnings(as.numeric(orthoInfo$X2)),
+        var2 = suppressWarnings(as.numeric(orthoInfo$X3)),
         stringsAsFactors = FALSE
     )
 
