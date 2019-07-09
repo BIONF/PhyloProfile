@@ -241,7 +241,7 @@ getAllDomainsOma <- function(finalOmaDf = NULL) {
         FUN.VALUE = numeric(1)
     )
     domainDf <- data.frame(
-        do.call(rbind, strsplit(feature, "\t")), stringsAsFactors = FALSE
+        do.call(rbind, strsplit(feature, "#")), stringsAsFactors = FALSE
     )
     colnames(domainDf) <- c("feature", "start", "end")
     domainDf$seedID <- rep(paste0(seedID, "#", orthoID), featureCount)
@@ -259,7 +259,7 @@ getAllDomainsOma <- function(finalOmaDf = NULL) {
         stringsAsFactors = FALSE
     )
 
-    outDf <- rbindlist(list(domainDf, seedDfFull))
+    outDf <- data.table::rbindlist(list(domainDf, seedDfFull))
     outDf$length <- as.numeric(outDf$length)
     outDf$start <- as.numeric(outDf$start)
     outDf$end <- as.numeric(outDf$end)

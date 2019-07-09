@@ -162,6 +162,7 @@ clusterDataDend <- function(distanceMatrix = NULL, clusterMethod = "complete") {
 #' @export
 #' @param dd dendrogram object (see ?clusterDataDend)
 #' @return A dendrogram plot for the genes in the input phylogenetic profiles.
+#' @importFrom graphics plot
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{clusterDataDend}}
 #' @examples

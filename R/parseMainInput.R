@@ -190,10 +190,13 @@ fastaParser <- function(inputFile = NULL){
     tmpDf <- data.frame(
         do.call(rbind, strsplit(seqID, "\\|")), stringsAsFactors = FALSE
     )
+    orthoID <- tmpDf[,3]
+    if (!is.null(nrow(tmpDf[,-c(1,2, ncol(tmpDf) - 1, ncol(tmpDf))])))
+        orthoID <- do.call(paste, tmpDf[,-c(1,2, ncol(tmpDf) - 1, ncol(tmpDf))])
     faDf <- data.frame(
         geneID = tmpDf[,1],
         ncbiID = tmpDf[,2],
-        orthoID = do.call(paste, tmpDf[,-c(1,2, ncol(tmpDf) - 1, ncol(tmpDf))]),
+        orthoID = orthoID,
         var1 = tmpDf[, ncol(tmpDf) - 1],
         var2 = tmpDf[, ncol(tmpDf)],
         stringsAsFactors = FALSE
@@ -202,7 +205,6 @@ fastaParser <- function(inputFile = NULL){
     
     # remove columns that contains only NA
     faDf <- faDf[, colSums(is.na(faDf)) < nrow(faDf)]
-    
     return(faDf)
 }
 
@@ -229,26 +231,24 @@ wideToLong <- function(inputFile = NULL){
         comment.char = "",
         stringsAsFactors = FALSE
     )
-
     ncbiIDs <- colnames(wideDataframe[, c(-1)])
-
+    
     orthoInfo <- data.frame(
         do.call(
             rbind, strsplit(as.character(unlist(wideDataframe[, c(-1)])), "#")
         ),
         stringsAsFactors = FALSE
     )
-    orthoInfo[orthoInfo$X1 == "",] <- c(NA, NA, NA)
-
+    
     longDataframe <- data.frame(
         geneID = rep(wideDataframe$geneID, time = ncol(wideDataframe) - 1),
         ncbiID = rep(ncbiIDs, time = 1, each = nrow(wideDataframe)),
-        orthoID = orthoInfo$V1,
+        orthoID = orthoInfo$X1,
         var1 = suppressWarnings(as.numeric(orthoInfo$X2)),
         var2 = suppressWarnings(as.numeric(orthoInfo$X3)),
         stringsAsFactors = FALSE
     )
-
+    
     return(longDataframe)
 }
 

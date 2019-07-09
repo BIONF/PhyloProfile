@@ -4,7 +4,6 @@
 #' @import BiocStyle
 #' @import Cairo
 #' @importFrom colourpicker colourInput
-#' @import devtools
 #' @import DT
 #' @import energy
 #' @import ExperimentHub

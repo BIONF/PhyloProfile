@@ -32,7 +32,7 @@ checkNewick <- function(tree, inputTaxonID = NULL){
             # return(2) # missing comma
         } else {
             # get list of tips
-            nodeString <- gsub(regex("\\W+"), "#", as.character(tree$V1))
+            nodeString <- gsub("\\W+", "#", as.character(tree$V1))
             nodeList <- unlist(strsplit(nodeString, "#"))
             # list of input taxa
             inputTaxa <- inputTaxonID
