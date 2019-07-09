@@ -81,9 +81,9 @@ clusterProfile <- function(input, output, session,
     # Brushed cluster table ====================================================
     #' render brushedCluster.table based on clicked point on dendrogram plot
     brushedClusterGene <- reactive({
-        dd.col <- clusterData()
-        dt <- dendro_data(dd.col)
-        dt$labels$label <- levels(dt$labels$label)
+        # dd.col <- clusterData()
+		clusteredTree <- as.phylo(clusterData())
+		labels <- rev(sortTaxaFromTree(clusteredTree))
 
         # get list of selected gene(s)
         if (is.null(input$plotBrush))
@@ -91,11 +91,11 @@ clusterProfile <- function(input, output, session,
         else {
             top <- round(input$plotBrush$ymin)
             bottom <- round(input$plotBrush$ymax)
-            df <- dt$labels[bottom:top,]
+            df <- labels[bottom:top]
         }
 
         # return list of genes
-        df <- df[complete.cases(df), 3]
+        df <- df[!is.na(df)]
         return(df)
     })
 

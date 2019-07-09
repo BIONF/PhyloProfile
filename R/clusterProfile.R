@@ -129,13 +129,14 @@ getDistanceMatrix <- function(profiles = NULL, method = "mutualInformation") {
     return(distanceMatrix)
 }
 
-#' Create a dendrogram tree from the distance matrix
+#' Create a hclust object from the distance matrix
 #' @export
 #' @param distanceMatrix calculated distance matrix (see ?getDistanceMatrix)
 #' @param clusterMethod clustering method ("single", "complete",
 #' "average" for UPGMA, "mcquitty" for WPGMA, "median" for WPGMC,
 #' or "centroid" for UPGMC). Default = "complete".
-#' @return A dendrogram tree object generated based on input distance matrix.
+#' @return An object class hclust generated based on input distance matrix and 
+#' a selected clustering method.
 #' @importFrom stats as.dendrogram
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{getDataClustering}},
@@ -153,7 +154,7 @@ getDistanceMatrix <- function(profiles = NULL, method = "mutualInformation") {
 
 clusterDataDend <- function(distanceMatrix = NULL, clusterMethod = "complete") {
     if (is.null(distanceMatrix)) return()
-    dd.col <- as.dendrogram(hclust(distanceMatrix, method = clusterMethod))
+    dd.col <- hclust(distanceMatrix, method = clusterMethod)
     return(dd.col)
 }
 
@@ -177,8 +178,6 @@ clusterDataDend <- function(distanceMatrix = NULL, clusterMethod = "complete") {
 
 getDendrogram <- function(dd = NULL) {
     if (is.null(dd)) return()
-    py <- dendextend::as.ggdend(dd)
-    p <- ggplot(py, horiz = TRUE, theme = theme_minimal()) +
-        theme(axis.title = element_blank(), axis.text.y = element_blank())
+    p <- plot(as.phylo(dd))
     return(p)
 }

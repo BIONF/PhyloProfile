@@ -2,7 +2,7 @@
 % Please edit documentation in R/clusterProfile.R
 \name{clusterDataDend}
 \alias{clusterDataDend}
-\title{Create a dendrogram tree from the distance matrix}
+\title{Create a hclust object from the distance matrix}
 \usage{
 clusterDataDend(distanceMatrix = NULL, clusterMethod = "complete")
 }
@@ -14,10 +14,11 @@ clusterDataDend(distanceMatrix = NULL, clusterMethod = "complete")
 or "centroid" for UPGMC). Default = "complete".}
 }
 \value{
-A dendrogram tree object generated based on input distance matrix.
+An object class hclust generated based on input distance matrix and 
+a selected clustering method.
 }
 \description{
-Create a dendrogram tree from the distance matrix
+Create a hclust object from the distance matrix
 }
 \examples{
 data("finalProcessedProfile", package="PhyloProfile")
