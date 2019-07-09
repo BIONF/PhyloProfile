@@ -296,12 +296,7 @@ dataVarDistTaxGroup <- function(
 #' @return Distribution plots as a grob (gtable) object. Use grid.draw to plot.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{dataVarDistTaxGroup}}
-#' @importFrom ggplot2 geom_violin
-#' @importFrom ggplot2 position_dodge
-#' @importFrom ggplot2 geom_boxplot
-#' @importFrom ggplot2 scale_x_discrete
-#' @importFrom ggplot2 stat_summary
-#' @importFrom ggplot2 ggplotGrob
+#' @import ggplot2
 #' @importFrom grid unit.c
 #' @importFrom grid unit
 #' @importFrom grid textGrob

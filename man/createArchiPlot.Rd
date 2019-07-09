@@ -4,16 +4,16 @@
 \alias{createArchiPlot}
 \title{Create protein's domain architecure plot}
 \usage{
-createArchiPlot(info = NULL, domainDf = NULL, labelArchiSize = 12, 
+createArchiPlot(info = NULL, domainDf = NULL, labelArchiSize = 12,
     titleArchiSize = 12)
 }
 \arguments{
 \item{info}{a list contains seed and ortholog's IDs}
 
-\item{domainDf}{dataframe contains domain info for the seed and ortholog. 
-This including the seed ID, orthologs IDs, sequence lengths, feature names, 
-start and end positions, feature weights (optional) and the status to 
-determine if that feature is important for comparison the architecture 
+\item{domainDf}{dataframe contains domain info for the seed and ortholog.
+This including the seed ID, orthologs IDs, sequence lengths, feature names,
+start and end positions, feature weights (optional) and the status to
+determine if that feature is important for comparison the architecture
 between 2 proteins* (e.g. seed protein vs ortholog) (optional).}
 
 \item{labelArchiSize}{lable size (in px). Default = 12.}
@@ -21,7 +21,7 @@ between 2 proteins* (e.g. seed protein vs ortholog) (optional).}
 \item{titleArchiSize}{title size (in px). Default = 12.}
 }
 \value{
-A domain plot as arrangeGrob object. Use grid::grid.draw(plot) to 
+A domain plot as arrangeGrob object. Use grid::grid.draw(plot) to
 render.
 }
 \description{

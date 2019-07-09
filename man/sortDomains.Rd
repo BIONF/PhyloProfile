@@ -29,11 +29,10 @@ domainFile <- system.file(
 domainDf <- parseDomainInput(seedID, domainFile, "file")
 # get seedDf and orthoDf
 subDf <- domainDf[
-    domainDf$seedID == "101621at6656#101621at6656|ANOGA@7165@1|Q7Q122|1",]
-orthoDf <- dplyr::filter(
-    subDf, orthoID == "101621at6656|ANOGA@7165@1|Q7Q122|1")
-seedDf <- dplyr::filter(
-    subDf, orthoID != "101621at6656|ANOGA@7165@1|Q7Q122|1")
+    domainDf$seedID ==
+    "101621at6656#101621at6656:AGRPL@224129@0:224129_0:001955:1",]
+orthoDf <- subDf[subDf$orthoID == "101621at6656:DROME@7227@1:Q9VG04",]
+seedDf <- subDf[subDf$orthoID != "101621at6656:DROME@7227@1:Q9VG04",]
 # sort
 sortDomains(seedDf, orthoDf)
 }

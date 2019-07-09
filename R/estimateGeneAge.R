@@ -214,13 +214,7 @@ geneAgePlotDf <- function(geneAgeDf){
 #' @param geneAgeText text size
 #' @return A gene age distribution plot as a ggplot2 object
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
-#' @importFrom ggplot2 geom_bar
-#' @importFrom ggplot2 scale_y_reverse
-#' @importFrom ggplot2 coord_flip
-#' @importFrom ggplot2 geom_text
-#' @importFrom ggplot2 scale_fill_brewer
-#' @importFrom ggplot2 guides
-#' @importFrom ggplot2 guide_legend
+#' @import ggplot2
 #' @export
 #' @seealso \code{\link{estimateGeneAge}} and \code{\link{geneAgePlotDf}}
 #' @examples

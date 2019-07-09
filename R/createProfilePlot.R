@@ -138,13 +138,7 @@ dataCustomizedPlot <- function(
 #' default = FALSE). NOTE: Leave blank or NULL to use default values.
 #' @return A profile heatmap plot as a ggplot object.
 #' @importFrom plyr mapvalues
-#' @importFrom ggplot2 scale_fill_gradient
-#' @importFrom ggplot2 scale_color_gradient
-#' @importFrom ggplot2 scale_size_continuous
-#' @importFrom ggplot2 guide_colourbar
-#' @importFrom ggplot2 geom_hline
-#' @importFrom ggplot2 geom_rect
-#' @importFrom ggplot2 geom_tile
+#' @import ggplot2
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{dataMainPlot}}, \code{\link{dataCustomizedPlot}}
 #' @examples
