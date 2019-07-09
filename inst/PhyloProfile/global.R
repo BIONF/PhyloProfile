@@ -5,10 +5,10 @@
 source("R/functions.R")
 
 # List of dependent packages --------------------------------------------------
-packages <- c("ape", "colourpicker", "data.table", "dendextend", "devtools", 
-              "plyr", "dplyr", "DT", "energy", "ggdendro", "ggplot2", "gplots", 
-              "grid", "gridExtra", "gtable", "RCurl", "RColorBrewer", 
-              "reshape2", "scales", "shiny", "shinyBS", "shinyjs", "stringr",
+packages <- c("ape", "colourpicker", "data.table", "dendextend", "devtools",
+              "plyr", "dplyr", "DT", "energy", "ggdendro", "ggplot2", "gplots",
+              "grid", "gridExtra", "gtable", "RCurl", "RColorBrewer",
+              "reshape2", "scales", "shiny", "shinyBS", "shinyjs",
               "tidyr", "zoo")
 
 # Find & install missing packages ---------------------------------------------

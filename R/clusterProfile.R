@@ -78,6 +78,8 @@ getDataClustering <- function(
 #' "mutualInformation" or "pearson" for binary data; "distanceCorrelation" or
 #' "mutualInformation" for non-binary data). Default = "mutualInformation".
 #' @return A calculated distance matrix for input phylogenetic profiles.
+#' @importFrom bioDist mutualInfo
+#' @importFrom bioDist cor.dist
 #' @author Carla Mölbert (carla.moelbert@gmx.de), Vinh Tran
 #' (tran@bio.uni-frankfurt.de)
 #' @seealso \code{\link{getDataClustering}}
@@ -118,10 +120,10 @@ getDistanceMatrix <- function(profiles = NULL, method = "mutualInformation") {
         rownames(matrix) <- profileNames
         distanceMatrix <- as.dist(matrix)
     } else if (method == "mutualInformation") {
-        distanceMatrix <- mutualInfo(as.matrix(profiles))
+        distanceMatrix <- bioDist::mutualInfo(as.matrix(profiles))
         distanceMatrix <- max(distanceMatrix, na.rm = TRUE) - distanceMatrix
     } else if (method == "pearson") {
-        distanceMatrix <-  cor.dist(as.matrix(profiles))
+        distanceMatrix <-  bioDist::cor.dist(as.matrix(profiles))
     }
 
     return(distanceMatrix)
