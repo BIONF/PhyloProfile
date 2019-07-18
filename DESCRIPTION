@@ -16,8 +16,7 @@ Encoding: UTF-8
 biocViews: Software, Visualization, DataRepresentation, MultipleComparison, FunctionalPrediction
 Imports:
     ape, bioDist, BiocStyle, Biostrings, Cairo, colourpicker, data.table, 
-    energy, ExperimentHub,
-    GenomeInfoDbData, ggplot2, GO.db, grDevices, grid, 
+    energy, ExperimentHub, GenomeInfoDbData, ggplot2, GO.db, grDevices, grid, 
     gridExtra, gtable, knitr, pbapply, praise, RColorBrewer, reshape2, 
     rmarkdown, scales, shiny, shinyBS, shinycssloaders, shinyjs, stats,
     svMisc, tidyr, testthat, tree, utils, OmaDB, plyr, xml2, zoo

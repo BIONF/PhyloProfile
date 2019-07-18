@@ -157,18 +157,6 @@ distributionTest <- function(
             )
             return(wilcox$p.value)
         }
-
-        # perm <- jmuOutlier:: perm.test(
-        #     unique(varIn), unique(varOut),
-        #     alternative = c("two.sided"),
-        #     mu = 0, # Hypothesis: Samples do not differ
-        #     paired = FALSE,
-        #     all.perms = TRUE, # Tries to get a exact p value
-        #     num.sim = 1000000,
-        #     plot = FALSE, # does not plot
-        #     stat = mean
-        # ) # compaires the means of the distributions
-        # return(perm$p.value)
     }
 }
 
