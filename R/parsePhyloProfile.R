@@ -345,7 +345,7 @@ sortInputTaxa <- function(
         ),
         stringsAsFactors = FALSE
     )
-    sortedOut <- plyr::join(indexSpecDf, sortedOut, by = "fullName.y")
+    sortedOut <- merge(indexSpecDf, sortedOut, by = "fullName.y")
 
     # final sorted supertaxa list
     sortedOut$taxonID <- 0
