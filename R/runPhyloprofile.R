@@ -8,7 +8,6 @@
 #' @import ExperimentHub
 #' @import GenomeInfoDbData
 #' @import GO.db
-#' @import gtable
 #' @import praise
 #' @import scales
 #' @import shinyBS
