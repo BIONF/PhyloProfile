@@ -6,9 +6,6 @@
 #' @importFrom colourpicker colourInput
 #' @import energy
 #' @import ExperimentHub
-#' @import GenomeInfoDbData
-#' @import GO.db
-#' @import praise
 #' @import scales
 #' @import shinyBS
 #' @rawNamespace import(shinyjs, except = colourInput)
