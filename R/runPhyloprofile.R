@@ -9,7 +9,6 @@
 #' @import shinyBS
 #' @rawNamespace import(shinyjs, except = colourInput)
 #' @import shinycssloaders
-#' @rawNamespace import(svMisc, except = package)
 #' @import tidyr
 #' @import tree
 #' @examples
