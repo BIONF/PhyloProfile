@@ -9,7 +9,6 @@
 #' @import GenomeInfoDbData
 #' @import GO.db
 #' @import gtable
-#' @import knitr
 #' @import praise
 #' @rawNamespace import(rmarkdown, except = c(pdf_document, md_document,
 #'     html_document))

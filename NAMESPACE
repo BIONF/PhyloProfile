@@ -71,7 +71,6 @@ import(data.table, except = c(set, melt))
 import(energy)
 import(ggplot2)
 import(gtable)
-import(knitr)
 import(praise)
 import(rmarkdown, except = c(pdf_document, md_document,
     html_document))
