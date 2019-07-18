@@ -18,7 +18,7 @@ Imports:
     ape, bioDist, BiocStyle, Biostrings, Cairo, colourpicker, data.table, 
     energy, ExperimentHub, ggplot2, grDevices, grid, 
     gridExtra, pbapply, RColorBrewer, 
-    scales, shiny, shinyBS, shinycssloaders, shinyjs, stats,
+    shiny, shinyBS, shinycssloaders, shinyjs, stats,
     svMisc, tidyr, tree, utils, OmaDB, plyr, xml2, zoo
 RoxygenNote: 6.1.1
 Suggests: knitr, rmarkdown, testthat

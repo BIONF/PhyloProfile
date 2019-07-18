@@ -6,7 +6,6 @@
 #' @importFrom colourpicker colourInput
 #' @import energy
 #' @import ExperimentHub
-#' @import scales
 #' @import shinyBS
 #' @rawNamespace import(shinyjs, except = colourInput)
 #' @import shinycssloaders
