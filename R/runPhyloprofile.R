@@ -10,15 +10,12 @@
 #' @import GO.db
 #' @import gtable
 #' @import praise
-#' @rawNamespace import(rmarkdown, except = c(pdf_document, md_document,
-#'     html_document))
 #' @import scales
 #' @import shinyBS
 #' @rawNamespace import(shinyjs, except = colourInput)
 #' @import shinycssloaders
 #' @rawNamespace import(svMisc, except = package)
 #' @import tidyr
-#' @rawNamespace import(testthat, except = c(test_file, setup))
 #' @import tree
 #' @examples
 #' ?runPhyloProfile
