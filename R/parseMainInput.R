@@ -149,7 +149,9 @@ xmlParser <- function(inputFile = NULL){
         scoreValue = scorePair$V2,
         stringsAsFactors = FALSE
     )
-    orthoDf <- spread(orthoDf, scoreType, scoreValue)
+    orthoDf <- data.table::dcast(
+        orthoDf, geneID + refGeneID ~ scoreType, value.var = "scoreValue"
+    )
 
     # merge into final dataframe
     finalDf <- merge(speciesDf, orthoDf, all.y = TRUE, by = "refGeneID")
