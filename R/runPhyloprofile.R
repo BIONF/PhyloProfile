@@ -7,7 +7,6 @@
 #' @import energy
 #' @import ExperimentHub
 #' @import GenomeInfoDbData
-#' @import gplots
 #' @import GO.db
 #' @import gtable
 #' @import knitr
