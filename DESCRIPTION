@@ -19,7 +19,7 @@ Imports:
     energy, ExperimentHub, ggplot2, grDevices, grid, 
     gridExtra, pbapply, RColorBrewer, reshape2, 
     scales, shiny, shinyBS, shinycssloaders, shinyjs, stats,
-    svMisc, tidyr, tree, utils, OmaDB, plyr, zoo
+    svMisc, tidyr, tree, utils, OmaDB, plyr, xml2, zoo
 RoxygenNote: 6.1.1
 Suggests: knitr, rmarkdown, testthat
 VignetteBuilder: knitr
