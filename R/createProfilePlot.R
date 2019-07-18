@@ -11,7 +11,7 @@
 #' paralogNew), number of species in each supertaxon (numberSpec) and the % of
 #' species that have orthologs in each supertaxon (presSpec).
 #' @importFrom stats na.omit
-#' @rawNamespace import(data.table, except = c(set, melt))
+#' @import data.table
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{filterProfileData}}
 #' @examples

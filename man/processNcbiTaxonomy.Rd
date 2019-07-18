@@ -8,12 +8,12 @@ processNcbiTaxonomy()
 }
 \value{
 A dataframe contains NCBI taxon IDs, taxon names, taxon ranks and the
-next higher taxon IDs (parent's IDs) of all taxa in the NCBI taxonomy 
+next higher taxon IDs (parent's IDs) of all taxa in the NCBI taxonomy
 database.
 }
 \description{
 Download NCBI taxonomy database and parse information that are
-needed for PhyloProfile, including taxon IDs, their scientific names, 
+needed for PhyloProfile, including taxon IDs, their scientific names,
 systematic ranks, and parent (next higher) rank IDs.
 }
 \examples{
@@ -21,7 +21,7 @@ systematic ranks, and parent (next higher) rank IDs.
 preProcessedTaxonomy <- processNcbiTaxonomy()
 # save to text (tab-delimited) file
 write.table(
-    preProcessedTaxonomy, 
+    preProcessedTaxonomy,
     file = "preProcessedTaxonomy.txt",
     col.names = TRUE,
     row.names = FALSE,

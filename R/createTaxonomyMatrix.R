@@ -1,9 +1,9 @@
 #' Pre-processing NCBI taxonomy data
 #' @description Download NCBI taxonomy database and parse information that are
-#' needed for PhyloProfile, including taxon IDs, their scientific names, 
+#' needed for PhyloProfile, including taxon IDs, their scientific names,
 #' systematic ranks, and parent (next higher) rank IDs.
 #' @return A dataframe contains NCBI taxon IDs, taxon names, taxon ranks and the
-#' next higher taxon IDs (parent's IDs) of all taxa in the NCBI taxonomy 
+#' next higher taxon IDs (parent's IDs) of all taxa in the NCBI taxonomy
 #' database.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @export
@@ -12,7 +12,7 @@
 #' preProcessedTaxonomy <- processNcbiTaxonomy()
 #' # save to text (tab-delimited) file
 #' write.table(
-#'     preProcessedTaxonomy, 
+#'     preProcessedTaxonomy,
 #'     file = "preProcessedTaxonomy.txt",
 #'     col.names = TRUE,
 #'     row.names = FALSE,
@@ -48,7 +48,7 @@ processNcbiTaxonomy <- function() {
     )
     unlink(temp)
     message("Download NCBI taxonomy done!")
-    
+
     # Create data frame containing taxon ID, the scientific name, its taxonomy
     # rank and the taxon ID of the higer rank (parent's ID)
     preProcessedTaxonomy <- merge(
@@ -59,14 +59,14 @@ processNcbiTaxonomy <- function() {
     colnames(preProcessedTaxonomy) <- c(
         "ncbiID", "fullName", "rank", "parentID"
     )
-    
+
     # Remove "'" from taxon names and ranks, remove space from taxon ranks
     preProcessedTaxonomy$fullName <- gsub(
         "'", "", preProcessedTaxonomy$fullName
     )
     preProcessedTaxonomy$rank <- gsub("'", "", preProcessedTaxonomy$rank)
     preProcessedTaxonomy$rank <- gsub(" ", "", preProcessedTaxonomy$rank)
-    
+
     message("Parsing NCBI taxonomy done!")
     return(preProcessedTaxonomy)
 }
@@ -299,8 +299,6 @@ rankIndexing <- function(rankListFile = NULL){
 #' (see idListFile in example)
 #' @param rankListFile a text file whose each row is a rank list of a taxon
 #' (see rankListFile in example)
-#' @importFrom data.table transpose
-#' @importFrom reshape2 melt
 #' @importFrom stats complete.cases
 #' @importFrom utils count.fields
 #' @importFrom utils read.table
@@ -360,7 +358,7 @@ taxonomyTableCreator <- function(idListFile = NULL, rankListFile = NULL){
                 strsplit(as.character(idList[x,]$tip), "#", fixed = TRUE)
             )
             ### convert into long format
-            mTaxonDf <- suppressWarnings(melt(taxonDf, id = "tip"))
+            mTaxonDf <- suppressWarnings(data.table::melt(taxonDf, id = "tip"))
 
             ### get rank names and corresponding IDs
             splitCol <- data.frame(
