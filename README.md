@@ -46,13 +46,25 @@ The dev version of *PhyloProfile* can be installed from this github repository u
 ```r
 if (!requireNamespace("devtools"))
     install.packages("devtools")
-devtools::install_github("BIONF/PhyloProfile", INSTALL_opts = c('--no-lock'), build_opts = c('--no-resave-data'))
+devtools::install_github("BIONF/PhyloProfile", INSTALL_opts = c('--no-lock'), build_vignettes = TRUE)
 ```
 
 This step can take a while, as the tool will try do download and install all necessary dependencies automatically. *(Note: Depending on your system this sometimes fails, please check the console log for error messages concerning the dependency installation)*
 
 ## Start PhyloProfile
-Simply run
+First install the demo data package
+```r
+if (!requireNamespace("BiocManager"))
+    install.packages("BiocManager")
+BiocManager::install(version = '3.10', ask = FALSE)
+devtools::install_github(
+    "bionf/PhyloProfileData",
+    INSTALL_opts = c('--no-lock'),
+    build_opts = c('--no-resave-data')
+)
+```
+
+Then run
 ```r
 library(PhyloProfile)
 runPhyloProfile()
