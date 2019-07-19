@@ -9,7 +9,6 @@
 #' @import shinyBS
 #' @rawNamespace import(shinyjs, except = colourInput)
 #' @import shinycssloaders
-#' @import tree
 #' @examples
 #' ?runPhyloProfile
 #' \dontrun{
