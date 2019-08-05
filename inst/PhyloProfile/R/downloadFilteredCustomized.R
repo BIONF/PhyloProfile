@@ -91,7 +91,7 @@ downloadFilteredCustomized <- function(input, output, session,
     )
 
     # render download data table -----------------------------------------------
-    output$filteredCustomData <- renderDataTable(rownames = FALSE, {
+    output$filteredCustomData <- renderDataTable({
         data <- downloadCustomData()
         data
     })
