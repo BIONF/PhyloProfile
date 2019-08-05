@@ -139,7 +139,7 @@ getDistanceMatrix <- function(profiles = NULL, method = "mutualInformation") {
 #' @param clusterMethod clustering method ("single", "complete",
 #' "average" for UPGMA, "mcquitty" for WPGMA, "median" for WPGMC,
 #' or "centroid" for UPGMC). Default = "complete".
-#' @return An object class hclust generated based on input distance matrix and 
+#' @return An object class hclust generated based on input distance matrix and
 #' a selected clustering method.
 #' @importFrom stats as.dendrogram
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
@@ -166,7 +166,6 @@ clusterDataDend <- function(distanceMatrix = NULL, clusterMethod = "complete") {
 #' @export
 #' @param dd dendrogram object (see ?clusterDataDend)
 #' @return A dendrogram plot for the genes in the input phylogenetic profiles.
-#' @importFrom graphics plot
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{clusterDataDend}}
 #' @examples
@@ -183,6 +182,6 @@ clusterDataDend <- function(distanceMatrix = NULL, clusterMethod = "complete") {
 
 getDendrogram <- function(dd = NULL) {
     if (is.null(dd)) return()
-    p <- plot(as.phylo(dd))
+    p <- ape::plot.phylo(as.phylo(dd))
     return(p)
 }

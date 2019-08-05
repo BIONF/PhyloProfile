@@ -55,7 +55,7 @@ createArchiPlot <- function(
     if (nrow(subdomainDf) < 1) return(paste0("ERR-0"))
     else {
         # ortho domains df
-		orthoDf <- subdomainDf[subdomainDf$orthoID == ortho,]
+        orthoDf <- subdomainDf[subdomainDf$orthoID == ortho,]
         # seed domains df
         seedDf <- subdomainDf[subdomainDf$orthoID != ortho,]
         if (nrow(seedDf) == 0) seedDf <- orthoDf

@@ -14,7 +14,7 @@ clusterDataDend(distanceMatrix = NULL, clusterMethod = "complete")
 or "centroid" for UPGMC). Default = "complete".}
 }
 \value{
-An object class hclust generated based on input distance matrix and 
+An object class hclust generated based on input distance matrix and
 a selected clustering method.
 }
 \description{
