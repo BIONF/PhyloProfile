@@ -183,7 +183,7 @@ getDataForOneOma <- function(seedID = NULL, orthoType = "OG"){
             paste(unlist(do.call(paste, domainDfJoin)), collapse = "\t")
         }
     )
-
+    
     # return data frame
     return(data.frame(
         orthoID = idList,
@@ -191,7 +191,7 @@ getDataForOneOma <- function(seedID = NULL, orthoType = "OG"){
         seq = unlist(seq),
         length = unlist(length),
         domains = unlist(domains),
-        seed = seedID,
+        seed = rep(seedID, length(idList)),
         stringsAsFactors = FALSE
     ))
 }
