@@ -27,7 +27,7 @@ A dataframe with one column contains sequences in fasta format.
 Get fasta sequences for the input phylogenetic profiles.
 }
 \examples{
-seqIDs <- "72288at6656|RAT@10116@1|D3ZUE4"
+seqIDs <- "RAT@10116@1|D3ZUE4"
 path <- system.file(
     "extdata", "fastaFiles", package = "PhyloProfile", mustWork = TRUE
 )

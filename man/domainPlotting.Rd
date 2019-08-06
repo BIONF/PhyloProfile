@@ -4,14 +4,14 @@
 \alias{domainPlotting}
 \title{Create architecure plot for a single protein}
 \usage{
-domainPlotting(df, geneID = "GeneID", sep = "|", labelSize = 12, 
+domainPlotting(df, geneID = "GeneID", sep = "|", labelSize = 12,
     titleSize = 12, minStart = NULL, maxEnd = NULL, colorScheme)
 }
 \arguments{
-\item{df}{domain dataframe for ploting containing the seed ID, ortholog ID, 
-ortholog sequence length, feature names, start and end positions, 
-feature weights (optional) and the status to determine if that feature is 
-important for comparison the architecture between 2 proteins* (e.g. seed 
+\item{df}{domain dataframe for ploting containing the seed ID, ortholog ID,
+ortholog sequence length, feature names, start and end positions,
+feature weights (optional) and the status to determine if that feature is
+important for comparison the architecture between 2 proteins* (e.g. seed
 protein vs ortholog) (optional).}
 
 \item{geneID}{ID of seed or orthologous protein}

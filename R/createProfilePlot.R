@@ -11,7 +11,7 @@
 #' paralogNew), number of species in each supertaxon (numberSpec) and the % of
 #' species that have orthologs in each supertaxon (presSpec).
 #' @importFrom stats na.omit
-#' @rawNamespace import(data.table, except = c(set, melt))
+#' @import data.table
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{filterProfileData}}
 #' @examples
@@ -137,14 +137,7 @@ dataCustomizedPlot <- function(
 #' default = 0; (15) enable/disable coloring gene categories TRUE/FALSE -
 #' default = FALSE). NOTE: Leave blank or NULL to use default values.
 #' @return A profile heatmap plot as a ggplot object.
-#' @importFrom plyr mapvalues
-#' @importFrom ggplot2 scale_fill_gradient
-#' @importFrom ggplot2 scale_color_gradient
-#' @importFrom ggplot2 scale_size_continuous
-#' @importFrom ggplot2 guide_colourbar
-#' @importFrom ggplot2 geom_hline
-#' @importFrom ggplot2 geom_rect
-#' @importFrom ggplot2 geom_tile
+#' @import ggplot2
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{dataMainPlot}}, \code{\link{dataCustomizedPlot}}
 #' @examples
@@ -226,18 +219,15 @@ heatmapPlotting <- function(data = NULL, plotParameter = NULL){
     }
 
     # remove prefix number of taxa names but keep the order
-    data$supertaxon <- {
-        mapvalues(
-            warn_missing = FALSE,
-            data$supertaxon,
-            from = as.character(data$supertaxon),
-            to = substr(
-                as.character(data$supertaxon),
-                6,
-                nchar(as.character(data$supertaxon))
-            )
+    data$supertaxon <- factor(
+        substr(
+            as.character(data$supertaxon), 6,
+            nchar(as.character(data$supertaxon))
+        ),
+        levels = substr(
+            levels(data$supertaxon), 6, nchar(levels(data$supertaxon))
         )
-    }
+    )
 
     # format plot
     if (xAxis == "genes") {

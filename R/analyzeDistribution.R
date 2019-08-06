@@ -207,8 +207,7 @@ createVariableDistributionDataSubset <- function(
 #' @param percent range of percentage cutoff (between 0 and 1). Default = c(0,1)
 #' @param distTextSize text size of the distribution plot (in px). Default = 12.
 #' @return A distribution plot for the selected variable as a ggplot object
-#' @importFrom ggplot2 geom_histogram
-#' @importFrom ggplot2 geom_vline
+#' @import ggplot2
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @export
 #' @seealso \code{\link{mainLongRaw}},

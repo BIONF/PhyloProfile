@@ -237,7 +237,7 @@ downloadFilteredMain <- function(
     )
 
     # render download data table -----------------------------------------------
-    output$filteredMainData <- renderDataTable(rownames = FALSE, {
+    output$filteredMainData <- renderDataTable({
         data <- downloadData()
         data
     })

@@ -183,7 +183,7 @@ getDataForOneOma <- function(seedID = NULL, orthoType = "OG"){
             paste(unlist(do.call(paste, domainDfJoin)), collapse = "\t")
         }
     )
-
+    
     # return data frame
     return(data.frame(
         orthoID = idList,
@@ -191,7 +191,7 @@ getDataForOneOma <- function(seedID = NULL, orthoType = "OG"){
         seq = unlist(seq),
         length = unlist(length),
         domains = unlist(domains),
-        seed = seedID,
+        seed = rep(seedID, length(idList)),
         stringsAsFactors = FALSE
     ))
 }
@@ -240,9 +240,8 @@ getAllDomainsOma <- function(finalOmaDf = NULL) {
         function (x) length(unlist(strsplit(x, "\t"))),
         FUN.VALUE = numeric(1)
     )
-
-    domainDf <- as.data.frame(
-        stringr::str_split_fixed((unlist(strsplit(feature, "\t"))), "#", 3)
+    domainDf <- data.frame(
+        do.call(rbind, strsplit(feature, "#")), stringsAsFactors = FALSE
     )
     colnames(domainDf) <- c("feature", "start", "end")
     domainDf$seedID <- rep(paste0(seedID, "#", orthoID), featureCount)
@@ -260,7 +259,7 @@ getAllDomainsOma <- function(finalOmaDf = NULL) {
         stringsAsFactors = FALSE
     )
 
-    outDf <- rbindlist(list(domainDf, seedDfFull))
+    outDf <- data.table::rbindlist(list(domainDf, seedDfFull))
     outDf$length <- as.numeric(outDf$length)
     outDf$start <- as.numeric(outDf$start)
     outDf$end <- as.numeric(outDf$end)

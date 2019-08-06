@@ -217,8 +217,10 @@ groupComparison <- function (
                         multiple = TRUE,
                         selectize = FALSE)
         } else {
-            featureDf <- str_split_fixed(
-                as.character(featureDf()$Feature), "_", 2
+            featureDf <- data.frame(
+                do.call(
+                    rbind, strsplit(as.character(featureDf()$Feature), "_")
+                ), stringsAsFactors = FALSE
             )
             featureList <- unique(featureDf[,1])
             selectInput(ns("featureTypeSelect"),

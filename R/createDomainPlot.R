@@ -4,20 +4,19 @@
 #' be plotted. NOTE: seed protein ID is the one being shown in the profile plot,
 #' which normally is also the orthologous group ID.
 #' @export
-#' @usage createArchiPlot(info = NULL, domainDf = NULL, labelArchiSize = 12, 
+#' @usage createArchiPlot(info = NULL, domainDf = NULL, labelArchiSize = 12,
 #'     titleArchiSize = 12)
 #' @param info a list contains seed and ortholog's IDs
-#' @param domainDf dataframe contains domain info for the seed and ortholog. 
-#' This including the seed ID, orthologs IDs, sequence lengths, feature names, 
-#' start and end positions, feature weights (optional) and the status to 
-#' determine if that feature is important for comparison the architecture 
+#' @param domainDf dataframe contains domain info for the seed and ortholog.
+#' This including the seed ID, orthologs IDs, sequence lengths, feature names,
+#' start and end positions, feature weights (optional) and the status to
+#' determine if that feature is important for comparison the architecture
 #' between 2 proteins* (e.g. seed protein vs ortholog) (optional).
 #' @param labelArchiSize lable size (in px). Default = 12.
 #' @param titleArchiSize title size (in px). Default = 12.
-#' @importFrom dplyr filter
 #' @importFrom gridExtra arrangeGrob
-#' @importFrom ggplot2 theme_void
-#' @return A domain plot as arrangeGrob object. Use grid::grid.draw(plot) to 
+#' @import ggplot2
+#' @return A domain plot as arrangeGrob object. Use grid::grid.draw(plot) to
 #' render.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{domainPlotting}}, \code{\link{sortDomains}},
@@ -56,9 +55,9 @@ createArchiPlot <- function(
     if (nrow(subdomainDf) < 1) return(paste0("ERR-0"))
     else {
         # ortho domains df
-        orthoDf <- dplyr::filter(subdomainDf, orthoID == ortho)
+        orthoDf <- subdomainDf[subdomainDf$orthoID == ortho,]
         # seed domains df
-        seedDf <- dplyr::filter(subdomainDf, orthoID != ortho)
+        seedDf <- subdomainDf[subdomainDf$orthoID != ortho,]
         if (nrow(seedDf) == 0) seedDf <- orthoDf
 
         seed <- as.character(seedDf$orthoID[1])
@@ -169,12 +168,12 @@ createArchiPlot <- function(
 }
 
 #' Create architecure plot for a single protein
-#' @usage domainPlotting(df, geneID = "GeneID", sep = "|", labelSize = 12, 
+#' @usage domainPlotting(df, geneID = "GeneID", sep = "|", labelSize = 12,
 #'     titleSize = 12, minStart = NULL, maxEnd = NULL, colorScheme)
-#' @param df domain dataframe for ploting containing the seed ID, ortholog ID, 
-#' ortholog sequence length, feature names, start and end positions, 
-#' feature weights (optional) and the status to determine if that feature is 
-#' important for comparison the architecture between 2 proteins* (e.g. seed 
+#' @param df domain dataframe for ploting containing the seed ID, ortholog ID,
+#' ortholog sequence length, feature names, start and end positions,
+#' feature weights (optional) and the status to determine if that feature is
+#' important for comparison the architecture between 2 proteins* (e.g. seed
 #' protein vs ortholog) (optional).
 #' @param geneID ID of seed or orthologous protein
 #' @param sep separate indicator for title. Default = "|".
@@ -184,21 +183,10 @@ createArchiPlot <- function(
 #' @param maxEnd the highest stop position of all domains
 #' @param colorScheme color scheme for all domain types
 #' @return Domain plot of a single protein as a ggplot object.
-#' @importFrom ggplot2 ggplot
-#' @importFrom ggplot2 aes
-#' @importFrom ggplot2 geom_segment
-#' @importFrom ggplot2 scale_color_manual
-#' @importFrom ggplot2 geom_point
-#' @importFrom ggplot2 scale_y_discrete
-#' @importFrom ggplot2 labs
-#' @importFrom ggplot2 theme_minimal
-#' @importFrom ggplot2 theme_void
-#' @importFrom ggplot2 theme
-#' @importFrom ggplot2 element_blank
-#' @importFrom ggplot2 element_text
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{getQualColForVector}},
 #' \code{\link{parseDomainInput}}
+#' @import ggplot2
 #' @examples
 #' \dontrun{
 #' # get domain data
@@ -283,7 +271,7 @@ domainPlotting <- function(
         size = 1.5
     )
     gg <- gg + geom_point(
-        data = df, aes(y = feature, x = start), 
+        data = df, aes(y = feature, x = start),
         color = "#b2b2b2", size = 3, shape = 3
     )
     gg <- gg + geom_point(
@@ -297,16 +285,6 @@ domainPlotting <- function(
         aes(x = start, xend = end, y = feature, yend = feature),
         size = 3, linetype = "dashed"
     )
-
-    # # add text above
-    # gg <- gg + geom_text(data = df,
-    #                      aes(x = (start + end) / 2,
-    #                          y = feature, label = round(weight,2)),
-    #                        color = "#9fb059",
-    #                        size = descSize,
-    #                        vjust = -0.75,
-    #                        fontface = "bold",
-    #                        family = "serif")
 
     # theme format
     titleMod <- gsub(":", sep, geneID)
@@ -350,11 +328,10 @@ domainPlotting <- function(
 #' domainDf <- parseDomainInput(seedID, domainFile, "file")
 #' # get seedDf and orthoDf
 #' subDf <- domainDf[
-#'     domainDf$seedID == "101621at6656#101621at6656|ANOGA@7165@1|Q7Q122|1",]
-#' orthoDf <- dplyr::filter(
-#'     subDf, orthoID == "101621at6656|ANOGA@7165@1|Q7Q122|1")
-#' seedDf <- dplyr::filter(
-#'     subDf, orthoID != "101621at6656|ANOGA@7165@1|Q7Q122|1")
+#'     domainDf$seedID ==
+#'     "101621at6656#101621at6656:AGRPL@224129@0:224129_0:001955:1",]
+#' orthoDf <- subDf[subDf$orthoID == "101621at6656:DROME@7227@1:Q9VG04",]
+#' seedDf <- subDf[subDf$orthoID != "101621at6656:DROME@7227@1:Q9VG04",]
 #' # sort
 #' sortDomains(seedDf, orthoDf)
 #' }

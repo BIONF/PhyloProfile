@@ -12,8 +12,6 @@
 #' @param percentCutoff cutoff for percentage of species present in each
 #' supertaxon
 #' @return A dataframe contains estimated gene ages for the seed proteins.
-#' @importFrom data.table setDT
-#' @importFrom data.table setnames
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{parseInfoProfile}} for creating a full processed
 #' profile dataframe; \code{\link{getNameList}} and
@@ -117,8 +115,8 @@ estimateGeneAge <- function(
         tapply(mdDataExtended$cat, mdDataExtended$geneID, min)
     )
 
-    setDT(geneAgeDf, keep.rownames = TRUE)[]
-    setnames(geneAgeDf, seq_len(2), c("geneID", "cat"))  # rename columns
+    data.table::setDT(geneAgeDf, keep.rownames = TRUE)[]
+    data.table::setnames(geneAgeDf, seq_len(2), c("geneID", "cat"))  #col names
     row.names(geneAgeDf) <- NULL   # remove row names
 
     ### convert cat into geneAge
@@ -214,13 +212,7 @@ geneAgePlotDf <- function(geneAgeDf){
 #' @param geneAgeText text size
 #' @return A gene age distribution plot as a ggplot2 object
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
-#' @importFrom ggplot2 geom_bar
-#' @importFrom ggplot2 scale_y_reverse
-#' @importFrom ggplot2 coord_flip
-#' @importFrom ggplot2 geom_text
-#' @importFrom ggplot2 scale_fill_brewer
-#' @importFrom ggplot2 guides
-#' @importFrom ggplot2 guide_legend
+#' @import ggplot2
 #' @export
 #' @seealso \code{\link{estimateGeneAge}} and \code{\link{geneAgePlotDf}}
 #' @examples

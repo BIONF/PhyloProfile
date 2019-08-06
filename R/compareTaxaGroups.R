@@ -157,18 +157,6 @@ distributionTest <- function(
             )
             return(wilcox$p.value)
         }
-
-        # perm <- jmuOutlier:: perm.test(
-        #     unique(varIn), unique(varOut),
-        #     alternative = c("two.sided"),
-        #     mu = 0, # Hypothesis: Samples do not differ
-        #     paired = FALSE,
-        #     all.perms = TRUE, # Tries to get a exact p value
-        #     num.sim = 1000000,
-        #     plot = FALSE, # does not plot
-        #     stat = mean
-        # ) # compaires the means of the distributions
-        # return(perm$p.value)
     }
 }
 
@@ -296,12 +284,7 @@ dataVarDistTaxGroup <- function(
 #' @return Distribution plots as a grob (gtable) object. Use grid.draw to plot.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{dataVarDistTaxGroup}}
-#' @importFrom ggplot2 geom_violin
-#' @importFrom ggplot2 position_dodge
-#' @importFrom ggplot2 geom_boxplot
-#' @importFrom ggplot2 scale_x_discrete
-#' @importFrom ggplot2 stat_summary
-#' @importFrom ggplot2 ggplotGrob
+#' @import ggplot2
 #' @importFrom grid unit.c
 #' @importFrom grid unit
 #' @importFrom grid textGrob

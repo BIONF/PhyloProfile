@@ -16,10 +16,9 @@ Encoding: UTF-8
 biocViews: Software, Visualization, DataRepresentation, MultipleComparison, FunctionalPrediction
 Imports:
     ape, bioDist, BiocStyle, Biostrings, Cairo, colourpicker, data.table, 
-    dendextend, devtools, dplyr, DT, energy, ExperimentHub, IRanges, 
-    GenomeInfoDbData, ggdendro, ggplot2, gplots, GO.db, grDevices, grid, 
-    gridExtra, gtable, knitr, pbapply, praise, RColorBrewer, reshape2, 
-    rmarkdown, scales, shiny, shinyBS, shinycssloaders, shinyjs, stats, stringr,
-    svMisc, tidyr, testthat, tree, utils, OmaDB, plyr, xml2, zoo
+    energy, ExperimentHub, ggplot2, grDevices, grid, gridExtra, pbapply, 
+    RColorBrewer, shiny, shinyBS, shinycssloaders, shinyjs, stats, utils,
+    OmaDB, plyr, xml2, zoo
 RoxygenNote: 6.1.1
+Suggests: knitr, rmarkdown, testthat
 VignetteBuilder: knitr

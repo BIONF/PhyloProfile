@@ -40,7 +40,9 @@ getDataClustering <- function(
         subDataHeat <- subDataHeat[, c("geneID", "supertaxon", "presSpec")]
         subDataHeat$presSpec[subDataHeat$presSpec > 0] <- 1
         subDataHeat <- subDataHeat[!duplicated(subDataHeat), ]
-        wideData <- spread(subDataHeat, supertaxon, presSpec)
+        wideData <- data.table::dcast(
+            subDataHeat, geneID ~ supertaxon, value.var = "presSpec"
+        )
     } else {
         var <- profileType
 
@@ -58,7 +60,9 @@ getDataClustering <- function(
         )
 
         colnames(subDataHeat) <- c("geneID", "supertaxon", var)
-        wideData <- spread(subDataHeat, supertaxon, var)
+        wideData <- data.table::dcast(
+            subDataHeat, geneID ~ supertaxon, value.var = var
+        )
     }
 
     # set name for wide matrix as gene IDs
@@ -78,6 +82,8 @@ getDataClustering <- function(
 #' "mutualInformation" or "pearson" for binary data; "distanceCorrelation" or
 #' "mutualInformation" for non-binary data). Default = "mutualInformation".
 #' @return A calculated distance matrix for input phylogenetic profiles.
+#' @importFrom bioDist mutualInfo
+#' @importFrom bioDist cor.dist
 #' @author Carla Mölbert (carla.moelbert@gmx.de), Vinh Tran
 #' (tran@bio.uni-frankfurt.de)
 #' @seealso \code{\link{getDataClustering}}
@@ -118,22 +124,23 @@ getDistanceMatrix <- function(profiles = NULL, method = "mutualInformation") {
         rownames(matrix) <- profileNames
         distanceMatrix <- as.dist(matrix)
     } else if (method == "mutualInformation") {
-        distanceMatrix <- mutualInfo(as.matrix(profiles))
+        distanceMatrix <- bioDist::mutualInfo(as.matrix(profiles))
         distanceMatrix <- max(distanceMatrix, na.rm = TRUE) - distanceMatrix
     } else if (method == "pearson") {
-        distanceMatrix <-  cor.dist(as.matrix(profiles))
+        distanceMatrix <-  bioDist::cor.dist(as.matrix(profiles))
     }
 
     return(distanceMatrix)
 }
 
-#' Create a dendrogram tree from the distance matrix
+#' Create a hclust object from the distance matrix
 #' @export
 #' @param distanceMatrix calculated distance matrix (see ?getDistanceMatrix)
 #' @param clusterMethod clustering method ("single", "complete",
 #' "average" for UPGMA, "mcquitty" for WPGMA, "median" for WPGMC,
 #' or "centroid" for UPGMC). Default = "complete".
-#' @return A dendrogram tree object generated based on input distance matrix.
+#' @return An object class hclust generated based on input distance matrix and
+#' a selected clustering method.
 #' @importFrom stats as.dendrogram
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{getDataClustering}},
@@ -151,7 +158,7 @@ getDistanceMatrix <- function(profiles = NULL, method = "mutualInformation") {
 
 clusterDataDend <- function(distanceMatrix = NULL, clusterMethod = "complete") {
     if (is.null(distanceMatrix)) return()
-    dd.col <- as.dendrogram(hclust(distanceMatrix, method = clusterMethod))
+    dd.col <- hclust(distanceMatrix, method = clusterMethod)
     return(dd.col)
 }
 
@@ -175,8 +182,6 @@ clusterDataDend <- function(distanceMatrix = NULL, clusterMethod = "complete") {
 
 getDendrogram <- function(dd = NULL) {
     if (is.null(dd)) return()
-    py <- dendextend::as.ggdend(dd)
-    p <- ggplot(py, horiz = TRUE, theme = theme_minimal()) +
-        theme(axis.title = element_blank(), axis.text.y = element_blank())
+    p <- ape::plot.phylo(as.phylo(dd))
     return(p)
 }

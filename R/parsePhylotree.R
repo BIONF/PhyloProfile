@@ -8,8 +8,6 @@
 #' with PhyloProfile, 1 = missing parenthesis; 2 = missing comma;
 #' 3 = tree has singleton; or a list of taxa that do not exist in the input
 #' phylogenetic profile.
-#' @importFrom stringr regex
-#' @importFrom stringr str_count
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{getInputTaxaID}} for getting input taxon IDs,
 #' \code{\link{ppTree}} for an example of input tree
@@ -20,12 +18,12 @@
 checkNewick <- function(tree, inputTaxonID = NULL){
     if (missing(tree)) return("No tree given!")
     # get tree structure
-    treeStruc <- gsub(stringr::regex("\\w"), "", as.character(tree$V1))
+    treeStruc <- gsub("\\w", "", as.character(tree$V1), perl = TRUE)
 
-    open <- stringr::str_count(treeStruc, "\\(")
-    close <- stringr::str_count(treeStruc, "\\)")
-    comma <- stringr::str_count(treeStruc, "\\,")
-    singleton <- stringr::str_count(treeStruc, "\\(\\)")
+    open <- lengths(regmatches(treeStruc, gregexpr("\\(", treeStruc)))
+    close <- lengths(regmatches(treeStruc, gregexpr("\\)", treeStruc)))
+    comma <- lengths(regmatches(treeStruc, gregexpr("\\,", treeStruc)))
+    singleton <- lengths(regmatches(treeStruc, gregexpr("\\(\\)", treeStruc)))
 
     if (singleton > 0) return(3) # tree contains singleton
     if (open != close) return(1) # missing parenthesis
@@ -34,7 +32,7 @@ checkNewick <- function(tree, inputTaxonID = NULL){
             # return(2) # missing comma
         } else {
             # get list of tips
-            nodeString <- gsub(regex("\\W+"), "#", as.character(tree$V1))
+            nodeString <- gsub("\\W+", "#", as.character(tree$V1))
             nodeList <- unlist(strsplit(nodeString, "#"))
             # list of input taxa
             inputTaxa <- inputTaxonID

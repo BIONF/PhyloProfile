@@ -92,11 +92,10 @@ getFastaFromFile <- function(seqIDs = NULL, concatFasta = NULL) {
 #' @param idFormat fasta header format (1 for ">speciesID:seqID", 2 for
 #' ">speciesID@seqID", 3 for ">speciesID|seqID" or 4 for "seqID")
 #' @return A dataframe with one column contains sequences in fasta format.
-#' @importFrom IRanges reverse
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{mainLongRaw}}
 #' @examples
-#' seqIDs <- "72288at6656|RAT@10116@1|D3ZUE4"
+#' seqIDs <- "RAT@10116@1|D3ZUE4"
 #' path <- system.file(
 #'     "extdata", "fastaFiles", package = "PhyloProfile", mustWork = TRUE
 #' )
@@ -120,20 +119,11 @@ getFastaFromFolder <- function(
     if (path != "") {
         # get list of species IDs
         if (idFormat == 1) {
-            specDf <- as.data.frame(
-                stringr::str_split_fixed(reverse(as.character(seqIDs)), ":", 2)
-            )
-            specDf$specID <- reverse(as.character(specDf$V2))
+            specID <- unlist(strsplit(seqIDs, "\\:"))[1]
         } else if (idFormat == 2) {
-            specDf <- as.data.frame(
-                stringr::str_split_fixed(reverse(as.character(seqIDs)), "@", 2)
-            )
-            specDf$specID <- reverse(as.character(specDf$V2))
+            specID <- unlist(strsplit(seqIDs, "@"))[1]
         } else if (idFormat == 3) {
-            specDf <- as.data.frame(
-                stringr::str_split_fixed(reverse(as.character(seqIDs)),"\\|",2)
-            )
-            specDf$specID <- reverse(as.character(specDf$V2))
+            specID <- unlist(strsplit(seqIDs, "\\|"))[1]
         }
         
         # read all specices FASTA files at once
@@ -150,7 +140,7 @@ getFastaFromFolder <- function(
                 faFile <- Biostrings::readAAStringSet(fileWithPath)
             }
         } else {
-            specID <- as.character(levels(as.factor(specDf$specID)))
+            specID <- as.character(levels(as.factor(specID)))
             specID <- specID[specID != ""]
             
             file <- paste0(path, "/", specID, ".", fileExt)
