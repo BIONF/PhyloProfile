@@ -30,7 +30,7 @@ checkOmaID <- function(ids) {
 #' getOmaMembers("HUMAN29397", "OG")
 
 getOmaMembers <- function(id = NULL, orthoType = "OG") {
-    if (is.null(id)) return()
+    if (is.null(id)) stop("No OMA ID given!")
     # get the members of the Hierarchical Orthologous Group
     if (orthoType == "HOG") {
         members <- suppressWarnings(
@@ -43,14 +43,6 @@ getOmaMembers <- function(id = NULL, orthoType = "OG") {
             OmaDB::getOMAGroup(id = id)$members$omaid
         )
     }
-    # # get the members of the Orthologous Pair
-    # else if (orthoType == "PAIR") {
-    #   members <- OmaDB::resolveURL(OmaDB::getData(type = "protein",
-    #                                               id = id)$orthologs)$omaid
-    #   # add query ID into output list
-    #   seed <- OmaDB::getData("protein",id)$omaid
-    #   members <- c(seed,members)
-    # }
 
     return(members)
 }
@@ -67,7 +59,7 @@ getOmaMembers <- function(id = NULL, orthoType = "OG") {
 #' getOmaDomainFromURL("https://omabrowser.org/api/protein/7916808/domains/")
 
 getOmaDomainFromURL <- function(domainURL = NULL) {
-    if (is.null(domainURL)) return()
+    if (is.null(domainURL)) stop("OMA domain URL is NULL!")
     if (grepl("https://", domainURL[1])) {
         domains <- OmaDB::resolveURL(domainURL)$regions
     } else {
@@ -102,7 +94,7 @@ getOmaDomainFromURL <- function(domainURL = NULL) {
 #' getOmaDataForOneOrtholog("HUMAN29397")
 
 getOmaDataForOneOrtholog <- function(id = NULL) {
-    if (is.null(id)) return()
+    if (is.null(id)) stop("No OMA ID given!")
     # get ncbi taxonomy id
     specName <- substr(id, 1, 5)
     taxonID <- paste0(
@@ -149,7 +141,7 @@ getOmaDataForOneOrtholog <- function(id = NULL) {
 #' getDataForOneOma("HUMAN29397", "OG")
 
 getDataForOneOma <- function(seedID = NULL, orthoType = "OG"){
-    if (is.null(seedID)) return()
+    if (is.null(seedID)) stop("No OMA seed ID given!")
     # get members
     idList <- getOmaMembers(seedID, orthoType)
     specName <- substr(idList, 1, 5)
@@ -183,7 +175,7 @@ getDataForOneOma <- function(seedID = NULL, orthoType = "OG"){
             paste(unlist(do.call(paste, domainDfJoin)), collapse = "\t")
         }
     )
-    
+
     # return data frame
     return(data.frame(
         orthoID = idList,
@@ -209,7 +201,7 @@ getDataForOneOma <- function(seedID = NULL, orthoType = "OG"){
 #' createProfileFromOma(omaData)
 
 createProfileFromOma <- function(finalOmaDf = NULL) {
-    if (is.null(finalOmaDf)) return()
+    if (is.null(finalOmaDf)) stop("Raw OMA data cannot be NULL!")
     profileDf <- finalOmaDf[, c("seed", "taxonID", "orthoID")]
     colnames(profileDf) <- c("geneID", "ncbiID", "orthoID")
     return(profileDf[!duplicated(profileDf), ])
@@ -228,7 +220,7 @@ createProfileFromOma <- function(finalOmaDf = NULL) {
 #' getAllDomainsOma(omaData)
 
 getAllDomainsOma <- function(finalOmaDf = NULL) {
-    if (is.null(finalOmaDf)) return()
+    if (is.null(finalOmaDf)) stop("Raw OMA data cannot be NULL!")
 
     seedID <- finalOmaDf$seed
     orthoID <- finalOmaDf$orthoID
@@ -280,7 +272,7 @@ getAllDomainsOma <- function(finalOmaDf = NULL) {
 #' getAllFastaOma(omaData)
 
 getAllFastaOma <- function(finalOmaDf = NULL) {
-    if (is.null(finalOmaDf)) return()
+    if (is.null(finalOmaDf)) stop("Raw OMA data cannot be NULL!")
     fastaDf <- finalOmaDf[, c("orthoID", "seq")]
     fastaOut <- paste(paste0(">", fastaDf$orthoID), fastaDf$seq, sep = "\n")
     return(unique(fastaOut))
@@ -298,7 +290,7 @@ getAllFastaOma <- function(finalOmaDf = NULL) {
 #' getSelectedFastaOma(omaData, "HUMAN29397")
 
 getSelectedFastaOma <- function(finalOmaDf = NULL, seqID = NULL) {
-    if (is.null(finalOmaDf)) return()
+    if (is.null(finalOmaDf)) stop("Raw OMA data cannot be NULL!")
     selectedDf <- subset(
         finalOmaDf[, c("orthoID", "seq")],
         finalOmaDf$orthoID == seqID

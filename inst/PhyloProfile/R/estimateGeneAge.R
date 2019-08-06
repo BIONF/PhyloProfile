@@ -48,7 +48,7 @@ plotGeneAge <- function(input, output, session,
                         data, geneAgeWidth, geneAgeHeight, geneAgeText) {
     # render gene age plot -----------------------------------------------------
     output$geneAgePlot <- renderPlot({
-        if (is.null(data())) return()
+        if (is.null(data())) stop("No input data available!")
         createGeneAgePlot(geneAgePlotDf(data()), geneAgeText())
     })
 
@@ -81,13 +81,13 @@ plotGeneAge <- function(input, output, session,
 
     # render genAge.table based on clicked point on geneAgePlot ---------------
     selectedgeneAge <- reactive({
-        if (is.null(data())) return()
+        if (is.null(data())) stop("No input data available!")
         selectedGene <- getSelectedGeneAge(data(), input$plotClickGeneAge$x)
         return(selectedGene)
     })
 
     output$geneAge.table <- renderTable({
-        if (is.null(data())) return()
+        if (is.null(data())) stop("No input data available!")
         if (is.null(input$plotClickGeneAge$x)) return()
 
         data <- as.data.frame(selectedgeneAge())

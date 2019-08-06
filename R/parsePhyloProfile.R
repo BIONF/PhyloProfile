@@ -109,7 +109,7 @@ getTaxonomyMatrix <- function(subsetTaxaCheck = FALSE, taxonIDs = NULL){
 #' getInputTaxaID(mainLongRaw)
 
 getInputTaxaID <- function(rawProfile = NULL){
-    if (is.null(rawProfile)) return()
+    if (is.null(rawProfile)) stop("Input profile data cannot be NULL!")
     inputTaxa <- levels(as.factor(rawProfile$ncbiID))
     inputTaxa <- unlist(strsplit(inputTaxa, split = "\t"))
     # remove "geneID" element from vector inputTaxa
@@ -183,7 +183,8 @@ getSelectedTaxonNames <- function(
     higherRank = NULL, higherID = NULL, higherName = NULL
 ) {
     rankName <- NULL
-    if (is.null(inputTaxonIDs) | is.null(rank)) return()
+    if (is.null(inputTaxonIDs) | is.null(rank)) 
+        stop("Input taxa and taxonomy rank cannot be NULL!")
     # load pre-calculated taxonomy daxa
     taxDf <- getTaxonomyMatrix(TRUE, paste0("ncbi", inputTaxonIDs))
 
@@ -398,8 +399,8 @@ sortInputTaxa <- function(
 calcPresSpec <- function(profileWithTax, taxaCount){
     paralog <- NULL
     abbrName <- NULL
-    if (missing(profileWithTax)) return ("No input data given")
-    if (missing(taxaCount)) return ("No supertaxon count given")
+    if (missing(profileWithTax)) return("No input data given")
+    if (missing(taxaCount)) return("No supertaxon count given")
 
     profileWithTax <- profileWithTax[profileWithTax$orthoID != "NA", ]
 
@@ -492,7 +493,8 @@ calcPresSpec <- function(profileWithTax, taxaCount){
 parseInfoProfile <- function(
     inputDf, sortedInputTaxa, var1AggregateBy = "max", var2AggregateBy = "max"
 ) {
-    if (is.null(inputDf) | is.null(sortedInputTaxa)) return()
+    if (is.null(inputDf) | is.null(sortedInputTaxa)) 
+        stop("Input profiles and sorted taxonomy data cannot be NULL!")
 
     # rename columns of 2 additional variables
     if (ncol(inputDf) > 3) {
@@ -582,7 +584,7 @@ parseInfoProfile <- function(
 #' reduceProfile(fullProcessedProfile)
 
 reduceProfile <- function(fullProfile) {
-    if (is.null(fullProfile)) return()
+    if (is.null(fullProfile)) stop("Profile data cannot be NULL!")
 
     # check if working with the lowest taxonomy rank; 1 for NO; 0 for YES
     flag <- 1
@@ -711,14 +713,14 @@ filterProfileData <- function(
     groupByCat = FALSE,
     catDt = NULL
 ) {
-    if (is.null(superTaxonDf)) return()
+    if (is.null(superTaxonDf)) stop("Profile data cannot be NULL!")
     if (is.null(refTaxon)) refTaxon = "NA"
 
     ### remove index from supertaxon names
     superTaxonDf$taxonMod <- gsub("^[[:digit:]]*_", "", superTaxonDf$supertaxon)
 
     ### replace insufficient values according to the thresholds by NA or 0
-    # based on presSpec or # of co-orthologs
+    ### based on presSpec or # of co-orthologs
     numberCoortholog <- levels(as.factor(superTaxonDf$paralog))
     if (length(numberCoortholog) > 1) {
         superTaxonDf$presSpec[

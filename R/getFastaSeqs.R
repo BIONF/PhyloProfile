@@ -13,8 +13,9 @@
 #' getFastaFromFasInput("all", file)
 
 getFastaFromFasInput <- function(seqIDs = NULL, file = NULL) {
-    if (is.null(seqIDs)) return ()
-    if (is.null(seqIDs) | is.null(file)) return()
+    if (is.null(seqIDs)) stop("No sequence ID given!")
+    if (is.null(seqIDs) | is.null(file)) 
+        stop("Sequence ID and input fasta file cannot be NULL!")
     faFile <- Biostrings::readAAStringSet(file)
 
     if (length(seqIDs) == 1 & seqIDs[1] == "all") seqIDs <- names(faFile)
@@ -45,7 +46,7 @@ getFastaFromFasInput <- function(seqIDs = NULL, file = NULL) {
 #' getFastaFromFasInput("all", concatFasta)
 
 getFastaFromFile <- function(seqIDs = NULL, concatFasta = NULL) {
-    if (is.null(seqIDs)) return ()
+    if (is.null(seqIDs)) stop("No sequence ID given!")
     if (!is.null(concatFasta)) {
         # read fasta file and save sequences into dataframe
         faFile <- Biostrings::readAAStringSet(toString(concatFasta))
@@ -108,7 +109,7 @@ getFastaFromFolder <- function(
     seqIDs = NULL,
     path = NULL, dirFormat = NULL, fileExt = NULL, idFormat = NULL
 ) {
-    if (is.null(seqIDs)) return ()
+    if (is.null(seqIDs)) stop("No sequence ID given!")
     if (is.null(path)) return(
         data.frame(
             fasta = paste0("Please provide path to FASTA file(s)!"),

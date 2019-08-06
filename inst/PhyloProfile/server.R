@@ -11,7 +11,6 @@ options(
 #' MAIN SERVER =================================================================
 shinyServer(function(input, output, session) {
     # Automatically stop a Shiny app when closing the browser tab
-    # session$onSessionEnded(stopApp)
     session$allowReconnect(TRUE)
 
     # =========================== INITIAL CHECKING  ============================
@@ -1288,8 +1287,8 @@ shinyServer(function(input, output, session) {
                 longDataframe <- as.data.frame(unclass(longDataframe))
             } else longDataframe <- createLongMatrix(filein$datapath)
         }
-        
-        # convert geneID, ncbiID and orthoID into factor and 
+
+        # convert geneID, ncbiID and orthoID into factor and
         # var1, var2 into numeric
         for (i in seq_len(3)) {
             longDataframe[, i] <- as.factor(longDataframe[, i])
@@ -1301,7 +1300,7 @@ shinyServer(function(input, output, session) {
                 )
             }
         }
-        
+
         # remove duplicated lines
         longDataframe <- longDataframe[!duplicated(longDataframe),]
         return(longDataframe)
@@ -1326,7 +1325,7 @@ shinyServer(function(input, output, session) {
                 } else {
                     domainDf <- myData[["EH2546"]]
                 }
-                
+
                 domainDf$seedID <- as.character(domainDf$seedID)
                 domainDf$orthoID <- as.character(domainDf$orthoID)
                 domainDf$seedID <- gsub("\\|",":",domainDf$seedID)
@@ -1448,7 +1447,7 @@ shinyServer(function(input, output, session) {
     # * max/min/mean/median VAR1 (3) and VAR2 (4)
     getDataFiltered <- reactive({
         req(preData())
-
+        req(sortedtaxaList())
         fullMdData <- parseInfoProfile(
             inputDf = preData(),
             sortedInputTaxa = sortedtaxaList(),

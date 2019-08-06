@@ -35,14 +35,13 @@ clusterProfile <- function(input, output, session,
                             plotWidth, plotHeight) {
     # Reactive function holding data for clustering ============================
     clusterData <- reactive({
-        if (is.null(distanceMatrix)) return()
+        if (is.null(distanceMatrix)) stop("Distance matrix is NULL!")
         df <- clusterDataDend(distanceMatrix(), clusterMethod())
         return(df)
     })
 
     # Dendrogram ===============================================================
     output$dendrogram <- renderPlot({
-        if (is.null(clusterData())) return()
         getDendrogram(clusterData())
     })
 
@@ -81,7 +80,6 @@ clusterProfile <- function(input, output, session,
     # Brushed cluster table ====================================================
     #' render brushedCluster.table based on clicked point on dendrogram plot
     brushedClusterGene <- reactive({
-        # dd.col <- clusterData()
 		clusteredTree <- as.phylo(clusterData())
 		labels <- rev(sortTaxaFromTree(clusteredTree))
 

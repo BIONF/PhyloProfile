@@ -19,7 +19,7 @@
 #' dataMainPlot(fullProcessedProfile)
 
 dataMainPlot <- function(dataHeat = NULL){
-    if (is.null(dataHeat)) return()
+    if (is.null(dataHeat)) stop("Input data cannot be NULL!")
     paralogNew <- NULL
 
     # reduce number of inparalogs based on filtered dataHeat
@@ -72,7 +72,7 @@ dataMainPlot <- function(dataHeat = NULL){
 dataCustomizedPlot <- function(
     dataHeat = NULL, selectedTaxa = "all", selectedSeq = "all"
 ){
-    if (is.null(dataHeat)) return()
+    if (is.null(dataHeat)) stop("Input data cannot be NULL!")
     geneID <- NULL
     supertaxonMod <- NULL
     paralogNew <- NULL
@@ -165,7 +165,7 @@ dataCustomizedPlot <- function(
 #' heatmapPlotting(plotDf, plotParameter)
 
 heatmapPlotting <- function(data = NULL, plotParameter = NULL){
-    if (is.null(data)) return()
+    if (is.null(data)) stop("Input data cannot be NULL!")
     if (is.null(plotParameter)) {
         plotParameter <- list(
             "xAxis" = "taxa",
@@ -415,7 +415,7 @@ highlightProfilePlot <- function(
     rankName = "none",
     geneHighlight = "none"
 ){
-    if (is.null(data)) return()
+    if (is.null(data)) stop("Input data cannot be NULL!")
     xmin <- NULL
     xmax <- NULL
     ymin <- NULL

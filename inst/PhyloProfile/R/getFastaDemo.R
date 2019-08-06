@@ -12,7 +12,7 @@
 #' getFastaDemo(seqIDs, "arthropoda")
 
 getFastaDemo <- function(seqIDs = NULL, demoData = "arthropoda") {
-    if (is.null(seqIDs)) return()
+    if (is.null(seqIDs)) stop("No sequence ID given!")
     if (demoData == "ampk-tor" | demoData == "arthropoda") {
         if (demoData == "ampk-tor") {
             faFile <- myData[["EH2545"]]

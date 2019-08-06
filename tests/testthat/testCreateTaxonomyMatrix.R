@@ -6,7 +6,6 @@ test_that("get taxonomy IDs for list of taxa", {
 
     taxonomyInfo <- getIDsRank(inputTaxa, allTaxonInfo)
     reducedInfoList <- as.data.frame(taxonomyInfo[3])
-
     expect_that(nrow(reducedInfoList), equals(10))
 })
 

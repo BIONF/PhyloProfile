@@ -14,9 +14,10 @@
 #' createPercentageDistributionData(mainLongRaw, "class")
 
 createPercentageDistributionData <- function(inputData, rankName = NULL) {
-    if (is.null(inputData) | is.null(rankName)) return()
+    if (is.null(inputData) | is.null(rankName)) 
+        stop("Input data or rank name cannot be NULL!")
     allMainRanks <- getTaxonomyRanks()
-    if (!(rankName[1] %in% allMainRanks)) return("Invalid taxonomy rank given!")
+    if (!(rankName[1] %in% allMainRanks)) stop("Invalid taxonomy rank given!")
 
     if (ncol(inputData) < 4) {
         colnames(inputData) <- c("geneID", "ncbiID", "orthoID")
@@ -151,7 +152,8 @@ createVariableDistributionDataSubset <- function(
     supertaxonMod <- NULL
 
     # check parameters
-    if (is.null(fullProfileData) | is.null(distributionData)) return()
+    if (is.null(fullProfileData) | is.null(distributionData)) 
+        stop("Full processed profiles or distribution data cannot be NULL!")
 
     # get geneID and supertaxon name for distributionData
     distributionDataName <- merge(
@@ -235,7 +237,7 @@ createVarDistPlot <- function(
     data, varName = "var", varType = "var1", percent = c(0, 1),
     distTextSize = 12
 ) {
-    if (is.null(data)) return()
+    if (is.null(data)) stop("Input data cannot be NULL!")
     if (varType == "presSpec") {
         # remove presSpec < cutoffMin or > cutoffMax
         if (percent[1] > 0) {

@@ -17,7 +17,8 @@
 #' getCommonAncestor(inputTaxa, inGroup)
 
 getCommonAncestor <- function(inputTaxa = NULL, inGroup = NULL) {
-    if (is.null(inputTaxa) | is.null(inGroup)) return()
+    if (is.null(inputTaxa) | is.null(inGroup)) 
+        stop("Input taxa and in-group ID list cannot be NULL!")
 
     # get list of pre-calculated taxonomy info
     taxMatrix <- getTaxonomyMatrix(TRUE, inputTaxa)
@@ -82,10 +83,10 @@ compareTaxonGroups <- function(
     variable = NULL,
     significanceLevel = 0.05
 ) {
-    if (is.null(data) | is.null(inGroup) | is.null(variable)) return()
+    if (is.null(data) | is.null(inGroup) | is.null(variable)) 
+        stop("Input profiles, in-group IDs and variable name cannot be NULL!")
     if (!(variable %in% colnames(data))) {
-        message("Invalid variable")
-        return()
+        stop("Invalid variable")
     }
 
     # add other taxa that share a common ancestor with the given in-group
@@ -103,8 +104,8 @@ compareTaxonGroups <- function(
             varOut <- data[
                 data$geneID == x & !(data$ncbiID %in% inGroup), variable
                 ]
-            pvalue <- distributionTest(varIn, varOut, significanceLevel)
-            if (!is.null(pvalue))
+            pvalue <- try(distributionTest(varIn, varOut, significanceLevel))
+            if (is.numeric(pvalue))
                 return(distributionTest(varIn, varOut, significanceLevel))
             else return(999)
         },
@@ -132,13 +133,15 @@ compareTaxonGroups <- function(
 distributionTest <- function(
     varIn = NULL, varOut = NULL, significanceLevel = 0.05
 ){
-    if (is.null(varIn) | is.null(varOut)) return()
+    if (is.null(varIn) | is.null(varOut)) 
+        stop("Vector of in-group and out-group cannot be NULL!")
     # remove NA values
     varIn <- varIn[!is.na(varIn)]
     varOut <- varOut[!is.na(varOut)]
 
     # if there is no data in one of the groups the p-value is NULL
-    if (length(varIn) == 0 | length(varOut) == 0) return()
+    if (length(varIn) == 0 | length(varOut) == 0) 
+        stop("No data for In/Out-group taxa!")
     else {
         # * Kolmogorov-Smirnov Test
         # H0 : The two samples have the same distribution
@@ -191,10 +194,10 @@ distributionTest <- function(
 compareMedianTaxonGroups <- function(
     data = NULL, inGroup = NULL, useCommonAncestor = TRUE, variable = NULL
 ) {
-    if (is.null(data) | is.null(inGroup) | is.null(variable)) return()
+    if (is.null(data) | is.null(inGroup) | is.null(variable)) 
+        stop("Input profiles, in-group IDs and variable name cannot be NULL!")
     if (!(variable %in% colnames(data))) {
-        message("Invalid variable")
-        return()
+        stop("Invalid variable")
     }
 
     # add other taxa that share a common ancestor with the given in-group
@@ -250,7 +253,7 @@ dataVarDistTaxGroup <- function(
     variable = NULL
 ) {
     if (is.null(data) | is.null(inGroup) | is.null(gene) | is.null(variable))
-        return()
+        stop("Input profiles, in-group IDs, gene & variable ID cannot be NULL!")
     # remove "empty" variable (char "")
     variable <- variable[unlist(lapply(variable, function (x) x != ""))]
     # get 2 lists of values for in-group and out-group
@@ -262,12 +265,176 @@ dataVarDistTaxGroup <- function(
         data[data$geneID == gene & !(data$ncbiID %in% inGroup), ][, variable]
     )
     colnames(varOut) <- variable
-    if (nrow(varIn) == 0 & nrow(varOut) == 0) return()
+    if (nrow(varIn) == 0 & nrow(varOut) == 0) stop("No data for in-/out-group!")
 
     varIn$type <- "In-group"
     varOut$type <- "Out-group"
     out <- rbind(varIn[complete.cases(varIn),], varOut[complete.cases(varOut),])
     return(out[, c(variable, "type")])
+}
+
+#' Create a single violin distribution plot
+#' @export
+#' @param plotDf dataframe for plotting containing values for each variable in 
+#' in-group and out-group.
+#' @param parameters plot parameters, including size of x-axis, y-axis,
+#' legend and title; position of legend ("right", "bottom" or "none");
+#' mean/median point; names of in-group and out-group; and plot title.
+#' NOTE: Leave blank or NULL to use default values.
+#' @param variable name of variable that need to be plotted (one of the column
+#' names of input dataframe plotDf).
+#' @return A violin plot as a ggplot object.
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+#' @import ggplot2
+#' @examples
+#' data("mainLongRaw", package="PhyloProfile")
+#' data <- mainLongRaw
+#' inGroup <- c("ncbi9606", "ncbi10116")
+#' varNames <- colnames(data)[c(4, 5)]
+#' plotDf <- dataVarDistTaxGroup(data, inGroup, "101621at6656", varNames)
+#' plotParameters <- list(
+#'     "xSize" = 12,
+#'     "ySize" = 12,
+#'     "titleSize" = 15,
+#'     "legendSize" = 12,
+#'     "legendPosition" = "right",
+#'     "mValue" = "mean",
+#'     "inGroupName" = "In-group",
+#'     "outGroupName" = "Out-group",
+#'     "title" = "101621at6656"
+#' )
+#' generateSinglePlot(plotDf, plotParameters, colnames(plotDf)[1])
+
+generateSinglePlot <- function(plotDf, parameters, variable) {
+    type <- NULL
+    .data <- NULL
+    xNames <- c(
+        paste(
+            parameters$inGroupName, " \n n = ",
+            nrow(plotDf[plotDf$type == parameters$inGroupName,]), sep = ""
+        ),
+        paste(
+            parameters$outGroupName, " \n n = ",
+            nrow(plotDf[plotDf$type == parameters$outGroupName,]), sep = ""
+        )
+    )
+    
+    plot <- ggplot(plotDf, aes(x = factor(type), y = .data[[variable]])) +
+        geom_violin(
+            aes(fill = factor(type)), position = position_dodge(),
+            scale = "width", alpha = .5) +
+        geom_boxplot(width = 0.1) +
+        scale_x_discrete(labels = xNames) +
+        # add mean/median point and color of that point
+        stat_summary(
+            aes(colour = parameters$mValue), fun.y = parameters$mValue,
+            geom = "point", size = 3, show.legend = TRUE, shape = 8
+        ) +
+        scale_color_manual("", values = c("red")) +
+        # add title and theme
+        labs(x = element_blank(), y = variable) +
+        theme_minimal() +
+        theme(
+            axis.text.x = element_text(size = parameters$xSize, hjust = 1),
+            axis.text.y = element_text(size = parameters$ySize),
+            axis.title.y = element_text(size = parameters$ySize),
+            legend.position = parameters$legendPosition,
+            legend.text = element_text(size = parameters$legendSize),
+            legend.title = element_blank()
+        )
+    return(plot)
+}
+
+#' Plot Multiple Graphs with Shared Legend in a Grid
+#' @export
+#' @usage gridArrangeSharedLegend(...,  ncol = length(list(...)), nrow = 1, 
+#'     position = c("bottom", "right"), title = NA, titleSize = 12)
+#' @param ...  Plots to be arranged in grid
+#' @param ncol Number of columns in grid
+#' @param nrow Number of rows in grid
+#' @param position Gird position (bottom or right)
+#' @param title Title of grid
+#' @param titleSize Size of grid title
+#' @import grid gridExtra ggplot2
+#' @return Grid of plots with common legend 
+#' @author Phil Boileau, \email{philippe.boileau (at) rimuhc.ca}
+#' @note adapted from https://rdrr.io/github/PhilBoileau/CLSAR/src/R/
+#' gridArrangeSharedLegend.R
+#' @importFrom grid unit.c
+#' @importFrom grid unit
+#' @importFrom grid textGrob
+#' @importFrom grid gpar
+#' @examples
+#' data("mainLongRaw", package="PhyloProfile")
+#' data <- mainLongRaw
+#' inGroup <- c("ncbi9606", "ncbi10116")
+#' varNames <- colnames(data)[c(4, 5)]
+#' plotDf <- dataVarDistTaxGroup(data, inGroup, "101621at6656", varNames)
+#' plotParameters <- list(
+#'     "xSize" = 12,
+#'     "ySize" = 12,
+#'     "titleSize" = 15,
+#'     "legendSize" = 12,
+#'     "legendPosition" = "right",
+#'     "mValue" = "mean",
+#'     "inGroupName" = "In-group",
+#'     "outGroupName" = "Out-group",
+#'     "title" = "101621at6656"
+#' )
+#' plotVar1 <- generateSinglePlot(plotDf, plotParameters, colnames(plotDf)[1])
+#' plotVar2 <- generateSinglePlot(plotDf, plotParameters, colnames(plotDf)[2])
+#' g <- gridArrangeSharedLegend(
+#'     plotVar1, plotVar2, 
+#'     position = plotParameters$legendPosition,
+#'     title = plotParameters$title,
+#'     size = plotParameters$titleSize
+#' )
+
+gridArrangeSharedLegend <- function(
+    ...,  ncol = length(list(...)), nrow = 1, position = c("bottom", "right"),
+    title = NA, titleSize = 12
+) {
+    plots <- list(...)
+    position <- match.arg(position)
+    g <- ggplotGrob(plots[[1]] + theme(legend.position = position))$grobs
+    legend <- g[[
+        which(vapply(g, function(x) x$name, FUN.VALUE = "") == "guide-box")
+        ]]
+    lheight <- sum(legend$height)
+    lwidth <- sum(legend$width)
+    gl <- lapply(plots, function(x) x + theme(legend.position="none"))
+    gl <- c(gl, ncol = ncol, nrow = nrow)
+    
+    combined <- switch(
+        position,
+        "bottom" = gridExtra::arrangeGrob(
+            do.call(arrangeGrob, gl),
+            legend,
+            ncol = 1,
+            heights = unit.c(unit(1, "npc") - lheight, lheight),
+            top = textGrob(
+                title,
+                vjust = 1,
+                gp = gpar(
+                    fontface = "bold", fontsize = titleSize
+                )
+            )
+        ),
+        "right" = gridExtra::arrangeGrob(
+            do.call(arrangeGrob, gl),
+            legend,
+            ncol = 2,
+            widths = unit.c(unit(1, "npc") - lwidth, lwidth),
+            top = textGrob(
+                title,
+                vjust = 1,
+                gp = gpar(
+                    fontface = "bold", fontsize = titleSize
+                )
+            )
+        )
+    )
+    return(combined)
 }
 
 #' Create variable distribution comparison plot
@@ -284,11 +451,6 @@ dataVarDistTaxGroup <- function(
 #' @return Distribution plots as a grob (gtable) object. Use grid.draw to plot.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{dataVarDistTaxGroup}}
-#' @import ggplot2
-#' @importFrom grid unit.c
-#' @importFrom grid unit
-#' @importFrom grid textGrob
-#' @importFrom grid gpar
 #' @examples
 #' data("mainLongRaw", package="PhyloProfile")
 #' data <- mainLongRaw
@@ -310,105 +472,16 @@ dataVarDistTaxGroup <- function(
 #' grid::grid.draw(g)
 
 varDistTaxPlot <- function(data, plotParameters) {
-    if (is.null(data)) return()
-    if (missing(plotParameters)) return()
+    if (is.null(data)) stop("Input data cannot be NULL!")
+    if (missing(plotParameters)) stop("Plot parameters are missing!")
 
     # rename in-group and out-group
     data$type[data$type == "In-group"] <- plotParameters$inGroupName
     data$type[data$type == "Out-group"] <- plotParameters$outGroupName
 
-    # function for plotting a single plot
-    generatePlot <- function(plotDf, parameters, variable) {
-        type <- NULL
-        .data <- NULL
-        xNames <- c(
-            paste(
-                parameters$inGroupName, " \n n = ",
-                nrow(plotDf[plotDf$type == parameters$inGroupName,]), sep = ""
-            ),
-            paste(
-                parameters$outGroupName, " \n n = ",
-                nrow(plotDf[plotDf$type == parameters$outGroupName,]), sep = ""
-            )
-        )
-
-        plot <- ggplot(plotDf, aes(x = factor(type), y = .data[[variable]])) +
-            geom_violin(
-                aes(fill = factor(type)), position = position_dodge(),
-                scale = "width", alpha = .5) +
-            geom_boxplot(width = 0.1) +
-            scale_x_discrete(labels = xNames) +
-            # add mean/median point and color of that point
-            stat_summary(
-                aes(colour = parameters$mValue), fun.y = parameters$mValue,
-                geom = "point", size = 3, show.legend = TRUE, shape = 8
-            ) +
-            scale_color_manual("", values = c("red")) +
-            # add title and theme
-            labs(x = element_blank(), y = variable) +
-            theme_minimal() +
-            theme(
-                axis.text.x = element_text(size = parameters$xSize, hjust = 1),
-                axis.text.y = element_text(size = parameters$ySize),
-                axis.title.y = element_text(size = parameters$ySize),
-                legend.position = parameters$legendPosition,
-                legend.text = element_text(size = parameters$legendSize),
-                legend.title = element_blank()
-            )
-        return(plot)
-    }
-
-    # adapted from http://rpubs.com/sjackman/grid_arrange_shared_legend
-    gridArrangeSharedLegend <- function(
-        ...,  ncol = length(list(...)), nrow = 1,
-        position = c("bottom", "right"), title = NA
-    ) {
-        plots <- list(...)
-        position <- match.arg(position)
-        g <- ggplotGrob(plots[[1]] + theme(legend.position = position))$grobs
-        legend <- g[[
-            which(vapply(g, function(x) x$name, FUN.VALUE = "") == "guide-box")
-            ]]
-        lheight <- sum(legend$height)
-        lwidth <- sum(legend$width)
-        gl <- lapply(plots, function(x) x + theme(legend.position="none"))
-        gl <- c(gl, ncol = ncol, nrow = nrow)
-
-        combined <- switch(
-            position,
-            "bottom" = arrangeGrob(
-                do.call(arrangeGrob, gl),
-                legend,
-                ncol = 1,
-                heights = unit.c(unit(1, "npc") - lheight, lheight),
-                top = textGrob(
-                    title,
-                    vjust = 1,
-                    gp = gpar(
-                        fontface = "bold", fontsize = plotParameters$titleSize
-                    )
-                )
-            ),
-            "right" = arrangeGrob(
-                do.call(arrangeGrob, gl),
-                legend,
-                ncol = 2,
-                widths = unit.c(unit(1, "npc") - lwidth, lwidth),
-                top = textGrob(
-                    title,
-                    vjust = 1,
-                    gp = gpar(
-                        fontface = "bold", fontsize = plotParameters$titleSize
-                    )
-                )
-            )
-        )
-        return(combined)
-    }
-
     # return plot(s)
     if (ncol(data) == 2) {
-        plotVar1 <- generatePlot(data, plotParameters, colnames(data)[1])
+        plotVar1 <- generateSinglePlot(data, plotParameters, colnames(data)[1])
         return(
             arrangeGrob(
                 plotVar1,
@@ -421,8 +494,8 @@ varDistTaxPlot <- function(data, plotParameters) {
             )
         )
     } else {
-        plotVar1 <- generatePlot(data, plotParameters, colnames(data)[1])
-        plotVar2 <- generatePlot(data, plotParameters, colnames(data)[2])
+        plotVar1 <- generateSinglePlot(data, plotParameters, colnames(data)[1])
+        plotVar2 <- generateSinglePlot(data, plotParameters, colnames(data)[2])
         if (plotParameters$legendPosition == "none") {
             return(
                 arrangeGrob(
@@ -491,7 +564,7 @@ dataFeatureTaxGroup <- function(
     gene = NULL
 ) {
     if (is.null(mainDf) | is.null(inGroup) | is.null(gene) | is.null(domainDf))
-        return()
+        stop("Input profiles, in-group IDs, gene & domain data cannot be NULL!")
 
     # get ncbiIDs for the domain data
     mainDf$orthoID <- gsub("\\|", ":", mainDf$orthoID)
@@ -583,8 +656,8 @@ featureDistTaxPlot <- function(data, plotParameters) {
     Feature <- NULL
     IPP <- NULL
     Taxon_group <- NULL
-    if (is.null(data)) return()
-    if (missing(plotParameters)) return()
+    if (is.null(data)) stop("Input data cannot be NULL!")
+    if (missing(plotParameters)) stop("Plot parameters are missing!")
 
     data$Taxon_group[data$Taxon_group == "In-group"] <-
         plotParameters$inGroupName
@@ -609,13 +682,3 @@ featureDistTaxPlot <- function(data, plotParameters) {
     if (plotParameters$flipPlot == "Yes") plot <- plot + coord_flip()
     return(plot)
 }
-
-
-
-#### WHAT IS p.adjust() ????? ################
-# significantGenesDf$pvalues <- {
-#     p.adjust(
-#         significantGenesDf$pvalues, method = "holm",
-#         n = length(significantGenesDf$pvalues)
-#     )
-# }

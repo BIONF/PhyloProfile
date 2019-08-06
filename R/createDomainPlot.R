@@ -337,7 +337,8 @@ domainPlotting <- function(
 #' }
 
 sortDomains <- function(seedDf, orthoDf){
-    if (is.null(seedDf) | is.null(orthoDf)) return()
+    if (is.null(seedDf) | is.null(orthoDf)) 
+        stop("Domain data for seed & ortholog cannot be NULL!")
     orderNo <- NULL
     # get list of features in seedDf
     featureList <- as.data.frame(levels(as.factor(seedDf$feature)))

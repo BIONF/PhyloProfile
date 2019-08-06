@@ -25,8 +25,8 @@
 parseDomainInput <- function(seed = NULL, inputFile = NULL, type = "file") {
     file <- NULL
     # check parameters
-    if (type == "folder" & is.null(seed)) return()
-    if (is.null(inputFile)) return()
+    if (type == "folder" & is.null(seed)) stop("Seed ID cannot be NULL!")
+    if (is.null(inputFile)) stop("Input domain file cannot be NULL!")
 
     # get domain from single file
     if (type == "file") {
