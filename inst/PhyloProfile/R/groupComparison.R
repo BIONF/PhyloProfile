@@ -85,7 +85,8 @@ groupComparison <- function (
     ### get candidate genes and their p-values
     candidateGenes <- reactive({
         if (is.null(inGroup())) return()
-        if (is.null(variable()) | variable()[1] == "none") return()
+        if (is.null(variable()) | variable()[1] == "none") 
+            stop("No variable available or selected!")
 
         if (compareType() == "Statistical tests") {
             pvalues <- compareTaxonGroups(

@@ -40,7 +40,7 @@ createProfilePlot <- function(input, output, session,
                                 colorByGroup) {
     # data for heatmap ---------------------------------------------------------
     dataHeat <- reactive({
-        if (is.null(data())) return()
+        if (is.null(data())) stop("Profile data is NULL!")
 
         if (typeProfile() == "customizedProfile") {
             if (is.null(inTaxa()) | is.null(inSeq())) return()
@@ -62,7 +62,7 @@ createProfilePlot <- function(input, output, session,
 
     # render heatmap profile ---------------------------------------------------
     output$plot <- renderPlot({
-        if (is.null(data())) return()
+        if (is.null(data())) stop("Profile data is NULL!")
         if (typeProfile() == "customizedProfile") {
             if (inSeq()[1] == "all" & inTaxa()[1] == "all") return()
         }
@@ -80,8 +80,8 @@ createProfilePlot <- function(input, output, session,
         ns <- session$ns
 
         if (typeProfile() == "customizedProfile") {
-            if (is.null(inSeq()[1]) | is.null(inTaxa()[1]))  return()
-            else if (inSeq()[1] == "all" & inTaxa()[1] == "all") return()
+            if (is.null(inSeq()[1]) | is.null(inTaxa()[1])) return()
+            else if (inSeq()[1] == "all" & inTaxa()[1] == "all")  return()
         }
 
         shinycssloaders::withSpinner(
@@ -116,13 +116,11 @@ createProfilePlot <- function(input, output, session,
 
         # get selected supertaxon name
         taxaList <- getNameList()
-        # rankSelect <- rankSelect()
-        # rankName <- substr(rankSelect, 4, nchar(rankSelect))
         rankName <- rankSelect()
         inSelect <- taxaList$ncbiID[taxaList$fullName == inSelect()]
 
         dataHeat <- dataHeat()
-        if (is.null(dataHeat)) return()
+        if (is.null(dataHeat)) stop("Data for heatmap is NULL!")
 
         if (typeProfile() == "customizedProfile") {
             # get sub-dataframe of selected taxa and sequences
@@ -132,7 +130,8 @@ createProfilePlot <- function(input, output, session,
                 nchar(as.character(dataHeat$supertaxon))
             )
 
-            if (is.null(inSeq()[1]) | is.null(inTaxa()[1]))  return()
+            if (is.null(inSeq()[1]) | is.null(inTaxa()[1]))  
+                stop("Subset taxa or genes is NULL!")
             if (inTaxa()[1] == "all" & inSeq()[1] != "all") {
                 # select data from dataHeat for selected sequences only
                 dataHeat <- subset(dataHeat, geneID %in% inSeq())
