@@ -28,7 +28,7 @@ getDataClustering <- function(
     data = NULL, profileType = "binary",
     var1AggregateBy = "max", var2AggregateBy = "max"
 ) {
-    if (is.null(data)) return()
+    if (is.null(data)) stop("Input data cannot be NULL!")
     supertaxon <- NULL
     presSpec <- NULL
 
@@ -97,7 +97,7 @@ getDataClustering <- function(
 #' getDistanceMatrix(profiles, method)
 
 getDistanceMatrix <- function(profiles = NULL, method = "mutualInformation") {
-    if (is.null(profiles)) return()
+    if (is.null(profiles)) stop("Profile data cannot be NULL!")
     profiles <-  profiles[, colSums(profiles != 0) > 0]
     profiles <-  profiles[rowSums(profiles != 0) > 0, ]
 
@@ -157,7 +157,7 @@ getDistanceMatrix <- function(profiles = NULL, method = "mutualInformation") {
 #' clusterDataDend(distanceMatrix, clusterMethod)
 
 clusterDataDend <- function(distanceMatrix = NULL, clusterMethod = "complete") {
-    if (is.null(distanceMatrix)) return()
+    if (is.null(distanceMatrix)) stop("Distance matrix cannot be NULL!")
     dd.col <- hclust(distanceMatrix, method = clusterMethod)
     return(dd.col)
 }
@@ -181,7 +181,7 @@ clusterDataDend <- function(distanceMatrix = NULL, clusterMethod = "complete") {
 #' getDendrogram(dd)
 
 getDendrogram <- function(dd = NULL) {
-    if (is.null(dd)) return()
+    if (is.null(dd)) stop("Input dendrogram cannot be NULL!")
     p <- ape::plot.phylo(as.phylo(dd))
     return(p)
 }

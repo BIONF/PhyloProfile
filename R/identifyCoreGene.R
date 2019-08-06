@@ -44,8 +44,8 @@ getCoreGene <- function(
     var1Cutoff = c(0, 1), var2Cutoff = c(0, 1),
     percentCutoff = c(0, 1), coreCoverage = 1
 ) {
-    if (is.null(processedProfileData)) return()
-    if (is.null(rankName)) return()
+    if (is.null(processedProfileData)) stop("Processed profile cannot be NULL!")
+    if (is.null(rankName)) stop("Rank name cannot be NULL!")
 
     supertaxonID <- NULL
     mVar1 <- NULL

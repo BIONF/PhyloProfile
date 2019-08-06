@@ -19,7 +19,7 @@ runPhyloProfile <- function(){
     appDir <- system.file("PhyloProfile", package = "PhyloProfile")
     if (appDir == "") {
         stop(
-            "Could not find apps director. Try re-installing `PhyloProfile`.",
+            "Could not find apps directory. Try re-installing `PhyloProfile`.",
             call = FALSE
         )
     }

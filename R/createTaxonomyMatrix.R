@@ -96,7 +96,7 @@ processNcbiTaxonomy <- function() {
 #' getIDsRank(inputTaxa, currentNCBIinfo)
 
 getIDsRank <- function(inputTaxa = NULL, currentNCBIinfo = NULL){
-    if (is.null(currentNCBIinfo)) return()
+    if (is.null(currentNCBIinfo)) stop("Pre-processed NCBI tax data is NULL!")
     ## get all taxonomy info for input taxa
     inputTaxaInfo <- pbapply::pblapply(
         seq_len(length(inputTaxa)),
@@ -202,7 +202,7 @@ getIDsRank <- function(inputTaxa = NULL, currentNCBIinfo = NULL){
 #' rankIndexing(rankListFile)
 
 rankIndexing <- function(rankListFile = NULL){
-    if (is.null(rankListFile)) return()
+    if (is.null(rankListFile)) stop("Rank list file is NULL!")
     ### input is a dataframe, where each row is a rank list of a taxon
     rankList <- read.table(
         rankListFile,
@@ -319,7 +319,8 @@ rankIndexing <- function(rankListFile = NULL){
 #' taxonomyTableCreator(idListFile, rankListFile)
 
 taxonomyTableCreator <- function(idListFile = NULL, rankListFile = NULL){
-    if (is.null(idListFile) | is.null(rankListFile)) return()
+    if (is.null(idListFile) | is.null(rankListFile)) 
+        stop("Taxonomy ID list or rank list file is NULL!")
     index <- NULL
     ### get indexed rank list
     index2RankDf <- rankIndexing(rankListFile)

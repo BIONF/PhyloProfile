@@ -17,7 +17,8 @@
 #' getCommonAncestor(inputTaxa, inGroup)
 
 getCommonAncestor <- function(inputTaxa = NULL, inGroup = NULL) {
-    if (is.null(inputTaxa) | is.null(inGroup)) return()
+    if (is.null(inputTaxa) | is.null(inGroup)) 
+        stop("Input taxa and in-group ID list cannot be NULL!")
 
     # get list of pre-calculated taxonomy info
     taxMatrix <- getTaxonomyMatrix(TRUE, inputTaxa)
@@ -82,10 +83,10 @@ compareTaxonGroups <- function(
     variable = NULL,
     significanceLevel = 0.05
 ) {
-    if (is.null(data) | is.null(inGroup) | is.null(variable)) return()
+    if (is.null(data) | is.null(inGroup) | is.null(variable)) 
+        stop("Input profiles, in-group IDs and variable name cannot be NULL!")
     if (!(variable %in% colnames(data))) {
-        message("Invalid variable")
-        return()
+        stop("Invalid variable")
     }
 
     # add other taxa that share a common ancestor with the given in-group
@@ -103,8 +104,8 @@ compareTaxonGroups <- function(
             varOut <- data[
                 data$geneID == x & !(data$ncbiID %in% inGroup), variable
                 ]
-            pvalue <- distributionTest(varIn, varOut, significanceLevel)
-            if (!is.null(pvalue))
+            pvalue <- try(distributionTest(varIn, varOut, significanceLevel))
+            if (is.numeric(pvalue))
                 return(distributionTest(varIn, varOut, significanceLevel))
             else return(999)
         },
@@ -132,13 +133,15 @@ compareTaxonGroups <- function(
 distributionTest <- function(
     varIn = NULL, varOut = NULL, significanceLevel = 0.05
 ){
-    if (is.null(varIn) | is.null(varOut)) return()
+    if (is.null(varIn) | is.null(varOut)) 
+        stop("Vector of in-group and out-group cannot be NULL!")
     # remove NA values
     varIn <- varIn[!is.na(varIn)]
     varOut <- varOut[!is.na(varOut)]
 
     # if there is no data in one of the groups the p-value is NULL
-    if (length(varIn) == 0 | length(varOut) == 0) return()
+    if (length(varIn) == 0 | length(varOut) == 0) 
+        stop("No data for In/Out-group taxa!")
     else {
         # * Kolmogorov-Smirnov Test
         # H0 : The two samples have the same distribution
@@ -191,10 +194,10 @@ distributionTest <- function(
 compareMedianTaxonGroups <- function(
     data = NULL, inGroup = NULL, useCommonAncestor = TRUE, variable = NULL
 ) {
-    if (is.null(data) | is.null(inGroup) | is.null(variable)) return()
+    if (is.null(data) | is.null(inGroup) | is.null(variable)) 
+        stop("Input profiles, in-group IDs and variable name cannot be NULL!")
     if (!(variable %in% colnames(data))) {
-        message("Invalid variable")
-        return()
+        stop("Invalid variable")
     }
 
     # add other taxa that share a common ancestor with the given in-group
@@ -250,7 +253,7 @@ dataVarDistTaxGroup <- function(
     variable = NULL
 ) {
     if (is.null(data) | is.null(inGroup) | is.null(gene) | is.null(variable))
-        return()
+        stop("Input profiles, in-group IDs, gene & variable ID cannot be NULL!")
     # remove "empty" variable (char "")
     variable <- variable[unlist(lapply(variable, function (x) x != ""))]
     # get 2 lists of values for in-group and out-group
@@ -262,7 +265,7 @@ dataVarDistTaxGroup <- function(
         data[data$geneID == gene & !(data$ncbiID %in% inGroup), ][, variable]
     )
     colnames(varOut) <- variable
-    if (nrow(varIn) == 0 & nrow(varOut) == 0) return()
+    if (nrow(varIn) == 0 & nrow(varOut) == 0) stop("No data for in-/out-group!")
 
     varIn$type <- "In-group"
     varOut$type <- "Out-group"
@@ -344,7 +347,7 @@ generateSinglePlot <- function(plotDf, parameters, variable) {
 
 #' Plot Multiple Graphs with Shared Legend in a Grid
 #' @export
-#' @usage gridArrangeSharedLegend <- (...,  ncol = length(list(...)), nrow = 1, 
+#' @usage gridArrangeSharedLegend(...,  ncol = length(list(...)), nrow = 1, 
 #'     position = c("bottom", "right"), title = NA, titleSize = 12)
 #' @param ...  Plots to be arranged in grid
 #' @param ncol Number of columns in grid
@@ -469,8 +472,8 @@ gridArrangeSharedLegend <- function(
 #' grid::grid.draw(g)
 
 varDistTaxPlot <- function(data, plotParameters) {
-    if (is.null(data)) return()
-    if (missing(plotParameters)) return()
+    if (is.null(data)) stop("Input data cannot be NULL!")
+    if (missing(plotParameters)) stop("Plot parameters are missing!")
 
     # rename in-group and out-group
     data$type[data$type == "In-group"] <- plotParameters$inGroupName
@@ -561,7 +564,7 @@ dataFeatureTaxGroup <- function(
     gene = NULL
 ) {
     if (is.null(mainDf) | is.null(inGroup) | is.null(gene) | is.null(domainDf))
-        return()
+        stop("Input profiles, in-group IDs, gene & domain data cannot be NULL!")
 
     # get ncbiIDs for the domain data
     mainDf$orthoID <- gsub("\\|", ":", mainDf$orthoID)
@@ -653,8 +656,8 @@ featureDistTaxPlot <- function(data, plotParameters) {
     Feature <- NULL
     IPP <- NULL
     Taxon_group <- NULL
-    if (is.null(data)) return()
-    if (missing(plotParameters)) return()
+    if (is.null(data)) stop("Input data cannot be NULL!")
+    if (missing(plotParameters)) stop("Plot parameters are missing!")
 
     data$Taxon_group[data$Taxon_group == "In-group"] <-
         plotParameters$inGroupName

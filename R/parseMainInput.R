@@ -91,7 +91,7 @@ checkInputValidity <- function(filein) {
 #' xmlParser(inputFile)
 
 xmlParser <- function(inputFile = NULL){
-    if (is.null(inputFile)) return()
+    if (is.null(inputFile)) stop("Input file is NULL!")
     scoreType <- NULL
     scoreValue <- NULL
 
@@ -185,7 +185,7 @@ xmlParser <- function(inputFile = NULL){
 #' fastaParser(inputFile)
 
 fastaParser <- function(inputFile = NULL){
-    if (is.null(inputFile)) return()
+    if (is.null(inputFile)) stop("Input file is NULL!")
     # split sequence IDs into columns
     fastaFile <- Biostrings::readAAStringSet(inputFile)
     seqID <- names(fastaFile)
@@ -224,7 +224,7 @@ fastaParser <- function(inputFile = NULL){
 #' wideToLong(inputFile)
 
 wideToLong <- function(inputFile = NULL){
-    if (is.null(inputFile)) return()
+    if (is.null(inputFile)) stop("Input file is NULL!")
     wideDataframe <- read.table(
         file = inputFile,
         sep = "\t",
@@ -271,7 +271,7 @@ wideToLong <- function(inputFile = NULL){
 #' createLongMatrix(inputFile)
 
 createLongMatrix <- function(inputFile = NULL){
-    if (is.null(inputFile)) return()
+    if (is.null(inputFile)) stop("Input file is NULL!")
 
     inputType <- checkInputValidity(inputFile)
     # XML

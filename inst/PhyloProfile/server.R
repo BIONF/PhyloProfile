@@ -1447,7 +1447,7 @@ shinyServer(function(input, output, session) {
     # * max/min/mean/median VAR1 (3) and VAR2 (4)
     getDataFiltered <- reactive({
         req(preData())
-
+        req(sortedtaxaList())
         fullMdData <- parseInfoProfile(
             inputDf = preData(),
             sortedInputTaxa = sortedtaxaList(),
