@@ -609,13 +609,3 @@ featureDistTaxPlot <- function(data, plotParameters) {
     if (plotParameters$flipPlot == "Yes") plot <- plot + coord_flip()
     return(plot)
 }
-
-
-
-#### WHAT IS p.adjust() ????? ################
-# significantGenesDf$pvalues <- {
-#     p.adjust(
-#         significantGenesDf$pvalues, method = "holm",
-#         n = length(significantGenesDf$pvalues)
-#     )
-# }

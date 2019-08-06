@@ -15,10 +15,6 @@ qualitativeColours <- function(n, light = FALSE) {
     # Get a specified number of qualitative colours if possible.
     # This function will default to a continuous color scheme if there are more
     # than 21 colours needed.
-
-    # rainbow12equal <- c("#BF4D4D", "#BF864D", "#BFBF4D", "#86BF4D", "#4DBF4D",
-    #                     "#4DBF86", "#4DBFBF", "#4D86BF", "#4D4DBF", "#864DBF",
-    #                     "#BF4DBF", "#BF4D86")
     rich12equal <- c(
         "#000040", "#000093", "#0020E9", "#0076FF", "#00B8C2", "#04E466",
         "#49FB25", "#E7FD09", "#FEEA02", "#FFC200", "#FF8500", "#FF3300"
@@ -101,7 +97,6 @@ qualitativeColours <- function(n, light = FALSE) {
                                     n = n, name = 'Set1'
                                 ))
                             ),
-                            # else(n > 21,
                             # If there are more than 21 qualitative colours,
                             # default to a continuous colour scheme,
                             # rich12equal in this case

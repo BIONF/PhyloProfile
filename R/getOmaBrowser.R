@@ -43,14 +43,6 @@ getOmaMembers <- function(id = NULL, orthoType = "OG") {
             OmaDB::getOMAGroup(id = id)$members$omaid
         )
     }
-    # # get the members of the Orthologous Pair
-    # else if (orthoType == "PAIR") {
-    #   members <- OmaDB::resolveURL(OmaDB::getData(type = "protein",
-    #                                               id = id)$orthologs)$omaid
-    #   # add query ID into output list
-    #   seed <- OmaDB::getData("protein",id)$omaid
-    #   members <- c(seed,members)
-    # }
 
     return(members)
 }
@@ -183,7 +175,7 @@ getDataForOneOma <- function(seedID = NULL, orthoType = "OG"){
             paste(unlist(do.call(paste, domainDfJoin)), collapse = "\t")
         }
     )
-    
+
     # return data frame
     return(data.frame(
         orthoID = idList,

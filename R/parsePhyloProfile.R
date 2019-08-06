@@ -718,7 +718,7 @@ filterProfileData <- function(
     superTaxonDf$taxonMod <- gsub("^[[:digit:]]*_", "", superTaxonDf$supertaxon)
 
     ### replace insufficient values according to the thresholds by NA or 0
-    # based on presSpec or # of co-orthologs
+    ### based on presSpec or # of co-orthologs
     numberCoortholog <- levels(as.factor(superTaxonDf$paralog))
     if (length(numberCoortholog) > 1) {
         superTaxonDf$presSpec[

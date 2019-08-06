@@ -1,10 +1,7 @@
 context("test estimation of gene ages")
 
 test_that("test estimation of gene ages", {
-    # load full processed data
     data("fullProcessedProfile", package="PhyloProfile")
-
-    # calculate gene ages
     rankName <- "class"
     refTaxon <- "Mammalia"
     var1Cutoff <- c(0,1)
@@ -15,7 +12,6 @@ test_that("test estimation of gene ages", {
         rankName, refTaxon,
         var1Cutoff, var2Cutoff, percentCutoff
     )
-
     expect_true(geneAge$age[geneAge$geneID == "100136at6656"] == "07_LUCA")
 })
 
@@ -28,7 +24,6 @@ test_that("test plotting gene age plot", {
     )
     plotDf <- geneAgePlotDf(geneAgeDf)
     geneAgeText <- 1
-
     p <- createGeneAgePlot(plotDf, geneAgeText)
     expect_true(p$guides$fill$nrow == 1)
 })

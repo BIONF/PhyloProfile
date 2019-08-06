@@ -204,7 +204,7 @@ fastaParser <- function(inputFile = NULL){
         stringsAsFactors = FALSE
     )
     faDf$orthoID <- gsub(" ", "|", faDf$orthoID)
-    
+
     # remove columns that contains only NA
     faDf <- faDf[, colSums(is.na(faDf)) < nrow(faDf)]
     return(faDf)
@@ -234,14 +234,14 @@ wideToLong <- function(inputFile = NULL){
         stringsAsFactors = FALSE
     )
     ncbiIDs <- colnames(wideDataframe[, c(-1)])
-    
+
     orthoInfo <- data.frame(
         do.call(
             rbind, strsplit(as.character(unlist(wideDataframe[, c(-1)])), "#")
         ),
         stringsAsFactors = FALSE
     )
-    
+
     longDataframe <- data.frame(
         geneID = rep(wideDataframe$geneID, time = ncol(wideDataframe) - 1),
         ncbiID = rep(ncbiIDs, time = 1, each = nrow(wideDataframe)),
@@ -250,7 +250,7 @@ wideToLong <- function(inputFile = NULL){
         var2 = suppressWarnings(as.numeric(orthoInfo$X3)),
         stringsAsFactors = FALSE
     )
-    
+
     return(longDataframe)
 }
 
@@ -272,7 +272,7 @@ wideToLong <- function(inputFile = NULL){
 
 createLongMatrix <- function(inputFile = NULL){
     if (is.null(inputFile)) return()
-    
+
     inputType <- checkInputValidity(inputFile)
     # XML
     if (inputType == "xml") longDataframe <- xmlParser(inputFile)
@@ -303,6 +303,5 @@ createLongMatrix <- function(inputFile = NULL){
 
     # remove duplicated lines
     longDataframe <- longDataframe[!duplicated(longDataframe),]
-    # longDataframe$orthoID <- gsub("\\|",":",longDataframe$orthoID)
     return(longDataframe)
 }
