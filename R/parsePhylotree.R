@@ -36,12 +36,10 @@ checkNewick <- function(tree, inputTaxonID = NULL){
             nodeList <- unlist(strsplit(nodeString, "#"))
             # list of input taxa
             inputTaxa <- inputTaxonID
-
             # get missing taxa
             setdiff(inputTaxa, nodeList)
             missingTaxa <- setdiff(nodeList, inputTaxa)
             missingTaxa <- missingTaxa[lapply(missingTaxa, nchar) > 0]
-
             if (length(missingTaxa) > 0) {
                 # contains taxa that not exist in main input
                 return(paste(missingTaxa, collapse = "; "))

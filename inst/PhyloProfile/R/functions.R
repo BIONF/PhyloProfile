@@ -69,7 +69,6 @@ createSliderCutoff <- function(id, title, start, stop, varID){
 
 updateSliderCutoff <- function(session, id, title, newVar, varID){
     if (is.null(varID) || varID == "") return()
-
     updateSliderInput(session, id, title,
                       value = newVar,
                       min = 0,

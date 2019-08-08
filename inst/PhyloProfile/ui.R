@@ -1007,7 +1007,7 @@ shinyUI(
             bsButton("getDataOma", "Get data", style = "danger"),
             downloadButton("downloadFilesOma", "Save data"),
             br(),
-            em("This windows will close automatically when eveything is done!", 
+            em("This windows will close automatically when eveything is done!",
                style = "color:red")
         ),
 
@@ -1335,7 +1335,7 @@ shinyUI(
 
             column(
                 6,
-                createTextSize("legendSizeSelect", "Legend label size (px)", 
+                createTextSize("legendSizeSelect", "Legend label size (px)",
                                8, 150)
             ),
             column(
@@ -1453,7 +1453,7 @@ shinyUI(
             hr(),
             column(
                 12,
-                HTML("<p><span style=\"color: #ff0000;\"><strong><em>Options 
+                HTML("<p><span style=\"color: #ff0000;\"><strong><em>Options
                      for variable plot only:</em></strong></span></p>")
             ),
             column(
@@ -1485,7 +1485,7 @@ shinyUI(
             hr(),
             column(
                 12,
-                HTML("<p><span style=\"color: #ff0000;\"><strong><em>Options 
+                HTML("<p><span style=\"color: #ff0000;\"><strong><em>Options
                      for feature plot only:</em></strong></span></p>")
             ),
             column(
@@ -1518,7 +1518,7 @@ shinyUI(
             hr(),
             column(
                 12,
-                HTML("<p><span style=\"color: #ff0000;\"><strong><em>Names 
+                HTML("<p><span style=\"color: #ff0000;\"><strong><em>Names
                      of in-group and out-group taxa:</em></strong></span></p>")
             ),
             column(
@@ -1586,7 +1586,7 @@ shinyUI(
                 value = FALSE
             )
         ),
-        
+
         # * popup for input in-group and out-group on Group comparison ---------
         bsModal(
             "uploadGCBs",
@@ -1609,7 +1609,7 @@ shinyUI(
                      <p><code>ncbi24242 &nbsp; &nbsp;in-group</code></p>
                      <p><code>ncbi33333 &nbsp; &nbsp;out-group
                  </code></p>"),
-            
+
             fileInput("taxonGroupGC", NULL),
             conditionalPanel(
                 condition = "output.checkTaxonGroupGC == false",

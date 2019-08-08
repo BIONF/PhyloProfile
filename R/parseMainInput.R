@@ -19,20 +19,13 @@
 checkInputValidity <- function(filein) {
     if (missing(filein)) return("No input file given!")
     inputDt <- read.table(
-        file = filein,
-        sep = "\t",
-        header = FALSE,
-        check.names = FALSE,
-        comment.char = "",
-        fill = TRUE,
-        stringsAsFactors = FALSE
-    )
+        file = filein, sep = "\t", header = FALSE, check.names = FALSE,
+        comment.char = "", fill = TRUE, stringsAsFactors = FALSE)
 
     if (is.na(inputDt[1, ncol(inputDt)])) {
         return("moreCol")
     } else {
         names(inputDt) <- as.character(unlist(inputDt[1, ]))
-
         # XML format (starts with <?xml)
         if (grepl("<?xml", colnames(inputDt)[1])) {
             return("xml")
@@ -55,9 +48,7 @@ checkInputValidity <- function(filein) {
                     tmp <- inputDt[inputDt == ""][1]
                     if (!is.na(tmp) & tmp == "") {
                         return("emptyCell")
-                    } else {
-                        return("wide")
-                    }
+                    } else return("wide")
                 }
             }
             else {
@@ -66,9 +57,7 @@ checkInputValidity <- function(filein) {
                 invalidOma <- checkOmaID(unique(inputDt[,1]))
                 if (length(invalidOma) == 0) {
                     return("oma")
-                } else {
-                    return(invalidOma)
-                }
+                } else return(invalidOma)
             }
         }
     }
@@ -91,80 +80,52 @@ checkInputValidity <- function(filein) {
 #' xmlParser(inputFile)
 
 xmlParser <- function(inputFile = NULL){
-    if (is.null(inputFile)) return()
-    scoreType <- NULL
-    scoreValue <- NULL
-
+    if (is.null(inputFile)) stop("Input file is NULL!")
+    scoreType <- scoreValue <- NULL
     data <- read_xml(inputFile)
-
     # get all genes for each taxon
     species <- xml_find_all(data, ".//species")
-
     geneSpec <- xml_find_all(species, ".//gene")
     refGeneID <- xml_attr(geneSpec, "id")
-
     if (grepl("protId", geneSpec[1])) {
         orthoID <- as.data.frame(unlist(strsplit(
             xml_attr(geneSpec, "protId"), split = '|', fixed = TRUE
         )), stringsAsFactors = FALSE)[,1]
-    } else if (grepl("geneId", geneSpec[1])) {
-        orthoID <- xml_attr(geneSpec, "id")
-    }
-
+    } else if (grepl("geneId", geneSpec[1])) orthoID <- xml_attr(geneSpec, "id")
     speciesID <- xml_attr(species, "NCBITaxId")
     speciesIDrep <- unlist(
-        lapply(species, function (x) length(xml_find_all(x, ".//gene")))
-    )
-
+        lapply(species, function (x) length(xml_find_all(x, ".//gene"))))
     speciesDf <- data.frame(
         ncbiID = rep(paste0("ncbi", speciesID), speciesIDrep),
-        refGeneID = refGeneID,
-        orthoID = orthoID,
-        stringsAsFactors=FALSE
-    )
-
+        refGeneID = refGeneID, orthoID = orthoID, stringsAsFactors=FALSE)
     # get orthologs and their scores
     orthoGroup <- xml_find_all(data, ".//orthologGroup")
     genes <- xml_find_all(orthoGroup, ".//geneRef")
     refGeneID <- xml_attr(genes, "id")
-
     score <- xml_find_all(genes, ".//score")
     scorePair <- lapply(
-        score, function (x) c(xml_attr(x, "id"), xml_attr(x, "value"))
-    )
+        score, function (x) c(xml_attr(x, "id"), xml_attr(x, "value")))
     scorePair <- as.data.frame(do.call(rbind, scorePair))
-
     groupID <- xml_attr(orthoGroup, "id")
-    groupIDrep <- unlist(
-        lapply(
-            orthoGroup,
-            function (x) ncol(scorePair) * length(xml_find_all(x, ".//geneRef"))
-        )
+    groupIDrep <- unlist(lapply(
+        orthoGroup,
+        function (x) ncol(scorePair) * length(xml_find_all(x, ".//geneRef")))
     )
-
     orthoDf <- data.frame(
         geneID = rep(groupID, groupIDrep),
         refGeneID = rep(refGeneID, each = ncol(scorePair)),
-        scoreType = scorePair$V1,
-        scoreValue = scorePair$V2,
-        stringsAsFactors = FALSE
-    )
+        scoreType = scorePair$V1, scoreValue = scorePair$V2, 
+        stringsAsFactors = FALSE)
     orthoDf <- data.table::dcast(
-        orthoDf, geneID + refGeneID ~ scoreType, value.var = "scoreValue"
-    )
-
+        orthoDf, geneID + refGeneID ~ scoreType, value.var = "scoreValue")
     # merge into final dataframe
     finalDf <- merge(speciesDf, orthoDf, all.y = TRUE, by = "refGeneID")
-
     # remove refGeneID column and reorder columns
     finalDf <- finalDf[, -1]
     refcols <- c("geneID", "ncbiID", "orthoID")
     finalDf <- finalDf[, c(refcols, setdiff(names(finalDf), refcols))]
-
     # remove columns that contains only NA
     finalDf <- finalDf[, colSums(is.na(finalDf)) < nrow(finalDf)]
-
-    # return final long dataframe
     return(finalDf)
 }
 
@@ -185,7 +146,7 @@ xmlParser <- function(inputFile = NULL){
 #' fastaParser(inputFile)
 
 fastaParser <- function(inputFile = NULL){
-    if (is.null(inputFile)) return()
+    if (is.null(inputFile)) stop("Input file is NULL!")
     # split sequence IDs into columns
     fastaFile <- Biostrings::readAAStringSet(inputFile)
     seqID <- names(fastaFile)
@@ -204,7 +165,7 @@ fastaParser <- function(inputFile = NULL){
         stringsAsFactors = FALSE
     )
     faDf$orthoID <- gsub(" ", "|", faDf$orthoID)
-    
+
     # remove columns that contains only NA
     faDf <- faDf[, colSums(is.na(faDf)) < nrow(faDf)]
     return(faDf)
@@ -224,7 +185,7 @@ fastaParser <- function(inputFile = NULL){
 #' wideToLong(inputFile)
 
 wideToLong <- function(inputFile = NULL){
-    if (is.null(inputFile)) return()
+    if (is.null(inputFile)) stop("Input file is NULL!")
     wideDataframe <- read.table(
         file = inputFile,
         sep = "\t",
@@ -234,14 +195,13 @@ wideToLong <- function(inputFile = NULL){
         stringsAsFactors = FALSE
     )
     ncbiIDs <- colnames(wideDataframe[, c(-1)])
-    
     orthoInfo <- data.frame(
         do.call(
             rbind, strsplit(as.character(unlist(wideDataframe[, c(-1)])), "#")
         ),
         stringsAsFactors = FALSE
     )
-    
+
     longDataframe <- data.frame(
         geneID = rep(wideDataframe$geneID, time = ncol(wideDataframe) - 1),
         ncbiID = rep(ncbiIDs, time = 1, each = nrow(wideDataframe)),
@@ -250,7 +210,6 @@ wideToLong <- function(inputFile = NULL){
         var2 = suppressWarnings(as.numeric(orthoInfo$X3)),
         stringsAsFactors = FALSE
     )
-    
     return(longDataframe)
 }
 
@@ -271,8 +230,8 @@ wideToLong <- function(inputFile = NULL){
 #' createLongMatrix(inputFile)
 
 createLongMatrix <- function(inputFile = NULL){
-    if (is.null(inputFile)) return()
-    
+    if (is.null(inputFile)) stop("Input file is NULL!")
+
     inputType <- checkInputValidity(inputFile)
     # XML
     if (inputType == "xml") longDataframe <- xmlParser(inputFile)
@@ -303,6 +262,5 @@ createLongMatrix <- function(inputFile = NULL){
 
     # remove duplicated lines
     longDataframe <- longDataframe[!duplicated(longDataframe),]
-    # longDataframe$orthoID <- gsub("\\|",":",longDataframe$orthoID)
     return(longDataframe)
 }

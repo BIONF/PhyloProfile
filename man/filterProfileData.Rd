@@ -4,33 +4,33 @@
 \alias{filterProfileData}
 \title{Filter phylogentic profiles}
 \usage{
-filterProfileData(superTaxonDf, refTaxon = NULL,
-    percentCutoff = c(0, 1), coorthologCutoffMax = 9999,
-    var1Cutoff  = c(0, 1), var2Cutoff = c(0, 1), var1Relation = "protein",
-    var2Relation = "protein", groupByCat = FALSE, catDt = NULL)
+filterProfileData(supTaxDf, refTaxon = NULL,
+    percentCO = c(0, 1), coorthoCOMax = 9999,
+    var1CO  = c(0, 1), var2CO = c(0, 1), var1Rel = "protein",
+    var2Rel = "protein", groupByCat = FALSE, catDt = NULL)
 }
 \arguments{
-\item{superTaxonDf}{a reduced dataframe contains info for all phylogenetic
+\item{supTaxDf}{a reduced dataframe contains info for all phylogenetic
 profiles in the selected taxonomy rank.}
 
 \item{refTaxon}{selected reference taxon. NOTE: This taxon will not be
 affected by the filtering. If you want to filter all, set refTaxon <- NULL.
 Default = NULL.}
 
-\item{percentCutoff}{min and max cutoffs for percentage of species present
+\item{percentCO}{min and max cutoffs for percentage of species present
 in a supertaxon. Default = c(0, 1).}
 
-\item{coorthologCutoffMax}{maximum number of co-orthologs allowed. Default =
+\item{coorthoCOMax}{maximum number of co-orthologs allowed. Default =
 9999.}
 
-\item{var1Cutoff}{min and max cutoffs for var1. Default = c(0, 1).}
+\item{var1CO}{min and max cutoffs for var1. Default = c(0, 1).}
 
-\item{var2Cutoff}{min anc max cutoffs for var2. Default = c(0, 1).}
+\item{var2CO}{min anc max cutoffs for var2. Default = c(0, 1).}
 
-\item{var1Relation}{relation of var1 ("protein" for protein-protein or
+\item{var1Rel}{relation of var1 ("protein" for protein-protein or
 "species" for protein-species). Default = "protein".}
 
-\item{var2Relation}{relation of var2 ("protein" for protein-protein or
+\item{var2Rel}{relation of var2 ("protein" for protein-protein or
 "species" for protein-species). Default = "protein".}
 
 \item{groupByCat}{group genes by their categories (TRUE or FALSE). Default =

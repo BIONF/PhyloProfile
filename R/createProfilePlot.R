@@ -19,7 +19,7 @@
 #' dataMainPlot(fullProcessedProfile)
 
 dataMainPlot <- function(dataHeat = NULL){
-    if (is.null(dataHeat)) return()
+    if (is.null(dataHeat)) stop("Input data cannot be NULL!")
     paralogNew <- NULL
 
     # reduce number of inparalogs based on filtered dataHeat
@@ -72,11 +72,8 @@ dataMainPlot <- function(dataHeat = NULL){
 dataCustomizedPlot <- function(
     dataHeat = NULL, selectedTaxa = "all", selectedSeq = "all"
 ){
-    if (is.null(dataHeat)) return()
-    geneID <- NULL
-    supertaxonMod <- NULL
-    paralogNew <- NULL
-
+    if (is.null(dataHeat)) stop("Input data cannot be NULL!")
+    geneID <- supertaxonMod <- paralogNew <- NULL
     # process data
     dataHeat$supertaxonMod <- {
         substr(
@@ -100,11 +97,9 @@ dataCustomizedPlot <- function(
     # reduce number of inparalogs based on filtered dataHeat
     dataHeatTb <- data.table(na.omit(dataHeat))
     dataHeatTb[, paralogNew := .N, by = c("geneID", "supertaxon")]
-
     dataHeatTb <- data.frame(
         dataHeatTb[, c("geneID", "supertaxon", "paralogNew")]
     )
-
     dataHeat <- merge(
         dataHeat, dataHeatTb, by = c("geneID", "supertaxon"), all.x = TRUE
     )
@@ -115,7 +110,6 @@ dataCustomizedPlot <- function(
     dataHeat$presSpec[dataHeat$presSpec == 0] <- NA
     dataHeat$paralog[dataHeat$presSpec < 1] <- NA
     dataHeat$paralog[dataHeat$paralog == 1] <- NA
-
     return(dataHeat)
 }
 
@@ -165,7 +159,7 @@ dataCustomizedPlot <- function(
 #' heatmapPlotting(plotDf, plotParameter)
 
 heatmapPlotting <- function(data = NULL, plotParameter = NULL){
-    if (is.null(data)) return()
+    if (is.null(data)) stop("Input data cannot be NULL!")
     if (is.null(plotParameter)) {
         plotParameter <- list(
             "xAxis" = "taxa",
@@ -181,19 +175,8 @@ heatmapPlotting <- function(data = NULL, plotParameter = NULL){
             "colorByGroup" = FALSE
         )
     }
-
-    geneID <- NULL
-    supertaxon <- NULL
-    group <- NULL
-    var1 <- NULL
-    var2 <- NULL
-    presSpec <- NULL
-    paralog <- NULL
-    xmin <- NULL
-    xmax <- NULL
-    ymin <- NULL
-    ymax <- NULL
-
+    geneID <- supertaxon <- group <- var1 <- var2 <- presSpec <- paralog <- NULL
+    xmin <- xmax <- ymin <- ymax <- NULL
     # parameters
     xAxis <- plotParameter$xAxis
     var1ID <- plotParameter$var1ID
@@ -211,31 +194,22 @@ heatmapPlotting <- function(data = NULL, plotParameter = NULL){
     xAngle <- plotParameter$xAngle
     guideline <- plotParameter$guideline
     colorByGroup <- plotParameter$colorByGroup
-
     # rescale numbers of paralogs
-    if (length(unique(na.omit(data$paralog))) > 0) {
-        maxParalog <- max(na.omit(data$paralog))
-        data$paralogSize <- (data$paralog / maxParalog) * 3
-    }
-
+    if (length(unique(na.omit(data$paralog))) > 0)
+        data$paralogSize <- (data$paralog / max(na.omit(data$paralog))) * 3
     # remove prefix number of taxa names but keep the order
     data$supertaxon <- factor(
         substr(
-            as.character(data$supertaxon), 6,
-            nchar(as.character(data$supertaxon))
+            as.character(data$supertaxon),6,nchar(as.character(data$supertaxon))
         ),
         levels = substr(
             levels(data$supertaxon), 6, nchar(levels(data$supertaxon))
         )
     )
-
-    # format plot
-    if (xAxis == "genes") {
-        p <- ggplot(data, aes(x = geneID, y = supertaxon))
-    } else{
-        p <- ggplot(data, aes(y = geneID, x = supertaxon))
-    }
-
+    # create heatmap plot with geom_point & scale_color_gradient for present 
+    # ortho & var1, geom_tile & scale_fill_gradient for var2
+    if (xAxis == "genes") p <- ggplot(data, aes(x = geneID, y = supertaxon))
+    else p <- ggplot(data, aes(y = geneID, x = supertaxon))
     if (colorByGroup == TRUE) {
         p <- p + geom_tile(aes(fill = factor(group)), alpha = 0.3)
     } else {
@@ -245,44 +219,30 @@ heatmapPlotting <- function(data = NULL, plotParameter = NULL){
                 high = highColorVar2,
                 na.value = "gray95",
                 limits = c(0, 1)
-            ) +  #fill color (var2)
-                geom_tile(aes(fill = var2))    # filled rect (var2 score)
+            ) + geom_tile(aes(fill = var2))
         }
     }
-
     if (length(unique(na.omit(data$presSpec))) < 3) {
         if (length(unique(na.omit(data$var1))) == 1) {
-            # geom_point for circle illusion (var1 and presence/absence)
-            p <- p + geom_point(aes(colour = var1),
-                                size = data$presSpec * 5 * (1 + dotZoom),
-                                na.rm = TRUE, show.legend = FALSE)
+            p <- p + geom_point(aes(colour = var1), na.rm = TRUE, 
+                size = data$presSpec * 5 * (1 + dotZoom), show.legend = FALSE)
         } else {
-            # geom_point for circle illusion (var1 and presence/absence)
-            p <- p + geom_point(aes(colour = var1),
-                                size = data$presSpec * 5 * (1 + dotZoom),
-                                na.rm = TRUE)
-            # color of the corresponding aes (var1)
+            p <- p + geom_point(aes(colour = var1), na.rm = TRUE,
+                                size = data$presSpec * 5 * (1 + dotZoom))
             p <- p + scale_color_gradient(
-                low = lowColorVar1, high = highColorVar1, limits = c(0, 1)
-            )
+                low = lowColorVar1, high = highColorVar1, limits = c(0, 1))
         }
     } else {
         if (length(unique(na.omit(data$var1))) == 1) {
-            # geom_point for circle illusion (var1 and presence/absence)
             p <- p + geom_point(aes(size = presSpec), color = "#336a98",
                                 na.rm = TRUE)
         } else {
-            # geom_point for circle illusion (var1 and presence/absence)
             p <- p + geom_point(aes(colour = var1, size = presSpec),
                                 na.rm = TRUE)
-            # color of the corresponding aes (var1)
-            p <- p +
-                scale_color_gradient(
-                    low = lowColorVar1, high = highColorVar1, limits = c(0, 1)
-                )
+            p <- p + scale_color_gradient(
+                low = lowColorVar1, high = highColorVar1, limits = c(0, 1))
         }
     }
-
     # plot inparalogs (if available)
     if (length(unique(na.omit(data$paralog))) > 0) {
         p <- p + geom_point(
@@ -290,30 +250,25 @@ heatmapPlotting <- function(data = NULL, plotParameter = NULL){
             na.rm = TRUE, show.legend = TRUE
         )
         p <- p + guides(size = guide_legend(title = "# of co-orthologs"))
-
         # to tune the size of circles
-        p <- p +
-            scale_size_continuous(
-                range = c(
-                    min(na.omit(data$paralogSize)) * (1 + dotZoom),
-                    max(na.omit(data$paralogSize)) * (1 + dotZoom)
-                )
+        p <- p + scale_size_continuous(
+            range = c(
+                min(na.omit(data$paralogSize)) * (1 + dotZoom),
+                max(na.omit(data$paralogSize)) * (1 + dotZoom)
             )
+        )
     } else {
         # remain the scale of point while filtering
         presentVl <- data$presSpec[!is.na(data$presSpec)]
-
         # to tune the size of circles;
-        # use "floor(value*10)/10" to round "down" the value with one decimal nr
-        p <- p +
-            scale_size_continuous(
-                range = c(
-                    (floor(min(presentVl) * 10) / 10 * 5) * (1 + dotZoom),
-                    (floor(max(presentVl) * 10) / 10 * 5) * (1 + dotZoom)
-                )
+        p <- p + scale_size_continuous(
+            range = c(
+                (floor(min(presentVl) * 10) / 10 * 5) * (1 + dotZoom),
+                (floor(max(presentVl) * 10) / 10 * 5) * (1 + dotZoom)
             )
+        )
     }
-
+    # color gene categories
     if (colorByGroup == FALSE) {
         p <- p + guides(fill = guide_colourbar(title = var2ID),
                         color = guide_colourbar(title = var1ID))
@@ -321,9 +276,6 @@ heatmapPlotting <- function(data = NULL, plotParameter = NULL){
         p <- p + guides(fill = guide_legend("Category"),
                         color = guide_colourbar(title = var1ID))
     }
-
-    baseSize <- 9
-
     # guideline for separating ref species
     if (guideline == 1) {
         if (xAxis == "genes") {
@@ -336,8 +288,8 @@ heatmapPlotting <- function(data = NULL, plotParameter = NULL){
             p <- p + geom_vline(xintercept = 1.5, colour = "dodgerblue4")
         }
     }
-
     # format theme
+    baseSize <- 9
     p <- p + theme_minimal()
     p <- p + theme(
         axis.text.x = element_text(angle = xAngle, hjust = 1, size = xSize),
@@ -348,8 +300,6 @@ heatmapPlotting <- function(data = NULL, plotParameter = NULL){
         legend.text = element_text(size = legendSize),
         legend.position = mainLegend
     )
-
-    # return plot
     return(p)
 }
 
@@ -409,119 +359,52 @@ heatmapPlotting <- function(data = NULL, plotParameter = NULL){
 #' )
 
 highlightProfilePlot <- function(
-    data = NULL,
-    plotParameter = NULL,
-    taxonHighlight = "none",
-    rankName = "none",
-    geneHighlight = "none"
+    data = NULL, plotParameter = NULL, taxonHighlight = "none",
+    rankName = "none", geneHighlight = "none"
 ){
-    if (is.null(data)) return()
-    xmin <- NULL
-    xmax <- NULL
-    ymin <- NULL
-    ymax <- NULL
-
-    # get heatmap
+    if (is.null(data)) stop("Input data cannot be NULL!")
+    xmin <- xmax <- ymin <- ymax <- NULL
     p <- heatmapPlotting(data, plotParameter)
-
     # highlight taxon
     if (taxonHighlight != "none") {
         # get selected highlight taxon ID
         nameReducedFile <- paste(
-            system.file(package="PhyloProfile"),
-            "PhyloProfile/data/taxonNamesReduced.txt",
-            sep="/"
-        )
-
+            system.file(package = "PhyloProfile"),
+            "PhyloProfile/data/taxonNamesReduced.txt", sep="/")
         if (!file.exists(nameReducedFile)) {
-            data(taxonNamesReduced)
-        } else {
-            taxonNamesReduced <- read.table(
-                nameReducedFile, sep = "\t", header = TRUE
-            )
-        }
-
-        taxonHighlightID <- taxonNamesReduced$ncbiID[
-            taxonNamesReduced$fullName == taxonHighlight
-            & taxonNamesReduced$rank == rankName]
-
-        if (length(taxonHighlightID) == 0L) {
-            taxonHighlightID <- taxonNamesReduced$ncbiID[
-                taxonNamesReduced$fullName == taxonHighlight]
-        }
-
+            taxonNamesReduced <- NULL
+            delayedAssign("taxName", taxonNamesReduced)
+        } else
+            taxName <- read.table(nameReducedFile, sep = "\t", header = TRUE)
+        taxonHighlightID <- taxName$ncbiID[
+            taxName$fullName == taxonHighlight & taxName$rank == rankName]
+        if (length(taxonHighlightID) == 0L)
+            taxonHighlightID <- taxName$ncbiID[taxName$fullName==taxonHighlight]
         # get taxonID together with it sorted index
-        highlightTaxon <- {
-            toString(
-                data[data$supertaxonID == taxonHighlightID, 2][1]
-            )
-        }
-
-        # get index
-        selectedIndex <- as.numeric(
-            as.character(substr(highlightTaxon, 2, 4))
-        )
-
-        # draw a rect to highlight this taxon's column
+        selTaxon <- toString(data[data$supertaxonID == taxonHighlightID, 2][1])
+        selIndex <- as.numeric(as.character(substr(selTaxon, 2, 4)))
         if (plotParameter$xAxis == "taxa") {
             rect <- data.frame(
-                xmin = selectedIndex - 0.5,
-                xmax = selectedIndex + 0.5,
-                ymin = -Inf,
-                ymax = Inf
-            )
-        } else {
+                xmin=selIndex-0.5, xmax = selIndex+0.5, ymin = -Inf, ymax = Inf)
+        } else
             rect <- data.frame(
-                ymin = selectedIndex - 0.5,
-                ymax = selectedIndex + 0.5,
-                xmin = -Inf,
-                xmax = Inf
-            )
-        }
-
-        p <- p + geom_rect(
-            data = rect,
-            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
-            color = "yellow",
-            alpha = 0.3,
-            inherit.aes = FALSE
-        )
+                ymin=selIndex-0.5, ymax = selIndex+0.5, xmin = -Inf, xmax = Inf)
+        p <- heatmapPlotting(data, plotParameter) + geom_rect(
+            data = rect, color = "yellow", alpha = 0.3, inherit.aes = FALSE,
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax))
     }
-
     # highlight gene
     if (geneHighlight != "none") {
-        # get selected highlight gene ID
-        geneHighlight <- geneHighlight
-
-        # get index
-        allGenes <- levels(data$geneID)
-        selectedIndex <- match(geneHighlight, allGenes)
-
-        # draw a rect to highlight this taxon's column
+        selIndex <- match(geneHighlight, levels(data$geneID))
         if (plotParameter$xAxis == "taxa") {
             rect <- data.frame(
-                ymin = selectedIndex - 0.5,
-                ymax = selectedIndex + 0.5,
-                xmin = -Inf,
-                xmax = Inf
-            )
-        } else {
+                ymin=selIndex-0.5, ymax = selIndex+0.5, xmin = -Inf, xmax = Inf)
+        } else
             rect <- data.frame(
-                xmin = selectedIndex - 0.5,
-                xmax = selectedIndex + 0.5,
-                ymin = -Inf,
-                ymax = Inf
-            )
-        }
-
-        p <- p + geom_rect(
-            data = rect,
-            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
-            color = "yellow",
-            alpha = 0.3,
-            inherit.aes = FALSE
-        )
+                xmin=selIndex-0.5, xmax = selIndex+0.5, ymin = -Inf, ymax = Inf)
+        p <- heatmapPlotting(data, plotParameter) + geom_rect(
+            data = rect, color = "yellow", alpha = 0.3, inherit.aes = FALSE,
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax))
     }
-
     return(p)
 }

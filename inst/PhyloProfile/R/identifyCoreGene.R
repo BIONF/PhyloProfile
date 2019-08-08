@@ -23,7 +23,7 @@ identifyCoreGene <- function(
 
     output$coreGene.table <- renderDataTable({
         data <- coreGeneDf()
-        if (is.null(data)) return()
+        if (is.null(data)) stop("Input data is NULL!")
         else {
             data <- as.data.frame(data)
             data

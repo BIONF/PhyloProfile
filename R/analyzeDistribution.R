@@ -14,10 +14,10 @@
 #' createPercentageDistributionData(mainLongRaw, "class")
 
 createPercentageDistributionData <- function(inputData, rankName = NULL) {
-    if (is.null(inputData) | is.null(rankName)) return()
+    if (is.null(inputData) | is.null(rankName)) 
+        stop("Input data or rank name cannot be NULL!")
     allMainRanks <- getTaxonomyRanks()
-    if (!(rankName[1] %in% allMainRanks)) return("Invalid taxonomy rank given!")
-
+    if (!(rankName[1] %in% allMainRanks)) stop("Invalid taxonomy rank given!")
     if (ncol(inputData) < 4) {
         colnames(inputData) <- c("geneID", "ncbiID", "orthoID")
     } else if (ncol(inputData) < 5) {
@@ -25,28 +25,22 @@ createPercentageDistributionData <- function(inputData, rankName = NULL) {
     } else {
         colnames(inputData) <- c("geneID", "ncbiID", "orthoID", "var1", "var2")
     }
-
     # count number of inparalogs
     paralogCount <- plyr::count(inputData, c("geneID", "ncbiID"))
     inputData <- merge(inputData, paralogCount, by = c("geneID", "ncbiID"))
     colnames(inputData)[ncol(inputData)] <- "paralog"
-
     # get sorted taxonomy list
     inputTaxonID <- getInputTaxaID(inputData)
     inputTaxonName <- getInputTaxaName(rankName, inputTaxonID)
     refTaxon <- inputTaxonName$fullName[1]
     taxaTree <- NULL
     taxaList <- sortInputTaxa(inputTaxonID, rankName, refTaxon, taxaTree)
-
     # calculate frequency of all supertaxa
     taxaCount <- plyr::count(taxaList, "supertaxon")
-
     # merge inputData, inputDatavar2 and taxaList to get taxonomy info
     taxaMdData <- merge(inputData, taxaList, by = "ncbiID")
-
     # calculate % present species
     finalPresSpecDt <- calcPresSpec(taxaMdData, taxaCount)
-
     finalPresSpecDt[!is.na(finalPresSpecDt$geneID),]
     return(finalPresSpecDt)
 }
@@ -83,28 +77,19 @@ createVariableDistributionData <- function(
         colnames(inputData) <- c("geneID", "ncbiID", "orthoID", "var1", "var2")
         splitDt <- inputData[, c("orthoID", "var1", "var2")]
     }
-
     splitDt$orthoID[splitDt$orthoID == "NA" | is.na(splitDt$orthoID)] <- NA
     splitDt <- splitDt[complete.cases(splitDt), ]
 
-    if (length(levels(as.factor(splitDt$var2))) == 1) {
+    if (length(levels(as.factor(splitDt$var2))) == 1)
         if (levels(as.factor(splitDt$var2)) == "") splitDt$var2 <- 0
-    }
 
     # Filter based on variable cutoffs
-    if ("var1" %in% colnames(splitDt)) {
-        # filter splitDt based on selected var1 cutoff
+    if ("var1" %in% colnames(splitDt))
         splitDt <- splitDt[
-            splitDt$var1 >= var1Cutoff[1] & splitDt$var1 <= var1Cutoff[2],
-            ]
-    }
-    if ("var2" %in% colnames(splitDt)) {
-        # filter splitDt based on selected var2 cutoff
+            splitDt$var1 >= var1Cutoff[1] & splitDt$var1 <= var1Cutoff[2],]
+    if ("var2" %in% colnames(splitDt))
         splitDt <- splitDt[
-            splitDt$var2 >= var2Cutoff[1] & splitDt$var2 <= var2Cutoff[2],
-            ]
-    }
-
+            splitDt$var2 >= var2Cutoff[1] & splitDt$var2 <= var2Cutoff[2],]
     return(splitDt)
 }
 
@@ -144,15 +129,10 @@ createVariableDistributionDataSubset <- function(
     fullProfileData, distributionData,
     selectedGenes = "all", selectedTaxa = "all"
 ) {
-    geneID <- NULL
-    orthoID <- NULL
-    var1.x <- NULL
-    var2.y <- NULL
-    supertaxonMod <- NULL
-
+    geneID <- orthoID <- var1.x <- var2.y <- supertaxonMod <- NULL
     # check parameters
-    if (is.null(fullProfileData) | is.null(distributionData)) return()
-
+    if (is.null(fullProfileData) | is.null(distributionData)) 
+        stop("Full processed profiles or distribution data cannot be NULL!")
     # get geneID and supertaxon name for distributionData
     distributionDataName <- merge(
         distributionData, fullProfileData, by = "orthoID", all.x = TRUE
@@ -168,8 +148,7 @@ createVariableDistributionDataSubset <- function(
     colnames(distributionDataName) <- c(
         "orthoID", "var1", "var2", "supertaxonMod", "geneID"
     )
-
-    # filter
+    # filter data
     if (selectedTaxa[1] == "all" & selectedGenes[1] != "all") {
         # select data from dataHeat for selected sequences only
         distributionData <- subset(
@@ -180,7 +159,7 @@ createVariableDistributionDataSubset <- function(
         distributionData <- subset(
             distributionDataName, supertaxonMod %in% selectedTaxa
         )
-    }  else if (selectedGenes[1] == "all" & selectedTaxa[1] == "all") {
+    } else if (selectedGenes[1] == "all" & selectedTaxa[1] == "all") {
         return(distributionData)
     } else {
         # select data from dataHeat for selected sequences and taxa
@@ -196,7 +175,7 @@ createVariableDistributionDataSubset <- function(
 #' @description Create distribution plot for one of the additional variable or
 #' the percentage of the species present in the supertaxa.
 #' @usage createVarDistPlot(data, varName = "var", varType = "var1",
-#'     percent = c(0, 1), distTextSize = 12)
+#'     percent = c(0, 1), textSize = 12)
 #' @param data dataframe contains data for plotting (see
 #' ?createVariableDistributionData, ?createVariableDistributionDataSubset or
 #' ?createPercentageDistributionData)
@@ -205,7 +184,7 @@ createVariableDistributionDataSubset <- function(
 #' @param varType type of variable (either "var1", "var2" or "presSpec").
 #' Default = "var1".
 #' @param percent range of percentage cutoff (between 0 and 1). Default = c(0,1)
-#' @param distTextSize text size of the distribution plot (in px). Default = 12.
+#' @param textSize text size of the distribution plot (in px). Default = 12.
 #' @return A distribution plot for the selected variable as a ggplot object
 #' @import ggplot2
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
@@ -222,20 +201,19 @@ createVariableDistributionDataSubset <- function(
 #' varName <- "Variable abc"
 #' varType <- "var1"
 #' percent <- c(0,1)
-#' distTextSize <- 12
+#' textSize <- 12
 #' createVarDistPlot(
 #'     data,
 #'     varName,
 #'     varType,
 #'     percent,
-#'     distTextSize
+#'     textSize
 #' )
 
 createVarDistPlot <- function(
-    data, varName = "var", varType = "var1", percent = c(0, 1),
-    distTextSize = 12
+    data, varName = "var", varType = "var1", percent = c(0, 1), textSize = 12
 ) {
-    if (is.null(data)) return()
+    if (is.null(data)) stop("Input data cannot be NULL!")
     if (varType == "presSpec") {
         # remove presSpec < cutoffMin or > cutoffMax
         if (percent[1] > 0) {
@@ -252,22 +230,17 @@ createVarDistPlot <- function(
     } else data <- data[!is.na(data[,varType]), ]
 
     data.mean <- mean(data[,varType])
-
     p <- ggplot(data, aes(x = data[,varType])) +
         geom_histogram(binwidth = .01, alpha = .5, position = "identity") +
         geom_vline(
-            data = data,
-            aes(xintercept = data.mean, colour = "red"),
-            linetype = "dashed",
-            size = 1
-        ) +
-        theme_minimal()
+            data = data, aes(xintercept = data.mean, colour = "red"),
+            linetype = "dashed", size = 1
+        ) + theme_minimal()
     p <- p + theme(
             legend.position = "none",
-            axis.title = element_text(size = distTextSize),
-            axis.text = element_text(size = distTextSize)
-        ) +
-        labs(
+            axis.title = element_text(size = textSize),
+            axis.text = element_text(size = textSize)
+        ) + labs(
             x = paste0(varName," (mean = ", round(mean(data[,varType]), 3),")"),
             y = "Frequency"
         )

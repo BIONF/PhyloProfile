@@ -1,10 +1,7 @@
 context("test identification of core genes for a selected set of taxa")
 
 test_that("test core gene estimation", {
-    # load full processed data
     data("fullProcessedProfile", package="PhyloProfile")
-
-    # calculate gene ages
     rankName <- "class"
     taxaCore <- c("Mammalia", "Saccharomycetes", "Insecta")
     var1Cutoff <- c(0,1)
@@ -18,6 +15,5 @@ test_that("test core gene estimation", {
         var1Cutoff, var2Cutoff,
         percentCutoff, coreCoverage
     )
-
     expect_true(length(coreGene) == 3)
 })

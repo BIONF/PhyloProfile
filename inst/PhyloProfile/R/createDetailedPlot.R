@@ -22,9 +22,9 @@ createDetailedPlotUI <- function(id) {
     )
 }
 
-createDetailedPlot <- function(input, output, session, data,
-                                 var1ID, var2ID,
-                                 detailedText, detailedHeight){
+createDetailedPlot <- function(
+    input, output, session, data, var1ID, var2ID, detailedText, detailedHeight
+){
 
     # render detailed plot -----------------------------------------------------
     output$detailPlot <- renderPlot({
@@ -68,8 +68,8 @@ createDetailedPlot <- function(input, output, session, data,
         selDf$orthoID <- as.character(selDf$orthoID)
 
         # get coordinates of plotClickDetail
-        if (is.null(input$plotClickDetail$x)) return()
-        else{
+        if (is.null(input$plotClickDetail$x)) return(NULL)
+        else {
             corX <- round(input$plotClickDetail$y)
             corY <- round(input$plotClickDetail$x)
         }
@@ -88,14 +88,10 @@ createDetailedPlot <- function(input, output, session, data,
         ncbiID <- as.character(ncbiID[!is.na(ncbiID)][1])
 
         # return info
-        if (is.na(orthoID)) {
+        if (is.na(orthoID)) 
             return(NULL)
-        } else {
-            if (orthoID != "NA") {
-                info <- c(seedID, orthoID, var1, var2, ncbiID)
-                return(info)
-            }
-        }
+        else
+            if (orthoID != "NA") return(c(seedID, orthoID, var1, var2, ncbiID))
     })
 
     # * show info when clicking on detailed plot -------------------------------
@@ -103,7 +99,7 @@ createDetailedPlot <- function(input, output, session, data,
         info <- pointInfoDetail() # info = seedID, orthoID, var1
 
         if (is.null(info)) paste("select ortholog")
-        else{
+        else {
             a <- paste0("seedID = ", info[1])
             b <- paste0("hitID = ", info[2])
             c <- ""
@@ -117,7 +113,6 @@ createDetailedPlot <- function(input, output, session, data,
             paste(a, b, c, d, sep = "\n")
         }
     })
-
     return(pointInfoDetail)
 }
 
@@ -131,11 +126,7 @@ createDetailedPlot <- function(input, output, session, data,
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 
 detailPlot <- function(selDf, detailedText, var1ID, var2ID){
-    selDf$xLabel <- paste(selDf$orthoID,
-                            " (",
-                            selDf$fullName,
-                            ")",
-                            sep = "")
+    selDf$xLabel <- paste(selDf$orthoID, " (", selDf$fullName, ")", sep = "")
 
     # create joined DF for plotting var1 next to var2
     var1Df <- subset(selDf, select = c("xLabel", "var1"))
@@ -168,6 +159,5 @@ detailPlot <- function(selDf, detailedText, var1ID, var2ID){
                      axis.title = element_text(size = detailedText),
                      legend.text = element_text(size = detailedText)
     )
-
     return(gp)
 }

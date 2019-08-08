@@ -13,8 +13,9 @@
 #' getFastaFromFasInput("all", file)
 
 getFastaFromFasInput <- function(seqIDs = NULL, file = NULL) {
-    if (is.null(seqIDs)) return ()
-    if (is.null(seqIDs) | is.null(file)) return()
+    if (is.null(seqIDs)) stop("No sequence ID given!")
+    if (is.null(seqIDs) | is.null(file)) 
+        stop("Sequence ID and input fasta file cannot be NULL!")
     faFile <- Biostrings::readAAStringSet(file)
 
     if (length(seqIDs) == 1 & seqIDs[1] == "all") seqIDs <- names(faFile)
@@ -45,7 +46,7 @@ getFastaFromFasInput <- function(seqIDs = NULL, file = NULL) {
 #' getFastaFromFasInput("all", concatFasta)
 
 getFastaFromFile <- function(seqIDs = NULL, concatFasta = NULL) {
-    if (is.null(seqIDs)) return ()
+    if (is.null(seqIDs)) stop("No sequence ID given!")
     if (!is.null(concatFasta)) {
         # read fasta file and save sequences into dataframe
         faFile <- Biostrings::readAAStringSet(toString(concatFasta))
@@ -105,17 +106,13 @@ getFastaFromFile <- function(seqIDs = NULL, concatFasta = NULL) {
 #' getFastaFromFolder(seqIDs, path, dirFormat, fileExt, idFormat)
 
 getFastaFromFolder <- function(
-    seqIDs = NULL,
-    path = NULL, dirFormat = NULL, fileExt = NULL, idFormat = NULL
+    seqIDs = NULL, path = NULL, dirFormat = NULL, fileExt = NULL, idFormat=NULL
 ) {
-    if (is.null(seqIDs)) return ()
+    if (is.null(seqIDs)) stop("No sequence ID given!")
     if (is.null(path)) return(
         data.frame(
             fasta = paste0("Please provide path to FASTA file(s)!"),
-            stringsAsFactors = FALSE
-        )
-    )
-    
+            stringsAsFactors = FALSE))
     if (path != "") {
         # get list of species IDs
         if (idFormat == 1) {
@@ -125,7 +122,6 @@ getFastaFromFolder <- function(
         } else if (idFormat == 3) {
             specID <- unlist(strsplit(seqIDs, "\\|"))[1]
         }
-        
         # read all specices FASTA files at once
         if (idFormat == 4) {
             fileList <- list.files(path, pattern = fileExt)
@@ -133,8 +129,7 @@ getFastaFromFolder <- function(
                 return(data.frame(
                     fasta = paste0(
                         "No FASTA files with ", fileExt, "found in ", path
-                    ), stringsAsFactors = FALSE
-                ))
+                    ), stringsAsFactors = FALSE))
             } else {
                 fileWithPath <- paste0(path, "/", fileList)
                 faFile <- Biostrings::readAAStringSet(fileWithPath)
@@ -142,13 +137,11 @@ getFastaFromFolder <- function(
         } else {
             specID <- as.character(levels(as.factor(specID)))
             specID <- specID[specID != ""]
-            
             file <- paste0(path, "/", specID, ".", fileExt)
-            if (dirFormat == 2) {
+            if (dirFormat == 2)
                 file <- paste0(path, "/", specID, "/", specID, ".", fileExt)
-            }
             file <- file[file.exists(file)]
-            if(length(file) == 0) {
+            if (length(file) == 0) {
                 return(data.frame(
                     fasta = paste0(
                         "No FASTA files found in ", path, "! Please check ",
@@ -157,16 +150,12 @@ getFastaFromFolder <- function(
                 ))
             } else faFile <- Biostrings::readAAStringSet(file)
         }
-        
         # now get selected sequences
-        if (
-            length(unique(pmatch(seqIDs, names(faFile)))) == 1 &
-            is.na(unique(pmatch(seqIDs, names(faFile)))[1])
-        ) {
+        if (length(unique(pmatch(seqIDs, names(faFile)))) == 1 
+            & is.na(unique(pmatch(seqIDs, names(faFile)))[1])) {
             return(data.frame(
                 fasta = paste0("Please check FASTA header format!"),
-                stringsAsFactors = FALSE
-            ))
+                stringsAsFactors = FALSE))
         } else {
             return(data.frame(
                 fasta = paste(
@@ -174,15 +163,11 @@ getFastaFromFolder <- function(
                     lapply(
                         pmatch(seqIDs, names(faFile)),
                         function (x) as.character(faFile[[x]])
-                    ),
-                    sep = "\n"
-                ), stringsAsFactors = FALSE
-            ))
+                    ), sep = "\n"), stringsAsFactors = FALSE))
         }
     } else {
         return(data.frame(
             fasta = paste0("Please provide path to FASTA file(s)!"),
-            stringsAsFactors = FALSE
-        ))
+            stringsAsFactors = FALSE))
     }
 }
