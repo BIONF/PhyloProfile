@@ -50,7 +50,6 @@ qualitativeColours <- function(n, light = FALSE) {
                                     n = n, name = 'Pastel1')),
                                 return(RColorBrewer::brewer.pal(
                                     n = n, name = 'Set1'))),
-                            # If there are more than 21 qualitative colours
                             return(grDevices::colorRampPalette(rich12equal)(n))
                         )
                     )

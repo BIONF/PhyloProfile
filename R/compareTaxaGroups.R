@@ -84,7 +84,6 @@ compareTaxonGroups <- function(
     if (is.null(data) | is.null(inGroup) | is.null(variable)) 
         stop("Input profiles, in-group IDs and variable name cannot be NULL!")
     if (!(variable %in% colnames(data))) stop("Invalid variable")
-
     # add other taxa that share a common ancestor with the given in-group
     commonTaxa <- getCommonAncestor(levels(as.factor(data$ncbiID)), inGroup)
     if (useCommonAncestor == TRUE)
@@ -190,7 +189,6 @@ compareMedianTaxonGroups <- function(
     if (is.null(data) | is.null(inGroup) | is.null(variable)) 
         stop("Input profiles, in-group IDs and variable name cannot be NULL!")
     if (!(variable %in% colnames(data))) stop("Invalid variable")
-
     # add other taxa that share a common ancestor with the given in-group
     commonTaxa <- getCommonAncestor(levels(as.factor(data$ncbiID)), inGroup)
     if (useCommonAncestor == TRUE)

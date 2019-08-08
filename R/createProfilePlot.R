@@ -74,7 +74,6 @@ dataCustomizedPlot <- function(
 ){
     if (is.null(dataHeat)) stop("Input data cannot be NULL!")
     geneID <- supertaxonMod <- paralogNew <- NULL
-
     # process data
     dataHeat$supertaxonMod <- {
         substr(
