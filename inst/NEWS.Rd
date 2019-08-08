@@ -1,9 +1,9 @@
-\name{NEWS}
-\title{News for Package \pkg{PhyloProfile}}
+\name{PhyloProfilenews}
+\title{PhyloProfile news}
+\encoding{UTF-8}
 
-\section{Changes in version 0.99.6 (April 2019)}{
+\section{Version 0.99.21}{
   \itemize{
     \item Submitted to Bioconductor
   }
 }
-

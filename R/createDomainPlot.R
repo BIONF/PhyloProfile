@@ -34,39 +34,27 @@
 #' grid::grid.draw(plot)
 
 createArchiPlot <- function(
-    info = NULL,
-    domainDf = NULL,
-    labelArchiSize = 12, titleArchiSize = 12
+    info = NULL, domainDf = NULL, labelArchiSize = 12, titleArchiSize = 12
 ){
     if (is.null(info) | is.null(domainDf)) return(ggplot() + theme_void())
-    orthoID <- NULL
-
-    # info
     group <- as.character(info[1])
     ortho <- as.character(info[2])
-
     # get sub dataframe based on selected groupID and orthoID
     ortho <- gsub("\\|", ":", ortho)
     grepID <- paste(group, "#", ortho, sep = "")
-
     subdomainDf <- domainDf[grep(grepID, domainDf$seedID), ]
     subdomainDf$feature <- as.character(subdomainDf$feature)
-
+    orthoID <- NULL
     if (nrow(subdomainDf) < 1) return(paste0("ERR-0"))
     else {
-        # ortho domains df
+        # ortho & seed domains df
         orthoDf <- subdomainDf[subdomainDf$orthoID == ortho,]
-        # seed domains df
         seedDf <- subdomainDf[subdomainDf$orthoID != ortho,]
         if (nrow(seedDf) == 0) seedDf <- orthoDf
-
         seed <- as.character(seedDf$orthoID[1])
-
         # return ERR-0 if seedDf and orthoDf are empty
         if (nrow(seedDf) == 0) return(paste0("ERR-0"))
-
-        # change order of one dataframe's features
-        # based on order of other df's features
+        # change order of one df's features based on order of other df's
         if (length(orthoDf$feature) < length(seedDf$feature)) {
             orderedOrthoDf <- orthoDf[order(orthoDf$feature), ]
             orderedSeedDf <- sortDomains(orderedOrthoDf, seedDf)
@@ -74,92 +62,46 @@ createArchiPlot <- function(
             orderedSeedDf <- seedDf[order(seedDf$feature), ]
             orderedOrthoDf <- sortDomains(orderedSeedDf, orthoDf)
         }
-
         # join weight values and feature names
         if ("weight" %in% colnames(orderedOrthoDf)) {
             orderedOrthoDf$yLabel <- paste0(
-                orderedOrthoDf$feature,
-                " (",
-                round(orderedOrthoDf$weight, 2),
-                ")"
-            )
-        } else {
-            orderedOrthoDf$yLabel <- orderedOrthoDf$feature
-        }
+                orderedOrthoDf$feature," (",round(orderedOrthoDf$weight, 2),")")
+        } else orderedOrthoDf$yLabel <- orderedOrthoDf$feature
         if ("weight" %in% colnames(orderedSeedDf)) {
             orderedSeedDf$yLabel <- paste0(
-                orderedSeedDf$feature,
-                " (",
-                round(orderedSeedDf$weight, 2),
-                ")"
-            )
-        } else {
-            orderedSeedDf$yLabel <- orderedSeedDf$feature
-        }
-
-        # create color scheme for all features
+                orderedSeedDf$feature," (",round(orderedSeedDf$weight, 2),")")
+        } else orderedSeedDf$yLabel <- orderedSeedDf$feature
         # the same features in seed & ortholog will have the same colors
         featureSeed <- levels(as.factor(orderedSeedDf$feature))
         featureOrtho <- levels(as.factor(orderedOrthoDf$feature))
         allFeatures <- c(featureSeed, featureOrtho)
         allColors <- getQualColForVector(allFeatures)
         colorScheme <- structure(allColors, .Names = allFeatures)
-
         # plotting
         sep <- "|"
-
+        minStart <- min(subdomainDf$start)
+        maxEnd <- max(c(subdomainDf$end, subdomainDf$length))
         if ("length" %in% colnames(subdomainDf)) {
             plotOrtho <- domainPlotting(
-                orderedOrthoDf,
-                ortho,
-                sep,
-                labelArchiSize,
-                titleArchiSize,
-                min(subdomainDf$start),
-                max(c(subdomainDf$end, subdomainDf$length)),
-                colorScheme
-            )
+                orderedOrthoDf, ortho, sep, labelArchiSize, titleArchiSize,
+                minStart, maxEnd, colorScheme)
             plotSeed <- domainPlotting(
-                orderedSeedDf,
-                seed,
-                sep,
-                labelArchiSize,
-                titleArchiSize,
-                min(subdomainDf$start),
-                max(c(subdomainDf$end, subdomainDf$length)),
-                colorScheme
-            )
-
-        } else{
+                orderedSeedDf, seed, sep, labelArchiSize, titleArchiSize,
+                minStart, maxEnd, colorScheme)
+        } else {
             plotOrtho <- domainPlotting(
-                orderedOrthoDf,
-                ortho,
-                sep,
-                labelArchiSize,
-                titleArchiSize,
-                min(subdomainDf$start),
-                max(subdomainDf$end),
-                colorScheme
-            )
+                orderedOrthoDf, ortho, sep, labelArchiSize, titleArchiSize,
+                minStart, max(subdomainDf$end), colorScheme)
             plotSeed <- domainPlotting(
-                orderedSeedDf,
-                seed,
-                sep,
-                labelArchiSize,
-                titleArchiSize,
-                min(subdomainDf$start),
-                max(subdomainDf$end),
-                colorScheme
-            )
+                orderedSeedDf, seed, sep, labelArchiSize, titleArchiSize,
+                minStart, max(subdomainDf$end), colorScheme)
         }
-
         # grid.arrange(plotSeed,plotOrtho,ncol=1)
         if (ortho == seed) {
             g <- gridExtra::arrangeGrob(plotSeed, ncol = 1)
         } else {
             seedHeight <- length(levels(as.factor(orderedSeedDf$feature)))
             orthoHeight <- length(levels(as.factor(orderedOrthoDf$feature)))
-
             g <- gridExtra::arrangeGrob(plotSeed, plotOrtho, ncol = 1,
                                         heights = c(seedHeight, orthoHeight))
         }
@@ -223,90 +165,53 @@ createArchiPlot <- function(
 #' }
 
 domainPlotting <- function(
-    df = NULL,
-    geneID = "GeneID",
-    sep = "|",
-    labelSize = 12, titleSize = 12,
-    minStart = NULL, maxEnd = NULL,
-    colorScheme = NULL
+    df = NULL, geneID = "GeneID", sep = "|", labelSize = 12, titleSize = 12,
+    minStart = NULL, maxEnd = NULL, colorScheme = NULL
 ){
-    feature <- NULL
-    end <- NULL
-    start <- NULL
+    feature <- end <- start <- NULL
     # parse parameters
     if (is.null(df)) return(ggplot() + theme_void())
     if (is.null(minStart)) minStart <- min(df$start)
     if (is.null(maxEnd)) maxEnd <- max(df$end)
     if (is.null(colorScheme)) {
-        allFeatures <- levels(as.factor(df$feature))
-        allColors <- getQualColForVector(allFeatures)
         colorScheme <- structure(
-            allColors,
-            .Names = allFeatures
-        )
-    }
-
+            getQualColForVector(levels(as.factor(df$feature))), 
+            .Names = levels(as.factor(df$feature)))}
     gg <- ggplot(df, aes(y = feature, x = end, color = as.factor(feature))) +
         geom_segment(
-            data = df,
-            aes(y = feature, yend = feature, x = minStart, xend = maxEnd),
-            color = "white",
-            size = 0
-        ) +
+            data = df, color = "white", size = 0,
+            aes(y = feature, yend = feature, x = minStart, xend = maxEnd)) + 
         scale_color_manual(values = colorScheme)
-
     # draw lines for representing sequence length
-    if ("length" %in% colnames(df)) {
+    if ("length" %in% colnames(df))
         gg <- gg + geom_segment(
-            data = df,
-            aes(x = 0, xend = length, y = feature, yend = feature),
-            size = 1,
-            color = "#b2b2b2"
-        )
-    }
-
+            data = df, size = 1, color = "#b2b2b2",
+            aes(x = 0, xend = length, y = feature, yend = feature))
     # draw line and points
     gg <- gg + geom_segment(
         data = df, aes(x = start, xend = end, y = feature, yend = feature),
-        size = 1.5
-    )
-    gg <- gg + geom_point(
-        data = df, aes(y = feature, x = start),
-        color = "#b2b2b2", size = 3, shape = 3
-    )
-    gg <- gg + geom_point(
-        data = df, aes(y = feature, x = end),
-        color = "#edae52", size = 3, shape = 5
-    )
-
+        size = 1.5) + 
+        geom_point(data = df, aes(y = feature, x = start),
+                    color = "#b2b2b2", size = 3, shape = 3) + 
+        geom_point(data = df, aes(y = feature, x = end),
+                    color = "#edae52", size = 3, shape = 5)
     # draw dashed line for domain path
     gg <- gg + geom_segment(
-        data = df[df$path == "Y", ],
-        aes(x = start, xend = end, y = feature, yend = feature),
-        size = 3, linetype = "dashed"
-    )
-
+        data = df[df$path == "Y", ], size = 3, linetype = "dashed",
+        aes(x = start, xend = end, y = feature, yend = feature))
     # theme format
-    titleMod <- gsub(":", sep, geneID)
     gg <- gg + scale_y_discrete(
-        expand = c(0.075, 0), breaks = df$feature, labels = df$yLabel
-    )
-    gg <- gg + labs(title = paste0(titleMod), y = "Feature")
-    gg <- gg + theme_minimal()
-    gg <- gg + theme(panel.border = element_blank())
+        expand = c(0.075, 0), breaks = df$feature, labels = df$yLabel)
+    gg <- gg + labs(title = paste0(gsub(":", sep, geneID)), y = "Feature")
+    gg <- gg + theme_minimal() + theme(panel.border = element_blank())
     gg <- gg + theme(axis.ticks = element_blank())
-    gg <- gg + theme(
-        plot.title = element_text(face = "bold", size = titleSize)
-    )
+    gg <- gg + theme(plot.title = element_text(face = "bold", size = titleSize))
     gg <- gg + theme(plot.title = element_text(hjust = 0.5))
     gg <- gg + theme(
         legend.position = "none", axis.title.x = element_blank(),
         axis.text.y = element_text(size = labelSize),
         axis.title.y = element_text(size = labelSize),
-        panel.grid.minor.x = element_blank(),
-        panel.grid.major.x = element_blank()
-    )
-    # return plot
+        panel.grid.minor.x=element_blank(), panel.grid.major.x=element_blank())
     return(gg)
 }
 

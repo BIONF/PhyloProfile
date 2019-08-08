@@ -19,7 +19,6 @@
 getCommonAncestor <- function(inputTaxa = NULL, inGroup = NULL) {
     if (is.null(inputTaxa) | is.null(inGroup)) 
         stop("Input taxa and in-group ID list cannot be NULL!")
-
     # get list of pre-calculated taxonomy info
     taxMatrix <- getTaxonomyMatrix(TRUE, inputTaxa)
     # get subset taxonomy info for selected in-group taxa
@@ -41,7 +40,6 @@ getCommonAncestor <- function(inputTaxa = NULL, inGroup = NULL) {
     commonRank <- rownames(checkDf[V1 == V2,])[1]
     commonID <- checkDf[V1 == V2,][1]
     commonTaxa <- taxMatrix[taxMatrix[, commonRank] == commonID, ]
-
     return(list(commonRank, commonID, commonTaxa))
 }
 
@@ -85,15 +83,11 @@ compareTaxonGroups <- function(
 ) {
     if (is.null(data) | is.null(inGroup) | is.null(variable)) 
         stop("Input profiles, in-group IDs and variable name cannot be NULL!")
-    if (!(variable %in% colnames(data))) {
-        stop("Invalid variable")
-    }
-
+    if (!(variable %in% colnames(data))) stop("Invalid variable")
     # add other taxa that share a common ancestor with the given in-group
     commonTaxa <- getCommonAncestor(levels(as.factor(data$ncbiID)), inGroup)
-    if (useCommonAncestor == TRUE) {
+    if (useCommonAncestor == TRUE)
         inGroup <- as.character(commonTaxa[[3]]$abbrName)
-    }
 
     # perform distribution comparison test
     data$geneID <- as.character(data$geneID)
@@ -108,8 +102,7 @@ compareTaxonGroups <- function(
             if (is.numeric(pvalue))
                 return(distributionTest(varIn, varOut, significanceLevel))
             else return(999)
-        },
-        FUN.VALUE = numeric(1)
+        }, FUN.VALUE = numeric(1)
     )
     return(sort(unlist(pvalues)))
 }
@@ -138,7 +131,6 @@ distributionTest <- function(
     # remove NA values
     varIn <- varIn[!is.na(varIn)]
     varOut <- varOut[!is.na(varOut)]
-
     # if there is no data in one of the groups the p-value is NULL
     if (length(varIn) == 0 | length(varOut) == 0) 
         stop("No data for In/Out-group taxa!")
@@ -196,15 +188,11 @@ compareMedianTaxonGroups <- function(
 ) {
     if (is.null(data) | is.null(inGroup) | is.null(variable)) 
         stop("Input profiles, in-group IDs and variable name cannot be NULL!")
-    if (!(variable %in% colnames(data))) {
-        stop("Invalid variable")
-    }
-
+    if (!(variable %in% colnames(data))) stop("Invalid variable")
     # add other taxa that share a common ancestor with the given in-group
     commonTaxa <- getCommonAncestor(levels(as.factor(data$ncbiID)), inGroup)
-    if (useCommonAncestor == TRUE) {
+    if (useCommonAncestor == TRUE)
         inGroup <- as.character(commonTaxa[[3]]$abbrName)
-    }
 
     # return delta-median scores for two taxa groups
     data$geneID <- as.character(data$geneID)
@@ -247,10 +235,7 @@ compareMedianTaxonGroups <- function(
 #' dataVarDistTaxGroup(data, inGroup, "101621at6656", variable)
 
 dataVarDistTaxGroup <- function(
-    data = NULL,
-    inGroup = NULL,
-    gene = NULL,
-    variable = NULL
+    data = NULL, inGroup = NULL, gene = NULL, variable = NULL
 ) {
     if (is.null(data) | is.null(inGroup) | is.null(gene) | is.null(variable))
         stop("Input profiles, in-group IDs, gene & variable ID cannot be NULL!")
@@ -306,8 +291,7 @@ dataVarDistTaxGroup <- function(
 #' generateSinglePlot(plotDf, plotParameters, colnames(plotDf)[1])
 
 generateSinglePlot <- function(plotDf, parameters, variable) {
-    type <- NULL
-    .data <- NULL
+    type <- .data <- NULL
     xNames <- c(
         paste(
             parameters$inGroupName, " \n n = ",
@@ -474,11 +458,9 @@ gridArrangeSharedLegend <- function(
 varDistTaxPlot <- function(data, plotParameters) {
     if (is.null(data)) stop("Input data cannot be NULL!")
     if (missing(plotParameters)) stop("Plot parameters are missing!")
-
     # rename in-group and out-group
     data$type[data$type == "In-group"] <- plotParameters$inGroupName
     data$type[data$type == "Out-group"] <- plotParameters$outGroupName
-
     # return plot(s)
     if (ncol(data) == 2) {
         plotVar1 <- generateSinglePlot(data, plotParameters, colnames(data)[1])
@@ -558,61 +540,43 @@ varDistTaxPlot <- function(data, plotParameters) {
 #' dataFeatureTaxGroup(mainDf, domainDf, inGroup, gene)
 
 dataFeatureTaxGroup <- function(
-    mainDf = NULL,
-    domainDf = NULL,
-    inGroup = NULL,
-    gene = NULL
+    mainDf = NULL, domainDf = NULL, inGroup = NULL, gene = NULL
 ) {
     if (is.null(mainDf) | is.null(inGroup) | is.null(gene) | is.null(domainDf))
         stop("Input profiles, in-group IDs, gene & domain data cannot be NULL!")
-
     # get ncbiIDs for the domain data
     mainDf$orthoID <- gsub("\\|", ":", mainDf$orthoID)
     domainDfSub <- merge(
-        domainDf[grep(gene, domainDf$seedID),][
-            , c("orthoID", "seedID", "feature")
-        ],
-        mainDf[, c("orthoID", "ncbiID")],
-        by = "orthoID", all.x = TRUE
+        domainDf[grep(gene,domainDf$seedID),][,c("orthoID","seedID","feature")],
+        mainDf[, c("orthoID", "ncbiID")], by = "orthoID", all.x = TRUE
     )
     domainDfSub <- domainDfSub[complete.cases(domainDfSub),]
-
     # identify in-group and out-group
     domainDfSub$type[domainDfSub$ncbiID %in% inGroup] <- "In-group"
     domainDfSub$type[!(domainDfSub$ncbiID %in% inGroup)] <- "Out-group"
-
     # count number of orthologs for each taxon group
     nInGroup <- length(
-        unique(domainDfSub$seedID[domainDfSub$type == "In-group"])
-    )
+        unique(domainDfSub$seedID[domainDfSub$type == "In-group"]))
     nOutGroup <- length(
-        unique(domainDfSub$seedID[domainDfSub$type == "Out-group"])
-    )
-
+        unique(domainDfSub$seedID[domainDfSub$type == "Out-group"]))
     # get intances and count the number of intances for each taxon group
     domainIn <- domainDfSub$feature[domainDfSub$ncbiID %in% inGroup]
     domainOut <- domainDfSub$feature[!(domainDfSub$ncbiID %in% inGroup)]
-
     countDomainIn <- data.frame(table(unlist(as.character(domainIn))))
     countDomainIn$type <- "In-group"
     countDomainIn$ipp <- countDomainIn$Freq/nInGroup
-
     countDomainOut <- data.frame(table(unlist(as.character(domainOut))))
     countDomainOut$type <- "Out-group"
     countDomainOut$ipp <- countDomainOut$Freq/nOutGroup
-
-
     # calculate delta IPP
     mergedDf <- merge(countDomainIn, countDomainOut, by = "Var1", all = TRUE)
     mergedDf[is.na(mergedDf)] <- 0
     mergedDf$dIPPtmp <- mergedDf$ipp.x - mergedDf$ipp.y
     mergedDf$dIPP <- mergedDf$dIPPtmp / (mergedDf$ipp.x + mergedDf$ipp.y)
-
     # return
     outDf <- merge(
         rbind(countDomainIn, countDomainOut), mergedDf[, c("Var1", "dIPP")],
-        by = "Var1", all.x = TRUE
-    )
+        by = "Var1", all.x = TRUE)
     colnames(outDf) <- c("Feature", "Count", "Taxon_group", "IPP", "dIPP")
     return(outDf)
 }

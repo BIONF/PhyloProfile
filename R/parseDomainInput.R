@@ -27,7 +27,6 @@ parseDomainInput <- function(seed = NULL, inputFile = NULL, type = "file") {
     # check parameters
     if (type == "folder" & is.null(seed)) stop("Seed ID cannot be NULL!")
     if (is.null(inputFile)) stop("Input domain file cannot be NULL!")
-
     # get domain from single file
     if (type == "file") {
         file <- inputFile
@@ -35,10 +34,9 @@ parseDomainInput <- function(seed = NULL, inputFile = NULL, type = "file") {
     # or from a domain folder
     else {
         file <- getDomainFolder(seed, inputFile)
-        if (file == "noSelectHit") return("noSelectHit")
-        else if (file == "noFileInFolder") return("noFileInFolder")
+        if (file == "noSelectHit") {return("noSelectHit")}
+        else if (file == "noFileInFolder") {return("noFileInFolder")}
     }
-    
     if (file != FALSE) {
         exeptions <- c("noFileInput", "noSelectHit", "noFileInFolder")
         if (!(file %in% exeptions)) {
@@ -47,36 +45,27 @@ parseDomainInput <- function(seed = NULL, inputFile = NULL, type = "file") {
             )
         }
     }
-    
     if (ncol(domains) == 5) {
-        colnames(domains) <- c(
-            "seedID", "orthoID", "feature", "start", "end"
-        )
+        colnames(domains) <- 
+            c("seedID", "orthoID", "feature", "start", "end")
     } else if (ncol(domains) == 6) {
-        colnames(domains) <- c(
-            "seedID", "orthoID", "length", "feature", "start", "end"
-        )
+        colnames(domains) <- 
+            c("seedID", "orthoID", "length", "feature", "start", "end")
     } else if (ncol(domains) == 7) {
-        colnames(domains) <- c(
-            "seedID", "orthoID", "length", "feature", "start", "end",
-            "weight"
-        )
+        colnames(domains) <- 
+            c("seedID", "orthoID", "length", "feature", "start", "end","weight")
     } else if (ncol(domains) == 8) {
         colnames(domains) <- c(
-            "seedID", "orthoID", "length", "feature", "start", "end",
-            "weight", "path"
-        )
+            "seedID", "orthoID", "length", "feature", "start", "end","weight",
+            "path")
     } else {
         return("ERR")
     }
-
     if (nrow(domains) == 0) return("ERR-0")
-
     domains$seedID <- as.character(domains$seedID)
     domains$orthoID <- as.character(domains$orthoID)
     domains$seedID <- gsub("\\|",":",domains$seedID)
     domains$orthoID <- gsub("\\|",":",domains$orthoID)
-
     return(domains)
 }
 
