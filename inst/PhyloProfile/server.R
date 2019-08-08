@@ -1517,14 +1517,14 @@ shinyServer(function(input, output, session) {
 
         # create data for heatmap plotting
         dataHeat <- filterProfileData(
-            superTaxonDf = dataSupertaxa(),
+            supTaxDf = dataSupertaxa(),
             refTaxon = inSelect,
             percentCutoff,
             coorthologCutoffMax,
             var1Cutoff,
             var2Cutoff,
-            var1Relation = input$var1Relation,
-            var2Relation = input$var2Relation,
+            input$var1Relation,
+            input$var2Relation,
             groupByCat = input$colorByGroup,
             catDt = inputCatDt
         )

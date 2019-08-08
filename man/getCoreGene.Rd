@@ -4,7 +4,7 @@
 \alias{getCoreGene}
 \title{Identify core genes for a list of selected taxa}
 \usage{
-getCoreGene(rankName, taxaCore = c("none"), processedProfileData,
+getCoreGene(rankName, taxaCore = c("none"), profileDt,
     var1Cutoff = c(0, 1), var2Cutoff = c(0, 1), percentCutoff = c(0, 1),
     coreCoverage = 1)
 }
@@ -13,7 +13,7 @@ getCoreGene(rankName, taxaCore = c("none"), processedProfileData,
 
 \item{taxaCore}{list of selected taxon names}
 
-\item{processedProfileData}{dataframe contains the full processed
+\item{profileDt}{dataframe contains the full processed
 phylogenetic profiles (see ?fullProcessedProfile or ?parseInfoProfile)}
 
 \item{var1Cutoff}{cutoff for var1. Default = c(0, 1).}
@@ -40,7 +40,7 @@ or all of them (determined via coreCoverage).
 data("fullProcessedProfile", package="PhyloProfile")
 rankName <- "class"
 taxaCore <- c("Mammalia", "Saccharomycetes", "Insecta")
-processedProfileData <- fullProcessedProfile
+profileDt <- fullProcessedProfile
 var1Cutoff <- c(0.75, 1.0)
 var2Cutoff <- c(0.75, 1.0)
 percentCutoff <- c(0.0, 1.0)
@@ -48,7 +48,7 @@ coreCoverage <- 1
 getCoreGene(
     rankName,
     taxaCore,
-    processedProfileData,
+    profileDt,
     var1Cutoff, var2Cutoff,
     percentCutoff, coreCoverage
 )

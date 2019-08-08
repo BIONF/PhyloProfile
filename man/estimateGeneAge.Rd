@@ -5,7 +5,7 @@
 \title{Calculate the phylogenetic gene age from the phylogenetic profiles}
 \usage{
 estimateGeneAge(processedProfileData, rankName, refTaxon,
-    var1Cutoff, var2Cutoff, percentCutoff)
+    var1CO, var2CO, percentCO)
 }
 \arguments{
 \item{processedProfileData}{dataframe contains the full processed
@@ -16,11 +16,11 @@ phylogenetic profiles (see ?fullProcessedProfile or ?parseInfoProfile)}
 \item{refTaxon}{reference taxon name (e.g. "Homo sapiens", "Homo" or
 "Hominidae")}
 
-\item{var1Cutoff}{cutoff for var1}
+\item{var1CO}{cutoff for var1}
 
-\item{var2Cutoff}{cutoff for var2}
+\item{var2CO}{cutoff for var2}
 
-\item{percentCutoff}{cutoff for percentage of species present in each
+\item{percentCO}{cutoff for percentage of species present in each
 supertaxon}
 }
 \value{

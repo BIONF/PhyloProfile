@@ -1,16 +1,16 @@
 #' Get data for calculating distance matrix from phylogenetic profiles
 #' @export
-#' @usage getDataClustering(data, profileType = "binary",
-#'     var1AggregateBy = "max", var2AggregateBy = "max")
+#' @usage getDataClustering(data, profileType = "binary", var1AggBy = "max", 
+#'     var2AggBy = "max")
 #' @param data a data frame contains processed and filtered profiles (see
 #' ?fullProcessedProfile and ?filterProfileData, ?fromInputToProfile)
 #' @param profileType type of data used for calculating the distance matrix.
 #' Either "binary" (consider only the presence/absence status of orthlogs), or
 #' "var1"/"var2" for taking values of the additional variables into account.
 #' Default = "binary".
-#' @param var1AggregateBy aggregate method for VAR1 (min, max, mean or median).
+#' @param var1AggBy aggregate method for VAR1 (min, max, mean or median).
 #' Default = "max".
-#' @param var2AggregateBy aggregate method for VAR2 (min, max, mean or median).
+#' @param var2AggBy aggregate method for VAR2 (min, max, mean or median).
 #' Default = "max".
 #' @return A wide dataframe contains values for calculating distance matrix.
 #' @author Carla Mölbert (carla.moelbert@gmx.de), Vinh Tran
@@ -25,51 +25,39 @@
 #' getDataClustering(data, profileType, var1AggregateBy, var2AggregateBy)
 
 getDataClustering <- function(
-    data = NULL, profileType = "binary",
-    var1AggregateBy = "max", var2AggregateBy = "max"
+    data = NULL, profileType = "binary", var1AggBy = "max", var2AggBy = "max"
 ) {
     if (is.null(data)) stop("Input data cannot be NULL!")
-    supertaxon <- NULL
-    presSpec <- NULL
-
+    supertaxon <- presSpec <- NULL
     # remove lines where there is no found ortholog
     subDataHeat <- subset(data, data$presSpec > 0)
-
     # transform data into wide matrix
     if (profileType == "binary") {
         subDataHeat <- subDataHeat[, c("geneID", "supertaxon", "presSpec")]
         subDataHeat$presSpec[subDataHeat$presSpec > 0] <- 1
         subDataHeat <- subDataHeat[!duplicated(subDataHeat), ]
         wideData <- data.table::dcast(
-            subDataHeat, geneID ~ supertaxon, value.var = "presSpec"
-        )
+            subDataHeat, geneID ~ supertaxon, value.var = "presSpec")
     } else {
         var <- profileType
-
         subDataHeat <- subDataHeat[, c("geneID", "supertaxon", var)]
         subDataHeat <- subDataHeat[!duplicated(subDataHeat), ]
-
         # aggreagte the values by the selected method
-        if (var == "var1") aggregateBy <- var1AggregateBy
-        else aggregateBy <- var2AggregateBy
-
+        if (var == "var1") aggregateBy <- var1AggBy
+        else aggregateBy <- var2AggBy
         subDataHeat <- aggregate(
             subDataHeat[, var],
             list(subDataHeat$geneID, subDataHeat$supertaxon),
             FUN = aggregateBy
         )
-
         colnames(subDataHeat) <- c("geneID", "supertaxon", var)
         wideData <- data.table::dcast(
-            subDataHeat, geneID ~ supertaxon, value.var = var
-        )
+            subDataHeat, geneID ~ supertaxon, value.var = var)
     }
-
     # set name for wide matrix as gene IDs
     dat <- wideData[, 2:ncol(wideData)]
     rownames(dat) <- wideData[, 1]
     dat[is.na(dat)] <- 0
-
     return(dat)
 }
 
@@ -100,7 +88,6 @@ getDistanceMatrix <- function(profiles = NULL, method = "mutualInformation") {
     if (is.null(profiles)) stop("Profile data cannot be NULL!")
     profiles <-  profiles[, colSums(profiles != 0) > 0]
     profiles <-  profiles[rowSums(profiles != 0) > 0, ]
-
     distMethods <- c("euclidean", "maximum", "manhattan", "canberra", "binary")
     if (method %in% distMethods) {
         distanceMatrix <- stats::dist(profiles, method = method)
@@ -118,7 +105,6 @@ getDistanceMatrix <- function(profiles = NULL, method = "mutualInformation") {
         # are clustered together
         matrix <- 1 - matrix
         matrix <- as.data.frame(matrix)
-
         profileNames <- rownames(profiles)
         colnames(matrix) <- profileNames[seq_len(length(profileNames)) - 1]
         rownames(matrix) <- profileNames
@@ -129,7 +115,6 @@ getDistanceMatrix <- function(profiles = NULL, method = "mutualInformation") {
     } else if (method == "pearson") {
         distanceMatrix <-  bioDist::cor.dist(as.matrix(profiles))
     }
-
     return(distanceMatrix)
 }
 

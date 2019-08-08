@@ -43,7 +43,6 @@ getOmaMembers <- function(id = NULL, orthoType = "OG") {
             OmaDB::getOMAGroup(id = id)$members$omaid
         )
     }
-
     return(members)
 }
 
@@ -157,15 +156,12 @@ getDataForOneOma <- function(seedID = NULL, orthoType = "OG"){
 
     # get sequences, protein lengths and their domain annotations
     raw <- OmaDB::getProtein(idList)
-
     seq <- lapply(
         seq(length(raw)), function (x) as.character(raw[[x]]$sequence)
     )
-
     length <- lapply(
         seq(length(raw)), function (x) raw[[x]]$sequence_length
     )
-
     domains <- lapply(
         seq(length(raw)),
         function (x) {
@@ -175,7 +171,6 @@ getDataForOneOma <- function(seedID = NULL, orthoType = "OG"){
             paste(unlist(do.call(paste, domainDfJoin)), collapse = "\t")
         }
     )
-
     # return data frame
     return(data.frame(
         orthoID = idList,

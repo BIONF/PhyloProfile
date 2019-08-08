@@ -5,7 +5,7 @@
 \title{Create distribution plot}
 \usage{
 createVarDistPlot(data, varName = "var", varType = "var1",
-    percent = c(0, 1), distTextSize = 12)
+    percent = c(0, 1), textSize = 12)
 }
 \arguments{
 \item{data}{dataframe contains data for plotting (see
@@ -20,7 +20,7 @@ Default = "var1".}
 
 \item{percent}{range of percentage cutoff (between 0 and 1). Default = c(0,1)}
 
-\item{distTextSize}{text size of the distribution plot (in px). Default = 12.}
+\item{textSize}{text size of the distribution plot (in px). Default = 12.}
 }
 \value{
 A distribution plot for the selected variable as a ggplot object
@@ -37,13 +37,13 @@ data <- createVariableDistributionData(
 varName <- "Variable abc"
 varType <- "var1"
 percent <- c(0,1)
-distTextSize <- 12
+textSize <- 12
 createVarDistPlot(
     data,
     varName,
     varType,
     percent,
-    distTextSize
+    textSize
 )
 }
 \seealso{

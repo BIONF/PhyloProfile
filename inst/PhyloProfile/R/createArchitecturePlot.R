@@ -83,7 +83,7 @@ createArchitecturePlot <- function(
     )
 
     output$selectedDomain <- renderText({
-        if (is.null(input$archiClick$y)) stop("No domain selected!")
+        if (is.null(input$archiClick$y)) return("No domain selected!")
         convertY(unit(input$archiClick$y, "npc"), "native")
     })
 }
