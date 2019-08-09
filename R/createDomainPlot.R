@@ -19,7 +19,7 @@
 #' @return A domain plot as arrangeGrob object. Use grid::grid.draw(plot) to
 #' render.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
-#' @seealso \code{\link{domainPlotting}}, \code{\link{sortDomains}},
+#' @seealso \code{\link{singleDomainPlotting}}, \code{\link{sortDomains}},
 #' \code{\link{parseDomainInput}}, \code{\link{getQualColForVector}}
 #' @examples
 #' seedID <- "101621at6656"
@@ -45,15 +45,14 @@ createArchiPlot <- function(
     subdomainDf <- domainDf[grep(grepID, domainDf$seedID), ]
     subdomainDf$feature <- as.character(subdomainDf$feature)
     orthoID <- NULL
-    if (nrow(subdomainDf) < 1) return(paste0("ERR-0"))
+    if (nrow(subdomainDf) < 1) return(paste0("No domain info available!"))
     else {
         # ortho & seed domains df
         orthoDf <- subdomainDf[subdomainDf$orthoID == ortho,]
         seedDf <- subdomainDf[subdomainDf$orthoID != ortho,]
         if (nrow(seedDf) == 0) seedDf <- orthoDf
         seed <- as.character(seedDf$orthoID[1])
-        # return ERR-0 if seedDf and orthoDf are empty
-        if (nrow(seedDf) == 0) return(paste0("ERR-0"))
+        if (nrow(seedDf) == 0) return(paste0("No domain info available!"))
         # change order of one df's features based on order of other df's
         if (length(orthoDf$feature) < length(seedDf$feature)) {
             orderedOrthoDf <- orthoDf[order(orthoDf$feature), ]
@@ -71,46 +70,20 @@ createArchiPlot <- function(
             orderedSeedDf$yLabel <- paste0(
                 orderedSeedDf$feature," (",round(orderedSeedDf$weight, 2),")")
         } else orderedSeedDf$yLabel <- orderedSeedDf$feature
-        # the same features in seed & ortholog will have the same colors
-        featureSeed <- levels(as.factor(orderedSeedDf$feature))
-        featureOrtho <- levels(as.factor(orderedOrthoDf$feature))
-        allFeatures <- c(featureSeed, featureOrtho)
-        allColors <- getQualColForVector(allFeatures)
-        colorScheme <- structure(allColors, .Names = allFeatures)
         # plotting
-        sep <- "|"
         minStart <- min(subdomainDf$start)
-        maxEnd <- max(c(subdomainDf$end, subdomainDf$length))
-        if ("length" %in% colnames(subdomainDf)) {
-            plotOrtho <- domainPlotting(
-                orderedOrthoDf, ortho, sep, labelArchiSize, titleArchiSize,
-                minStart, maxEnd, colorScheme)
-            plotSeed <- domainPlotting(
-                orderedSeedDf, seed, sep, labelArchiSize, titleArchiSize,
-                minStart, maxEnd, colorScheme)
-        } else {
-            plotOrtho <- domainPlotting(
-                orderedOrthoDf, ortho, sep, labelArchiSize, titleArchiSize,
-                minStart, max(subdomainDf$end), colorScheme)
-            plotSeed <- domainPlotting(
-                orderedSeedDf, seed, sep, labelArchiSize, titleArchiSize,
-                minStart, max(subdomainDf$end), colorScheme)
-        }
-        # grid.arrange(plotSeed,plotOrtho,ncol=1)
-        if (ortho == seed) {
-            g <- gridExtra::arrangeGrob(plotSeed, ncol = 1)
-        } else {
-            seedHeight <- length(levels(as.factor(orderedSeedDf$feature)))
-            orthoHeight <- length(levels(as.factor(orderedOrthoDf$feature)))
-            g <- gridExtra::arrangeGrob(plotSeed, plotOrtho, ncol = 1,
-                                        heights = c(seedHeight, orthoHeight))
-        }
+        maxEnd <- max(subdomainDf$end)
+        if ("length" %in% colnames(subdomainDf))
+            maxEnd <- max(c(subdomainDf$end, subdomainDf$length))
+        g <- pairDomainPlotting(
+            seed, ortho, orderedSeedDf, orderedOrthoDf, minStart, maxEnd, 
+            labelArchiSize, titleArchiSize)
         return(g)
     }
 }
 
 #' Create architecure plot for a single protein
-#' @usage domainPlotting(df, geneID = "GeneID", sep = "|", labelSize = 12,
+#' @usage singleDomainPlotting(df, geneID = "GeneID", sep = "|", labelSize = 12,
 #'     titleSize = 12, minStart = NULL, maxEnd = NULL, colorScheme)
 #' @param df domain dataframe for ploting containing the seed ID, ortholog ID,
 #' ortholog sequence length, feature names, start and end positions,
@@ -154,7 +127,7 @@ createArchiPlot <- function(
 #' minStart <- min(df$start)
 #' maxEnd <- max(df$end)
 #' # do plotting
-#' domainPlotting(
+#' singleDomainPlotting(
 #'     df,
 #'     geneID,
 #'     sep,
@@ -164,7 +137,7 @@ createArchiPlot <- function(
 #' )
 #' }
 
-domainPlotting <- function(
+singleDomainPlotting <- function(
     df = NULL, geneID = "GeneID", sep = "|", labelSize = 12, titleSize = 12,
     minStart = NULL, maxEnd = NULL, colorScheme = NULL
 ){
@@ -213,6 +186,75 @@ domainPlotting <- function(
         axis.title.y = element_text(size = labelSize),
         panel.grid.minor.x=element_blank(), panel.grid.major.x=element_blank())
     return(gg)
+}
+
+#' Create architecure plot for a pair of seed and ortholog protein
+#' @usage pairDomainPlotting(seed, ortho, seedDf, orthoDf, minStart, maxEnd, 
+#'     labelSize, titleSize)
+#' @param seed Seed ID
+#' @param ortho Ortho ID
+#' @param seedDf domain dataframe for seed domains containing the seed ID, 
+#' ortholog ID, sequence length, feature names, start and end positions, 
+#' feature weights (optional) and the status to determine if that feature is 
+#' important for comparison the architecture between 2 proteins* (e.g. seed 
+#' protein vs ortholog) (optional).
+#' @param orthoDf domain dataframe for ortholog domains (same format as seedDf).
+#' @param minStart the smallest start position of all domains
+#' @param maxEnd the highest stop position of all domains
+#' @param labelSize lable size. Default = 12.
+#' @param titleSize title size. Default = 12.
+#' @return Domain plot of a pair proteins as a arrangeGrob object.
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+#' @examples
+#' \dontrun{
+#' seed <- "101621at6656"
+#' ortho <- "101621at6656|AGRPL@224129@0|224129_0:001955|1"
+#' ortho <- gsub("\\|", ":", ortho)
+#' grepID <- paste(seed, "#", ortho, sep = "")
+#' domainFile <- system.file(
+#'     "extdata", "domainFiles/101621at6656.domains",
+#'     package = "PhyloProfile", mustWork = TRUE
+#' )
+#' domainDf <- parseDomainInput(seed, domainFile, "file")
+#' subdomainDf <- domainDf[grep(grepID, domainDf$seedID), ]
+#' subdomainDf$feature <- as.character(subdomainDf$feature)
+#' orthoDf <- subdomainDf[subdomainDf$orthoID == ortho,]
+#' seedDf <- subdomainDf[subdomainDf$orthoID != ortho,]
+#' minStart <- min(subdomainDf$start)
+#' maxEnd <- max(c(subdomainDf$end, subdomainDf$length))
+#' g <- pairDomainPlotting(seed,ortho,seedDf,orthoDf,minStart,maxEnd,9,9)    
+#' grid::grid.draw(g)
+#' }
+
+pairDomainPlotting <- function(
+    seed = NULL, ortho = NULL, seedDf = NULL, orthoDf = NULL, 
+    minStart = 0, maxEnd = 999, labelSize = 12, titleSize = 12
+) {
+    if(is.null(seed) | is.null(ortho) | is.null(seedDf) | is.null(orthoDf))
+        stop("Seed/Ortho ID or domain dataframe is NULL!")
+    # create color scheme, so that the same features in seed & ortholog will 
+    # have the same colors
+    featureSeed <- levels(as.factor(seedDf$feature))
+    featureOrtho <- levels(as.factor(orthoDf$feature))
+    allFeatures <- c(featureSeed, featureOrtho)
+    allColors <- getQualColForVector(allFeatures)
+    colorScheme <- structure(allColors, .Names = allFeatures)
+    # plot
+    sep <- "|"
+    plotOrtho <- singleDomainPlotting(
+        orthoDf, ortho, sep, labelSize, titleSize, minStart, maxEnd,colorScheme)
+    plotSeed <- singleDomainPlotting(
+        seedDf, seed, sep, labelSize, titleSize, minStart, maxEnd, colorScheme)
+    if (ortho == seed) {
+        g <- gridExtra::arrangeGrob(plotSeed, ncol = 1)
+    } else {
+        seedHeight <- length(levels(as.factor(seedDf$feature)))
+        orthoHeight <- length(levels(as.factor(orthoDf$feature)))
+        g <- gridExtra::arrangeGrob(
+            plotSeed, plotOrtho, ncol = 1, heights = c(seedHeight, orthoHeight)
+        )
+    }
+    return(g)
 }
 
 #' Sort one domain dataframe based on the other domain dataframe

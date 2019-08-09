@@ -4,13 +4,13 @@
 \alias{filterProfileData}
 \title{Filter phylogentic profiles}
 \usage{
-filterProfileData(supTaxDf, refTaxon = NULL,
+filterProfileData(DF, refTaxon = NULL,
     percentCO = c(0, 1), coorthoCOMax = 9999,
     var1CO  = c(0, 1), var2CO = c(0, 1), var1Rel = "protein",
     var2Rel = "protein", groupByCat = FALSE, catDt = NULL)
 }
 \arguments{
-\item{supTaxDf}{a reduced dataframe contains info for all phylogenetic
+\item{DF}{a reduced dataframe contains info for all phylogenetic
 profiles in the selected taxonomy rank.}
 
 \item{refTaxon}{selected reference taxon. NOTE: This taxon will not be

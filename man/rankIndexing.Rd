@@ -17,10 +17,14 @@ values.
 \description{
 Indexing all available ranks (including norank)
 }
-\author{
-Vinh Tran {tran@bio.uni-frankfurt.de}
+\examples{
+\dontrun{
 rankListFile <- system.file(
     "extdata", "data/rankList.txt", package = "PhyloProfile", mustWork = TRUE
 )
 rankIndexing(rankListFile)
+}
+}
+\author{
+Vinh Tran {tran@bio.uni-frankfurt.de}
 }

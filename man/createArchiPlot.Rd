@@ -43,7 +43,7 @@ plot <- createArchiPlot(info, domainDf, 9, 9)
 grid::grid.draw(plot)
 }
 \seealso{
-\code{\link{domainPlotting}}, \code{\link{sortDomains}},
+\code{\link{singleDomainPlotting}}, \code{\link{sortDomains}},
 \code{\link{parseDomainInput}}, \code{\link{getQualColForVector}}
 }
 \author{
