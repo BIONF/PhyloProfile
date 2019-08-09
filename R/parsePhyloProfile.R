@@ -542,11 +542,11 @@ reduceProfile <- function(fullProfile) {
 #' using the results from other functions. If you would like to get a full
 #' processed data from the raw input, please use the function
 #' fromInputToProfile() instead!
-#' @usage filterProfileData(supTaxDf, refTaxon = NULL,
+#' @usage filterProfileData(DF, refTaxon = NULL,
 #'     percentCO = c(0, 1), coorthoCOMax = 9999,
 #'     var1CO  = c(0, 1), var2CO = c(0, 1), var1Rel = "protein",
 #'     var2Rel = "protein", groupByCat = FALSE, catDt = NULL)
-#' @param supTaxDf a reduced dataframe contains info for all phylogenetic
+#' @param DF a reduced dataframe contains info for all phylogenetic
 #' profiles in the selected taxonomy rank.
 #' @param refTaxon selected reference taxon. NOTE: This taxon will not be
 #' affected by the filtering. If you want to filter all, set refTaxon <- NULL.
@@ -605,99 +605,76 @@ reduceProfile <- function(fullProfile) {
 #' )
 
 filterProfileData <- function(
-    supTaxDf, refTaxon = NULL, percentCO = c(0, 1), coorthoCOMax = 9999,
+    DF, refTaxon = NULL, percentCO = c(0, 1), coorthoCOMax = 9999,
     var1CO = c(0, 1), var2CO = c(0, 1), var1Rel = "protein", 
     var2Rel = "protein", groupByCat = FALSE, catDt = NULL
 ) {
-    if (is.null(supTaxDf)) stop("Profile data cannot be NULL!")
+    if (is.null(DF)) stop("Profile data cannot be NULL!")
     if (is.null(refTaxon)) refTaxon = "NA"
     ### remove index from supertaxon names
-    supTaxDf$taxonMod <- gsub("^[[:digit:]]*_", "", supTaxDf$supertaxon)
+    DF$taxonMod <- gsub("^[[:digit:]]*_", "", DF$supertaxon)
     ### replace insufficient values according to the thresholds by NA or 0
-    numberCoortholog <- levels(as.factor(supTaxDf$paralog))
+    numberCoortholog <- levels(as.factor(DF$paralog))
     if (length(numberCoortholog) > 1) {
-        supTaxDf$presSpec[supTaxDf$taxonMod != refTaxon
-            & supTaxDf$paralog > coorthoCOMax] <- 0
+        DF$presSpec[DF$taxonMod != refTaxon & DF$paralog > coorthoCOMax] <- 0
         if (var2Rel == "protein")
-            supTaxDf$var2[supTaxDf$taxonMod != refTaxon
-                & supTaxDf$paralog > coorthoCOMax] <- NA
+            DF$var2[DF$taxonMod != refTaxon & DF$paralog > coorthoCOMax] <- NA
     } else {
-        if (length(levels(as.factor(supTaxDf$presSpec))) > 1)
-            supTaxDf$presSpec[supTaxDf$taxonMod != refTaxon
-                & supTaxDf$presSpec < percentCO[1]] <- 0
-        supTaxDf$presSpec[supTaxDf$taxonMod != refTaxon
-            & supTaxDf$presSpec > percentCO[2]] <- 0
+        if (length(levels(as.factor(DF$presSpec))) > 1)
+            DF$presSpec[DF$taxonMod != refTaxon & DF$presSpec<percentCO[1]] <- 0
+        DF$presSpec[DF$taxonMod != refTaxon & DF$presSpec > percentCO[2]] <- 0
         if (var2Rel == "protein") {
-            supTaxDf$var2[supTaxDf$taxonMod != refTaxon
-                & supTaxDf$presSpec < percentCO[1]] <- NA
-            supTaxDf$var2[supTaxDf$taxonMod != refTaxon
-                & supTaxDf$presSpec > percentCO[2]] <- NA
+            DF$var2[DF$taxonMod != refTaxon & DF$presSpec < percentCO[1]] <- NA
+            DF$var2[DF$taxonMod != refTaxon & DF$presSpec > percentCO[2]] <- NA
         }
     }
-    supTaxDf$presSpec[supTaxDf$taxonMod != refTaxon 
-        & supTaxDf$var1 < var1CO[1]] <- 0
-    supTaxDf$presSpec[supTaxDf$taxonMod != refTaxon 
-        & supTaxDf$var1 > var1CO[2]] <- 0
+    DF$presSpec[DF$taxonMod != refTaxon & DF$var1 < var1CO[1]] <- 0
+    DF$presSpec[DF$taxonMod != refTaxon & DF$var1 > var1CO[2]] <- 0
     if (var1Rel == "protein") {
         if (var2Rel == "protein") {
             # prot-prot: remove complete cell if one variable not sufficient
-            supTaxDf$presSpec[supTaxDf$taxonMod != refTaxon
-                & supTaxDf$var2 < var2CO[1]] <- 0
-            supTaxDf$presSpec[supTaxDf$taxonMod != refTaxon
-                & supTaxDf$var2 > var2CO[2]] <- 0
-            supTaxDf$var2[supTaxDf$taxonMod != refTaxon
-                & supTaxDf$var1 < var1CO[1]] <- NA
-            supTaxDf$var2[supTaxDf$taxonMod != refTaxon
-                & supTaxDf$var1 > var1CO[2]] <- NA
-            supTaxDf$var1[supTaxDf$taxonMod != refTaxon
-                & supTaxDf$var2 < var2CO[1]] <- NA
-            supTaxDf$var1[supTaxDf$taxonMod != refTaxon
-                & supTaxDf$var2 > var2CO[2]] <- NA
+            DF$presSpec[DF$taxonMod != refTaxon & DF$var2 < var2CO[1]] <- 0
+            DF$presSpec[DF$taxonMod != refTaxon & DF$var2 > var2CO[2]] <- 0
+            DF$var2[DF$taxonMod != refTaxon & DF$var1 < var1CO[1]] <- NA
+            DF$var2[DF$taxonMod != refTaxon & DF$var1 > var1CO[2]] <- NA
+            DF$var1[DF$taxonMod != refTaxon & DF$var2 < var2CO[1]] <- NA
+            DF$var1[DF$taxonMod != refTaxon & DF$var2 > var2CO[2]] <- NA
         } else {
             # prot-spec: var1 depend on var2
-            supTaxDf$presSpec[supTaxDf$taxonMod != refTaxon
-                & supTaxDf$var2 < var2CO[1]] <- 0
-            supTaxDf$presSpec[supTaxDf$taxonMod != refTaxon
-                & supTaxDf$var2 > var2CO[2]] <- 0
+            DF$presSpec[DF$taxonMod != refTaxon & DF$var2 < var2CO[1]] <- 0
+            DF$presSpec[DF$taxonMod != refTaxon & DF$var2 > var2CO[2]] <- 0
         }
     } else {
         if (var2Rel == "species") {
             # spec-spec: remove var1 and var2 independently
-            supTaxDf$presSpec[supTaxDf$taxonMod != refTaxon
-                & supTaxDf$var1 < var1CO[1]] <- 0
-            supTaxDf$presSpec[supTaxDf$taxonMod != refTaxon
-                & supTaxDf$var1 > var1CO[2]] <- 0
+            DF$presSpec[DF$taxonMod != refTaxon & DF$var1 < var1CO[1]] <- 0
+            DF$presSpec[DF$taxonMod != refTaxon & DF$var1 > var1CO[2]] <- 0
         } else {
             # spec-prot: var2 depend on var1
-            supTaxDf$var2[supTaxDf$taxonMod != refTaxon
-                & supTaxDf$var1 < var1CO[1]] <- NA
-            supTaxDf$var2[supTaxDf$taxonMod != refTaxon
-                & supTaxDf$var1 > var1CO[2]] <- NA
+            DF$var2[DF$taxonMod != refTaxon & DF$var1 < var1CO[1]] <- NA
+            DF$var2[DF$taxonMod != refTaxon & DF$var1 > var1CO[2]] <- NA
         }
     }
-    supTaxDf$var1[supTaxDf$taxonMod != refTaxon & supTaxDf$var1<var1CO[1]] <- NA
-    supTaxDf$var1[supTaxDf$taxonMod != refTaxon & supTaxDf$var1>var1CO[2]] <- NA
-    supTaxDf$var2[supTaxDf$taxonMod != refTaxon & supTaxDf$var2<var2CO[1]] <- NA
-    supTaxDf$var2[supTaxDf$taxonMod != refTaxon & supTaxDf$var2>var2CO[2]] <- NA
-    supTaxDf <- droplevels(supTaxDf)  # delete unused levels
-    supTaxDf$geneID <- as.factor(supTaxDf$geneID)
-    supTaxDf$supertaxon <- as.factor(supTaxDf$supertaxon)
+    DF$var1[DF$taxonMod != refTaxon & DF$var1 < var1CO[1]] <- NA
+    DF$var1[DF$taxonMod != refTaxon & DF$var1 > var1CO[2]] <- NA
+    DF$var2[DF$taxonMod != refTaxon & DF$var2 < var2CO[1]] <- NA
+    DF$var2[DF$taxonMod != refTaxon & DF$var2 > var2CO[2]] <- NA
+    DF <- droplevels(DF)  # delete unused levels
+    DF$geneID <- as.factor(DF$geneID)
+    DF$supertaxon <- as.factor(DF$supertaxon)
     ### add gene categories (if provided)
     if (groupByCat == TRUE) {
         if (is.null(catDt)) {
-            catDt <- data.frame( geneID = levels(supTaxDf$geneID))
+            catDt <- data.frame( geneID = levels(DF$geneID))
             catDt$group <- "noCategory"
         }
-        dataHeatCat <- data.frame(
-            supertaxon = rep(
-                levels(supTaxDf$supertaxon), nlevels(supTaxDf$geneID)),
-            geneID = rep(
-                levels(supTaxDf$geneID), each = nlevels(supTaxDf$supertaxon)))
-        dataHeatCat <- merge(dataHeatCat, catDt, by = "geneID")
-        supTaxDf <- merge(
-            dataHeatCat, supTaxDf, by = c("geneID","supertaxon"), all.x = TRUE)
+        dfCat <- data.frame(
+            supertaxon = rep(levels(DF$supertaxon), nlevels(DF$geneID)),
+            geneID = rep(levels(DF$geneID), each = nlevels(DF$supertaxon)))
+        dfCat <- merge(dfCat, catDt, by = "geneID")
+        DF <- merge(dfCat, DF, by = c("geneID","supertaxon"), all.x = TRUE)
     }
-    return(supTaxDf)
+    return(DF)
 }
 
 #' Complete processing of raw input phylogenetic profiles

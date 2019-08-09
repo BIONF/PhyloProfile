@@ -35,8 +35,7 @@
 estimateGeneAge <- function(
     processedProfileData, rankName, refTaxon, var1CO, var2CO, percentCO
 ){
-    rankList <- 
-        c("family", "class", "phylum", "kingdom", "superkingdom", "root")
+    rankList <- c("family", "class", "phylum", "kingdom", "superkingdom","root")
     # get selected (super)taxon ID
     taxList <- getNameList()
     superID <- taxList[
@@ -48,39 +47,33 @@ estimateGeneAge <- function(
     # get (super)taxa IDs for one of representative species
     firstLine <- Dt[Dt[, rankName] == superID, ][1, ]
     supFirstLine <- firstLine[, c("abbrName", rankList)]
-    # compare each taxon ncbi IDs with selected taxon
-    # and create a "category" data frame
+    # compare each taxon IDs with selected taxon & create a "category" DF
     catList <- lapply(
         seq(nrow(subDt)), function (x) {
             cat <- subDt[x, ] %in% supFirstLine
-            cat <- paste0(cat, collapse = "")
-        })
-    catDf <- data.frame(
-        ncbiID = as.character(subDt$abbrName), cat = do.call(rbind, catList),
-        stringsAsFactors = FALSE)
+            cat <- paste0(cat, collapse = "")})
+    catDf <- data.frame(ncbiID = as.character(subDt$abbrName), 
+                        cat = do.call(rbind, catList), stringsAsFactors = FALSE)
     catDf$cat <- gsub("TRUE", "1", catDf$cat)
     catDf$cat <- gsub("FALSE", "0", catDf$cat)
     # get main input data
     mdData <- droplevels(processedProfileData)
-    mdData <- mdData[, c(
-        "geneID", "ncbiID", "orthoID", "var1", "var2", "presSpec")]
+    mdData <- mdData[, c("geneID","ncbiID","orthoID","var1","var2","presSpec")]
     # add "category" into mdData
-    mdDataExt <- merge(mdData, catDf, by = "ncbiID", all.x = TRUE)
-    mdDataExt$var1[mdDataExt$var1 == "NA" | is.na(mdDataExt$var1)] <- 0
-    mdDataExt$var2[mdDataExt$var2 == "NA" | is.na(mdDataExt$var2)] <- 0
+    mdDtExt <- merge(mdData, catDf, by = "ncbiID", all.x = TRUE)
+    mdDtExt$var1[mdDtExt$var1 == "NA" | is.na(mdDtExt$var1)] <- 0
+    mdDtExt$var2[mdDtExt$var2 == "NA" | is.na(mdDtExt$var2)] <- 0
     # remove cat for "NA" orthologs and also for orthologs that dont fit cutoffs
-    if (nrow(
-        mdDataExt[mdDataExt$orthoID == "NA" | is.na(mdDataExt$orthoID), ]) > 0){
-        mdDataExt[mdDataExt$orthoID == "NA"|is.na(mdDataExt$orthoID),]$cat <- NA
-    }
-    mdDataExt <- mdDataExt[complete.cases(mdDataExt), ]
+    if (nrow(mdDtExt[mdDtExt$orthoID == "NA" | is.na(mdDtExt$orthoID), ]) > 0)
+        mdDtExt[mdDtExt$orthoID == "NA" | is.na(mdDtExt$orthoID),]$cat <- NA
+    mdDtExt <- mdDtExt[complete.cases(mdDtExt), ]
     # filter by %specpres, var1, var2 ..
-    mdDataExt <- subset(mdDataExt, 
-        mdDataExt$var1 >= var1CO[1] & mdDataExt$var1 <= var1CO[2] 
-        & mdDataExt$var2 >= var2CO[1] & mdDataExt$var2 <= var2CO[2]
-        & mdDataExt$presSpec >=percentCO[1] & mdDataExt$presSpec<= percentCO[2])
+    mdDtExt <- subset(
+        mdDtExt, mdDtExt$var1 >= var1CO[1] & mdDtExt$var1 <= var1CO[2] 
+        & mdDtExt$var2 >= var2CO[1] & mdDtExt$var2 <= var2CO[2]
+        & mdDtExt$presSpec >=percentCO[1] & mdDtExt$presSpec<= percentCO[2])
     # get the furthest common taxon with selected taxon for each gene
-    geneAgeDf <- as.data.frame(tapply(mdDataExt$cat, mdDataExt$geneID, min))
+    geneAgeDf <- as.data.frame(tapply(mdDtExt$cat, mdDtExt$geneID, min))
     data.table::setDT(geneAgeDf, keep.rownames = TRUE)[]
     data.table::setnames(geneAgeDf, seq_len(2), c("geneID", "cat"))  #col names
     row.names(geneAgeDf) <- NULL   # remove row names
@@ -89,7 +82,7 @@ estimateGeneAge <- function(
     geneAgeDf$age[geneAgeDf$cat == "0000011" | geneAgeDf$cat == "0000010"] <-
         paste0(
             "06_", taxList$fullName[taxList$ncbiID == supFirstLine$superkingdom
-                                & taxList$rank == "superkingdom"])
+                                    & taxList$rank == "superkingdom"])
     geneAgeDf$age[geneAgeDf$cat == "0000111"] <- paste0(
         "05_", taxList$fullName[
             taxList$ncbiID == supFirstLine$kingdom & taxList$rank == "kingdom"])

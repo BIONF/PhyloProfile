@@ -1517,7 +1517,7 @@ shinyServer(function(input, output, session) {
 
         # create data for heatmap plotting
         dataHeat <- filterProfileData(
-            supTaxDf = dataSupertaxa(),
+            DF = dataSupertaxa(),
             refTaxon = inSelect,
             percentCutoff,
             coorthologCutoffMax,
@@ -1931,12 +1931,11 @@ shinyServer(function(input, output, session) {
 
         req(info)
         ### get info for present taxa in selected supertaxon (1)
-        plotTaxon <- info[3]
-        plotGeneID <- info[1]
         fullDf <- getDataFiltered()
+        plotTaxon <- unique(fullDf$supertaxon[grep(info[3], fullDf$supertaxon)])
+        plotGeneID <- info[1]
         selDf <- fullDf[fullDf$geneID == plotGeneID
                         & fullDf$supertaxon == plotTaxon, ]
-
         ### get all taxa of this supertaxon (2)
         allTaxaDf <- sortedtaxaList()
         allTaxaDf <- allTaxaDf[allTaxaDf$supertaxon == plotTaxon,

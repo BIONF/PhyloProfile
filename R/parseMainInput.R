@@ -21,7 +21,7 @@ checkInputValidity <- function(filein) {
     inputDt <- read.table(
         file = filein, sep = "\t", header = FALSE, check.names = FALSE,
         comment.char = "", fill = TRUE, stringsAsFactors = FALSE)
-
+    
     if (is.na(inputDt[1, ncol(inputDt)])) {
         return("moreCol")
     } else {
@@ -54,7 +54,9 @@ checkInputValidity <- function(filein) {
             else {
                 if (grepl("\\s", inputDt[1, 1])) return("invalidFormat")
                 # OMA ids
-                invalidOma <- checkOmaID(unique(inputDt[,1]))
+                ids <- unique(inputDt[,1])
+                if (length(ids) < 2) ids <- rep(ids, 2)
+                invalidOma <- checkOmaID(ids)
                 if (length(invalidOma) == 0) {
                     return("oma")
                 } else return(invalidOma)

@@ -4,13 +4,13 @@
 \alias{heatmapPlotting}
 \title{Create profile heatmap plot}
 \usage{
-heatmapPlotting(data = NULL, plotParameter = NULL)
+heatmapPlotting(data = NULL, parm = NULL)
 }
 \arguments{
 \item{data}{dataframe for plotting the heatmap phylogentic profile (either
 full or subset profiles)}
 
-\item{plotParameter}{plot parameters, including (1) type of x-axis "taxa" or
+\item{parm}{plot parameters, including (1) type of x-axis "taxa" or
 "genes" - default = "taxa"; (2+3) names of 2 variables var1ID and var2ID -
 default = "var1" & "var2"; (4) color for lowest var1 - default = "#FF8C00";
 (5) color for highest var1 - default = "#4682B4"; (6) color for lowest var2 -

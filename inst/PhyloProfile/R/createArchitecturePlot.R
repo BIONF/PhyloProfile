@@ -34,7 +34,7 @@ createArchitecturePlot <- function(
         g <- createArchiPlot(
             pointInfo(), domainInfo(), labelArchiSize(), titleArchiSize()
         )
-        if (any(g == "ERR-0")) {
+        if (any(g == "No domain info available!")) {
             msgPlot()
         } else {
             grid.draw(g)
