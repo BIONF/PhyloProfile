@@ -53,7 +53,8 @@ multi-layered phylogenetic profiles*.
 
 # How to install PhyloProfile
 
-To install the PhyloProfile package via [Bioconductor](https://bioconductor.org/packages/PhyloProfile)
+To install the PhyloProfile package via 
+[Bioconductor](https://bioconductor.org/packages/PhyloProfile)
 using BiocManager:
 
 ```r
