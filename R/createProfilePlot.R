@@ -40,9 +40,10 @@ dataMainPlot <- function(dataHeat = NULL){
     dataHeat$paralog[dataHeat$presSpec < 1] <- NA
     dataHeat$paralog[dataHeat$paralog == 1] <- NA
     # rescale numbers of paralogs
-    maxParalog <- max(na.omit(dataHeat$paralog))
-    if (length(unique(na.omit(dataHeat$paralog))) > 0)
+    if (length(unique(na.omit(dataHeat$paralog))) > 0) {
+        maxParalog <- max(na.omit(dataHeat$paralog))
         dataHeat$paralogSize <- (dataHeat$paralog / maxParalog) * 3
+    }
     # remove prefix number of taxa names but keep the order
     dataHeat$supertaxon <- factor(
         substr(
@@ -115,9 +116,10 @@ dataCustomizedPlot <- function(
     dataHeat$paralog[dataHeat$presSpec < 1] <- NA
     dataHeat$paralog[dataHeat$paralog == 1] <- NA
     # rescale numbers of paralogs
-    maxParalog <- max(na.omit(dataHeat$paralog))
-    if (length(unique(na.omit(dataHeat$paralog))) > 0)
+    if (length(unique(na.omit(dataHeat$paralog))) > 0) {
+        maxParalog <- max(na.omit(dataHeat$paralog))
         dataHeat$paralogSize <- (dataHeat$paralog / maxParalog) * 3
+    }
     # remove prefix number of taxa names but keep the order
     dataHeat$supertaxon <- factor(
         substr(
