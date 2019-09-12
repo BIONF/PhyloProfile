@@ -53,12 +53,20 @@ multi-layered phylogenetic profiles*.
 
 # How to install PhyloProfile
 
-To install the PhyloProfile package via [Bioconductor](https://bioconductor.org)
+To install the PhyloProfile package via [Bioconductor](https://bioconductor.org/packages/PhyloProfile)
 using BiocManager:
 
 ```r
 if (!requireNamespace("BiocManager"))
     install.packages("BiocManager")
+BiocManager::install("PhyloProfile")
+```
+
+To install the dev version from Bioconductor:
+```r
+if (!requireNamespace("BiocManager", quitely = TRUE))
+    install.packages("BiocManager")
+BiocManager::install(version='devel')
 BiocManager::install("PhyloProfile")
 ```
 
@@ -70,7 +78,7 @@ if (!requireNamespace("devtools"))
 devtools::install_github(
     "BIONF/PhyloProfile",
     INSTALL_opts = c('--no-lock'),
-    build_opts = c('--no-resave-data')
+    build_vignettes = TRUE
 )
 ```
 
