@@ -1,16 +1,15 @@
 # PhyloProfile
-[![GitHub release](https://img.shields.io/badge/latest%20release-1.0.0-orange.svg)](https://github.com/BIONF/PhyloProfile/releases/tag/v1.0.0)
+[![Bioconductor](https://img.shields.io/badge/available%20at-Bioconductor-orange)](https://bioconductor.org/packages/PhyloProfile)
 [![published in: Bioinformatics](https://img.shields.io/badge/published%20in-Bioinformatics-ff69b4.svg?style=flat)](https://doi.org/10.1093/bioinformatics/bty225)
-[![poster at: BOSC2017](https://img.shields.io/badge/poster%20at-BOSC2017-green.svg?style=flat)](https://f1000research.com/posters/6-1782)
 [![presented at: GCB2018](https://img.shields.io/badge/presented%20at-GCB2018-green.svg?style=flat)](http://gcb2018.de)
-[![language: R](https://img.shields.io/badge/language-R-blue.svg?style=flat)](https://www.r-project.org/)
-[![license: MIT](https://img.shields.io/badge/license-MIT-lightgrey.svg)](https://opensource.org/licenses/MIT)
+[![poster at: SMBE2019](https://img.shields.io/badge/poster%20at-SMBE2019-green)](https://f1000research.com/posters/6-1782)
 [![Travis-CI Build Status](https://travis-ci.org/BIONF/PhyloProfile.svg?branch=master)](https://travis-ci.org/BIONF/PhyloProfile)
+[![](https://img.shields.io/badge/download-21/total-blue.svg)](https://bioconductor.org/packages/stats/bioc/PhyloProfile)
 
 ![](https://github.com/BIONF/phyloprofile-data/blob/gh-pages/www/posterSub.png)
 [Click here for the full PDF version of the BOSC2017 poster](https://f1000research.com/posters/6-1782)
 
-*PhyloProfile* is a *Shiny*-based tool for integrating, visualizing and exploring multi-layered [phylogenetic profiles](https://en.wikipedia.org/wiki/Phylogenetic_profiling).
+*PhyloProfile* is an R package that comes together with a *Shiny*-based tool for integrating, visualizing and exploring multi-layered [phylogenetic profiles](https://en.wikipedia.org/wiki/Phylogenetic_profiling).
 
 Alongside the presence/absence patterns of [orthologs](https://en.wikipedia.org/wiki/Homology_(biology)) across large [taxon](https://en.wikipedia.org/wiki/Taxon) collections, *PhyloProfile* allows the integration of any two additional information layers. These complementary data, like [sequence similarity](https://en.wikipedia.org/wiki/Sequence_alignment) between orthologs, similarities in their [domain architecture](https://www.ncbi.nlm.nih.gov/pubmed/20221914), or differences in [functional annotations](https://en.wikipedia.org/wiki/Protein_function_prediction) enable a more informed interpretation of phylogenetic profiles.
 
@@ -30,16 +29,34 @@ Take a look at [the functionality](https://github.com/BIONF/PhyloProfile/wiki/Fu
 * [Contact](#contact)
 
 # Installation & Usage
+*PhyloProfile* requires [R](https://cran.r-project.org) (version ≥ 3.6.0). Please install or update R on your computer before continue.
+
+* [R for Linux](https://cran.r-project.org/bin/linux/)
+* [R for Mac OS](https://cran.r-project.org/bin/macosx/)
+* [R for Windows](https://cran.r-project.org/bin/windows/base/)
+
+Then start R to install and use *PhyloProfile*.
+
 ## Using BiocManager
-We are preparing to submit *PhyloProfile* to [Bioconductor](https://www.bioconductor.org/). Once the package is accepted, you can easily install it using BiocManager:
+*PhyloProfile* is available at [Bioconductor](https://bioconductor.org/packages/PhyloProfile). To install *PhyloProfile*, start R (version ≥ 3.6.0) and enter:
 
 ```r
-if (!requireNamespace("BiocManager"))
+if (!requireNamespace("BiocManager", quitely = TRUE))
     install.packages("BiocManager")
 BiocManager::install("PhyloProfile")
 ```
 
-*Until then please install the dev version of *PhyloProfile* from our github repository using __[devtools](https://cran.r-project.org/web/packages/devtools/index.html)__.*
+To install the development version of PhyloProfile, please use the [devel version](https://bioconductor.org/developers/how-to/useDevel/) of Bioconductor:
+```r
+if (!requireNamespace("BiocManager", quitely = TRUE))
+    install.packages("BiocManager")
+BiocManager::install(version='devel')
+BiocManager::install("PhyloProfile")
+```
+
+or
+*install the dev version of *PhyloProfile* from our github repository using __[devtools](https://cran.r-project.org/web/packages/devtools/index.html)__.*
+
 ## Using devtools
 The dev version of *PhyloProfile* can be installed from this github repository using `devtools`:
 
@@ -51,20 +68,9 @@ devtools::install_github("BIONF/PhyloProfile", INSTALL_opts = c('--no-lock'), bu
 
 This step can take a while, as the tool will try do download and install all necessary dependencies automatically. *(Note: Depending on your system this sometimes fails, please check the console log for error messages concerning the dependency installation)*
 
-## Start PhyloProfile
-First install the demo data package
-```r
-if (!requireNamespace("BiocManager"))
-    install.packages("BiocManager")
-BiocManager::install(version = '3.10', ask = FALSE)
-devtools::install_github(
-    "bionf/PhyloProfileData",
-    INSTALL_opts = c('--no-lock'),
-    build_opts = c('--no-resave-data')
-)
-```
+## Start PhyloProfile's Shiny app
 
-Then run
+From the R terminal, enter:
 ```r
 library(PhyloProfile)
 runPhyloProfile()
@@ -74,7 +80,7 @@ Check your web browser, *PhyloProfile* will be displayed there ;-) For the first
 _**Please check our [detailed instructions](https://github.com/BIONF/PhyloProfile/wiki/Installation) if you encounter any problems while installing and starting the program.**_
 
 # Input Data
-*PhyloProfile* can read a number of different input files, including multi-FASTA files, regular tab-separated files, OMA ID list or *OrthoXML*. The additional information layers can be embedded in the OrthoXML or be provided separately.
+*PhyloProfile* can read a number of different input files, including multi-FASTA files, regular tab-separated files, OMA ID lists or *OrthoXML* files. The additional information layers can be embedded in the OrthoXML or be provided separately as tab-separated files.
 
 We described all suppported input formats in section [Input Data](https://github.com/BIONF/PhyloProfile/wiki/Input-Data) in our [PhyloProfile's Wiki](https://github.com/BIONF/PhyloProfile/wiki).
 

@@ -307,27 +307,6 @@ shinyServer(function(input, output, session) {
         }
     })
 
-    # * render 2. variable relationship according to demo data -----------------
-    output$var2Relation.ui <- renderUI({
-        if (input$demoData == "ampk-tor") {
-            selectInput(
-                "var2Relation", label = h5("Relationship:"),
-                choices = list(
-                    "Prot-Prot" = "protein", "Prot-Spec" = "species"
-                ),
-                selected = "protein",
-                width = 130
-            )
-        } else {
-            selectInput("var2Relation", label = h5("Relationship:"),
-                        choices = list(
-                            "Prot-Prot" = "protein", "Prot-Spec" = "species"
-                        ),
-                        selected = "species",
-                        width = 130)
-        }
-    })
-
     # * check the existance of the input concatenate fasta file ----------------
     output$concatFasta.existCheck <- renderUI({
         req(input$concatFasta)

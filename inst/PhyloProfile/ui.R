@@ -245,7 +245,15 @@ shinyUI(
                             )
                         ),
                         column(
-                            4, uiOutput("var2Relation.ui")
+                            4,
+                            selectInput(
+                                "var2Relation", label = h5("Relationship:"),
+                                choices = list(
+                                    "Prot-Prot" = "protein", "Prot-Spec" = "species"
+                                ),
+                                selected = "protein",
+                                width = 130
+                            )
                         )
                     ),
                     hr(),
