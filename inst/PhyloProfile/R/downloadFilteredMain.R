@@ -54,7 +54,7 @@ downloadFilteredMainUI <- function(id) {
         ),
         column(
             12,
-            dataTableOutput(ns("filteredMainData"))
+            DT::dataTableOutput(ns("filteredMainData"))
         ),
         column(
             4,
@@ -237,7 +237,7 @@ downloadFilteredMain <- function(
     )
 
     # render download data table -----------------------------------------------
-    output$filteredMainData <- renderDataTable({
+    output$filteredMainData <- DT::renderDataTable({
         data <- downloadData()
         data
     })

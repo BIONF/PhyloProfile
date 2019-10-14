@@ -849,7 +849,7 @@ shinyServer(function(input, output, session) {
 
     # * render list of unkTaxa -------------------------------------------------
     output$unkTaxaFull <-
-        renderDataTable(options = list(searching = FALSE, pageLength = 10),{
+        DT::renderDataTable(options = list(searching = FALSE, pageLength = 10),{
             if (length(unkTaxa()) > 0) {
                 tb <- unkTaxa()
                 tb[, c("TaxonID", "Source")]
@@ -1875,7 +1875,7 @@ shinyServer(function(input, output, session) {
             a <- toString(paste("Seed-ID:", info[1]))
             b <- toString(paste0(
                 "Hit-ID: ", orthoID,
-                " (", substr(info[3], 6, nchar(info[3])), ")"
+                " (", info[3], ")"
             ))
             c <- ""
             if (input$var1ID != "") {
@@ -2811,7 +2811,7 @@ shinyServer(function(input, output, session) {
     })
     outputOptions(output, "checkTaxonGroupGC", suspendWhenHidden = FALSE)
 
-    output$invalidTaxonGroupGC <- renderDataTable({
+    output$invalidTaxonGroupGC <- DT::renderDataTable({
         if (is.null(invalidTaxonGroupGC())) return()
         else return(invalidTaxonGroupGC())
     })

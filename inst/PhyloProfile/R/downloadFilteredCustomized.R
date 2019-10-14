@@ -25,7 +25,7 @@ downloadFilteredCustomizedUI <- function(id) {
         ),
         column(
             12,
-            dataTableOutput(ns("filteredCustomData"))
+            DT::dataTableOutput(ns("filteredCustomData"))
         ),
         column(
             4,
@@ -91,7 +91,7 @@ downloadFilteredCustomized <- function(input, output, session,
     )
 
     # render download data table -----------------------------------------------
-    output$filteredCustomData <- renderDataTable({
+    output$filteredCustomData <- DT::renderDataTable({
         data <- downloadCustomData()
         data
     })

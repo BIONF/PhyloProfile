@@ -2,7 +2,7 @@
 #' @export
 #' @return A shiny application - GUI version of PhyloProfile
 #' @import BiocStyle
-#' @import Cairo
+#' @import DT
 #' @importFrom colourpicker colourInput
 #' @import energy
 #' @import ExperimentHub
