@@ -12,7 +12,7 @@
 
 identifyCoreGeneUI <- function(id){
     ns <- NS(id)
-    dataTableOutput(ns("coreGene.table"))
+    DT::dataTableOutput(ns("coreGene.table"))
 }
 
 identifyCoreGene <- function(
@@ -21,7 +21,7 @@ identifyCoreGene <- function(
     var1Cutoff, var2Cutoff, coreCoverage
 ){
 
-    output$coreGene.table <- renderDataTable({
+    output$coreGene.table <- DT::renderDataTable({
         data <- coreGeneDf()
         if (is.null(data)) stop("Input data is NULL!")
         else {

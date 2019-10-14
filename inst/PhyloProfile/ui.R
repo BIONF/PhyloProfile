@@ -288,7 +288,7 @@ shinyUI(
                         output.unkTaxaStatus == 'ncbi' ||
                         output.unkTaxaStatus == 'invalid'",
                         strong(h4("New taxa were found:")),
-                        dataTableOutput("unkTaxaFull"),
+                        DT::dataTableOutput("unkTaxaFull"),
                         br(),
                         downloadButton("unkTaxa.download", "Download ID list")
                     ),
@@ -1622,7 +1622,7 @@ shinyUI(
             conditionalPanel(
                 condition = "output.checkTaxonGroupGC == false",
                 h5(strong("Invalid taxa were found:")),
-                dataTableOutput("invalidTaxonGroupGC")
+                DT::dataTableOutput("invalidTaxonGroupGC")
             )
         ),
 

@@ -41,14 +41,14 @@ Then start R to install and use *PhyloProfile*.
 *PhyloProfile* is available at [Bioconductor](https://bioconductor.org/packages/PhyloProfile). To install *PhyloProfile*, start R (version ≥ 3.6.0) and enter:
 
 ```r
-if (!requireNamespace("BiocManager", quitely = TRUE))
+if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 BiocManager::install("PhyloProfile")
 ```
 
 To install the development version of PhyloProfile, please use the [devel version](https://bioconductor.org/developers/how-to/useDevel/) of Bioconductor:
 ```r
-if (!requireNamespace("BiocManager", quitely = TRUE))
+if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 BiocManager::install(version='devel')
 BiocManager::install("PhyloProfile")
