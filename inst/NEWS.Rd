@@ -2,7 +2,7 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
-\section{Version 0.99.26}{
+\section{Version 0.99.27}{
   \itemize{
     \item Submitted to Bioconductor
   }
