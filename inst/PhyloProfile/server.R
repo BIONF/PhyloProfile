@@ -2982,4 +2982,58 @@ shinyServer(function(input, output, session) {
         doCompare = reactive(input$doCompare),
         doUpdate = reactive(input$updateGC)
     )
+    
+    # * UPDATE NCBI TAXONOMY DATABASE ==========================================
+    # ** description for update NCBI tax function ------------------------------
+    observe({
+        desc = paste(
+            "<p><em>PhyloProfile</em> is provided with a set of pre-identified 
+            taxa (based on the Quest for Ortholog data set). The taxonomy 
+            information in <em>PhyloProfile</em> is stored in different files
+            within the <code>PhyloProfile/PhyloProfile/data</code> folder (to 
+            check where <em>PhyloProfile</em> package is installed, im R 
+            Terminal type <code>find.package(\"PhyloProfile\")</code>). Two 
+            most important files are the <code>preProcessedTaxonomy.txt</code> 
+            and <code>taxonomyMatrix.txt</code>. The 
+            <code>preProcessedTaxonomy.txt</code> file stored a pre-processing
+            NCBI taxonomy database. While the <code>taxonomyMatrix.txt</code> 
+            file is used for sorting the input taxa in the profile plot.</p>
+            <p>If your phylogenetic profiles contains taxa that are not part of 
+            that set, the new taxa will need to be parsed. Normally, if the new 
+            taxa can be found in the <code>preProcessedTaxonomy.txt</code>, you 
+            can easily parse the taxonomy info for those taxa by clicking on 
+            <strong>Parse taxnomoy info</strong> button in the Shiny App of 
+            <em>PhyloProfile</em>. In case your pre-processing NCBI taxonomy 
+            database is out-of-date and some of the new taxa are not in that 
+            old database, you will see the <strong>Add taxonomy info</strong> 
+            button instead. You have to either manually add those taxa using 
+            the <strong>Add taxonomy info</strong> button, or update the 
+            <code>preProcessedTaxonomy.txt</code> file by using this 
+            function.&nbsp;</p>
+            <p>This task will take some minutes depending on your internet 
+            connection. So, please be patient and wait until the process is 
+            done!</p>"
+        )
+        
+        if (input$tabs == "Update NCBI taxonomy database") {
+            createAlert(
+                session, "descUpdateNCBITaxUI", "descUpdateNCBITax", title = "",
+                content = desc, append = FALSE
+            )
+        }
+    })
+    
+    # ** do update NCBI taxonomy database --------------------------------------
+    observeEvent(input$doUpdateNcbi, {
+        withCallingHandlers({
+            shinyjs::html("updateNCBITaxStatus", "")
+            updateNcbiTax()
+        },
+        message = function(m) {
+            shinyjs::html(
+                id = "updateNCBITaxStatus", html = m$message, add = TRUE
+            )
+        })
+        updateButton(session, "doUpdateNcbi", disabled = TRUE)
+    })
 })

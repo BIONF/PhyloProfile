@@ -968,6 +968,21 @@ shinyUI(
                         )
                     ),
                     groupComparisonUI("groupComparison")
+                ),
+                
+                # * Update NCBI taxonomy database ------------------------------
+                tabPanel(
+                    "Update NCBI taxonomy database",
+                    h4(strong("Update NCBI taxonomy")),
+                    bsAlert("descUpdateNCBITaxUI"),
+                    bsButton(
+                        "doUpdateNcbi",
+                        "Do update",
+                        style = "warning",
+                        icon("wrench")
+                    ),
+                    hr(),
+                    verbatimTextOutput("updateNCBITaxStatus")
                 )
             ),
 

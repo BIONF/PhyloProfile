@@ -38,7 +38,7 @@ Take a look at [the functionality](https://github.com/BIONF/PhyloProfile/wiki/Fu
 Then start R to install and use *PhyloProfile*.
 
 ## Using BiocManager
-*PhyloProfile* is available at [Bioconductor](https://bioconductor.org/packages/PhyloProfile). To install *PhyloProfile*, start R (version ≥ 3.6.0) and enter:
+*PhyloProfile* is available at [Bioconductor](https://bioconductor.org/packages/PhyloProfile) (require Bioc version ≥ 3.10). To install *PhyloProfile*, start R (version ≥ 3.6.0) and enter:
 
 ```r
 if (!requireNamespace("BiocManager", quietly = TRUE))
