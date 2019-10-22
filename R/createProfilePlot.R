@@ -346,7 +346,7 @@ highlightProfilePlot <- function(
             taxonHighlightID <- taxName$ncbiID[taxName$fullName==taxonHighlight]
         # get taxonID together with it sorted index
         selTaxon <- toString(data[data$supertaxonID == taxonHighlightID, 2][1])
-        selIndex <- as.numeric(as.character(substr(selTaxon, 2, 4)))
+        selIndex <- grep(selTaxon, levels(as.factor(data$supertaxon)))
         if (plotParameter$xAxis == "taxa") {
             rect <- data.frame(
                 xmin=selIndex-0.5, xmax = selIndex+0.5, ymin = -Inf, ymax = Inf)
