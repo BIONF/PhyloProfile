@@ -1246,7 +1246,7 @@ shinyServer(function(input, output, session) {
                 stringsAsFactors = FALSE,
                 select = 1
             )
-            return(getOmaBrowser(omaIDs, input$selectedOmaType))
+            return(getOmaBrowser(omaIDs$V1, input$selectedOmaType))
         } else return()
     })
 
