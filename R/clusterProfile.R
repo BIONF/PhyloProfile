@@ -37,7 +37,8 @@ getDataClustering <- function(
         subDataHeat$presSpec[subDataHeat$presSpec > 0] <- 1
         subDataHeat <- subDataHeat[!duplicated(subDataHeat), ]
         wideData <- data.table::dcast(
-            subDataHeat, geneID ~ supertaxon, value.var = "presSpec")
+            data.table::setDT(subDataHeat), 
+            geneID ~ supertaxon, value.var = "presSpec")
     } else {
         var <- profileType
         subDataHeat <- subDataHeat[, c("geneID", "supertaxon", var)]
@@ -52,9 +53,11 @@ getDataClustering <- function(
         )
         colnames(subDataHeat) <- c("geneID", "supertaxon", var)
         wideData <- data.table::dcast(
-            subDataHeat, geneID ~ supertaxon, value.var = var)
+            data.table::setDT(subDataHeat),
+            geneID ~ supertaxon, value.var = var)
     }
     # set name for wide matrix as gene IDs
+    wideData <- as.data.frame(wideData)
     dat <- wideData[, 2:ncol(wideData)]
     rownames(dat) <- wideData[, 1]
     dat[is.na(dat)] <- 0

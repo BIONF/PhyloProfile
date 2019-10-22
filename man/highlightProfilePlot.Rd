@@ -58,9 +58,8 @@ plotParameter <- list(
     "guideline" = 0,
     "colorByGroup" = FALSE
 )
-taxonHighlight <- "Mammalia"
+taxonHighlight <- "Aves"
 rankName <- "class"
-print(plotDf$geneID)
 geneHighlight <- "none"
 highlightProfilePlot(
     plotDf, plotParameter, taxonHighlight, rankName, geneHighlight
