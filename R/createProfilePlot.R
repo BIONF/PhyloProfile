@@ -314,9 +314,9 @@ heatmapPlotting <- function(data = NULL, parm = NULL){
 #'     "guideline" = 0,
 #'     "colorByGroup" = FALSE
 #' )
-#' taxonHighlight <- "Aves"
+#' taxonHighlight <- "none"
 #' rankName <- "class"
-#' geneHighlight <- "none"
+#' geneHighlight <- "100265at6656"
 #' highlightProfilePlot(
 #'     plotDf, plotParameter, taxonHighlight, rankName, geneHighlight
 #' )
@@ -358,7 +358,7 @@ highlightProfilePlot <- function(
     }
     # highlight gene
     if (geneHighlight != "none") {
-        selIndex <- match(geneHighlight, levels(data$geneID))
+        selIndex <- match(geneHighlight, levels(as.factor(data$geneID)))
         if (plotParameter$xAxis == "taxa") {
             rect <- data.frame(
                 ymin=selIndex-0.5, ymax = selIndex+0.5, xmin = -Inf, xmax = Inf)
