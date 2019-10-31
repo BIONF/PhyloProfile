@@ -18,7 +18,8 @@ Get domain annotation from OMA Browser based on a URL or a
 raw data frame contains annotation info from OMA
 }
 \examples{
-getOmaDomainFromURL("https://omabrowser.org/api/protein/7916808/domains/")
+print("Uncomment the following line to run the function")
+# getOmaDomainFromURL("https://omabrowser.org/api/protein/7916808/domains/")
 }
 \author{
 Vinh Tran {tran@bio.uni-frankfurt.de}

@@ -2,7 +2,7 @@ citHeader("To cite PhyloProfile in publications use:")
 
 citEntry(entry = "Article",
          title        = "{PhyloProfile}: Dynamic visualization and exploration of multi-layered phylogenetic profiles",
-         author       = personList(as.person("Ngoc-Vinh Tran"),
+         author       = personList(as.person("Ngoc Vinh Tran"),
                                    as.person("Bastian Greshake Tzovaras"),
                                    as.person("Ingo Ebersberger")),
          journal      = "Bioinformatics",
