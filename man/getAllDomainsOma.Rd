@@ -18,8 +18,9 @@ and end positions of those features.
 Create domain annotation dataframe from a raw OMA dataframe
 }
 \examples{
-omaData <- getDataForOneOma("HUMAN29397", "OG")
-getAllDomainsOma(omaData)
+print("Uncomment the following line to run the function")
+# omaData <- getDataForOneOma("HUMAN29397", "OG")
+# getAllDomainsOma(omaData)
 }
 \seealso{
 \code{\link{getDataForOneOma}}

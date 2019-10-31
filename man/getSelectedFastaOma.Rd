@@ -18,8 +18,9 @@ Required protein sequence in fasta format.
 Get selected fasta sequences from a raw OMA dataframe
 }
 \examples{
-omaData <- getDataForOneOma("HUMAN29397", "OG")
-getSelectedFastaOma(omaData, "HUMAN29397")
+print("Uncomment the following line to run the function")
+# omaData <- getDataForOneOma("HUMAN29397", "OG")
+# getSelectedFastaOma(omaData, "HUMAN29397")
 }
 \seealso{
 \code{\link{getDataForOneOma}}

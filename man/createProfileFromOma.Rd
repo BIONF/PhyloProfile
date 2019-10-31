@@ -18,8 +18,9 @@ corresponding taxononmy IDs of the orthologs.
 Create a phylogenetic profile from a raw OMA dataframe
 }
 \examples{
-omaData <- getDataForOneOma("HUMAN29397", "OG")
-createProfileFromOma(omaData)
+print("Uncomment the following lines to run the function")
+# omaData <- getDataForOneOma("HUMAN29397", "OG")
+# createProfileFromOma(omaData)
 }
 \seealso{
 \code{\link{getDataForOneOma}}
