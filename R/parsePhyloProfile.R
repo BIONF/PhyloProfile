@@ -266,8 +266,7 @@ sortInputTaxa <- function(
     # get selected supertaxon ID(s)
     rankNameTMP <- taxonNames$rank[taxonNames$fullName == refTaxon]
     if (rankName == "strain") {
-        superID <- fullnameList$ncbiID[
-            fullnameList$fullName == refTaxon & fullnameList$rank == "norank"]
+        superID <- fullnameList$ncbiID[fullnameList$fullName]
     } else
         superID <- fullnameList$ncbiID[
             fullnameList$fullName == refTaxon
