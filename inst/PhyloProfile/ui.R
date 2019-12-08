@@ -127,7 +127,7 @@ shinyUI(
 
         # MAIN NARVARPAGE TABS -------------------------------------------------
         navbarPage(
-            em(strong("PhyloProfile v1.0.1")),
+            em(strong("PhyloProfile v1.0.3")),
             id = "tabs",
             collapsible = TRUE,
             inverse = TRUE,
@@ -280,6 +280,7 @@ shinyUI(
                 # * 2nd column -------------------------------------------------
                 column(
                     3,
+                    bsAlert("fileExistMsgUI"),
                     bsAlert("inputMsgUI"),
 
                     # ** List of new taxa --------------------------------------

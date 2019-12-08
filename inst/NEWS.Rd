@@ -2,6 +2,13 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.0.3}{
+  \itemize{
+    \item Fixed bug listing taxa by selecting a supertaxon from a higher level
+    \item Added message for downloading preprocessed data
+  }
+}
+
 \section{Version 1.0.2}{
   \itemize{
     \item Fixed bug sorting taxa when taxonomy rank is set as strain
