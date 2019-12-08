@@ -31,6 +31,20 @@ shinyServer(function(input, output, session) {
 
     # * check for the existence of taxonomy files ------------------------------
     observe({
+        fileExist <- file.exists("data/preProcessedTaxonomy.txt")
+        if (fileExist == FALSE) {
+            msg <- paste0(
+                "Please wait while preprocessed data are being downloaded!!!"
+            )
+            createAlert(
+                session, "fileExistMsgUI", "fileExistMsg", title = "",
+                content = msg,
+                append = FALSE
+            )
+        } else closeAlert(session, "fileExistMsg")
+    })
+    
+    observe({
         if (!file.exists(isolate("data/rankList.txt"))) {
             data(rankList)
             write.table(
@@ -95,6 +109,7 @@ shinyServer(function(input, output, session) {
                     sep = "\t"
                 )
             } else system("cp data/newTaxa.txt data/preProcessedTaxonomy.txt")
+            closeAlert(session, "fileExistMsg")
         }
     })
 
@@ -104,7 +119,8 @@ shinyServer(function(input, output, session) {
         filein <- input$mainInput
         if (is.null(filein) & input$demoData == "none") {
             msg <- paste0(
-                "Please <em>upload an input file</em> or
+                "PhyloProfile is ready to use! Please 
+        <em>upload an input file</em> or
         <em>select a demo data</em><br /> to begin!
         To learn more about the <em>input data</em>, please visit
         <span style=\"text-decoration: underline;\">

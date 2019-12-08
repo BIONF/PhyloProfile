@@ -280,6 +280,7 @@ shinyUI(
                 # * 2nd column -------------------------------------------------
                 column(
                     3,
+                    bsAlert("fileExistMsgUI"),
                     bsAlert("inputMsgUI"),
 
                     # ** List of new taxa --------------------------------------
