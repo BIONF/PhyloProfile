@@ -1,6 +1,6 @@
 Package: PhyloProfile
-Version: 1.0.3
-Date: 2019-12-08
+Version: 1.0.4
+Date: 2020-01-20
 Title: PhyloProfile
 Authors@R: c(
     person("Vinh", "Tran", email = "tran@bio.uni-frankfurt.de", role = c("aut", "cre")),
@@ -19,6 +19,6 @@ Imports:
     energy, ExperimentHub, ggplot2, grDevices, grid, gridExtra, pbapply, 
     RColorBrewer, shiny, shinyBS, shinycssloaders, shinyjs, stats, utils,
     OmaDB, plyr, xml2, zoo
-RoxygenNote: 7.0.1
+RoxygenNote: 7.0.2
 Suggests: knitr, rmarkdown, testthat
 VignetteBuilder: knitr

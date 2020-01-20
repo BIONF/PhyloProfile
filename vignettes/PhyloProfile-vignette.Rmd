@@ -110,9 +110,11 @@ Together with several functions for exploring phylogenetic profiles, we provide
 an interactive visualization application implemented with
 [Shiny](https://shiny.rstudio.com) (https://CRAN.R-project.org/package=shiny).
 
-```{r pressure, echo=FALSE, fig.cap="PhyloProfile's GUI", out.width = '100%'}
-knitr::include_graphics("posterSub.png")
-```
+<!-- ```{r, echo=FALSE, fig.cap="PhyloProfile's GUI", out.width = '100%'} -->
+<!-- knitr::include_graphics("./posterSub.png") -->
+<!-- ``` -->
+
+![](https://live.staticflickr.com/65535/49414684766_22413d233b_c.jpg)
 
 For both command-based and visualization analyses, users can:
 

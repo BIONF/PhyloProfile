@@ -2,6 +2,12 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.0.4}{
+  \itemize{
+    \item Fixed bug posterSub.png not found in vignette
+  }
+}
+
 \section{Version 1.0.3}{
   \itemize{
     \item Fixed bug listing taxa by selecting a supertaxon from a higher level
