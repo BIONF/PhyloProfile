@@ -24,7 +24,8 @@ knitr::opts_chunk$set(
     library(PhyloProfile),
     collapse = TRUE,
     comment = "#>",
-    dev = 'png'
+    dev = 'png',
+    crop = NULL
 )
 ```
 
