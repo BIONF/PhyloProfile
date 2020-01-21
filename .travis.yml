@@ -5,9 +5,12 @@ r: bioc-release
 sudo: false
 cache: packages
 
+r_packages: magick
+
 branches:
   only:
     - master
+    
 after_success:
   - R CMD INSTALL $PKG_TARBALL
   - Rscript -e 'lintr::lint_package()'
