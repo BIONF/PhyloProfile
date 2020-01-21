@@ -127,7 +127,7 @@ shinyUI(
 
         # MAIN NARVARPAGE TABS -------------------------------------------------
         navbarPage(
-            em(strong("PhyloProfile v1.0.0")),
+            em(strong("PhyloProfile v1.2.0")),
             id = "tabs",
             collapsible = TRUE,
             inverse = TRUE,
@@ -280,6 +280,7 @@ shinyUI(
                 # * 2nd column -------------------------------------------------
                 column(
                     3,
+                    bsAlert("fileExistMsgUI"),
                     bsAlert("inputMsgUI"),
 
                     # ** List of new taxa --------------------------------------
@@ -968,6 +969,21 @@ shinyUI(
                         )
                     ),
                     groupComparisonUI("groupComparison")
+                ),
+                
+                # * Update NCBI taxonomy database ------------------------------
+                tabPanel(
+                    "Update NCBI taxonomy database",
+                    h4(strong("Update NCBI taxonomy")),
+                    bsAlert("descUpdateNCBITaxUI"),
+                    bsButton(
+                        "doUpdateNcbi",
+                        "Do update",
+                        style = "warning",
+                        icon("wrench")
+                    ),
+                    hr(),
+                    verbatimTextOutput("updateNCBITaxStatus")
                 )
             ),
 

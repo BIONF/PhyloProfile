@@ -4,7 +4,8 @@
 [![presented at: GCB2018](https://img.shields.io/badge/presented%20at-GCB2018-green.svg?style=flat)](http://gcb2018.de)
 [![poster at: SMBE2019](https://img.shields.io/badge/poster%20at-SMBE2019-green)](https://f1000research.com/posters/6-1782)
 [![Travis-CI Build Status](https://travis-ci.org/BIONF/PhyloProfile.svg?branch=master)](https://travis-ci.org/BIONF/PhyloProfile)
-[![](https://img.shields.io/badge/download-21/total-blue.svg)](https://bioconductor.org/packages/stats/bioc/PhyloProfile)
+[![BioC status](http://www.bioconductor.org/shields/build/devel/bioc/PhyloProfile.svg)](https://bioconductor.org/checkResults/release/bioc-LATEST/PhyloProfile)
+[![](https://img.shields.io/badge/download-40/total(Nov'19)-blue.svg)](https://bioconductor.org/packages/stats/bioc/PhyloProfile)
 
 ![](https://github.com/BIONF/phyloprofile-data/blob/gh-pages/www/posterSub.png)
 [Click here for the full PDF version of the BOSC2017 poster](https://f1000research.com/posters/6-1782)
@@ -38,7 +39,7 @@ Take a look at [the functionality](https://github.com/BIONF/PhyloProfile/wiki/Fu
 Then start R to install and use *PhyloProfile*.
 
 ## Using BiocManager
-*PhyloProfile* is available at [Bioconductor](https://bioconductor.org/packages/PhyloProfile). To install *PhyloProfile*, start R (version ≥ 3.6.0) and enter:
+*PhyloProfile* is available at [Bioconductor](https://bioconductor.org/packages/PhyloProfile) (require Bioc version ≥ 3.10). To install *PhyloProfile*, start R (version ≥ 3.6.0) and enter:
 
 ```r
 if (!requireNamespace("BiocManager", quietly = TRUE))

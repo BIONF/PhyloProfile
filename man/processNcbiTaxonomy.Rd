@@ -27,7 +27,7 @@ write.table(
     col.names = TRUE,
     row.names = FALSE,
     quote = FALSE,
-    sep = "\\t"
+    sep = "\t"
 )
 # save to rdata file
 save(

@@ -31,6 +31,20 @@ shinyServer(function(input, output, session) {
 
     # * check for the existence of taxonomy files ------------------------------
     observe({
+        fileExist <- file.exists("data/preProcessedTaxonomy.txt")
+        if (fileExist == FALSE) {
+            msg <- paste0(
+                "Please wait while preprocessed data are being downloaded!!!"
+            )
+            createAlert(
+                session, "fileExistMsgUI", "fileExistMsg", title = "",
+                content = msg,
+                append = FALSE
+            )
+        } else closeAlert(session, "fileExistMsg")
+    })
+    
+    observe({
         if (!file.exists(isolate("data/rankList.txt"))) {
             data(rankList)
             write.table(
@@ -95,6 +109,7 @@ shinyServer(function(input, output, session) {
                     sep = "\t"
                 )
             } else system("cp data/newTaxa.txt data/preProcessedTaxonomy.txt")
+            closeAlert(session, "fileExistMsg")
         }
     })
 
@@ -104,7 +119,8 @@ shinyServer(function(input, output, session) {
         filein <- input$mainInput
         if (is.null(filein) & input$demoData == "none") {
             msg <- paste0(
-                "Please <em>upload an input file</em> or
+                "PhyloProfile is ready to use! Please 
+        <em>upload an input file</em> or
         <em>select a demo data</em><br /> to begin!
         To learn more about the <em>input data</em>, please visit
         <span style=\"text-decoration: underline;\">
@@ -1246,7 +1262,7 @@ shinyServer(function(input, output, session) {
                 stringsAsFactors = FALSE,
                 select = 1
             )
-            return(getOmaBrowser(omaIDs, input$selectedOmaType))
+            return(getOmaBrowser(omaIDs$V1, input$selectedOmaType))
         } else return()
     })
 
@@ -2982,4 +2998,58 @@ shinyServer(function(input, output, session) {
         doCompare = reactive(input$doCompare),
         doUpdate = reactive(input$updateGC)
     )
+    
+    # * UPDATE NCBI TAXONOMY DATABASE ==========================================
+    # ** description for update NCBI tax function ------------------------------
+    observe({
+        desc = paste(
+            "<p><em>PhyloProfile</em> is provided with a set of pre-identified 
+            taxa (based on the Quest for Ortholog data set). The taxonomy 
+            information in <em>PhyloProfile</em> is stored in different files
+            within the <code>PhyloProfile/PhyloProfile/data</code> folder (to 
+            check where <em>PhyloProfile</em> package is installed, im R 
+            Terminal type <code>find.package(\"PhyloProfile\")</code>). Two 
+            most important files are the <code>preProcessedTaxonomy.txt</code> 
+            and <code>taxonomyMatrix.txt</code>. The 
+            <code>preProcessedTaxonomy.txt</code> file stored a pre-processing
+            NCBI taxonomy database. While the <code>taxonomyMatrix.txt</code> 
+            file is used for sorting the input taxa in the profile plot.</p>
+            <p>If your phylogenetic profiles contains taxa that are not part of 
+            that set, the new taxa will need to be parsed. Normally, if the new 
+            taxa can be found in the <code>preProcessedTaxonomy.txt</code>, you 
+            can easily parse the taxonomy info for those taxa by clicking on 
+            <strong>Parse taxnomoy info</strong> button in the Shiny App of 
+            <em>PhyloProfile</em>. In case your pre-processing NCBI taxonomy 
+            database is out-of-date and some of the new taxa are not in that 
+            old database, you will see the <strong>Add taxonomy info</strong> 
+            button instead. You have to either manually add those taxa using 
+            the <strong>Add taxonomy info</strong> button, or update the 
+            <code>preProcessedTaxonomy.txt</code> file by using this 
+            function.&nbsp;</p>
+            <p>This task will take some minutes depending on your internet 
+            connection. So, please be patient and wait until the process is 
+            done!</p>"
+        )
+        
+        if (input$tabs == "Update NCBI taxonomy database") {
+            createAlert(
+                session, "descUpdateNCBITaxUI", "descUpdateNCBITax", title = "",
+                content = desc, append = FALSE
+            )
+        }
+    })
+    
+    # ** do update NCBI taxonomy database --------------------------------------
+    observeEvent(input$doUpdateNcbi, {
+        withCallingHandlers({
+            shinyjs::html("updateNCBITaxStatus", "")
+            updateNcbiTax()
+        },
+        message = function(m) {
+            shinyjs::html(
+                id = "updateNCBITaxStatus", html = m$message, add = TRUE
+            )
+        })
+        updateButton(session, "doUpdateNcbi", disabled = TRUE)
+    })
 })

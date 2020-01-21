@@ -16,8 +16,9 @@ A list contains all protein sequences in fasta format.
 Get all fasta sequences from a raw OMA dataframe
 }
 \examples{
-omaData <- getDataForOneOma("HUMAN29397", "OG")
-getAllFastaOma(omaData)
+print("Uncomment the following line to run the function")
+# omaData <- getDataForOneOma("HUMAN29397", "OG")
+# getAllFastaOma(omaData)
 }
 \seealso{
 \code{\link{getDataForOneOma}}

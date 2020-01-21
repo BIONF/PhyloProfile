@@ -21,7 +21,8 @@ Get OMA ortholog group, OMA HOG or OMA pair's members for a
 seed protein from OMA Browser.
 }
 \examples{
-getOmaMembers("HUMAN29397", "OG")
+print("Uncomment the following line to run the function")
+# getOmaMembers("HUMAN29397", "OG")
 }
 \author{
 Carla Mölbert {carla.moelbert@gmx.de}

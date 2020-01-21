@@ -94,14 +94,12 @@ selectTaxonRank <- function(input, output, session, rankSelect, inputTaxonID) {
                                     & taxaList$rank %in% c(rankName, "norank")]
 
         # from that ID, get list of all taxa for main selected taxon
-        # mainRankName <- substr(rankSelect(), 4, nchar(rankSelect()))
         mainRankName <- rankSelect()
         customizedtaxaID <-
             levels(as.factor(Dt[mainRankName][Dt[rankName] == superID, ]))
 
         cusTaxaName <-
-            taxaList$fullName[taxaList$rank %in% c(mainRankName, "norank")
-                               & taxaList$ncbiID %in% customizedtaxaID]
+            taxaList$fullName[taxaList$ncbiID %in% customizedtaxaID]
         return(cusTaxaName)
     })
     return(cusTaxaName)

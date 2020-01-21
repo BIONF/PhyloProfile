@@ -314,10 +314,9 @@ heatmapPlotting <- function(data = NULL, parm = NULL){
 #'     "guideline" = 0,
 #'     "colorByGroup" = FALSE
 #' )
-#' taxonHighlight <- "Mammalia"
+#' taxonHighlight <- "none"
 #' rankName <- "class"
-#' print(plotDf$geneID)
-#' geneHighlight <- "none"
+#' geneHighlight <- "100265at6656"
 #' highlightProfilePlot(
 #'     plotDf, plotParameter, taxonHighlight, rankName, geneHighlight
 #' )
@@ -346,7 +345,7 @@ highlightProfilePlot <- function(
             taxonHighlightID <- taxName$ncbiID[taxName$fullName==taxonHighlight]
         # get taxonID together with it sorted index
         selTaxon <- toString(data[data$supertaxonID == taxonHighlightID, 2][1])
-        selIndex <- as.numeric(as.character(substr(selTaxon, 2, 4)))
+        selIndex <- grep(selTaxon, levels(as.factor(data$supertaxon)))
         if (plotParameter$xAxis == "taxa") {
             rect <- data.frame(
                 xmin=selIndex-0.5, xmax = selIndex+0.5, ymin = -Inf, ymax = Inf)
@@ -359,7 +358,7 @@ highlightProfilePlot <- function(
     }
     # highlight gene
     if (geneHighlight != "none") {
-        selIndex <- match(geneHighlight, levels(data$geneID))
+        selIndex <- match(geneHighlight, levels(as.factor(data$geneID)))
         if (plotParameter$xAxis == "taxa") {
             rect <- data.frame(
                 ymin=selIndex-0.5, ymax = selIndex+0.5, xmin = -Inf, xmax = Inf)
