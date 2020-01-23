@@ -53,14 +53,14 @@ createArchitecturePlot <- function(
             )
             HTML(msg)
         } else {
-            shinycssloaders::withSpinner(
+            # shinycssloaders::withSpinner(
                 plotOutput(
                     ns("archiPlot"),
                     height = archiHeight(),
                     width = archiWidth(),
                     click = ns("archiClick")
                 )
-            )
+            # )
         }
     })
 

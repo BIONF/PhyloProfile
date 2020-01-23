@@ -24,7 +24,8 @@ knitr::opts_chunk$set(
     library(PhyloProfile),
     collapse = TRUE,
     comment = "#>",
-    dev = 'png'
+    dev = 'png',
+    crop = NULL
 )
 ```
 
@@ -110,11 +111,9 @@ Together with several functions for exploring phylogenetic profiles, we provide
 an interactive visualization application implemented with
 [Shiny](https://shiny.rstudio.com) (https://CRAN.R-project.org/package=shiny).
 
-<!-- ```{r, echo=FALSE, fig.cap="PhyloProfile's GUI", out.width = '100%'} -->
-<!-- knitr::include_graphics("./posterSub.png") -->
-<!-- ``` -->
-
-![](https://live.staticflickr.com/65535/49414684766_22413d233b_c.jpg)
+```{r, echo=FALSE, fig.cap="PhyloProfile's GUI", out.width = '100%'}
+knitr::include_graphics("./posterSub.png")
+```
 
 For both command-based and visualization analyses, users can:
 

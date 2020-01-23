@@ -453,21 +453,21 @@ shinyUI(
                         br(),
 
                         strong(h5("Select taxonomy rank:")),
-                        shinycssloaders::withSpinner(
+                        # shinycssloaders::withSpinner(
                             uiOutput("rankSelect"),
-                            proxy.height = "50px",
-                            type = 7,
-                            size = 0.5
-                        ),
+                        #     proxy.height = "50px",
+                        #     type = 7,
+                        #     size = 0.5
+                        # ),
                         br(),
 
                         strong(h5("Choose (super)taxon of interest:")),
-                        shinycssloaders::withSpinner(
+                        # shinycssloaders::withSpinner(
                             uiOutput("select"),
-                            proxy.height = "50px",
-                            type = 7,
-                            size = 0.5
-                        ),
+                        #     proxy.height = "50px",
+                        #     type = 7,
+                        #     size = 0.5
+                        # ),
                         br(),
 
                         bsButton(

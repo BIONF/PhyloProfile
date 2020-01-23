@@ -54,14 +54,14 @@ plotGeneAge <- function(input, output, session,
 
     output$geneAge.ui <- renderUI({
         ns <- session$ns
-        shinycssloaders::withSpinner(
+        # shinycssloaders::withSpinner(
             plotOutput(
                 ns("geneAgePlot"),
                 width = 600 * geneAgeWidth(),
                 height = 150 * geneAgeHeight(),
                 click = ns("plotClickGeneAge")
             )
-        )
+        # )
     })
 
     output$geneAgePlotDownload <- downloadHandler(
