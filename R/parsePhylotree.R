@@ -54,7 +54,6 @@ checkNewick <- function(tree, inputTaxonID = NULL){
 #' @param df data frame contains taxonomy matrix used for generating tree
 #' (see distDf in example)
 #' @param rootTaxon taxon used for rooting the taxonomy tree
-#' @importFrom stats hclust
 #' @importFrom ape as.phylo
 #' @importFrom ape root
 #' @return A rooted taxonomy tree as an object of class "phylo".
@@ -111,7 +110,6 @@ sortTaxaFromTree <- function(tree){
 }
 
 #' taxa2dist
-#' @importFrom stats as.dist
 #' @param x taxa matrix
 #' @param varstep var-step
 #' @param check check
@@ -146,7 +144,7 @@ taxa2dist <- function(x, varstep = FALSE, check = TRUE, labels) {
     for (i in seq_len(ncol(x))) {
         out <- out + add[i + 1] * outer(x[, i], x[, i], "!=")
     }
-    out <- as.dist(out)
+    out <- stats::as.dist(out)
     attr(out, "method") <- "taxa2dist"
     attr(out, "steps") <- add
     if (missing(labels)) {

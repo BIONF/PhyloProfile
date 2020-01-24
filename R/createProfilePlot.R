@@ -10,7 +10,6 @@
 #' number of original and filtered co-orthologs in each supertaxon (paralog and
 #' paralogNew), number of species in each supertaxon (numberSpec) and the % of
 #' species that have orthologs in each supertaxon (presSpec).
-#' @importFrom stats na.omit
 #' @import data.table
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{filterProfileData}}
@@ -21,27 +20,27 @@
 dataMainPlot <- function(dataHeat = NULL){
     if (is.null(dataHeat)) stop("Input data cannot be NULL!")
     paralogNew <- NULL
-    
+
     # reduce number of inparalogs based on filtered dataHeat
-    dataHeatTb <- data.table(na.omit(dataHeat))
+    dataHeatTb <- data.table(stats::na.omit(dataHeat))
     dataHeatTb[, paralogNew := .N, by = c("geneID", "supertaxon")]
     dataHeatTb <- data.frame(dataHeatTb[, c(
         "geneID", "supertaxon", "paralogNew"
     )])
-    
+
     dataHeat <- merge(
         dataHeat, dataHeatTb, by = c("geneID", "supertaxon"), all.x = TRUE
     )
     dataHeat$paralog <- dataHeat$paralogNew
     dataHeat <- dataHeat[!duplicated(dataHeat), ]
-    
+
     # remove unneeded dots
     dataHeat$presSpec[dataHeat$presSpec == 0] <- NA
     dataHeat$paralog[dataHeat$presSpec < 1] <- NA
     dataHeat$paralog[dataHeat$paralog == 1] <- NA
     # rescale numbers of paralogs
-    if (length(unique(na.omit(dataHeat$paralog))) > 0) {
-        maxParalog <- max(na.omit(dataHeat$paralog))
+    if (length(unique(stats::na.omit(dataHeat$paralog))) > 0) {
+        maxParalog <- max(stats::na.omit(dataHeat$paralog))
         dataHeat$paralogSize <- (dataHeat$paralog / maxParalog) * 3
     }
     # remove prefix number of taxa names but keep the order
@@ -50,7 +49,7 @@ dataMainPlot <- function(dataHeat = NULL){
             as.character(dataHeat$supertaxon), 6 ,
             nchar(as.character(dataHeat$supertaxon))),
         levels = substr(
-            levels(dataHeat$supertaxon), 6, 
+            levels(dataHeat$supertaxon), 6,
             nchar(levels(dataHeat$supertaxon))))
     return(dataHeat)
 }
@@ -101,7 +100,7 @@ dataCustomizedPlot <- function(
         )
     }
     # reduce number of inparalogs based on filtered dataHeat
-    dataHeatTb <- data.table(na.omit(dataHeat))
+    dataHeatTb <- data.table(stats::na.omit(dataHeat))
     dataHeatTb[, paralogNew := .N, by = c("geneID", "supertaxon")]
     dataHeatTb <- data.frame(
         dataHeatTb[, c("geneID", "supertaxon", "paralogNew")]
@@ -116,8 +115,8 @@ dataCustomizedPlot <- function(
     dataHeat$paralog[dataHeat$presSpec < 1] <- NA
     dataHeat$paralog[dataHeat$paralog == 1] <- NA
     # rescale numbers of paralogs
-    if (length(unique(na.omit(dataHeat$paralog))) > 0) {
-        maxParalog <- max(na.omit(dataHeat$paralog))
+    if (length(unique(stats::na.omit(dataHeat$paralog))) > 0) {
+        maxParalog <- max(stats::na.omit(dataHeat$paralog))
         dataHeat$paralogSize <- (dataHeat$paralog / maxParalog) * 3
     }
     # remove prefix number of taxa names but keep the order
@@ -126,7 +125,7 @@ dataCustomizedPlot <- function(
             as.character(dataHeat$supertaxon), 6 ,
             nchar(as.character(dataHeat$supertaxon))),
         levels = substr(
-            levels(dataHeat$supertaxon), 6, 
+            levels(dataHeat$supertaxon), 6,
             nchar(levels(dataHeat$supertaxon))))
     return(dataHeat)
 }
@@ -188,32 +187,32 @@ heatmapPlotting <- function(data = NULL, parm = NULL){
             "colorByGroup" = FALSE)
     geneID <- supertaxon <- group <- var1 <- var2 <- presSpec <- paralog <- NULL
     xmin <- xmax <- ymin <- ymax <- NULL
-    # create heatmap plot with geom_point & scale_color_gradient for present 
+    # create heatmap plot with geom_point & scale_color_gradient for present
     # ortho & var1, geom_tile & scale_fill_gradient for var2
     if (parm$xAxis == "genes") p <- ggplot(data,aes(x = geneID, y = supertaxon))
     else p <- ggplot(data, aes(y = geneID, x = supertaxon))
     if (parm$colorByGroup == TRUE) {
         p <- p + geom_tile(aes(fill = factor(group)), alpha = 0.3)
     } else {
-        if (length(unique(na.omit(data$var2))) != 1)
+        if (length(unique(stats::na.omit(data$var2))) != 1)
             p <- p + scale_fill_gradient(
-                low = parm$lowColorVar2, high = parm$highColorVar2, 
-                na.value = "gray95", limits = c(0, 1)) + 
+                low = parm$lowColorVar2, high = parm$highColorVar2,
+                na.value = "gray95", limits = c(0, 1)) +
                 geom_tile(aes(fill = var2))
     }
-    if (length(unique(na.omit(data$presSpec))) < 3) {
-        if (length(unique(na.omit(data$var1))) == 1) {
-            p <- p + geom_point(aes(colour = var1), na.rm = TRUE, 
+    if (length(unique(stats::na.omit(data$presSpec))) < 3) {
+        if (length(unique(stats::na.omit(data$var1))) == 1) {
+            p <- p + geom_point(aes(colour = var1), na.rm = TRUE,
                 size = data$presSpec*5*(1+parm$dotZoom), show.legend = FALSE)
         } else
-            p <- p + 
+            p <- p +
                 geom_point(
                     aes(colour = var1), na.rm = TRUE,
                     size = data$presSpec * 5 * (1 + parm$dotZoom)) +
                 scale_color_gradient(
                     low=parm$lowColorVar1,high=parm$highColorVar1,limits=c(0,1))
     } else {
-        if (length(unique(na.omit(data$var1))) == 1) {
+        if (length(unique(stats::na.omit(data$var1))) == 1) {
             p <- p + geom_point(aes(size=presSpec),color="#336a98",na.rm = TRUE)
         } else
             p <- p + geom_point(aes(colour=var1, size = presSpec),na.rm = TRUE)+
@@ -221,15 +220,15 @@ heatmapPlotting <- function(data = NULL, parm = NULL){
                     low=parm$lowColorVar1,high=parm$highColorVar1,limits=c(0,1))
     }
     # plot inparalogs (if available)
-    if (length(unique(na.omit(data$paralog))) > 0) {
-        p <- p + 
+    if (length(unique(stats::na.omit(data$paralog))) > 0) {
+        p <- p +
             geom_point(
                 data = data, aes(size = paralog), color = parm$paraColor,
-                na.rm = TRUE, show.legend = TRUE) + 
+                na.rm = TRUE, show.legend = TRUE) +
             guides(size = guide_legend(title = "# of co-orthologs")) +
             scale_size_continuous(range = c(
-                min(na.omit(data$paralogSize)) * (1 + parm$dotZoom),
-                max(na.omit(data$paralogSize)) * (1 + parm$dotZoom)))
+                min(stats::na.omit(data$paralogSize)) * (1 + parm$dotZoom),
+                max(stats::na.omit(data$paralogSize)) * (1 + parm$dotZoom)))
     } else {
         # remain the scale of point while filtering
         presentVl <- data$presSpec[!is.na(data$presSpec)]
@@ -247,12 +246,12 @@ heatmapPlotting <- function(data = NULL, parm = NULL){
     # guideline for separating ref species
     if (parm$guideline == 1) {
         if (parm$xAxis == "genes") {
-            p <- p + labs(y = "Taxon") + 
-                geom_hline(yintercept = 0.5, colour = "dodgerblue4") + 
+            p <- p + labs(y = "Taxon") +
+                geom_hline(yintercept = 0.5, colour = "dodgerblue4") +
                 geom_hline(yintercept = 1.5, colour = "dodgerblue4")
         } else
-            p <- p + labs(x = "Taxon") + 
-                geom_vline(xintercept = 0.5, colour = "dodgerblue4") + 
+            p <- p + labs(x = "Taxon") +
+                geom_vline(xintercept = 0.5, colour = "dodgerblue4") +
                 geom_vline(xintercept = 1.5, colour = "dodgerblue4")
     }
     p <- p + theme_minimal(base_size = 9)
@@ -291,7 +290,6 @@ heatmapPlotting <- function(data = NULL, parm = NULL){
 #' @return A profile heatmap plot with highlighted gene and/or taxon of interest
 #' as ggplot object.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
-#' @importFrom utils data
 #' @seealso \code{\link{dataMainPlot}}, \code{\link{dataCustomizedPlot}}
 #' @examples
 #' data("fullProcessedProfile", package="PhyloProfile")
@@ -338,7 +336,7 @@ highlightProfilePlot <- function(
             taxonNamesReduced <- NULL
             delayedAssign("taxName", taxonNamesReduced)
         } else
-            taxName <- read.table(nameReducedFile, sep = "\t", header = TRUE)
+            taxName <- utils::read.table(nameReducedFile, sep="\t", header=TRUE)
         taxonHighlightID <- taxName$ncbiID[
             taxName$fullName == taxonHighlight & taxName$rank == rankName]
         if (length(taxonHighlightID) == 0L)

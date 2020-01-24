@@ -2,9 +2,11 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
-\section{Version 1.0.4}{
+\section{Version 1.0.5}{
   \itemize{
-    \item Fixed bug posterSub.png not found in vignette
+    \item Added progress indicators for data loading and processing steps
+    \item Removed shinycssloaders
+    \item Removed grDevices, grid, stats, utils from Imports list in DESCRIPTION
   }
 }
 

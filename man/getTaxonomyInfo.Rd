@@ -13,7 +13,7 @@ getTaxonomyInfo(inputTaxa = NULL, currentNCBIinfo = NULL)
 data (/PhyloProfile/data/preProcessedTaxonomy.txt)}
 }
 \value{
-A list of NCBI taxonomy info for input taxa, including the taxonomy 
+A list of NCBI taxonomy info for input taxa, including the taxonomy
 IDs, full scientific names, taxonomy ranks and the parent IDs.
 }
 \description{

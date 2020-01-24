@@ -33,14 +33,14 @@ createDetailedPlot <- function(
 
     output$detailPlot.ui <- renderUI({
         ns <- session$ns
-        shinycssloaders::withSpinner(
+        # shinycssloaders::withSpinner(
             plotOutput(
                 ns("detailPlot"),
                 width = 800,
                 height = detailedHeight(),
                 click = ns("plotClickDetail")
             )
-        )
+        # )
     })
 
     output$downloadDetailed <- downloadHandler(

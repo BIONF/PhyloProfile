@@ -14,7 +14,7 @@
 #' createPercentageDistributionData(mainLongRaw, "class")
 
 createPercentageDistributionData <- function(inputData, rankName = NULL) {
-    if (is.null(inputData) | is.null(rankName)) 
+    if (is.null(inputData) | is.null(rankName))
         stop("Input data or rank name cannot be NULL!")
     allMainRanks <- getTaxonomyRanks()
     if (!(rankName[1] %in% allMainRanks)) stop("Invalid taxonomy rank given!")
@@ -78,7 +78,7 @@ createVariableDistributionData <- function(
         splitDt <- inputData[, c("orthoID", "var1", "var2")]
     }
     splitDt$orthoID[splitDt$orthoID == "NA" | is.na(splitDt$orthoID)] <- NA
-    splitDt <- splitDt[complete.cases(splitDt), ]
+    splitDt <- splitDt[stats::complete.cases(splitDt), ]
 
     if (length(levels(as.factor(splitDt$var2))) == 1)
         if (levels(as.factor(splitDt$var2)) == "") splitDt$var2 <- 0
@@ -131,7 +131,7 @@ createVariableDistributionDataSubset <- function(
 ) {
     geneID <- orthoID <- var1.x <- var2.y <- supertaxonMod <- NULL
     # check parameters
-    if (is.null(fullProfileData) | is.null(distributionData)) 
+    if (is.null(fullProfileData) | is.null(distributionData))
         stop("Full processed profiles or distribution data cannot be NULL!")
     # get geneID and supertaxon name for distributionData
     distributionDataName <- merge(

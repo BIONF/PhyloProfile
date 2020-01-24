@@ -66,14 +66,16 @@ createProfilePlot <- function(input, output, session,
         if (typeProfile() == "customizedProfile") {
             if (inSeq()[1] == "all" & inTaxa()[1] == "all") return()
         }
-
-        highlightProfilePlot(
-            dataHeat(),
-            parameters(),
-            taxonHighlight(),
-            rankSelect(),
-            geneHighlight()
-        )
+        withProgress(message = 'PLOTTING...', value = 0.5, {
+            highlightProfilePlot(
+                dataHeat(),
+                parameters(),
+                taxonHighlight(),
+                rankSelect(),
+                geneHighlight()
+            )
+        })
+        
     })
 
     output$plot.ui <- renderUI({
@@ -84,14 +86,14 @@ createProfilePlot <- function(input, output, session,
             else if (inSeq()[1] == "all" & inTaxa()[1] == "all")  return()
         }
 
-        shinycssloaders::withSpinner(
+        # shinycssloaders::withSpinner(
             plotOutput(
                 ns("plot"),
                 width = parameters()$width,
                 height = parameters()$height,
                 click = ns("plotClick")
             )
-        )
+        # )
     })
 
     output$profileDownload <- downloadHandler(

@@ -127,7 +127,7 @@ shinyUI(
 
         # MAIN NARVARPAGE TABS -------------------------------------------------
         navbarPage(
-            em(strong("PhyloProfile v1.0.3")),
+            em(strong("PhyloProfile v1.0.5")),
             id = "tabs",
             collapsible = TRUE,
             inverse = TRUE,
@@ -453,21 +453,11 @@ shinyUI(
                         br(),
 
                         strong(h5("Select taxonomy rank:")),
-                        shinycssloaders::withSpinner(
-                            uiOutput("rankSelect"),
-                            proxy.height = "50px",
-                            type = 7,
-                            size = 0.5
-                        ),
+                        uiOutput("rankSelect"),
                         br(),
 
                         strong(h5("Choose (super)taxon of interest:")),
-                        shinycssloaders::withSpinner(
-                            uiOutput("select"),
-                            proxy.height = "50px",
-                            type = 7,
-                            size = 0.5
-                        ),
+                        uiOutput("select"),
                         br(),
 
                         bsButton(

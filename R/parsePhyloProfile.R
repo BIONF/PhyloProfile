@@ -29,7 +29,6 @@ getTaxonomyRanks <- function(){
 #' @export
 #' @return List of taxon IDs, their full names, taxonomy ranks and parent IDs
 #' obtained from "PhyloProfile/data/taxonNamesReduced.txt"
-#' @importFrom utils download.file
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @examples
 #' getNameList()
@@ -42,9 +41,9 @@ getNameList <- function() {
     )
 
     if (!file.exists(nameReducedFile)) {
-        data(taxonNamesReduced)
+        utils::data(taxonNamesReduced)
     } else {
-        taxonNamesReduced <- read.table(
+        taxonNamesReduced <- utils::read.table(
             nameReducedFile, sep = "\t", header = TRUE, fill = TRUE
         )
     }
@@ -65,7 +64,6 @@ getNameList <- function() {
 #' @param taxonIDs list of input taxon IDs (e.g. ncbi1234). Default = NULL.
 #' @return Data frame contains the (subset of) taxonomy matrix for list of
 #' input taxa.
-#' @importFrom utils download.file
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @examples
 #' # get full pre-installed taxonomy matrix
@@ -82,9 +80,9 @@ getTaxonomyMatrix <- function(subsetTaxaCheck = FALSE, taxonIDs = NULL){
     )
 
     if (!file.exists(taxonomyMatrixFile)) {
-        data(taxonomyMatrix)
+        utils::data(taxonomyMatrix)
     } else {
-        taxonomyMatrix <- read.table(
+        taxonomyMatrix <- utils::read.table(
             taxonomyMatrixFile, sep = "\t", header = TRUE,
             stringsAsFactors = TRUE
         )
@@ -166,7 +164,6 @@ getInputTaxaName <- function(rankName, taxonIDs = NULL){
 #' @export
 #' @return A data frame contains ncbi IDs and names of taxa from the input taxon
 #' list that belong to the selected supertaxon.
-#' @importFrom utils download.file
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @examples
 #' inputTaxonIDs <- c("10116", "122586", "123851", "13616", "188937", "189518",
@@ -183,7 +180,7 @@ getSelectedTaxonNames <- function(
     higherRank = NULL, higherID = NULL, higherName = NULL
 ) {
     rankName <- NULL
-    if (is.null(inputTaxonIDs) | is.null(rank)) 
+    if (is.null(inputTaxonIDs) | is.null(rank))
         stop("Input taxa and taxonomy rank cannot be NULL!")
     taxDf <- getTaxonomyMatrix(TRUE, paste0("ncbi", inputTaxonIDs))
     if (is.null(higherID) & is.null(higherName))
@@ -309,10 +306,10 @@ sortInputTaxa <- function(
     sortedOut$taxonID <- 0
     sortedOut$category <- "cat"
     sortedOut <- sortedOut[, c(
-        "abbrName", "taxonID", "fullName.x", "species", "ncbiID", 
+        "abbrName", "taxonID", "fullName.x", "species", "ncbiID",
         "sortedSupertaxon", "rank", "category")]
     colnames(sortedOut) <- c(
-        "abbrName", "taxonID", "fullName", "ncbiID", "supertaxonID", 
+        "abbrName", "taxonID", "fullName", "ncbiID", "supertaxonID",
         "supertaxon", "rank", "category")
     sortedOut$ncbiID <- as.factor(sortedOut$ncbiID)
     sortedOut$supertaxon <- as.factor(sortedOut$supertaxon)
@@ -379,7 +376,7 @@ calcPresSpec <- function(profileWithTax, taxaCount){
     finalPresSpecDt$presSpec[is.na(finalPresSpecDt$presSpec)] <- 0
     # remove duplicated and NA rows
     finalPresSpecDt <- finalPresSpecDt[!duplicated(finalPresSpecDt), ]
-    finalPresSpecDt <- finalPresSpecDt[complete.cases(finalPresSpecDt), ]
+    finalPresSpecDt <- finalPresSpecDt[stats::complete.cases(finalPresSpecDt), ]
     # return finalPresSpecDt
     return(finalPresSpecDt)
 }
@@ -398,7 +395,6 @@ calcPresSpec <- function(profileWithTax, taxaCount){
 #' or median), applied for calculating var1 of supertaxa. Default = "max".
 #' @param var2AggregateBy aggregate method for VAR2 (max, min, mean
 #' or median), applied for calculating var2 of supertaxa. Default = "max".
-#' @importFrom stats aggregate
 #' @return A dataframe contains all info for the input phylogenetic profiles.
 #' This full processed profile that is required for several profiling analyses
 #' e.g. estimation of gene age (?estimateGeneAge) or identification of core gene
@@ -422,7 +418,7 @@ calcPresSpec <- function(profileWithTax, taxaCount){
 parseInfoProfile <- function(
     inputDf, sortedInputTaxa, var1AggregateBy = "max", var2AggregateBy = "max"
 ) {
-    if (is.null(inputDf) | is.null(sortedInputTaxa)) 
+    if (is.null(inputDf) | is.null(sortedInputTaxa))
         stop("Input profiles and sorted taxonomy data cannot be NULL!")
     if (ncol(inputDf) > 3) {
         if (ncol(inputDf) < 5) colnames(inputDf)[4] <- "var1"
@@ -460,7 +456,7 @@ parseInfoProfile <- function(
     scoreDf <- merge(mVar1Dt, mVar2Dt, by = c("supertaxon","geneID"), all=TRUE)
     # (2+3+4) add presSpec and mVar1 into taxaMdData
     fullMdData <- Reduce(
-        function(x, y) merge(x, y, by = c("geneID", "supertaxon"), all.x=TRUE), 
+        function(x, y) merge(x, y, by = c("geneID", "supertaxon"), all.x=TRUE),
         list(taxaMdData, finalPresSpecDt, scoreDf))
     fullMdData <- merge(fullMdData, taxaCount, by = ("supertaxon"), all.x=TRUE)
     names(fullMdData)[names(fullMdData) == "freq"] <- "numberSpec"
@@ -605,7 +601,7 @@ reduceProfile <- function(fullProfile) {
 
 filterProfileData <- function(
     DF, refTaxon = NULL, percentCO = c(0, 1), coorthoCOMax = 9999,
-    var1CO = c(0, 1), var2CO = c(0, 1), var1Rel = "protein", 
+    var1CO = c(0, 1), var2CO = c(0, 1), var1Rel = "protein",
     var2Rel = "protein", groupByCat = FALSE, catDt = NULL
 ) {
     if (is.null(DF)) stop("Profile data cannot be NULL!")
