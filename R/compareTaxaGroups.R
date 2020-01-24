@@ -17,7 +17,7 @@
 #' getCommonAncestor(inputTaxa, inGroup)
 
 getCommonAncestor <- function(inputTaxa = NULL, inGroup = NULL) {
-    if (is.null(inputTaxa) | is.null(inGroup)) 
+    if (is.null(inputTaxa) | is.null(inGroup))
         stop("Input taxa and in-group ID list cannot be NULL!")
     # get list of pre-calculated taxonomy info
     taxMatrix <- getTaxonomyMatrix(TRUE, inputTaxa)
@@ -81,7 +81,7 @@ compareTaxonGroups <- function(
     variable = NULL,
     significanceLevel = 0.05
 ) {
-    if (is.null(data) | is.null(inGroup) | is.null(variable)) 
+    if (is.null(data) | is.null(inGroup) | is.null(variable))
         stop("Input profiles, in-group IDs and variable name cannot be NULL!")
     if (!(variable %in% colnames(data))) stop("Invalid variable")
     # add other taxa that share a common ancestor with the given in-group
@@ -119,26 +119,24 @@ compareTaxonGroups <- function(
 #' @param significanceLevel significant cutoff of the Kolmogorov-Smirnov test.
 #' Default = 0.05.
 #' @return p-value of the comparison test.
-#' @importFrom stats ks.test
-#' @importFrom stats wilcox.test
 #' @author Carla Mölbert (carla.moelbert@gmx.de)
 
 distributionTest <- function(
     varIn = NULL, varOut = NULL, significanceLevel = 0.05
 ){
-    if (is.null(varIn) | is.null(varOut)) 
+    if (is.null(varIn) | is.null(varOut))
         stop("Vector of in-group and out-group cannot be NULL!")
     # remove NA values
     varIn <- varIn[!is.na(varIn)]
     varOut <- varOut[!is.na(varOut)]
     # if there is no data in one of the groups the p-value is NULL
-    if (length(varIn) == 0 | length(varOut) == 0) 
+    if (length(varIn) == 0 | length(varOut) == 0)
         stop("No data for In/Out-group taxa!")
     else {
         # * Kolmogorov-Smirnov Test
         # H0 : The two samples have the same distribution
         ks <- suppressWarnings(
-            ks.test(unique(varIn), unique(varOut), exact = FALSE)
+            stats::ks.test(unique(varIn), unique(varOut), exact = FALSE)
         )
 
         if (ks$p.value <= significanceLevel) return(ks$p.value)
@@ -146,7 +144,7 @@ distributionTest <- function(
             # * Wilcoxon-Mann-Whitney Test
             # H0: the samples have the same location parameters
             wilcox <- suppressWarnings(
-                wilcox.test(
+                stats::wilcox.test(
                     varIn, varOut, alternative = "two.sided", paired = FALSE
                 )
             )
@@ -175,7 +173,6 @@ distributionTest <- function(
 #' @return List of genes that have a difference in the variable's median scores
 #' between the in-group and out-group taxa and their corresponding delta-median.
 #' @author Vinh Tran (tran@bio.uni-frankfurt.de)
-#' @importFrom stats median
 #' @examples
 #' data("mainLongRaw", package="PhyloProfile")
 #' data <- mainLongRaw
@@ -186,7 +183,7 @@ distributionTest <- function(
 compareMedianTaxonGroups <- function(
     data = NULL, inGroup = NULL, useCommonAncestor = TRUE, variable = NULL
 ) {
-    if (is.null(data) | is.null(inGroup) | is.null(variable)) 
+    if (is.null(data) | is.null(inGroup) | is.null(variable))
         stop("Input profiles, in-group IDs and variable name cannot be NULL!")
     if (!(variable %in% colnames(data))) stop("Invalid variable")
     # add other taxa that share a common ancestor with the given in-group
@@ -203,7 +200,10 @@ compareMedianTaxonGroups <- function(
             varOut <- data[
                 data$geneID == x & !(data$ncbiID %in% inGroup), variable]
             return(
-                abs(median(varIn[!is.na(varIn)])-median(varOut[!is.na(varOut)]))
+                abs(
+                    stats::median(varIn[!is.na(varIn)])
+                    - stats::median(varOut[!is.na(varOut)])
+                )
             )
         },
         FUN.VALUE = numeric(1)
@@ -254,13 +254,16 @@ dataVarDistTaxGroup <- function(
 
     varIn$type <- "In-group"
     varOut$type <- "Out-group"
-    out <- rbind(varIn[complete.cases(varIn),], varOut[complete.cases(varOut),])
+    out <- rbind(
+        varIn[stats::complete.cases(varIn),], 
+        varOut[stats::complete.cases(varOut),]
+    )
     return(out[, c(variable, "type")])
 }
 
 #' Create a single violin distribution plot
 #' @export
-#' @param plotDf dataframe for plotting containing values for each variable in 
+#' @param plotDf dataframe for plotting containing values for each variable in
 #' in-group and out-group.
 #' @param parameters plot parameters, including size of x-axis, y-axis,
 #' legend and title; position of legend ("right", "bottom" or "none");
@@ -302,7 +305,7 @@ generateSinglePlot <- function(plotDf, parameters, variable) {
             nrow(plotDf[plotDf$type == parameters$outGroupName,]), sep = ""
         )
     )
-    
+
     plot <- ggplot(plotDf, aes(x = factor(type), y = .data[[variable]])) +
         geom_violin(
             aes(fill = factor(type)), position = position_dodge(),
@@ -331,7 +334,7 @@ generateSinglePlot <- function(plotDf, parameters, variable) {
 
 #' Plot Multiple Graphs with Shared Legend in a Grid
 #' @export
-#' @usage gridArrangeSharedLegend(...,  ncol = length(list(...)), nrow = 1, 
+#' @usage gridArrangeSharedLegend(...,  ncol = length(list(...)), nrow = 1,
 #'     position = c("bottom", "right"), title = NA, titleSize = 12)
 #' @param ...  Plots to be arranged in grid
 #' @param ncol Number of columns in grid
@@ -339,15 +342,11 @@ generateSinglePlot <- function(plotDf, parameters, variable) {
 #' @param position Gird position (bottom or right)
 #' @param title Title of grid
 #' @param titleSize Size of grid title
-#' @import grid gridExtra ggplot2
-#' @return Grid of plots with common legend 
+#' @import gridExtra ggplot2
+#' @return Grid of plots with common legend
 #' @author Phil Boileau, \email{philippe.boileau (at) rimuhc.ca}
 #' @note adapted from https://rdrr.io/github/PhilBoileau/CLSAR/src/R/
 #' gridArrangeSharedLegend.R
-#' @importFrom grid unit.c
-#' @importFrom grid unit
-#' @importFrom grid textGrob
-#' @importFrom grid gpar
 #' @examples
 #' data("mainLongRaw", package="PhyloProfile")
 #' data <- mainLongRaw
@@ -368,7 +367,7 @@ generateSinglePlot <- function(plotDf, parameters, variable) {
 #' plotVar1 <- generateSinglePlot(plotDf, plotParameters, colnames(plotDf)[1])
 #' plotVar2 <- generateSinglePlot(plotDf, plotParameters, colnames(plotDf)[2])
 #' g <- gridArrangeSharedLegend(
-#'     plotVar1, plotVar2, 
+#'     plotVar1, plotVar2,
 #'     position = plotParameters$legendPosition,
 #'     title = plotParameters$title,
 #'     size = plotParameters$titleSize
@@ -388,18 +387,18 @@ gridArrangeSharedLegend <- function(
     lwidth <- sum(legend$width)
     gl <- lapply(plots, function(x) x + theme(legend.position="none"))
     gl <- c(gl, ncol = ncol, nrow = nrow)
-    
+
     combined <- switch(
         position,
         "bottom" = gridExtra::arrangeGrob(
             do.call(arrangeGrob, gl),
             legend,
             ncol = 1,
-            heights = unit.c(unit(1, "npc") - lheight, lheight),
-            top = textGrob(
+            heights = grid::unit.c(grid::unit(1, "npc") - lheight, lheight),
+            top = grid::textGrob(
                 title,
                 vjust = 1,
-                gp = gpar(
+                gp = grid::gpar(
                     fontface = "bold", fontsize = titleSize
                 )
             )
@@ -408,11 +407,11 @@ gridArrangeSharedLegend <- function(
             do.call(arrangeGrob, gl),
             legend,
             ncol = 2,
-            widths = unit.c(unit(1, "npc") - lwidth, lwidth),
-            top = textGrob(
+            widths = grid::unit.c(grid::unit(1, "npc") - lwidth, lwidth),
+            top = grid::textGrob(
                 title,
                 vjust = 1,
-                gp = gpar(
+                gp = grid::gpar(
                     fontface = "bold", fontsize = titleSize
                 )
             )
@@ -467,9 +466,9 @@ varDistTaxPlot <- function(data, plotParameters) {
         return(
             arrangeGrob(
                 plotVar1,
-                top = textGrob(
+                top = grid::textGrob(
                     plotParameters$title, vjust = 1,
-                    gp = gpar(
+                    gp = grid::gpar(
                         fontface = "bold", fontsize = plotParameters$titleSize
                     )
                 )
@@ -483,9 +482,9 @@ varDistTaxPlot <- function(data, plotParameters) {
                 arrangeGrob(
                     plotVar1, plotVar2,
                     nrow = 1,
-                    top = textGrob(
+                    top = grid::textGrob(
                         plotParameters$title, vjust = 1,
-                        gp = gpar(
+                        gp = grid::gpar(
                             fontface = "bold",
                             fontsize = plotParameters$titleSize
                         )
@@ -550,7 +549,7 @@ dataFeatureTaxGroup <- function(
         domainDf[grep(gene,domainDf$seedID),][,c("orthoID","seedID","feature")],
         mainDf[, c("orthoID", "ncbiID")], by = "orthoID", all.x = TRUE
     )
-    domainDfSub <- domainDfSub[complete.cases(domainDfSub),]
+    domainDfSub <- domainDfSub[stats::complete.cases(domainDfSub),]
     # identify in-group and out-group
     domainDfSub$type[domainDfSub$ncbiID %in% inGroup] <- "In-group"
     domainDfSub$type[!(domainDfSub$ncbiID %in% inGroup)] <- "Out-group"

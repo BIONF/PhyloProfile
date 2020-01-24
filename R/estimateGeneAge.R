@@ -52,7 +52,7 @@ estimateGeneAge <- function(
         seq(nrow(subDt)), function (x) {
             cat <- subDt[x, ] %in% supFirstLine
             cat <- paste0(cat, collapse = "")})
-    catDf <- data.frame(ncbiID = as.character(subDt$abbrName), 
+    catDf <- data.frame(ncbiID = as.character(subDt$abbrName),
                         cat = do.call(rbind, catList), stringsAsFactors = FALSE)
     catDf$cat <- gsub("TRUE", "1", catDf$cat)
     catDf$cat <- gsub("FALSE", "0", catDf$cat)
@@ -66,10 +66,10 @@ estimateGeneAge <- function(
     # remove cat for "NA" orthologs and also for orthologs that dont fit cutoffs
     if (nrow(mdDtExt[mdDtExt$orthoID == "NA" | is.na(mdDtExt$orthoID), ]) > 0)
         mdDtExt[mdDtExt$orthoID == "NA" | is.na(mdDtExt$orthoID),]$cat <- NA
-    mdDtExt <- mdDtExt[complete.cases(mdDtExt), ]
+    mdDtExt <- mdDtExt[stats::complete.cases(mdDtExt), ]
     # filter by %specpres, var1, var2 ..
     mdDtExt <- subset(
-        mdDtExt, mdDtExt$var1 >= var1CO[1] & mdDtExt$var1 <= var1CO[2] 
+        mdDtExt, mdDtExt$var1 >= var1CO[1] & mdDtExt$var1 <= var1CO[2]
         & mdDtExt$var2 >= var2CO[1] & mdDtExt$var2 <= var2CO[2]
         & mdDtExt$presSpec >=percentCO[1] & mdDtExt$presSpec<= percentCO[2])
     # get the furthest common taxon with selected taxon for each gene

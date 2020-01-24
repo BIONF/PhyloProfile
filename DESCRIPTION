@@ -1,12 +1,12 @@
 Package: PhyloProfile
-Version: 1.1.5
-Date: 2020-01-23
+Version: 1.1.6
+Date: 2020-01-24
 Title: PhyloProfile
 Authors@R: c(
-    person("Vinh", "Tran", email = "tran@bio.uni-frankfurt.de", role = c("aut", "cre")),
-    person("Bastian", "Greshake Tzovaras", email = "", role = "aut"),
-    person("Ingo", "Ebersberger", email = "ebersberger@bio.uni-frankfurt.de", role = "aut"),
-    person("Carla", "Mölbert", email = "carla.moelbert@gmx.de", role = "ctb"))
+    person("Vinh", "Tran", role = c("aut", "cre"), email = "tran@bio.uni-frankfurt.de"),
+    person("Bastian", "Greshake Tzovaras", role = "aut", email = "bgreshake@googlemail.com"),
+    person("Ingo", "Ebersberger", role = "aut", email = "ebersberger@bio.uni-frankfurt.de"),
+    person("Carla", "Mölbert", role = "ctb", email = "carla.moelbert@gmx.de"))
 Description: PhyloProfile is a tool for exploring complex phylogenetic profiles. Phylogenetic profiles, presence/absence patterns of genes over a set of species, are commonly used to trace the functional and evolutionary history of genes across species and time. With PhyloProfile we can enrich regular phylogenetic profiles with further data like sequence/structure similarity, to make phylogenetic profiling more meaningful. Besides the interactive visualisation powered by R-Shiny, the package offers a set of further analysis features to gain insights like the gene age estimation or core gene identification.
 URL: https://github.com/BIONF/PhyloProfile/
 BugReports: https://github.com/BIONF/PhyloProfile/issues
@@ -15,10 +15,9 @@ Depends: R (>= 3.6.0)
 Encoding: UTF-8
 biocViews: Software, Visualization, DataRepresentation, MultipleComparison, FunctionalPrediction
 Imports:
-    ape, bioDist, BiocStyle, Biostrings, colourpicker, data.table, DT,
-    energy, ExperimentHub, ggplot2, grDevices, grid, gridExtra, pbapply, 
-    RColorBrewer, shiny, shinyBS, shinyjs, stats, utils,
-    OmaDB, plyr, xml2, zoo
+    ape, bioDist, BiocStyle, Biostrings, colourpicker, data.table, DT, energy, 
+    ExperimentHub, ggplot2, gridExtra, pbapply, RColorBrewer, shiny, shinyBS, 
+    shinyjs, OmaDB, plyr, xml2, zoo
 RoxygenNote: 7.0.2
 Suggests: knitr, rmarkdown, testthat
 VignetteBuilder: knitr

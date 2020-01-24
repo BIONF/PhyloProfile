@@ -18,10 +18,10 @@
 
 checkInputValidity <- function(filein) {
     if (missing(filein)) return("No input file given!")
-    inputDt <- read.table(
+    inputDt <- utils::read.table(
         file = filein, sep = "\t", header = FALSE, check.names = FALSE,
         comment.char = "", fill = TRUE, stringsAsFactors = FALSE)
-    
+
     if (is.na(inputDt[1, ncol(inputDt)])) {
         return("moreCol")
     } else {
@@ -116,7 +116,7 @@ xmlParser <- function(inputFile = NULL){
     orthoDf <- data.frame(
         geneID = rep(groupID, groupIDrep),
         refGeneID = rep(refGeneID, each = ncol(scorePair)),
-        scoreType = scorePair$V1, scoreValue = scorePair$V2, 
+        scoreType = scorePair$V1, scoreValue = scorePair$V2,
         stringsAsFactors = FALSE)
     orthoDf <- data.table::dcast(
         orthoDf, geneID + refGeneID ~ scoreType, value.var = "scoreValue")
@@ -188,7 +188,7 @@ fastaParser <- function(inputFile = NULL){
 
 wideToLong <- function(inputFile = NULL){
     if (is.null(inputFile)) stop("Input file is NULL!")
-    wideDataframe <- read.table(
+    wideDataframe <- utils::read.table(
         file = inputFile,
         sep = "\t",
         header = TRUE,
@@ -241,7 +241,7 @@ createLongMatrix <- function(inputFile = NULL){
     else if (inputType == "fasta") longDataframe <- fastaParser(inputFile)
     # LONG
     else if (inputType == "long") {
-        longDataframe <- read.table(
+        longDataframe <- utils::read.table(
             file = inputFile, sep = "\t", header = TRUE,
             check.names = FALSE, comment.char = "", stringsAsFactors = FALSE
         )

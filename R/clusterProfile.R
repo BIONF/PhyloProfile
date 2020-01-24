@@ -1,6 +1,6 @@
 #' Get data for calculating distance matrix from phylogenetic profiles
 #' @export
-#' @usage getDataClustering(data, profileType = "binary", var1AggBy = "max", 
+#' @usage getDataClustering(data, profileType = "binary", var1AggBy = "max",
 #'     var2AggBy = "max")
 #' @param data a data frame contains processed and filtered profiles (see
 #' ?fullProcessedProfile and ?filterProfileData, ?fromInputToProfile)
@@ -37,7 +37,7 @@ getDataClustering <- function(
         subDataHeat$presSpec[subDataHeat$presSpec > 0] <- 1
         subDataHeat <- subDataHeat[!duplicated(subDataHeat), ]
         wideData <- data.table::dcast(
-            data.table::setDT(subDataHeat), 
+            data.table::setDT(subDataHeat),
             geneID ~ supertaxon, value.var = "presSpec")
     } else {
         var <- profileType
@@ -46,7 +46,7 @@ getDataClustering <- function(
         # aggreagte the values by the selected method
         if (var == "var1") aggregateBy <- var1AggBy
         else aggregateBy <- var2AggBy
-        subDataHeat <- aggregate(
+        subDataHeat <- stats::aggregate(
             subDataHeat[, var],
             list(subDataHeat$geneID, subDataHeat$supertaxon),
             FUN = aggregateBy
@@ -111,7 +111,7 @@ getDistanceMatrix <- function(profiles = NULL, method = "mutualInformation") {
         profileNames <- rownames(profiles)
         colnames(matrix) <- profileNames[seq_len(length(profileNames)) - 1]
         rownames(matrix) <- profileNames
-        distanceMatrix <- as.dist(matrix)
+        distanceMatrix <- stats::as.dist(matrix)
     } else if (method == "mutualInformation") {
         distanceMatrix <- bioDist::mutualInfo(as.matrix(profiles))
         distanceMatrix <- max(distanceMatrix, na.rm = TRUE) - distanceMatrix
@@ -129,7 +129,6 @@ getDistanceMatrix <- function(profiles = NULL, method = "mutualInformation") {
 #' or "centroid" for UPGMC). Default = "complete".
 #' @return An object class hclust generated based on input distance matrix and
 #' a selected clustering method.
-#' @importFrom stats as.dendrogram
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{getDataClustering}},
 #' \code{\link{getDistanceMatrix}}, \code{\link{hclust}}
@@ -146,7 +145,7 @@ getDistanceMatrix <- function(profiles = NULL, method = "mutualInformation") {
 
 clusterDataDend <- function(distanceMatrix = NULL, clusterMethod = "complete") {
     if (is.null(distanceMatrix)) stop("Distance matrix cannot be NULL!")
-    dd.col <- hclust(distanceMatrix, method = clusterMethod)
+    dd.col <- stats::hclust(distanceMatrix, method = clusterMethod)
     return(dd.col)
 }
 

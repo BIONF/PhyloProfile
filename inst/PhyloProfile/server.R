@@ -2451,22 +2451,23 @@ shinyServer(function(input, output, session) {
     # ** var1 / var2 distribution data -----------------------------------------
     distributionDf <- reactive({
         req(v$doPlot)
-        splitDt <- createVariableDistributionData(
-            getMainInput(), input$var1, input$var2
-        )
-        # filter data base on customized plot (if chosen)
-        if (input$dataset.distribution == "Customized data") {
-            req(input$inSeq)
-            splitDt <- createVariableDistributionDataSubset(
-                getDataFiltered(),
-                splitDt,
-                input$inSeq,
-                input$inTaxa
+        withProgress(message = 'Getting data for analyzing...', value = 0.5, {
+            splitDt <- createVariableDistributionData(
+                getMainInput(), input$var1, input$var2
             )
-        }
-
-        # return dt
-        return(splitDt)
+            # filter data base on customized plot (if chosen)
+            if (input$dataset.distribution == "Customized data") {
+                req(input$inSeq)
+                splitDt <- createVariableDistributionDataSubset(
+                    getDataFiltered(),
+                    splitDt,
+                    input$inSeq,
+                    input$inTaxa
+                )
+            }
+            # return dt
+            return(splitDt)
+        })
     })
 
     # ** render distribution plots ---------------------------------------------
@@ -2564,13 +2565,15 @@ shinyServer(function(input, output, session) {
     # ** data for gene age estimation ------------------------------------------
     geneAgeDf <- reactive({
         req(v$doPlot)
-        geneAgeDf <- estimateGeneAge(
-            getDataFiltered(),
-            toString(input$rankSelect),
-            input$inSelect,
-            input$var1, input$var2, input$percent
-        )
-        return(geneAgeDf)
+        withProgress(message = 'Getting data for analyzing...', value = 0.5, {
+            geneAgeDf <- estimateGeneAge(
+                getDataFiltered(),
+                toString(input$rankSelect),
+                input$inSelect,
+                input$var1, input$var2, input$percent
+            )
+            return(geneAgeDf)
+        })
     })
 
     # ** render age distribution plot ------------------------------------------
@@ -3019,12 +3022,16 @@ shinyServer(function(input, output, session) {
     # ** data for group comparison ---------------------------------------------
     groupComparisonData <- reactive({
         req(getDataFiltered())
-        if (is.null(input$taxonGroupGC)) return(getDataFiltered())
-        else {
-            taxonGroupGC <- inputTaxonGroupGC()
-            dataFiltered <- getDataFiltered()
-            return(dataFiltered[dataFiltered$ncbiID %in% taxonGroupGC$ncbiID,])
-        }
+        withProgress(message = 'Getting data for analyzing...', value = 0.5, {
+            if (is.null(input$taxonGroupGC)) return(getDataFiltered())
+            else {
+                taxonGroupGC <- inputTaxonGroupGC()
+                dataFiltered <- getDataFiltered()
+                return(
+                    dataFiltered[dataFiltered$ncbiID %in% taxonGroupGC$ncbiID,]
+                )
+            }
+        })
     })
 
     # ** render plots for group comparison -------------------------------------

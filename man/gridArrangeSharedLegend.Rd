@@ -4,7 +4,7 @@
 \alias{gridArrangeSharedLegend}
 \title{Plot Multiple Graphs with Shared Legend in a Grid}
 \usage{
-gridArrangeSharedLegend(...,  ncol = length(list(...)), nrow = 1, 
+gridArrangeSharedLegend(...,  ncol = length(list(...)), nrow = 1,
     position = c("bottom", "right"), title = NA, titleSize = 12)
 }
 \arguments{
@@ -50,7 +50,7 @@ plotParameters <- list(
 plotVar1 <- generateSinglePlot(plotDf, plotParameters, colnames(plotDf)[1])
 plotVar2 <- generateSinglePlot(plotDf, plotParameters, colnames(plotDf)[2])
 g <- gridArrangeSharedLegend(
-    plotVar1, plotVar2, 
+    plotVar1, plotVar2,
     position = plotParameters$legendPosition,
     title = plotParameters$title,
     size = plotParameters$titleSize
