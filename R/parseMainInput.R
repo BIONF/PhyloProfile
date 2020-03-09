@@ -119,7 +119,8 @@ xmlParser <- function(inputFile = NULL){
         scoreType = scorePair$V1, scoreValue = scorePair$V2,
         stringsAsFactors = FALSE)
     orthoDf <- data.table::dcast(
-        orthoDf, geneID + refGeneID ~ scoreType, value.var = "scoreValue")
+        setDT(orthoDf), geneID + refGeneID ~ scoreType, value.var = "scoreValue"
+    )
     # merge into final dataframe
     finalDf <- merge(speciesDf, orthoDf, all.y = TRUE, by = "refGeneID")
     # remove refGeneID column and reorder columns
