@@ -28,8 +28,10 @@
 
 processNcbiTaxonomy <- function() {
     temp <- tempfile()
-    download.file("ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdmp.zip", temp)
-    names <- read.table(
+    utils::download.file(
+        "ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdmp.zip", temp
+    )
+    names <- utils::read.table(
         unz(temp, "names.dmp"),
         header = FALSE,
         fill = TRUE,
@@ -38,7 +40,7 @@ processNcbiTaxonomy <- function() {
         comment.char = "",
         stringsAsFactors = FALSE
     )
-    nodes <- read.table(
+    nodes <- utils::read.table(
         unz(temp, "nodes.dmp"),
         header = FALSE,
         fill = TRUE,
@@ -72,7 +74,7 @@ processNcbiTaxonomy <- function() {
 #' @param inputTaxa NCBI taxonomy IDs of input taxa.
 #' @param currentNCBIinfo table/dataframe of the pre-processed NCBI taxonomy
 #' data (/PhyloProfile/data/preProcessedTaxonomy.txt)
-#' @return A list of NCBI taxonomy info for input taxa, including the taxonomy 
+#' @return A list of NCBI taxonomy info for input taxa, including the taxonomy
 #' IDs, full scientific names, taxonomy ranks and the parent IDs.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @export
@@ -141,7 +143,7 @@ getIDsRank <- function(inputTaxa = NULL, currentNCBIinfo = NULL){
         seq_len(length(inputTaxaInfo)),
         function (x) {
             inputTaxaInfo[[x]]$rankMod <- inputTaxaInfo[[x]]$rank
-            if (inputTaxaInfo[[x]]$rank[1] == "norank") 
+            if (inputTaxaInfo[[x]]$rank[1] == "norank")
                 inputTaxaInfo[[x]]$rankMod[1] <-
                     paste0("strain_", inputTaxaInfo[[x]]$ncbiID[1])
             inputTaxaInfo[[x]]$rankMod <- with(
@@ -169,7 +171,7 @@ getIDsRank <- function(inputTaxa = NULL, currentNCBIinfo = NULL){
         seq_len(length(inputRankIDDf)),
         function (x) {
             ll <- c(paste0(
-                reducedDf$fullName[reducedDf$ncbiID==inputTaxa[x]],"#name"), 
+                reducedDf$fullName[reducedDf$ncbiID==inputTaxa[x]],"#name"),
                 inputRankIDDf[[x]]$id, "1#norank_1")
             return(data.frame(
                 matrix(ll, nrow = 1, byrow = TRUE), stringsAsFactors = FALSE))
@@ -185,7 +187,7 @@ getIDsRank <- function(inputTaxa = NULL, currentNCBIinfo = NULL){
 #' @export
 #' @return A list of all available NCBI taxonomy rank names.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
-#' @examples 
+#' @examples
 #' mainTaxonomyRank()
 
 mainTaxonomyRank <- function() {
@@ -206,7 +208,6 @@ mainTaxonomyRank <- function() {
 #' Indexing all available ranks (including norank)
 #' @param rankListFile Input file, where each row is a rank list of a taxon
 #' (see rankListFile in example)
-#' @importFrom utils read.table
 #' @return A dataframe containing a list of all possible ranks and their indexed
 #' values.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
@@ -220,8 +221,10 @@ mainTaxonomyRank <- function() {
 
 rankIndexing <- function(rankListFile = NULL) {
     if (is.null(rankListFile)) stop("Rank list file is NULL!")
-    rankList <- read.table(rankListFile, sep = '\t', header = FALSE,fill = TRUE,
-                        stringsAsFactors = TRUE, na.strings = c("", "NA"))
+    rankList <- utils::read.table(
+        rankListFile, sep = '\t', header = FALSE,fill = TRUE,
+        stringsAsFactors = TRUE, na.strings = c("", "NA")
+    )
     uList <- unlist(rankList)
     uList[!duplicated(uList)] <- NA
     allInputRank <- as.character(unique(uList))
@@ -261,7 +264,7 @@ rankIndexing <- function(rankListFile = NULL) {
             }
         }
     }
-    index2RankList <- lapply(seq_len(length(allInputRank)), function (x) { 
+    index2RankList <- lapply(seq_len(length(allInputRank)), function (x) {
         data.frame(index = rank2Index[[allInputRank[x]]],
                 rank = allInputRank[x], stringsAsFactors = FALSE)})
     index2RankDf <- do.call(rbind, index2RankList)
@@ -275,9 +278,6 @@ rankIndexing <- function(rankListFile = NULL) {
 #' (see idListFile in example)
 #' @param rankListFile a text file whose each row is a rank list of a taxon
 #' (see rankListFile in example)
-#' @importFrom stats complete.cases
-#' @importFrom utils count.fields
-#' @importFrom utils read.table
 #' @return An aligned taxonomy dataframe which contains all the available
 #' taxonomy ranks from the id and rank list file. This dataframe can be used for
 #' creating a well resolved taxonomy tree (see ?createRootedTree) and sorting
@@ -295,14 +295,14 @@ rankIndexing <- function(rankListFile = NULL) {
 #' taxonomyTableCreator(idListFile, rankListFile)
 
 taxonomyTableCreator <- function(idListFile = NULL, rankListFile = NULL) {
-    if (is.null(idListFile) | is.null(rankListFile)) 
+    if (is.null(idListFile) | is.null(rankListFile))
         stop("Taxonomy ID list or rank list file is NULL!")
     index <- NULL
     index2RankDf <- rankIndexing(rankListFile)
-    ncol <- max(count.fields(rankListFile, sep = '\t'))
-    idList <- read.table(
-        idListFile, sep = '\t', header = FALSE, check.names = FALSE, 
-        comment.char = "", fill = TRUE, stringsAsFactors = TRUE, 
+    ncol <- max(utils::count.fields(rankListFile, sep = '\t'))
+    idList <- utils::read.table(
+        idListFile, sep = '\t', header = FALSE, check.names = FALSE,
+        comment.char = "", fill = TRUE, stringsAsFactors = TRUE,
         na.strings = c("","NA"), col.names = paste0('X', seq_len(ncol)))
     colnames(idList)[1] <- "tip"
     orderedRank <- factor(index2RankDf$rank, levels = index2RankDf$rank)
@@ -326,7 +326,7 @@ taxonomyTableCreator <- function(idListFile = NULL, rankListFile = NULL) {
             splitCol <- data.frame(do.call('rbind',
                     strsplit(as.character(mTaxonDf$value), '#', fixed = TRUE)))
             mTaxonDf <- cbind(mTaxonDf, splitCol)
-            mTaxonDf <- mTaxonDf[complete.cases(mTaxonDf),]
+            mTaxonDf <- mTaxonDf[stats::complete.cases(mTaxonDf),]
             ### subselect mTaxonDf to keep only 2 column rank id and rank name
             mTaxonDf <- mTaxonDf[, c("X1","X2")]
             if (mTaxonDf$X2[1] != index2RankDf$rank[1])

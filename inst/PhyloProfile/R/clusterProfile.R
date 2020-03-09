@@ -47,7 +47,8 @@ clusterProfile <- function(input, output, session,
 
     output$cluster.ui <- renderUI({
         ns <- session$ns
-        shinycssloaders::withSpinner(plotOutput(
+        # shinycssloaders::withSpinner(
+        plotOutput(
             ns("dendrogram"),
             width = plotWidth(),
             height = plotHeight(),
@@ -58,7 +59,8 @@ clusterProfile <- function(input, output, session,
                 direction = input$brushDir,
                 resetOnNew = input$brushReset
             )
-        ))
+        )
+        # )
     })
 
     # download clustered plot ==================================================

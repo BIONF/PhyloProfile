@@ -9,7 +9,7 @@ parseDomainInput(seed = NULL, inputFile = NULL, type = "file")
 \arguments{
 \item{seed}{seed protein ID}
 
-\item{inputFile}{name of input file (file name or path to folder contains 
+\item{inputFile}{name of input file (file name or path to folder contains
 individual domain files)}
 
 \item{type}{type of data (file" or "folder"). Default = "file".}

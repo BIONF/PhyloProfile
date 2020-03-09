@@ -4,7 +4,7 @@
 \alias{getDataClustering}
 \title{Get data for calculating distance matrix from phylogenetic profiles}
 \usage{
-getDataClustering(data, profileType = "binary", var1AggBy = "max", 
+getDataClustering(data, profileType = "binary", var1AggBy = "max",
     var2AggBy = "max")
 }
 \arguments{

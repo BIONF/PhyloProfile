@@ -2,6 +2,18 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.1.6}{
+  \itemize{
+    \item Removed grDevices, grid, stats, utils from Imports list in DESCRIPTION
+  }
+}
+
+\section{Version 1.1.5}{
+  \itemize{
+    \item Added progress indicators for data loading and processing steps
+    \item Removed shinycssloaders
+  }
+}
 
 \section{Version 1.1.3}{
   \itemize{

@@ -8,7 +8,6 @@
 #' @import ExperimentHub
 #' @import shinyBS
 #' @rawNamespace import(shinyjs, except = colourInput)
-#' @import shinycssloaders
 #' @examples
 #' ?runPhyloProfile
 #' \dontrun{

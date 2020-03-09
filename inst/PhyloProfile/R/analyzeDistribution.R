@@ -32,9 +32,9 @@ analyzeDistribution <- function(input, output, session,
     # render distPlot.ui ------------------------------------------------------
     output$distPlot.ui <- renderUI({
         ns <- session$ns
-        shinycssloaders::withSpinner(
+        # shinycssloaders::withSpinner(
             plotOutput(ns("distributionPlot"),  width = distWidth())
-        )
+        # )
     })
 
     output$distributionPlot <- renderPlot(width = distWidth(), height = 356, {

@@ -2,10 +2,9 @@
 #' @description Get all domain annotations for one seed protein IDs.
 #' @export
 #' @param seed seed protein ID
-#' @param inputFile name of input file (file name or path to folder contains 
+#' @param inputFile name of input file (file name or path to folder contains
 #' individual domain files)
 #' @param type type of data (file" or "folder"). Default = "file".
-#' @importFrom utils read.csv
 #' @return A dataframe for protein domains including seed ID, its orthologs IDs,
 #' sequence lengths, feature names, start and end positions, feature weights
 #' (optional) and the status to determine if that feature is important for
@@ -40,19 +39,19 @@ parseDomainInput <- function(seed = NULL, inputFile = NULL, type = "file") {
     if (file != FALSE) {
         exeptions <- c("noFileInput", "noSelectHit", "noFileInFolder")
         if (!(file %in% exeptions)) {
-            domains <- read.table(
+            domains <- utils::read.table(
                 file, sep = "\t", header = FALSE, comment.char = ""
             )
         }
     }
     if (ncol(domains) == 5) {
-        colnames(domains) <- 
+        colnames(domains) <-
             c("seedID", "orthoID", "feature", "start", "end")
     } else if (ncol(domains) == 6) {
-        colnames(domains) <- 
+        colnames(domains) <-
             c("seedID", "orthoID", "length", "feature", "start", "end")
     } else if (ncol(domains) == 7) {
-        colnames(domains) <- 
+        colnames(domains) <-
             c("seedID", "orthoID", "length", "feature", "start", "end","weight")
     } else if (ncol(domains) == 8) {
         colnames(domains) <- c(

@@ -7,7 +7,7 @@
 generateSinglePlot(plotDf, parameters, variable)
 }
 \arguments{
-\item{plotDf}{dataframe for plotting containing values for each variable in 
+\item{plotDf}{dataframe for plotting containing values for each variable in
 in-group and out-group.}
 
 \item{parameters}{plot parameters, including size of x-axis, y-axis,
