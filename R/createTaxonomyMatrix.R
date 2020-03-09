@@ -321,7 +321,9 @@ taxonomyTableCreator <- function(idListFile = NULL, rankListFile = NULL) {
             taxonDf <- data.frame(idList[x,])
             taxonName <- unlist(
                 strsplit(as.character(idList[x,]$tip), "#", fixed = TRUE))
-            mTaxonDf <- suppressWarnings(data.table::melt(taxonDf, id = "tip"))
+            mTaxonDf <- suppressWarnings(
+                data.table::melt(setDT(taxonDf), id = "tip")
+            )
             ### get rank names and corresponding IDs, then remove NA cases
             splitCol <- data.frame(do.call('rbind',
                     strsplit(as.character(mTaxonDf$value), '#', fixed = TRUE)))
