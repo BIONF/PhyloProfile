@@ -26,7 +26,7 @@ inputTaxa <- c("ncbi34740", "ncbi9606", "ncbi374847", "ncbi123851",
     "ncbi5664", "ncbi189518", "ncbi418459", "ncbi10116", "ncbi284812",
     "ncbi35128", "ncbi7070")
 inGroup <-  c("ncbi9606", "ncbi10116")
-getCommonAncestor(inputTaxa, inGroup)
+# getCommonAncestor(inputTaxa, inGroup)
 }
 \author{
 Vinh Tran (tran@bio.uni-frankfurt.de)

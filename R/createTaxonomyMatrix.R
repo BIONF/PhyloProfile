@@ -1,3 +1,25 @@
+#' Get all NCBI taxonomy rank names
+#' @export
+#' @return A list of all available NCBI taxonomy rank names.
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+#' @examples
+#' mainTaxonomyRank()
+
+mainTaxonomyRank <- function() {
+    return(
+        c(
+            "strain","forma","subspecies","varietas",
+            "subspecies","species","species subgroup","species group",
+            "subgenus","genus","subtribe","tribe",
+            "subfamily","family","superfamily",
+            "parvorder","infraorder","suborder","order","superorder",
+            "cohort","infraclass","subclass","class","superclass",
+            "subphylum","phylum","superphylum",
+            "subkingdom","kingdom","superkingdom"
+        )
+    )
+}
+
 #' Pre-processing NCBI taxonomy data
 #' @description Download NCBI taxonomy database and parse information that are
 #' needed for PhyloProfile, including taxon IDs, their scientific names,
@@ -183,28 +205,6 @@ getIDsRank <- function(inputTaxa = NULL, currentNCBIinfo = NULL){
     return(list(inputIDDf, inputRankDf, as.data.frame(reducedDf)))
 }
 
-#' Get all NCBI taxonomy rank names
-#' @export
-#' @return A list of all available NCBI taxonomy rank names.
-#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
-#' @examples
-#' mainTaxonomyRank()
-
-mainTaxonomyRank <- function() {
-    return(
-        c(
-            "strain","forma","subspecies","varietas",
-            "subspecies","species","species subgroup","species group",
-            "subgenus","genus","subtribe","tribe",
-            "subfamily","family","superfamily",
-            "parvorder","infraorder","suborder","order","superorder",
-            "cohort","infraclass","subclass","class","superclass",
-            "subphylum","phylum","superphylum",
-            "subkingdom","kingdom","superkingdom"
-        )
-    )
-}
-
 #' Indexing all available ranks (including norank)
 #' @param rankListFile Input file, where each row is a rank list of a taxon
 #' (see rankListFile in example)
@@ -219,20 +219,21 @@ mainTaxonomyRank <- function() {
 #' rankIndexing(rankListFile)
 #' }
 
-rankIndexing <- function(rankListFile = NULL) {
+rankIndexing <- function (rankListFile = NULL) {
     if (is.null(rankListFile)) stop("Rank list file is NULL!")
     rankList <- utils::read.table(
         rankListFile, sep = '\t', header = FALSE,fill = TRUE,
         stringsAsFactors = TRUE, na.strings = c("", "NA")
     )
-    uList <- unlist(rankList)
-    uList[!duplicated(uList)] <- NA
+    uList <- unlist(rankList[seq(3, length(rankList))])
     allInputRank <- as.character(unique(uList))
     allInputRank <- allInputRank[!is.na(allInputRank)]
     ### initial index for main ranks
     mainRank <- mainTaxonomyRank()
-    rank2Index <- new.env()
-    for (i in seq_len(length(mainRank))) rank2Index[[mainRank[i]]] = i
+    rank2index <- new.env(hash = TRUE)
+    getHash <- Vectorize(get, vectorize.args = "x")
+    assignHash <- Vectorize(assign, vectorize.args = c("x", "value"))
+    for (i in seq_len(length(mainRank))) rank2index[[mainRank[i]]] <- i
     ### the magic happens here
     for (k in seq_len(nrow(rankList))) {
         ## get rank list for current taxon containing only ranks in allInputRank
@@ -240,33 +241,53 @@ rankIndexing <- function(rankListFile = NULL) {
         filter <- vapply(
             subList, function(x) x %in% allInputRank, FUN.VALUE = logical(1))
         subList <- subList[filter]
+        ## indexing
+        tmpEnv <- new.env(hash = TRUE)
         for (i in seq_len(length(subList))) {
-            # check each rank if it has no index (probably only for norank), ...
-            if (is.null(rank2Index[[subList[i]]])) {
-                # then index of this rank = the [avail] index of prev rank + 1
+            iRank <- subList[i]
+            if (is.null(rank2index[[iRank]])) {
+                # for new rank: get index of prev avail from this taxon
                 for (j in seq_len(length(subList))) {
                     if (j < i) {
-                        if (!is.null(rank2Index[[subList[i - j]]])) {
-                            rank2Index[[subList[i]]] =
-                                rank2Index[[subList[i - j]]] + 1
+                        if (!is.null(tmpEnv[[subList[i - j]]])) {
+                            tmpEnv[[iRank]] <- tmpEnv[[subList[i - j]]] + 1
                             break
-                        } else j = j - 1
-                    }
+                        }
+                    } else j = j - 1
                 }
-            }
-            # else, increase the curr index if it is smaller than the prev rank
-            else {
+            } else {
+                # for old rank
                 if (i > 1) {
-                    preRank <- subList[i - 1]
-                    if (rank2Index[[subList[i]]] <= rank2Index[[preRank]])
-                        rank2Index[[subList[i]]] = rank2Index[[preRank]] + 1
-                }
+                    if (rank2index[[iRank]] < tmpEnv[[subList[i-1]]]) {
+                        tmpEnv[[iRank]] <- tmpEnv[[subList[i-1]]] + 1
+                        for (
+                            r in 
+                            ls(rank2index)[!(ls(rank2index) %in% ls(tmpEnv))]
+                        ) {
+                            if (rank2index[[r]] >= tmpEnv[[subList[i-1]]]) {
+                                tmpEnv[[r]] <- 
+                                    rank2index[[r]] + tmpEnv[[iRank]] - 
+                                    rank2index[[iRank]]
+                            }
+                        }
+                    } else {
+                        if (is.null(tmpEnv[[iRank]]))
+                            tmpEnv[[iRank]] <- rank2index[[iRank]]
+                    }
+                } else tmpEnv[[iRank]] <- rank2index[[iRank]]
             }
         }
+        assignHash(ls(tmpEnv), getHash(ls(tmpEnv), tmpEnv), rank2index)
     }
-    index2RankList <- lapply(seq_len(length(allInputRank)), function (x) {
-        data.frame(index = rank2Index[[allInputRank[x]]],
-                rank = allInputRank[x], stringsAsFactors = FALSE)})
+    # convert env into dataframe and return
+    index2RankList <- lapply(
+        seq_len(length(allInputRank)), function (x) {
+            data.frame(
+                index = rank2index[[allInputRank[x]]],
+                rank = allInputRank[x], stringsAsFactors = FALSE
+            )
+        }
+    )
     index2RankDf <- do.call(rbind, index2RankList)
     index2RankDf <- index2RankDf[with(index2RankDf, order(index2RankDf$index)),]
     return(index2RankDf)
@@ -325,8 +346,12 @@ taxonomyTableCreator <- function(idListFile = NULL, rankListFile = NULL) {
                 data.table::melt(setDT(taxonDf), id = "tip")
             )
             ### get rank names and corresponding IDs, then remove NA cases
-            splitCol <- data.frame(do.call('rbind',
-                    strsplit(as.character(mTaxonDf$value), '#', fixed = TRUE)))
+            splitCol <- data.frame(
+                do.call(
+                    'rbind',
+                    strsplit(as.character(mTaxonDf$value), '#', fixed = TRUE)
+                )
+            )
             mTaxonDf <- cbind(mTaxonDf, splitCol)
             mTaxonDf <- mTaxonDf[stats::complete.cases(mTaxonDf),]
             ### subselect mTaxonDf to keep only 2 column rank id and rank name

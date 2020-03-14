@@ -36,7 +36,7 @@ data("mainLongRaw", package="PhyloProfile")
 data <- mainLongRaw
 inGroup <- c("ncbi9606", "ncbi10116")
 variable <- colnames(data)[4]
-compareMedianTaxonGroups(data, inGroup, TRUE, variable)
+# compareMedianTaxonGroups(data, inGroup, TRUE, variable)
 }
 \author{
 Vinh Tran (tran@bio.uni-frankfurt.de)
