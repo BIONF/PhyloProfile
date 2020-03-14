@@ -2,6 +2,12 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.1.8}{
+  \itemize{
+    \item Improved the rank indexing function
+  }
+}
+
 \section{Version 1.1.6}{
   \itemize{
     \item Removed grDevices, grid, stats, utils from Imports list in DESCRIPTION

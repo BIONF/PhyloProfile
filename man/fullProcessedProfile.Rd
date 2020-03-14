@@ -4,7 +4,8 @@
 \name{fullProcessedProfile}
 \alias{fullProcessedProfile}
 \title{An example of a fully processed phylogenetic profile.}
-\format{A data frame with 168 rows and 17 variables:
+\format{
+A data frame with 168 rows and 17 variables:
 \itemize{
     \item{supertaxon}{ Supertaxon name together with its ordered index, e.g.
     "1001_Mammalia"}
@@ -25,7 +26,8 @@
     \item{mVar1}{ Value of the 1. variable after grouping into supertaxon}
     \item{mVar2}{ Value of the 2. variable after grouping into supertaxon}
     \item{numberSpec}{ Total number of species in each supertaxon}
-}}
+}
+}
 \usage{
 fullProcessedProfile
 }

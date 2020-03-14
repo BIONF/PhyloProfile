@@ -4,14 +4,16 @@
 \name{ppTaxonomyMatrix}
 \alias{ppTaxonomyMatrix}
 \title{An example of a taxonomy matrix.}
-\format{A data frame with 10 rows and 162 variables:
+\format{
+A data frame with 10 rows and 162 variables:
 \itemize{
     \item{abbrName}{ e.g. "ncbi10090"}
     \item{ncbiID}{ e.g. "10090"}
     \item{fullName}{ e.g. "Mus musculus"}
     \item{strain}{ e.g. "10090"}
     ...
-}}
+}
+}
 \usage{
 ppTaxonomyMatrix
 }

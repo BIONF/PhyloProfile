@@ -4,8 +4,10 @@
 \name{rankList}
 \alias{rankList}
 \title{NCBI rank list for experimental data sets}
-\format{A data frame with up to 37 columns and 94 rows corresponding to 94
-taxa in the 2 experimental data sets}
+\format{
+A data frame with up to 37 columns and 95 rows corresponding to 95
+taxa in the 2 experimental data sets
+}
 \usage{
 data(rankList)
 }
