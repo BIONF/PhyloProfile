@@ -14,7 +14,7 @@
 #'     "ncbi5664", "ncbi189518", "ncbi418459", "ncbi10116", "ncbi284812",
 #'     "ncbi35128", "ncbi7070")
 #' inGroup <-  c("ncbi9606", "ncbi10116")
-#' # getCommonAncestor(inputTaxa, inGroup)
+#' getCommonAncestor(inputTaxa, inGroup)
 
 getCommonAncestor <- function(inputTaxa = NULL, inGroup = NULL) {
     if (is.null(inputTaxa) | is.null(inGroup))
@@ -72,7 +72,7 @@ getCommonAncestor <- function(inputTaxa = NULL, inGroup = NULL) {
 #' data <- mainLongRaw
 #' inGroup <- c("ncbi9606", "ncbi10116")
 #' variable <- colnames(data)[4]
-#' # compareTaxonGroups(data, inGroup, TRUE, variable, 0.05)
+#' compareTaxonGroups(data, inGroup, TRUE, variable, 0.05)
 
 compareTaxonGroups <- function(
     data = NULL,
@@ -178,7 +178,7 @@ distributionTest <- function(
 #' data <- mainLongRaw
 #' inGroup <- c("ncbi9606", "ncbi10116")
 #' variable <- colnames(data)[4]
-#' # compareMedianTaxonGroups(data, inGroup, TRUE, variable)
+#' compareMedianTaxonGroups(data, inGroup, TRUE, variable)
 
 compareMedianTaxonGroups <- function(
     data = NULL, inGroup = NULL, useCommonAncestor = TRUE, variable = NULL

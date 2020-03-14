@@ -4,13 +4,15 @@
 \name{taxonomyMatrix}
 \alias{taxonomyMatrix}
 \title{Taxonomy matrix for experimental data sets}
-\format{A data frame with up to 79 columns and 94 rows corresponding to 94
-taxa in the 2 experimental data sets}
+\format{
+A data frame with up to 142 columns and 95 rows corresponding to 95
+taxa in the 2 experimental data sets
+}
 \usage{
 data(taxonomyMatrix)
 }
 \description{
-Data frame containing the fully aligned taxonomy IDs of 94 taxa in the
+Data frame containing the fully aligned taxonomy IDs of 95 taxa in the
 experimental data sets. By talking into account both the defined ranks (e.g.
 strain, This data is used for clustering and then creating a
 taxon tree. It is used also for cross-linking between different taxonomy

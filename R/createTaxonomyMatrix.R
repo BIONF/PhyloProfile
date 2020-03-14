@@ -388,5 +388,8 @@ taxonomyTableCreator <- function(idListFile = NULL, rankListFile = NULL) {
     fullRankIDdfOut <- cbind(fullRankIDdfOut, tFullRankIDdf)
     ### rename last column to "root"
     names(fullRankIDdfOut)[ncol(fullRankIDdfOut)] <- "root"
+    numericCol <- c(seq(4, ncol(fullRankIDdfOut)))
+    fullRankIDdfOut[,numericCol] <- 
+        as.numeric(as.character(unlist(fullRankIDdfOut[,numericCol])))
     return(fullRankIDdfOut)
 }

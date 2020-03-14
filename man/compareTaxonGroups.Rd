@@ -41,7 +41,7 @@ data("mainLongRaw", package="PhyloProfile")
 data <- mainLongRaw
 inGroup <- c("ncbi9606", "ncbi10116")
 variable <- colnames(data)[4]
-# compareTaxonGroups(data, inGroup, TRUE, variable, 0.05)
+compareTaxonGroups(data, inGroup, TRUE, variable, 0.05)
 }
 \author{
 Vinh Tran (tran@bio.uni-frankfurt.de)
