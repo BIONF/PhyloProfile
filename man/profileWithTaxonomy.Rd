@@ -4,7 +4,8 @@
 \name{profileWithTaxonomy}
 \alias{profileWithTaxonomy}
 \title{An example of a raw long input file together with the taxonomy info.}
-\format{A data frame with 20 rows and 12 variables:
+\format{
+A data frame with 20 rows and 12 variables:
 \itemize{
     \item{geneID}{ Seed or ortholog group ID, e.g. "OG_1017"}
     \item{ncbiID}{ Taxon ID, e.g. "ncbi176299"}
@@ -19,7 +20,8 @@
     working with higher taxonomy rank than input's)}
     \item{supertaxon}{ Name of the corresponding supertaxon}
     \item{rank}{ Rank of the supertaxon}
-}}
+}
+}
 \usage{
 profileWithTaxonomy
 }

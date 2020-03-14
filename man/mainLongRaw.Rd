@@ -4,14 +4,16 @@
 \name{mainLongRaw}
 \alias{mainLongRaw}
 \title{An example of a raw long input file.}
-\format{A data frame with 168 rows and 5 variables:
+\format{
+A data frame with 168 rows and 5 variables:
 \itemize{
     \item{geneID}{ Seed or ortholog group ID, e.g. "100136at6656"}
     \item{ncbiID}{ Taxon ID, e.g. "ncbi36329"}
     \item{orthoID}{ Ortholog ID, e.g. "100136at6656|PLAF7@36329@1|Q8ILT8|1"}
     \item{FAS_F}{ First additional variable}
     \item{FAS_B}{ Second additional variable}
-}}
+}
+}
 \usage{
 mainLongRaw
 }

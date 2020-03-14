@@ -2,6 +2,12 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.0.7}{
+  \itemize{
+    \item Improved the rank indexing function
+  }
+}
+
 \section{Version 1.0.5}{
   \itemize{
     \item Added progress indicators for data loading and processing steps
