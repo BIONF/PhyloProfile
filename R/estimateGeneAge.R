@@ -35,7 +35,10 @@
 estimateGeneAge <- function(
     processedProfileData, rankName, refTaxon, var1CO, var2CO, percentCO
 ){
-    rankList <- c("family", "class", "phylum", "kingdom", "superkingdom","root")
+    rankList <- c(
+        "family", "class", "phylum", "kingdom", "norank_33154",
+        "superkingdom", "root"
+    )
     # get selected (super)taxon ID
     taxList <- getNameList()
     superID <- taxList[
@@ -78,24 +81,45 @@ estimateGeneAge <- function(
     data.table::setnames(geneAgeDf, seq_len(2), c("geneID", "cat"))  #col names
     row.names(geneAgeDf) <- NULL   # remove row names
     ### convert cat into geneAge
-    geneAgeDf$age[geneAgeDf$cat == "0000001"] <- "07_LUCA"
-    geneAgeDf$age[geneAgeDf$cat == "0000011" | geneAgeDf$cat == "0000010"] <-
+    geneAgeDf$age[geneAgeDf$cat == "00000001"] <- "08_LUCA"
+    geneAgeDf$age[geneAgeDf$cat == "00000011" | geneAgeDf$cat == "0000010"] <-
         paste0(
-            "06_", taxList$fullName[taxList$ncbiID == supFirstLine$superkingdom
+            "07_", taxList$fullName[taxList$ncbiID == supFirstLine$superkingdom
                                     & taxList$rank == "superkingdom"])
-    geneAgeDf$age[geneAgeDf$cat == "0000111"] <- paste0(
+    superKingdom <- taxList$ncbiID[taxList$ncbiID == supFirstLine$superkingdom
+                                    & taxList$rank == "superkingdom"]
+    if (superKingdom == 2759) {
+        norank33154id = supFirstLine$norank_33154
+        if (norank33154id == 33154 | norank33154id == 554915) {
+            geneAgeDf$age[
+                geneAgeDf$cat == "00000111" | geneAgeDf$cat == "0000110"
+            ] <- paste0("06_Unikonta")
+        } else {
+            geneAgeDf$age[
+                geneAgeDf$cat == "00000111" | geneAgeDf$cat == "0000110"
+            ] <- paste0("06_Bikonta")
+        }
+    } else {
+        geneAgeDf$age[
+            geneAgeDf$cat == "00000111" | geneAgeDf$cat == "0000110"
+        ] <- paste0(
+            "07_", taxList$fullName[taxList$ncbiID == supFirstLine$superkingdom
+                                    & taxList$rank == "superkingdom"]
+        )
+    }
+    geneAgeDf$age[geneAgeDf$cat == "00001111"] <- paste0(
         "05_", taxList$fullName[
             taxList$ncbiID == supFirstLine$kingdom & taxList$rank == "kingdom"])
-    geneAgeDf$age[geneAgeDf$cat == "0001111"] <- paste0(
+    geneAgeDf$age[geneAgeDf$cat == "00011111"] <- paste0(
         "04_", taxList$fullName[
             taxList$ncbiID == supFirstLine$phylum & taxList$rank == "phylum"])
-    geneAgeDf$age[geneAgeDf$cat == "0011111"] <- paste0(
+    geneAgeDf$age[geneAgeDf$cat == "00111111"] <- paste0(
         "03_", taxList$fullName[
             taxList$ncbiID == supFirstLine$class & taxList$rank == "class"])
-    geneAgeDf$age[geneAgeDf$cat == "0111111"] <- paste0(
+    geneAgeDf$age[geneAgeDf$cat == "01111111"] <- paste0(
         "02_", taxList$fullName[
             taxList$ncbiID == supFirstLine$family & taxList$rank == "family"])
-    geneAgeDf$age[geneAgeDf$cat == "1111111"] <- paste0(
+    geneAgeDf$age[geneAgeDf$cat == "11111111"] <- paste0(
         "01_", taxList$fullName[
             taxList$fullName == refTaxon & taxList$rank == rankName])
     # return geneAge data frame

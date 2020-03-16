@@ -27,7 +27,8 @@ plotGeneAgeUI <- function(id) {
             em(
                 h6(
                     "01-Species; 02-Family; 03-Class; 04-Phylum; 05-Kingdom;
-                    06-Superkingdom; 07-Last universal common ancestor;
+                    06-Bikonta/Unikonta (only for Eukaryote);
+                    07-Superkingdom; 08-Last universal common ancestor;
                     Undef-Genes have been filtered out"
                 )
             )
