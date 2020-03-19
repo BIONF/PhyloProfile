@@ -243,6 +243,7 @@ rankIndexing <- function (rankListFile = NULL) {
         subList <- subList[filter]
         ## indexing
         tmpEnv <- new.env(hash = TRUE)
+        flag <- 0
         for (i in seq_len(length(subList))) {
             iRank <- subList[i]
             if (is.null(rank2index[[iRank]])) {
@@ -258,23 +259,44 @@ rankIndexing <- function (rankListFile = NULL) {
             } else {
                 # for old rank
                 if (i > 1) {
-                    if (rank2index[[iRank]] < tmpEnv[[subList[i-1]]]) {
-                        tmpEnv[[iRank]] <- tmpEnv[[subList[i-1]]] + 1
-                        for (
-                            r in 
-                            ls(rank2index)[!(ls(rank2index) %in% ls(tmpEnv))]
-                        ) {
-                            if (rank2index[[r]] >= tmpEnv[[subList[i-1]]]) {
-                                tmpEnv[[r]] <- 
-                                    rank2index[[r]] + tmpEnv[[iRank]] - 
-                                    rank2index[[iRank]]
+                    if (flag == 0) {
+                        currentIndex <- rank2index[[iRank]]
+                    } else {
+                        currentIndex <- tmpEnv[[iRank]]
+                    }
+                    if (currentIndex <= tmpEnv[[subList[i-1]]]) {
+                        if (flag == 0) {
+                            tmpEnv[[iRank]] <- tmpEnv[[subList[i-1]]] + 1
+                            for (
+                                r in 
+                                ls(rank2index)[!(ls(rank2index)%in%ls(tmpEnv))]
+                            ) {
+                                if (rank2index[[r]] >= currentIndex) {
+                                    tmpEnv[[r]] <- 
+                                        rank2index[[r]] + 
+                                        (tmpEnv[[iRank]] - rank2index[[iRank]])
+                                    flag <- 1
+                                }
+                            }
+                        } else {
+                            step <- tmpEnv[[subList[i-1]]] - currentIndex + 1
+                            for (n in ls(rank2index)) {
+                                if (rank2index[[n]] >= currentIndex) {
+                                    tmpEnv[[n]] <- rank2index[[n]] + step
+                                }
                             }
                         }
+                        assignHash(
+                            ls(tmpEnv), getHash(ls(tmpEnv), tmpEnv), rank2index
+                        )
                     } else {
-                        if (is.null(tmpEnv[[iRank]]))
+                        if (is.null(tmpEnv[[iRank]])) {
                             tmpEnv[[iRank]] <- rank2index[[iRank]]
+                        }
                     }
-                } else tmpEnv[[iRank]] <- rank2index[[iRank]]
+                } else {
+                    tmpEnv[[iRank]] <- rank2index[[iRank]]
+                }
             }
         }
         assignHash(ls(tmpEnv), getHash(ls(tmpEnv), tmpEnv), rank2index)
