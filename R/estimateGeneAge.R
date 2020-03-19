@@ -86,59 +86,75 @@ estimateGeneAge <- function(
         geneAgeDf[geneAgeDf$cat == "00000001",]$geneID, 
         function (x) {
             orthoList <- mdDtExt[
-                mdDtExt$geneID == x & mdDtExt$cat == "00000001",
-            ]$ncbiID
+                mdDtExt$geneID == x & mdDtExt$cat == "00000001",]$ncbiID
             orthoDomainID <- levels(as.factor(
-                subDt[subDt$abbrName %in% orthoList,]$superkingdom
-            ))
-            orthoDomainName <- paste(
-                levels(as.factor(c(
-                    taxList$fullName[
-                        taxList$ncbiID == supFirstLine$superkingdom 
-                        & taxList$rank == "superkingdom"
-                    ],
-                    taxList$fullName[
-                        taxList$ncbiID %in% orthoDomainID 
-                        & taxList$rank == "superkingdom"
-                    ]
-                ))), collapse = "-"
-            )
-            return(
-                data.frame(
-                    geneID = x, age = paste0("08_", orthoDomainName), 
-                    stringsAsFactors = FALSE
-                )
-            )
+                subDt[subDt$abbrName %in% orthoList,]$superkingdom))
+            orthoDomainName <- levels(as.factor(c(
+                taxList$fullName[
+                    taxList$ncbiID == supFirstLine$superkingdom 
+                    & taxList$rank == "superkingdom"],
+                taxList$fullName[
+                    taxList$ncbiID %in% orthoDomainID 
+                    & taxList$rank == "superkingdom"]
+            )))
+            if (length(orthoDomainName) == 3) {
+                age = paste0("09_", paste(orthoDomainName, collapse = "-"))
+            } else {
+                age = paste0("08_", paste(orthoDomainName, collapse = "-"))
+            }
+            return(data.frame(geneID = x, age, stringsAsFactors = FALSE))
         }
     )
-    domainAgeDf <- do.call(rbind, domainDfList)
-    geneAgeDf <- merge(geneAgeDf, domainAgeDf, by = "geneID", all.x = TRUE)
+    
+    konList <- lapply(
+        geneAgeDf[geneAgeDf$cat %in% c("00000111", "0000110") ,]$geneID, 
+        function (x) {
+            orthoList <- mdDtExt[
+                mdDtExt$geneID == x & mdDtExt$cat %in% c("00000111","0000110"),
+            ]$ncbiID
+            orthoDomainID <- levels(as.factor(
+                subDt[subDt$abbrName %in% orthoList,]$norank_33154
+            ))
+            superKingdom <- taxList$ncbiID[
+                taxList$ncbiID == supFirstLine$superkingdom 
+                & taxList$rank == "superkingdom"
+            ]
+            if (superKingdom == 2759) {
+                if (length(orthoDomainID) == 1) {
+                    age <- paste0(
+                        "06_", taxList$fullName[
+                            taxList$ncbiID == orthoDomainID 
+                            & taxList$rank == "norank"]
+                    )
+                } else {
+                    ukon <- levels(as.factor(orthoDomainID%in%c(33154, 554915)))
+                    if (length(ukon) == 1) {
+                        if (ukon == TRUE) {
+                            age <- "06_Unikonta"
+                        } else {
+                            age <- "06_Bikonta"
+                        }
+                    } else {
+                        age <- "07_Eukaryote"
+                    }
+                }
+            } else {
+                age <- paste0(
+                    "07_", taxList$fullName[
+                        taxList$ncbiID == supFirstLine$superkingdom
+                        & taxList$rank == "superkingdom"]
+                )
+            }
+            return(data.frame(geneID = x, age, stringsAsFactors = FALSE))
+        }
+    )
+    geneAgeDfPre <- do.call(rbind, c(domainDfList, konList))
+    geneAgeDf <- merge(geneAgeDf, geneAgeDfPre, by = "geneID", all.x = TRUE)
     
     geneAgeDf$age[geneAgeDf$cat == "00000011" | geneAgeDf$cat == "0000010"] <-
         paste0(
             "07_", taxList$fullName[taxList$ncbiID == supFirstLine$superkingdom
                                     & taxList$rank == "superkingdom"])
-    superKingdom <- taxList$ncbiID[taxList$ncbiID == supFirstLine$superkingdom
-                                    & taxList$rank == "superkingdom"]
-    if (superKingdom == 2759) {
-        norank33154id = supFirstLine$norank_33154
-        if (norank33154id == 33154 | norank33154id == 554915) {
-            geneAgeDf$age[
-                geneAgeDf$cat == "00000111" | geneAgeDf$cat == "0000110"
-            ] <- paste0("06_Unikonta")
-        } else {
-            geneAgeDf$age[
-                geneAgeDf$cat == "00000111" | geneAgeDf$cat == "0000110"
-            ] <- paste0("06_Bikonta")
-        }
-    } else {
-        geneAgeDf$age[
-            geneAgeDf$cat == "00000111" | geneAgeDf$cat == "0000110"
-        ] <- paste0(
-            "07_", taxList$fullName[taxList$ncbiID == supFirstLine$superkingdom
-                                    & taxList$rank == "superkingdom"]
-        )
-    }
     geneAgeDf$age[geneAgeDf$cat == "00001111"] <- paste0(
         "05_", taxList$fullName[
             taxList$ncbiID == supFirstLine$kingdom & taxList$rank == "kingdom"])
