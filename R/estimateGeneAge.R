@@ -81,7 +81,39 @@ estimateGeneAge <- function(
     data.table::setnames(geneAgeDf, seq_len(2), c("geneID", "cat"))  #col names
     row.names(geneAgeDf) <- NULL   # remove row names
     ### convert cat into geneAge
-    geneAgeDf$age[geneAgeDf$cat == "00000001"] <- "08_LUCA"
+    # geneAgeDf$age[geneAgeDf$cat == "00000001"] <- "08_LUCA"
+    domainDfList <- lapply(
+        geneAgeDf[geneAgeDf$cat == "00000001",]$geneID, 
+        function (x) {
+            orthoList <- mdDtExt[
+                mdDtExt$geneID == x & mdDtExt$cat == "00000001",
+            ]$ncbiID
+            orthoDomainID <- levels(as.factor(
+                subDt[subDt$abbrName %in% orthoList,]$superkingdom
+            ))
+            orthoDomainName <- paste(
+                levels(as.factor(c(
+                    taxList$fullName[
+                        taxList$ncbiID == supFirstLine$superkingdom 
+                        & taxList$rank == "superkingdom"
+                    ],
+                    taxList$fullName[
+                        taxList$ncbiID %in% orthoDomainID 
+                        & taxList$rank == "superkingdom"
+                    ]
+                ))), collapse = "-"
+            )
+            return(
+                data.frame(
+                    geneID = x, age = paste0("08_", orthoDomainName), 
+                    stringsAsFactors = FALSE
+                )
+            )
+        }
+    )
+    domainAgeDf <- do.call(rbind, domainDfList)
+    geneAgeDf <- merge(geneAgeDf, domainAgeDf, by = "geneID", all.x = TRUE)
+    
     geneAgeDf$age[geneAgeDf$cat == "00000011" | geneAgeDf$cat == "0000010"] <-
         paste0(
             "07_", taxList$fullName[taxList$ncbiID == supFirstLine$superkingdom

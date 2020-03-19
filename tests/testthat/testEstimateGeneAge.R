@@ -12,7 +12,9 @@ test_that("test estimation of gene ages", {
         rankName, refTaxon,
         var1Cutoff, var2Cutoff, percentCutoff
     )
-    expect_true(geneAge$age[geneAge$geneID == "100136at6656"] == "08_LUCA")
+    expect_true(
+        geneAge$age[geneAge$geneID == "100265at6656"] == "06_Unikonta"
+    )
 })
 
 test_that("test plotting gene age plot", {
