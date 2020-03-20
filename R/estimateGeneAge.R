@@ -51,11 +51,13 @@ estimateGeneAge <- function(
     firstLine <- Dt[Dt[, rankName] == superID, ][1, ]
     supFirstLine <- firstLine[, c("abbrName", rankList)]
     # compare each taxon IDs with selected taxon & create a "category" DF
+    subDtTmp <- subDt
+    subDtTmp$norank_33154[subDtTmp$norank_33154 == "554915"] <- "33154"
     catList <- lapply(
-        seq(nrow(subDt)), function (x) {
-            cat <- subDt[x, ] %in% supFirstLine
+        seq(nrow(subDtTmp)), function (x) {
+            cat <- subDtTmp[x, ] %in% supFirstLine
             cat <- paste0(cat, collapse = "")})
-    catDf <- data.frame(ncbiID = as.character(subDt$abbrName),
+    catDf <- data.frame(ncbiID = as.character(subDtTmp$abbrName),
                         cat = do.call(rbind, catList), stringsAsFactors = FALSE)
     catDf$cat <- gsub("TRUE", "1", catDf$cat)
     catDf$cat <- gsub("FALSE", "0", catDf$cat)
