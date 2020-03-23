@@ -83,7 +83,6 @@ estimateGeneAge <- function(
     data.table::setnames(geneAgeDf, seq_len(2), c("geneID", "cat"))  #col names
     row.names(geneAgeDf) <- NULL   # remove row names
     ### convert cat into geneAge
-    # geneAgeDf$age[geneAgeDf$cat == "00000001"] <- "08_LUCA"
     domainDfList <- lapply(
         geneAgeDf[geneAgeDf$cat == "00000001",]$geneID, 
         function (x) {
@@ -107,7 +106,6 @@ estimateGeneAge <- function(
             return(data.frame(geneID = x, age, stringsAsFactors = FALSE))
         }
     )
-    
     konList <- lapply(
         geneAgeDf[geneAgeDf$cat %in% c("00000111", "0000110") ,]$geneID, 
         function (x) {
@@ -122,6 +120,9 @@ estimateGeneAge <- function(
                 & taxList$rank == "superkingdom"
             ]
             if (superKingdom == 2759) {
+                orthoDomainID <- unique(
+                    c(orthoDomainID, supFirstLine$norank_33154)
+                )
                 if (length(orthoDomainID) == 1) {
                     age <- paste0(
                         "06_", taxList$fullName[
