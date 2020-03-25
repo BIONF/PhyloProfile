@@ -16,12 +16,12 @@ phylogenetic profiles (see ?fullProcessedProfile or ?parseInfoProfile)}
 \item{refTaxon}{reference taxon name (e.g. "Homo sapiens", "Homo" or
 "Hominidae")}
 
-\item{var1CO}{cutoff for var1}
+\item{var1CO}{cutoff for var1. Default: c(0, 1)}
 
-\item{var2CO}{cutoff for var2}
+\item{var2CO}{cutoff for var2. Default: c(0, 1)}
 
 \item{percentCO}{cutoff for percentage of species present in each
-supertaxon}
+supertaxon. Default: c(0, 1)}
 }
 \value{
 A dataframe contains estimated gene ages for the seed proteins.
