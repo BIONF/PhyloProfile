@@ -27,5 +27,5 @@ test_that("test plotting gene age plot", {
     plotDf <- geneAgePlotDf(geneAgeDf)
     geneAgeText <- 1
     p <- createGeneAgePlot(plotDf, geneAgeText)
-    expect_true(p$guides$fill$nrow == 1)
+    expect_true(nrow(p$data) == 1)
 })

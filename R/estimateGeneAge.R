@@ -229,16 +229,32 @@ estimateGeneAge <- function(
 #' geneAgePlotDf(geneAgeDf)
 
 geneAgePlotDf <- function(geneAgeDf){
+    if (is.null(geneAgeDf)) stop("Gene age data is NULL!")
     plotDf <- plyr::count(geneAgeDf, c("age"))
+    plotDf$level <- substring(plotDf$age, 1,2)
+    levelDf <- data.frame(
+        level = c("01", "02", "03", "04", "05", "07", "08", "09"),
+        rank = c(
+            " (Species)", " (Family)", " (Class)", " (Phylum)", " (Kingdom)", 
+            " (Superkingdom)", " (LUCA)", " (LUCA)"
+        ),
+        stringsAsFactors = FALSE
+    )
+    plotDf <- merge(plotDf, levelDf, by = "level", all.x = TRUE)
+    plotDf[is.na(plotDf)] <- ""
+    plotDf$name <- paste0(substring(plotDf$age, 4), plotDf$rank)
+    plotDf$name[plotDf$name == "ef"] <- "Undefined"
+    plotDf$name <- factor(plotDf$name, levels = plotDf$name)
     plotDf$percentage <- round(plotDf$freq / sum(plotDf$freq) * 100)
-    plotDf$pos <- cumsum(plotDf$percentage) - (0.5 * plotDf$percentage)
-    return(plotDf)
+    outDf <- plotDf[, c("name", "freq", "percentage")]
+    colnames(outDf) <- c("name", "count", "percentage")
+    return(outDf)
 }
 
 #' Create gene age plot
 #' @param geneAgePlotDf data frame required for plotting gene age (see
 #' ?geneAgePlotDf)
-#' @param geneAgeText text size
+#' @param textFactor increase factor of text size
 #' @return A gene age distribution plot as a ggplot2 object
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @import ggplot2
@@ -246,41 +262,48 @@ geneAgePlotDf <- function(geneAgeDf){
 #' @seealso \code{\link{estimateGeneAge}} and \code{\link{geneAgePlotDf}}
 #' @examples
 #' geneAgePlotDf <- data.frame(
-#'     age = "07_LUCA",
-#'     frea = 2,
-#'     percentage = 100,
-#'     pos = 50
+#'     name = c("Streptophyta (Phylum)", "Bikonta", "Eukaryota (Superkingdom)"),
+#'     count = c(7, 1, 30),
+#'     percentage = c(18, 3, 79)
 #' )
-#' geneAgeText <- 1
-#' createGeneAgePlot(geneAgePlotDf, geneAgeText)
+#' createGeneAgePlot(geneAgePlotDf)
 
-createGeneAgePlot <- function(geneAgePlotDf, geneAgeText){
-    age <- NULL
+createGeneAgePlot <- function(geneAgePlotDf, textFactor = 1){
+    name <- NULL
+    count <- NULL
     percentage <- NULL
-    pos <- NULL
-    freq <- NULL
-
-    p <- ggplot(geneAgePlotDf, aes(fill = age, y = percentage, x = 1)) +
-        geom_bar(stat = "identity") +
-        scale_y_reverse() +
+    x <- NULL
+    y <- NULL
+    
+    arrowDf <- data.frame(time = c(0, 0), y = c(0, nrow(geneAgePlotDf) + 1))
+    p <- ggplot(data = geneAgePlotDf, aes(x = name, y = count, fill = name)) +
+        geom_bar(stat = "identity", width = 0.5) +
+        geom_text(
+            aes(label = paste(percentage, "%")), position = position_dodge(0.9),
+            vjust = 1.5, angle = 90, size = 3.5 + 1 * textFactor
+        ) +
+        geom_line(
+            data = data.frame(x = c(0, 0), y = c(0, nrow(geneAgePlotDf) + 1)), 
+            aes(y = x, x = y),
+            arrow = arrow(
+                length = unit(0.30,"cm"), ends = "last", type = "closed"
+            )
+        ) +
+        geom_text(
+            data = NULL,
+            aes(y = 0, x = (nrow(geneAgePlotDf) + 1) * 0.92, label = "time"),
+            vjust = -0.5,
+            angle = 90, alpha = 0.2
+        ) +
         coord_flip() +
-        theme_minimal()
-    p <- p + geom_text(
-        data = geneAgePlotDf,
-        aes(x = 1, y = 100 - pos, label = paste0(freq, "\n", percentage, "%")),
-        size = 4 * geneAgeText
-    )
-    p <- p + theme(
-            legend.position = "bottom",
-            legend.title = element_blank(),
-            legend.text = element_text(size = 12 * geneAgeText),
-            axis.title = element_blank(), axis.text = element_blank()
+        theme_minimal() + 
+        theme(
+            legend.position = "none",
+            axis.title.y = element_blank(),
+            axis.title.x = element_text(size = 12 * textFactor),
+            axis.text = element_text(size = 12 * textFactor)
         ) +
         scale_fill_brewer(palette = "Spectral") +
-        guides(
-            fill = guide_legend(
-                nrow = max(round(nrow(geneAgePlotDf) / 3, 0), 1), byrow = TRUE
-            )
-        )
+        scale_x_discrete(limits = rev(levels(geneAgePlotDf$name)))
     return(p)
 }

@@ -12,35 +12,21 @@ plotGeneAgeUI <- function(id) {
     ns <- NS(id)
     tagList(
         column(
-            2,
+            8,
             downloadButton(ns("geneAgePlotDownload"),
                            "Download plot", class = "butDL"),
             tags$head(
                 tags$style(HTML(
                     ".butDL{background-color:#476ba3;} .butDL{color: white;}"))
-            )
+            ),
+            uiOutput(ns("geneAge.ui"))
         ),
+        column(1),
         column(
-            10,
-            uiOutput(ns("geneAge.ui")),
-            br(),
-            em(
-                h6(
-                    "01-Species; 02-Family; 03-Class; 04-Phylum; 05-Kingdom;
-                    06-Bikonta/Unikonta (only for Eukaryote);
-                    07-Superkingdom; 08-Last universal common ancestor;
-                    Undef-Genes have been filtered out"
-                )
-            )
-        ),
-        hr(),
-        column(
-            4,
-            downloadButton(ns("geneAgeTableDownload"), "Download gene list")
-        ),
-        column(
-            8,
-            tableOutput(ns("geneAge.table"))
+            3,
+            downloadButton(ns("geneAgeTableDownload"), "Download gene list"),
+            br(), br(),
+            DT::dataTableOutput(ns("geneAge.table"))
         )
     )
 }
@@ -58,8 +44,8 @@ plotGeneAge <- function(input, output, session,
         # shinycssloaders::withSpinner(
             plotOutput(
                 ns("geneAgePlot"),
-                width = 600 * geneAgeWidth(),
-                height = 150 * geneAgeHeight(),
+                width = 800 * geneAgeWidth(),
+                height = 300 * geneAgeHeight(),
                 click = ns("plotClickGeneAge")
             )
         # )
@@ -73,8 +59,8 @@ plotGeneAge <- function(input, output, session,
             ggsave(
                 file,
                 plot = createGeneAgePlot(geneAgePlotDf(data()), geneAgeText()),
-                width = 600 * geneAgeWidth() * 0.056458333,
-                height = 150 * geneAgeHeight() * 0.056458333,
+                width = 800 * geneAgeWidth() * 0.056458333,
+                height = 300 * geneAgeHeight() * 0.056458333,
                 units = "cm", dpi = 300, device = "pdf"
             )
         }
@@ -83,18 +69,16 @@ plotGeneAge <- function(input, output, session,
     # render genAge.table based on clicked point on geneAgePlot ---------------
     selectedgeneAge <- reactive({
         if (is.null(data())) stop("No input data available!")
-        selectedGene <- getSelectedGeneAge(data(), input$plotClickGeneAge$x)
+        selectedGene <- getSelectedGeneAge(data(), input$plotClickGeneAge$y)
         return(selectedGene)
     })
-
-    output$geneAge.table <- renderTable({
+    
+    output$geneAge.table <- DT::renderDataTable(
+        options = list(searching = FALSE, pageLength = 10
+    ), {
         if (is.null(data())) stop("No input data available!")
         if (is.null(input$plotClickGeneAge$x)) return()
-
         data <- as.data.frame(selectedgeneAge())
-        data$number <- rownames(data)
-        colnames(data) <- c("geneID", "No.")
-        data <- data[, c("No.", "geneID")]
         data
     })
 
@@ -110,7 +94,7 @@ plotGeneAge <- function(input, output, session,
                         quote = FALSE)
         }
     )
-
+    
     return(selectedgeneAge)
 }
 
@@ -118,36 +102,20 @@ plotGeneAge <- function(input, output, session,
 #' @param geneAgeDf data of estimated gene age (from fn "estimateGeneAge")
 #' @param clickedX x coordinate of selected age
 
-getSelectedGeneAge <- function(geneAgeDf, clickedX){
+getSelectedGeneAge <- function(geneAgeDf, clickedY){
     data <- geneAgeDf
-
     # calculate the coordinate range for each age group
     rangeDf <- plyr::count(data, c("age"))
-
-    rangeDf$percentage <- round(rangeDf$freq / sum(rangeDf$freq) * 100)
-    rangeDf$rangeStart[1] <- 0
-    rangeDf$rangeEnd[1] <- rangeDf$percentage[1]
-    if (nrow(rangeDf) > 1) {
-        for (i in 2:nrow(rangeDf)) {
-            rangeDf$rangeStart[i] <- rangeDf$rangeEnd[i - 1] + 1
-            rangeDf$rangeEnd[i] <-
-                rangeDf$percentage[i] + rangeDf$rangeEnd[i - 1]
-        }
-    }
-
-    # get list of gene for selected age
-    if (is.null(clickedX)) return()
-    else{
-        corX <- 100 - round(clickedX)
-        selectAge <- {
-            as.character(rangeDf[rangeDf$rangeStart <= corX
-                                 & rangeDf$rangeEnd >= corX, ]$age)
-        }
+    rangeDf <- rangeDf[seq(dim(rangeDf)[1],1),]
+    
+    if (is.null(clickedY)) return()
+    else {
+        corY <- round(clickedY)
+        selectAge <- as.character(rangeDf$age[corY])
         subData <- subset(data, age == selectAge)
         data <- data[data$age == selectAge, ]
+        geneList <- list(levels(as.factor(subData$geneID)))
+        names(geneList) <- substring(selectAge, 4)
+        return(geneList)
     }
-
-    # return list of genes
-    geneList <- levels(as.factor(subData$geneID))
-    return(geneList)
 }
