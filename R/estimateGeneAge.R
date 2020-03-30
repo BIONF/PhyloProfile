@@ -160,9 +160,7 @@ estimateGeneAge <- function(
                     Dt$abbrName %in% orthoList, 
                     colnames(Dt)[
                         colnames(Dt) %in% 
-                            c("norank_33630", "norank_543769", "norank_33634")
-                    ]
-                ]
+                            c("norank_33630", "norank_543769", "norank_33634")]]
                 check <- lapply(
                     sarTaxDt, 
                     function(x) {
@@ -178,23 +176,19 @@ estimateGeneAge <- function(
                 } else {
                     age <- paste0(
                         "05_", 
-                        taxList$fullName[taxList$ncbiID == unlist(check)]
-                    )
+                        taxList$fullName[taxList$ncbiID == unlist(check)])
                 }
             } else {
                 age <- paste0(
                     "05_", 
-                    taxList$fullName[taxList$ncbiID == supFirstLine$kingdom]
-                )
+                    taxList$fullName[taxList$ncbiID == supFirstLine$kingdom])
             }
             return(data.frame(geneID = x, age, stringsAsFactors = FALSE))
         }
     )
-    
     geneAgeDfPre <- do.call(rbind, c(domainDfList, konList, sarList))
     if (!(is.null(geneAgeDfPre)))
         geneAgeDf <- merge(geneAgeDf, geneAgeDfPre, by = "geneID", all.x = TRUE)
-    
     geneAgeDf$age[geneAgeDf$cat == "00000011"] <- paste0(
         "07_", taxList$fullName[taxList$ncbiID == supFirstLine$superkingdom])
     geneAgeDf$age[geneAgeDf$cat == "00011111"] <- paste0(
@@ -208,7 +202,8 @@ estimateGeneAge <- function(
             taxList$fullName == refTaxon & taxList$rank == rankName])
     # return geneAge data frame
     geneAgeDf <- geneAgeDf[, c("geneID", "cat", "age")]
-    geneAgeDf$age[is.na(geneAgeDf$age)] <- "Undef"
+    geneAgeDf$age[is.na(geneAgeDf$age)] <- 
+        min(levels(as.factor(geneAgeDf$age[!(is.na(geneAgeDf$age))]))) #Undef
     return(geneAgeDf)
 }
 
@@ -233,18 +228,16 @@ geneAgePlotDf <- function(geneAgeDf){
     plotDf <- plyr::count(geneAgeDf, c("age"))
     plotDf$level <- substring(plotDf$age, 1,2)
     levelDf <- data.frame(
-        level = c("01", "02", "03", "04", "05", "07", "08", "09"),
+        level = c("01", "02", "03", "04", "05", "07", "09"),
         rank = c(
             " (Species)", " (Family)", " (Class)", " (Phylum)", " (Kingdom)", 
-            " (Superkingdom)", " (LUCA)", " (LUCA)"
+            " (Superkingdom)"," (LUCA)"
         ),
         stringsAsFactors = FALSE
     )
     plotDf <- merge(plotDf, levelDf, by = "level", all.x = TRUE)
-    plotDf$rank[plotDf$level == "08" & !grepl("Bacteria", plotDf$age)] <- NA
     plotDf[is.na(plotDf)] <- ""
     plotDf$name <- paste0(substring(plotDf$age, 4), plotDf$rank)
-    plotDf$name[plotDf$name == "ef"] <- "Undefined"
     plotDf$name <- factor(plotDf$name, levels = plotDf$name)
     plotDf$percentage <- round(plotDf$freq / sum(plotDf$freq) * 100)
     outDf <- plotDf[, c("name", "freq", "percentage")]
@@ -280,8 +273,9 @@ createGeneAgePlot <- function(geneAgePlotDf, textFactor = 1){
     p <- ggplot(data = geneAgePlotDf, aes(x = name, y = count, fill = name)) +
         geom_bar(stat = "identity", width = 0.5) +
         geom_text(
-            aes(label = paste(percentage, "%")), position = position_dodge(0.9),
-            vjust = 1.5, angle = 90, size = 3.5 + 1 * textFactor
+            aes(label = paste0(percentage, "%")), 
+            position = position_dodge(0.9),
+            size = 3.5 + 1 * textFactor, hjust = 0
         ) +
         geom_line(
             data = data.frame(x = c(0, 0), y = c(0, nrow(geneAgePlotDf) + 1)), 
