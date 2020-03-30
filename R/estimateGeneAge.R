@@ -197,13 +197,12 @@ estimateGeneAge <- function(
         "03_", taxList$fullName[taxList$ncbiID == supFirstLine$class])
     geneAgeDf$age[geneAgeDf$cat == "01111111"] <- paste0(
         "02_", taxList$fullName[taxList$ncbiID == supFirstLine$family])
+    geneAgeDf$cat[is.na(geneAgeDf$cat)] <- "11111111"
     geneAgeDf$age[geneAgeDf$cat == "11111111"] <- paste0(
         "01_", taxList$fullName[
             taxList$fullName == refTaxon & taxList$rank == rankName])
     # return geneAge data frame
     geneAgeDf <- geneAgeDf[, c("geneID", "cat", "age")]
-    geneAgeDf$age[is.na(geneAgeDf$age)] <- 
-        min(levels(as.factor(geneAgeDf$age[!(is.na(geneAgeDf$age))]))) #Undef
     return(geneAgeDf)
 }
 
@@ -268,8 +267,9 @@ createGeneAgePlot <- function(geneAgePlotDf, textFactor = 1){
     percentage <- NULL
     x <- NULL
     y <- NULL
-    
     arrowDf <- data.frame(time = c(0, 0), y = c(0, nrow(geneAgePlotDf) + 1))
+    n <- nlevels(as.factor(geneAgePlotDf$name))
+    mycolors <- colorRampPalette(brewer.pal(11, "Spectral"))(n)
     p <- ggplot(data = geneAgePlotDf, aes(x = name, y = count, fill = name)) +
         geom_bar(stat = "identity", width = 0.5) +
         geom_text(
@@ -298,7 +298,8 @@ createGeneAgePlot <- function(geneAgePlotDf, textFactor = 1){
             axis.title.x = element_text(size = 12 * textFactor),
             axis.text = element_text(size = 12 * textFactor)
         ) +
-        scale_fill_brewer(palette = "Spectral") +
-        scale_x_discrete(limits = rev(levels(geneAgePlotDf$name)))
+        scale_fill_manual(values = mycolors) +
+        scale_x_discrete(limits = rev(levels(geneAgePlotDf$name))) +
+        labs(y = "Number of genes")
     return(p)
 }
