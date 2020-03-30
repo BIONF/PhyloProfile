@@ -241,6 +241,7 @@ geneAgePlotDf <- function(geneAgeDf){
         stringsAsFactors = FALSE
     )
     plotDf <- merge(plotDf, levelDf, by = "level", all.x = TRUE)
+    plotDf$rank[plotDf$level == "08" & !grepl("Bacteria", plotDf$age)] <- NA
     plotDf[is.na(plotDf)] <- ""
     plotDf$name <- paste0(substring(plotDf$age, 4), plotDf$rank)
     plotDf$name[plotDf$name == "ef"] <- "Undefined"
