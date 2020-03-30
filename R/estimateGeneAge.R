@@ -251,6 +251,7 @@ geneAgePlotDf <- function(geneAgeDf){
 #' @return A gene age distribution plot as a ggplot2 object
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @import ggplot2
+#' @import RColorBrewer
 #' @export
 #' @seealso \code{\link{estimateGeneAge}} and \code{\link{geneAgePlotDf}}
 #' @examples
@@ -261,7 +262,7 @@ geneAgePlotDf <- function(geneAgeDf){
 #' )
 #' createGeneAgePlot(geneAgePlotDf)
 
-createGeneAgePlot <- function(geneAgePlotDf, textFactor = 1){
+createGeneAgePlot <- function (geneAgePlotDf, textFactor = 1){
     name <- NULL
     count <- NULL
     percentage <- NULL
@@ -269,7 +270,7 @@ createGeneAgePlot <- function(geneAgePlotDf, textFactor = 1){
     y <- NULL
     arrowDf <- data.frame(time = c(0, 0), y = c(0, nrow(geneAgePlotDf) + 1))
     n <- nlevels(as.factor(geneAgePlotDf$name))
-    mycolors <- colorRampPalette(brewer.pal(11, "Spectral"))(n)
+    mycolors <- grDevices::colorRampPalette(brewer.pal(11, "Spectral"))(n)
     p <- ggplot(data = geneAgePlotDf, aes(x = name, y = count, fill = name)) +
         geom_bar(stat = "identity", width = 0.5) +
         geom_text(
