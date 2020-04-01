@@ -37,7 +37,7 @@ estimateGeneAge <- function(
     var2CO = c(0, 1), percentCO = c(0, 1)
 ){
     rankList <- c(
-        "family", "class", "phylum", "kingdom", "norank_33154",
+        "genus", "family", "class", "phylum", "kingdom", "norank_33154",
         "superkingdom", "root"
     )
     # get selected (super)taxon ID
@@ -93,12 +93,35 @@ estimateGeneAge <- function(
     data.table::setDT(geneAgeDf, keep.rownames = TRUE)[]
     data.table::setnames(geneAgeDf, seq_len(2), c("geneID", "cat"))  #col names
     row.names(geneAgeDf) <- NULL   # remove row names
+    ### move NA cat to working taxonomy rank
+    if (rankName == "genus")
+        geneAgeDf$cat[is.na(geneAgeDf$cat)] <- "011111111"
+    else if (rankName == "family")
+        geneAgeDf$cat[is.na(geneAgeDf$cat)] <- "001111111"
+    else if (rankName == "class")
+        geneAgeDf$cat[is.na(geneAgeDf$cat)] <- "000111111"
+    else if (rankName == "phylum")
+        geneAgeDf$cat[is.na(geneAgeDf$cat)] <- "000011111"
+    else if (rankName == "kingdom")
+        geneAgeDf$cat[is.na(geneAgeDf$cat)] <- "000001111"
+    else if (rankName == "superkingdom")
+        geneAgeDf$cat[is.na(geneAgeDf$cat)] <- "000000011"
+    else
+        geneAgeDf$cat[is.na(geneAgeDf$cat)] <- "111111111"
+    ### merge ranks that are lower than ref rank to ref rank
+    index <- 0
+    if (rankName != "species")
+        index <- match(rankName, rankList)
+    maxCat <- paste0(
+        paste(rep(0,index), collapse = ""), paste(rep(1,9-index), collapse = "")
+    )
+    geneAgeDf$cat[geneAgeDf$cat > maxCat] <- maxCat
     ### convert cat into geneAge
     domainDfList <- lapply(
-        geneAgeDf[geneAgeDf$cat == "00000001",]$geneID, 
+        geneAgeDf[geneAgeDf$cat == "000000001",]$geneID, 
         function (x) {
             orthoList <- mdDtExt[
-                mdDtExt$geneID == x & mdDtExt$cat == "00000001",]$ncbiID
+                mdDtExt$geneID == x & mdDtExt$cat == "000000001",]$ncbiID
             orthoDomainID <- levels(as.factor(
                 subDt[subDt$abbrName %in% orthoList,]$superkingdom))
             orthoDomainName <- levels(as.factor(c(
@@ -106,18 +129,18 @@ estimateGeneAge <- function(
                 taxList$fullName[taxList$ncbiID %in% orthoDomainID]
             )))
             if (length(orthoDomainName) == 3) {
-                age = paste0("09_", paste(orthoDomainName, collapse = "-"))
+                age = paste0("10_", paste(orthoDomainName, collapse = "-"))
             } else {
-                age = paste0("08_", paste(orthoDomainName, collapse = "-"))
+                age = paste0("09_", paste(orthoDomainName, collapse = "-"))
             }
             return(data.frame(geneID = x, age, stringsAsFactors = FALSE))
         }
     )
     konList <- lapply(
-        geneAgeDf[geneAgeDf$cat == "00000111",]$geneID, 
+        geneAgeDf[geneAgeDf$cat == "000000111",]$geneID, 
         function (x) {
             orthoList <- mdDtExt[
-                mdDtExt$geneID == x & mdDtExt$cat == "00000111",]$ncbiID
+                mdDtExt$geneID == x & mdDtExt$cat == "000000111",]$ncbiID
             orthoKonID <- levels(as.factor(
                 subDt[subDt$abbrName %in% orthoList,]$norank_33154))
             superKingdom <- taxList$ncbiID[
@@ -132,30 +155,30 @@ estimateGeneAge <- function(
                     ukon <- levels(as.factor(orthoKonID%in%c(33154, 554915)))
                     if (length(ukon) == 1) {
                         if (ukon == TRUE) {
-                            age <- "06_Unikonta"
+                            age <- "07_Unikonta"
                         } else {
-                            age <- "06_Bikonta"
+                            age <- "07_Bikonta"
                         }
                     } else {
-                        age <- "07_Eukaryote"
+                        age <- "08_Eukaryote"
                     }
                 }
             } else {
                 age <- paste0(
-                    "07_", taxList$fullName[
+                    "08_", taxList$fullName[
                         taxList$ncbiID == supFirstLine$superkingdom])
             }
             return(data.frame(geneID = x, age, stringsAsFactors = FALSE))
         }
     )
     sarList <- lapply(
-        geneAgeDf[geneAgeDf$cat == "00001111",]$geneID, 
+        geneAgeDf[geneAgeDf$cat == "000001111",]$geneID, 
         function (x) {
             if (
                 taxList$fullName[taxList$ncbiID == supFirstLine$kingdom] =="Sar"
             ) {
                 orthoList <- mdDtExt[
-                    mdDtExt$geneID == x & mdDtExt$cat == "00001111",]$ncbiID
+                    mdDtExt$geneID == x & mdDtExt$cat == "000001111",]$ncbiID
                 sarTaxDt <- Dt[
                     Dt$abbrName %in% orthoList, 
                     colnames(Dt)[
@@ -189,17 +212,18 @@ estimateGeneAge <- function(
     geneAgeDfPre <- do.call(rbind, c(domainDfList, konList, sarList))
     if (!(is.null(geneAgeDfPre)))
         geneAgeDf <- merge(geneAgeDf, geneAgeDfPre, by = "geneID", all.x = TRUE)
-    geneAgeDf$age[geneAgeDf$cat == "00000011"] <- paste0(
-        "07_", taxList$fullName[taxList$ncbiID == supFirstLine$superkingdom])
-    geneAgeDf$age[geneAgeDf$cat == "00011111"] <- paste0(
+    geneAgeDf$age[geneAgeDf$cat == "000000011"] <- paste0(
+        "08_", taxList$fullName[taxList$ncbiID == supFirstLine$superkingdom])
+    geneAgeDf$age[geneAgeDf$cat == "000011111"] <- paste0(
         "04_", taxList$fullName[taxList$ncbiID == supFirstLine$phylum])
-    geneAgeDf$age[geneAgeDf$cat == "00111111"] <- paste0(
+    geneAgeDf$age[geneAgeDf$cat == "000111111"] <- paste0(
         "03_", taxList$fullName[taxList$ncbiID == supFirstLine$class])
-    geneAgeDf$age[geneAgeDf$cat == "01111111"] <- paste0(
+    geneAgeDf$age[geneAgeDf$cat == "001111111"] <- paste0(
         "02_", taxList$fullName[taxList$ncbiID == supFirstLine$family])
-    geneAgeDf$cat[is.na(geneAgeDf$cat)] <- "11111111"
-    geneAgeDf$age[geneAgeDf$cat == "11111111"] <- paste0(
-        "01_", taxList$fullName[
+    geneAgeDf$age[geneAgeDf$cat == "011111111"] <- paste0(
+        "01_", taxList$fullName[taxList$ncbiID == supFirstLine$genus])
+    geneAgeDf$age[geneAgeDf$cat == "111111111"] <- paste0(
+        "00_", taxList$fullName[
             taxList$fullName == refTaxon & taxList$rank == rankName])
     # return geneAge data frame
     geneAgeDf <- geneAgeDf[, c("geneID", "cat", "age")]
@@ -227,10 +251,10 @@ geneAgePlotDf <- function(geneAgeDf){
     plotDf <- plyr::count(geneAgeDf, c("age"))
     plotDf$level <- substring(plotDf$age, 1,2)
     levelDf <- data.frame(
-        level = c("01", "02", "03", "04", "05", "07", "09"),
+        level = c("00", "01", "02", "03", "04", "05", "08", "10"),
         rank = c(
-            " (Species)", " (Family)", " (Class)", " (Phylum)", " (Kingdom)", 
-            " (Superkingdom)"," (LUCA)"
+            " (Species)", " (Genus)", " (Family)", " (Class)", " (Phylum)", 
+            " (Kingdom)", " (Superkingdom)"," (LUCA)"
         ),
         stringsAsFactors = FALSE
     )
@@ -238,7 +262,7 @@ geneAgePlotDf <- function(geneAgeDf){
     plotDf[is.na(plotDf)] <- ""
     plotDf$name <- paste0(substring(plotDf$age, 4), plotDf$rank)
     plotDf$name <- factor(plotDf$name, levels = plotDf$name)
-    plotDf$percentage <- round(plotDf$freq / sum(plotDf$freq) * 100)
+    plotDf$percentage <- round(plotDf$freq / sum(plotDf$freq) * 100, 1)
     outDf <- plotDf[, c("name", "freq", "percentage")]
     colnames(outDf) <- c("name", "count", "percentage")
     return(outDf)
