@@ -12,7 +12,9 @@ test_that("test estimation of gene ages", {
         rankName, refTaxon,
         var1Cutoff, var2Cutoff, percentCutoff
     )
-    expect_true(geneAge$age[geneAge$geneID == "100136at6656"] == "07_LUCA")
+    expect_true(
+        geneAge$age[geneAge$geneID == "103479at6656"] == "08_Eukaryota"
+    )
 })
 
 test_that("test plotting gene age plot", {
@@ -25,5 +27,5 @@ test_that("test plotting gene age plot", {
     plotDf <- geneAgePlotDf(geneAgeDf)
     geneAgeText <- 1
     p <- createGeneAgePlot(plotDf, geneAgeText)
-    expect_true(p$guides$fill$nrow == 1)
+    expect_true(nrow(p$data) == 1)
 })

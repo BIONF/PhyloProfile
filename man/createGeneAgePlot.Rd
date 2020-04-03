@@ -4,13 +4,13 @@
 \alias{createGeneAgePlot}
 \title{Create gene age plot}
 \usage{
-createGeneAgePlot(geneAgePlotDf, geneAgeText)
+createGeneAgePlot(geneAgePlotDf, textFactor = 1)
 }
 \arguments{
 \item{geneAgePlotDf}{data frame required for plotting gene age (see
 ?geneAgePlotDf)}
 
-\item{geneAgeText}{text size}
+\item{textFactor}{increase factor of text size}
 }
 \value{
 A gene age distribution plot as a ggplot2 object
@@ -20,13 +20,11 @@ Create gene age plot
 }
 \examples{
 geneAgePlotDf <- data.frame(
-    age = "07_LUCA",
-    frea = 2,
-    percentage = 100,
-    pos = 50
+    name = c("Streptophyta (Phylum)", "Bikonta", "Eukaryota (Superkingdom)"),
+    count = c(7, 1, 30),
+    percentage = c(18, 3, 79)
 )
-geneAgeText <- 1
-createGeneAgePlot(geneAgePlotDf, geneAgeText)
+createGeneAgePlot(geneAgePlotDf)
 }
 \seealso{
 \code{\link{estimateGeneAge}} and \code{\link{geneAgePlotDf}}

@@ -2,6 +2,12 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.1.11}{
+  \itemize{
+    \item Increased the resolution of the phylostratigraphy function
+  }
+}
+
 \section{Version 1.1.10}{
   \itemize{
     \item Improved the rank indexing function

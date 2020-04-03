@@ -1738,6 +1738,7 @@ shinyServer(function(input, output, session) {
             outAll <- c("all", as.list(levels(factor(data$geneID))))
             if (input$addGeneAgeCustomProfile == TRUE) {
                 outAll <- as.list(selectedgeneAge())
+                outAll <- outAll[[1]]
             } else if (input$addClusterCustomProfile == TRUE) {
                 outAll <- as.list(brushedClusterGene())
             } else if (input$addCoreGeneCustomProfile == TRUE) {
@@ -1749,13 +1750,15 @@ shinyServer(function(input, output, session) {
                     customList <- read.table(
                         file = fileCustom$datapath, header = FALSE
                     )
-                    
                     customList$V1 <- as.factor(customList$V1)
                     outAll <- as.list(levels(customList$V1))
                 }
             }
-            
-            createSelectGene("inSeq", outAll, outAll[1])
+            if (outAll[1] == "all") {
+                createSelectGene("inSeq", outAll, "all")
+            } else {
+                createSelectGene("inSeq", outAll, outAll)
+            }
         }
     })
     
