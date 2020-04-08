@@ -54,42 +54,45 @@ processNcbiTaxonomy <- function() {
         "ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdmp.zip", temp
     )
     names <- utils::read.table(
-        unz(temp, "names.dmp"),
-        header = FALSE,
-        fill = TRUE,
-        sep = "\t",
-        quote = "",
-        comment.char = "",
-        stringsAsFactors = FALSE
+        unz(temp, "names.dmp"), header = FALSE, fill = TRUE, sep = "\t", 
+        quote = "", comment.char = "", stringsAsFactors = FALSE
     )
     nodes <- utils::read.table(
-        unz(temp, "nodes.dmp"),
-        header = FALSE,
-        fill = TRUE,
-        sep = "\t",
-        quote = "",
-        comment.char = "",
-        stringsAsFactors = FALSE
+        unz(temp, "nodes.dmp"), header = FALSE, fill = TRUE, sep = "\t",
+        quote = "", comment.char = "", stringsAsFactors = FALSE
     )
     unlink(temp)
     message("Download NCBI taxonomy done!")
-
     # Create data frame containing taxon ID, the scientific name, its taxonomy
     # rank and the taxon ID of the higer rank (parent's ID)
-    preProcessedTaxonomy <- merge(
+    outTax <- merge(
         names[names$V7 == "scientific name", c("V1", "V3")],
         nodes[,c("V1", "V5", "V3")],
         by = "V1"
     )
-    colnames(preProcessedTaxonomy) <- c("ncbiID", "fullName", "rank","parentID")
-
+    colnames(outTax) <- c("ncbiID", "fullName", "rank","parentID")
     # Remove "'" from taxon names and ranks, remove space from taxon ranks
-    preProcessedTaxonomy$fullName <- gsub("'", "",preProcessedTaxonomy$fullName)
-    preProcessedTaxonomy$rank <- gsub("'", "", preProcessedTaxonomy$rank)
-    preProcessedTaxonomy$rank <- gsub(" ", "", preProcessedTaxonomy$rank)
-
+    outTax$fullName <- gsub("'", "",outTax$fullName)
+    outTax$rank <- gsub("'", "", outTax$rank)
+    outTax$rank <- gsub(" ", "", outTax$rank)
+    # Add Holozoa and Holomycota ranks
+    opiMod <- data.frame(
+        ncbiID = c(999999001, 999999002, 999999003, 999999004, 999999005),
+        fullName = c(
+            "Choanozoa", "Filozoa", "Pluriformea", "Holozoa", "Holomycota"),
+        rank = rep("norank", 6),
+        parentID = c(999999002, 999999003, 999999004, 33154, 33154),
+        stringsAsFactors = FALSE
+    )
+    outTax[outTax$ncbiID %in% c(28009, 33208),]$parentID <- 999999001
+    outTax[outTax$ncbiID == 2687318,]$parentID <- 999999002
+    outTax[outTax$ncbiID == 42461,]$parentID <- 999999003
+    outTax[outTax$ncbiID == 127916,]$parentID <- 999999004
+    outTax[outTax$ncbiID %in% c(4751, 2686024),]$parentID <- 999999005
+    outTax <- do.call(rbind, list(outTax, opiMod))
+    # Return
     message("Parsing NCBI taxonomy done!")
-    return(preProcessedTaxonomy)
+    return(outTax)
 }
 
 #' Get taxonomy info for a list of input taxa

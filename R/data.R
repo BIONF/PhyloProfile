@@ -18,7 +18,7 @@
 #' Data frame, in which each row contains the complete taxonomy ranks from the
 #' lowest systematic level (strain/species) upto the taxonomy root and the
 #' corresponding IDs for one taxon in the experimental data sets.
-#' @format A data frame with up to 37 columns and 95 rows corresponding to 95
+#' @format A data frame with up to 41 columns and 95 rows corresponding to 95
 #' taxa in the 2 experimental data sets
 #' @usage data(idList)
 "idList"
@@ -28,7 +28,7 @@
 #' Data frame, in which each row contains the complete taxonomy ranks from the
 #' lowest systematic level (strain/species) upto the taxonomy root for one taxon
 #' in the experimental data sets.
-#' @format A data frame with up to 37 columns and 95 rows corresponding to 95
+#' @format A data frame with up to 41 columns and 95 rows corresponding to 95
 #' taxa in the 2 experimental data sets
 #' @usage data(rankList)
 "rankList"
@@ -40,7 +40,7 @@
 #' strain, This data is used for clustering and then creating a
 #' taxon tree. It is used also for cross-linking between different taxonomy
 #' ranks within a taxon.
-#' @format A data frame with up to 142 columns and 95 rows corresponding to 95
+#' @format A data frame with up to 146 columns and 95 rows corresponding to 95
 #' taxa in the 2 experimental data sets
 #' @usage data(taxonomyMatrix)
 "taxonomyMatrix"
