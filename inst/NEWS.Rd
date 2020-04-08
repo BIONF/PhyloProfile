@@ -2,6 +2,12 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.1.12}{
+  \itemize{
+    \item Added pseudo IDs for Holozoa and Holomycota clades and their non-NCBI sub-clades
+  }
+}
+
 \section{Version 1.1.11}{
   \itemize{
     \item Increased the resolution of the phylostratigraphy function
