@@ -2,6 +2,13 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.2.1}{
+  \itemize{
+    \item Fixed bug in rankIndexing and processNcbiTaxonomy
+    \item Improved check for invalid input taxon IDs
+  }
+}
+
 \section{Version 1.1.12}{
   \itemize{
     \item Added pseudo IDs for Holozoa and Holomycota clades and their non-NCBI sub-clades

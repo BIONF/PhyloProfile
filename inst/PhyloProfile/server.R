@@ -828,37 +828,22 @@ shinyServer(function(input, output, session) {
                     if (nrow(unkTaxa[!(unkTaxa[,"id"] %in% ncbiTaxa),]) > 0) {
                         unkTaxaId <- unkTaxa[!(unkTaxa$id %in% ncbiTaxa),]$id
                         unkTaxa[unkTaxa$id %in% unkTaxaId,]$Source <- "unknown"
-                        if (any(unkTaxaId < maxNCBI)) {
-                            unkTaxa[
-                                unkTaxa$id %in% unkTaxaId 
-                                & unkTaxa$id < maxNCBI,]$Source <- "invalid"
-                        }
                     }
                     
                     newTaxaFile <- paste0(getwd(), "/data/newTaxa.txt")
                     newTaxa <- as.factor(
                         unlist(fread(file = newTaxaFile, select = 1))
                     )
-                    
+
                     if (nrow(unkTaxa[unkTaxa$id %in% newTaxa,]) > 0) {
                         unkTaxa[unkTaxa$id %in% newTaxa,]$Source <- "new"
                     }
                     
-                    # check for invalid newly generated IDs in newTaxa.txt file
-                    if (length(newTaxa) > 1) {
-                        newTaxaList <- levels(newTaxa)
-                        newTaxaList <- as.integer(
-                            newTaxaList[newTaxaList != "ncbiID"]
-                        )
-                        
-                        if (min(newTaxaList) < maxNCBI) {
-                            invalidList <- data.frame(
-                                id = newTaxaList[newTaxaList < maxNCBI]
-                            )
-                            invalidList$Source <- "newTaxa.txt"
-                            invalidList$TaxonID <- "invalid"
-                            unkTaxa <- rbind(invalidList, unkTaxa)
-                        }
+                    # check for invalid taxon IDs
+                    if (any(unkTaxaId < maxNCBI)) {
+                        unkTaxa[
+                            unkTaxa$id %in% unkTaxaId
+                            & unkTaxa$id < maxNCBI,]$Source <- "invalid"
                     }
                     
                     # return list of unkTaxa
@@ -872,7 +857,7 @@ shinyServer(function(input, output, session) {
     output$unkTaxaStatus <- reactive({
         unkTaxa <- unkTaxa()
         if (length(unkTaxa) > 0) {
-            if ("invalid" %in% unkTaxa$TaxonID) return("invalid")
+            if ("invalid" %in% unkTaxa$Source) return("invalid")
             if ("unknown" %in% unkTaxa$Source) return("unknown")
             else return("ncbi")
         } else return(0)
