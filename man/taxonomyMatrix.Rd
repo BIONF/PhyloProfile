@@ -5,7 +5,7 @@
 \alias{taxonomyMatrix}
 \title{Taxonomy matrix for experimental data sets}
 \format{
-A data frame with up to 146 columns and 95 rows corresponding to 95
+A data frame with up to 147 columns and 95 rows corresponding to 95
 taxa in the 2 experimental data sets
 }
 \usage{

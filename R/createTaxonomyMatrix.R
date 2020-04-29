@@ -80,7 +80,7 @@ processNcbiTaxonomy <- function() {
         ncbiID = c(999999001, 999999002, 999999003, 999999004, 999999005),
         fullName = c(
             "Choanozoa", "Filozoa", "Pluriformea", "Holozoa", "Holomycota"),
-        rank = rep("norank", 6),
+        rank = rep("norank", 5),
         parentID = c(999999002, 999999003, 999999004, 33154, 33154),
         stringsAsFactors = FALSE
     )
@@ -274,7 +274,7 @@ rankIndexing <- function (rankListFile = NULL) {
                                 r in 
                                 ls(rank2index)[!(ls(rank2index)%in%ls(tmpEnv))]
                             ) {
-                                if (rank2index[[r]] >= currentIndex) {
+                                if (rank2index[[r]] > currentIndex) {
                                     tmpEnv[[r]] <- 
                                         rank2index[[r]] + 
                                         (tmpEnv[[iRank]] - rank2index[[iRank]])
