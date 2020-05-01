@@ -1,8 +1,10 @@
 #' NCBI Taxonomy reduced data set
-#'
-#' A list of NCBI taxonomy info (including taxon IDs, taxon names, their
-#' systematic taxonomy rank and IDs of their next rank - parent IDs) for 95 taxa
-#' in two experimental sets included in PhyloProfilData package.
+#' 
+#' @docType data
+#' @name taxonNamesReduced
+#' @description A list of NCBI taxonomy info (including taxon IDs, taxon names, 
+#' their systematic taxonomy rank and IDs of their next rank - parent IDs) for 
+#' 95 taxa in two experimental sets included in PhyloProfilData package.
 #' @format A data frame with 4 columns:
 #' \itemize{
 #'     \item{ncbiID}{ e.g. "10090"}
@@ -11,50 +13,61 @@
 #'     \item{parentID}{ e.g. "862507"}
 #' }
 #' @usage data(taxonNamesReduced)
-"taxonNamesReduced"
+NULL
 
 #' NCBI ID list for experimental data sets
-#'
-#' Data frame, in which each row contains the complete taxonomy ranks from the
-#' lowest systematic level (strain/species) upto the taxonomy root and the
-#' corresponding IDs for one taxon in the experimental data sets.
+#' 
+#' @docType data
+#' @name idList
+#' @description Data frame, in which each row contains the complete taxonomy 
+#' ranks from the lowest systematic level (strain/species) upto the taxonomy 
+#' root and the corresponding IDs for one taxon in the experimental data sets.
 #' @format A data frame with up to 41 columns and 95 rows corresponding to 95
 #' taxa in the 2 experimental data sets
 #' @usage data(idList)
-"idList"
+NULL
 
 #' NCBI rank list for experimental data sets
 #'
-#' Data frame, in which each row contains the complete taxonomy ranks from the
-#' lowest systematic level (strain/species) upto the taxonomy root for one taxon
-#' in the experimental data sets.
+#' @docType data
+#' @name rankList
+#' @description Data frame, in which each row contains the complete taxonomy 
+#' ranks from the lowest systematic level (strain/species) upto the taxonomy 
+#' root for one taxon in the experimental data sets.
 #' @format A data frame with up to 41 columns and 95 rows corresponding to 95
 #' taxa in the 2 experimental data sets
 #' @usage data(rankList)
-"rankList"
+NULL
 
 #' Taxonomy matrix for experimental data sets
 #'
-#' Data frame containing the fully aligned taxonomy IDs of 95 taxa in the
-#' experimental data sets. By talking into account both the defined ranks (e.g.
-#' strain, This data is used for clustering and then creating a
+#' @docType data
+#' @name taxonomyMatrix
+#' @description Data frame containing the fully aligned taxonomy IDs of 95 taxa 
+#' in the experimental data sets. By talking into account both the defined 
+#' ranks (e.g. strain, This data is used for clustering and then creating a
 #' taxon tree. It is used also for cross-linking between different taxonomy
 #' ranks within a taxon.
 #' @format A data frame with up to 147 columns and 95 rows corresponding to 95
 #' taxa in the 2 experimental data sets
 #' @usage data(taxonomyMatrix)
-"taxonomyMatrix"
+NULL
 
 #' An example of a taxonomy tree in newick format.
 #'
+#' @docType data
+#' @name ppTree
 #' @format A data frame with only one entry
 #' \describe{
 #'     \item{V1}{ tree in newick format}
 #' }
-"ppTree"
+#' @usage data(ppTree)
+NULL
 
 #' An example of a taxonomy matrix.
 #'
+#' @docType data
+#' @name ppTaxonomyMatrix
 #' @format A data frame with 10 rows and 162 variables:
 #' \itemize{
 #'     \item{abbrName}{ e.g. "ncbi10090"}
@@ -63,10 +76,13 @@
 #'     \item{strain}{ e.g. "10090"}
 #'     ...
 #' }
-"ppTaxonomyMatrix"
+#' @usage data(ppTaxonomyMatrix)
+NULL
 
 #' An example of a raw long input file.
 #'
+#' @docType data
+#' @name mainLongRaw
 #' @format A data frame with 168 rows and 5 variables:
 #' \itemize{
 #'     \item{geneID}{ Seed or ortholog group ID, e.g. "100136at6656"}
@@ -75,10 +91,13 @@
 #'     \item{FAS_F}{ First additional variable}
 #'     \item{FAS_B}{ Second additional variable}
 #' }
-"mainLongRaw"
+#' @usage data(mainLongRaw)
+NULL
 
 #' An example of a raw long input file together with the taxonomy info.
 #'
+#' @docType data
+#' @name profileWithTaxonomy
 #' @format A data frame with 20 rows and 12 variables:
 #' \itemize{
 #'     \item{geneID}{ Seed or ortholog group ID, e.g. "OG_1017"}
@@ -95,10 +114,13 @@
 #'     \item{supertaxon}{ Name of the corresponding supertaxon}
 #'     \item{rank}{ Rank of the supertaxon}
 #' }
-"profileWithTaxonomy"
+#' @usage data(profileWithTaxonomy)
+NULL
 
 #' An example of a fully processed phylogenetic profile.
 #'
+#' @docType data
+#' @name fullProcessedProfile
 #' @format A data frame with 168 rows and 17 variables:
 #' \itemize{
 #'     \item{supertaxon}{ Supertaxon name together with its ordered index, e.g.
@@ -121,10 +143,13 @@
 #'     \item{mVar2}{ Value of the 2. variable after grouping into supertaxon}
 #'     \item{numberSpec}{ Total number of species in each supertaxon}
 #' }
-"fullProcessedProfile"
+#' @usage data(fullProcessedProfile)
+NULL
 
 #' An example of a final processed & filtered phylogenetic profile.
 #'
+#' @docType data
+#' @name finalProcessedProfile
 #' @format A data frame with 91 rows and 10 variables:
 #' \itemize{
 #'     \item{geneID}{ Seed or ortholog group ID, e.g. "100136at6656"}
@@ -134,10 +159,11 @@
 #'     working with higher taxonomy rank than input's). e.g. "40674"}
 #'     \item{var1}{ First additional variable}
 #'     \item{presSpec}{ The percentage of species presenting in each supertaxon}
-#'     \item{category}{ "cat}
+#'     \item{category}{ "cat"}
 #'     \item{orthoID}{ Ortholog ID, e.g. "100136at6656|RAT@10116@1|G3V7R8|1"}
 #'     \item{var2}{ Second additional variable}
 #'     \item{paralog}{ Number of co-orthologs in the current taxon}
 #'     \item{taxonMon}{ Name of supertaxon but without index, e.g. "Mammalia"}
 #' }
-"finalProcessedProfile"
+#' @usage data(finalProcessedProfile)
+NULL

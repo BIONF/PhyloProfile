@@ -12,8 +12,7 @@ taxa in the 2 experimental data sets
 data(idList)
 }
 \description{
-Data frame, in which each row contains the complete taxonomy ranks from the
-lowest systematic level (strain/species) upto the taxonomy root and the
-corresponding IDs for one taxon in the experimental data sets.
+Data frame, in which each row contains the complete taxonomy 
+ranks from the lowest systematic level (strain/species) upto the taxonomy 
+root and the corresponding IDs for one taxon in the experimental data sets.
 }
-\keyword{datasets}

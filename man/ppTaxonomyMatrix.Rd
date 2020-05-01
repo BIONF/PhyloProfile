@@ -15,9 +15,8 @@ A data frame with 10 rows and 162 variables:
 }
 }
 \usage{
-ppTaxonomyMatrix
+data(ppTaxonomyMatrix)
 }
 \description{
 An example of a taxonomy matrix.
 }
-\keyword{datasets}

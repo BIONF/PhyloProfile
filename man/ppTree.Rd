@@ -11,9 +11,8 @@ A data frame with only one entry
 }
 }
 \usage{
-ppTree
+data(ppTree)
 }
 \description{
 An example of a taxonomy tree in newick format.
 }
-\keyword{datasets}

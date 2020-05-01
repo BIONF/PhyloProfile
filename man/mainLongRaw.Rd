@@ -15,9 +15,8 @@ A data frame with 168 rows and 5 variables:
 }
 }
 \usage{
-mainLongRaw
+data(mainLongRaw)
 }
 \description{
 An example of a raw long input file.
 }
-\keyword{datasets}
