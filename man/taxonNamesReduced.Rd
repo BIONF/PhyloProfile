@@ -17,8 +17,7 @@ A data frame with 4 columns:
 data(taxonNamesReduced)
 }
 \description{
-A list of NCBI taxonomy info (including taxon IDs, taxon names, their
-systematic taxonomy rank and IDs of their next rank - parent IDs) for 95 taxa
-in two experimental sets included in PhyloProfilData package.
+A list of NCBI taxonomy info (including taxon IDs, taxon names, 
+their systematic taxonomy rank and IDs of their next rank - parent IDs) for 
+95 taxa in two experimental sets included in PhyloProfilData package.
 }
-\keyword{datasets}

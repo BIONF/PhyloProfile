@@ -23,9 +23,8 @@ A data frame with 20 rows and 12 variables:
 }
 }
 \usage{
-profileWithTaxonomy
+data(profileWithTaxonomy)
 }
 \description{
 An example of a raw long input file together with the taxonomy info.
 }
-\keyword{datasets}

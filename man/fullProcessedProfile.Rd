@@ -29,9 +29,8 @@ A data frame with 168 rows and 17 variables:
 }
 }
 \usage{
-fullProcessedProfile
+data(fullProcessedProfile)
 }
 \description{
 An example of a fully processed phylogenetic profile.
 }
-\keyword{datasets}
