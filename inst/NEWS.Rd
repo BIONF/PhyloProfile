@@ -2,6 +2,12 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.2.2}{
+  \itemize{
+    \item Fixed bug checking invalid taxon IDs
+  }
+}
+
 \section{Version 1.2.1}{
   \itemize{
     \item Fixed bug in rankIndexing and processNcbiTaxonomy

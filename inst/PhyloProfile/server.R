@@ -840,7 +840,7 @@ shinyServer(function(input, output, session) {
                     }
                     
                     # check for invalid taxon IDs
-                    if (any(unkTaxaId < maxNCBI)) {
+                    if (exists(unkTaxaId) && any(unkTaxaId < maxNCBI)) {
                         unkTaxa[
                             unkTaxa$id %in% unkTaxaId
                             & unkTaxa$id < maxNCBI,]$Source <- "invalid"
