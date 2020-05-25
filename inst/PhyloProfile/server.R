@@ -825,6 +825,7 @@ shinyServer(function(input, output, session) {
                     ncbiID <- levels(ncbiTaxa)
                     maxNCBI <- max(sort(as.numeric(ncbiID[ncbiID != "ncbiID"])))
                     
+                    unkTaxaId <- c()
                     if (nrow(unkTaxa[!(unkTaxa[,"id"] %in% ncbiTaxa),]) > 0) {
                         unkTaxaId <- unkTaxa[!(unkTaxa$id %in% ncbiTaxa),]$id
                         unkTaxa[unkTaxa$id %in% unkTaxaId,]$Source <- "unknown"
@@ -840,7 +841,7 @@ shinyServer(function(input, output, session) {
                     }
                     
                     # check for invalid taxon IDs
-                    if (exists(unkTaxaId) && any(unkTaxaId < maxNCBI)) {
+                    if (any(unkTaxaId < maxNCBI)) {
                         unkTaxa[
                             unkTaxa$id %in% unkTaxaId 
                             & unkTaxa$id < maxNCBI,]$Source <- "invalid"
