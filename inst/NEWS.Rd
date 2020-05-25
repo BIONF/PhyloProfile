@@ -2,7 +2,7 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
-\section{Version 1.2.2}{
+\section{Version 1.2.4}{
   \itemize{
     \item Fixed bug checking invalid taxon IDs
   }
