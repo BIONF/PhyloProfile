@@ -29,7 +29,7 @@ Take a look at [the functionality](https://github.com/BIONF/PhyloProfile/wiki/Fu
 * [Contact](#contact)
 
 # Installation & Usage
-*PhyloProfile* requires [R](https://cran.r-project.org) (version ≥ 3.6.0). Please install or update R on your computer before continue.
+*PhyloProfile* requires the latest version of [R](https://cran.r-project.org) (check for required R version [here](https://bioconductor.org/packages/PhyloProfile)). Please install or update R on your computer before continue.
 
 * [R for Linux](https://cran.r-project.org/bin/linux/)
 * [R for Mac OS](https://cran.r-project.org/bin/macosx/)
@@ -38,7 +38,7 @@ Take a look at [the functionality](https://github.com/BIONF/PhyloProfile/wiki/Fu
 Then start R to install and use *PhyloProfile*.
 
 ## Using BiocManager
-*PhyloProfile* is available at [Bioconductor](https://bioconductor.org/packages/PhyloProfile) (require Bioc version ≥ 3.10). To install *PhyloProfile*, start R (version ≥ 3.6.0) and enter:
+*PhyloProfile* is available at [Bioconductor](https://bioconductor.org/packages/PhyloProfile) (require Bioc version ≥ 3.10). To install *PhyloProfile*, start R and enter:
 
 ```r
 if (!requireNamespace("BiocManager", quietly = TRUE))
