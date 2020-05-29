@@ -498,7 +498,6 @@ citation("PhyloProfile")
 ```
 
 # How to contribute
-![](http://www.sharegif.com/wp-content/uploads/2014/03/giphy41.gif)
 
 Thanks so much for your interest in contributing to *PhyloProfile* 🎉👍🍾
 
