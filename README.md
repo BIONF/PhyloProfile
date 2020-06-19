@@ -1,5 +1,6 @@
 # PhyloProfile
 [![Bioconductor](https://img.shields.io/badge/available%20at-Bioconductor-orange)](https://bioconductor.org/packages/PhyloProfile)
+[![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/bioconductor-phyloprofile/README.html)
 [![published in: Bioinformatics](https://img.shields.io/badge/published%20in-Bioinformatics-ff69b4.svg?style=flat)](https://doi.org/10.1093/bioinformatics/bty225)
 [![presented at: GCB2018](https://img.shields.io/badge/presented%20at-GCB2018-green.svg?style=flat)](http://gcb2018.de)
 [![poster at: SMBE2019](https://img.shields.io/badge/poster%20at-SMBE2019-green)](https://f1000research.com/posters/6-1782)
@@ -66,7 +67,19 @@ if (!requireNamespace("devtools"))
 devtools::install_github("BIONF/PhyloProfile", INSTALL_opts = c('--no-lock'), build_vignettes = TRUE)
 ```
 
-This step can take a while, as the tool will try do download and install all necessary dependencies automatically. *(Note: Depending on your system this sometimes fails, please check the console log for error messages concerning the dependency installation)*
+## Using Conda
+*PhyloProfile* can also be installed within a [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) environment. First, add [bioconda](https://bioconda.github.io/user/install.html#set-up-channels) to the list of your conda channels:
+```
+conda config --add channels defaults
+conda config --add channels bioconda
+conda config --add channels conda-forge
+```
+then install *PhyloProfile* using the standard `conda install` command:
+```
+conda install bioconductor-phyloprofile
+```
+
+This installation step can take a while regardless of the method used, as all necessary dependencies will be downloaded and installed automatically. *(Note: Depending on your system this sometimes fails, please check the console log for error messages concerning the dependency installation)*
 
 ## Start PhyloProfile's Shiny app
 

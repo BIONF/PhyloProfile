@@ -126,12 +126,6 @@ createProfilePlot <- function(input, output, session,
 
         if (typeProfile() == "customizedProfile") {
             # get sub-dataframe of selected taxa and sequences
-            dataHeat$supertaxonMod <- substr(
-                dataHeat$supertaxon,
-                6,
-                nchar(as.character(dataHeat$supertaxon))
-            )
-
             if (is.null(inSeq()[1]) | is.null(inTaxa()[1]))  
                 stop("Subset taxa or genes is NULL!")
             if (inTaxa()[1] == "all" & inSeq()[1] != "all") {
@@ -139,11 +133,11 @@ createProfilePlot <- function(input, output, session,
                 dataHeat <- subset(dataHeat, geneID %in% inSeq())
             } else if (inSeq()[1] == "all" & inTaxa()[1] != "all") {
                 # select data from dataHeat for selected taxa only
-                dataHeat <- subset(dataHeat, supertaxonMod %in% inTaxa())
+                dataHeat <- subset(dataHeat, supertaxon %in% inTaxa())
             } else {
                 # select data from dataHeat for selected sequences and taxa
                 dataHeat <- subset(dataHeat, geneID %in% inSeq()
-                                   & supertaxonMod %in% inTaxa())
+                                   & supertaxon %in% inTaxa())
             }
 
             # drop all other supertaxon that are not in sub-dataframe

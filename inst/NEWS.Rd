@@ -2,6 +2,12 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.2.6}{
+  \itemize{
+    \item Fixed bug customized profile of subset of taxa not clickable
+  }
+}
+
 \section{Version 1.2.4}{
   \itemize{
     \item Fixed bug checking invalid taxon IDs
