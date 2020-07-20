@@ -2,6 +2,12 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.2.7}{
+  \itemize{
+    \item Solved problem with new NCBI taxonomy rank "clade" by replace them with "norank"
+  }
+}
+
 \section{Version 1.2.6}{
   \itemize{
     \item Fixed bug customized profile of subset of taxa not clickable

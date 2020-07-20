@@ -160,6 +160,7 @@ getTaxonomyInfo <- function(inputTaxa = NULL, currentNCBIinfo = NULL) {
 getIDsRank <- function(inputTaxa = NULL, currentNCBIinfo = NULL){
     if (is.null(currentNCBIinfo)) stop("Pre-processed NCBI tax data is NULL!")
     inputTaxaInfo <- getTaxonomyInfo(inputTaxa, currentNCBIinfo)
+    allMainRank <- mainTaxonomyRank()
     ## get reduced taxonomy info (subset of preProcessedTaxonomy.txt)
     reducedDf <- unique(rbindlist(inputTaxaInfo))
     ## get list of all ranks and rank#IDs
@@ -167,6 +168,8 @@ getIDsRank <- function(inputTaxa = NULL, currentNCBIinfo = NULL){
     inputRankIDDf <- lapply(
         seq_len(length(inputTaxaInfo)),
         function (x) {
+            inputTaxaInfo[[x]]$rank[
+                !(inputTaxaInfo[[x]]$rank %in% allMainRank)] <- "norank"
             inputTaxaInfo[[x]]$rankMod <- inputTaxaInfo[[x]]$rank
             if (inputTaxaInfo[[x]]$rank[1] == "norank")
                 inputTaxaInfo[[x]]$rankMod[1] <-
@@ -205,6 +208,7 @@ getIDsRank <- function(inputTaxa = NULL, currentNCBIinfo = NULL){
     inputIDDf <- do.call(plyr::rbind.fill, inputIDList)
     newCol <- seq(ncol(inputIDDf) + 1, ncol(inputRankDf))
     inputIDDf[paste0("X", newCol)] <- NA
+    reducedDf$rank[!(reducedDf$rank %in% allMainRank)] <- "norank"
     return(list(inputIDDf, inputRankDf, as.data.frame(reducedDf)))
 }
 
