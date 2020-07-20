@@ -167,6 +167,8 @@ getIDsRank <- function(inputTaxa = NULL, currentNCBIinfo = NULL){
     inputRankIDDf <- lapply(
         seq_len(length(inputTaxaInfo)),
         function (x) {
+            inputTaxaInfo[[x]]$rank[inputTaxaInfo[[x]]$rank == "clade"] <- 
+                "norank"
             inputTaxaInfo[[x]]$rankMod <- inputTaxaInfo[[x]]$rank
             if (inputTaxaInfo[[x]]$rank[1] == "norank")
                 inputTaxaInfo[[x]]$rankMod[1] <-
@@ -205,6 +207,7 @@ getIDsRank <- function(inputTaxa = NULL, currentNCBIinfo = NULL){
     inputIDDf <- do.call(plyr::rbind.fill, inputIDList)
     newCol <- seq(ncol(inputIDDf) + 1, ncol(inputRankDf))
     inputIDDf[paste0("X", newCol)] <- NA
+    reducedDf$rank[reducedDf$rank == "clade"] <- "norank"
     return(list(inputIDDf, inputRankDf, as.data.frame(reducedDf)))
 }
 
