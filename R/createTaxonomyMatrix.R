@@ -161,6 +161,7 @@ getTaxonomyInfo <- function(inputTaxa = NULL, currentNCBIinfo = NULL) {
 getIDsRank <- function(inputTaxa = NULL, currentNCBIinfo = NULL){
     if (is.null(currentNCBIinfo)) stop("Pre-processed NCBI tax data is NULL!")
     inputTaxaInfo <- getTaxonomyInfo(inputTaxa, currentNCBIinfo)
+    allMainRank <- mainTaxonomyRank()
     ## get reduced taxonomy info (subset of preProcessedTaxonomy.txt)
     reducedDf <- unique(rbindlist(inputTaxaInfo))
     ## get list of all ranks and rank#IDs
