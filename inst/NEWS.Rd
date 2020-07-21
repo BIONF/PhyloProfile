@@ -2,6 +2,13 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.2.8}{
+  \itemize{
+    \item Added new NCBI taxonomy ranks (e.g. biotype, isolate, pathogroup, ...)
+    \item Added function to reset taxonomy data
+  }
+}
+
 \section{Version 1.2.7}{
   \itemize{
     \item Solved problem with new NCBI taxonomy rank "clade" by replace them with "norank"

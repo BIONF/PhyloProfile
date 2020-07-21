@@ -127,7 +127,7 @@ shinyUI(
 
         # MAIN NARVARPAGE TABS -------------------------------------------------
         navbarPage(
-            em(strong("PhyloProfile v1.2.7")),
+            em(strong("PhyloProfile v1.2.8")),
             id = "tabs",
             collapsible = TRUE,
             inverse = TRUE,
@@ -974,6 +974,21 @@ shinyUI(
                     ),
                     hr(),
                     verbatimTextOutput("updateNCBITaxStatus")
+                ),
+                
+                # * Reset old taxonomy data ------------------------------------
+                tabPanel(
+                    "Reset taxonomy data",
+                    h4(strong("Reset taxonomy data")),
+                    bsAlert("descResetTaxDataUI"),
+                    bsButton(
+                        "doResetTax",
+                        "Do reset",
+                        style = "warning",
+                        icon("wrench")
+                    ),
+                    hr(),
+                    verbatimTextOutput("resetTaxonomyDataStatus")
                 )
             ),
 

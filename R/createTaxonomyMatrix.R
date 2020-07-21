@@ -8,12 +8,13 @@
 mainTaxonomyRank <- function() {
     return(
         c(
-            "strain","forma","subspecies","varietas",
-            "subspecies","species","species subgroup","species group",
-            "subgenus","genus","subtribe","tribe",
+            "strain","biotype","isolate","pathogroup","serogroup","serotype",
+            "genotype","morph","forma","subspecies","subvariety","varietas",
+            "formaspecialis","subspecies","species","speciessubgroup",
+            "speciesgroup","series","subgenus","genus","subtribe","tribe",
             "subfamily","family","superfamily",
             "parvorder","infraorder","suborder","order","superorder",
-            "cohort","infraclass","subclass","class","superclass",
+            "subcohort","cohort","infraclass","subclass","class","superclass",
             "subphylum","phylum","superphylum",
             "subkingdom","kingdom","superkingdom"
         )
@@ -167,8 +168,8 @@ getIDsRank <- function(inputTaxa = NULL, currentNCBIinfo = NULL){
     inputRankIDDf <- lapply(
         seq_len(length(inputTaxaInfo)),
         function (x) {
-            inputTaxaInfo[[x]]$rank[inputTaxaInfo[[x]]$rank == "clade"] <- 
-                "norank"
+            inputTaxaInfo[[x]]$rank[
+                !(inputTaxaInfo[[x]]$rank %in% allMainRank)] <- "norank"
             inputTaxaInfo[[x]]$rankMod <- inputTaxaInfo[[x]]$rank
             if (inputTaxaInfo[[x]]$rank[1] == "norank")
                 inputTaxaInfo[[x]]$rankMod[1] <-
@@ -207,7 +208,7 @@ getIDsRank <- function(inputTaxa = NULL, currentNCBIinfo = NULL){
     inputIDDf <- do.call(plyr::rbind.fill, inputIDList)
     newCol <- seq(ncol(inputIDDf) + 1, ncol(inputRankDf))
     inputIDDf[paste0("X", newCol)] <- NA
-    reducedDf$rank[reducedDf$rank == "clade"] <- "norank"
+    reducedDf$rank[!(reducedDf$rank %in% allMainRank)] <- "norank"
     return(list(inputIDDf, inputRankDf, as.data.frame(reducedDf)))
 }
 
