@@ -8,12 +8,13 @@
 mainTaxonomyRank <- function() {
     return(
         c(
-            "strain","forma","subspecies","varietas",
-            "subspecies","species","species subgroup","species group",
-            "subgenus","genus","subtribe","tribe",
+            "strain","biotype","isolate","pathogroup","serogroup","serotype",
+            "genotype","morph","forma","subspecies","subvariety","varietas",
+            "formaspecialis","subspecies","species","speciessubgroup",
+            "speciesgroup","series","subgenus","genus","subtribe","tribe",
             "subfamily","family","superfamily",
             "parvorder","infraorder","suborder","order","superorder",
-            "cohort","infraclass","subclass","class","superclass",
+            "subcohort","cohort","infraclass","subclass","class","superclass",
             "subphylum","phylum","superphylum",
             "subkingdom","kingdom","superkingdom"
         )

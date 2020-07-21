@@ -974,6 +974,21 @@ shinyUI(
                     ),
                     hr(),
                     verbatimTextOutput("updateNCBITaxStatus")
+                ),
+                
+                # * Reset old taxonomy data ------------------------------------
+                tabPanel(
+                    "Reset taxonomy data",
+                    h4(strong("Reset taxonomy data")),
+                    bsAlert("descResetTaxDataUI"),
+                    bsButton(
+                        "doResetTax",
+                        "Do reset",
+                        style = "warning",
+                        icon("wrench")
+                    ),
+                    hr(),
+                    verbatimTextOutput("resetTaxonomyDataStatus")
                 )
             ),
 

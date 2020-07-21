@@ -3091,4 +3091,48 @@ shinyServer(function(input, output, session) {
         })
         updateButton(session, "doUpdateNcbi", disabled = TRUE)
     })
+    
+    # * RESET TAXONOMY DATA ====================================================
+    # ** description for reset taxonomy data function --------------------------
+    observe({
+        desc = paste(
+            "<p><em>PhyloProfile</em> utilizes the NCBI taxonomy info to sort 
+            input taxa and dynamically change the working systematic rank. 
+            Initially, PhyloProfile has a set of pre-processing taxa together 
+            with their NCBI taxonomy info saved in different files in the&nbsp;
+            <code>PhyloProfile/PhyloProfile/data</code> folder (to check where 
+            <em>PhyloProfile</em> package is installed, im R Terminal type 
+            <code>find.package(\"PhyloProfile\")</code>). Those files include 
+            <code>idList.txt</code>, <code>rankList.txt</code>, 
+            <code>taxonNamesReduced.txt</code>, and 
+            <code>taxonomyMatrix.txt</code>. Whenever a new taxon is added into 
+            the taxonomy data of <em>PhyloProfile</em>, these file will be 
+            changed.</p>
+            <p>If you encounter any troubles related to the taxonomy, such as 
+            error by parsing new taxa, not all input taxa can be found, the 
+            order of your taxa in the profile plot looks weird, etc., you 
+            should reset the taxonomy data.</p>"
+        )
+        
+        if (input$tabs == "Reset taxonomy data") {
+            createAlert(
+                session, "descResetTaxDataUI", "descResetTaxData", title = "",
+                content = desc, append = FALSE
+            )
+        }
+    })
+    
+    # ** do reset taxonomy data ------------------------------------------------
+    observeEvent(input$doResetTax, {
+        withCallingHandlers({
+            shinyjs::html("resetTaxonomyDataStatus", "")
+            resetTaxData()
+        },
+        message = function(m) {
+            shinyjs::html(
+                id = "resetTaxonomyDataStatus", html = m$message, add = TRUE
+            )
+        })
+        updateButton(session, "doResetTax", disabled = TRUE)
+    })
 })
