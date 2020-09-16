@@ -190,6 +190,13 @@ data("fullProcessedProfile", package="PhyloProfile")
 rankName <- "class"
 refTaxon <- "Mammalia"
 
+#' Count taxa within each supertaxon
+taxonIDs <- levels(as.factor(fullProcessedProfile$ncbiID))
+sortedInputTaxa <- sortInputTaxa(
+    taxonIDs, rankName, refTaxon, NULL
+)
+taxaCount <- plyr::count(sortedInputTaxa, "supertaxon")
+
 #' Set cutoff for 2 additional variables and the percentage of present species
 #' in each supertaxon
 var1Cutoff <- c(0,1)
@@ -198,7 +205,7 @@ percentCutoff <- c(0,1)
 
 #' Estimate gene age
 estimateGeneAge(
-    fullProcessedProfile, rankName, refTaxon,
+    fullProcessedProfile, taxaCount, rankName, refTaxon,
     var1Cutoff, var2Cutoff, percentCutoff
 )
 ```
@@ -215,10 +222,10 @@ their core genes.
 
 #' Load built-in data
 data("fullProcessedProfile", package="PhyloProfile")
-processedProfileData <- fullProcessedProfile
 
 #' Choose the working rank and a set of taxa of interest
 rankName <- "class"
+refTaxon <- "Mammalia"
 taxaCore <- c("Mammalia", "Saccharomycetes", "Insecta")
 
 #' Set cutoff for 2 additional variables and the percentage of present species
@@ -230,11 +237,19 @@ percentCutoff <- c(0.0, 1.0)
 #' Set core coverage, the % of taxa that must be present in the selected set
 coreCoverage <- 1
 
+#' Count taxa within each supertaxon
+taxonIDs <- levels(as.factor(fullProcessedProfile$ncbiID))
+sortedInputTaxa <- sortInputTaxa(
+    taxonIDs, rankName, refTaxon, NULL
+)
+taxaCount <- plyr::count(sortedInputTaxa, "supertaxon")
+
 #' Identify core genes
 getCoreGene(
     rankName,
     taxaCore,
-    processedProfileData,
+    fullProcessedProfile,
+    taxaCount,
     var1Cutoff, var2Cutoff,
     percentCutoff, coreCoverage
 )
@@ -369,16 +384,16 @@ head(profileData)
 Generate phylogenetic profile heatmap after processing the raw input file.
 ```{r, fig.show='hold', dev='png'}
 #' Load built-in processed data
-data("fullProcessedProfile", package="PhyloProfile")
+data("superTaxonProfile", package="PhyloProfile")
 
 #' Create data for plotting
-plotDf <- dataMainPlot(fullProcessedProfile)
+plotDf <- dataMainPlot(superTaxonProfile)
 
 #' You can also choose a subset of genes and/or taxa for plotting with:
 #' selectedTaxa <- c("Mammalia", "Echinoidea", "Gunneridae")
 #' selectedSeq <- "all"
 #' plotDf <- dataCustomizedPlot(
-#'     fullProcessedProfile, selectedTaxa, selectedSeq
+#'     superTaxonProfile, selectedTaxa, selectedSeq
 #' )
 
 #' Identify plot's parameters

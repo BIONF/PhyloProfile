@@ -29,8 +29,8 @@ A wide dataframe contains values for calculating distance matrix.
 Get data for calculating distance matrix from phylogenetic profiles
 }
 \examples{
-data("fullProcessedProfile", package="PhyloProfile")
-data <- fullProcessedProfile
+data("superTaxonProfile", package="PhyloProfile")
+data <- superTaxonProfile
 profileType <- "binary"
 var1AggregateBy <- "max"
 var2AggregateBy <- "mean"

@@ -46,8 +46,9 @@ downloadFilteredCustomizedUI <- function(id) {
     )
 }
 
-downloadFilteredCustomized <- function(input, output, session,
-                                        data, fasta, inSeq, inTaxa){
+downloadFilteredCustomized <- function(
+    input, output, session, data, fasta, inSeq, inTaxa
+){
 
     # filtered data for downloading (Customized Profile) -----------------------
     downloadCustomData <- reactive({

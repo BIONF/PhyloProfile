@@ -14,8 +14,8 @@
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{filterProfileData}}
 #' @examples
-#' data("fullProcessedProfile", package="PhyloProfile")
-#' dataMainPlot(fullProcessedProfile)
+#' data("superTaxonProfile", package="PhyloProfile")
+#' dataMainPlot(superTaxonProfile)
 
 dataMainPlot <- function(dataHeat = NULL){
     if (is.null(dataHeat)) stop("Input data cannot be NULL!")
@@ -75,10 +75,10 @@ dataMainPlot <- function(dataHeat = NULL){
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{filterProfileData}}
 #' @examples
-#' data("fullProcessedProfile", package="PhyloProfile")
+#' data("superTaxonProfile", package="PhyloProfile")
 #' selectedTaxa <- c("Mammalia", "Saccharomycetes", "Insecta")
 #' selectedSeq <- "all"
-#' dataCustomizedPlot(fullProcessedProfile, selectedTaxa, selectedSeq)
+#' dataCustomizedPlot(superTaxonProfile, selectedTaxa, selectedSeq)
 
 dataCustomizedPlot <- function(
     dataHeat = NULL, selectedTaxa = "all", selectedSeq = "all"
@@ -152,8 +152,8 @@ dataCustomizedPlot <- function(
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{dataMainPlot}}, \code{\link{dataCustomizedPlot}}
 #' @examples
-#' data("fullProcessedProfile", package="PhyloProfile")
-#' plotDf <- dataMainPlot(fullProcessedProfile)
+#' data("superTaxonProfile", package="PhyloProfile")
+#' plotDf <- dataMainPlot(superTaxonProfile)
 #' plotParameter <- list(
 #'     "xAxis" = "taxa",
 #'     "var1ID" = "FAS_FW",
@@ -292,8 +292,8 @@ heatmapPlotting <- function(data = NULL, parm = NULL){
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{dataMainPlot}}, \code{\link{dataCustomizedPlot}}
 #' @examples
-#' data("fullProcessedProfile", package="PhyloProfile")
-#' plotDf <- dataMainPlot(fullProcessedProfile)
+#' data("superTaxonProfile", package="PhyloProfile")
+#' plotDf <- dataMainPlot(superTaxonProfile)
 #' plotParameter <- list(
 #'     "xAxis" = "taxa",
 #'     "var1ID" = "FAS_FW",

@@ -2,6 +2,13 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.3.10}{
+  \itemize{
+    \item Calculate percentage of present taxa after filtering of var1 and var2
+    \item Fixed filter when working with high taxonomy ranks
+  }
+}
+
 \section{Version 1.2.8}{
   \itemize{
     \item Added new NCBI taxonomy ranks (e.g. biotype, isolate, pathogroup, ...)

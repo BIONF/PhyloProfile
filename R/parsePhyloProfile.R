@@ -384,13 +384,14 @@ calcPresSpec <- function(profileWithTax, taxaCount){
 #' Parsing info for phylogenetic profiles
 #' @description Creating main dataframe for the input phylogenetic profiles
 #' based on selected input taxonomy level (e.g. strain, species) and reference
-#' taxon. The output contains the number of paralogs, percentage of species
-#' presence in each supertaxon, and the max/min/mean/median of VAR1 and VAR2.
-#' @usage parseInfoProfile(inputDf, sortedInputTaxa, var1AggregateBy = "max",
-#'     var2AggregateBy = "max")
+#' taxon. The output contains the number of paralogs, the max/min/mean/median 
+#' of VAR1 and VAR2.
+#' @usage parseInfoProfile(inputDf, sortedInputTaxa, taxaCount, 
+#'     var1AggregateBy = "max", var2AggregateBy = "max")
 #' @param inputDf input profiles in long format
 #' @param sortedInputTaxa sorted taxonomy data for the input taxa
 #' (check sortInputTaxa())
+#' @param taxaCount dataframe counting present taxa in each supertaxon
 #' @param var1AggregateBy aggregate method for VAR1 (max, min, mean
 #' or median), applied for calculating var1 of supertaxa. Default = "max".
 #' @param var2AggregateBy aggregate method for VAR2 (max, min, mean
@@ -409,14 +410,16 @@ calcPresSpec <- function(profileWithTax, taxaCount){
 #' sortedInputTaxa <- sortInputTaxa(
 #'     taxonIDs, "class", "Mammalia", NULL
 #' )
+#' taxaCount <- plyr::count(sortedInputTaxa, "supertaxon")
 #' var1AggregateBy <- "max"
 #' var2AggregateBy <- "mean"
 #' parseInfoProfile(
-#'     mainLongRaw, sortedInputTaxa, var1AggregateBy, var2AggregateBy
+#'     mainLongRaw, sortedInputTaxa, taxaCount, var1AggregateBy, var2AggregateBy
 #' )
 
 parseInfoProfile <- function(
-    inputDf, sortedInputTaxa, var1AggregateBy = "max", var2AggregateBy = "max"
+    inputDf, sortedInputTaxa, taxaCount, 
+    var1AggregateBy = "max", var2AggregateBy = "max"
 ) {
     if (is.null(inputDf) | is.null(sortedInputTaxa))
         stop("Input profiles and sorted taxonomy data cannot be NULL!")
@@ -428,11 +431,8 @@ parseInfoProfile <- function(
     paralogCount <- plyr::count(inputDf, c("geneID", "ncbiID"))
     inputDf <- merge(inputDf, paralogCount, by = c("geneID", "ncbiID"))
     colnames(inputDf)[ncol(inputDf)] <- "paralog"
-    taxaCount <- plyr::count(sortedInputTaxa, "supertaxon")
     # merge inputDf, mdDataVar2 and sortedInputTaxa to get taxonomy info
     taxaMdData <- merge(inputDf, sortedInputTaxa, by = "ncbiID")
-    # (2) calculate PERCENTAGE of PRESENT SPECIES
-    finalPresSpecDt <- calcPresSpec(taxaMdData, taxaCount)
     # (3) calculate max/min/mean/median VAR1 for every supertaxon of each gene
     taxaMdDataNoNA <- taxaMdData[!is.na(taxaMdData$var1), ]
     mVar1Dt <- stats::aggregate(
@@ -454,10 +454,10 @@ parseInfoProfile <- function(
     }
     # (3+4) & join mVar2 together with mVar1 scores into one df
     scoreDf <- merge(mVar1Dt, mVar2Dt, by = c("supertaxon","geneID"), all=TRUE)
-    # (2+3+4) add presSpec and mVar1 into taxaMdData
+    # add into taxaMdData
     fullMdData <- Reduce(
         function(x, y) merge(x, y, by = c("geneID", "supertaxon"), all.x=TRUE),
-        list(taxaMdData, finalPresSpecDt, scoreDf))
+        list(taxaMdData, scoreDf))
     fullMdData <- merge(fullMdData, taxaCount, by = ("supertaxon"), all.x=TRUE)
     names(fullMdData)[names(fullMdData) == "freq"] <- "numberSpec"
     fullMdData$fullName <- as.vector(fullMdData$fullName)
@@ -466,83 +466,19 @@ parseInfoProfile <- function(
     return(fullMdData)
 }
 
-#' Reduce the full processed profile data into supertaxon level
-#' @description Reduce data of the processed phylogenetic profiles from input
-#' taxonomy rank into supertaxon level (e.g. from species to phylum)
-#' @param fullProfile dataframe contains the full processed profiles (see
-#' ?parseInfoProfile and ?fullProcessedProfile)
-#' @return A reduced dataframe contains only profile data for the selected
-#' supertaxon rank. This dataframe contains only supertaxa and their value
-#' (%present, mVar1 & mVar2) for each gene.
-#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
-#' @export
-#' @seealso \code{\link{parseInfoProfile}} for creating a full processed
-#' profile dataframe, \code{\link{fullProcessedProfile}} for a demo full
-#' processed profile dataframe
-#' @examples
-#' data("fullProcessedProfile", package="PhyloProfile")
-#' reduceProfile(fullProcessedProfile)
-
-reduceProfile <- function(fullProfile) {
-    if (is.null(fullProfile)) stop("Profile data cannot be NULL!")
-
-    # check if working with the lowest taxonomy rank; 1 for NO; 0 for YES
-    flag <- 1
-    if (length(unique(levels(as.factor(fullProfile$numberSpec)))) == 1) {
-        if (unique(levels(as.factor(fullProfile$numberSpec))) == 1) {
-            superDfExt <- fullProfile[, c(
-                "geneID", "supertaxon", "supertaxonID",
-                "var1", "presSpec", "category", "orthoID", "var2", "paralog"
-            )]
-            flag <- 0
-        }
-    }
-    if (flag == 1) {
-        # get representative orthoID that has m VAR1 for each supertaxon
-        mOrthoID <- fullProfile[, c(
-            "geneID", "supertaxon", "var1", "mVar1", "orthoID"
-        )]
-        mOrthoID <- subset(mOrthoID, mOrthoID$var1 == mOrthoID$mVar1)
-        colnames(mOrthoID) <- c(
-            "geneID", "supertaxon", "var1", "mVar1", "orthoID"
-        )
-        mOrthoID <- mOrthoID[!is.na(mOrthoID$orthoID), ]
-        mOrthoID <- mOrthoID[, c("geneID", "supertaxon", "orthoID")]
-        mOrthoID <- mOrthoID[!duplicated(mOrthoID[, seq_len(2)]), ]
-
-        # get data set for PhyloProfile plotting (contains only supertaxa info)
-        superDf <- subset(fullProfile, select = c(
-            "geneID", "supertaxon", "supertaxonID",
-            "mVar1", "presSpec", "category", "mVar2", "paralog"
-        ))
-        superDf$paralog <- 1
-        superDf <- superDf[!duplicated(superDf), ]
-
-        superDfExt <- merge(superDf, mOrthoID,
-                            by = c("geneID", "supertaxon"), all.x = TRUE)
-        superDfExt <- superDfExt[, c(
-            "geneID", "supertaxon", "supertaxonID",
-            "mVar1", "presSpec", "category", "orthoID", "mVar2", "paralog"
-        )]
-        # rename mVar to var
-        names(superDfExt)[names(superDfExt) == "mVar1"] <- "var1"
-        names(superDfExt)[names(superDfExt) == "mVar2"] <- "var2"
-    }
-    return(superDfExt)
-}
-
 #' Filter phylogentic profiles
 #' @description Create a filtered data needed for plotting or clustering
 #' phylogenetic profiles. NOTE: this function require some intermediate steps
 #' using the results from other functions. If you would like to get a full
 #' processed data from the raw input, please use the function
 #' fromInputToProfile() instead!
-#' @usage filterProfileData(DF, refTaxon = NULL,
+#' @usage filterProfileData(DF, taxaCount, refTaxon = NULL,
 #'     percentCO = c(0, 1), coorthoCOMax = 9999,
 #'     var1CO  = c(0, 1), var2CO = c(0, 1), var1Rel = "protein",
 #'     var2Rel = "protein", groupByCat = FALSE, catDt = NULL)
 #' @param DF a reduced dataframe contains info for all phylogenetic
 #' profiles in the selected taxonomy rank.
+#' @param taxaCount dataframe counting present taxa in each supertaxon
 #' @param refTaxon selected reference taxon. NOTE: This taxon will not be
 #' affected by the filtering. If you want to filter all, set refTaxon <- NULL.
 #' Default = NULL.
@@ -576,7 +512,7 @@ reduceProfile <- function(fullProfile) {
 #' # other functions. If you would like to get a full processed data from the
 #' # raw input, please use the function fromInputToProfile() instead!
 #' data("fullProcessedProfile", package="PhyloProfile")
-#' superTaxonDf <- reduceProfile(fullProcessedProfile)
+#' rankName <- "class"
 #' refTaxon <- "Mammalia"
 #' percentCutoff <- c(0.0, 1.0)
 #' coorthologCutoffMax <- 10
@@ -586,8 +522,14 @@ reduceProfile <- function(fullProfile) {
 #' var2Relation <- "species"
 #' groupByCat <- FALSE
 #' catDt <- NULL
+#' taxonIDs <- levels(as.factor(fullProcessedProfile$ncbiID))
+#' sortedInputTaxa <- sortInputTaxa(
+#'     taxonIDs, rankName, refTaxon, NULL
+#' )
+#' taxaCount <- plyr::count(sortedInputTaxa, "supertaxon")
 #' filterProfileData(
-#'     superTaxonDf,
+#'     fullProcessedProfile,
+#'     taxaCount,
 #'     refTaxon,
 #'     percentCutoff,
 #'     coorthologCutoffMax,
@@ -600,7 +542,7 @@ reduceProfile <- function(fullProfile) {
 #' )
 
 filterProfileData <- function(
-    DF, refTaxon = NULL, percentCO = c(0, 1), coorthoCOMax = 9999,
+    DF, taxaCount, refTaxon = NULL, percentCO = c(0, 1), coorthoCOMax = 9999,
     var1CO = c(0, 1), var2CO = c(0, 1), var1Rel = "protein",
     var2Rel = "protein", groupByCat = FALSE, catDt = NULL
 ) {
@@ -608,52 +550,42 @@ filterProfileData <- function(
     if (is.null(refTaxon)) refTaxon = "NA"
     ### remove index from supertaxon names
     DF$taxonMod <- gsub("^[[:digit:]]*_", "", DF$supertaxon)
-    ### replace insufficient values according to the thresholds by NA or 0
-    numberCoortholog <- levels(as.factor(DF$paralog))
-    if (length(numberCoortholog) > 1) {
-        DF$presSpec[DF$taxonMod != refTaxon & DF$paralog > coorthoCOMax] <- 0
-        if (var2Rel == "protein")
-            DF$var2[DF$taxonMod != refTaxon & DF$paralog > coorthoCOMax] <- NA
-    } else {
-        if (length(levels(as.factor(DF$presSpec))) > 1)
-            DF$presSpec[DF$taxonMod != refTaxon & DF$presSpec<percentCO[1]] <- 0
-        DF$presSpec[DF$taxonMod != refTaxon & DF$presSpec > percentCO[2]] <- 0
-        if (var2Rel == "protein") {
-            DF$var2[DF$taxonMod != refTaxon & DF$presSpec < percentCO[1]] <- NA
-            DF$var2[DF$taxonMod != refTaxon & DF$presSpec > percentCO[2]] <- NA
-        }
-    }
-    DF$presSpec[DF$taxonMod != refTaxon & DF$var1 < var1CO[1]] <- 0
-    DF$presSpec[DF$taxonMod != refTaxon & DF$var1 > var1CO[2]] <- 0
+    ### filter by var1 and var2
     if (var1Rel == "protein") {
-        if (var2Rel == "protein") {
-            # prot-prot: remove complete cell if one variable not sufficient
-            DF$presSpec[DF$taxonMod != refTaxon & DF$var2 < var2CO[1]] <- 0
-            DF$presSpec[DF$taxonMod != refTaxon & DF$var2 > var2CO[2]] <- 0
-            DF$var2[DF$taxonMod != refTaxon & DF$var1 < var1CO[1]] <- NA
-            DF$var2[DF$taxonMod != refTaxon & DF$var1 > var1CO[2]] <- NA
-            DF$var1[DF$taxonMod != refTaxon & DF$var2 < var2CO[1]] <- NA
-            DF$var1[DF$taxonMod != refTaxon & DF$var2 > var2CO[2]] <- NA
-        } else {
-            # prot-spec: var1 depend on var2
-            DF$presSpec[DF$taxonMod != refTaxon & DF$var2 < var2CO[1]] <- 0
-            DF$presSpec[DF$taxonMod != refTaxon & DF$var2 > var2CO[2]] <- 0
-        }
+        DF$var1[DF$taxonMod != refTaxon & DF$var1 < var1CO[1]] <- NA
+        DF$var1[DF$taxonMod != refTaxon & DF$var1 > var1CO[2]] <- NA
     } else {
-        if (var2Rel == "species") {
-            # spec-spec: remove var1 and var2 independently
-            DF$presSpec[DF$taxonMod != refTaxon & DF$var1 < var1CO[1]] <- 0
-            DF$presSpec[DF$taxonMod != refTaxon & DF$var1 > var1CO[2]] <- 0
-        } else {
-            # spec-prot: var2 depend on var1
-            DF$var2[DF$taxonMod != refTaxon & DF$var1 < var1CO[1]] <- NA
-            DF$var2[DF$taxonMod != refTaxon & DF$var1 > var1CO[2]] <- NA
+        DF$var1[DF$taxonMod != refTaxon & DF$var1 < var1CO[1]] <- 0
+        DF$var1[DF$taxonMod != refTaxon & DF$var1 > var1CO[2]] <- 0
+    }
+    if (var2Rel == "protein") {
+        DF$var2[DF$taxonMod != refTaxon & DF$var2 < var2CO[1]] <- NA
+        DF$var2[DF$taxonMod != refTaxon & DF$var2 > var2CO[2]] <- NA
+    } else {
+        DF$var2[DF$taxonMod != refTaxon & DF$var2 < var2CO[1]] <- 0
+        DF$var2[DF$taxonMod != refTaxon & DF$var2 > var2CO[2]] <- 0
+    }
+    # calculate % present taxa and filter by percentCO
+    DFtmp <- DF[stats::complete.cases(DF), ]
+    finalPresSpecDt <- calcPresSpec(DFtmp, taxaCount)
+    DF <- Reduce(
+        function(x, y) merge(x, y, by = c("geneID", "supertaxon"), all.x=TRUE),
+        list(DF, finalPresSpecDt))
+    DF$presSpec[DF$presSpec < percentCO[[1]] | DF$presSpec > percentCO[[2]]] <-0
+    DF$orthoID[is.na(DF$var1) | is.na(DF$var2) | DF$presSpec == 0] <- NA
+    DF$presSpec[is.na(DF$orthoID)] <- 0
+    DF$var1[is.na(DF$orthoID)] <- NA
+    DF$var2[is.na(DF$orthoID)] <- NA
+    
+    ### remove paralog count if NOT working with lowest rank (species/strain)
+    flag <- 1
+    if (length(unique(levels(as.factor(DF$numberSpec)))) == 1) {
+        if (unique(levels(as.factor(DF$numberSpec))) == 1) {
+            flag <- 0
         }
     }
-    DF$var1[DF$taxonMod != refTaxon & DF$var1 < var1CO[1]] <- NA
-    DF$var1[DF$taxonMod != refTaxon & DF$var1 > var1CO[2]] <- NA
-    DF$var2[DF$taxonMod != refTaxon & DF$var2 < var2CO[1]] <- NA
-    DF$var2[DF$taxonMod != refTaxon & DF$var2 > var2CO[2]] <- NA
+    if (flag == 1) DF$paralog <- 1
+    
     DF <- droplevels(DF)  # delete unused levels
     DF$geneID <- as.factor(DF$geneID)
     DF$supertaxon <- as.factor(DF$supertaxon)
@@ -670,6 +602,72 @@ filterProfileData <- function(
         DF <- merge(dfCat, DF, by = c("geneID","supertaxon"), all.x = TRUE)
     }
     return(DF)
+}
+
+
+#' Reduce the filtered profile data into supertaxon level
+#' @description Reduce data of the processed phylogenetic profiles from input
+#' taxonomy rank into supertaxon level (e.g. from species to phylum)
+#' @param filteredProfile dataframe contains the filtered profiles (see
+#' ?parseInfoProfile, ?filterProfileData and ?filteredProfile)
+#' @return A reduced dataframe contains only profile data for the selected
+#' supertaxon rank. This dataframe contains only supertaxa and their value
+#' (mVar1 & mVar2) for each gene.
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+#' @export
+#' @seealso \code{\link{parseInfoProfile}} for creating a full processed
+#' profile dataframe, \code{\link{filterProfileData}} for filter processed 
+#' profile and \code{\link{filteredProfile}} for a demo filtered
+#' profile dataframe
+#' @examples
+#' data("filteredProfile", package="PhyloProfile")
+#' reduceProfile(filteredProfile)
+
+reduceProfile <- function(filteredProfile) {
+    if (is.null(filteredProfile)) stop("Profile data cannot be NULL!")
+    
+    # check if working with the lowest taxonomy rank; 1 for NO; 0 for YES
+    flag <- 1
+    if (length(unique(levels(as.factor(filteredProfile$numberSpec)))) == 1) {
+        if (unique(levels(as.factor(filteredProfile$numberSpec))) == 1) {
+            superDfExt <- filteredProfile[, c(
+                "geneID", "supertaxon", "supertaxonID",
+                "var1", "presSpec", "category", "orthoID", "var2", "paralog"
+            )]
+            flag <- 0
+        }
+    }
+    if (flag == 1) {
+        # get representative orthoID that has m VAR1 for each supertaxon
+        mOrthoID <- filteredProfile[, c(
+            "geneID", "supertaxon", "var1", "mVar1", "orthoID", "presSpec"
+        )]
+        mOrthoID <- subset(mOrthoID, mOrthoID$var1 == mOrthoID$mVar1)
+        colnames(mOrthoID) <- c(
+            "geneID", "supertaxon", "var1", "mVar1", "orthoID", "presSpec"
+        )
+        mOrthoID <- mOrthoID[!is.na(mOrthoID$orthoID), ]
+        mOrthoID <- mOrthoID[, c("geneID", "supertaxon", "orthoID", "presSpec")]
+        mOrthoID <- mOrthoID[!duplicated(mOrthoID[, seq_len(2)]), ]
+        # get data set for PhyloProfile plotting (contains only supertaxa info)
+        superDf <- subset(filteredProfile, select = c(
+            "geneID", "supertaxon", "supertaxonID",
+            "mVar1", "category", "mVar2", "paralog"
+        ))
+        superDf <- superDf[!duplicated(superDf), ]
+        superDfExt <- merge(
+            superDf, mOrthoID, by = c("geneID", "supertaxon"), all.x = TRUE
+        )
+        superDfExt <- superDfExt[!is.na(superDfExt$orthoID), ]
+        superDfExt <- superDfExt[, c(
+            "geneID", "supertaxon", "supertaxonID",
+            "mVar1", "presSpec", "category", "orthoID", "mVar2", "paralog"
+        )]
+        # rename mVar to var
+        names(superDfExt)[names(superDfExt) == "mVar1"] <- "var1"
+        names(superDfExt)[names(superDfExt) == "mVar2"] <- "var2"
+    }
+    return(superDfExt)
 }
 
 #' Complete processing of raw input phylogenetic profiles
@@ -774,15 +772,16 @@ fromInputToProfile <- function(
     inputTaxonID <- getInputTaxaID(inputDf)
     # sort input taxa based on selected reference taxon or input taxonomy tree
     sortedInputTaxa <- sortInputTaxa(inputTaxonID, rankName, refTaxon, taxaTree)
+    # count present taxa in each supertaxon
+    taxaCount <- plyr::count(sortedInputTaxa, "supertaxon")
     # parse info (additional values...) into profile df
     fullMdData <- parseInfoProfile(
-        inputDf, sortedInputTaxa, var1AggregateBy, var2AggregateBy
+        inputDf, sortedInputTaxa, taxaCount, var1AggregateBy, var2AggregateBy
     )
-    # reduce profile df into supertaxon level
-    superTaxonDf <- reduceProfile(fullMdData)
-    # create final df
-    dataHeat <- filterProfileData(
-        superTaxonDf,
+    # filter profile
+    filteredDf <- filterProfileData(
+        fullMdData,
+        taxaCount,
         refTaxon,
         percentCutoff,
         coorthologCutoffMax,
@@ -793,5 +792,7 @@ fromInputToProfile <- function(
         groupByCat = FALSE,
         catDt = NULL
     )
+    # reduce profile df into supertaxon level
+    dataHeat <- reduceProfile(filteredDf)
     return(dataHeat)
 }

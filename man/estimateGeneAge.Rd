@@ -4,12 +4,14 @@
 \alias{estimateGeneAge}
 \title{Calculate the phylogenetic gene age from the phylogenetic profiles}
 \usage{
-estimateGeneAge(processedProfileData, rankName, refTaxon,
+estimateGeneAge(processedProfileData, taxaCount, rankName, refTaxon,
     var1CO, var2CO, percentCO)
 }
 \arguments{
 \item{processedProfileData}{dataframe contains the full processed
 phylogenetic profiles (see ?fullProcessedProfile or ?parseInfoProfile)}
+
+\item{taxaCount}{dataframe counting present taxa in each supertaxon}
 
 \item{rankName}{working taxonomy rank (e.g. "species", "genus", "family")}
 
@@ -34,11 +36,17 @@ data("fullProcessedProfile", package="PhyloProfile")
 rankName <- "class"
 refTaxon <- "Mammalia"
 processedProfileData <- fullProcessedProfile
+taxonIDs <- levels(as.factor(processedProfileData$ncbiID))
+sortedInputTaxa <- sortInputTaxa(
+    taxonIDs, rankName, refTaxon, NULL
+)
+taxaCount <- plyr::count(sortedInputTaxa, "supertaxon")
 var1Cutoff <- c(0, 1)
 var2Cutoff <- c(0, 1)
 percentCutoff <- c(0, 1)
 estimateGeneAge(
     processedProfileData,
+    taxaCount,
     rankName,
     refTaxon,
     var1Cutoff, var2Cutoff, percentCutoff

@@ -4,7 +4,7 @@
 \alias{filterProfileData}
 \title{Filter phylogentic profiles}
 \usage{
-filterProfileData(DF, refTaxon = NULL,
+filterProfileData(DF, taxaCount, refTaxon = NULL,
     percentCO = c(0, 1), coorthoCOMax = 9999,
     var1CO  = c(0, 1), var2CO = c(0, 1), var1Rel = "protein",
     var2Rel = "protein", groupByCat = FALSE, catDt = NULL)
@@ -12,6 +12,8 @@ filterProfileData(DF, refTaxon = NULL,
 \arguments{
 \item{DF}{a reduced dataframe contains info for all phylogenetic
 profiles in the selected taxonomy rank.}
+
+\item{taxaCount}{dataframe counting present taxa in each supertaxon}
 
 \item{refTaxon}{selected reference taxon. NOTE: This taxon will not be
 affected by the filtering. If you want to filter all, set refTaxon <- NULL.
@@ -58,7 +60,7 @@ fromInputToProfile() instead!
 # other functions. If you would like to get a full processed data from the
 # raw input, please use the function fromInputToProfile() instead!
 data("fullProcessedProfile", package="PhyloProfile")
-superTaxonDf <- reduceProfile(fullProcessedProfile)
+rankName <- "class"
 refTaxon <- "Mammalia"
 percentCutoff <- c(0.0, 1.0)
 coorthologCutoffMax <- 10
@@ -68,8 +70,14 @@ var1Relation <- "protein"
 var2Relation <- "species"
 groupByCat <- FALSE
 catDt <- NULL
+taxonIDs <- levels(as.factor(fullProcessedProfile$ncbiID))
+sortedInputTaxa <- sortInputTaxa(
+    taxonIDs, rankName, refTaxon, NULL
+)
+taxaCount <- plyr::count(sortedInputTaxa, "supertaxon")
 filterProfileData(
-    superTaxonDf,
+    fullProcessedProfile,
+    taxaCount,
     refTaxon,
     percentCutoff,
     coorthologCutoffMax,

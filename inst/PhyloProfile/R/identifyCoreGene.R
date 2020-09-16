@@ -17,7 +17,7 @@ identifyCoreGeneUI <- function(id){
 
 identifyCoreGene <- function(
     input, output, session,
-    filteredData, rankSelect, taxaCore, percentCore,
+    filteredData, taxaCount, rankSelect, taxaCore, percentCore,
     var1Cutoff, var2Cutoff, coreCoverage
 ){
 
@@ -32,7 +32,7 @@ identifyCoreGene <- function(
 
     coreGeneDf <- reactive({
         coreGeneDf <- getCoreGene(
-            rankSelect(), taxaCore(), filteredData(),
+            rankSelect(), taxaCore(), filteredData(), taxaCount(),
             var1Cutoff(), var2Cutoff(), percentCore(), coreCoverage()
         )
         return(coreGeneDf)

@@ -38,8 +38,8 @@ as ggplot object.
 Highlight gene and/or taxon of interest on the phylogenetic profile plot
 }
 \examples{
-data("fullProcessedProfile", package="PhyloProfile")
-plotDf <- dataMainPlot(fullProcessedProfile)
+data("superTaxonProfile", package="PhyloProfile")
+plotDf <- dataMainPlot(superTaxonProfile)
 plotParameter <- list(
     "xAxis" = "taxa",
     "var1ID" = "FAS_FW",

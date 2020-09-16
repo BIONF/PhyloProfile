@@ -835,7 +835,7 @@ shinyServer(function(input, output, session) {
                     newTaxa <- as.factor(
                         unlist(fread(file = newTaxaFile, select = 1))
                     )
-
+                    
                     if (nrow(unkTaxa[unkTaxa$id %in% newTaxa,]) > 0) {
                         unkTaxa[unkTaxa$id %in% newTaxa,]$Source <- "new"
                     }
@@ -843,7 +843,7 @@ shinyServer(function(input, output, session) {
                     # check for invalid taxon IDs
                     if (any(unkTaxaId < maxNCBI)) {
                         unkTaxa[
-                            unkTaxa$id %in% unkTaxaId
+                            unkTaxa$id %in% unkTaxaId 
                             & unkTaxa$id < maxNCBI,]$Source <- "invalid"
                     }
                     
@@ -1385,6 +1385,8 @@ shinyServer(function(input, output, session) {
     # * sort taxonomy data of input taxa ---------------------------------------
     sortedtaxaList <- reactive({
         req(v$doPlot)
+        req(input$rankSelect)
+        req(input$inSelect)
         withProgress(message = 'Sorting input taxa...', value = 0.5, {
             # get input taxonomy tree
             inputTaxaTree <- NULL
@@ -1403,6 +1405,12 @@ shinyServer(function(input, output, session) {
             # return
             return(sortedOut)
         })
+    })
+    
+    # * count taxa for each supertaxon -----------------------------------------
+    getCountTaxa <- reactive({
+        taxaCount <- plyr::count(sortedtaxaList(), "supertaxon")
+        return(taxaCount)
     })
     
     # * get subset data (default: first 30 genes) for plotting -----------------
@@ -1452,33 +1460,22 @@ shinyServer(function(input, output, session) {
     })
     
     # * creating main dataframe for subset taxa (in species/strain level) ------
-    # * get (super)taxa names (1)
-    # * calculate percentage of presence (2),
-    # * max/min/mean/median VAR1 (3) and VAR2 (4)
-    getDataFiltered <- reactive({
+    # * get (super)taxa names
+    # * max/min/mean/median VAR1 and VAR2
+    getFullData <- reactive({
         req(v$doPlot)
         req(preData())
+        req(getCountTaxa())
         req(sortedtaxaList())
         withProgress(message = 'Parsing profile data...', value = 0.5, {
             fullMdData <- parseInfoProfile(
                 inputDf = preData(),
                 sortedInputTaxa = sortedtaxaList(),
+                taxaCount = getCountTaxa(),
                 var1AggregateBy = input$var1AggregateBy,
                 var2AggregateBy = input$var2AggregateBy
             )
             return(fullMdData)
-        })
-    })
-    
-    # * reduce data from lowest level to supertaxon (e.g. phylum) --------------
-    # * This data set contain only supertaxa
-    # * and their value (%present, mVar1 & mVar2) for each gene
-    dataSupertaxa <- reactive({
-        req(v$doPlot)
-        fullMdData <- getDataFiltered()
-        withProgress(message = 'Reducing to supertaxon...', value = 0.5, {
-            superDfExt <- reduceProfile(fullMdData)
-            return(superDfExt)
         })
     })
     
@@ -1532,8 +1529,9 @@ shinyServer(function(input, output, session) {
             }
             
             # create data for heatmap plotting
-            dataHeat <- filterProfileData(
-                DF = dataSupertaxa(),
+            filteredDf <- filterProfileData(
+                DF = getFullData(),
+                taxaCount = getCountTaxa(),
                 refTaxon = inSelect,
                 percentCutoff,
                 coorthologCutoffMax,
@@ -1544,6 +1542,7 @@ shinyServer(function(input, output, session) {
                 groupByCat = input$colorByGroup,
                 catDt = inputCatDt
             )
+            dataHeat <- reduceProfile(filteredDf)
             return(dataHeat)
         })
     })
@@ -1720,7 +1719,7 @@ shinyServer(function(input, output, session) {
         }
         if (v$doPlot == FALSE) return(selectInput("inSeq", "", "all"))
         else {
-            data <- getDataFiltered()
+            data <- getFullData()
             outAll <- c("all", as.list(levels(factor(data$geneID))))
             if (input$addGeneAgeCustomProfile == TRUE) {
                 outAll <- as.list(selectedgeneAge())
@@ -1954,7 +1953,7 @@ shinyServer(function(input, output, session) {
         
         withProgress(message = 'Getting data for detailed plot...', value=0.5, {
             ### get info for present taxa in selected supertaxon (1)
-            fullDf <- getDataFiltered()
+            fullDf <- getFullData()
             plotTaxon <- unique(
                 fullDf$supertaxon[grep(info[3], fullDf$supertaxon)]
             )
@@ -2195,7 +2194,8 @@ shinyServer(function(input, output, session) {
     downloadData <- callModule(
         downloadFilteredMain,
         "filteredMainDownload",
-        data = getDataFiltered,
+        data = getFullData,
+        taxaCount = getCountTaxa,
         fasta = mainFastaDownload,
         var1ID = reactive(input$var1ID),
         var2ID = reactive(input$var2ID),
@@ -2448,7 +2448,7 @@ shinyServer(function(input, output, session) {
             if (input$dataset.distribution == "Customized data") {
                 req(input$inSeq)
                 splitDt <- createVariableDistributionDataSubset(
-                    getDataFiltered(),
+                    getFullData(),
                     splitDt,
                     input$inSeq,
                     input$inTaxa
@@ -2556,7 +2556,8 @@ shinyServer(function(input, output, session) {
         req(v$doPlot)
         withProgress(message = 'Getting data for analyzing...', value = 0.5, {
             geneAgeDf <- estimateGeneAge(
-                getDataFiltered(),
+                getFullData(),
+                getCountTaxa(),
                 toString(input$rankSelect),
                 input$inSelect,
                 input$var1, input$var2, input$percent
@@ -2670,7 +2671,8 @@ shinyServer(function(input, output, session) {
     coreGeneDf <- callModule(
         identifyCoreGene,
         "coreGene",
-        filteredData = getDataFiltered,
+        filteredData = getFullData,
+        taxaCount = getCountTaxa,
         rankSelect = reactive(input$rankSelect),
         taxaCore = reactive(input$taxaCore),
         percentCore = reactive(input$percentCore),
@@ -2796,7 +2798,7 @@ shinyServer(function(input, output, session) {
                 "selectedGeneGC", "Sequence(s) of interest:", "none"
             ))
         } else {
-            data <- as.data.frame(getDataFiltered())
+            data <- as.data.frame(getFullData())
             data$geneID <- as.character(data$geneID)
             data$geneID <- as.factor(data$geneID)
             outAll <- as.list(levels(data$geneID))
@@ -3010,12 +3012,12 @@ shinyServer(function(input, output, session) {
 
     # ** data for group comparison ---------------------------------------------
     groupComparisonData <- reactive({
-        req(getDataFiltered())
+        req(getFullData())
         withProgress(message = 'Getting data for analyzing...', value = 0.5, {
-            if (is.null(input$taxonGroupGC)) return(getDataFiltered())
+            if (is.null(input$taxonGroupGC)) return(getFullData())
             else {
                 taxonGroupGC <- inputTaxonGroupGC()
-                dataFiltered <- getDataFiltered()
+                dataFiltered <- getFullData()
                 return(
                     dataFiltered[dataFiltered$ncbiID %in% taxonGroupGC$ncbiID,]
                 )

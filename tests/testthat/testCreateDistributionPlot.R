@@ -3,10 +3,8 @@ context("test creating data and plots for distritbution analysis function")
 test_that("test distritbution analyze functions", {
     # raw input
     inputData <- createLongMatrix("mainWideTest.txt")
-
     # selected rank name
     rankName <- "species"
-
     # distribution data for percentage of species present in supertaxa
     percentDistributionData <- createPercentageDistributionData(
         inputData, rankName
@@ -24,14 +22,14 @@ test_that("test distritbution analyze functions", {
     inputTaxonName <- getInputTaxaName(rankName, inputTaxonID)
     refTaxon <- inputTaxonName$fullName[1]
     taxaTree <- NULL
-
     sortedTaxa <- sortInputTaxa(
         inputTaxonID, rankName, refTaxon, taxaTree
     )
-
+    taxaCount <- plyr::count(sortedTaxa, "supertaxon")
     fullProfileData <- parseInfoProfile(
         inputData,
         sortedTaxa,
+        taxaCount,
         "max", "mean"
     )
     selectedGenes <- c("100136at6656", "103479at6656")

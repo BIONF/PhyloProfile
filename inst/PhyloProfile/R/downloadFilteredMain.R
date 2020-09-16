@@ -75,7 +75,8 @@ downloadFilteredMainUI <- function(id) {
 }
 
 downloadFilteredMain <- function(
-    input, output, session, data, fasta, var1ID, var2ID, var1, var2, percent
+    input, output, session, data, taxaCount, fasta, var1ID, var2ID, var1, var2, 
+    percent
 ){
 
     # render options for downloading -------------------------------------------
@@ -109,31 +110,34 @@ downloadFilteredMain <- function(
         if (is.null(data())) stop("Data for downloading is NULL!")
         ### filtered data
         dataOut <- data()
-
-        dataOut <- as.data.frame(dataOut[dataOut$presSpec > 0, ])
-        dataOut <- dataOut[!is.na(dataOut$geneID), ]
-
-        dataOut <- as.data.frame(dataOut[dataOut$presSpec >= percent()[1], ])
         if (length(var1()) == 1) {
-            dataOut <- as.data.frame(dataOut[dataOut$var1 >= var1()[1], ])
+            dataOut <- dataOut[dataOut$var1 >= var1()[1], ]
         } else {
-            dataOut <- as.data.frame(dataOut[dataOut$var1 >= var1()[1]
-                                               & dataOut$var1 <= var1()[2], ])
+            dataOut <- dataOut[
+                dataOut$var1 >= var1()[1] & dataOut$var1 <= var1()[2], 
+            ]
         }
-
         if (!all(is.na(dataOut$var2))) {
             if (length(var2()) == 1) {
-                dataOut <-
-                    as.data.frame(dataOut[dataOut$var2 >= var2()[1], ])
+                dataOut <- dataOut[dataOut$var2 >= var2()[1], ]
             } else {
-                dataOut <-
-                    as.data.frame(dataOut[dataOut$var2 >= var2()[1]
-                                           & dataOut$var2 <= var2()[2], ])
+                dataOut <- dataOut[
+                    dataOut$var2 >= var2()[1] & dataOut$var2 <= var2()[2], 
+                ]
             }
         } else {
             dataOut$var2 <- 0
         }
-
+        # calculate presSpec
+        finalPresSpecDt <- calcPresSpec(dataOut, taxaCount())
+        dataOut <- Reduce(
+            function(x, y) merge(x, y, by = c("geneID", "supertaxon"), all.x=TRUE),
+            list(dataOut, finalPresSpecDt))
+        # dataOut <- as.data.frame(dataOut[dataOut$presSpec > 0, ])
+        dataOut <- dataOut[
+            dataOut$presSpec >= percent()[1] & dataOut$presSpec <= percent()[2], 
+        ]
+        dataOut <- dataOut[!is.na(dataOut$geneID), ]
         ### select only representative genes if chosen
         if (input$getRepresentativeMain == TRUE) {
             if (is.null(input$refVarMain)) return()

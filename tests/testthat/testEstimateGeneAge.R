@@ -7,8 +7,13 @@ test_that("test estimation of gene ages", {
     var1Cutoff <- c(0,1)
     var2Cutoff <- c(0,1)
     percentCutoff <- c(0,1)
+    taxonIDs <- levels(as.factor(fullProcessedProfile$ncbiID))
+    sortedInputTaxa <- sortInputTaxa(
+        taxonIDs, rankName, refTaxon, NULL
+    )
+    taxaCount <- plyr::count(sortedInputTaxa, "supertaxon")
     geneAge <- estimateGeneAge(
-        fullProcessedProfile,
+        fullProcessedProfile, taxaCount,
         rankName, refTaxon,
         var1Cutoff, var2Cutoff, percentCutoff
     )

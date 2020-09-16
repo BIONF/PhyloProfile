@@ -30,8 +30,8 @@ A profile heatmap plot as a ggplot object.
 Create profile heatmap plot
 }
 \examples{
-data("fullProcessedProfile", package="PhyloProfile")
-plotDf <- dataMainPlot(fullProcessedProfile)
+data("superTaxonProfile", package="PhyloProfile")
+plotDf <- dataMainPlot(superTaxonProfile)
 plotParameter <- list(
     "xAxis" = "taxa",
     "var1ID" = "FAS_FW",

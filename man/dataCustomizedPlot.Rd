@@ -30,10 +30,10 @@ in each supertaxon (numberSpec) and the % of species that have orthologs in
 each supertaxon (presSpec).
 }
 \examples{
-data("fullProcessedProfile", package="PhyloProfile")
+data("superTaxonProfile", package="PhyloProfile")
 selectedTaxa <- c("Mammalia", "Saccharomycetes", "Insecta")
 selectedSeq <- "all"
-dataCustomizedPlot(fullProcessedProfile, selectedTaxa, selectedSeq)
+dataCustomizedPlot(superTaxonProfile, selectedTaxa, selectedSeq)
 }
 \seealso{
 \code{\link{filterProfileData}}

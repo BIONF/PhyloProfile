@@ -1,9 +1,10 @@
 #' Calculate the phylogenetic gene age from the phylogenetic profiles
 #' @export
-#' @usage estimateGeneAge(processedProfileData, rankName, refTaxon,
+#' @usage estimateGeneAge(processedProfileData, taxaCount, rankName, refTaxon,
 #'     var1CO, var2CO, percentCO)
 #' @param processedProfileData dataframe contains the full processed
 #' phylogenetic profiles (see ?fullProcessedProfile or ?parseInfoProfile)
+#' @param taxaCount dataframe counting present taxa in each supertaxon
 #' @param rankName working taxonomy rank (e.g. "species", "genus", "family")
 #' @param refTaxon reference taxon name (e.g. "Homo sapiens", "Homo" or
 #' "Hominidae")
@@ -22,19 +23,25 @@
 #' rankName <- "class"
 #' refTaxon <- "Mammalia"
 #' processedProfileData <- fullProcessedProfile
+#' taxonIDs <- levels(as.factor(processedProfileData$ncbiID))
+#' sortedInputTaxa <- sortInputTaxa(
+#'     taxonIDs, rankName, refTaxon, NULL
+#' )
+#' taxaCount <- plyr::count(sortedInputTaxa, "supertaxon")
 #' var1Cutoff <- c(0, 1)
 #' var2Cutoff <- c(0, 1)
 #' percentCutoff <- c(0, 1)
 #' estimateGeneAge(
 #'     processedProfileData,
+#'     taxaCount,
 #'     rankName,
 #'     refTaxon,
 #'     var1Cutoff, var2Cutoff, percentCutoff
 #' )
 
 estimateGeneAge <- function(
-    processedProfileData, rankName, refTaxon, var1CO = c(0, 1), 
-    var2CO = c(0, 1), percentCO = c(0, 1)
+    processedProfileData, taxaCount, rankName, refTaxon, 
+    var1CO = c(0, 1), var2CO = c(0, 1), percentCO = c(0, 1)
 ){
     rankList <- c(
         "genus", "family", "class", "phylum", "kingdom", "norank_33154",
@@ -74,25 +81,37 @@ estimateGeneAge <- function(
     catDf$cat <- gsub("FALSE", "0", catDf$cat)
     # get main input data
     mdData <- droplevels(processedProfileData)
-    mdData <- mdData[, c("geneID","ncbiID","orthoID","var1","var2","presSpec")]
+    # filter by var1, var2 ..
+    mdData <- subset(
+        mdData, mdData$var1 >= var1CO[1] & mdData$var1 <= var1CO[2]
+        & mdData$var2 >= var2CO[1] & mdData$var2 <= var2CO[2])
+    # calculate % present taxa
+    finalPresSpecDt <- calcPresSpec(mdData, taxaCount)
+    mdData <- mdData[
+        , c("geneID", "supertaxon","ncbiID","orthoID","var1","var2")
+        ]
+    mdDataFull <- Reduce(
+        function(x, y) merge(x, y, by = c("geneID", "supertaxon"), all.x=TRUE),
+        list(mdData, finalPresSpecDt))
     # add "category" into mdData
-    mdDtExt <- merge(mdData, catDf, by = "ncbiID", all.x = TRUE)
+    mdDtExt <- merge(mdDataFull, catDf, by = "ncbiID", all.x = TRUE)
     mdDtExt$var1[mdDtExt$var1 == "NA" | is.na(mdDtExt$var1)] <- 0
     mdDtExt$var2[mdDtExt$var2 == "NA" | is.na(mdDtExt$var2)] <- 0
     # remove cat for "NA" orthologs and also for orthologs that dont fit cutoffs
     if (nrow(mdDtExt[mdDtExt$orthoID == "NA" | is.na(mdDtExt$orthoID), ]) > 0)
         mdDtExt[mdDtExt$orthoID == "NA" | is.na(mdDtExt$orthoID),]$cat <- NA
     mdDtExt <- mdDtExt[stats::complete.cases(mdDtExt), ]
-    # filter by %specpres, var1, var2 ..
-    mdDtExt <- subset(
-        mdDtExt, mdDtExt$var1 >= var1CO[1] & mdDtExt$var1 <= var1CO[2]
-        & mdDtExt$var2 >= var2CO[1] & mdDtExt$var2 <= var2CO[2]
-        & mdDtExt$presSpec >=percentCO[1] & mdDtExt$presSpec<= percentCO[2])
+    # filter by %specpres
+    mdDtExt <- mdDtExt[
+        mdDtExt$presSpec >=percentCO[1] & mdDtExt$presSpec<= percentCO[2],
+        ]
+    
     # get the furthest common taxon with selected taxon for each gene
     geneAgeDf <- as.data.frame(tapply(mdDtExt$cat, mdDtExt$geneID, min))
     data.table::setDT(geneAgeDf, keep.rownames = TRUE)[]
     data.table::setnames(geneAgeDf, seq_len(2), c("geneID", "cat"))  #col names
     row.names(geneAgeDf) <- NULL   # remove row names
+    
     ### move NA cat to working taxonomy rank
     if (rankName == "genus")
         geneAgeDf$cat[is.na(geneAgeDf$cat)] <- "011111111"

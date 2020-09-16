@@ -4,14 +4,16 @@
 \alias{parseInfoProfile}
 \title{Parsing info for phylogenetic profiles}
 \usage{
-parseInfoProfile(inputDf, sortedInputTaxa, var1AggregateBy = "max",
-    var2AggregateBy = "max")
+parseInfoProfile(inputDf, sortedInputTaxa, taxaCount, 
+    var1AggregateBy = "max", var2AggregateBy = "max")
 }
 \arguments{
 \item{inputDf}{input profiles in long format}
 
 \item{sortedInputTaxa}{sorted taxonomy data for the input taxa
 (check sortInputTaxa())}
+
+\item{taxaCount}{dataframe counting present taxa in each supertaxon}
 
 \item{var1AggregateBy}{aggregate method for VAR1 (max, min, mean
 or median), applied for calculating var1 of supertaxa. Default = "max".}
@@ -28,8 +30,8 @@ e.g. estimation of gene age (?estimateGeneAge) or identification of core gene
 \description{
 Creating main dataframe for the input phylogenetic profiles
 based on selected input taxonomy level (e.g. strain, species) and reference
-taxon. The output contains the number of paralogs, percentage of species
-presence in each supertaxon, and the max/min/mean/median of VAR1 and VAR2.
+taxon. The output contains the number of paralogs, the max/min/mean/median 
+of VAR1 and VAR2.
 }
 \examples{
 data("mainLongRaw", package="PhyloProfile")
@@ -37,10 +39,11 @@ taxonIDs <- getInputTaxaID(mainLongRaw)
 sortedInputTaxa <- sortInputTaxa(
     taxonIDs, "class", "Mammalia", NULL
 )
+taxaCount <- plyr::count(sortedInputTaxa, "supertaxon")
 var1AggregateBy <- "max"
 var2AggregateBy <- "mean"
 parseInfoProfile(
-    mainLongRaw, sortedInputTaxa, var1AggregateBy, var2AggregateBy
+    mainLongRaw, sortedInputTaxa, taxaCount, var1AggregateBy, var2AggregateBy
 )
 }
 \seealso{

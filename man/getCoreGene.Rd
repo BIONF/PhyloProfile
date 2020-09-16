@@ -4,7 +4,7 @@
 \alias{getCoreGene}
 \title{Identify core genes for a list of selected taxa}
 \usage{
-getCoreGene(rankName, taxaCore = c("none"), profileDt,
+getCoreGene(rankName, taxaCore = c("none"), profileDt, taxaCount,
     var1Cutoff = c(0, 1), var2Cutoff = c(0, 1), percentCutoff = c(0, 1),
     coreCoverage = 1)
 }
@@ -15,6 +15,8 @@ getCoreGene(rankName, taxaCore = c("none"), profileDt,
 
 \item{profileDt}{dataframe contains the full processed
 phylogenetic profiles (see ?fullProcessedProfile or ?parseInfoProfile)}
+
+\item{taxaCount}{dataframe counting present taxa in each supertaxon}
 
 \item{var1Cutoff}{cutoff for var1. Default = c(0, 1).}
 
@@ -39,8 +41,14 @@ or all of them (determined via coreCoverage).
 \examples{
 data("fullProcessedProfile", package="PhyloProfile")
 rankName <- "class"
+refTaxon <- "Mammalia"
 taxaCore <- c("Mammalia", "Saccharomycetes", "Insecta")
 profileDt <- fullProcessedProfile
+taxonIDs <- levels(as.factor(fullProcessedProfile$ncbiID))
+sortedInputTaxa <- sortInputTaxa(
+    taxonIDs, rankName, refTaxon, NULL
+)
+taxaCount <- plyr::count(sortedInputTaxa, "supertaxon")
 var1Cutoff <- c(0.75, 1.0)
 var2Cutoff <- c(0.75, 1.0)
 percentCutoff <- c(0.0, 1.0)
@@ -49,6 +57,7 @@ getCoreGene(
     rankName,
     taxaCore,
     profileDt,
+    taxaCount,
     var1Cutoff, var2Cutoff,
     percentCutoff, coreCoverage
 )

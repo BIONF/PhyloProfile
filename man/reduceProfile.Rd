@@ -2,31 +2,32 @@
 % Please edit documentation in R/parsePhyloProfile.R
 \name{reduceProfile}
 \alias{reduceProfile}
-\title{Reduce the full processed profile data into supertaxon level}
+\title{Reduce the filtered profile data into supertaxon level}
 \usage{
-reduceProfile(fullProfile)
+reduceProfile(filteredProfile)
 }
 \arguments{
-\item{fullProfile}{dataframe contains the full processed profiles (see
-?parseInfoProfile and ?fullProcessedProfile)}
+\item{filteredProfile}{dataframe contains the filtered profiles (see
+?parseInfoProfile, ?filterProfileData and ?filteredProfile)}
 }
 \value{
 A reduced dataframe contains only profile data for the selected
 supertaxon rank. This dataframe contains only supertaxa and their value
-(%present, mVar1 & mVar2) for each gene.
+(mVar1 & mVar2) for each gene.
 }
 \description{
 Reduce data of the processed phylogenetic profiles from input
 taxonomy rank into supertaxon level (e.g. from species to phylum)
 }
 \examples{
-data("fullProcessedProfile", package="PhyloProfile")
-reduceProfile(fullProcessedProfile)
+data("filteredProfile", package="PhyloProfile")
+reduceProfile(filteredProfile)
 }
 \seealso{
 \code{\link{parseInfoProfile}} for creating a full processed
-profile dataframe, \code{\link{fullProcessedProfile}} for a demo full
-processed profile dataframe
+profile dataframe, \code{\link{filterProfileData}} for filter processed 
+profile and \code{\link{filteredProfile}} for a demo filtered
+profile dataframe
 }
 \author{
 Vinh Tran {tran@bio.uni-frankfurt.de}
