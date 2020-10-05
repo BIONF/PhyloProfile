@@ -2,6 +2,12 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.3.11}{
+  \itemize{
+    \item Add filter number of co-orthologs to parseInfoProfile()
+  }
+}
+
 \section{Version 1.3.10}{
   \itemize{
     \item Calculate percentage of present taxa after filtering of var1 and var2

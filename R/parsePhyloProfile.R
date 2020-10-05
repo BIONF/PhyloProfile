@@ -386,12 +386,13 @@ calcPresSpec <- function(profileWithTax, taxaCount){
 #' based on selected input taxonomy level (e.g. strain, species) and reference
 #' taxon. The output contains the number of paralogs, the max/min/mean/median 
 #' of VAR1 and VAR2.
-#' @usage parseInfoProfile(inputDf, sortedInputTaxa, taxaCount, 
+#' @usage parseInfoProfile(inputDf, sortedInputTaxa, taxaCount, coorthoCOMax,
 #'     var1AggregateBy = "max", var2AggregateBy = "max")
 #' @param inputDf input profiles in long format
 #' @param sortedInputTaxa sorted taxonomy data for the input taxa
 #' (check sortInputTaxa())
 #' @param taxaCount dataframe counting present taxa in each supertaxon
+#' @param coorthoCOMax maximum number of co-orthologs allowed
 #' @param var1AggregateBy aggregate method for VAR1 (max, min, mean
 #' or median), applied for calculating var1 of supertaxa. Default = "max".
 #' @param var2AggregateBy aggregate method for VAR2 (max, min, mean
@@ -413,12 +414,14 @@ calcPresSpec <- function(profileWithTax, taxaCount){
 #' taxaCount <- plyr::count(sortedInputTaxa, "supertaxon")
 #' var1AggregateBy <- "max"
 #' var2AggregateBy <- "mean"
+#' coorthoCOMax <- 999
 #' parseInfoProfile(
-#'     mainLongRaw, sortedInputTaxa, taxaCount, var1AggregateBy, var2AggregateBy
+#'     mainLongRaw, sortedInputTaxa, taxaCount, coorthoCOMax,
+#'     var1AggregateBy, var2AggregateBy
 #' )
 
 parseInfoProfile <- function(
-    inputDf, sortedInputTaxa, taxaCount, 
+    inputDf, sortedInputTaxa, taxaCount, coorthoCOMax = 9999,
     var1AggregateBy = "max", var2AggregateBy = "max"
 ) {
     if (is.null(inputDf) | is.null(sortedInputTaxa))
@@ -427,10 +430,14 @@ parseInfoProfile <- function(
         if (ncol(inputDf) < 5) colnames(inputDf)[4] <- "var1"
         else colnames(inputDf)[c(4,5)] <- c("var1", "var2")
     }
+    if (coorthoCOMax < 1) coorthoCOMax <- 1
     # count number of inparalogs & calculate frequency of all supertaxa
     paralogCount <- plyr::count(inputDf, c("geneID", "ncbiID"))
     inputDf <- merge(inputDf, paralogCount, by = c("geneID", "ncbiID"))
     colnames(inputDf)[ncol(inputDf)] <- "paralog"
+    ### filter by number of coorthologs
+    inputDf <- inputDf[!(inputDf$paralog > coorthoCOMax),]
+    
     # merge inputDf, mdDataVar2 and sortedInputTaxa to get taxonomy info
     taxaMdData <- merge(inputDf, sortedInputTaxa, by = "ncbiID")
     # (3) calculate max/min/mean/median VAR1 for every supertaxon of each gene
@@ -565,7 +572,8 @@ filterProfileData <- function(
         DF$var2[DF$taxonMod != refTaxon & DF$var2 < var2CO[1]] <- 0
         DF$var2[DF$taxonMod != refTaxon & DF$var2 > var2CO[2]] <- 0
     }
-    # calculate % present taxa and filter by percentCO
+    
+    ### calculate % present taxa and filter by percentCO
     DFtmp <- DF[stats::complete.cases(DF), ]
     finalPresSpecDt <- calcPresSpec(DFtmp, taxaCount)
     DF <- Reduce(

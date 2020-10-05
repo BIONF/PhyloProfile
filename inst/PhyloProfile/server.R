@@ -1467,11 +1467,21 @@ shinyServer(function(input, output, session) {
         req(preData())
         req(getCountTaxa())
         req(sortedtaxaList())
+        {
+            input$plotCustom
+            input$updateBtn
+        }
         withProgress(message = 'Parsing profile data...', value = 0.5, {
+            if (input$autoUpdate == TRUE) {
+                coorthologCutoffMax <- input$coortholog
+            } else {
+                coorthologCutoffMax <- isolate(input$coortholog)
+            }
             fullMdData <- parseInfoProfile(
                 inputDf = preData(),
                 sortedInputTaxa = sortedtaxaList(),
                 taxaCount = getCountTaxa(),
+                coorthoCOMax = coorthologCutoffMax,
                 var1AggregateBy = input$var1AggregateBy,
                 var2AggregateBy = input$var2AggregateBy
             )
