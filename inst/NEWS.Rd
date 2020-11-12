@@ -2,6 +2,12 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.4.1}{
+  \itemize{
+    \item Fixed bug data lost after filtering var2
+  }
+}
+
 \section{Version 1.3.11}{
   \itemize{
     \item Add filter number of co-orthologs to parseInfoProfile()

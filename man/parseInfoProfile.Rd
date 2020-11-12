@@ -4,8 +4,7 @@
 \alias{parseInfoProfile}
 \title{Parsing info for phylogenetic profiles}
 \usage{
-parseInfoProfile(inputDf, sortedInputTaxa, taxaCount, coorthoCOMax,
-    var1AggregateBy = "max", var2AggregateBy = "max")
+parseInfoProfile(inputDf, sortedInputTaxa, taxaCount, coorthoCOMax)
 }
 \arguments{
 \item{inputDf}{input profiles in long format}
@@ -16,12 +15,6 @@ parseInfoProfile(inputDf, sortedInputTaxa, taxaCount, coorthoCOMax,
 \item{taxaCount}{dataframe counting present taxa in each supertaxon}
 
 \item{coorthoCOMax}{maximum number of co-orthologs allowed}
-
-\item{var1AggregateBy}{aggregate method for VAR1 (max, min, mean
-or median), applied for calculating var1 of supertaxa. Default = "max".}
-
-\item{var2AggregateBy}{aggregate method for VAR2 (max, min, mean
-or median), applied for calculating var2 of supertaxa. Default = "max".}
 }
 \value{
 A dataframe contains all info for the input phylogenetic profiles.
@@ -42,12 +35,9 @@ sortedInputTaxa <- sortInputTaxa(
     taxonIDs, "class", "Mammalia", NULL
 )
 taxaCount <- plyr::count(sortedInputTaxa, "supertaxon")
-var1AggregateBy <- "max"
-var2AggregateBy <- "mean"
 coorthoCOMax <- 999
 parseInfoProfile(
-    mainLongRaw, sortedInputTaxa, taxaCount, coorthoCOMax,
-    var1AggregateBy, var2AggregateBy
+    mainLongRaw, sortedInputTaxa, taxaCount, coorthoCOMax
 )
 }
 \seealso{

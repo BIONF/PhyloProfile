@@ -1481,9 +1481,7 @@ shinyServer(function(input, output, session) {
                 inputDf = preData(),
                 sortedInputTaxa = sortedtaxaList(),
                 taxaCount = getCountTaxa(),
-                coorthoCOMax = coorthologCutoffMax,
-                var1AggregateBy = input$var1AggregateBy,
-                var2AggregateBy = input$var2AggregateBy
+                coorthoCOMax = coorthologCutoffMax
             )
             return(fullMdData)
         })
@@ -1550,7 +1548,9 @@ shinyServer(function(input, output, session) {
                 input$var1Relation,
                 input$var2Relation,
                 groupByCat = input$colorByGroup,
-                catDt = inputCatDt
+                catDt = inputCatDt,
+                var1AggregateBy = input$var1AggregateBy,
+                var2AggregateBy = input$var2AggregateBy
             )
             dataHeat <- reduceProfile(filteredDf)
             return(dataHeat)
