@@ -1460,8 +1460,6 @@ shinyServer(function(input, output, session) {
     })
     
     # * creating main dataframe for subset taxa (in species/strain level) ------
-    # * get (super)taxa names
-    # * max/min/mean/median VAR1 and VAR2
     getFullData <- reactive({
         req(v$doPlot)
         req(preData())
@@ -1487,8 +1485,8 @@ shinyServer(function(input, output, session) {
         })
     })
     
-    # * heatmap data input -----------------------------------------------------
-    dataHeat <- reactive({
+    # * filter full data -------------------------------------------------------
+    filteredDataHeat <- reactive({
         req(v$doPlot)
         {
             input$plotCustom
@@ -1552,9 +1550,16 @@ shinyServer(function(input, output, session) {
                 var1AggregateBy = input$var1AggregateBy,
                 var2AggregateBy = input$var2AggregateBy
             )
-            dataHeat <- reduceProfile(filteredDf)
-            return(dataHeat)
+            return(filteredDf)
         })
+    })
+    
+    # * heatmap data input -----------------------------------------------------
+    dataHeat <- reactive({
+        req(v$doPlot)
+        req(filteredDataHeat())
+        dataHeat <- reduceProfile(filteredDataHeat())
+        return(dataHeat)
     })
     
     # * clustered heatmap data -------------------------------------------------
@@ -1960,10 +1965,30 @@ shinyServer(function(input, output, session) {
         }
         
         req(info)
-        
         withProgress(message = 'Getting data for detailed plot...', value=0.5, {
+            ### get refspec name 
+            split <- strsplit(as.character(input$inSelect), "_")
+            inSelect <- as.character(split[[1]][1])
+            
             ### get info for present taxa in selected supertaxon (1)
             fullDf <- getFullData()
+            ### filter data if needed
+            if  (input$detailedFilter == TRUE) {
+                fullDf <- filteredDataHeat()
+                if (info[3] == inSelect) {
+                    fullDf <- fullDf[
+                        fullDf$var1 >= input$var1[1] 
+                        & fullDf$var1 <= input$var1[2], 
+                    ]
+                    fullDf <- fullDf[
+                        fullDf$var2 >= input$var2[1] 
+                        & fullDf$var2 <= input$var2[2], 
+                    ]
+                }
+                updateCheckboxInput(
+                    session, "detailedRemoveNA", value = TRUE
+                )
+            }
             plotTaxon <- unique(
                 fullDf$supertaxon[grep(info[3], fullDf$supertaxon)]
             )

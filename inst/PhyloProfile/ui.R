@@ -1136,6 +1136,12 @@ shinyUI(
                         strong("Hide taxa that have no ortholog (NAs)",
                                style = "color:red"),
                         value = FALSE
+                    ),
+                    checkboxInput(
+                        "detailedFilter",
+                        strong("Apply filters",
+                               style = "color:red"),
+                        value = FALSE
                     )
                 )
             ),

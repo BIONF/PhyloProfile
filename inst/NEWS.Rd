@@ -5,6 +5,7 @@
 \section{Version 1.4.1}{
   \itemize{
     \item Fixed bug data lost after filtering var2
+    \item Add filter data to detailed plot
   }
 }
 
