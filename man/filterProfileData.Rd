@@ -7,7 +7,8 @@
 filterProfileData(DF, taxaCount, refTaxon = NULL,
     percentCO = c(0, 1), coorthoCOMax = 9999,
     var1CO  = c(0, 1), var2CO = c(0, 1), var1Rel = "protein",
-    var2Rel = "protein", groupByCat = FALSE, catDt = NULL)
+    var2Rel = "protein", groupByCat = FALSE, catDt = NULL, 
+    var1AggregateBy = "max", var2AggregateBy = "max")
 }
 \arguments{
 \item{DF}{a reduced dataframe contains info for all phylogenetic
@@ -40,6 +41,12 @@ FALSE.}
 
 \item{catDt}{dataframe contains gene categories
 (optional, NULL if groupByCat = FALSE or no info provided). Default = NULL.}
+
+\item{var1AggregateBy}{aggregate method for VAR1 (max, min, mean
+or median), applied for calculating var1 of supertaxa. Default = "max".}
+
+\item{var2AggregateBy}{aggregate method for VAR2 (max, min, mean
+or median), applied for calculating var2 of supertaxa. Default = "max".}
 }
 \value{
 A filtered dataframe for generating profile plot including seed gene
@@ -70,6 +77,8 @@ var1Relation <- "protein"
 var2Relation <- "species"
 groupByCat <- FALSE
 catDt <- NULL
+var1AggregateBy <- "max"
+var2AggregateBy <- "max"
 taxonIDs <- levels(as.factor(fullProcessedProfile$ncbiID))
 sortedInputTaxa <- sortInputTaxa(
     taxonIDs, rankName, refTaxon, NULL
@@ -86,7 +95,9 @@ filterProfileData(
     var1Relation,
     var2Relation,
     groupByCat,
-    catDt
+    catDt,
+    var1AggregateBy,
+    var2AggregateBy
 )
 }
 \seealso{

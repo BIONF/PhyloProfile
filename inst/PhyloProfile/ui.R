@@ -127,7 +127,7 @@ shinyUI(
 
         # MAIN NARVARPAGE TABS -------------------------------------------------
         navbarPage(
-            em(strong("PhyloProfile v1.4.0")),
+            em(strong("PhyloProfile v1.4.1")),
             id = "tabs",
             collapsible = TRUE,
             inverse = TRUE,
@@ -1134,6 +1134,12 @@ shinyUI(
                     checkboxInput(
                         "detailedRemoveNA",
                         strong("Hide taxa that have no ortholog (NAs)",
+                               style = "color:red"),
+                        value = FALSE
+                    ),
+                    checkboxInput(
+                        "detailedFilter",
+                        strong("Apply filters",
                                style = "color:red"),
                         value = FALSE
                     )

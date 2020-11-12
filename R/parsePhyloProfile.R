@@ -39,7 +39,7 @@ getNameList <- function() {
         "PhyloProfile/data/taxonNamesReduced.txt",
         sep="/"
     )
-
+    
     if (!file.exists(nameReducedFile)) {
         utils::data(taxonNamesReduced)
     } else {
@@ -47,11 +47,11 @@ getNameList <- function() {
             nameReducedFile, sep = "\t", header = TRUE, fill = TRUE
         )
     }
-
+    
     taxonNamesReduced$fullName <- as.character(taxonNamesReduced$fullName)
     taxonNamesReduced$rank <- as.character(taxonNamesReduced$rank)
     taxonNamesReduced <- taxonNamesReduced[!duplicated(taxonNamesReduced), ]
-
+    
     return(taxonNamesReduced)
 }
 
@@ -78,7 +78,7 @@ getTaxonomyMatrix <- function(subsetTaxaCheck = FALSE, taxonIDs = NULL){
         "PhyloProfile/data/taxonomyMatrix.txt",
         sep="/"
     )
-
+    
     if (!file.exists(taxonomyMatrixFile)) {
         utils::data(taxonomyMatrix)
     } else {
@@ -87,7 +87,7 @@ getTaxonomyMatrix <- function(subsetTaxaCheck = FALSE, taxonIDs = NULL){
             stringsAsFactors = TRUE
         )
     }
-
+    
     if (subsetTaxaCheck) {
         if (missing(taxonIDs)) return(taxonomyMatrix)
         taxonomyMatrix <- taxonomyMatrix[
@@ -338,7 +338,7 @@ calcPresSpec <- function(profileWithTax, taxaCount){
     if (missing(profileWithTax)) return("No input data given")
     if (missing(taxaCount)) return("No supertaxon count given")
     profileWithTax <- profileWithTax[profileWithTax$orthoID != "NA", ]
-
+    
     # get geneID and supertaxon
     geneIDSupertaxon <- subset(
         profileWithTax,
@@ -386,17 +386,12 @@ calcPresSpec <- function(profileWithTax, taxaCount){
 #' based on selected input taxonomy level (e.g. strain, species) and reference
 #' taxon. The output contains the number of paralogs, the max/min/mean/median 
 #' of VAR1 and VAR2.
-#' @usage parseInfoProfile(inputDf, sortedInputTaxa, taxaCount, coorthoCOMax,
-#'     var1AggregateBy = "max", var2AggregateBy = "max")
+#' @usage parseInfoProfile(inputDf, sortedInputTaxa, taxaCount, coorthoCOMax)
 #' @param inputDf input profiles in long format
 #' @param sortedInputTaxa sorted taxonomy data for the input taxa
 #' (check sortInputTaxa())
 #' @param taxaCount dataframe counting present taxa in each supertaxon
 #' @param coorthoCOMax maximum number of co-orthologs allowed
-#' @param var1AggregateBy aggregate method for VAR1 (max, min, mean
-#' or median), applied for calculating var1 of supertaxa. Default = "max".
-#' @param var2AggregateBy aggregate method for VAR2 (max, min, mean
-#' or median), applied for calculating var2 of supertaxa. Default = "max".
 #' @return A dataframe contains all info for the input phylogenetic profiles.
 #' This full processed profile that is required for several profiling analyses
 #' e.g. estimation of gene age (?estimateGeneAge) or identification of core gene
@@ -412,17 +407,13 @@ calcPresSpec <- function(profileWithTax, taxaCount){
 #'     taxonIDs, "class", "Mammalia", NULL
 #' )
 #' taxaCount <- plyr::count(sortedInputTaxa, "supertaxon")
-#' var1AggregateBy <- "max"
-#' var2AggregateBy <- "mean"
 #' coorthoCOMax <- 999
 #' parseInfoProfile(
-#'     mainLongRaw, sortedInputTaxa, taxaCount, coorthoCOMax,
-#'     var1AggregateBy, var2AggregateBy
+#'     mainLongRaw, sortedInputTaxa, taxaCount, coorthoCOMax
 #' )
 
 parseInfoProfile <- function(
-    inputDf, sortedInputTaxa, taxaCount, coorthoCOMax = 9999,
-    var1AggregateBy = "max", var2AggregateBy = "max"
+    inputDf, sortedInputTaxa, taxaCount, coorthoCOMax = 9999
 ) {
     if (is.null(inputDf) | is.null(sortedInputTaxa))
         stop("Input profiles and sorted taxonomy data cannot be NULL!")
@@ -435,37 +426,12 @@ parseInfoProfile <- function(
     paralogCount <- plyr::count(inputDf, c("geneID", "ncbiID"))
     inputDf <- merge(inputDf, paralogCount, by = c("geneID", "ncbiID"))
     colnames(inputDf)[ncol(inputDf)] <- "paralog"
-    ### filter by number of coorthologs
+    # filter by number of coorthologs
     inputDf <- inputDf[!(inputDf$paralog > coorthoCOMax),]
-    
-    # merge inputDf, mdDataVar2 and sortedInputTaxa to get taxonomy info
+    # merge inputDf and sortedInputTaxa to get taxonomy info
     taxaMdData <- merge(inputDf, sortedInputTaxa, by = "ncbiID")
-    # (3) calculate max/min/mean/median VAR1 for every supertaxon of each gene
-    taxaMdDataNoNA <- taxaMdData[!is.na(taxaMdData$var1), ]
-    mVar1Dt <- stats::aggregate(
-        taxaMdDataNoNA[, "var1"],
-        list(taxaMdDataNoNA$supertaxon, taxaMdDataNoNA$geneID),
-        FUN = var1AggregateBy)
-    colnames(mVar1Dt) <- c("supertaxon", "geneID", "mVar1")
-    # (4) calculate max/min/mean/median VAR2 for each super taxon
-    taxaMdDataNoNAVar2 <- taxaMdData[!is.na(taxaMdData$var2), ]
-    if (nrow(taxaMdDataNoNAVar2) > 0) {
-        mVar2Dt <- stats::aggregate(
-            taxaMdDataNoNAVar2[, "var2"],
-            list(taxaMdDataNoNAVar2$supertaxon, taxaMdDataNoNAVar2$geneID),
-            FUN = var2AggregateBy)
-        colnames(mVar2Dt) <- c("supertaxon", "geneID", "mVar2")
-    } else {
-        mVar2Dt <- taxaMdData[, c("supertaxon", "geneID")]
-        mVar2Dt$mVar2 <- 0
-    }
-    # (3+4) & join mVar2 together with mVar1 scores into one df
-    scoreDf <- merge(mVar1Dt, mVar2Dt, by = c("supertaxon","geneID"), all=TRUE)
-    # add into taxaMdData
-    fullMdData <- Reduce(
-        function(x, y) merge(x, y, by = c("geneID", "supertaxon"), all.x=TRUE),
-        list(taxaMdData, scoreDf))
-    fullMdData <- merge(fullMdData, taxaCount, by = ("supertaxon"), all.x=TRUE)
+    # merge with taxaCount to get number of species
+    fullMdData <- merge(taxaMdData, taxaCount, by = ("supertaxon"), all.x=TRUE)
     names(fullMdData)[names(fullMdData) == "freq"] <- "numberSpec"
     fullMdData$fullName <- as.vector(fullMdData$fullName)
     names(fullMdData)[names(fullMdData) == "orthoID.x"] <- "orthoID"
@@ -482,7 +448,8 @@ parseInfoProfile <- function(
 #' @usage filterProfileData(DF, taxaCount, refTaxon = NULL,
 #'     percentCO = c(0, 1), coorthoCOMax = 9999,
 #'     var1CO  = c(0, 1), var2CO = c(0, 1), var1Rel = "protein",
-#'     var2Rel = "protein", groupByCat = FALSE, catDt = NULL)
+#'     var2Rel = "protein", groupByCat = FALSE, catDt = NULL, 
+#'     var1AggregateBy = "max", var2AggregateBy = "max")
 #' @param DF a reduced dataframe contains info for all phylogenetic
 #' profiles in the selected taxonomy rank.
 #' @param taxaCount dataframe counting present taxa in each supertaxon
@@ -503,6 +470,10 @@ parseInfoProfile <- function(
 #' FALSE.
 #' @param catDt dataframe contains gene categories
 #' (optional, NULL if groupByCat = FALSE or no info provided). Default = NULL.
+#' @param var1AggregateBy aggregate method for VAR1 (max, min, mean
+#' or median), applied for calculating var1 of supertaxa. Default = "max".
+#' @param var2AggregateBy aggregate method for VAR2 (max, min, mean
+#' or median), applied for calculating var2 of supertaxa. Default = "max".
 #' @return A filtered dataframe for generating profile plot including seed gene
 #' IDs (or orthologous group IDs), their ortholog IDs and the corresponding
 #' (super)taxa, (super)taxon IDs, number of co-orthologs in each (super)taxon,
@@ -529,6 +500,8 @@ parseInfoProfile <- function(
 #' var2Relation <- "species"
 #' groupByCat <- FALSE
 #' catDt <- NULL
+#' var1AggregateBy <- "max"
+#' var2AggregateBy <- "max"
 #' taxonIDs <- levels(as.factor(fullProcessedProfile$ncbiID))
 #' sortedInputTaxa <- sortInputTaxa(
 #'     taxonIDs, rankName, refTaxon, NULL
@@ -545,13 +518,16 @@ parseInfoProfile <- function(
 #'     var1Relation,
 #'     var2Relation,
 #'     groupByCat,
-#'     catDt
+#'     catDt,
+#'     var1AggregateBy,
+#'     var2AggregateBy
 #' )
 
 filterProfileData <- function(
     DF, taxaCount, refTaxon = NULL, percentCO = c(0, 1), coorthoCOMax = 9999,
     var1CO = c(0, 1), var2CO = c(0, 1), var1Rel = "protein",
-    var2Rel = "protein", groupByCat = FALSE, catDt = NULL
+    var2Rel = "protein", groupByCat = FALSE, catDt = NULL,
+    var1AggregateBy = "max", var2AggregateBy = "max"
 ) {
     if (is.null(DF)) stop("Profile data cannot be NULL!")
     if (is.null(refTaxon)) refTaxon = "NA"
@@ -597,6 +573,33 @@ filterProfileData <- function(
     DF <- droplevels(DF)  # delete unused levels
     DF$geneID <- as.factor(DF$geneID)
     DF$supertaxon <- as.factor(DF$supertaxon)
+    
+    # calculate max/min/mean/median VAR1 for every supertaxon of each gene
+    DFNoNA <- DF[!is.na(DF$var1), ]
+    mVar1Dt <- stats::aggregate(
+        DFNoNA[, "var1"],
+        list(DFNoNA$supertaxon, DFNoNA$geneID),
+        FUN = var1AggregateBy)
+    colnames(mVar1Dt) <- c("supertaxon", "geneID", "mVar1")
+    # calculate max/min/mean/median VAR2 for each supertaxon
+    DFNoNAVar2 <- DF[!is.na(DF$var2), ]
+    if (nrow(DFNoNAVar2) > 0) {
+        mVar2Dt <- stats::aggregate(
+            DFNoNAVar2[, "var2"],
+            list(DFNoNAVar2$supertaxon, DFNoNAVar2$geneID),
+            FUN = var2AggregateBy)
+        colnames(mVar2Dt) <- c("supertaxon", "geneID", "mVar2")
+    } else {
+        mVar2Dt <- DF[, c("supertaxon", "geneID")]
+        mVar2Dt$mVar2 <- 0
+    }
+    # join mVar2 together with mVar1 scores into one df
+    scoreDf <- merge(mVar1Dt, mVar2Dt, by = c("supertaxon","geneID"), all=TRUE)
+    # add into DF
+    DF <- Reduce(
+        function(x, y) merge(x, y, by = c("geneID", "supertaxon"), all.x=TRUE),
+        list(DF, scoreDf))
+    
     ### add gene categories (if provided)
     if (groupByCat == TRUE) {
         if (is.null(catDt)) {
@@ -611,7 +614,6 @@ filterProfileData <- function(
     }
     return(DF)
 }
-
 
 #' Reduce the filtered profile data into supertaxon level
 #' @description Reduce data of the processed phylogenetic profiles from input
@@ -783,9 +785,7 @@ fromInputToProfile <- function(
     # count present taxa in each supertaxon
     taxaCount <- plyr::count(sortedInputTaxa, "supertaxon")
     # parse info (additional values...) into profile df
-    fullMdData <- parseInfoProfile(
-        inputDf, sortedInputTaxa, taxaCount, var1AggregateBy, var2AggregateBy
-    )
+    fullMdData <- parseInfoProfile(inputDf, sortedInputTaxa, taxaCount)
     # filter profile
     filteredDf <- filterProfileData(
         fullMdData,
@@ -798,7 +798,8 @@ fromInputToProfile <- function(
         var1Relation,
         var2Relation,
         groupByCat = FALSE,
-        catDt = NULL
+        catDt = NULL, 
+        var1AggregateBy, var2AggregateBy
     )
     # reduce profile df into supertaxon level
     dataHeat <- reduceProfile(filteredDf)

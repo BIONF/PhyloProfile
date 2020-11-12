@@ -30,7 +30,7 @@ test_that("test distritbution analyze functions", {
         inputData,
         sortedTaxa,
         taxaCount,
-        999, "max", "mean"
+        999
     )
     selectedGenes <- c("100136at6656", "103479at6656")
     selectedTaxa <- c("Homo sapiens", "Branchiostoma floridae")
