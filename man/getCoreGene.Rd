@@ -6,7 +6,7 @@
 \usage{
 getCoreGene(rankName, taxaCore = c("none"), profileDt, taxaCount,
     var1Cutoff = c(0, 1), var2Cutoff = c(0, 1), percentCutoff = c(0, 1),
-    coreCoverage = 1)
+    coreCoverage = 100)
 }
 \arguments{
 \item{rankName}{working taxonomy rank (e.g. "species", "genus", "family")}
@@ -52,7 +52,7 @@ taxaCount <- plyr::count(sortedInputTaxa, "supertaxon")
 var1Cutoff <- c(0.75, 1.0)
 var2Cutoff <- c(0.75, 1.0)
 percentCutoff <- c(0.0, 1.0)
-coreCoverage <- 1
+coreCoverage <- 100
 getCoreGene(
     rankName,
     taxaCore,

@@ -113,25 +113,38 @@ processNcbiTaxonomy <- function() {
 #' currentNCBIinfo <- as.data.frame(data.table::fread(ncbiFilein))
 #' getTaxonomyInfo(inputTaxa, currentNCBIinfo)
 getTaxonomyInfo <- function(inputTaxa = NULL, currentNCBIinfo = NULL) {
-    inputTaxaInfo <- pbapply::pblapply(
-        seq_len(length(inputTaxa)),
-        function (x) {
-            refID <- inputTaxa[x]
-            # get info for this taxon
-            refEntry <- currentNCBIinfo[currentNCBIinfo$ncbiID == refID, ]
-            lastID <- refEntry$parentID
-            inputTaxaInfo <- refEntry
-            while (lastID != 1) {
+    tmp <- list()
+    outList <- list()
+    k <- 1
+    for (refID in inputTaxa) {
+        # get info for this taxon
+        refEntry <- currentNCBIinfo[currentNCBIinfo$ncbiID == refID, ]
+        lastID <- refEntry$parentID
+        inputTaxaInfo <- refEntry
+        while (lastID != 1) {
+            if (lastID %in% names(tmp)) {
+                inputTaxaInfo <- rbindlist(
+                    list(inputTaxaInfo, tmp[[toString(lastID)]]), 
+                    use.names = TRUE, fill = TRUE, idcol = NULL)
+                lastID = 1
+            } else {
                 nextEntry <- currentNCBIinfo[currentNCBIinfo$ncbiID == lastID, ]
                 inputTaxaInfo <- rbindlist(
                     list(inputTaxaInfo, nextEntry), use.names = TRUE,
                     fill = TRUE, idcol = NULL)
                 lastID <- nextEntry$parentID
             }
-            return(inputTaxaInfo)
         }
-    )
-    return(inputTaxaInfo)
+        for (i in seq(inputTaxaInfo$ncbiID)) {
+            if (!(inputTaxaInfo$ncbiID[i] %in% names(tmp))) {
+                tmp[[toString(inputTaxaInfo$ncbiID[i])]] <-
+                    inputTaxaInfo[i:length(inputTaxaInfo$ncbiID)]
+            }
+        }
+        outList[[k]] <- inputTaxaInfo
+        k <- k + 1
+    }
+    return(outList)
 }
 
 #' Get taxonomy info for a list of taxa
@@ -400,7 +413,10 @@ taxonomyTableCreator <- function(idListFile = NULL, rankListFile = NULL) {
     )
     ### merge into data frame contains all available ranks from input
     mTaxonDfFull <- c(list(fullRankIDdf), mTaxonDf)
-    fullRankIDdf <- Reduce(function (x, y) merge(x,y,all.x = TRUE),mTaxonDfFull)
+    fullRankIDdf <- Reduce(
+        function (x, y) merge(x , y, all.x = TRUE, allow.cartesian = TRUE),
+        mTaxonDfFull
+    )
     ### reorder ranks & replace NA id by id of previous rank
     fullRankIDdf <- fullRankIDdf[order(fullRankIDdf$index),]
     fullRankIDdf <- zoo::na.locf(fullRankIDdf)

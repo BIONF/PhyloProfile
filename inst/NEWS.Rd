@@ -2,6 +2,14 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.4.2}{
+  \itemize{
+    \item Fixed error when parsing large amount of new taxa
+    \item Improved the speed of parsing new taxa
+    \item Apply filter to refspec orthologs when not working with strain/species
+  }
+}
+ 
 \section{Version 1.4.1}{
   \itemize{
     \item Fixed bug data lost after filtering var2

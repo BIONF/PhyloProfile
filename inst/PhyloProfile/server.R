@@ -2621,7 +2621,8 @@ shinyServer(function(input, output, session) {
             that is higher than the one in the input profile (e.g.
             Species), you can also identify a minimal fragtion of species
             that need to have an ortholog in each supertaxon with
-            \"% of present taxa\" cutoff."
+            \"% of present taxa\" cutoff. WARNING: You should set the cutoffs 
+            before selecting taxa of interest!"
         )
 
         if (input$tabs == "Core gene identification") {
