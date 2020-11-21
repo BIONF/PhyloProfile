@@ -361,7 +361,7 @@ calcPresSpec <- function(profileWithTax, taxaCount){
     presSpecDt <- merge(
         presSpecDt, specCount, by = c("geneID", "supertaxon")
     )
-    presSpecDt$presSpec <- presSpecDt$freq / presSpecDt$freq.y
+    presSpecDt$presSpec <- round(presSpecDt$freq / presSpecDt$freq.y, digits=2)
     presSpecDt <- presSpecDt[presSpecDt$presSpec <= 1, ]
     presSpecDt <- presSpecDt[order(presSpecDt$geneID), ]
     presSpecDt <- presSpecDt[, c("geneID", "supertaxon", "presSpec")]
@@ -531,24 +531,47 @@ filterProfileData <- function(
 ) {
     if (is.null(DF)) stop("Profile data cannot be NULL!")
     if (is.null(refTaxon)) refTaxon = "NA"
+    ### check if working with lowest rank (species/strain), e.g. flag == 0
+    flag <- 1
+    if (length(unique(levels(as.factor(DF$numberSpec)))) == 1) {
+        if (unique(levels(as.factor(DF$numberSpec))) == 1) {
+            flag <- 0
+        }
+    }
     ### remove index from supertaxon names
     DF$taxonMod <- gsub("^[[:digit:]]*_", "", DF$supertaxon)
     ### filter by var1 and var2
-    if (var1Rel == "protein") {
-        DF$var1[DF$taxonMod != refTaxon & DF$var1 < var1CO[1]] <- NA
-        DF$var1[DF$taxonMod != refTaxon & DF$var1 > var1CO[2]] <- NA
+    if (flag == 0) {
+        if (var1Rel == "protein") {
+            DF$var1[DF$taxonMod != refTaxon & DF$var1 < var1CO[1]] <- NA
+            DF$var1[DF$taxonMod != refTaxon & DF$var1 > var1CO[2]] <- NA
+        } else {
+            DF$var1[DF$taxonMod != refTaxon & DF$var1 < var1CO[1]] <- 0
+            DF$var1[DF$taxonMod != refTaxon & DF$var1 > var1CO[2]] <- 0
+        }
+        if (var2Rel == "protein") {
+            DF$var2[DF$taxonMod != refTaxon & DF$var2 < var2CO[1]] <- NA
+            DF$var2[DF$taxonMod != refTaxon & DF$var2 > var2CO[2]] <- NA
+        } else {
+            DF$var2[DF$taxonMod != refTaxon & DF$var2 < var2CO[1]] <- 0
+            DF$var2[DF$taxonMod != refTaxon & DF$var2 > var2CO[2]] <- 0
+        }
     } else {
-        DF$var1[DF$taxonMod != refTaxon & DF$var1 < var1CO[1]] <- 0
-        DF$var1[DF$taxonMod != refTaxon & DF$var1 > var1CO[2]] <- 0
+        if (var1Rel == "protein") {
+            DF$var1[DF$var1 < var1CO[1]] <- NA
+            DF$var1[DF$var1 > var1CO[2]] <- NA
+        } else {
+            DF$var1[DF$var1 < var1CO[1]] <- 0
+            DF$var1[DF$var1 > var1CO[2]] <- 0
+        }
+        if (var2Rel == "protein") {
+            DF$var2[DF$var2 < var2CO[1]] <- NA
+            DF$var2[DF$var2 > var2CO[2]] <- NA
+        } else {
+            DF$var2[DF$var2 < var2CO[1]] <- 0
+            DF$var2[DF$var2 > var2CO[2]] <- 0
+        }
     }
-    if (var2Rel == "protein") {
-        DF$var2[DF$taxonMod != refTaxon & DF$var2 < var2CO[1]] <- NA
-        DF$var2[DF$taxonMod != refTaxon & DF$var2 > var2CO[2]] <- NA
-    } else {
-        DF$var2[DF$taxonMod != refTaxon & DF$var2 < var2CO[1]] <- 0
-        DF$var2[DF$taxonMod != refTaxon & DF$var2 > var2CO[2]] <- 0
-    }
-    
     ### calculate % present taxa and filter by percentCO
     DFtmp <- DF[stats::complete.cases(DF), ]
     finalPresSpecDt <- calcPresSpec(DFtmp, taxaCount)
@@ -562,12 +585,6 @@ filterProfileData <- function(
     DF$var2[is.na(DF$orthoID)] <- NA
     
     ### remove paralog count if NOT working with lowest rank (species/strain)
-    flag <- 1
-    if (length(unique(levels(as.factor(DF$numberSpec)))) == 1) {
-        if (unique(levels(as.factor(DF$numberSpec))) == 1) {
-            flag <- 0
-        }
-    }
     if (flag == 1) DF$paralog <- 1
     
     DF <- droplevels(DF)  # delete unused levels

@@ -7,7 +7,7 @@
 #' @export
 #' @usage getCoreGene(rankName, taxaCore = c("none"), profileDt, taxaCount,
 #'     var1Cutoff = c(0, 1), var2Cutoff = c(0, 1), percentCutoff = c(0, 1),
-#'     coreCoverage = 1)
+#'     coreCoverage = 100)
 #' @param rankName working taxonomy rank (e.g. "species", "genus", "family")
 #' @param taxaCore list of selected taxon names
 #' @param profileDt dataframe contains the full processed
@@ -37,7 +37,7 @@
 #' var1Cutoff <- c(0.75, 1.0)
 #' var2Cutoff <- c(0.75, 1.0)
 #' percentCutoff <- c(0.0, 1.0)
-#' coreCoverage <- 1
+#' coreCoverage <- 100
 #' getCoreGene(
 #'     rankName,
 #'     taxaCore,
@@ -50,7 +50,7 @@
 getCoreGene <- function(
     rankName = NULL, taxaCore = c("none"), profileDt = NULL, taxaCount = NULL, 
     var1Cutoff = c(0, 1), var2Cutoff = c(0, 1),
-    percentCutoff = c(0, 1), coreCoverage = 1
+    percentCutoff = c(0, 1), coreCoverage = 100
 ) {
     var1 <- var2 <- 0
     if (is.null(profileDt)) stop("Processed profile cannot be NULL!")
