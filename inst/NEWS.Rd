@@ -2,6 +2,13 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.4.3}{
+   \itemize{
+     \item Plot background for NA orthologs
+     \item Fixed highlight by categories
+  }
+}
+
 \section{Version 1.4.2}{
   \itemize{
     \item Fixed error when parsing large amount of new taxa

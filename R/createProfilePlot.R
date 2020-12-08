@@ -49,8 +49,8 @@ dataMainPlot <- function(dataHeat = NULL){
             as.character(dataHeat$supertaxon), 6 ,
             nchar(as.character(dataHeat$supertaxon))),
         levels = substr(
-            levels(dataHeat$supertaxon), 6,
-            nchar(levels(dataHeat$supertaxon))))
+            levels(as.factor(dataHeat$supertaxon)), 6,
+            nchar(levels(as.factor(dataHeat$supertaxon)))))
     return(dataHeat)
 }
 
@@ -185,14 +185,14 @@ heatmapPlotting <- function(data = NULL, parm = NULL){
             "paraColor" = "#07D000", "xSize" = 8, "ySize" = 8, "legendSize" = 8,
             "mainLegend" = "top", "dotZoom" = 0, "xAngle" = 60, "guideline" = 0,
             "colorByGroup" = FALSE)
-    geneID <- supertaxon <- group <- var1 <- var2 <- presSpec <- paralog <- NULL
+    geneID <- supertaxon <- category <-var1<-var2 <- presSpec <- paralog <- NULL
     xmin <- xmax <- ymin <- ymax <- NULL
     # create heatmap plot with geom_point & scale_color_gradient for present
     # ortho & var1, geom_tile & scale_fill_gradient for var2
     if (parm$xAxis == "genes") p <- ggplot(data,aes(x = geneID, y = supertaxon))
     else p <- ggplot(data, aes(y = geneID, x = supertaxon))
     if (parm$colorByGroup == TRUE) {
-        p <- p + geom_tile(aes(fill = factor(group)), alpha = 0.3)
+        p <- p + geom_tile(aes(fill = factor(category)), alpha = 0.3)
     } else {
         if (length(unique(stats::na.omit(data$var2))) != 1)
             p <- p + scale_fill_gradient(

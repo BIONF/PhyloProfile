@@ -579,10 +579,16 @@ filterProfileData <- function(
         function(x, y) merge(x, y, by = c("geneID", "supertaxon"), all.x=TRUE),
         list(DF, finalPresSpecDt))
     DF$presSpec[DF$presSpec < percentCO[[1]] | DF$presSpec > percentCO[[2]]] <-0
-    DF$orthoID[is.na(DF$var1) | is.na(DF$var2) | DF$presSpec == 0] <- NA
+    DF$orthoID[DF$presSpec == 0] <- NA
+    if (var1Rel == "protein") {
+        DF$orthoID[is.na(DF$var1)] <- NA
+        DF$var1[is.na(DF$orthoID)] <- NA
+    }
+    if (var2Rel == "protein") {
+        DF$orthoID[is.na(DF$var2)] <- NA
+        DF$var2[is.na(DF$orthoID)] <- NA
+    }
     DF$presSpec[is.na(DF$orthoID)] <- 0
-    DF$var1[is.na(DF$orthoID)] <- NA
-    DF$var2[is.na(DF$orthoID)] <- NA
     
     ### remove paralog count if NOT working with lowest rank (species/strain)
     if (flag == 1) DF$paralog <- 1
@@ -628,6 +634,7 @@ filterProfileData <- function(
             geneID = rep(levels(DF$geneID), each = nlevels(DF$supertaxon)))
         dfCat <- merge(dfCat, catDt, by = "geneID")
         DF <- merge(dfCat, DF, by = c("geneID","supertaxon"), all.x = TRUE)
+        DF$category <- DF$group
     }
     return(DF)
 }
@@ -685,7 +692,6 @@ reduceProfile <- function(filteredProfile) {
         superDfExt <- merge(
             superDf, mOrthoID, by = c("geneID", "supertaxon"), all.x = TRUE
         )
-        superDfExt <- superDfExt[!is.na(superDfExt$orthoID), ]
         superDfExt <- superDfExt[, c(
             "geneID", "supertaxon", "supertaxonID",
             "mVar1", "presSpec", "category", "orthoID", "mVar2", "paralog"
