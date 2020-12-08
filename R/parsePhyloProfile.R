@@ -634,6 +634,7 @@ filterProfileData <- function(
             geneID = rep(levels(DF$geneID), each = nlevels(DF$supertaxon)))
         dfCat <- merge(dfCat, catDt, by = "geneID")
         DF <- merge(dfCat, DF, by = c("geneID","supertaxon"), all.x = TRUE)
+        DF$category <- DF$group
     }
     return(DF)
 }

@@ -5,6 +5,7 @@
 \section{Version 1.4.3}{
   \itemize{
     \item Plot background for NA orthologs
+    \item Fixed highlight by categories
   }
 }
 

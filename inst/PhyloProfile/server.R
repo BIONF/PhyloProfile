@@ -1505,11 +1505,13 @@ shinyServer(function(input, output, session) {
                 coorthologCutoffMax <- input$coortholog
                 var1Cutoff <- input$var1
                 var2Cutoff <- input$var2
+                colorByGroup <- input$colorByGroup
             } else {
                 percentCutoff <- isolate(input$percent)
                 coorthologCutoffMax <- isolate(input$coortholog)
                 var1Cutoff <- isolate(input$var1)
                 var2Cutoff <- isolate(input$var2)
+                colorByGroup <- isolate(input$colorByGroup)
             }
             
             # get selected supertaxon name
@@ -1518,14 +1520,14 @@ shinyServer(function(input, output, session) {
             
             # get gene categories
             inputCatDt <- NULL
-            if (input$colorByGroup == TRUE) {
+            if (colorByGroup == TRUE) {
                 # get gene category
                 geneCategoryFile <- input$geneCategory
                 if (!is.null(geneCategoryFile)) {
                     inputCatDt <- read.table(
                         file = geneCategoryFile$datapath,
                         sep = "\t",
-                        header = TRUE,
+                        header = FALSE,
                         check.names = FALSE,
                         comment.char = "",
                         fill = TRUE
@@ -1545,7 +1547,7 @@ shinyServer(function(input, output, session) {
                 var2Cutoff,
                 input$var1Relation,
                 input$var2Relation,
-                groupByCat = input$colorByGroup,
+                groupByCat = colorByGroup,
                 catDt = inputCatDt,
                 var1AggregateBy = input$var1AggregateBy,
                 var2AggregateBy = input$var2AggregateBy
