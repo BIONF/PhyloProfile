@@ -89,6 +89,8 @@ xmlParser <- function(inputFile = NULL){
     species <- xml_find_all(data, ".//species")
     geneSpec <- xml_find_all(species, ".//gene")
     refGeneID <- xml_attr(geneSpec, "id")
+    if (length(geneSpec) == 0) 
+        stop("Unsupported XML format! Please check the file header!")
     if (grepl("protId", geneSpec[1])) {
         orthoID <- as.data.frame(unlist(strsplit(
             xml_attr(geneSpec, "protId"), split = '|', fixed = TRUE
@@ -102,25 +104,36 @@ xmlParser <- function(inputFile = NULL){
         refGeneID = refGeneID, orthoID = orthoID, stringsAsFactors=FALSE)
     # get orthologs and their scores
     orthoGroup <- xml_find_all(data, ".//orthologGroup")
+    groupID <- xml_attr(orthoGroup, "id")
     genes <- xml_find_all(orthoGroup, ".//geneRef")
     refGeneID <- xml_attr(genes, "id")
     score <- xml_find_all(genes, ".//score")
-    scorePair <- lapply(
-        score, function (x) c(xml_attr(x, "id"), xml_attr(x, "value")))
-    scorePair <- as.data.frame(do.call(rbind, scorePair))
-    groupID <- xml_attr(orthoGroup, "id")
-    groupIDrep <- unlist(lapply(
-        orthoGroup,
-        function (x) ncol(scorePair) * length(xml_find_all(x, ".//geneRef")))
-    )
-    orthoDf <- data.frame(
-        geneID = rep(groupID, groupIDrep),
-        refGeneID = rep(refGeneID, each = ncol(scorePair)),
-        scoreType = scorePair$V1, scoreValue = scorePair$V2,
-        stringsAsFactors = FALSE)
-    orthoDf <- data.table::dcast(
-        setDT(orthoDf), geneID + refGeneID ~ scoreType, value.var = "scoreValue"
-    )
+    if (length(score) > 0) {
+        scorePair <- lapply(
+            score, function (x) c(xml_attr(x, "id"), xml_attr(x, "value")))
+        scorePair <- as.data.frame(do.call(rbind, scorePair))
+        groupIDrep <- unlist(lapply(
+            orthoGroup,
+            function (x) ncol(scorePair)*length(xml_find_all(x, ".//geneRef")))
+        )
+        orthoDf <- data.frame(
+            geneID = rep(groupID, groupIDrep),
+            refGeneID = rep(refGeneID, each = ncol(scorePair)),
+            scoreType = scorePair$V1, scoreValue = scorePair$V2,
+            stringsAsFactors = FALSE)
+        orthoDf <- data.table::dcast(
+            setDT(orthoDf), geneID+refGeneID ~ scoreType, value.var="scoreValue"
+        )
+    } else {
+        groupIDrep <- unlist(lapply(
+            orthoGroup,
+            function (x) length(xml_find_all(x, ".//geneRef")))
+        )
+        orthoDf <- data.frame(
+            geneID = rep(groupID, groupIDrep),
+            refGeneID = refGeneID,
+            stringsAsFactors = FALSE)
+    }
     # merge into final dataframe
     finalDf <- merge(speciesDf, orthoDf, all.y = TRUE, by = "refGeneID")
     # remove refGeneID column and reorder columns

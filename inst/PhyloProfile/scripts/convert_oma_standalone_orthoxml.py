@@ -25,7 +25,10 @@ def read_mapping(mapping_file):
 def convert_orthoxml(xml_file,name_to_ncbi):
     for line in open(xml_file):
         line = line
-        if "NCBITaxId=" in line:
+        if "xmlns=" in line:
+            lineTmp = line.replace('xmlns=', 'xmlns:xsi=')
+            print(lineTmp.rstrip())
+        elif "NCBITaxId=" in line:
             try:
                 taxon_name = line.split("name=")[1].split(" NCBI")[0].replace('"','')
                 ncbi_id = name_to_ncbi[taxon_name]
