@@ -2,6 +2,12 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.4.4}{
+  \itemize{
+    \item Fixed orthoxml parsing function
+  }
+}
+
 \section{Version 1.4.3}{
   \itemize{
     \item Plot background for NA orthologs
