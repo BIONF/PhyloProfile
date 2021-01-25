@@ -1302,6 +1302,14 @@ shinyServer(function(input, output, session) {
             
             # remove duplicated lines
             longDataframe <- longDataframe[!duplicated(longDataframe),]
+            # update number of genes to plot based on input
+            if (nlevels(as.factor(longDataframe$geneID)) <= 1500) {
+                updateNumericInput(
+                    session, 
+                    "endIndex", value = nlevels(as.factor(longDataframe$geneID))
+                )
+            }
+            # return 
             return(longDataframe)
         })
     })
@@ -1413,12 +1421,13 @@ shinyServer(function(input, output, session) {
         return(taxaCount)
     })
     
-    # * get subset data (default: first 30 genes) for plotting -----------------
+    # * get subset data for plotting (default 30 genes if > 50 genes) ----------
     preData <- reactive({
         req(v$doPlot)
+        longDataframe <- getMainInput()
+        req(longDataframe)
         # isolate start and end gene index
         input$updateBtn
-        
         if (input$autoUpdate == TRUE) {
             startIndex <- input$stIndex
             endIndex <- input$endIndex
@@ -1426,10 +1435,9 @@ shinyServer(function(input, output, session) {
             startIndex <- isolate(input$stIndex)
             endIndex <- isolate(input$endIndex)
         }
-        if (is.na(endIndex)) endIndex <- 30
         
-        longDataframe <- getMainInput()
-        req(longDataframe)
+        if (is.na(endIndex)) endIndex <- 1000
+
         withProgress(message = 'Subseting data...', value = 0.5, {
             longDataframe <- unsortID(longDataframe, input$ordering)
             listIn <- input$list
@@ -1625,6 +1633,70 @@ shinyServer(function(input, output, session) {
         selectInput("geneHighlight", "Highlight:", out, selected = out[1])
     })
     
+    # * update plot size based on input ----------------------------------------
+    observe({
+        longDataframe <- getMainInput()
+        req(longDataframe)
+        if (input$autoSizing) {
+            inputSuperTaxon <- inputTaxonName()
+            nrTaxa <- nlevels(as.factor(inputSuperTaxon$fullName))
+            nrGene <- input$endIndex
+            # adapte to axis type
+            if (input$xAxis == "taxa") {
+                h <- nrGene
+                w <- nrTaxa
+            } else {
+                w <- nrGene
+                h <- nrTaxa
+            }
+            # adapt to dot zoom factor
+            if (input$dotZoom < -0.5){
+                hv <- (200 + 12 * h) * (1 + input$dotZoom) + 500
+                wv <- (200 + 12 * w) * (1 + input$dotZoom) + 500
+            }  else if ((input$dotZoom < 0)) {
+                hv <- (200 + 12 * h) * (1 + input$dotZoom) + 200
+                wv <- (200 + 12 * w) * (1 + input$dotZoom) + 200
+            } else {
+                hv <- (200 + 12 * h) * (1 + input$dotZoom)
+                wv <- (200 + 12 * w) * (1 + input$dotZoom)
+            }
+            # minimum size
+            if (hv < 300) hv <- 300
+            if (wv < 300) wv <- 300
+            # update plot size based on number of genes/taxa
+            if (h <= 20) {
+                updateSelectInput(
+                    session, "mainLegend",
+                    label = "Legend position:",
+                    choices = list("Right" = "right",
+                                   "Left" = "left",
+                                   "Top" = "top",
+                                   "Bottom" = "bottom",
+                                   "Hide" = "none"),
+                    selected = "top"
+                )
+                updateNumericInput(
+                    session, 
+                    "width", value = wv  + 50
+                )
+            } else if (h <= 30) {
+                updateNumericInput(
+                    session, 
+                    "width", value = wv + 50
+                )
+            } else {
+                updateNumericInput(
+                    session, 
+                    "width", value = wv
+                )
+            }
+            updateNumericInput(
+                session, 
+                "height", value = hv
+            )
+        }
+    })
+    
     # * reset configuration windows of Main plot -------------------------------
     observeEvent(input$resetMainConfig, {
         shinyjs::reset("xSize")
@@ -1811,14 +1883,76 @@ shinyServer(function(input, output, session) {
     })
     outputOptions(output, "sameProfile", suspendWhenHidden = FALSE)
     
-    # * change value of autoUpdateSelected checkbox --------------------------
+    # * update customized plot size based on input -----------------------------
     observe({
-        updateCheckboxInput(
-            session, "autoUpdateSelected", value = input$autoUpdate
-        )
-        shinyjs::disable("autoUpdateSelected")
-        if (input$autoUpdate == TRUE) shinyjs::disable("plotCustom")
-        else shinyjs::enable("plotCustom")
+        longDataframe <- getMainInput()
+        req(longDataframe)
+        req(input$inTaxa)
+        req(input$inSeq)
+        if (input$selectedAutoSizing) {
+            nrTaxa <- length(input$inTaxa)
+            nrGene <- length(input$inSeq)
+            if (input$inTaxa[1] == "all") {
+                inputSuperTaxon <- inputTaxonName()
+                nrTaxa <- nlevels(as.factor(inputSuperTaxon$fullName))
+            }
+            if (input$inSeq[1] == "all") {
+                nrGene <- input$endIndex
+            }
+            # adapte to axis type
+            if (input$xAxisSelected == "taxa") {
+                h <- nrGene
+                w <- nrTaxa
+            } else {
+                w <- nrGene
+                h <- nrTaxa
+            }
+            # adapt to dot zoom factor
+            if (input$dotZoomSelect < -0.5){
+                hv <- (200 + 12 * h) * (1 + input$dotZoomSelect) + 500
+                wv <- (200 + 12 * w) * (1 + input$dotZoomSelect) + 500
+            }  else if ((input$dotZoomSelect < 0)) {
+                hv <- (200 + 12 * h) * (1 + input$dotZoomSelect) + 200
+                wv <- (200 + 12 * w) * (1 + input$dotZoomSelect) + 200
+            } else {
+                hv <- (200 + 12 * h) * (1 + input$dotZoomSelect)
+                wv <- (200 + 12 * w) * (1 + input$dotZoomSelect)
+            }
+            # minimum size
+            if (hv < 300) hv <- 300
+            if (wv < 300) wv <- 300
+            # update plot size based on number of genes/taxa
+            if (h <= 20) {
+                updateSelectInput(
+                    session, "selectedLegend",
+                    label = "Legend position:",
+                    choices = list("Right" = "right",
+                                   "Left" = "left",
+                                   "Top" = "top",
+                                   "Bottom" = "bottom",
+                                   "Hide" = "none"),
+                    selected = "top"
+                )
+                updateNumericInput(
+                    session, 
+                    "selectedWidth", value = wv  + 50
+                )
+            } else if (h <= 30) {
+                updateNumericInput(
+                    session, 
+                    "selectedWidth", value = wv + 50
+                )
+            } else {
+                updateNumericInput(
+                    session, 
+                    "selectedWidth", value = wv
+                )
+            }
+            updateNumericInput(
+                session, 
+                "selectedHeight", value = hv
+            )
+        }
     })
     
     # * reset configuration windows of Customized plot -------------------------

@@ -37,10 +37,16 @@ shinyUI(
                     column(
                         1,
                         createPlotSize("width", "Width (px)", 600),
-                        actionButton("mainPlotConfig", "Appearance")
+                        checkboxInput(
+                            "autoSizing",
+                            strong(em("Auto sizing")),
+                            value = TRUE,
+                            width = NULL
+                        )
                     ),
                     column(
-                        1, createPlotSize("height", "Height (px)", 600)
+                        1, createPlotSize("height", "Height (px)", 600),
+                        actionButton("mainPlotConfig", "Appearance")
                     ),
                     column(
                         2, uiOutput("var1Cutoff.ui")
@@ -90,17 +96,23 @@ shinyUI(
                         checkboxInput(
                             "autoUpdateSelected",
                             strong(em("Auto update plot")),
-                            value = FALSE,
+                            value = TRUE,
                             width = NULL
                         )
                     ),
                     column(
                         1,
                         createPlotSize("selectedWidth", "Width (px)", 600),
-                        actionButton("selectedPlotConfig", "Appearance")
+                        checkboxInput(
+                            "selectedAutoSizing",
+                            strong(em("Auto sizing")),
+                            value = TRUE,
+                            width = NULL
+                        )
                     ),
                     column(
-                        1, createPlotSize("selectedHeight", "Height (px)", 600)
+                        1, createPlotSize("selectedHeight", "Height (px)", 600),
+                        actionButton("selectedPlotConfig", "Appearance")
                     ),
                     column(
                         2, uiOutput("var1Filter.ui")
@@ -501,7 +513,7 @@ shinyUI(
                                 "...to:",
                                 min = 1,
                                 max = 1600,
-                                value = 30,
+                                value = 1000,
                                 width = 100
                             ),
                             style = "padding:0px;"
@@ -614,7 +626,7 @@ shinyUI(
 
                         h5(""),
                         conditionalPanel(
-                            condition = "input.autoUpdate == false",
+                            condition = "input.autoUpdateSelected == false",
                             bsButton(
                                 "plotCustom",
                                 "Update plot",
