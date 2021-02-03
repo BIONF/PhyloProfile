@@ -570,6 +570,7 @@ shinyServer(function(input, output, session) {
 
     # * render filter slidebars for Customized plot ----------------------------
     output$var1Filter.ui <- renderUI({
+        req(input$var1)
         createSliderCutoff(
             "var1cus",
             paste(input$var1ID, "cutoff:"),
@@ -578,6 +579,7 @@ shinyServer(function(input, output, session) {
     })
 
     output$var2Filter.ui <- renderUI({
+        req(input$var2)
         createSliderCutoff(
             "var2cus",
             paste(input$var2ID, "cutoff:"),
@@ -586,6 +588,7 @@ shinyServer(function(input, output, session) {
     })
 
     output$percentFilter.ui <- renderUI({
+        req(input$percent)
         createSliderCutoff(
             "percent2",
             "% of present taxa:",
