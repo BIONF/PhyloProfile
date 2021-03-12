@@ -1384,6 +1384,7 @@ shinyServer(function(input, output, session) {
     
     # * get NAME list of all (super)taxa ---------------------------------------
     inputTaxonName <- reactive({
+        req(input$rankSelect)
         if (is.null(input$mainInput) & input$demoData == "none") return()
         if (length(unkTaxa()) > 0) return()
         if (input$rankSelect == "") return()

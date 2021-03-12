@@ -2,6 +2,12 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.4.8}{
+  \itemize{
+    \item fixed bug filterProfileData (some filtered data could not be plotted)
+  }
+}
+
 \section{Version 1.4.5}{
   \itemize{
     \item Add auto sizing feature
