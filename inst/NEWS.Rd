@@ -2,6 +2,13 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+
+\section{Version 1.4.9}{
+  \itemize{
+    \item fixed bug comparing taxon IDs with max ncbi taxID
+  }
+}
+
 \section{Version 1.4.8}{
   \itemize{
     \item fixed bug filterProfileData (some filtered data could not be plotted)

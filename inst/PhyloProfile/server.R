@@ -844,10 +844,11 @@ shinyServer(function(input, output, session) {
                     }
                     
                     # check for invalid taxon IDs
-                    if (any(unkTaxaId < maxNCBI)) {
+                    if (any(strtoi(unkTaxaId) < strtoi(maxNCBI))) {
                         unkTaxa[
                             unkTaxa$id %in% unkTaxaId 
-                            & unkTaxa$id < maxNCBI,]$Source <- "invalid"
+                            & strtoi(unkTaxa$id) < strtoi(maxNCBI),
+                            ]$Source <- "invalid"
                     }
                     
                     # return list of unkTaxa
