@@ -816,7 +816,7 @@ shinyServer(function(input, output, session) {
                     
                     # get non-ncbi taxa
                     unkTaxa <- data.frame(TaxonID = unkTaxa)
-                    unkTaxa$id <- substring(unkTaxa$TaxonID, 5)
+                    unkTaxa$id <- as.numeric(substring(unkTaxa$TaxonID, 5))
                     unkTaxa$Source <- "ncbi"
                     
                     nameFullFile <- paste0(
@@ -836,12 +836,23 @@ shinyServer(function(input, output, session) {
                     }
                     
                     newTaxaFile <- paste0(getwd(), "/data/newTaxa.txt")
-                    newTaxa <- as.factor(
-                        unlist(fread(file = newTaxaFile, select = 1))
-                    )
+                    newTaxaDf <- fread(file = newTaxaFile, select = 1)
+                    newTaxa <- as.numeric(newTaxaDf$ncbiID)
                     
                     if (nrow(unkTaxa[unkTaxa$id %in% newTaxa,]) > 0) {
                         unkTaxa[unkTaxa$id %in% newTaxa,]$Source <- "new"
+                    }
+                    
+                    # check invalid tax IDs in newTaxa.txt file
+                    if (any(as.numeric(newTaxa) < as.numeric(maxNCBI))) {
+                        invalidNewtaxa <- length(
+                            newTaxa[as.numeric(newTaxa) < as.numeric(maxNCBI)]
+                        )
+                        unkTaxa[nrow(unkTaxa) + 1,] <-
+                            c(
+                                paste(invalidNewtaxa, "IDs in newTaxa.txt"),
+                                as.character(invalidNewtaxa),"invalid"
+                            )
                     }
                     
                     # check for invalid taxon IDs
