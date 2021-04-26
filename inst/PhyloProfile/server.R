@@ -5,6 +5,7 @@ library(PhyloProfile)
 
 #' set size limit for input (9999mb)
 options(
+    scipen = 999,
     shiny.maxRequestSize = 9999 * 1024 ^ 2 # size limit for input 9999mb
 )
 
@@ -844,10 +845,10 @@ shinyServer(function(input, output, session) {
                     }
                     
                     # check for invalid taxon IDs
-                    if (any(strtoi(unkTaxaId) < strtoi(maxNCBI))) {
+                    if (any(as.numeric(unkTaxaId) < as.numeric(maxNCBI))) {
                         unkTaxa[
                             unkTaxa$id %in% unkTaxaId 
-                            & strtoi(unkTaxa$id) < strtoi(maxNCBI),
+                            & as.numeric(unkTaxa$id) < as.numeric(maxNCBI),
                             ]$Source <- "invalid"
                     }
                     
