@@ -4,6 +4,12 @@
 
 \section{Version 1.4.10}{
   \itemize{
+    \item added check for invalid ids in newTaxa file
+  }
+}
+
+\section{Version 1.4.10}{
+  \itemize{
     \item fixed bug comparing unk taxon IDs with max ncbi taxID
   }
 }
