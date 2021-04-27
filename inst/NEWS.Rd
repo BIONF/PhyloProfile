@@ -2,6 +2,12 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.4.12}{
+  \itemize{
+    \item domain plot works with group ID containing pipe
+  }
+}
+
 \section{Version 1.4.11}{
   \itemize{
     \item added check for invalid ids in newTaxa file

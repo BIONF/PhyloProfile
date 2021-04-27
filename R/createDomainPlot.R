@@ -40,6 +40,7 @@ createArchiPlot <- function(
     group <- as.character(info[1])
     ortho <- as.character(info[2])
     # get sub dataframe based on selected groupID and orthoID
+    group <- gsub("\\|", ":", group)
     ortho <- gsub("\\|", ":", ortho)
     grepID <- paste(group, "#", ortho, sep = "")
     subdomainDf <- domainDf[grep(grepID, domainDf$seedID), ]
