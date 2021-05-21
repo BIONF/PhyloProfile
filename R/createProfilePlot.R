@@ -255,8 +255,13 @@ heatmapPlotting <- function(data = NULL, parm = NULL){
                 geom_vline(xintercept = 1.5, colour = "dodgerblue4")
     }
     p <- p + theme_minimal(base_size = 9)
+    vjustValue <- 1
+    if (parm$xAngle == 90) vjustValue <- 0.5
     p <- p + theme(
-        axis.text.x = element_text(angle=parm$xAngle, hjust=1, size=parm$xSize),
+        axis.text.x = element_text(
+            angle = parm$xAngle, hjust = 1, size = parm$xSize, 
+            vjust = vjustValue
+        ),
         axis.text.y = element_text(size = parm$ySize),
         axis.title.x = element_text(size = parm$xSize),
         axis.title.y = element_text(size = parm$ySize),

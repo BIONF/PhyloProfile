@@ -2,6 +2,15 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+
+\section{Version 1.6.1}{
+  \itemize{
+    \item modified taxonomy ranks (ropensci#875)
+    \item improved rank indexing function (ropensci#874)
+    \item improved x-axis label (#116)
+  }
+}
+
 \section{Version 1.4.12}{
   \itemize{
     \item domain plot works with group ID containing pipe
