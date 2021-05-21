@@ -8,11 +8,12 @@
 mainTaxonomyRank <- function() {
     return(
         c(
-            "strain","biotype","isolate","pathogroup","serogroup","serotype",
-            "genotype","morph","forma","subspecies","subvariety","varietas",
-            "formaspecialis","subspecies","species","speciessubgroup",
-            "speciesgroup","series","subgenus","genus","subtribe","tribe",
-            "subfamily","family","superfamily",
+            "isolate","strain","pathogroup","serotype","serogroup",
+            "forma","formaspecialis","varietas",
+            "genotype","morph","subvariety","biotype",
+            "subspecies","species","speciessubgroup",
+            "speciesgroup","series","section","subgenus","genus",
+            "subtribe","tribe", "subfamily","family","superfamily",
             "parvorder","infraorder","suborder","order","superorder",
             "subcohort","cohort","infraclass","subclass","class","superclass",
             "subphylum","phylum","superphylum",
@@ -262,13 +263,13 @@ rankIndexing <- function (rankListFile = NULL) {
         filter <- vapply(
             subList, function(x) x %in% allInputRank, FUN.VALUE = logical(1))
         subList <- subList[filter]
+        
         ## indexing
         tmpEnv <- new.env(hash = TRUE)
         flag <- 0
         for (i in seq_len(length(subList))) {
             iRank <- subList[i]
             if (is.null(rank2index[[iRank]])) {
-                # for new rank: get index of prev avail from this taxon
                 for (j in seq_len(length(subList))) {
                     if (j < i) {
                         if (!is.null(tmpEnv[[subList[i - j]]])) {
@@ -281,29 +282,54 @@ rankIndexing <- function (rankListFile = NULL) {
                 # for old rank
                 if (i > 1) {
                     if (flag == 0) {
+                        if (!(iRank %in% ls(rank2index))) 
+                            stop(paste(iRank,"not found!"))
                         currentIndex <- rank2index[[iRank]]
                     } else {
+                        if (!(iRank %in% ls(tmpEnv))) {
+                            tmpEnv[[iRank]] <- tmpEnv[[subList[i-1]]]
+                        }
                         currentIndex <- tmpEnv[[iRank]]
                     }
+                    
                     if (currentIndex <= tmpEnv[[subList[i-1]]]) {
                         if (flag == 0) {
                             tmpEnv[[iRank]] <- tmpEnv[[subList[i-1]]] + 1
-                            for (
-                                r in 
-                                ls(rank2index)[!(ls(rank2index)%in%ls(tmpEnv))]
-                            ) {
-                                if (rank2index[[r]] > currentIndex) {
-                                    tmpEnv[[r]] <- 
+                            # list of curr ranks whose index should be increased
+                            candidateList <- unlist(
+                                mget(
+                                    ls(rank2index)[
+                                        !(ls(rank2index) %in% ls(tmpEnv))
+                                    ],
+                                    rank2index
+                                )
+                            )
+                            candidateList <- candidateList[
+                                order(unlist(candidateList))
+                            ]
+                            for (c in seq_len(length(candidateList))) {
+                                r <- names(candidateList)[c]
+                                fromIndex <- rank2index[[iRank]]
+                                if(subList[i-1] %in% ls(rank2index)) {
+                                    fromIndex <- rank2index[[subList[i-1]]]
+                                }
+                                
+                                if (rank2index[[r]] > fromIndex) {
+                                    tmpEnv[[r]] <-
                                         rank2index[[r]] + 
                                         (tmpEnv[[iRank]] - rank2index[[iRank]])
                                     flag <- 1
                                 }
                             }
                         } else {
-                            step <- tmpEnv[[subList[i-1]]] - currentIndex + 1
-                            for (n in ls(rank2index)) {
-                                if (rank2index[[n]] >= currentIndex) {
-                                    tmpEnv[[n]] <- rank2index[[n]] + step
+                            step <- tmpEnv[[subList[i-1]]] - 
+                                rank2index[[iRank]] + 1
+                            tmpEnv[[iRank]] <- tmpEnv[[subList[i-1]]] + 1
+                            for (t in ls(tmpEnv)) {
+                                if (tmpEnv[[t]] >= tmpEnv[[subList[i-1]]]){
+                                    if (!(t == iRank) & !(t == subList[i-1])){
+                                        tmpEnv[[t]] <- tmpEnv[[t]] + step
+                                    }
                                 }
                             }
                         }

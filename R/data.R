@@ -48,7 +48,7 @@ NULL
 #' ranks (e.g. strain, This data is used for clustering and then creating a
 #' taxon tree. It is used also for cross-linking between different taxonomy
 #' ranks within a taxon.
-#' @format A data frame with up to 147 columns and 95 rows corresponding to 95
+#' @format A data frame with up to 149 columns and 95 rows corresponding to 95
 #' taxa in the 2 experimental data sets
 #' @usage data(taxonomyMatrix)
 NULL
