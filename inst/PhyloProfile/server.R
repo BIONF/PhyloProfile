@@ -1681,6 +1681,8 @@ shinyServer(function(input, output, session) {
             if (hv < 300) hv <- 300
             if (wv < 300) wv <- 300
             # update plot size based on number of genes/taxa
+            hv <- hv + 300
+            wv <- wv + 300
             if (h <= 20) {
                 updateSelectInput(
                     session, "mainLegend",
@@ -1939,6 +1941,8 @@ shinyServer(function(input, output, session) {
             if (hv < 300) hv <- 300
             if (wv < 300) wv <- 300
             # update plot size based on number of genes/taxa
+            hv <- hv + 300
+            wv <- wv + 300
             if (h <= 20) {
                 updateSelectInput(
                     session, "selectedLegend",
@@ -2186,6 +2190,43 @@ shinyServer(function(input, output, session) {
         detailedText = reactive(input$detailedText),
         detailedHeight = reactive(input$detailedHeight)
     )
+    
+    # * render database links --------------------------------------------------
+    output$dbLink <- renderUI({
+        info <- pointInfoDetail() # info = seedID, orthoID, var1
+        req(info)
+        seqID <- toString(info[2])
+        tmp <- as.list(strsplit(seqID, "\\|")[[1]])
+        linkText <- ""
+        # get taxon ID
+        taxon <- tmp[[2]]
+        taxId <- as.list(strsplit(taxon, "@")[[1]])[[2]]
+        taxUrl <- paste0(
+            "https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=",
+            taxId
+        )
+        linkText <- paste0(
+            "<p><a href='", taxUrl, "' target='_blank'>",
+            "NCBI taxonomy entry for <strong>", taxId , "</strong></a></p>"
+        )
+        # get protein ID
+        protId <- tmp[[3]]
+        uniprotUrl <- paste0("https://www.uniprot.org/uniprot/", protId)
+        ncbiUrl <- paste0("https://www.ncbi.nlm.nih.gov/protein/", protId)
+        if (RCurl::url.exists(uniprotUrl)) {
+            linkText <- paste0(
+                linkText, "<p><a href='", uniprotUrl, "' target='_blank'>",
+                "UniProt entry for <strong>", protId, "</strong></a></p>"
+            )
+        } else if (RCurl::url.exists(ncbiUrl)) {
+            linkText <- paste0(
+                linkText, "<p><a href='", ncbiUrl, "' target='_blank'>",
+                "NCBI protein entry for <strong>", protId, "</strong></a></p>"
+            )
+        }
+        # render links
+        HTML(linkText)
+    })
     
     # * render FASTA sequence --------------------------------------------------
     output$fasta <- renderText({

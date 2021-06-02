@@ -2,6 +2,12 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.6.2}{
+  \itemize{
+    \item increase default font size for profile and domain plot
+    \item make links to DBs: ncbi taxonomy, ncbi protein, uniprot, pfam, smart
+  }
+}
 
 \section{Version 1.6.1}{
   \itemize{

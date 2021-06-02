@@ -7,6 +7,7 @@
 #' @import energy
 #' @import ExperimentHub
 #' @import shinyBS
+#' @rawNamespace import(RCurl, except = reset)
 #' @rawNamespace import(shinyjs, except = colourInput)
 #' @examples
 #' ?runPhyloProfile
