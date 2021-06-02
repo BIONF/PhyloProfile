@@ -1165,7 +1165,10 @@ shinyUI(
             uiOutput("checkDomainFiles"),
             br(),
             h4("Sequence:"),
-            verbatimTextOutput("fasta")
+            verbatimTextOutput("fasta"),
+            br(),
+            h4("Links:"),
+            uiOutput("dbLink")
         ),
 
         # * popup for plotting domain architecture plot ------------------------
@@ -1183,11 +1186,11 @@ shinyUI(
                 ),
                 column(
                     2,
-                    createTextSize("titleArchiSize", "Title size(px)", 11, 150)
+                    createTextSize("titleArchiSize", "Title size(px)", 14, 150)
                 ),
                 column(
                     2,
-                    createTextSize("labelArchiSize", "SeqID size(px)", 11, 150)
+                    createTextSize("labelArchiSize","Domain ID size(px)",12,150)
                 )
             ),
             uiOutput("test.ui"),
@@ -1306,10 +1309,10 @@ shinyUI(
             "mainPlotConfig",
             size = "small",
             column(
-                6, createTextSize("xSize", "X-axis label size (px)", 8, 100)
+                6, createTextSize("xSize", "X-axis label size (px)", 14, 100)
             ),
             column(
-                6, createTextSize("ySize", "Y-axis label size (px)", 8, 100)
+                6, createTextSize("ySize", "Y-axis label size (px)", 14, 100)
             ),
             column(
                 6,
@@ -1373,11 +1376,11 @@ shinyUI(
             size = "small",
             column(
                 6,
-                createTextSize("xSizeSelect", "X-axis label size (px)", 8, 100)
+                createTextSize("xSizeSelect", "X-axis label size (px)", 14, 100)
             ),
             column(
                 6,
-                createTextSize("ySizeSelect", "Y-axis label size (px)", 8, 100)
+                createTextSize("ySizeSelect", "Y-axis label size (px)", 14, 100)
             ),
 
             column(

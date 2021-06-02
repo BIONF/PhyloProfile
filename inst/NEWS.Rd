@@ -2,13 +2,20 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.6.2}{
+  \itemize{
+    \item increase default font size for profile and domain plot
+    \item make links to DBs: ncbi taxonomy, ncbi protein, uniprot, pfam, smart
+  }
+}
+
 \section{Version 1.6.1}{
-   \itemize{
-     \item modified taxonomy ranks (ropensci#875)
-     \item improved rank indexing function (ropensci#874)
-     \item improved x-axis label (#116)
-   }
- }
+  \itemize{
+    \item modified taxonomy ranks (ropensci#875)
+    \item improved rank indexing function (ropensci#874)
+    \item improved x-axis label (#116)
+  }
+}
 
 \section{Version 1.4.12}{
   \itemize{

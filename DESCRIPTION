@@ -1,6 +1,6 @@
 Package: PhyloProfile
-Version: 1.7.1
-Date: 2021-05-21
+Version: 1.7.2
+Date: 2021-06-02
 Title: PhyloProfile
 Authors@R: c(
     person("Vinh", "Tran", role = c("aut", "cre"), email = "tran@bio.uni-frankfurt.de"),
@@ -16,8 +16,8 @@ Encoding: UTF-8
 biocViews: Software, Visualization, DataRepresentation, MultipleComparison, FunctionalPrediction
 Imports:
     ape, bioDist, BiocStyle, Biostrings, colourpicker, data.table, DT, energy, 
-    ExperimentHub, ggplot2, gridExtra, pbapply, RColorBrewer, shiny, shinyBS, 
-    shinyjs, OmaDB, plyr, xml2, zoo
+    ExperimentHub, ggplot2, gridExtra, pbapply, RColorBrewer, RCurl,
+    shiny, shinyBS, shinyjs, OmaDB, plyr, xml2, zoo
 RoxygenNote: 7.1.1
 Suggests: knitr, rmarkdown, testthat
 VignetteBuilder: knitr

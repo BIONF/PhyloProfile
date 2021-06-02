@@ -20,7 +20,11 @@ createArchitecturePlotUI <- function(id) {
             tags$style(HTML(
                 ".butDL{background-color:#476ba3;} .butDL{color: white;}"))
         ),
-        textOutput(ns("selectedDomain"))
+        br(),
+        br(),
+        h4(strong("LINKS TO ONLINE DATABASE")),
+        textOutput(ns("selectedDomain")),
+        tableOutput(ns("domainTable"))
     )
 }
 
@@ -82,10 +86,17 @@ createArchitecturePlot <- function(
         }
     )
 
-    output$selectedDomain <- renderText({
-        if (is.null(input$archiClick$y)) return("No domain selected!")
-        convertY(unit(input$archiClick$y, "npc"), "native")
-    })
+    # output$selectedDomain <- renderText({
+    #     if (is.null(input$archiClick$y)) return("No domain selected!")
+    #     y <- input$archiClick$y
+    #     # paste(y, round(y), convertY(unit(y, "npc"), "px"))
+    #     
+    # })
+    
+    output$domainTable <- renderTable({
+        features <- getDomainLink(pointInfo(), domainInfo())
+        features
+    }, sanitize.text.function = function(x) x)
 }
 
 #' plot error message
@@ -116,3 +127,46 @@ msgPlot <- function() {
         ylim(0,1)
     return(g)
 }
+
+
+getDomainLink <- function(info, domainDf){
+    group <- as.character(info[1])
+    ortho <- as.character(info[2])
+    # get sub dataframe based on selected groupID and orthoID
+    group <- gsub("\\|", ":", group)
+    ortho <- gsub("\\|", ":", ortho)
+    grepID <- paste(group, "#", ortho, sep = "")
+    subdomainDf <- domainDf[grep(grepID, domainDf$seedID), ]
+    subdomainDf$feature <- as.character(subdomainDf$feature)
+    orthoID <- NULL
+    feature <- NULL
+    if (nrow(subdomainDf) < 1) return(paste0("No domain info available!"))
+    else {
+        # ortho & seed domains df
+        orthoDf <- subdomainDf[subdomainDf$orthoID == ortho,]
+        seedDf <- subdomainDf[subdomainDf$orthoID != ortho,]
+        feature <- c(
+            levels(as.factor(orthoDf$feature)), 
+            levels(as.factor(seedDf$feature))
+        )
+    }
+    # get URL
+    feature <- unique(feature[grep("pfam|smart", feature)])
+    feature <- sub("_","@", feature)
+    tmpDf <- data.frame(
+        do.call('cbind', data.table::tstrsplit(as.character(feature), '@', fixed = TRUE))
+    )
+    featDf <- data.frame("ID" = levels(as.factor(tmpDf$X2)))
+    featDf$PFAM <- paste0(
+        "<a href='https://pfam.xfam.org/family/", featDf$ID, 
+        "' target='_blank'>", featDf$ID, "</a>"
+    )
+    featDf$SMART <- paste0(
+        "<a href='http://smart.embl-heidelberg.de/smart/", 
+        "do_annotation.pl?BLAST=DUMMY&DOMAIN=", 
+        featDf$ID, "' target='_blank'>",
+        featDf$ID, "</a>"
+    )
+    return(featDf)
+}
+
