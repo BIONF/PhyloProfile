@@ -24,7 +24,17 @@ createArchitecturePlotUI <- function(id) {
         br(),
         h4(strong("LINKS TO ONLINE DATABASE")),
         textOutput(ns("selectedDomain")),
-        tableOutput(ns("domainTable"))
+        tableOutput(ns("domainTable")),
+        HTML(
+            paste0(
+                "<p><em><strong>Disclaimer:</strong> ",
+                "External links are automatically generated and may point to ",
+                "a wrong target (see <a ",
+                "href=\"https://github.com/BIONF/PhyloProfile/wiki/FAQ",
+                "#wrong-info-from-public-databases\" ",
+                "target=\"_blank\">FAQ</a>)</em></p>"
+            )
+        )
     )
 }
 
