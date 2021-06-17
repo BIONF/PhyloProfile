@@ -2225,13 +2225,14 @@ shinyServer(function(input, output, session) {
             )
         }
         # render links
-        linkText <- paste(
+        linkText <- paste0(
             linkText,
-            "<p><em><strong>WARNING:</strong>",
-            " Please be aware of the correctness of the above links. The",
-            "addresses were automatically generated, we cannot guarantee ",
-            "their content!",
-            "</em></p>"
+            "<p><em><strong>Disclaimer:</strong> ",
+            "External links are automatically generated and may point to ",
+            "a wrong target (see <a ",
+            "href=\"https://github.com/BIONF/PhyloProfile/wiki/FAQ",
+            "#wrong-info-from-public-databases\" ",
+            "target=\"_blank\">FAQ</a>)</em></p>"
         )
         HTML(linkText)
     })
