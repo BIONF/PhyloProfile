@@ -139,7 +139,7 @@ shinyUI(
 
         # MAIN NARVARPAGE TABS -------------------------------------------------
         navbarPage(
-            em(strong("PhyloProfile v1.6.4")),
+            em(strong("PhyloProfile v1.6.5")),
             id = "tabs",
             collapsible = TRUE,
             inverse = TRUE,
@@ -1206,12 +1206,25 @@ shinyUI(
             colourpicker::colourInput(
                 "lowColorVar1",
                 "Low variable 1 (dot)",
-                value = "darkorange"
+                value = "#FF8C00"
+            ),
+            colourpicker::colourInput(
+                "midColorVar1",
+                "Mid variable 1 (dot)",
+                value = "#40ABCF"
             ),
             colourpicker::colourInput(
                 "highColorVar1",
                 "High variable 1 (dot)",
-                value = "steelblue"
+                value = "#164294"
+            ),
+            numericInput(
+                "midVar1",
+                "Mitpoint varriable 1",
+                min = 0,
+                max = 1,
+                step = 0.01,
+                value = 0.5
             ),
             actionButton(
                 "defaultColorVar1",
@@ -1222,12 +1235,25 @@ shinyUI(
             colourpicker::colourInput(
                 "lowColorVar2",
                 "Low variable 2 (background)",
-                value = "grey95"
+                value = "#CC8D8D"
+            ),
+            colourpicker::colourInput(
+                "midColorVar2",
+                "Mid variable 2 (background)",
+                value = "#FFFFFF"
             ),
             colourpicker::colourInput(
                 "highColorVar2",
                 "High variable 2 (background)",
-                value = "khaki"
+                value = "#616587"
+            ),
+            numericInput(
+                "midVar2",
+                "Mitpoint varriable 2",
+                min = 0,
+                max = 1,
+                step = 0.01,
+                value = 1
             ),
             actionButton(
                 "defaultColorVar2",

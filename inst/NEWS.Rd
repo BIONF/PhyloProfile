@@ -2,6 +2,13 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.6.5}{
+  \itemize{
+    \item fixed filter for "species relation"
+    \item added midpoint colors
+  }
+}
+
 \section{Version 1.6.2}{
   \itemize{
     \item increase default font size for profile and domain plot
