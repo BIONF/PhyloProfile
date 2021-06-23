@@ -589,8 +589,10 @@ filterProfileData <- function(
         DF$var2[is.na(DF$orthoID)] <- NA
     }
     DF$presSpec[is.na(DF$orthoID)] <- 0
-    DF$var1[DF$presSpec == 0] <- NA
-    DF$var2[DF$presSpec == 0] <- NA
+    if (var1Rel == "protein")
+        DF$var1[DF$presSpec == 0] <- NA
+    if (var2Rel == "protein")
+        DF$var2[DF$presSpec == 0] <- NA
     
     ### remove paralog count if NOT working with lowest rank (species/strain)
     if (flag == 1) DF$paralog <- 1
@@ -638,7 +640,7 @@ filterProfileData <- function(
         DF <- merge(dfCat, DF, by = c("geneID","supertaxon"), all.x = TRUE)
         DF$category <- DF$group
     }
-    return(DF[!is.na(DF$orthoID),])
+    return(DF)
 }
 
 #' Reduce the filtered profile data into supertaxon level
