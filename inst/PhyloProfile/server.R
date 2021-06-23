@@ -408,12 +408,16 @@ shinyServer(function(input, output, session) {
     # * reset profile plot colors ----------------------------------------------
     observeEvent(input$defaultColorVar2, {
         shinyjs::reset("lowColorVar2")
+        shinyjs::reset("midColorVar2")
         shinyjs::reset("highColorVar2")
+        shinyjs::reset("midVar2")
     })
 
     observeEvent(input$defaultColorVar1, {
         shinyjs::reset("lowColorVar1")
+        shinyjs::reset("midColorVar1")
         shinyjs::reset("highColorVar1")
+        shinyjs::reset("midVar1")
     })
 
     observeEvent(input$defaultColorPara, {
@@ -1738,9 +1742,13 @@ shinyServer(function(input, output, session) {
                 "xAxis" = input$xAxis,
                 "var1ID" = input$var1ID,
                 "var2ID"  = input$var2ID,
+                "midVar1" = input$midVar1,
+                "midVar2" = input$midVar2,
                 "lowColorVar1" =  input$lowColorVar1,
+                "midColorVar1" =  input$midColorVar1,
                 "highColorVar1" = input$highColorVar1,
                 "lowColorVar2" = input$lowColorVar2,
+                "midColorVar2" =  input$midColorVar2,
                 "highColorVar2" = input$highColorVar2,
                 "paraColor" = input$paraColor,
                 "xSize" = input$xSize,
@@ -1760,9 +1768,13 @@ shinyServer(function(input, output, session) {
                     "xAxis" = input$xAxis,
                     "var1ID" = input$var1ID,
                     "var2ID"  = input$var2ID,
+                    "midVar1" = input$midVar1,
+                    "midVar2" = input$midVar2,
                     "lowColorVar1" =  input$lowColorVar1,
+                    "midColorVar1" =  input$midColorVar1,
                     "highColorVar1" = input$highColorVar1,
                     "lowColorVar2" = input$lowColorVar2,
+                    "midColorVar2" =  input$midColorVar2,
                     "highColorVar2" = input$highColorVar2,
                     "paraColor" = input$paraColor,
                     "xSize" = input$xSize,
@@ -1998,9 +2010,13 @@ shinyServer(function(input, output, session) {
                 "xAxis" = input$xAxisSelected,
                 "var1ID" = input$var1ID,
                 "var2ID"  = input$var2ID,
+                "midVar1" = input$midVar1,
+                "midVar2" = input$midVar2,
                 "lowColorVar1" =  input$lowColorVar1,
+                "midColorVar1" =  input$midColorVar1,
                 "highColorVar1" = input$highColorVar1,
                 "lowColorVar2" = input$lowColorVar2,
+                "midColorVar2" =  input$midColorVar2,
                 "highColorVar2" = input$highColorVar2,
                 "paraColor" = input$paraColor,
                 "xSize" = input$xSizeSelect,
@@ -2020,9 +2036,13 @@ shinyServer(function(input, output, session) {
                     "xAxis" = input$xAxisSelected,
                     "var1ID" = input$var1ID,
                     "var2ID"  = input$var2ID,
+                    "midVar1" = input$midVar1,
+                    "midVar2" = input$midVar2,
                     "lowColorVar1" =  input$lowColorVar1,
+                    "midColorVar1" =  input$midColorVar1,
                     "highColorVar1" = input$highColorVar1,
                     "lowColorVar2" = input$lowColorVar2,
+                    "midColorVar2" =  input$midColorVar2,
                     "highColorVar2" = input$highColorVar2,
                     "paraColor" = input$paraColor,
                     "xSize" = input$xSizeSelect,

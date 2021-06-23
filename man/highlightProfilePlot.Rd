@@ -13,15 +13,17 @@ full or subset profiles)}
 
 \item{plotParameter}{plot parameters, including (1) type of x-axis "taxa" or
 "genes" - default = "taxa"; (2+3) names of 2 variables var1ID and var2ID -
-default = "var1" & "var2"; (4) color for lowest var1 - default = "#FF8C00";
-(5) color for highest var1 - default = "#4682B4"; (6) color for lowest var2 -
-default = "#FFFFFF", (7) color for highest var2 - default = "#F0E68C", (8)
-color of co-orthologs - default = "#07D000"; (9+10+11) text sizes for x, y
-axis and legend - default = 9 for each; (12) legend position "top", "bottom",
-"right", "left" or "none" - default = "top"; (13) zoom ratio of the
-co-ortholog dots from -1 to 3 - default = 0; (14) angle of x-axis from 0 to
-90 - default = 60; (14) show/hide separate line for reference taxon 1/0 -
-default = 0; (15) enable/disable coloring gene categories TRUE/FALSE -
+default = "var1" & "var2"; (4+5) mid value and color for mid value of var1 -
+default is 0.5 and #FFFFFF; (6) color for lowest var1 - default = "#FF8C00";
+(7) color for highest var1 - default = "#4682B4"; (8+9) mid value and color 
+for mid value of var2 - default is 1 and #FFFFFF;(10) color for lowest var2 -
+default = "#FFFFFF", (11) color for highest var2 - default = "#F0E68C", (12)
+color of co-orthologs - default = "#07D000"; (13+14+15) text sizes for x, y
+axis and legend - default = 9 for each; (16) legend position "top", "bottom",
+"right", "left" or "none" - default = "top"; (17) zoom ratio of the
+co-ortholog dots from -1 to 3 - default = 0; (18) angle of x-axis from 0 to
+90 - default = 60; (19) show/hide separate line for reference taxon 1/0 -
+default = 0; (20) enable/disable coloring gene categories TRUE/FALSE -
 default = FALSE). NOTE: Leave blank or NULL to use default values.}
 
 \item{taxonHighlight}{taxon of interst. Default = "none".}
@@ -44,10 +46,14 @@ plotParameter <- list(
     "xAxis" = "taxa",
     "var1ID" = "FAS_FW",
     "var2ID"  = "FAS_BW",
+    "midVar1" = 0.5,
+    "midColorVar1" =  "#FFFFFF",
     "lowColorVar1" =  "#FF8C00",
     "highColorVar1" = "#4682B4",
-    "lowColorVar2" = "#FFFFFF",
-    "highColorVar2" = "#F0E68C",
+    "midVar2" = 1,
+    "midColorVar2" =  "#FFFFFF",
+    "lowColorVar2" = "#CB4C4E",
+    "highColorVar2" = "#3E436F",
     "paraColor" = "#07D000",
     "xSize" = 8,
     "ySize" = 8,

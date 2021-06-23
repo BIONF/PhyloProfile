@@ -137,15 +137,17 @@ dataCustomizedPlot <- function(
 #' full or subset profiles)
 #' @param parm plot parameters, including (1) type of x-axis "taxa" or
 #' "genes" - default = "taxa"; (2+3) names of 2 variables var1ID and var2ID -
-#' default = "var1" & "var2"; (4) color for lowest var1 - default = "#FF8C00";
-#' (5) color for highest var1 - default = "#4682B4"; (6) color for lowest var2 -
-#' default = "#FFFFFF", (7) color for highest var2 - default = "#F0E68C", (8)
-#' color of co-orthologs - default = "#07D000"; (9+10+11) text sizes for x, y
-#' axis and legend - default = 9 for each; (12) legend position "top", "bottom",
-#' "right", "left" or "none" - default = "top"; (13) zoom ratio of the
-#' co-ortholog dots from -1 to 3 - default = 0; (14) angle of x-axis from 0 to
-#' 90 - default = 60; (14) show/hide separate line for reference taxon 1/0 -
-#' default = 0; (15) enable/disable coloring gene categories TRUE/FALSE -
+#' default = "var1" & "var2"; (4+5) mid value and color for mid value of var1 -
+#' default is 0.5 and #FFFFFF; (6) color for lowest var1 - default = "#FF8C00";
+#' (7) color for highest var1 - default = "#4682B4"; (8+9) mid value and color 
+#' for mid value of var2 - default is 1 and #FFFFFF;(10) color for lowest var2 -
+#' default = "#FFFFFF", (11) color for highest var2 - default = "#F0E68C", (12)
+#' color of co-orthologs - default = "#07D000"; (13+14+15) text sizes for x, y
+#' axis and legend - default = 9 for each; (16) legend position "top", "bottom",
+#' "right", "left" or "none" - default = "top"; (17) zoom ratio of the
+#' co-ortholog dots from -1 to 3 - default = 0; (18) angle of x-axis from 0 to
+#' 90 - default = 60; (19) show/hide separate line for reference taxon 1/0 -
+#' default = 0; (20) enable/disable coloring gene categories TRUE/FALSE -
 #' default = FALSE). NOTE: Leave blank or NULL to use default values.
 #' @return A profile heatmap plot as a ggplot object.
 #' @import ggplot2
@@ -158,10 +160,14 @@ dataCustomizedPlot <- function(
 #'     "xAxis" = "taxa",
 #'     "var1ID" = "FAS_FW",
 #'     "var2ID"  = "FAS_BW",
+#'     "midVar1" = 0.5,
+#'     "midColorVar1" =  "#FFFFFF",
 #'     "lowColorVar1" =  "#FF8C00",
 #'     "highColorVar1" = "#4682B4",
-#'     "lowColorVar2" = "#FFFFFF",
-#'     "highColorVar2" = "#F0E68C",
+#'     "midVar2" = 1,
+#'     "midColorVar2" =  "#FFFFFF",
+#'     "lowColorVar2" = "#CB4C4E",
+#'     "highColorVar2" = "#3E436F",
 #'     "paraColor" = "#07D000",
 #'     "xSize" = 8,
 #'     "ySize" = 8,
@@ -180,8 +186,10 @@ heatmapPlotting <- function(data = NULL, parm = NULL){
     if (is.null(parm))
         parm <- list(
             "xAxis" = "taxa", "var1ID" = "var1", "var2ID"  = "var2",
+            "midVar1" = 0.5, "midColorVar1" =  "#FFFFFF",
             "lowColorVar1" =  "#FF8C00", "highColorVar1" = "#4682B4",
-            "lowColorVar2" = "#FFFFFF", "highColorVar2" = "#F0E68C",
+            "midVar2" = 1, "midColorVar2" =  "#FFFFFF",
+            "lowColorVar2" = "#CB4C4E", "highColorVar2" = "#3E436F",
             "paraColor" = "#07D000", "xSize" = 8, "ySize" = 8, "legendSize" = 8,
             "mainLegend" = "top", "dotZoom" = 0, "xAngle" = 60, "guideline" = 0,
             "colorByGroup" = FALSE)
@@ -195,29 +203,38 @@ heatmapPlotting <- function(data = NULL, parm = NULL){
         p <- p + geom_tile(aes(fill = factor(category)), alpha = 0.3)
     } else {
         if (length(unique(stats::na.omit(data$var2))) != 1)
-            p <- p + scale_fill_gradient(
+            p <- p + scale_fill_gradient2(
                 low = parm$lowColorVar2, high = parm$highColorVar2,
+                mid = parm$midColorVar2, midpoint = parm$midVar2,
                 na.value = "gray95", limits = c(0, 1)) +
                 geom_tile(aes(fill = var2))
     }
     if (length(unique(stats::na.omit(data$presSpec))) < 3) {
         if (length(unique(stats::na.omit(data$var1))) == 1) {
-            p <- p + geom_point(aes(colour = var1), na.rm = TRUE,
-                size = data$presSpec*5*(1+parm$dotZoom), show.legend = FALSE)
+            p <- p + geom_point(
+                aes(colour = var1), na.rm = TRUE,
+                size = data$presSpec*5*(1+parm$dotZoom), show.legend = FALSE
+            )
         } else
             p <- p +
                 geom_point(
                     aes(colour = var1), na.rm = TRUE,
                     size = data$presSpec * 5 * (1 + parm$dotZoom)) +
-                scale_color_gradient(
-                    low=parm$lowColorVar1,high=parm$highColorVar1,limits=c(0,1))
+                scale_color_gradient2(
+                    low = parm$lowColorVar1, high = parm$highColorVar1,
+                    mid = parm$midColorVar1, midpoint = parm$midVar1,
+                    limits = c(0,1)
+                )
     } else {
         if (length(unique(stats::na.omit(data$var1))) == 1) {
             p <- p + geom_point(aes(size=presSpec),color="#336a98",na.rm = TRUE)
         } else
             p <- p + geom_point(aes(colour=var1, size = presSpec),na.rm = TRUE)+
-                scale_color_gradient(
-                    low=parm$lowColorVar1,high=parm$highColorVar1,limits=c(0,1))
+                scale_color_gradient2(
+                    low = parm$lowColorVar1, high = parm$highColorVar1,
+                    mid = parm$midColorVar1, midpoint = parm$midVar1,
+                    limits = c(0,1)
+                )
     }
     # plot inparalogs (if available)
     if (length(unique(stats::na.omit(data$paralog))) > 0) {
@@ -279,15 +296,17 @@ heatmapPlotting <- function(data = NULL, parm = NULL){
 #' full or subset profiles)
 #' @param plotParameter plot parameters, including (1) type of x-axis "taxa" or
 #' "genes" - default = "taxa"; (2+3) names of 2 variables var1ID and var2ID -
-#' default = "var1" & "var2"; (4) color for lowest var1 - default = "#FF8C00";
-#' (5) color for highest var1 - default = "#4682B4"; (6) color for lowest var2 -
-#' default = "#FFFFFF", (7) color for highest var2 - default = "#F0E68C", (8)
-#' color of co-orthologs - default = "#07D000"; (9+10+11) text sizes for x, y
-#' axis and legend - default = 9 for each; (12) legend position "top", "bottom",
-#' "right", "left" or "none" - default = "top"; (13) zoom ratio of the
-#' co-ortholog dots from -1 to 3 - default = 0; (14) angle of x-axis from 0 to
-#' 90 - default = 60; (14) show/hide separate line for reference taxon 1/0 -
-#' default = 0; (15) enable/disable coloring gene categories TRUE/FALSE -
+#' default = "var1" & "var2"; (4+5) mid value and color for mid value of var1 -
+#' default is 0.5 and #FFFFFF; (6) color for lowest var1 - default = "#FF8C00";
+#' (7) color for highest var1 - default = "#4682B4"; (8+9) mid value and color 
+#' for mid value of var2 - default is 1 and #FFFFFF;(10) color for lowest var2 -
+#' default = "#FFFFFF", (11) color for highest var2 - default = "#F0E68C", (12)
+#' color of co-orthologs - default = "#07D000"; (13+14+15) text sizes for x, y
+#' axis and legend - default = 9 for each; (16) legend position "top", "bottom",
+#' "right", "left" or "none" - default = "top"; (17) zoom ratio of the
+#' co-ortholog dots from -1 to 3 - default = 0; (18) angle of x-axis from 0 to
+#' 90 - default = 60; (19) show/hide separate line for reference taxon 1/0 -
+#' default = 0; (20) enable/disable coloring gene categories TRUE/FALSE -
 #' default = FALSE). NOTE: Leave blank or NULL to use default values.
 #' @param taxonHighlight taxon of interst. Default = "none".
 #' @param rankName working taxonomy rank (needed only for highlight taxon).
@@ -303,10 +322,14 @@ heatmapPlotting <- function(data = NULL, parm = NULL){
 #'     "xAxis" = "taxa",
 #'     "var1ID" = "FAS_FW",
 #'     "var2ID"  = "FAS_BW",
+#'     "midVar1" = 0.5,
+#'     "midColorVar1" =  "#FFFFFF",
 #'     "lowColorVar1" =  "#FF8C00",
 #'     "highColorVar1" = "#4682B4",
-#'     "lowColorVar2" = "#FFFFFF",
-#'     "highColorVar2" = "#F0E68C",
+#'     "midVar2" = 1,
+#'     "midColorVar2" =  "#FFFFFF",
+#'     "lowColorVar2" = "#CB4C4E",
+#'     "highColorVar2" = "#3E436F",
 #'     "paraColor" = "#07D000",
 #'     "xSize" = 8,
 #'     "ySize" = 8,
