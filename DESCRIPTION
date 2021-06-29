@@ -1,6 +1,6 @@
 Package: PhyloProfile
-Version: 1.6.5
-Date: 2021-06-23
+Version: 1.6.6
+Date: 2021-06-29
 Title: PhyloProfile
 Authors@R: c(
     person("Vinh", "Tran", role = c("aut", "cre"), email = "tran@bio.uni-frankfurt.de"),

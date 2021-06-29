@@ -1662,61 +1662,63 @@ shinyServer(function(input, output, session) {
             inputSuperTaxon <- inputTaxonName()
             nrTaxa <- nlevels(as.factor(inputSuperTaxon$fullName))
             nrGene <- input$endIndex
-            # adapte to axis type
-            if (input$xAxis == "taxa") {
-                h <- nrGene
-                w <- nrTaxa
-            } else {
-                w <- nrGene
-                h <- nrTaxa
-            }
-            # adapt to dot zoom factor
-            if (input$dotZoom < -0.5){
-                hv <- (200 + 12 * h) * (1 + input$dotZoom) + 500
-                wv <- (200 + 12 * w) * (1 + input$dotZoom) + 500
-            }  else if ((input$dotZoom < 0)) {
-                hv <- (200 + 12 * h) * (1 + input$dotZoom) + 200
-                wv <- (200 + 12 * w) * (1 + input$dotZoom) + 200
-            } else {
-                hv <- (200 + 12 * h) * (1 + input$dotZoom)
-                wv <- (200 + 12 * w) * (1 + input$dotZoom)
-            }
-            # minimum size
-            if (hv < 300) hv <- 300
-            if (wv < 300) wv <- 300
-            # update plot size based on number of genes/taxa
-            hv <- hv + 300
-            wv <- wv + 300
-            if (h <= 20) {
-                updateSelectInput(
-                    session, "mainLegend",
-                    label = "Legend position:",
-                    choices = list("Right" = "right",
-                                   "Left" = "left",
-                                   "Top" = "top",
-                                   "Bottom" = "bottom",
-                                   "Hide" = "none"),
-                    selected = "top"
-                )
+            if (nrTaxa < 10000 && nrGene < 10000) {
+                # adapte to axis type
+                if (input$xAxis == "taxa") {
+                    h <- nrGene
+                    w <- nrTaxa
+                } else {
+                    w <- nrGene
+                    h <- nrTaxa
+                }
+                # adapt to dot zoom factor
+                if (input$dotZoom < -0.5){
+                    hv <- (200 + 12 * h) * (1 + input$dotZoom) + 500
+                    wv <- (200 + 12 * w) * (1 + input$dotZoom) + 500
+                }  else if ((input$dotZoom < 0)) {
+                    hv <- (200 + 12 * h) * (1 + input$dotZoom) + 200
+                    wv <- (200 + 12 * w) * (1 + input$dotZoom) + 200
+                } else {
+                    hv <- (200 + 12 * h) * (1 + input$dotZoom)
+                    wv <- (200 + 12 * w) * (1 + input$dotZoom)
+                }
+                # minimum size
+                if (hv < 300) hv <- 300
+                if (wv < 300) wv <- 300
+                # update plot size based on number of genes/taxa
+                hv <- hv + 300
+                wv <- wv + 300
+                if (h <= 20) {
+                    updateSelectInput(
+                        session, "mainLegend",
+                        label = "Legend position:",
+                        choices = list("Right" = "right",
+                                       "Left" = "left",
+                                       "Top" = "top",
+                                       "Bottom" = "bottom",
+                                       "Hide" = "none"),
+                        selected = "top"
+                    )
+                    updateNumericInput(
+                        session, 
+                        "width", value = wv  + 50
+                    )
+                } else if (h <= 30) {
+                    updateNumericInput(
+                        session, 
+                        "width", value = wv + 50
+                    )
+                } else {
+                    updateNumericInput(
+                        session, 
+                        "width", value = wv
+                    )
+                }
                 updateNumericInput(
                     session, 
-                    "width", value = wv  + 50
-                )
-            } else if (h <= 30) {
-                updateNumericInput(
-                    session, 
-                    "width", value = wv + 50
-                )
-            } else {
-                updateNumericInput(
-                    session, 
-                    "width", value = wv
+                    "height", value = hv
                 )
             }
-            updateNumericInput(
-                session, 
-                "height", value = hv
-            )
         }
     })
     
@@ -1923,68 +1925,70 @@ shinyServer(function(input, output, session) {
         if (input$selectedAutoSizing) {
             nrTaxa <- length(input$inTaxa)
             nrGene <- length(input$inSeq)
-            if (input$inTaxa[1] == "all") {
-                inputSuperTaxon <- inputTaxonName()
-                nrTaxa <- nlevels(as.factor(inputSuperTaxon$fullName))
-            }
-            if (input$inSeq[1] == "all") {
-                nrGene <- input$endIndex
-            }
-            # adapte to axis type
-            if (input$xAxisSelected == "taxa") {
-                h <- nrGene
-                w <- nrTaxa
-            } else {
-                w <- nrGene
-                h <- nrTaxa
-            }
-            # adapt to dot zoom factor
-            if (input$dotZoomSelect < -0.5){
-                hv <- (200 + 12 * h) * (1 + input$dotZoomSelect) + 500
-                wv <- (200 + 12 * w) * (1 + input$dotZoomSelect) + 500
-            }  else if ((input$dotZoomSelect < 0)) {
-                hv <- (200 + 12 * h) * (1 + input$dotZoomSelect) + 200
-                wv <- (200 + 12 * w) * (1 + input$dotZoomSelect) + 200
-            } else {
-                hv <- (200 + 12 * h) * (1 + input$dotZoomSelect)
-                wv <- (200 + 12 * w) * (1 + input$dotZoomSelect)
-            }
-            # minimum size
-            if (hv < 300) hv <- 300
-            if (wv < 300) wv <- 300
-            # update plot size based on number of genes/taxa
-            hv <- hv + 300
-            wv <- wv + 300
-            if (h <= 20) {
-                updateSelectInput(
-                    session, "selectedLegend",
-                    label = "Legend position:",
-                    choices = list("Right" = "right",
-                                   "Left" = "left",
-                                   "Top" = "top",
-                                   "Bottom" = "bottom",
-                                   "Hide" = "none"),
-                    selected = "top"
-                )
+            if (nrTaxa < 10000 && nrGene < 10000) {
+                if (input$inTaxa[1] == "all") {
+                    inputSuperTaxon <- inputTaxonName()
+                    nrTaxa <- nlevels(as.factor(inputSuperTaxon$fullName))
+                }
+                if (input$inSeq[1] == "all") {
+                    nrGene <- input$endIndex
+                }
+                # adapte to axis type
+                if (input$xAxisSelected == "taxa") {
+                    h <- nrGene
+                    w <- nrTaxa
+                } else {
+                    w <- nrGene
+                    h <- nrTaxa
+                }
+                # adapt to dot zoom factor
+                if (input$dotZoomSelect < -0.5){
+                    hv <- (200 + 12 * h) * (1 + input$dotZoomSelect) + 500
+                    wv <- (200 + 12 * w) * (1 + input$dotZoomSelect) + 500
+                }  else if ((input$dotZoomSelect < 0)) {
+                    hv <- (200 + 12 * h) * (1 + input$dotZoomSelect) + 200
+                    wv <- (200 + 12 * w) * (1 + input$dotZoomSelect) + 200
+                } else {
+                    hv <- (200 + 12 * h) * (1 + input$dotZoomSelect)
+                    wv <- (200 + 12 * w) * (1 + input$dotZoomSelect)
+                }
+                # minimum size
+                if (hv < 300) hv <- 300
+                if (wv < 300) wv <- 300
+                # update plot size based on number of genes/taxa
+                hv <- hv + 300
+                wv <- wv + 300
+                if (h <= 20) {
+                    updateSelectInput(
+                        session, "selectedLegend",
+                        label = "Legend position:",
+                        choices = list("Right" = "right",
+                                       "Left" = "left",
+                                       "Top" = "top",
+                                       "Bottom" = "bottom",
+                                       "Hide" = "none"),
+                        selected = "top"
+                    )
+                    updateNumericInput(
+                        session, 
+                        "selectedWidth", value = wv  + 50
+                    )
+                } else if (h <= 30) {
+                    updateNumericInput(
+                        session, 
+                        "selectedWidth", value = wv + 50
+                    )
+                } else {
+                    updateNumericInput(
+                        session, 
+                        "selectedWidth", value = wv
+                    )
+                }
                 updateNumericInput(
                     session, 
-                    "selectedWidth", value = wv  + 50
-                )
-            } else if (h <= 30) {
-                updateNumericInput(
-                    session, 
-                    "selectedWidth", value = wv + 50
-                )
-            } else {
-                updateNumericInput(
-                    session, 
-                    "selectedWidth", value = wv
+                    "selectedHeight", value = hv
                 )
             }
-            updateNumericInput(
-                session, 
-                "selectedHeight", value = hv
-            )
         }
     })
     
