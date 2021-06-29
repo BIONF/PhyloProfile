@@ -2,6 +2,13 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+
+\section{Version 1.6.6}{
+  \itemize{
+    \item turn off auto sizing for large number of taxa or genes (>= 10.000)
+  }
+}
+
 \section{Version 1.6.5}{
   \itemize{
     \item fixed filter for "species relation"

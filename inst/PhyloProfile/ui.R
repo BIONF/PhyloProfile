@@ -1211,12 +1211,12 @@ shinyUI(
             colourpicker::colourInput(
                 "midColorVar1",
                 "Mid variable 1 (dot)",
-                value = "#164294"
+                value = "#40ABCF"
             ),
             colourpicker::colourInput(
                 "highColorVar1",
                 "High variable 1 (dot)",
-                value = "steelblue"
+                value = "#164294"
             ),
             numericInput(
                 "midVar1",
