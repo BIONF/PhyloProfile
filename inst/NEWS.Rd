@@ -2,6 +2,11 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.7.7}{
+  \itemize{
+    \item use config file for input files, refspec selection and othes settings
+  }
+}
 
 \section{Version 1.6.6}{
   \itemize{

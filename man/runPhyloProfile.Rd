@@ -4,7 +4,11 @@
 \alias{runPhyloProfile}
 \title{Run PhyloProfile app}
 \usage{
-runPhyloProfile()
+runPhyloProfile(configFile = NULL)
+}
+\arguments{
+\item{configFile}{Configuration file for specifying path to input files,
+taxonomy rank and reference taxon, and some other settings}
 }
 \value{
 A shiny application - GUI version of PhyloProfile

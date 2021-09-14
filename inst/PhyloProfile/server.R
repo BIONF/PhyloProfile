@@ -15,14 +15,13 @@ shinyServer(function(input, output, session) {
     session$allowReconnect(TRUE)
 
     # =========================== INITIAL CHECKING  ============================
-
     # * check for internet connection ------------------------------------------
     observe({
         if (hasInternet() == FALSE) toggleState("demoData")
     })
 
     output$noInternetMsg <- renderUI({
-        if (hasInternet() == FALSE) {
+        if (hasInternet() == FALSE && input$demoData != "preCalcDt") {
             strong(
                 em("Internet connection is required for using demo data!"),
                 style = "color:red"
@@ -127,7 +126,129 @@ shinyServer(function(input, output, session) {
             closeAlert(session, "fileExistMsg")
         }
     })
-
+    
+    # ========================== LOAD CONFIG FILE ==============================
+    configFile <- .GlobalEnv$configFile
+    i_mainInput <- i_domainInput <- i_treeInput <- i_fastaInput <- NULL
+    i_rank <- i_refspec <- NULL
+    i_cluster <- FALSE
+    i_profileType <- i_distMethod <- i_clusterMethod <- NULL
+    i_xAxis <- NULL
+    if (!is.null(configFile)) {
+        if (file.exists(configFile)) {
+            configs <- yaml::read_yaml(configFile)
+            i_mainInput <- configs$mainInput
+            i_domainInput <- configs$domainInput
+            i_treeInput <- configs$treeInput
+            i_fastaInput <- configs$fastaInput
+            i_rank <- configs$rank
+            i_refspec <- configs$refspec
+            i_cluster <- configs$clusterProfile
+            i_profileType <- configs$profileTypeClustering
+            i_distMethod <- configs$distMethodClustering
+            i_clusterMethod <- configs$clusterMethod
+            i_xAxis <- configs$xAxis
+        } else configFile <- NULL
+        
+        if (!file.exists(i_mainInput))
+            stop(paste("Main input file", i_mainInput ,"not found!"))
+    }
+    # * render main input ------------------------------------------------------
+    observe({
+        if (!is.null(i_mainInput)) {
+            updateSelectInput(
+                session, "demoData", label = "",
+                choices = list("Pre-calculated" = "preCalcDt"),
+                selected = "preCalcDt"
+            )
+        }
+    })
+    # * change order taxa by user input tree -----------------------------------
+    observe({
+        if (!is.null(i_treeInput)) {
+            updateRadioButtons(
+                session,
+                inputId = "orderTaxa",
+                label = "",
+                choices = list(
+                    "automatically", "by user defined tree"
+                ),
+                selected = "by user defined tree",
+                inline = TRUE
+            )
+        }
+    })
+    # * change x-axis ----------------------------------------------------------
+    observe({
+        if (!is.null(i_xAxis)) {
+            if (i_xAxis == "taxa" || i_xAxis == "genes") {
+                updateRadioButtons(
+                    inputId = "xAxis",
+                    label = "Choose type of x-axis:",
+                    choices = list("taxa", "genes"),
+                    selected = i_xAxis,
+                    inline = TRUE
+                )
+            }
+        }
+    })
+    # * apply clustering profiles ----------------------------------------------
+    if (is.null(i_profileType) ||
+        (i_profileType != "binary" && i_profileType != "var1" && 
+         i_profileType != "var2")
+    ) i_profileType <- "binary"
+    
+    if (i_profileType != "binary") {
+        if (is.null(i_distMethod) ||
+            (i_distMethod != "mutualInformation" && 
+             i_distMethod != "distanceCorrelation")
+        ) i_distMethod <- "mutualInformation"
+    } else {
+        if (is.null(i_distMethod) ||
+            (i_distMethod != "euclidean" && i_distMethod != "maximum" &&
+             i_distMethod != "manhattan" && i_distMethod != "canberra" &&
+             i_distMethod != "binary" && i_distMethod != "pearson" &&
+             i_distMethod != "mutualInformation" && 
+             i_distMethod != "distanceCorrelation")
+        ) i_distMethod <- "euclidean"
+    }
+    
+    if (
+        is.null(i_clusterMethod) || 
+        (i_clusterMethod != "single" && 
+         i_clusterMethod != "complete" &&
+         i_clusterMethod != "average" &&
+         i_clusterMethod != "mcquitty" &&
+         i_clusterMethod != "median" &&
+         i_clusterMethod != "centroid")
+    ) i_clusterMethod <- "complete"
+    
+    observe({
+        if (i_cluster) {
+            updateCheckboxInput(
+                session,
+                "applyCluster",
+                "Apply clustering to profile plot",
+                value = TRUE
+            )
+            
+            updateSelectInput(
+                session,
+                "clusterMethod",
+                label = "Cluster method:",
+                choices = list(
+                    "single" = "single",
+                    "complete" = "complete",
+                    "average (UPGMA)" = "average",
+                    "mcquitty (WPGMA)" = "mcquitty",
+                    "median (WPGMC)" = "median",
+                    "centroid (UPGMC)" = "centroid"
+                ),
+                selected = i_clusterMethod
+            )
+        }
+    })
+    
     # ======================== INPUT & SETTINGS TAB ============================
     # * Render input message ---------------------------------------------------
     observe({
@@ -155,7 +276,7 @@ shinyServer(function(input, output, session) {
         filein <- input$mainInput
         if (is.null(filein)) return()
         inputType <- checkInputValidity(filein$datapath)
-
+        
         if (inputType[1] == "noGeneID") {
             updateButton(session, "do", disabled = TRUE)
             HTML(
@@ -167,15 +288,13 @@ shinyServer(function(input, output, session) {
             )
         } else if (inputType[1] == "emptyCell") {
             updateButton(session, "do", disabled = TRUE)
-            em(strong("ERROR: Rows have unequal length", style = "color:red"))
-        }
-        else if (inputType[1] == "moreCol") {
+            em(strong("ERROR: Rows have unequal length",style= "color:red"))
+        } else if (inputType[1] == "moreCol") {
             updateButton(session, "do", disabled = TRUE)
             em(strong(
                 "ERROR: More columns than column names", style = "color:red"
             ))
-        }
-        else if (inputType[1] == "invalidFormat") {
+        } else if (inputType[1] == "invalidFormat") {
             updateButton(session, "do", disabled = TRUE)
             em(strong(
                 "ERROR: Invalid format", style = "color:red"
@@ -195,6 +314,16 @@ shinyServer(function(input, output, session) {
     })
 
     # * render download link for Demo online files -----------------------------
+    output$downloadDemo.ui <- renderUI({
+        if (input$demoData == "ampk-tor" || input$demoData == "arthropoda") {
+            em(a(
+                "Click here to download demo files",
+                href = "https://github.com/BIONF/phyloprofile-data",
+                target = "_blank"
+            ))
+        }
+    })
+    
     output$mainInputFile.ui <- renderUI({
         if (input$demoData == "arthropoda") {
             url <- paste0(
@@ -208,6 +337,8 @@ shinyServer(function(input, output, session) {
                 "master/ampk-tor.zip"
             )
             strong(a("Download demo data", href = url, target = "_blank"))
+        } else if (input$demoData == "preCalcDt") {
+            em("Input from config file")
         } else fileInput("mainInput", h5("Upload input file:"))
     })
 
@@ -216,6 +347,14 @@ shinyServer(function(input, output, session) {
             strong("Download demo data (link above)")
         } else if (input$demoData == "ampk-tor") {
             strong("Download demo data (link above)")
+        } else if (input$demoData == "preCalcDt") {
+            if(!is.null(i_domainInput)) {
+                em("Input from config file")
+            } else {
+                if (input$annoLocation == "from file") {
+                    fileInput("fileDomainInput", "")
+                } else textInput("domainPath", "", "")
+            }
         } else {
             if (input$annoLocation == "from file") {
                 fileInput("fileDomainInput", "")
@@ -232,7 +371,7 @@ shinyServer(function(input, output, session) {
                 "ampk-tor.md"
             )
             em(a("Data description", href = url, target = "_blank"))
-        } else {
+        } else if (input$demoData == "arthropoda"){
             url <- paste0(
                 "https://github.com/BIONF/phyloprofile-data/blob/master/",
                 "arthropoda.md"
@@ -362,26 +501,47 @@ shinyServer(function(input, output, session) {
     })
 
     # * check the validity of input tree file and render checkNewick.ui --------
+    output$inputTree.ui <- renderUI({
+        filein <- input$mainInput
+        if (is.null(filein) & input$demoData == "none") {
+            fileInput("inputTree", "")
+        }
+    })
+    
     checkNewickID <- reactive({
-        req(input$inputTree)
-        req(input$mainInput)
-
-        filein <- input$inputTree
-        tree <- read.table(
-            file = filein$datapath,
-            header = FALSE,
-            check.names = FALSE,
-            comment.char = "",
-            fill = FALSE
-        )
-
-        checkNewick <- checkNewick(tree, inputTaxonID())
-        if (checkNewick == 0) updateButton(session, "do", disabled = FALSE)
-        return(checkNewick)
+        tree <- NULL
+        if (input$demoData == "preCalcDt") {
+            if (!is.null(i_treeInput)) {
+                tree <- read.table(
+                    file = i_treeInput,
+                    header = FALSE,
+                    check.names = FALSE,
+                    comment.char = "",
+                    fill = FALSE
+                )
+            }
+        } else {
+            req(input$mainInput)
+            req(input$inputTree)
+            filein <- input$inputTree
+            tree <- read.table(
+                file = filein$datapath,
+                header = FALSE,
+                check.names = FALSE,
+                comment.char = "",
+                fill = FALSE
+            )
+        }
+        if (!is.null(tree)) {
+            checkNewick <- checkNewick(tree, inputTaxonID())
+            if (checkNewick == 0) updateButton(session, "do", disabled = FALSE)
+            return(checkNewick)
+        } else return()
     })
 
     output$checkNewick.ui <- renderUI({
         checkNewick <- checkNewickID()
+        req(checkNewick)
         if (checkNewick == 1) {
             updateButton(session, "do", disabled = TRUE)
             HTML("<p><em><span style=\"color: #ff0000;\"><strong>
@@ -437,6 +597,16 @@ shinyServer(function(input, output, session) {
                 "rankSelect", label = "",
                 choices = getTaxonomyRanks(),
                 selected = "species"
+            )
+        } else if (input$demoData == "preCalcDt") {
+            selectedRank <- "species"
+            if (!is.null(i_rank)) {
+                selectedRank <- i_rank
+            }
+            selectInput(
+                "rankSelect", label = "",
+                choices = getTaxonomyRanks(),
+                selected = selectedRank
             )
         } else {
             selectInput(
@@ -515,6 +685,17 @@ shinyServer(function(input, output, session) {
                 "inSelect", "",
                 as.list(levels(choice$fullName)),
                 humanDf$name[humanDf$rank == rankName]
+            )
+        } else if (input$demoData == "preCalcDt") {
+            refspec <- levels(choice$fullName)[1]
+            if (!is.null(i_refspec)) {
+                if (i_refspec %in% levels(choice$fullName))
+                    refspec <- i_refspec
+            }
+            selectInput(
+                "inSelect", "",
+                as.list(levels(choice$fullName)),
+                refspec
             )
         } else {
             selectInput(
@@ -1296,6 +1477,8 @@ shinyServer(function(input, output, session) {
                 longDataframe <- myData[["EH2547"]]
             } else if (input$demoData == "ampk-tor") {
                 longDataframe <- myData[["EH2544"]]
+            } else if (input$demoData == "preCalcDt") {
+                longDataframe <- createLongMatrix(i_mainInput)
             } else {
                 filein <- input$mainInput
                 if (is.null(filein)) return()
@@ -1329,7 +1512,7 @@ shinyServer(function(input, output, session) {
                     "endIndex", value = nlevels(as.factor(longDataframe$geneID))
                 )
             }
-            # return 
+            # return
             return(longDataframe)
         })
     })
@@ -1349,16 +1532,32 @@ shinyServer(function(input, output, session) {
                 mainInput <- getMainInput()
                 
                 if (inputType == "demo") {
-                    if (input$demoData == "arthropoda") {
-                        domainDf <- myData[["EH2549"]]
+                    if (input$demoData == "preCalcDt") {
+                        if (!is.null(i_domainInput)) {
+                            if (!file.exists(i_domainInput)) {
+                                paste(
+                                    "Domain file", i_domainInput ,"not found!"
+                                )
+                                return()
+                            }
+                            domainDf <- parseDomainInput(
+                                NULL,
+                                i_domainInput,
+                                "file"
+                            )
+                        }
                     } else {
-                        domainDf <- myData[["EH2546"]]
+                        if (input$demoData == "arthropoda") {
+                            domainDf <- myData[["EH2549"]]
+                        } else {
+                            domainDf <- myData[["EH2546"]]
+                        }
+                        
+                        domainDf$seedID <- as.character(domainDf$seedID)
+                        domainDf$orthoID <- as.character(domainDf$orthoID)
+                        domainDf$seedID <- gsub("\\|",":",domainDf$seedID)
+                        domainDf$orthoID <- gsub("\\|",":",domainDf$orthoID)
                     }
-                    
-                    domainDf$seedID <- as.character(domainDf$seedID)
-                    domainDf$orthoID <- as.character(domainDf$orthoID)
-                    domainDf$seedID <- gsub("\\|",":",domainDf$seedID)
-                    domainDf$orthoID <- gsub("\\|",":",domainDf$orthoID)
                 } else {
                     if (input$annoLocation == "from file") {
                         inputDomain <- input$fileDomainInput
@@ -1419,9 +1618,15 @@ shinyServer(function(input, output, session) {
         withProgress(message = 'Sorting input taxa...', value = 0.5, {
             # get input taxonomy tree
             inputTaxaTree <- NULL
-            treeIn <- input$inputTree
-            if (!is.null(treeIn)) {
-                inputTaxaTree <- read.tree(file = treeIn$datapath)
+            if (input$demoData == "preCalcDt") {
+                if (!is.null(i_treeInput)) {
+                    inputTaxaTree <- read.tree(file = i_treeInput)
+                }
+            } else {
+                treeIn <- input$inputTree
+                if (!is.null(treeIn)) {
+                    inputTaxaTree <- read.tree(file = treeIn$datapath)
+                }
             }
             
             # sort taxonomy matrix based on selected refTaxon
@@ -1523,7 +1728,10 @@ shinyServer(function(input, output, session) {
         }
         # check input file
         filein <- input$mainInput
-        if (input$demoData == "arthropoda" | input$demoData == "ampk-tor") {
+        if (
+            input$demoData == "arthropoda" | input$demoData == "ampk-tor" |
+            input$demoData == "preCalcDt"
+        ) {
             filein <- 1
         }
         req(filein)
@@ -1600,8 +1808,10 @@ shinyServer(function(input, output, session) {
         withProgress(message = 'Clustering profile data...', value = 0.5, {
             dat <- getProfiles()
             # do clustering based on distance matrix
+            if (!is.null(i_clusterMethod)) clusterMethod <- i_clusterMethod
+            else clusterMethod <- input$clusterMethod
             row.order <- hclust(
-                getDistanceMatrixProfiles(), method = input$clusterMethod
+                getDistanceMatrixProfiles(), method = clusterMethod
             )$order
             
             # re-order distance matrix accoring to clustering
@@ -1611,7 +1821,7 @@ shinyServer(function(input, output, session) {
             clusteredGeneIDs <- as.factor(row.names(datNew))
             
             # sort original data according to clusteredGeneIDs
-            dataHeat$geneID <- factor(dataHeat$geneID, levels =clusteredGeneIDs)
+            dataHeat$geneID <- factor(dataHeat$geneID, levels=clusteredGeneIDs)
             
             dataHeat <- dataHeat[!is.na(dataHeat$geneID),]
             return(dataHeat)
@@ -1833,7 +2043,10 @@ shinyServer(function(input, output, session) {
         filein <- input$mainInput
         fileCustom <- input$customFile
         
-        if (input$demoData == "arthropoda" | input$demoData == "ampk-tor") {
+        if (
+            input$demoData == "arthropoda" | input$demoData == "ampk-tor" |
+            input$demoData == "preCalcDt"
+        ) {
             filein <- 1
         }
         
@@ -1881,7 +2094,10 @@ shinyServer(function(input, output, session) {
     # * get list of all taxa for customized profile ----------------------------
     output$taxaIn <- renderUI({
         filein <- input$mainInput
-        if (input$demoData == "arthropoda" | input$demoData == "ampk-tor") {
+        if (
+            input$demoData == "arthropoda" | input$demoData == "ampk-tor" |
+            input$demoData == "preCalcDt"
+        ) {
             filein <- 1
         }
         
@@ -2301,8 +2517,15 @@ shinyServer(function(input, output, session) {
                 }
             }
         } else {
-            # get fasta from demo online data
-            fastaOut <- getFastaDemo(seqID, demoData = input$demoData)
+            if (input$demoData == "preCalcDt") {
+                if (!is.null(i_fastaInput))
+                    if (!file.exists(i_fastaInput)) 
+                        return("Fasta file not found!")
+                    fastaOut <- getFastaFromFile(seqID, i_fastaInput)
+            } else {
+                # get fasta from demo online data
+                fastaOut <- getFastaDemo(seqID, demoData = input$demoData)
+            }
         }
         return(paste(fastaOut[1]))
     })
@@ -2320,8 +2543,10 @@ shinyServer(function(input, output, session) {
             updateButton(session, "doDomainPlot", disabled = TRUE)
             return("noSelectHit")
         } else {
-            if (input$demoData == "arthropoda" |
-                input$demoData == "ampk-tor") {
+            if (
+                input$demoData == "arthropoda" | input$demoData == "ampk-tor" |
+                input$demoData == "preCalcDt"
+            ) {
                 updateButton(session, "doDomainPlot", disabled = FALSE)
             } else {
                 if (checkInputValidity(input$mainInput$datapath) == "oma") {
@@ -2448,8 +2673,13 @@ shinyServer(function(input, output, session) {
                 }
             }
         } else {
-            # get fasta from demo online data
-            mainFastaOut <- getFastaDemo(seqIDs, demoData = input$demoData)
+            if (input$demoData == "preCalcDt") {
+                if (!is.null(i_fastaInput))
+                    mainFastaOut <- getFastaFromFile(seqIDs, i_fastaInput)
+            } else {
+                # get fasta from demo online data
+                mainFastaOut <- getFastaDemo(seqIDs, demoData = input$demoData)
+            }
         }
         return(mainFastaOut)
     })
@@ -2513,8 +2743,13 @@ shinyServer(function(input, output, session) {
                 }
             }
         } else {
-            # get fasta from demo online data
-            fastaOutDf <- getFastaDemo(seqIDs, demoData = input$demoData)
+            if (input$demoData == "preCalcDt") {
+                if (!is.null(i_fastaInput))
+                    fastaOutDf <- getFastaFromFile(seqIDs, i_fastaInput)
+            } else {
+                # get fasta from demo online data
+                fastaOutDf <- getFastaDemo(seqIDs, demoData = input$demoData)
+            }
         }
         return(fastaOutDf)
     })
@@ -2571,6 +2806,8 @@ shinyServer(function(input, output, session) {
     
     # ** List of possible profile types ----------------------------------------
     output$selectProfileType <- renderUI({
+        selectedType <- "binary"
+        if (!is.null(i_profileType)) selectedType <- i_profileType
         variable1 <- paste0("profile using ", input$var1ID)
         if (input$var2ID != "") {
             variable2 <- paste0("profile using ", input$var2ID)
@@ -2584,10 +2821,10 @@ shinyServer(function(input, output, session) {
                 choiceValues = list(
                     "binary", "var1", "var2"
                 ),
-                selected = "binary",
+                selected = selectedType,
                 inline = FALSE)
-        }
-        else {
+        } else {
+            if (selectedType == "var2") selectedType <- "binary"
             radioButtons(
                 "profileType",
                 label = h5("Select the profile type"),
@@ -2597,15 +2834,19 @@ shinyServer(function(input, output, session) {
                 choiceValues = list(
                     "binary", "var1"
                 ),
-                selected = "binary",
+                selected = selectedType,
                 inline = FALSE)
         }
     })
     
     # ** List of possible distance methods -------------------------------------
     output$selectDistMethod <- renderUI({
-        req(input$profileType)
-        if (input$profileType == "binary") {
+        if (is.null(input$profileType)) profileType <- i_profileType
+        else profileType <- input$profileType
+
+        if (profileType == "binary") {
+            selectedMethod <- "euclidean"
+            if (!is.null(i_distMethod)) selectedMethod <- i_distMethod
             selectInput(
                 "distMethod",
                 label = h5("Distance measure method:"),
@@ -2619,9 +2860,11 @@ shinyServer(function(input, output, session) {
                     "mutual information" = "mutualInformation",
                     "distance correlation" = "distanceCorrelation"
                 ),
-                selected = "euclidean"
+                selected = selectedMethod
             )
         } else {
+            selectedMethod <- "mutualInformation"
+            if (!is.null(i_distMethod)) selectedMethod <- i_distMethod
             selectInput(
                 "distMethod",
                 label = h5("Distance measure method:"),
@@ -2629,7 +2872,7 @@ shinyServer(function(input, output, session) {
                     "mutual information" = "mutualInformation",
                     "distance correlation" = "distanceCorrelation"
                 ),
-                selected = "mutualInformation"
+                selected = selectedMethod
             )
         }
     })
@@ -2638,10 +2881,11 @@ shinyServer(function(input, output, session) {
     getProfiles <- reactive({
         withProgress(message = 'Getting data for cluster...', value = 0.5, {
             req(dataHeat())
-            req(input$distMethod)
+            if (is.null(input$profileType)) profileType <- i_profileType
+            else profileType <- input$profileType
             profiles <- getDataClustering(
                 dataHeat(),
-                input$profileType,
+                profileType,
                 input$var1AggregateBy,
                 input$var2AggregateBy
             )
@@ -2652,8 +2896,11 @@ shinyServer(function(input, output, session) {
     # ** calculate distance matrix ---------------------------------------------
     getDistanceMatrixProfiles <- reactive({
         withProgress(message = 'Calculating distance matrix...', value = 0.5, {
-            req(input$distMethod)
-            distanceMatrix <- getDistanceMatrix(getProfiles(), input$distMethod)
+            req(getProfiles())
+            if (is.null(input$distMethod)) 
+                distMethod <- i_distMethod
+            else distMethod <- input$distMethod
+            distanceMatrix <- getDistanceMatrix(getProfiles(), distMethod)
             return(distanceMatrix)
         })
     })
@@ -2864,7 +3111,10 @@ shinyServer(function(input, output, session) {
     # ** render list of available taxa -----------------------------------------
     output$taxaListCore.ui <- renderUI({
         filein <- input$mainInput
-        if (input$demoData == "arthropoda" | input$demoData == "ampk-tor") {
+        if (
+            input$demoData == "arthropoda" | input$demoData == "ampk-tor" |
+            input$demoData == "preCalcDt"
+        ) {
             filein <- 1
         }
         if (is.null(filein)) {
@@ -3053,7 +3303,10 @@ shinyServer(function(input, output, session) {
         filein <- input$mainInput
         fileGC <- input$gcFile
 
-        if (input$demoData == "arthropoda" | input$demoData == "ampk-tor") {
+        if (
+            input$demoData == "arthropoda" | input$demoData == "ampk-tor" |
+            input$demoData == "preCalcDt"
+        ) {
             filein <- 1
         }
 
@@ -3136,7 +3389,10 @@ shinyServer(function(input, output, session) {
     # ** render list of taxa (and default in-group taxa are selected) ----------
     output$taxaListGC <- renderUI({
         filein <- input$mainInput
-        if (input$demoData == "arthropoda" | input$demoData == "ampk-tor") {
+        if (
+            input$demoData == "arthropoda" | input$demoData == "ampk-tor" |
+            input$demoData == "preCalcDt"
+        ) {
             filein <- 1
         }
         if (is.null(filein)) {

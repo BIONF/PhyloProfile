@@ -283,7 +283,7 @@ rankIndexing <- function (rankListFile = NULL) {
                 if (i > 1) {
                     if (flag == 0) {
                         if (!(iRank %in% ls(rank2index))) 
-                            stop(paste(iRank,"not found!"))
+                            stop(iRank," not found!")
                         currentIndex <- rank2index[[iRank]]
                     } else {
                         if (!(iRank %in% ls(tmpEnv))) {

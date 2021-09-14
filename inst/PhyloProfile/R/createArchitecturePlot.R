@@ -104,6 +104,7 @@ createArchitecturePlot <- function(
     # })
     
     output$domainTable <- renderTable({
+        if (is.null(nrow(domainInfo()))) return("No domain info available!")
         features <- getDomainLink(pointInfo(), domainInfo())
         features
     }, sanitize.text.function = function(x) x)
@@ -164,7 +165,10 @@ getDomainLink <- function(info, domainDf){
     feature <- unique(feature[grep("pfam|smart", feature)])
     feature <- sub("_","@", feature)
     tmpDf <- data.frame(
-        do.call('cbind', data.table::tstrsplit(as.character(feature), '@', fixed = TRUE))
+        do.call(
+            'cbind', 
+            data.table::tstrsplit(as.character(feature), '@', fixed = TRUE)
+        )
     )
     featDf <- data.frame("ID" = levels(as.factor(tmpDf$X2)))
     featDf$PFAM <- paste0(

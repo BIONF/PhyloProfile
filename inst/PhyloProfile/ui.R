@@ -282,11 +282,7 @@ shinyUI(
                     uiOutput("domainInputFile.ui"),
 
                     hr(),
-                    em(a(
-                        "Click here to download demo files",
-                        href = "https://github.com/BIONF/phyloprofile-data",
-                        target = "_blank"
-                    ))
+                    uiOutput("downloadDemo.ui")
                 ),
 
                 # * 2nd column -------------------------------------------------
@@ -350,7 +346,7 @@ shinyUI(
                         conditionalPanel(
                             condition = "input.orderTaxa
                                         == 'by user defined tree'",
-                            fileInput("inputTree", "")
+                            uiOutput("inputTree.ui")
                         ),
 
                         uiOutput("checkNewick.ui"),

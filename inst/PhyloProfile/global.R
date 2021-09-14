@@ -15,10 +15,12 @@ packages <- c(
 lapply(packages, library, character.only = TRUE)
 
 # Install ExperimentHub to load demo data sets
-if (!requireNamespace("ExperimentHub"))
-    BiocManager::install("ExperimentHub")
-if (packageVersion("ExperimentHub") < "1.11.1")
-    BiocManager::install(pkgs = "ExperimentHub", version = "devel")
-library(ExperimentHub)
-eh = ExperimentHub()
-myData <- query(eh, "PhyloProfileData")
+if (hasInternet() == TRUE) {
+    if (!requireNamespace("ExperimentHub"))
+        BiocManager::install("ExperimentHub")
+    if (packageVersion("ExperimentHub") < "1.11.1")
+        BiocManager::install(pkgs = "ExperimentHub", version = "devel")
+    library(ExperimentHub)
+    eh = ExperimentHub()
+    myData <- query(eh, "PhyloProfileData")
+}
