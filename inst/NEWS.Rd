@@ -2,6 +2,12 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.7.8}{
+  \itemize{
+    \item only mainInput is required in config file
+  }
+}
+
 \section{Version 1.7.7}{
   \itemize{
     \item use config file for input files, refspec selection and othes settings

@@ -1545,6 +1545,28 @@ shinyServer(function(input, output, session) {
                                 i_domainInput,
                                 "file"
                             )
+                        } else {
+                            if (input$annoLocation == "from file") {
+                                inputDomain <- input$fileDomainInput
+                                domainDf <- parseDomainInput(
+                                    NULL,
+                                    inputDomain$datapath,
+                                    "file"
+                                )
+                            } else {
+                                # GET INFO BASED ON CURRENT TAB
+                                if (input$tabs == "Main profile") {
+                                    # info = groupID,orthoID,supertaxon,mVar1,%spec,var2
+                                    info <- mainpointInfo()
+                                } else if (input$tabs == "Customized profile") {
+                                    info <- selectedpointInfo()
+                                }
+                                domainDf <- parseDomainInput(
+                                    info[1],
+                                    input$domainPath,
+                                    "folder"
+                                )
+                            }
                         }
                     } else {
                         if (input$demoData == "arthropoda") {
