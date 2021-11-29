@@ -59,7 +59,7 @@ titleSize <- 9
 minStart <- min(df$start)
 maxEnd <- max(df$end)
 # do plotting
-singleDomainPlotting(
+PhyloProfile:::singleDomainPlotting(
     df,
     geneID,
     sep,

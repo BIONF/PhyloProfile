@@ -26,7 +26,7 @@ runPhyloProfile <- function(configFile = NULL){
             call = FALSE
         )
     }
-    
+
     .GlobalEnv$configFile <- configFile
     on.exit(rm(configFile, envir=.GlobalEnv))
 

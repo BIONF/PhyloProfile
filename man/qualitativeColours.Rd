@@ -22,6 +22,6 @@ Create qualitative colours
 }
 \examples{
 \dontrun{
-qualitativeColours(5)
+PhyloProfile:::qualitativeColours(5)
 }
 }

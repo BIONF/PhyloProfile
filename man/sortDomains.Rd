@@ -34,7 +34,7 @@ subDf <- domainDf[
 orthoDf <- subDf[subDf$orthoID == "101621at6656:DROME@7227@1:Q9VG04",]
 seedDf <- subDf[subDf$orthoID != "101621at6656:DROME@7227@1:Q9VG04",]
 # sort
-sortDomains(seedDf, orthoDf)
+PhyloProfile:::sortDomains(seedDf, orthoDf)
 }
 }
 \author{

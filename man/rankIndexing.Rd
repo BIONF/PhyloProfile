@@ -22,7 +22,7 @@ Indexing all available ranks (including norank)
 rankListFile <- system.file(
     "extdata", "data/rankList.txt", package = "PhyloProfile", mustWork = TRUE
 )
-rankIndexing(rankListFile)
+PhyloProfile:::rankIndexing(rankListFile)
 }
 }
 \author{

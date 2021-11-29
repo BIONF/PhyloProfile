@@ -19,7 +19,7 @@ systematic ranks, and parent (next higher) rank IDs.
 \examples{
 ?processNcbiTaxonomy
 \dontrun{
-preProcessedTaxonomy <- processNcbiTaxonomy()
+preProcessedTaxonomy <- PhyloProfile:::processNcbiTaxonomy()
 # save to text (tab-delimited) file
 write.table(
     preProcessedTaxonomy,

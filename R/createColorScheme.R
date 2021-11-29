@@ -7,7 +7,7 @@
 #' @source Modified based on https://gist.github.com/peterk87/6011397
 #' @examples
 #' \dontrun{
-#' qualitativeColours(5)
+#' PhyloProfile:::qualitativeColours(5)
 #' }
 
 qualitativeColours <- function(n, light = FALSE) {

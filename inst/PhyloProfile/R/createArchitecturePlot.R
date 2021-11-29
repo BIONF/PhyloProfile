@@ -113,7 +113,6 @@ createArchitecturePlot <- function(
 #' plot error message
 #' @return error message in a ggplot object
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
-
 msgPlot <- function() {
     msg <- paste(
         "No information about domain architecture!",
@@ -139,8 +138,10 @@ msgPlot <- function() {
     return(g)
 }
 
-
-getDomainLink <- function(info, domainDf){
+#' get pfam and smart domain links
+#' @return dataframe with domain IDs and their database links
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+getDomainLink <- function(info, domainDf) {
     group <- as.character(info[1])
     ortho <- as.character(info[2])
     # get sub dataframe based on selected groupID and orthoID
@@ -161,9 +162,27 @@ getDomainLink <- function(info, domainDf){
             levels(as.factor(seedDf$feature))
         )
     }
-    # get URL
-    feature <- unique(feature[grep("pfam|smart", feature)])
-    feature <- sub("_","@", feature)
+    # get URLs
+    featurePfam <- unique(feature[grep("pfam", feature)])
+    pfamDf <- data.frame(ID = character(), PFAM = character())
+    if (length(featurePfam) > 0)
+        pfamDf <- createLinkTable(featurePfam, "pfam")
+    
+    featureSmart <- unique(feature[grep("smart", feature)])
+    smartDf <- data.frame(ID = character(), SMART = character())
+    if (length(featureSmart) > 0)
+        smartDf <- createLinkTable(featureSmart, "smart")
+    
+    featDf <- merge(pfamDf, smartDf, by = "ID", all = TRUE)
+    colnames(featDf) <- c("ID", "PFAM", "SMART")
+    return(featDf)
+}
+
+#' plot error message
+#' @return error message in a ggplot object
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+createLinkTable <- function(featureList, featureType) {
+    feature <- sub("_","@", featureList)
     tmpDf <- data.frame(
         do.call(
             'cbind', 
@@ -171,16 +190,22 @@ getDomainLink <- function(info, domainDf){
         )
     )
     featDf <- data.frame("ID" = levels(as.factor(tmpDf$X2)))
-    featDf$PFAM <- paste0(
-        "<a href='https://pfam.xfam.org/family/", featDf$ID, 
-        "' target='_blank'>", featDf$ID, "</a>"
-    )
-    featDf$SMART <- paste0(
-        "<a href='http://smart.embl-heidelberg.de/smart/", 
-        "do_annotation.pl?BLAST=DUMMY&DOMAIN=", 
-        featDf$ID, "' target='_blank'>",
-        featDf$ID, "</a>"
-    )
+    if (featureType == "pfam") {
+        # featDf$type <- "PFAM"
+        featDf$link <- paste0(
+            "<a href='https://pfam.xfam.org/family/", featDf$ID, 
+            "' target='_blank'>", featDf$ID, "</a>"
+        )
+    } else {
+        # featDf$type <- "SMART"
+        featDf$link <- paste0(
+            "<a href='http://smart.embl-heidelberg.de/smart/", 
+            "do_annotation.pl?BLAST=DUMMY&DOMAIN=", 
+            featDf$ID, "' target='_blank'>",
+            featDf$ID, "</a>"
+        )
+    }
     return(featDf)
 }
+ 
 

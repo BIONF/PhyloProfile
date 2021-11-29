@@ -2,6 +2,12 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.8.1}{
+  \itemize{
+    \item do not show pfam links for smart domains and vice versa
+  }
+}
+
 \section{Version 1.7.8}{
   \itemize{
     \item only mainInput is required in config file

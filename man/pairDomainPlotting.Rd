@@ -4,7 +4,7 @@
 \alias{pairDomainPlotting}
 \title{Create architecure plot for a pair of seed and ortholog protein}
 \usage{
-pairDomainPlotting(seed, ortho, seedDf, orthoDf, minStart, maxEnd, 
+pairDomainPlotting(seed, ortho, seedDf, orthoDf, minStart, maxEnd,
     labelSize, titleSize)
 }
 \arguments{
@@ -12,10 +12,10 @@ pairDomainPlotting(seed, ortho, seedDf, orthoDf, minStart, maxEnd,
 
 \item{ortho}{Ortho ID}
 
-\item{seedDf}{domain dataframe for seed domains containing the seed ID, 
-ortholog ID, sequence length, feature names, start and end positions, 
-feature weights (optional) and the status to determine if that feature is 
-important for comparison the architecture between 2 proteins* (e.g. seed 
+\item{seedDf}{domain dataframe for seed domains containing the seed ID,
+ortholog ID, sequence length, feature names, start and end positions,
+feature weights (optional) and the status to determine if that feature is
+important for comparison the architecture between 2 proteins* (e.g. seed
 protein vs ortholog) (optional).}
 
 \item{orthoDf}{domain dataframe for ortholog domains (same format as seedDf).}
@@ -51,7 +51,7 @@ orthoDf <- subdomainDf[subdomainDf$orthoID == ortho,]
 seedDf <- subdomainDf[subdomainDf$orthoID != ortho,]
 minStart <- min(subdomainDf$start)
 maxEnd <- max(c(subdomainDf$end, subdomainDf$length))
-g <- pairDomainPlotting(seed,ortho,seedDf,orthoDf,minStart,maxEnd,9,9)    
+g <- pairDomainPlotting(seed,ortho,seedDf,orthoDf,minStart,maxEnd,9,9)
 grid::grid.draw(g)
 }
 }

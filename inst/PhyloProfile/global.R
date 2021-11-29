@@ -23,4 +23,6 @@ if (hasInternet() == TRUE) {
     library(ExperimentHub)
     eh = ExperimentHub()
     myData <- query(eh, "PhyloProfileData")
+} else {
+    eh = ExperimentHub(localHub=TRUE)
 }

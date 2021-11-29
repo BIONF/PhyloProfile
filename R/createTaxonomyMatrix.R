@@ -34,7 +34,7 @@ mainTaxonomyRank <- function() {
 #' @examples
 #' ?processNcbiTaxonomy
 #' \dontrun{
-#' preProcessedTaxonomy <- processNcbiTaxonomy()
+#' preProcessedTaxonomy <- PhyloProfile:::processNcbiTaxonomy()
 #' # save to text (tab-delimited) file
 #' write.table(
 #'     preProcessedTaxonomy,
@@ -56,7 +56,7 @@ processNcbiTaxonomy <- function() {
         "ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdmp.zip", temp
     )
     names <- utils::read.table(
-        unz(temp, "names.dmp"), header = FALSE, fill = TRUE, sep = "\t", 
+        unz(temp, "names.dmp"), header = FALSE, fill = TRUE, sep = "\t",
         quote = "", comment.char = "", stringsAsFactors = FALSE
     )
     nodes <- utils::read.table(
@@ -125,7 +125,7 @@ getTaxonomyInfo <- function(inputTaxa = NULL, currentNCBIinfo = NULL) {
         while (lastID != 1) {
             if (lastID %in% names(tmp)) {
                 inputTaxaInfo <- rbindlist(
-                    list(inputTaxaInfo, tmp[[toString(lastID)]]), 
+                    list(inputTaxaInfo, tmp[[toString(lastID)]]),
                     use.names = TRUE, fill = TRUE, idcol = NULL)
                 lastID = 1
             } else {
@@ -238,7 +238,7 @@ getIDsRank <- function(inputTaxa = NULL, currentNCBIinfo = NULL){
 #' rankListFile <- system.file(
 #'     "extdata", "data/rankList.txt", package = "PhyloProfile", mustWork = TRUE
 #' )
-#' rankIndexing(rankListFile)
+#' PhyloProfile:::rankIndexing(rankListFile)
 #' }
 
 rankIndexing <- function (rankListFile = NULL) {
@@ -263,7 +263,7 @@ rankIndexing <- function (rankListFile = NULL) {
         filter <- vapply(
             subList, function(x) x %in% allInputRank, FUN.VALUE = logical(1))
         subList <- subList[filter]
-        
+
         ## indexing
         tmpEnv <- new.env(hash = TRUE)
         flag <- 0
@@ -282,7 +282,7 @@ rankIndexing <- function (rankListFile = NULL) {
                 # for old rank
                 if (i > 1) {
                     if (flag == 0) {
-                        if (!(iRank %in% ls(rank2index))) 
+                        if (!(iRank %in% ls(rank2index)))
                             stop(iRank," not found!")
                         currentIndex <- rank2index[[iRank]]
                     } else {
@@ -291,7 +291,7 @@ rankIndexing <- function (rankListFile = NULL) {
                         }
                         currentIndex <- tmpEnv[[iRank]]
                     }
-                    
+
                     if (currentIndex <= tmpEnv[[subList[i-1]]]) {
                         if (flag == 0) {
                             tmpEnv[[iRank]] <- tmpEnv[[subList[i-1]]] + 1
@@ -313,16 +313,16 @@ rankIndexing <- function (rankListFile = NULL) {
                                 if(subList[i-1] %in% ls(rank2index)) {
                                     fromIndex <- rank2index[[subList[i-1]]]
                                 }
-                                
+
                                 if (rank2index[[r]] > fromIndex) {
                                     tmpEnv[[r]] <-
-                                        rank2index[[r]] + 
+                                        rank2index[[r]] +
                                         (tmpEnv[[iRank]] - rank2index[[iRank]])
                                     flag <- 1
                                 }
                             }
                         } else {
-                            step <- tmpEnv[[subList[i-1]]] - 
+                            step <- tmpEnv[[subList[i-1]]] -
                                 rank2index[[iRank]] + 1
                             tmpEnv[[iRank]] <- tmpEnv[[subList[i-1]]] + 1
                             for (t in ls(tmpEnv)) {
@@ -461,7 +461,7 @@ taxonomyTableCreator <- function(idListFile = NULL, rankListFile = NULL) {
     ### rename last column to "root"
     names(fullRankIDdfOut)[ncol(fullRankIDdfOut)] <- "root"
     numericCol <- c(seq(4, ncol(fullRankIDdfOut)))
-    fullRankIDdfOut[,numericCol] <- 
+    fullRankIDdfOut[,numericCol] <-
         as.numeric(as.character(unlist(fullRankIDdfOut[,numericCol])))
     return(fullRankIDdfOut)
 }

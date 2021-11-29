@@ -77,7 +77,7 @@ createArchiPlot <- function(
         if ("length" %in% colnames(subdomainDf))
             maxEnd <- max(c(subdomainDf$end, subdomainDf$length))
         g <- pairDomainPlotting(
-            seed, ortho, orderedSeedDf, orderedOrthoDf, minStart, maxEnd, 
+            seed, ortho, orderedSeedDf, orderedOrthoDf, minStart, maxEnd,
             labelArchiSize, titleArchiSize)
         return(g)
     }
@@ -128,7 +128,7 @@ createArchiPlot <- function(
 #' minStart <- min(df$start)
 #' maxEnd <- max(df$end)
 #' # do plotting
-#' singleDomainPlotting(
+#' PhyloProfile:::singleDomainPlotting(
 #'     df,
 #'     geneID,
 #'     sep,
@@ -149,12 +149,12 @@ singleDomainPlotting <- function(
     if (is.null(maxEnd)) maxEnd <- max(df$end)
     if (is.null(colorScheme)) {
         colorScheme <- structure(
-            getQualColForVector(levels(as.factor(df$feature))), 
+            getQualColForVector(levels(as.factor(df$feature))),
             .Names = levels(as.factor(df$feature)))}
     gg <- ggplot(df, aes(y = feature, x = end, color = as.factor(feature))) +
         geom_segment(
             data = df, color = "white", size = 0,
-            aes(y = feature, yend = feature, x = minStart, xend = maxEnd)) + 
+            aes(y = feature, yend = feature, x = minStart, xend = maxEnd)) +
         scale_color_manual(values = colorScheme)
     # draw lines for representing sequence length
     if ("length" %in% colnames(df))
@@ -164,9 +164,9 @@ singleDomainPlotting <- function(
     # draw line and points
     gg <- gg + geom_segment(
         data = df, aes(x = start, xend = end, y = feature, yend = feature),
-        size = 1.5) + 
+        size = 1.5) +
         geom_point(data = df, aes(y = feature, x = start),
-                    color = "#b2b2b2", size = 3, shape = 3) + 
+                    color = "#b2b2b2", size = 3, shape = 3) +
         geom_point(data = df, aes(y = feature, x = end),
                     color = "#edae52", size = 3, shape = 5)
     # draw dashed line for domain path
@@ -190,14 +190,14 @@ singleDomainPlotting <- function(
 }
 
 #' Create architecure plot for a pair of seed and ortholog protein
-#' @usage pairDomainPlotting(seed, ortho, seedDf, orthoDf, minStart, maxEnd, 
+#' @usage pairDomainPlotting(seed, ortho, seedDf, orthoDf, minStart, maxEnd,
 #'     labelSize, titleSize)
 #' @param seed Seed ID
 #' @param ortho Ortho ID
-#' @param seedDf domain dataframe for seed domains containing the seed ID, 
-#' ortholog ID, sequence length, feature names, start and end positions, 
-#' feature weights (optional) and the status to determine if that feature is 
-#' important for comparison the architecture between 2 proteins* (e.g. seed 
+#' @param seedDf domain dataframe for seed domains containing the seed ID,
+#' ortholog ID, sequence length, feature names, start and end positions,
+#' feature weights (optional) and the status to determine if that feature is
+#' important for comparison the architecture between 2 proteins* (e.g. seed
 #' protein vs ortholog) (optional).
 #' @param orthoDf domain dataframe for ortholog domains (same format as seedDf).
 #' @param minStart the smallest start position of all domains
@@ -223,17 +223,17 @@ singleDomainPlotting <- function(
 #' seedDf <- subdomainDf[subdomainDf$orthoID != ortho,]
 #' minStart <- min(subdomainDf$start)
 #' maxEnd <- max(c(subdomainDf$end, subdomainDf$length))
-#' g <- pairDomainPlotting(seed,ortho,seedDf,orthoDf,minStart,maxEnd,9,9)    
+#' g <- pairDomainPlotting(seed,ortho,seedDf,orthoDf,minStart,maxEnd,9,9)
 #' grid::grid.draw(g)
 #' }
 
 pairDomainPlotting <- function(
-    seed = NULL, ortho = NULL, seedDf = NULL, orthoDf = NULL, 
+    seed = NULL, ortho = NULL, seedDf = NULL, orthoDf = NULL,
     minStart = 0, maxEnd = 999, labelSize = 12, titleSize = 12
 ) {
     if(is.null(seed) | is.null(ortho) | is.null(seedDf) | is.null(orthoDf))
         stop("Seed/Ortho ID or domain dataframe is NULL!")
-    # create color scheme, so that the same features in seed & ortholog will 
+    # create color scheme, so that the same features in seed & ortholog will
     # have the same colors
     featureSeed <- levels(as.factor(seedDf$feature))
     featureOrtho <- levels(as.factor(orthoDf$feature))
@@ -281,11 +281,11 @@ pairDomainPlotting <- function(
 #' orthoDf <- subDf[subDf$orthoID == "101621at6656:DROME@7227@1:Q9VG04",]
 #' seedDf <- subDf[subDf$orthoID != "101621at6656:DROME@7227@1:Q9VG04",]
 #' # sort
-#' sortDomains(seedDf, orthoDf)
+#' PhyloProfile:::sortDomains(seedDf, orthoDf)
 #' }
 
 sortDomains <- function(seedDf, orthoDf){
-    if (is.null(seedDf) | is.null(orthoDf)) 
+    if (is.null(seedDf) | is.null(orthoDf))
         stop("Domain data for seed & ortholog cannot be NULL!")
     orderNo <- NULL
     # get list of features in seedDf
