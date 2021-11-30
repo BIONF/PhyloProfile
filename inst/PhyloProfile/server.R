@@ -153,6 +153,7 @@ shinyServer(function(input, output, session) {
         if (!file.exists(i_mainInput))
             stop(paste("Main input file", i_mainInput ,"not found!"))
     }
+    if (is.null(i_cluster)) i_cluster <- FALSE
     # * render main input ------------------------------------------------------
     observe({
         if (!is.null(i_mainInput)) {
