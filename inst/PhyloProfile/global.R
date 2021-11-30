@@ -21,8 +21,11 @@ if (hasInternet() == TRUE) {
     if (packageVersion("ExperimentHub") < "1.11.1")
         BiocManager::install(pkgs = "ExperimentHub", version = "devel")
     library(ExperimentHub)
-    eh = ExperimentHub()
-    myData <- query(eh, "PhyloProfileData")
-} else {
-    eh = ExperimentHub(localHub=TRUE)
+    eh = ExperimentHub(localHub = TRUE)
+    if ("EH2549" %in% eh$ah_id) {
+        myData <- query(eh, "PhyloProfileData")
+    } else {
+        eh = ExperimentHub()
+        myData <- query(eh, "PhyloProfileData")
+    }
 }
