@@ -98,7 +98,7 @@ groupComparison <- function (
             )
             return(pvalues[pvalues <= significanceLevel()])
         } else {
-            deltaMean <- compareMeansTaxonGroups(
+            deltaMean <- compareMedianTaxonGroups(
                 filteredDf(),
                 inGroup(),
                 FALSE,
