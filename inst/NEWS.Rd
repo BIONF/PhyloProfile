@@ -2,6 +2,12 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.8.3}{
+  \itemize{
+    \item fixed bug of group comparison function
+  }
+}
+
 \section{Version 1.8.2}{
   \itemize{
     \item fixed loading cluster from config file
