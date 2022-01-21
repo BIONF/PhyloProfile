@@ -104,3 +104,24 @@ createSelectGene <- function(id, list, selected) {
                 multiple = TRUE,
                 selectize = FALSE)
 }
+
+#' Replace ~ symbol by the name of home folder
+#' @export
+#' @param fullPath complete path to input file or folder
+#' @return complete path of input file or folder without ~ symbol
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+#' @import stringr
+#' @examples 
+#' replaceHomeCharacter("~/path/to/something")
+replaceHomeCharacter <- function (fullPath = NULL) {
+    homeName <- system("echo $HOME", intern = TRUE)
+    stringr::str_replace(fullPath, "~", homeName)
+}
+
+substrRight <- function(x, n) {
+    substr(x, nchar(x)-n+1, nchar(x))
+}
+
+substrLeft <- function(x, n) {
+    substr(x, 1, n)
+}

@@ -2,6 +2,13 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.8.4}{
+  \itemize{
+    \item fixed error reading taxonNamesReduced.txt that contains "#"
+    \item added functions for import and export taxonomy DB
+  }
+}
+
 \section{Version 1.8.3}{
   \itemize{
     \item fixed bug of group comparison function

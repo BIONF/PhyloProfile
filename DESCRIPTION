@@ -1,6 +1,6 @@
 Package: PhyloProfile
-Version: 1.8.3
-Date: 2021-12-16
+Version: 1.8.4
+Date: 2022-01-21
 Title: PhyloProfile
 Authors@R: c(
     person("Vinh", "Tran", role = c("aut", "cre"), email = "tran@bio.uni-frankfurt.de"),
@@ -17,7 +17,7 @@ biocViews: Software, Visualization, DataRepresentation, MultipleComparison, Func
 Imports:
     ape, bioDist, BiocStyle, Biostrings, colourpicker, data.table, DT, energy, 
     ExperimentHub, ggplot2, gridExtra, pbapply, RColorBrewer, RCurl,
-    shiny, shinyBS, shinyjs, OmaDB, plyr, xml2, zoo, yaml
+    shiny, shinyBS, shinyFiles, shinyjs, OmaDB, plyr, xml2, zoo, yaml
 RoxygenNote: 7.1.2
 Suggests: knitr, rmarkdown, testthat
 VignetteBuilder: knitr

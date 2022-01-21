@@ -184,27 +184,30 @@ getDomainLink <- function(info, domainDf) {
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 createLinkTable <- function(featureList, featureType) {
     feature <- sub("_","@", featureList)
-    tmpDf <- data.frame(
-        do.call(
-            'cbind', 
-            data.table::tstrsplit(as.character(feature), '@', fixed = TRUE)
+    featDf <- NULL
+    if (length(feature) > 0) {
+        tmpDf <- data.frame(
+            do.call(
+                'cbind', 
+                data.table::tstrsplit(as.character(feature), '@', fixed = TRUE)
+            )
         )
-    )
-    featDf <- data.frame("ID" = levels(as.factor(tmpDf$X2)))
-    if (featureType == "pfam") {
-        # featDf$type <- "PFAM"
-        featDf$link <- paste0(
-            "<a href='https://pfam.xfam.org/family/", featDf$ID, 
-            "' target='_blank'>", featDf$ID, "</a>"
-        )
-    } else {
-        # featDf$type <- "SMART"
-        featDf$link <- paste0(
-            "<a href='http://smart.embl-heidelberg.de/smart/", 
-            "do_annotation.pl?BLAST=DUMMY&DOMAIN=", 
-            featDf$ID, "' target='_blank'>",
-            featDf$ID, "</a>"
-        )
+        featDf <- data.frame("ID" = levels(as.factor(tmpDf$X2)))
+        if (featureType == "pfam") {
+            # featDf$type <- "PFAM"
+            featDf$link <- paste0(
+                "<a href='https://pfam.xfam.org/family/", featDf$ID, 
+                "' target='_blank'>", featDf$ID, "</a>"
+            )
+        } else {
+            # featDf$type <- "SMART"
+            featDf$link <- paste0(
+                "<a href='http://smart.embl-heidelberg.de/smart/", 
+                "do_annotation.pl?BLAST=DUMMY&DOMAIN=", 
+                featDf$ID, "' target='_blank'>",
+                featDf$ID, "</a>"
+            )
+        }
     }
     return(featDf)
 }

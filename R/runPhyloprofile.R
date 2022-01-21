@@ -8,7 +8,8 @@
 #' @importFrom colourpicker colourInput
 #' @import energy
 #' @import ExperimentHub
-#' @import shinyBS
+#' @import shinyBS 
+#' @import shinyFiles
 #' @import yaml
 #' @rawNamespace import(RCurl, except = reset)
 #' @rawNamespace import(shinyjs, except = colourInput)
