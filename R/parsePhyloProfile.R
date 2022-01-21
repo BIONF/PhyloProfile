@@ -44,7 +44,8 @@ getNameList <- function() {
         utils::data(taxonNamesReduced)
     } else {
         taxonNamesReduced <- utils::read.table(
-            nameReducedFile, sep = "\t", header = TRUE, fill = TRUE
+            nameReducedFile, sep = "\t", header = TRUE, fill = TRUE, 
+            comment.char = ""
         )
     }
 

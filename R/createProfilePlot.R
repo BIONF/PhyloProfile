@@ -363,8 +363,11 @@ highlightProfilePlot <- function(
         if (!file.exists(nameReducedFile)) {
             taxonNamesReduced <- NULL
             delayedAssign("taxName", taxonNamesReduced)
-        } else
-            taxName <- utils::read.table(nameReducedFile, sep="\t", header=TRUE)
+        } else {
+            taxName <- utils::read.table(
+                nameReducedFile, sep="\t", header = TRUE, comment.char = ""
+            )
+        }
         taxonHighlightID <- taxName$ncbiID[
             taxName$fullName == taxonHighlight & taxName$rank == rankName]
         if (length(taxonHighlightID) == 0L)

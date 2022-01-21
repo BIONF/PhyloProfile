@@ -555,7 +555,7 @@ shinyUI(
                                 "updateBtn",
                                 "Update plot",
                                 style = "warning",
-                                icon("refresh")
+                                icon("sync")
                             )
                         )
                     ),
@@ -627,7 +627,7 @@ shinyUI(
                                 "plotCustom",
                                 "Update plot",
                                 style = "warning",
-                                icon("refresh")
+                                icon("sync")
                             )
                         )
                     ),
@@ -961,42 +961,107 @@ shinyUI(
                                     "updateGC",
                                     "Update plot",
                                     style = "warning",
-                                    icon("refresh")
+                                    icon("sync")
                                 )
                             )
                         )
                     ),
                     groupComparisonUI("groupComparison")
                 ),
-                
-                # * Update NCBI taxonomy database ------------------------------
+
+                # * NCBI taxonomy data -----------------------------------------
                 tabPanel(
-                    "Update NCBI taxonomy database",
-                    h4(strong("Update NCBI taxonomy")),
-                    bsAlert("descUpdateNCBITaxUI"),
-                    bsButton(
-                        "doUpdateNcbi",
-                        "Do update",
-                        style = "warning",
-                        icon("wrench")
+                    "NCBI taxonomy data",
+                    bsAlert("descNcbiTaxDbUI"),
+                    column(
+                        3,
+                        radioButtons(
+                            inputId = "taxDB",
+                            label = "Choose a task:",
+                            choices = list(
+                                "Update NCBI taxonomy DB" = "update",
+                                "Reset NCBI taxonomy DB" = "reset",
+                                "Export taxonomy DB files" = "export",
+                                "Import taxonomy DB files" = "import"
+                            )
+                        )
                     ),
-                    hr(),
-                    verbatimTextOutput("updateNCBITaxStatus")
-                ),
-                
-                # * Reset old taxonomy data ------------------------------------
-                tabPanel(
-                    "Reset taxonomy data",
-                    h4(strong("Reset taxonomy data")),
-                    bsAlert("descResetTaxDataUI"),
-                    bsButton(
-                        "doResetTax",
-                        "Do reset",
-                        style = "warning",
-                        icon("wrench")
-                    ),
-                    hr(),
-                    verbatimTextOutput("resetTaxonomyDataStatus")
+                    column(
+                        9,
+                        conditionalPanel(
+                            condition = "input.taxDB=='update'",
+                            h4(strong("Update NCBI taxonomy")),
+                            bsButton(
+                                "doUpdateNcbi",
+                                "Do update",
+                                style = "warning",
+                                icon("wrench")
+                            ),
+                            hr(),
+                            verbatimTextOutput("updateNCBITaxStatus")
+                        ),
+                        conditionalPanel(
+                            condition = "input.taxDB=='reset'",
+                            h4(strong("Reset taxonomy data")),
+                            bsButton(
+                                "doResetTax",
+                                "Do reset",
+                                style = "warning",
+                                icon("wrench")
+                            ),
+                            hr(),
+                            verbatimTextOutput("resetTaxonomyDataStatus")
+                        ),
+                        conditionalPanel(
+                            condition =
+                                "input.taxDB=='export'",
+                            h4(strong("Export current taxonomy files")),
+                            shinyDirButton(
+                                "taxDirOut", 
+                                "Select output directory" ,
+                                title = paste(
+                                    "Please select output directory"
+                                ),
+                                buttonType = "default", class = NULL
+                            ),
+                            br(),
+                            uiOutput("taxDirOut.ui"),
+                            br(),
+                            bsButton(
+                                "doExportTax",
+                                "Do export",
+                                style = "warning",
+                                icon("file-export")
+                            ),
+                            hr(),
+                            verbatimTextOutput("exportTaxonomyDataStatus")
+                        ),
+                        conditionalPanel(
+                            condition =
+                                "input.taxDB=='import'",
+                            h4(strong("Import your own taxonomy files")),
+                            shinyDirButton(
+                                "taxDir", 
+                                "Select input directory" ,
+                                title = paste(
+                                    "Please select directory that contains 
+                                    the taxonomy files"
+                                ),
+                                buttonType = "default", class = NULL
+                            ),
+                            br(),
+                            uiOutput("taxDir.ui"),
+                            br(),
+                            bsButton(
+                                "doImportTax",
+                                "Do import",
+                                style = "warning",
+                                icon("file-import")
+                            ),
+                            hr(),
+                            verbatimTextOutput("importTaxonomyDataStatus")
+                        )
+                    )
                 )
             ),
 
@@ -1203,7 +1268,7 @@ shinyUI(
                 "lowColorVar1",
                 "Low variable 1 (dot)",
                 value = "#FF8C00"
-            ),            
+            ),
             colourpicker::colourInput(
                 "midColorVar1",
                 "Mid variable 1 (dot)",

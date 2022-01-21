@@ -3583,8 +3583,7 @@ shinyServer(function(input, output, session) {
         doUpdate = reactive(input$updateGC)
     )
     
-    # * UPDATE NCBI TAXONOMY DATABASE ==========================================
-    # ** description for update NCBI tax function ------------------------------
+    # * WORKING WITH NCBI TAXONOMY DATABASE ====================================
     observe({
         desc = paste(
             "<p><em>PhyloProfile</em> is provided with a set of pre-identified 
@@ -3597,7 +3596,11 @@ shinyServer(function(input, output, session) {
             and <code>taxonomyMatrix.txt</code>. The 
             <code>preProcessedTaxonomy.txt</code> file stored a pre-processing
             NCBI taxonomy database. While the <code>taxonomyMatrix.txt</code> 
-            file is used for sorting the input taxa in the profile plot.</p>
+            file is used for sorting the input taxa in the profile plot as well 
+            as dynamically changing the working systematic rank. For more info
+            please refer to  
+            <a href=\"https://github.com/BIONF/PhyloProfile/wiki/PhyloProfile-and-the-NCBI-taxonomy-database\" 
+            target=\"_blank\">this post</a>.</p>
             <p>If your phylogenetic profiles contains taxa that are not part of 
             that set, the new taxa will need to be parsed. Normally, if the new 
             taxa can be found in the <code>preProcessedTaxonomy.txt</code>, you 
@@ -3608,16 +3611,35 @@ shinyServer(function(input, output, session) {
             old database, you will see the <strong>Add taxonomy info</strong> 
             button instead. You have to either manually add those taxa using 
             the <strong>Add taxonomy info</strong> button, or update the 
-            <code>preProcessedTaxonomy.txt</code> file by using this 
-            function.&nbsp;</p>
-            <p>This task will take some minutes depending on your internet 
+            <code>preProcessedTaxonomy.txt</code> file by using the 
+            function <strong>\"<span style=\"text-decoration: underline;\">
+            Update NCBI taxonomy DB</span>\"</strong>. This 
+            task will take some minutes depending on your internet 
             connection. So, please be patient and wait until the process is 
-            done!</p>"
+            done!</p>
+            <p>Whenever a new taxon is added into the taxonomy data of 
+            <em>PhyloProfile</em>, the taxonomy files will be 
+            changed. If you encounter any troubles related to the taxonomy, 
+            such as error by parsing new taxa, not all input taxa can be found,
+            the order of your taxa in the profile plot looks weird, etc., you 
+            should <strong>\"<span style=\"text-decoration: underline;\">
+            Reset the NCBI taxonomy DB</span>\"</strong>.</p>
+            <p>You can also <strong>\"<span style=\"text-decoration: underline;\">
+            export the taxonomy database</span>\"</strong> of your current
+            working project for backing up.</p>
+            <p>Last but not least, if you want to 
+            <strong>\"<span style=\"text-decoration: underline;\">
+            use any existing taxonomy files</span>\"</strong> from your old 
+            analyses, you can also provide the folder that contains these files 
+            to <em>PhyloProfile</em>: <code>newTaxa.txt</code>, 
+            <code>idList.txt</code>, <code>rankList.txt</code>, 
+            <code>taxonNamesReduced.txt</code>, and 
+            <code>taxonomyMatrix.txt</code>.</p>"
         )
         
-        if (input$tabs == "Update NCBI taxonomy database") {
+        if (input$tabs == "NCBI taxonomy data") {
             createAlert(
-                session, "descUpdateNCBITaxUI", "descUpdateNCBITax", title = "",
+                session, "descNcbiTaxDbUI", "descNcbiTaxDb", title = "",
                 content = desc, append = FALSE
             )
         }
@@ -3637,36 +3659,6 @@ shinyServer(function(input, output, session) {
         updateButton(session, "doUpdateNcbi", disabled = TRUE)
     })
     
-    # * RESET TAXONOMY DATA ====================================================
-    # ** description for reset taxonomy data function --------------------------
-    observe({
-        desc = paste(
-            "<p><em>PhyloProfile</em> utilizes the NCBI taxonomy info to sort 
-            input taxa and dynamically change the working systematic rank. 
-            Initially, PhyloProfile has a set of pre-processing taxa together 
-            with their NCBI taxonomy info saved in different files in the&nbsp;
-            <code>PhyloProfile/PhyloProfile/data</code> folder (to check where 
-            <em>PhyloProfile</em> package is installed, im R Terminal type 
-            <code>find.package(\"PhyloProfile\")</code>). Those files include 
-            <code>idList.txt</code>, <code>rankList.txt</code>, 
-            <code>taxonNamesReduced.txt</code>, and 
-            <code>taxonomyMatrix.txt</code>. Whenever a new taxon is added into 
-            the taxonomy data of <em>PhyloProfile</em>, these file will be 
-            changed.</p>
-            <p>If you encounter any troubles related to the taxonomy, such as 
-            error by parsing new taxa, not all input taxa can be found, the 
-            order of your taxa in the profile plot looks weird, etc., you 
-            should reset the taxonomy data.</p>"
-        )
-        
-        if (input$tabs == "Reset taxonomy data") {
-            createAlert(
-                session, "descResetTaxDataUI", "descResetTaxData", title = "",
-                content = desc, append = FALSE
-            )
-        }
-    })
-    
     # ** do reset taxonomy data ------------------------------------------------
     observeEvent(input$doResetTax, {
         withCallingHandlers({
@@ -3679,5 +3671,69 @@ shinyServer(function(input, output, session) {
             )
         })
         updateButton(session, "doResetTax", disabled = TRUE)
+    })
+    
+    # ** do export taxonomy data -----------------------------------------------
+    getTaxPathOut <- reactive({
+        homePath = c(wd='~/')
+        shinyDirChoose(
+            input, "taxDirOut", roots = homePath, session = session
+        )
+        taxPathOut <- parseDirPath(homePath, input$taxDirOut)
+        return(replaceHomeCharacter(as.character(taxPathOut)))
+    })
+    
+    output$taxDirOut.ui <- renderUI({
+        req(getTaxPathOut())
+        if (length(getTaxPathOut()) > 0) {
+            outString <- getTaxPathOut()
+            em(outString)
+        }
+    })
+    
+    observeEvent(input$doExportTax, {
+        req(getTaxPathOut())
+        withCallingHandlers({
+            shinyjs::html("exportTaxonomyDataStatus", "")
+            exportNcbiTax(getTaxPathOut())
+        },
+        message = function(m) {
+            shinyjs::html(
+                id = "exportTaxonomyDataStatus", html = m$message, add = TRUE
+            )
+        })
+        updateButton(session, "doExportTax", disabled = TRUE)
+    })
+    
+    # ** do import taxonomy data -----------------------------------------------
+    getTaxPath <- reactive({
+        homePath = c(wd='~/')
+        shinyDirChoose(
+            input, "taxDir", roots = homePath, session = session
+        )
+        taxPath <- parseDirPath(homePath, input$taxDir)
+        return(replaceHomeCharacter(as.character(taxPath)))
+    })
+    
+    output$taxDir.ui <- renderUI({
+        req(getTaxPath())
+        if (length(getTaxPath()) > 0) {
+            outString <- getTaxPath()
+            em(outString)
+        }
+    })
+    
+    observeEvent(input$doImportTax, {
+        req(getTaxPath())
+        withCallingHandlers({
+            shinyjs::html("importTaxonomyDataStatus", "")
+            importNcbiTax(getTaxPath())
+        },
+        message = function(m) {
+            shinyjs::html(
+                id = "importTaxonomyDataStatus", html = m$message, add = TRUE
+            )
+        })
+        updateButton(session, "doImportTax", disabled = TRUE)
     })
 })
