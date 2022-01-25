@@ -2785,6 +2785,130 @@ shinyServer(function(input, output, session) {
         inSeq = reactive(input$inSeq),
         inTaxa = reactive(input$inTaxa)
     )
+    
+    # ======================== PLOT SETTINGS DOWNLOADING =======================
+    # ** description for plot settings downloading -----------------------------
+    observe({
+        desc = paste(
+            "Here you can download the plot settings (such as plot size, font",
+            "size, filters, working taxonomy rank and the reference taxon,",
+            "etc.) either as <em><strong>a list in YAML",
+            "format</strong></em>, or as <em><strong>an Rscript</strong></em>",
+            "that you can directly use to create the corresponding plot",
+            "without the need of using the GUI of",
+            "PhyloProfile."
+        )
+        
+        if (input$tabs == "Export plot settings") {
+            createAlert(
+                session, "descExportSettingUI", "descExportSetting",
+                content = desc, append = FALSE
+            )
+        }
+    })
+    
+    # ** render output file name -----------------------------------------------
+    output$settingFile.ui <- renderUI({
+        if (input$exportSetting == "list") {
+            textInput(
+                "settingFile",
+                "",
+                value = "plotSettings",
+                width = "30%",
+                placeholder = "Output file name"
+            )
+        } else {
+            textInput(
+                "settingFile",
+                "",
+                value = "preConfiguredPlot",
+                width = "30%",
+                placeholder = "Output file name"
+            )
+        }
+        
+    })
+    
+    # ** do export plot settings -----------------------------------------------
+    getPlotSettings <- function(){
+        rawInput <- ""
+        if (input$demoData == "preCalcDt") {
+            rawInput <- createLongMatrix(i_mainInput)
+        } else {
+            rawInput <- input$mainInput
+        }
+        outputList <- list(
+            "mainInput" = rawInput$datapath,
+            "rank" = input$rankSelect,
+            "refspec" = input$inSelect,
+            "clusterProfile" = input$applyCluster,
+            "profileTypeClustering" = input$profileType,
+            "distMethodClustering" = input$distMethod,
+            "clusterMethod" = input$clusterMethod,
+            "taxonHighlight" = input$taxonHighlight,
+            "geneHighlight" = input$geneHighlight,
+            "var1AggregateBy" = input$var1AggregateBy,
+            "var2AggregateBy" = input$var2AggregateBy,
+            "percentCutoff" = input$percent,
+            "var1Cutoff" = input$var1,
+            "var2Cutoff" = input$var2,
+            "var1Relation" = input$var1Relation,
+            "var2Relation" = input$var2Relation
+        )
+        outputList <- append(outputList, getParameterInputMain())
+        return(outputList)
+    }
+    
+    getSettingPath <- reactive({
+        homePath = c(wd='~/')
+        shinyDirChoose(
+            input, "settingDir", roots = homePath, session = session
+        )
+        settingPath <- parseDirPath(homePath, input$settingDir)
+        settingPathMod <- replaceHomeCharacter(as.character(settingPath))
+        if (length(settingPathMod) > 0) {
+            if (input$exportSetting == "list")
+                settingPathMod <- paste0(
+                    settingPathMod, "/", input$settingFile, ".yml"
+                )
+            else
+                settingPathMod <- paste0(
+                    settingPathMod, "/", input$settingFile #, ".rscript"
+                )
+        }
+        return(settingPathMod)
+    })
+    
+    output$settingDir.ui <- renderUI({
+        req(getSettingPath())
+        if (length(getSettingPath()) > 0) {
+            outString <- getSettingPath()
+            if (input$exportSetting == "list") em(outString)
+            else 
+                em(
+                    paste0(
+                        paste0(outString, ".yml"), "; ",
+                        paste0(outString, ".rscript")
+                    )
+                )
+        }
+    })
+    
+    observeEvent(input$doExportSetting, {
+        req(length(getSettingPath()) > 0)
+        fileCheck <- 0
+        withCallingHandlers({
+            shinyjs::html("exportSettingStatus", "")
+            downloadPlotSettings(
+                getPlotSettings(), getSettingPath(), input$exportSetting
+            )
+        },
+        message = function(m) {
+            shinyjs::html(
+                id = "exportSettingStatus", html = m$message, add = TRUE
+            )
+        })
+    })
 
     # ============================ ANALYSIS FUNCTIONS ==========================
 
@@ -3630,7 +3754,7 @@ shinyServer(function(input, output, session) {
             <p>Last but not least, if you want to 
             <strong>\"<span style=\"text-decoration: underline;\">
             Import any existing taxonomy files</span>\"</strong> from your old 
-            analysesto <em>PhyloProfile</em> by providing the folder that 
+            analyses to <em>PhyloProfile</em> by providing the folder that 
             contains these files: <code>newTaxa.txt</code>, 
             <code>idList.txt</code>, <code>rankList.txt</code>, 
             <code>taxonNamesReduced.txt</code>, and 

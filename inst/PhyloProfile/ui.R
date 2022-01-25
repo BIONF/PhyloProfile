@@ -139,7 +139,7 @@ shinyUI(
 
         # MAIN NARVARPAGE TABS -------------------------------------------------
         navbarPage(
-            em(strong("PhyloProfile v1.8.4")),
+            em(strong("PhyloProfile v1.8.5")),
             id = "tabs",
             collapsible = TRUE,
             inverse = TRUE,
@@ -1067,9 +1067,49 @@ shinyUI(
 
             # DATA DOWNLOAD TAB ================================================
             navbarMenu(
-                "Download filtered data",
+                "Export data",
+                # * Export data ------------------------------------------------
                 downloadFilteredMainUI("filteredMainDownload"),
-                downloadFilteredCustomizedUI("filteredCustomizedDownload")
+                downloadFilteredCustomizedUI("filteredCustomizedDownload"),
+                
+                # * Export plot settings ---------------------------------------
+                tabPanel(
+                    "Export plot settings",
+                    h4(strong("Export plot settings")),
+                    bsAlert("descExportSettingUI"),
+                    radioButtons(
+                        inputId = "exportSetting",
+                        label = "as:",
+                        choices = list(
+                            "a list" = "list",
+                            "an Rscript" = "rscript"
+                        )
+                    ),
+                    hr(),
+                    strong("Output dir:"),
+                    br(), br(),
+                    shinyDirButton(
+                        "settingDir", 
+                        "Select output directory" ,
+                        title = paste(
+                            "Please select output directory"
+                        ),
+                        buttonType = "default", class = NULL
+                    ),
+                    br(), br(),
+                    strong("File name:"),
+                    uiOutput("settingFile.ui"),
+                    uiOutput("settingDir.ui"),
+                    br(),
+                    bsButton(
+                        "doExportSetting",
+                        "Do export",
+                        style = "warning",
+                        icon("file-export")
+                    ),
+                    hr(),
+                    verbatimTextOutput("exportSettingStatus")
+                )
             ),
 
             # HELP TAB =========================================================
