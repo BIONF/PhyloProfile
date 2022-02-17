@@ -47,6 +47,41 @@ hasInternet <- function(){
     !is.null(curl::nslookup("r-project.org", error = FALSE))
 }
 
+#' Create link to public database
+#' @return link to public database
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+
+createDBlink <- function(id, source, type = ""){
+    linkText <- ""
+    url <- ""
+    if (source == "NCBI") {
+        url <- paste0("https://www.ncbi.nlm.nih.gov/protein/", id)
+    } else if (source == "UniProt") {
+        url <- paste0("https://www.uniprot.org/uniprot/", id)
+    } else if (source == "OrthoDB") {
+        url <- paste0("https://www.orthodb.org/?query=", id)
+        if (type == "gene") {
+            idMod <- gsub(":", "%3A", id)
+            url <- paste0("https://www.orthodb.org/?gene=", idMod) 
+        }
+    } else if (source == "OMA") {
+        url <- paste0("https://omabrowser.org/oma/omagroup/", id, "/members/")
+        if (type == "gene") {
+            url <- paste0("https://omabrowser.org/oma/info/", id)
+        }
+    }
+    
+    if (length(url > 0)) {
+        if (RCurl::url.exists(url)) {
+            linkText <- paste0(
+                "<p><a href='", url, "' target='_blank'>",
+                source, " entry for <strong>", id, "</strong></a></p>"
+            )
+        }
+    }
+    return(linkText)
+}
+
 # FUNCTIONS FOR RENDER UI ELEMENTS ============================================
 createSliderCutoff <- function(id, title, start, stop, varID){
     if (is.null(varID)) return()

@@ -2473,20 +2473,27 @@ shinyServer(function(input, output, session) {
             "<p><a href='", taxUrl, "' target='_blank'>",
             "NCBI taxonomy entry for <strong>", taxId , "</strong></a></p>"
         )
-        # get protein ID
+        # get seed ID
+        seedId <- tmp[[1]]
+        if (input$seedSource == "ncbi") {
+            linkText <- paste0(linkText, createDBlink(seedId, "NCBI"))
+        } else if (input$seedSource == "uniprot") {
+            linkText <- paste0(linkText, createDBlink(seedId, "UniProt"))
+        } else if (input$seedSource == "orthodb") {
+            linkText <- paste0(linkText, createDBlink(seedId, "OrthoDB"))
+        } else if (input$seedSource == "oma") {
+            linkText <- paste0(linkText, createDBlink(seedId, "OMA"))
+        }
+        # get ortho ID
         protId <- tmp[[3]]
-        uniprotUrl <- paste0("https://www.uniprot.org/uniprot/", protId)
-        ncbiUrl <- paste0("https://www.ncbi.nlm.nih.gov/protein/", protId)
-        if (RCurl::url.exists(uniprotUrl)) {
-            linkText <- paste0(
-                linkText, "<p><a href='", uniprotUrl, "' target='_blank'>",
-                "UniProt entry for <strong>", protId, "</strong></a></p>"
-            )
-        } else if (RCurl::url.exists(ncbiUrl)) {
-            linkText <- paste0(
-                linkText, "<p><a href='", ncbiUrl, "' target='_blank'>",
-                "NCBI protein entry for <strong>", protId, "</strong></a></p>"
-            )
+        if (input$orthoSource == "ncbi") {
+            linkText <- paste0(linkText, createDBlink(protId, "NCBI"))
+        } else if (input$orthoSource == "uniprot") {
+            linkText <- paste0(linkText, createDBlink(protId, "UniProt"))
+        } else if (input$orthoSource == "orthodb") {
+            linkText <- paste0(linkText,createDBlink(protId, "OrthoDB", "gene"))
+        } else if (input$orthoSource == "oma") {
+            linkText <- paste0(linkText, createDBlink(protId, "OMA", "gene"))
         }
         # render links
         linkText <- paste0(
