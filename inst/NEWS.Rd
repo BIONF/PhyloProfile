@@ -2,6 +2,12 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.8.6}{
+  \itemize{
+    \item option to identify sequence source
+  }
+}
+
 \section{Version 1.8.5}{
   \itemize{
     \item added functions for exporting plot settings

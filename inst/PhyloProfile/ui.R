@@ -139,7 +139,7 @@ shinyUI(
 
         # MAIN NARVARPAGE TABS -------------------------------------------------
         navbarPage(
-            em(strong("PhyloProfile v1.8.5")),
+            em(strong("PhyloProfile v1.8.6")),
             id = "tabs",
             collapsible = TRUE,
             inverse = TRUE,
@@ -318,54 +318,66 @@ shinyUI(
                             condition = "input.geneListSelected == 'from file'",
                             fileInput("list", "")
                         ),
-
                         hr(),
+                        
+                        strong(h4("Sequence source:")),
+                        column(
+                            6,
+                            selectInput(
+                                "seedSource",
+                                label = h5("Seeds:"),
+                                choices = list(
+                                    "NCBI" = "ncbi",
+                                    "UniProt" = "uniprot",
+                                    "OrthoDB" = "orthodb",
+                                    "OMA" = "oma",
+                                    "User-defined" = "user"
+                                ),
+                                selected = "ncbi",
+                                width = 130
+                            )
+                        ),
+                        column(
+                            6,
+                            selectInput(
+                                "orthoSource",
+                                label = h5("Orthologs:"),
+                                choices = list(
+                                    "NCBI" = "ncbi",
+                                    "UniProt" = "uniprot",
+                                    "OrthoDB" = "orthodb",
+                                    "OMA" = "oma",
+                                    "User-defined" = "user"
+                                ),
+                                selected = "ncbi",
+                                width = 130
+                            )
+                        )
+                        ,
+                        h5(""),
+                        hr(),
+                        
                         checkboxInput(
                             "ordering",
                             strong("Order sequence IDs"),
                             value = TRUE
                         ),
-
                         hr(),
-                        HTML("<b>Order taxa</b>"),
-
-                        radioButtons(
-                            inputId = "orderTaxa",
-                            label = "",
-                            choices = list(
-                                "automatically", "by user defined tree"
-                            ),
-                            selected = "automatically",
-                            inline = TRUE
-                        ),
-
-                        bsPopover(
-                            "orderTaxa", "", "in newick format", "bottom"
-                        ),
-
-                        conditionalPanel(
-                            condition = "input.orderTaxa
-                                        == 'by user defined tree'",
-                            uiOutput("inputTree.ui")
-                        ),
-
-                        uiOutput("checkNewick.ui"),
-                        hr(),
-
-                        strong(h4("Other optional input:")),
-
-                        bsButton("fastaUpload", "FASTA file(s)"),
-                        h5(""),
-
-                        bsButton("uploadGeneCategory", "Gene categories"),
-                        h5(""),
-                        hr(),
-
+                        
                         strong(h4("Color configuration:")),
                         actionButton(
                             "setColor", "Change colors",
                             style = "padding:4px; font-size:100%"
                         ),
+                        hr(),
+                        
+                        strong(h4("Other optional input:")),
+                        
+                        bsButton("fastaUpload", "FASTA file(s)"),
+                        h5(""),
+                        
+                        bsButton("uploadGeneCategory", "Gene categories"),
+                        h5(""),
                         hr()
                     )
                 ),
@@ -466,7 +478,31 @@ shinyUI(
 
                         strong(h5("Choose (super)taxon of interest:")),
                         uiOutput("select"),
-                        br(),
+                        hr(),
+                        
+                        strong(h4("Order taxa")),
+                        radioButtons(
+                            inputId = "orderTaxa",
+                            label = "",
+                            choices = list(
+                                "automatically", "by user defined tree"
+                            ),
+                            selected = "automatically",
+                            inline = TRUE
+                        ),
+                        
+                        bsPopover(
+                            "orderTaxa", "", "in newick format", "bottom"
+                        ),
+                        
+                        conditionalPanel(
+                            condition = "input.orderTaxa
+                                        == 'by user defined tree'",
+                            uiOutput("inputTree.ui")
+                        ),
+                        
+                        uiOutput("checkNewick.ui"),
+                        hr(),
 
                         bsButton(
                             "do",
