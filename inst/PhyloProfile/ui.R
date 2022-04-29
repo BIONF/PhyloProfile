@@ -139,7 +139,7 @@ shinyUI(
 
         # MAIN NARVARPAGE TABS -------------------------------------------------
         navbarPage(
-            em(strong("PhyloProfile v1.10.0")),
+            em(strong("PhyloProfile v1.12.0")),
             id = "tabs",
             collapsible = TRUE,
             inverse = TRUE,
@@ -316,7 +316,7 @@ shinyUI(
 
                         conditionalPanel(
                             condition = "input.geneListSelected == 'from file'",
-                            fileInput("list", "")
+                            fileInput("geneList", "")
                         ),
                         hr(),
                         
@@ -333,7 +333,7 @@ shinyUI(
                                     "OMA" = "oma",
                                     "User-defined" = "user"
                                 ),
-                                selected = "ncbi",
+                                selected = "uniprot",
                                 width = 130
                             )
                         ),
@@ -352,8 +352,11 @@ shinyUI(
                                 selected = "ncbi",
                                 width = 130
                             )
-                        )
-                        ,
+                        ),
+                        actionButton(
+                            "selectSequenceID", "Ortholog ID format",
+                            style = "padding:4px; font-size:100%"
+                        ),
                         h5(""),
                         hr(),
                         
@@ -1465,6 +1468,39 @@ shinyUI(
             "uploadGeneCategory",
             size = "small",
             fileInput("geneCategory", "")
+        ),
+        
+        
+        # * popup for setting ortholog ID format -------------------------------
+        bsModal(
+            "seqIDBs",
+            "Sequence ID format",
+            "selectSequenceID",
+            size = "small",
+            selectInput(
+                "seqIdFormat",
+                "ID format:",
+                choices = list(
+                    "BIONF format (seed|taxon|ortho)" = 1,
+                    "seqID" = 2,
+                    "something<separator>seqID" = 3,
+                    "seqID<separator>something" = 4
+                ),
+                selected = 1
+            ),
+            selectInput(
+                "separator",
+                "Separator:",
+                choices = list(
+                    "none" = "none",
+                    "|" = 1,
+                    "@" = 2,
+                    "#" = 3,
+                    ";" = 4
+                ),
+                selected = 1
+            ),
+            em("Please note! Only these ID formats are accepted!")
         ),
 
         # * popup for setting Main plot configurations -------------------------

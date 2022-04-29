@@ -504,7 +504,7 @@ shinyServer(function(input, output, session) {
     # * check the validity of input tree file and render checkNewick.ui --------
     output$inputTree.ui <- renderUI({
         filein <- input$mainInput
-        if (is.null(filein) & input$demoData == "none") {
+        if (!(is.null(filein) & input$demoData == "none")) {
             fileInput("inputTree", "")
         }
     })
@@ -1689,13 +1689,21 @@ shinyServer(function(input, output, session) {
 
         withProgress(message = 'Subseting data...', value = 0.5, {
             longDataframe <- unsortID(longDataframe, input$ordering)
-            listIn <- input$list
+            listIn <- input$geneList
             if (!is.null(listIn)) {
                 list <- read.table(file = listIn$datapath, header = FALSE)
-                listGeneOri <- list$V1
+                listGeneOri <- unique(list$V1)
+                # update number of endIndex
+                if (length(listGeneOri) <= 1500) {
+                    updateNumericInput(
+                        session, 
+                        "endIndex", value = length(listGeneOri)
+                    )
+                }
                 if (startIndex <= length(listGeneOri)) {
-                    listGene <- listGeneOri[listGeneOri[startIndex:endIndex]]
+                    listGene <- listGeneOri[startIndex:endIndex]
                 } else listGene <- listGeneOri
+                listGene <- listGene[!is.na(listGene)]
                 data <- longDataframe[longDataframe$geneID %in% listGene, ]
             } else {
                 subsetID <-
@@ -1858,10 +1866,10 @@ shinyServer(function(input, output, session) {
         geneList <- getMainInput()
         out <- as.list(levels(factor(geneList$geneID)))
         
-        listIn <- input$list
+        listIn <- input$geneList
         if (!is.null(listIn)) {
             list <- read.table(file = listIn$datapath, header = FALSE)
-            out <- as.list(list$V1)
+            out <- as.list(unique(list$V1))
         }
         if (length(out) > 0) {
             strong(paste0("Total number of genes:  ", length(out)))
@@ -2456,15 +2464,44 @@ shinyServer(function(input, output, session) {
     )
     
     # * render database links --------------------------------------------------
+    parseProId <- function(protId, separator, seqIdFormat) {
+        tmp <- ""
+        if (separator == 1) {
+            if (grepl("\\|", protId))
+                tmp <- as.list(strsplit(protId, "\\|")[[1]])
+        } else if (separator == 2) {
+            if (grepl("@", protId))
+                tmp <- as.list(strsplit(protId, "@")[[1]])
+        } else if (separator == 3) {
+            if (grepl("#", protId))
+                tmp <- as.list(strsplit(protId, "#")[[1]])
+        } else if (separator == 4) {
+            if (grepl(";", protId))
+                tmp <- as.list(strsplit(protId, ";")[[1]])
+        }
+        if (length(tmp) > 1) {
+            if (seqIdFormat == 3) {
+                protId <- tmp[[length(tmp)]]
+            } else if (seqIdFormat == 4) {
+                protId <- tmp[[1]]
+            } else if (seqIdFormat == 1) {
+                if (length(tmp) >= 3) {
+                    protId <- tmp[[3]]
+                } else {
+                    warning("Wrong ID format was set!")
+                    return(NULL)
+                }
+            }
+        }
+        return(protId)
+    }
+    
     output$dbLink <- renderUI({
-        info <- pointInfoDetail() # info = seedID, orthoID, var1
+        info <- pointInfoDetail() # info = seedID, orthoID, var1, var2, ncbiID
         req(info)
-        seqID <- toString(info[2])
-        tmp <- as.list(strsplit(seqID, "\\|")[[1]])
         linkText <- ""
         # get taxon ID
-        taxon <- tmp[[2]]
-        taxId <- as.list(strsplit(taxon, "@")[[1]])[[2]]
+        taxId <- gsub("ncbi", "", info[5])
         taxUrl <- paste0(
             "https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=",
             taxId
@@ -2474,33 +2511,45 @@ shinyServer(function(input, output, session) {
             "NCBI taxonomy entry for <strong>", taxId , "</strong></a></p>"
         )
         # get seed ID
-        seedId <- tmp[[1]]
-        if (input$seedSource == "ncbi") {
-            linkText <- paste0(linkText, createDBlink(seedId, "NCBI"))
-        } else if (input$seedSource == "uniprot") {
-            linkText <- paste0(linkText, createDBlink(seedId, "UniProt"))
-        } else if (input$seedSource == "orthodb") {
-            linkText <- paste0(linkText, createDBlink(seedId, "OrthoDB"))
-        } else if (input$seedSource == "oma") {
-            linkText <- paste0(linkText, createDBlink(seedId, "OMA"))
+        seedId <- toString(info[1])
+        separators <- c("|", "@", "#", ";")
+        if (grepl(paste(ll, collapse = "|"), seedId)) {
+            seedId <- parseProId(seedId, input$separator, input$seqIdFormat)
+        }
+        if (length(seedId) > 0) {
+            if (input$seedSource == "ncbi") {
+                linkText <- paste0(linkText, createDBlink(seedId, "NCBI"))
+            } else if (input$seedSource == "uniprot") {
+                linkText <- paste0(linkText, createDBlink(seedId, "UniProt"))
+            } else if (input$seedSource == "orthodb") {
+                linkText <- paste0(linkText, createDBlink(seedId, "OrthoDB"))
+            } else if (input$seedSource == "oma") {
+                linkText <- paste0(linkText, createDBlink(seedId, "OMA"))
+            }
         }
         # get ortho ID
-        protId <- tmp[[3]]
-        if (input$orthoSource == "ncbi") {
-            linkText <- paste0(linkText, createDBlink(protId, "NCBI"))
-        } else if (input$orthoSource == "uniprot") {
-            linkText <- paste0(linkText, createDBlink(protId, "UniProt"))
-        } else if (input$orthoSource == "orthodb") {
-            linkText <- paste0(linkText,createDBlink(protId, "OrthoDB", "gene"))
-        } else if (input$orthoSource == "oma") {
-            linkText <- paste0(linkText, createDBlink(protId, "OMA", "gene"))
+        protId <- toString(info[2])
+        if (grepl(paste(ll, collapse = "|"), protId)) {
+            protId <- parseProId(protId, input$separator, input$seqIdFormat)
+        }
+        if (length(protId) > 0) {
+            if (input$orthoSource == "ncbi") {
+                linkText <- paste0(linkText, createDBlink(protId, "NCBI"))
+            } else if (input$orthoSource == "uniprot") {
+                linkText <- paste0(linkText, createDBlink(protId, "UniProt"))
+            } else if (input$orthoSource == "orthodb") {
+                linkText <- paste0(linkText,createDBlink(protId, "OrthoDB", "gene"))
+            } else if (input$orthoSource == "oma") {
+                linkText <- paste0(linkText, createDBlink(protId, "OMA", "gene"))
+            }
         }
         # render links
         linkText <- paste0(
             linkText,
             "<p><em><strong>Disclaimer:</strong> ",
             "External links are automatically generated and may point to ",
-            "a wrong target (see <a ",
+            "a wrong target. Please adapt the sequence ID format according ",
+            "to your data in the Input and Settings tab (see <a ",
             "href=\"https://github.com/BIONF/PhyloProfile/wiki/FAQ",
             "#wrong-info-from-public-databases\" ",
             "target=\"_blank\">FAQ</a>)</em></p>"

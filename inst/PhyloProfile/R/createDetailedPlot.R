@@ -77,6 +77,7 @@ createDetailedPlot <- function(
         # get pair of sequence IDs & var1
         seedID <- as.character(selDf$geneID[!is.na(selDf$geneID)][1])
         orthoID <- as.character(selDf$orthoID[corX])
+        taxID <- as.character(selDf$abbrName[corX])
 
         var1 <- as.list(selDf$var1[selDf$orthoID == orthoID])
         var1 <- as.character(var1[!is.na(var1)])
@@ -90,8 +91,10 @@ createDetailedPlot <- function(
         # return info
         if (is.na(orthoID)) 
             return(NULL)
-        else
-            if (orthoID != "NA") return(c(seedID, orthoID, var1, var2, ncbiID))
+        else {
+            if (orthoID != "NA") 
+                return(c(seedID, orthoID, var1, var2, ncbiID))
+        }
     })
 
     # * show info when clicking on detailed plot -------------------------------
