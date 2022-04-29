@@ -148,9 +148,9 @@ estimateGeneAge <- function(
                 taxList$fullName[taxList$ncbiID %in% orthoDomainID]
             )))
             if (length(orthoDomainName) == 3) {
-                age = paste0("10_", paste(orthoDomainName, collapse = "-"))
+                age <- paste0("10_", paste(orthoDomainName, collapse = "-"))
             } else {
-                age = paste0("09_", paste(orthoDomainName, collapse = "-"))
+                age <- paste0("09_", paste(orthoDomainName, collapse = "-"))
             }
             return(data.frame(geneID = x, age, stringsAsFactors = FALSE))
         }

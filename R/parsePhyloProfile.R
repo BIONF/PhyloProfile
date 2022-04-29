@@ -531,7 +531,7 @@ filterProfileData <- function(
     var1AggregateBy = "max", var2AggregateBy = "max"
 ) {
     if (is.null(DF)) stop("Profile data cannot be NULL!")
-    if (is.null(refTaxon)) refTaxon = "NA"
+    if (is.null(refTaxon)) refTaxon <- "NA"
     ### check if working with lowest rank (species/strain), e.g. flag == 0
     flag <- 1
     if (length(unique(levels(as.factor(DF$numberSpec)))) == 1) {

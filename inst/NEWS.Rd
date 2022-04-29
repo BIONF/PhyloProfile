@@ -2,6 +2,15 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.10.1}{
+  \itemize{
+    \item fixed bug button for tree uploading disappear #119
+    \item improved parsing seq ID to create links for external DB #117
+    \item fixed bug grepping domains for group comparison fn
+    \item fixed bug parsing data for a list of input gene IDs #122
+  }
+}
+
 \section{Version 1.8.6}{
   \itemize{
     \item option to identify sequence source

@@ -546,7 +546,9 @@ dataFeatureTaxGroup <- function(
     # get ncbiIDs for the domain data
     mainDf$orthoID <- gsub("\\|", ":", mainDf$orthoID)
     domainDfSub <- merge(
-        domainDf[grep(gene,domainDf$seedID),][,c("orthoID","seedID","feature")],
+        domainDf[grep(paste0(gene, "#"), domainDf$seedID),][
+            ,c("orthoID","seedID","feature")
+        ],
         mainDf[, c("orthoID", "ncbiID")], by = "orthoID", all.x = TRUE
     )
     domainDfSub <- domainDfSub[stats::complete.cases(domainDfSub),]

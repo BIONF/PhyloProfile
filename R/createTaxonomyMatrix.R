@@ -127,7 +127,7 @@ getTaxonomyInfo <- function(inputTaxa = NULL, currentNCBIinfo = NULL) {
                 inputTaxaInfo <- rbindlist(
                     list(inputTaxaInfo, tmp[[toString(lastID)]]),
                     use.names = TRUE, fill = TRUE, idcol = NULL)
-                lastID = 1
+                lastID <- 1
             } else {
                 nextEntry <- currentNCBIinfo[currentNCBIinfo$ncbiID == lastID, ]
                 inputTaxaInfo <- rbindlist(
@@ -276,7 +276,7 @@ rankIndexing <- function (rankListFile = NULL) {
                             tmpEnv[[iRank]] <- tmpEnv[[subList[i - j]]] + 1
                             break
                         }
-                    } else j = j - 1
+                    } else j <- j - 1
                 }
             } else {
                 # for old rank
@@ -450,7 +450,7 @@ taxonomyTableCreator <- function(idListFile = NULL, rankListFile = NULL) {
     fullRankIDdf <- subset(fullRankIDdf, select = -c(index))
     tFullRankIDdf <- data.table::transpose(fullRankIDdf)
     ### set first row to column names
-    colnames(tFullRankIDdf) = as.character(unlist(tFullRankIDdf[1,]))
+    colnames(tFullRankIDdf) <- as.character(unlist(tFullRankIDdf[1,]))
     tFullRankIDdf <- tFullRankIDdf[-1,]
     ### add "abbrName  ncbiID  fullName" columns
     fullRankIDdfOut <- data.frame(

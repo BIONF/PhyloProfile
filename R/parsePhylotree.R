@@ -77,8 +77,8 @@ createRootedTree <- function(df, rootTaxon = NULL){
     # create tree
     tree <- ape::as.phylo(stats::hclust(taxdis))
     # root tree
-    if (missing(rootTaxon)) rootTaxon = tree$tip.label[1]
-    if (!(rootTaxon %in% tree$tip.label)) rootTaxon = tree$tip.label[1]
+    if (missing(rootTaxon)) rootTaxon <- tree$tip.label[1]
+    if (!(rootTaxon %in% tree$tip.label)) rootTaxon <- tree$tip.label[1]
     tree <- ape::root(tree, outgroup = rootTaxon, resolve.root = TRUE)
     # return
     return(tree)
