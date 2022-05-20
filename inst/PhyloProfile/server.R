@@ -2513,7 +2513,7 @@ shinyServer(function(input, output, session) {
         # get seed ID
         seedId <- toString(info[1])
         separators <- c("|", "@", "#", ";")
-        if (grepl(paste(ll, collapse = "|"), seedId)) {
+        if (grepl(paste(separators, collapse = "|"), seedId)) {
             seedId <- parseProId(seedId, input$separator, input$seqIdFormat)
         }
         if (length(seedId) > 0) {
@@ -2529,7 +2529,7 @@ shinyServer(function(input, output, session) {
         }
         # get ortho ID
         protId <- toString(info[2])
-        if (grepl(paste(ll, collapse = "|"), protId)) {
+        if (grepl(paste(separators, collapse = "|"), protId)) {
             protId <- parseProId(protId, input$separator, input$seqIdFormat)
         }
         if (length(protId) > 0) {
