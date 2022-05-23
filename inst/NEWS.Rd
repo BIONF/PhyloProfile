@@ -2,6 +2,12 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.10.3}{
+  \itemize{
+    \item fixed bug parsing taxon names for input with more than 9999 taxa
+  }
+}
+ 
 \section{Version 1.10.1}{
   \itemize{
     \item fixed bug button for tree uploading disappear #119

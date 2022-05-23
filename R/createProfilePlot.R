@@ -44,14 +44,8 @@ dataMainPlot <- function(dataHeat = NULL){
         dataHeat$paralogSize <- (dataHeat$paralog / maxParalog) * 3
     }
     # remove prefix number of taxa names but keep the order
-    dataHeat$supertaxon <- factor(
-        substr(
-            as.character(dataHeat$supertaxon), 6 ,
-            nchar(as.character(dataHeat$supertaxon))),
-        levels = substr(
-            levels(as.factor(dataHeat$supertaxon)), 6,
-            nchar(levels(as.factor(dataHeat$supertaxon)))))
-    return(dataHeat)
+    dataHeatOut <- modifyTaxonNames(dataHeat)
+    return(dataHeatOut)
 }
 
 #' Create data for customized profile plot
@@ -120,16 +114,52 @@ dataCustomizedPlot <- function(
         dataHeat$paralogSize <- (dataHeat$paralog / maxParalog) * 3
     }
     # remove prefix number of taxa names but keep the order
-    dataHeat$supertaxon <- factor(
-        substr(
-            as.character(dataHeat$supertaxon), 6 ,
-            nchar(as.character(dataHeat$supertaxon))),
-        levels = substr(
-            levels(dataHeat$supertaxon), 6,
-            nchar(levels(dataHeat$supertaxon))))
-    return(dataHeat)
+    dataHeatOut <- modifyTaxonNames(dataHeat)
+    return(dataHeatOut)
 }
 
+#' Create data for main profile plot
+#' @param dataHeat a data frame contains processed profiles (see
+#' ?fullProcessedProfile, ?filterProfileData)
+#' @return A dataframe for plotting the phylogenetic profile, containing seed
+#' protein IDs (geneID), ortholog IDs (orthoID) together with their ncbi
+#' taxonomy IDs (ncbiID and abbrName), full names (fullName), indexed supertaxa
+#' (supertaxon), values for additional variables (var1, var2) and the aggregated
+#' values of those additional variables for each supertaxon (mVar1, mVar2),
+#' number of original and filtered co-orthologs in each supertaxon (paralog and
+#' paralogNew), number of species in each supertaxon (numberSpec) and the % of
+#' species that have orthologs in each supertaxon (presSpec).
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+#' @seealso \code{\link{filterProfileData}}
+
+modifyTaxonNames <- function(dataHeat = NULL) {
+    if (is.null(dataHeat)) stop("Input data cannot be NULL!")
+    substrDf <- data.frame(
+        do.call(
+            rbind,
+            regmatches(
+                as.character(levels(as.factor(dataHeat$supertaxon))), 
+                regexpr(
+                    "_", as.character(levels(as.factor(dataHeat$supertaxon)))
+                ), 
+                invert = TRUE
+            )
+        ),
+        stringsAsFactors = FALSE
+    )
+    substrDf$supertaxon <- paste(substrDf$X1, substrDf$X2, sep = "_")
+    substrDf <- substrDf[order(levels(as.factor(substrDf$supertaxon))),]
+    substrDf$X2 <- factor(substrDf$X2, levels = substrDf$X2)
+    dataHeatOut <- merge(
+        dataHeat, substrDf[,c("X2", "supertaxon")], 
+        by = "supertaxon", all.x = TRUE
+    )
+    dataHeatOut$supertaxon <- factor(
+        dataHeatOut$X2, levels = levels(dataHeatOut$X2)
+    )
+    dataHeatOut$X2 <- NULL
+    return(dataHeatOut)
+}
 
 #' Create profile heatmap plot
 #' @export
