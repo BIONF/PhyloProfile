@@ -504,9 +504,9 @@ head(
 **More examples? Please tell us what you want to see ;-)**
 
 # How to cite
->Ngoc-Vinh Tran, Bastian Greshake Tzovaras, Ingo Ebersberger, PhyloProfile: 
-dynamic visualization and exploration of multi-layered phylogenetic profiles, 
-Bioinformatics, Volume 34, Issue 17, 01 September 2018, Pages 3041–3043, 
+>Ngoc-Vinh Tran, Bastian Greshake Tzovaras, Ingo Ebersberger, PhyloProfile:
+dynamic visualization and exploration of multi-layered phylogenetic profiles,
+Bioinformatics, Volume 34, Issue 17, 01 September 2018, Pages 3041–3043,
 https://doi.org/10.1093/bioinformatics/bty225
 
 Or use the citation function in R CMD to have the citation in BibTex or
@@ -528,8 +528,8 @@ Contributions to *PhyloProfile* can take many forms. If you are
 online & standalone version,
 - [tell us about what features you would love to see](https://goo.gl/SBU4EG),
 - improve our documentation, both
-[in the Wiki](https://github.com/BIONF/PhyloProfile/wiki) and in our [R
-ADME](https://github.com/BIONF/PhyloProfile/blob/master/README.md),
+[in the Wiki](https://github.com/BIONF/PhyloProfile/wiki) and in our
+[README](https://github.com/BIONF/PhyloProfile/blob/master/README.md),
 - discuss about [non-coding issues](https://goo.gl/bDS9Cb)
 
 **biologist and love coding**, you can
