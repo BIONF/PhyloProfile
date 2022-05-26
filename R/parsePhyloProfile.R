@@ -296,7 +296,8 @@ sortInputTaxa <- function(
     sortedOut$species <- paste0("ncbi", sortedOut$species)
     ## create new column for sorted supertaxon
     indexSpec <- unlist(lapply(
-        seq_len(nlevels(as.factor(sortedOut$fullName.y))),function (x) 1000+x))
+        seq_len(nlevels(as.factor(sortedOut$fullName.y))),function (x) 100000+x)
+    )
     indexSpecDf <- data.frame(
         fullName.y = unique(as.character(sortedOut$fullName.y)),
         sortedSupertaxon = paste0(
