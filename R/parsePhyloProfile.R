@@ -363,7 +363,7 @@ calcPresSpec <- function(profileWithTax, taxaCount){
     presSpecDt <- merge(
         presSpecDt, specCount, by = c("geneID", "supertaxon")
     )
-    presSpecDt$presSpec <- round(presSpecDt$freq / presSpecDt$freq.y, digits=2)
+    presSpecDt$presSpec <- presSpecDt$freq / presSpecDt$freq.y
     presSpecDt <- presSpecDt[presSpecDt$presSpec <= 1, ]
     presSpecDt <- presSpecDt[order(presSpecDt$geneID), ]
     presSpecDt <- presSpecDt[, c("geneID", "supertaxon", "presSpec")]
