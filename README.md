@@ -22,10 +22,11 @@ Take a look at [the functionality](https://github.com/BIONF/PhyloProfile/wiki/Fu
 # Table of Contents
 * [Installation &amp; Usage](#installation--usage)
 * [Input Data](#input-data)
-* [Walkthrough](#walkthrough)
+* [Walkthrough &amp; Examples](#walkthrough--examples)
 * [Bugs](#bugs)
 * [Acknowledgements](#acknowledgements)
-* [Code of Conduct &amp; License](#code-of-conduct--license)
+* [License](#license)
+* [How-To Cite](#how-to-cite)
 * [Contact](#contact)
 
 # Installation & Usage
@@ -96,7 +97,7 @@ _**Please check our [detailed instructions](https://github.com/BIONF/PhyloProfil
 
 We described all suppported input formats in section [Input Data](https://github.com/BIONF/PhyloProfile/wiki/Input-Data) in our [PhyloProfile's Wiki](https://github.com/BIONF/PhyloProfile/wiki).
 
-# Walkthrough and Examples
+# Walkthrough & Examples
 Read the [walkthrough slides](https://github.com/BIONF/PhyloProfile/wiki/Walkthrough) to explore the functionality of the *PhyloProfile* GUI.
 
 Check the vignette for learning how to use PhyloProfile's functions in some specific use-cases:
