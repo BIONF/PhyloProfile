@@ -100,9 +100,9 @@ createArchitecturePlot <- function(
     #     if (is.null(input$archiClick$y)) return("No domain selected!")
     #     y <- input$archiClick$y
     #     # paste(y, round(y), convertY(unit(y, "npc"), "px"))
-    #     
+    #
     # })
-    
+
     output$domainTable <- renderTable({
         if (is.null(nrow(domainInfo()))) return("No domain info available!")
         features <- getDomainLink(pointInfo(), domainInfo())
@@ -158,7 +158,7 @@ getDomainLink <- function(info, domainDf) {
         orthoDf <- subdomainDf[subdomainDf$orthoID == ortho,]
         seedDf <- subdomainDf[subdomainDf$orthoID != ortho,]
         feature <- c(
-            levels(as.factor(orthoDf$feature)), 
+            levels(as.factor(orthoDf$feature)),
             levels(as.factor(seedDf$feature))
         )
     }
@@ -167,12 +167,12 @@ getDomainLink <- function(info, domainDf) {
     pfamDf <- data.frame(ID = character(), PFAM = character())
     if (length(featurePfam) > 0)
         pfamDf <- createLinkTable(featurePfam, "pfam")
-    
+
     featureSmart <- unique(feature[grep("smart", feature)])
     smartDf <- data.frame(ID = character(), SMART = character())
     if (length(featureSmart) > 0)
         smartDf <- createLinkTable(featureSmart, "smart")
-    
+
     featDf <- merge(pfamDf, smartDf, by = "ID", all = TRUE)
     colnames(featDf) <- c("ID", "PFAM", "SMART")
     return(featDf)
@@ -187,23 +187,23 @@ createLinkTable <- function(featureList, featureType) {
     if (length(feature) > 0) {
       tmpDf <- data.frame(
         do.call(
-          'cbind', 
+          'cbind',
           data.table::tstrsplit(as.character(feature), '@', fixed = TRUE)
         )
       )
-      
+
       featDf <- data.frame("ID" = levels(as.factor(tmpDf$X2)))
       if (featureType == "pfam") {
         # featDf$type <- "PFAM"
         featDf$link <- paste0(
-          "<a href='https://pfam.xfam.org/family/", featDf$ID, 
+          "<a href='https://pfam.xfam.org/family/", featDf$ID,
           "' target='_blank'>", featDf$ID, "</a>"
         )
       } else {
         # featDf$type <- "SMART"
         featDf$link <- paste0(
-          "<a href='http://smart.embl-heidelberg.de/smart/", 
-          "do_annotation.pl?BLAST=DUMMY&DOMAIN=", 
+          "<a href='http://smart.embl-heidelberg.de/smart/",
+          "do_annotation.pl?BLAST=DUMMY&DOMAIN=",
           featDf$ID, "' target='_blank'>",
           featDf$ID, "</a>"
         )
@@ -211,5 +211,3 @@ createLinkTable <- function(featureList, featureType) {
     }
     return(featDf)
 }
- 
-
