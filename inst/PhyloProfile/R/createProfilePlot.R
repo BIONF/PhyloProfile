@@ -162,7 +162,7 @@ createProfilePlot <- function(input, output, session,
             # get supertaxon (spec)
             supertaxa <- levels(dataHeat$supertaxon)
             spec <- toString(supertaxa[corX])
-            # get var1, percentage of present species and var2 score
+            # get var1 and var2 score
             var1 <- NA
             if (!is.na(dataHeat$var1[dataHeat$geneID == geneID
                                      & dataHeat$supertaxon == spec][1])) {
@@ -171,6 +171,15 @@ createProfilePlot <- function(input, output, session,
                                           & dataHeat$supertaxon == spec])
                 )
             }
+            var2 <- NA
+            if (!is.na(dataHeat$var2[dataHeat$geneID == geneID
+                                     & dataHeat$supertaxon == spec][1])) {
+                var2 <- {
+                    max(na.omit(dataHeat$var2[dataHeat$geneID == geneID
+                                              & dataHeat$supertaxon == spec]))
+                }
+            }
+            # get percentage of present species and total of taxa 
             Percent <- NA
             if (!is.na(dataHeat$presSpec[dataHeat$geneID == geneID
                                          & dataHeat$supertaxon == spec][1])) {
@@ -183,33 +192,56 @@ createProfilePlot <- function(input, output, session,
                     )
                 }
             }
-            var2 <- NA
-            if (!is.na(dataHeat$var2[dataHeat$geneID == geneID
+            presentTaxa <- NA
+            if (!is.na(dataHeat$presentTaxa[dataHeat$geneID == geneID
                                      & dataHeat$supertaxon == spec][1])) {
-                var2 <- {
-                    max(na.omit(dataHeat$var2[dataHeat$geneID == geneID
-                                              & dataHeat$supertaxon == spec]))
-                }
+                presentTaxa <- max(
+                    na.omit(dataHeat$presentTaxa[dataHeat$geneID == geneID
+                                          & dataHeat$supertaxon == spec])
+                )
             }
+            totalTaxa <- NA
+            if (
+                !is.na(dataHeat$totalTaxa[dataHeat$geneID == geneID
+                                          & dataHeat$supertaxon == spec][1])
+            ) {
+                totalTaxa <- max(
+                    na.omit(
+                        dataHeat$totalTaxa[dataHeat$geneID == geneID
+                                           & dataHeat$supertaxon == spec]
+                    )
+                )
+            }
+            
 
             # get ortholog ID
             orthoID <- dataHeat$orthoID[dataHeat$geneID == geneID
                                         & dataHeat$supertaxon == spec]
+            totalOrtho <- length(orthoID)
             if (length(orthoID) > 1) {
                 orthoID <- paste0(orthoID[1], ",...")
             }
+            
+            # get working taxonomy level
+            strain <- "Y"
+            if (nlevels(as.factor(dataHeat$totalTaxa)) > 1) strain <- "N"
 
             if (is.na(Percent)) return()
             else {
-                info <- c(geneID,
-                          as.character(orthoID),
-                          spec,
-                          round(var1, 2),
-                          round(Percent, 2),
-                          round(var2, 2))
+                info <- c(
+                    geneID,
+                    as.character(orthoID),
+                    totalOrtho,
+                    spec,
+                    round(var1, 2),
+                    round(Percent, 2),
+                    round(var2, 2),
+                    presentTaxa,
+                    totalTaxa,
+                    strain
+                )
                 return(info)
             }
-            print(info)
         }
     })
 

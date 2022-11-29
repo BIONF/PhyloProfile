@@ -366,7 +366,12 @@ calcPresSpec <- function(profileWithTax, taxaCount){
     presSpecDt$presSpec <- presSpecDt$freq / presSpecDt$freq.y
     presSpecDt <- presSpecDt[presSpecDt$presSpec <= 1, ]
     presSpecDt <- presSpecDt[order(presSpecDt$geneID), ]
-    presSpecDt <- presSpecDt[, c("geneID", "supertaxon", "presSpec")]
+    presSpecDt <- presSpecDt[
+        , c("geneID", "supertaxon", "presSpec", "freq", "freq.y")
+    ]
+    colnames(presSpecDt) <- c(
+        "geneID", "supertaxon", "presSpec", "presentTaxa", "totalTaxa"
+    )
     # add absent supertaxon into presSpecDt
     geneIDSupertaxon <- subset(
         geneIDSupertaxon, select = -c(paralog, abbrName)
@@ -595,7 +600,7 @@ filterProfileData <- function(
         DF$var1[DF$presSpec == 0] <- NA
     if (var2Rel == "protein")
         DF$var2[DF$presSpec == 0] <- NA
-    
+
     ### remove paralog count if NOT working with lowest rank (species/strain)
     if (flag == 1) DF$paralog <- 1
     
@@ -665,7 +670,6 @@ filterProfileData <- function(
 
 reduceProfile <- function(filteredProfile) {
     if (is.null(filteredProfile)) stop("Profile data cannot be NULL!")
-    
     # check if working with the lowest taxonomy rank; 1 for NO; 0 for YES
     flag <- 1
     if (length(unique(levels(as.factor(filteredProfile$numberSpec)))) == 1) {
@@ -674,6 +678,8 @@ reduceProfile <- function(filteredProfile) {
                 "geneID", "supertaxon", "supertaxonID",
                 "var1", "presSpec", "category", "orthoID", "var2", "paralog"
             )]
+            superDfExt$presentTaxa <- 1
+            superDfExt$totalTaxa <- 1
             flag <- 0
         }
     }
@@ -691,8 +697,8 @@ reduceProfile <- function(filteredProfile) {
         mOrthoID <- mOrthoID[!duplicated(mOrthoID[, seq_len(2)]), ]
         # get data set for PhyloProfile plotting (contains only supertaxa info)
         superDf <- subset(filteredProfile, select = c(
-            "geneID", "supertaxon", "supertaxonID",
-            "mVar1", "category", "mVar2", "paralog"
+            "geneID", "supertaxon", "supertaxonID", "mVar1", "category", 
+            "mVar2", "paralog", "presentTaxa", "totalTaxa"
         ))
         superDf <- superDf[!duplicated(superDf), ]
         superDfExt <- merge(
@@ -700,7 +706,8 @@ reduceProfile <- function(filteredProfile) {
         )
         superDfExt <- superDfExt[, c(
             "geneID", "supertaxon", "supertaxonID",
-            "mVar1", "presSpec", "category", "orthoID", "mVar2", "paralog"
+            "mVar1", "presSpec", "category", "orthoID", "mVar2", "paralog",
+            "presentTaxa", "totalTaxa"
         )]
         # rename mVar to var
         names(superDfExt)[names(superDfExt) == "mVar1"] <- "var1"

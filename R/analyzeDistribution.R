@@ -234,7 +234,7 @@ createVarDistPlot <- function(
         geom_histogram(binwidth = .01, alpha = .5, position = "identity") +
         geom_vline(
             data = data, aes(xintercept = data.mean, colour = "red"),
-            linetype = "dashed", size = 1
+            linetype = "dashed", linewidth = 1
         ) + theme_minimal()
     p <- p + theme(
             legend.position = "none",

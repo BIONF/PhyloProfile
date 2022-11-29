@@ -57,5 +57,5 @@ g <- gridArrangeSharedLegend(
 )
 }
 \author{
-Phil Boileau, \email{philippe.boileau (at) rimuhc.ca}
+Phil Boileau, \email{philippe.boileau@rimuhc.ca}
 }

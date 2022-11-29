@@ -57,6 +57,10 @@ parseDomainInput <- function(seed = NULL, inputFile = NULL, type = "file") {
         colnames(domains) <- c(
             "seedID", "orthoID", "length", "feature", "start", "end","weight",
             "path")
+    } else if (ncol(domains) == 9) {
+        colnames(domains) <- c(
+            "seedID", "orthoID", "length", "feature", "start", "end","weight",
+            "path","acc")
     } else {
         return("ERR")
     }

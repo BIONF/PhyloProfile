@@ -255,7 +255,7 @@ dataVarDistTaxGroup <- function(
     varIn$type <- "In-group"
     varOut$type <- "Out-group"
     out <- rbind(
-        varIn[stats::complete.cases(varIn),], 
+        varIn[stats::complete.cases(varIn),],
         varOut[stats::complete.cases(varOut),]
     )
     return(out[, c(variable, "type")])
@@ -344,7 +344,7 @@ generateSinglePlot <- function(plotDf, parameters, variable) {
 #' @param titleSize Size of grid title
 #' @import gridExtra ggplot2
 #' @return Grid of plots with common legend
-#' @author Phil Boileau, \email{philippe.boileau (at) rimuhc.ca}
+#' @author Phil Boileau, \email{philippe.boileau@rimuhc.ca}
 #' @note adapted from https://rdrr.io/github/PhilBoileau/CLSAR/src/R/
 #' gridArrangeSharedLegend.R
 #' @examples

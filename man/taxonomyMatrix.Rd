@@ -12,8 +12,8 @@ taxa in the 2 experimental data sets
 data(taxonomyMatrix)
 }
 \description{
-Data frame containing the fully aligned taxonomy IDs of 95 taxa 
-in the experimental data sets. By talking into account both the defined 
+Data frame containing the fully aligned taxonomy IDs of 95 taxa
+in the experimental data sets. By talking into account both the defined
 ranks (e.g. strain, This data is used for clustering and then creating a
 taxon tree. It is used also for cross-linking between different taxonomy
 ranks within a taxon.

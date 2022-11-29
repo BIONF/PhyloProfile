@@ -149,6 +149,10 @@ getDomainLink <- function(info, domainDf) {
     ortho <- gsub("\\|", ":", ortho)
     grepID <- paste(group, "#", ortho, sep = "")
     subdomainDf <- domainDf[grep(grepID, domainDf$seedID), ]
+    if (ncol(subdomainDf) == 9)
+        subdomainDf$feature <- paste(
+            subdomainDf$feature, subdomainDf$acc, sep = "_"
+        )
     subdomainDf$feature <- as.character(subdomainDf$feature)
     orthoID <- NULL
     feature <- NULL
@@ -182,7 +186,7 @@ getDomainLink <- function(info, domainDf) {
 #' @return error message in a ggplot object
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 createLinkTable <- function(featureList, featureType) {
-    feature <- sub("_","@", featureList)
+    feature <- gsub("_","@", featureList)
     featDf <- NULL
     if (length(feature) > 0) {
       tmpDf <- data.frame(
@@ -194,13 +198,18 @@ createLinkTable <- function(featureList, featureType) {
       
       featDf <- data.frame("ID" = levels(as.factor(tmpDf$X2)))
       if (featureType == "pfam") {
-        # featDf$type <- "PFAM"
-        featDf$link <- paste0(
-          "<a href='https://pfam.xfam.org/family/", featDf$ID, 
-          "' target='_blank'>", featDf$ID, "</a>"
-        )
+        if (ncol(tmpDf) == 3) {
+            featDf$link <- paste0(
+                "<a href='https://www.ebi.ac.uk/interpro/entry/pfam/", tmpDf$X3, 
+                "' target='_blank'>", tmpDf$X3, "</a>"
+            )
+        } else {
+            featDf$link <- paste0(
+                "<a href='https://pfam.xfam.org/family/", featDf$ID,
+                "' target='_blank'>", featDf$ID, "</a>"
+            )
+        }
       } else {
-        # featDf$type <- "SMART"
         featDf$link <- paste0(
           "<a href='http://smart.embl-heidelberg.de/smart/", 
           "do_annotation.pl?BLAST=DUMMY&DOMAIN=", 

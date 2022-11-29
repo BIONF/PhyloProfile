@@ -5,7 +5,7 @@
 \alias{finalProcessedProfile}
 \title{An example of a final processed & filtered phylogenetic profile.}
 \format{
-A data frame with 91 rows and 10 variables:
+A data frame with 88 rows and 11 variables:
 \itemize{
     \item{geneID}{ Seed or ortholog group ID, e.g. "100136at6656"}
     \item{supertaxon}{ Supertaxon name together with its ordered index, e.g.
@@ -18,7 +18,8 @@ A data frame with 91 rows and 10 variables:
     \item{orthoID}{ Ortholog ID, e.g. "100136at6656|RAT@10116@1|G3V7R8|1"}
     \item{var2}{ Second additional variable}
     \item{paralog}{ Number of co-orthologs in the current taxon}
-    \item{taxonMon}{ Name of supertaxon but without index, e.g. "Mammalia"}
+    \item{presentTaxa}{ Number of taxa that have ortho in each supertaxon}
+    \item{totalTaxa}{ Total number of taxa in each supertaxon}
 }
 }
 \usage{
