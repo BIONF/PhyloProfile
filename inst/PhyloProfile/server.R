@@ -2360,23 +2360,42 @@ shinyServer(function(input, output, session) {
         else {
             a <- toString(paste("Seed-ID:", info[1]))
             b <- toString(paste0(
-                "Hit-ID: ", orthoID,
-                " (", info[3], ")"
+                "Hit-ID: ", orthoID
             ))
             c <- ""
             if (input$var1ID != "") {
                 c <- toString(paste(
-                    input$var1AggregateBy, input$var1ID, ":", info[4]
+                    input$var1AggregateBy, input$var1ID, ":", info[5]
                 ))
             }
             d <- ""
             if (input$var2ID != "") {
                 d <- toString(paste(
-                    input$var2AggregateBy, input$var2ID, ":", info[6]
+                    input$var2AggregateBy, input$var2ID, ":", info[7]
                 ))
             }
-            e <- toString(paste("% present taxa:", info[5]))
-            paste(a, b, c, d, e, sep = "\n")
+            
+            if (info[10] == "Y") {
+                if (info[3] == 1) {
+                    s <- toString(
+                        paste0(info[3], " ortholog in ", info[4], ":")
+                    )
+                } else {
+                    s <- toString(
+                        paste0(info[3], " co-orthologs in ", info[4], ":")
+                    )
+                }
+                e <- ""
+            } else {
+                s <- toString(paste0("Best ortholog in ", info[4], ":"))
+                e <- toString(
+                    paste0(
+                        "% present taxa: ", info[6], " (", info[8], " out of ", 
+                        info[9],  ")", collapse = ""
+                    )
+                )
+            }
+            paste(a, s, b, c, d, e, sep = "\n")
         }
     })
 
@@ -2404,7 +2423,7 @@ shinyServer(function(input, output, session) {
             ### filter data if needed
             if  (input$detailedFilter == TRUE) {
                 fullDf <- filteredDataHeat()
-                if (info[3] == inSelect) {
+                if (info[4] == inSelect) {
                     fullDf <- fullDf[
                         fullDf$var1 >= input$var1[1] 
                         & fullDf$var1 <= input$var1[2], 
@@ -2419,7 +2438,7 @@ shinyServer(function(input, output, session) {
                 )
             }
             plotTaxon <- unique(
-                fullDf$supertaxon[grep(info[3], fullDf$supertaxon)]
+                fullDf$supertaxon[grep(info[4], fullDf$supertaxon)]
             )
             plotGeneID <- info[1]
             selDf <- fullDf[fullDf$geneID == plotGeneID

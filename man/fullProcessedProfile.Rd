@@ -5,12 +5,12 @@
 \alias{fullProcessedProfile}
 \title{An example of a fully processed phylogenetic profile.}
 \format{
-A data frame with 168 rows and 16 variables:
+A data frame with 168 rows and 14 variables:
 \itemize{
     \item{supertaxon}{ Supertaxon name together with its ordered index, e.g.
     "1001_Mammalia"}
-    \item{geneID}{ Seed or ortholog group ID, e.g. "100136at6656"}
     \item{ncbiID}{ Taxon ID, e.g. "ncbi10116"}
+    \item{geneID}{ Seed or ortholog group ID, e.g. "100136at6656"}
     \item{orthoID}{ Ortholog ID, e.g. "100136at6656|HUMAN@9606@1|Q9UNQ2|1"}
     \item{var1}{ First additional variable}
     \item{var2}{ Second additional variable}
@@ -22,8 +22,6 @@ A data frame with 168 rows and 16 variables:
     working with higher taxonomy rank than input's). e.g. "40674"}
     \item{rank}{ Rank of the supertaxon, e.g. "class"}
     \item{category}{ "cat}
-    \item{mVar1}{ Value of the 1. variable after grouping into supertaxon}
-    \item{mVar2}{ Value of the 2. variable after grouping into supertaxon}
     \item{numberSpec}{ Total number of species in each supertaxon}
 }
 }

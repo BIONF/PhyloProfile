@@ -2,6 +2,13 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.12.1}{
+   \itemize{
+     \item added number of co-orthologs and number of taxa in each supertaxon
+     \item replaced pfam link by interpro url
+   }
+ }
+
 \section{Version 1.10.3}{
   \itemize{
     \item fixed bug parsing taxon names for input with more than 9999 taxa

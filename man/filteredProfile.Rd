@@ -5,7 +5,7 @@
 \alias{filteredProfile}
 \title{An example of a filtered phylogenetic profile.}
 \format{
-A data frame with 168 rows and 18 variables:
+A data frame with 168 rows and 20 variables:
 \itemize{
     \item{geneID}{ Seed or ortholog group ID, e.g. "100136at6656"}
     \item{supertaxon}{ Supertaxon name together with its ordered index, e.g.
@@ -22,11 +22,13 @@ A data frame with 168 rows and 18 variables:
     working with higher taxonomy rank than input's). e.g. "40674"}
     \item{rank}{ Rank of the supertaxon, e.g. "class"}
     \item{category}{ "cat}
-    \item{mVar1}{ Value of the 1. variable after grouping into supertaxon}
-    \item{mVar2}{ Value of the 2. variable after grouping into supertaxon}
     \item{numberSpec}{ Total number of species in each supertaxon}
     \item{taxonMod}{ Name of supersupertaxon w/o its index, e.g. "Mammalia"}
-    \item{presSpec}{ Percentage of taxa that have ortho in each supertaxon}
+    \item{presSpec}{ Percentage of taxa having orthologs in each supertaxon}
+    \item{presentTaxa}{ Number of taxa that have ortho in each supertaxon}
+    \item{totalTaxa}{ Total number of taxa in each supertaxon}
+    \item{mVar1}{ Value of the 1. variable after grouping into supertaxon}
+    \item{mVar2}{ Value of the 2. variable after grouping into supertaxon}
 }
 }
 \usage{

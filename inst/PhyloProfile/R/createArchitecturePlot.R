@@ -100,9 +100,9 @@ createArchitecturePlot <- function(
     #     if (is.null(input$archiClick$y)) return("No domain selected!")
     #     y <- input$archiClick$y
     #     # paste(y, round(y), convertY(unit(y, "npc"), "px"))
-    #
+    #     
     # })
-
+    
     output$domainTable <- renderTable({
         if (is.null(nrow(domainInfo()))) return("No domain info available!")
         features <- getDomainLink(pointInfo(), domainInfo())
@@ -149,6 +149,10 @@ getDomainLink <- function(info, domainDf) {
     ortho <- gsub("\\|", ":", ortho)
     grepID <- paste(group, "#", ortho, sep = "")
     subdomainDf <- domainDf[grep(grepID, domainDf$seedID), ]
+    if (ncol(subdomainDf) == 9)
+        subdomainDf$feature <- paste(
+            subdomainDf$feature, subdomainDf$acc, sep = "_"
+        )
     subdomainDf$feature <- as.character(subdomainDf$feature)
     orthoID <- NULL
     feature <- NULL
@@ -158,7 +162,7 @@ getDomainLink <- function(info, domainDf) {
         orthoDf <- subdomainDf[subdomainDf$orthoID == ortho,]
         seedDf <- subdomainDf[subdomainDf$orthoID != ortho,]
         feature <- c(
-            levels(as.factor(orthoDf$feature)),
+            levels(as.factor(orthoDf$feature)), 
             levels(as.factor(seedDf$feature))
         )
     }
@@ -167,12 +171,12 @@ getDomainLink <- function(info, domainDf) {
     pfamDf <- data.frame(ID = character(), PFAM = character())
     if (length(featurePfam) > 0)
         pfamDf <- createLinkTable(featurePfam, "pfam")
-
+    
     featureSmart <- unique(feature[grep("smart", feature)])
     smartDf <- data.frame(ID = character(), SMART = character())
     if (length(featureSmart) > 0)
         smartDf <- createLinkTable(featureSmart, "smart")
-
+    
     featDf <- merge(pfamDf, smartDf, by = "ID", all = TRUE)
     colnames(featDf) <- c("ID", "PFAM", "SMART")
     return(featDf)
@@ -182,28 +186,33 @@ getDomainLink <- function(info, domainDf) {
 #' @return error message in a ggplot object
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 createLinkTable <- function(featureList, featureType) {
-    feature <- sub("_","@", featureList)
+    feature <- gsub("_","@", featureList)
     featDf <- NULL
     if (length(feature) > 0) {
       tmpDf <- data.frame(
         do.call(
-          'cbind',
+          'cbind', 
           data.table::tstrsplit(as.character(feature), '@', fixed = TRUE)
         )
       )
-
+      
       featDf <- data.frame("ID" = levels(as.factor(tmpDf$X2)))
       if (featureType == "pfam") {
-        # featDf$type <- "PFAM"
-        featDf$link <- paste0(
-          "<a href='https://pfam.xfam.org/family/", featDf$ID,
-          "' target='_blank'>", featDf$ID, "</a>"
-        )
+        if (ncol(tmpDf) == 3) {
+            featDf$link <- paste0(
+                "<a href='https://www.ebi.ac.uk/interpro/entry/pfam/", tmpDf$X3, 
+                "' target='_blank'>", tmpDf$X3, "</a>"
+            )
+        } else {
+            featDf$link <- paste0(
+                "<a href='https://pfam.xfam.org/family/", featDf$ID,
+                "' target='_blank'>", featDf$ID, "</a>"
+            )
+        }
       } else {
-        # featDf$type <- "SMART"
         featDf$link <- paste0(
-          "<a href='http://smart.embl-heidelberg.de/smart/",
-          "do_annotation.pl?BLAST=DUMMY&DOMAIN=",
+          "<a href='http://smart.embl-heidelberg.de/smart/", 
+          "do_annotation.pl?BLAST=DUMMY&DOMAIN=", 
           featDf$ID, "' target='_blank'>",
           featDf$ID, "</a>"
         )
@@ -211,3 +220,5 @@ createLinkTable <- function(featureList, featureType) {
     }
     return(featDf)
 }
+ 
+

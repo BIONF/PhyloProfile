@@ -344,7 +344,7 @@ generateSinglePlot <- function(plotDf, parameters, variable) {
 #' @param titleSize Size of grid title
 #' @import gridExtra ggplot2
 #' @return Grid of plots with common legend
-#' @author Phil Boileau, \email{philippe.boileau (at) rimuhc.ca}
+#' @author Phil Boileau, \email{philippe.boileau@rimuhc.ca}
 #' @note adapted from https://rdrr.io/github/PhilBoileau/CLSAR/src/R/
 #' gridArrangeSharedLegend.R
 #' @examples

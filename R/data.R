@@ -1,9 +1,9 @@
 #' NCBI Taxonomy reduced data set
-#' 
+#'
 #' @docType data
 #' @name taxonNamesReduced
-#' @description A list of NCBI taxonomy info (including taxon IDs, taxon names, 
-#' their systematic taxonomy rank and IDs of their next rank - parent IDs) for 
+#' @description A list of NCBI taxonomy info (including taxon IDs, taxon names,
+#' their systematic taxonomy rank and IDs of their next rank - parent IDs) for
 #' 95 taxa in two experimental sets included in PhyloProfilData package.
 #' @format A data frame with 4 columns:
 #' \itemize{
@@ -16,11 +16,11 @@
 NULL
 
 #' NCBI ID list for experimental data sets
-#' 
+#'
 #' @docType data
 #' @name idList
-#' @description Data frame, in which each row contains the complete taxonomy 
-#' ranks from the lowest systematic level (strain/species) upto the taxonomy 
+#' @description Data frame, in which each row contains the complete taxonomy
+#' ranks from the lowest systematic level (strain/species) upto the taxonomy
 #' root and the corresponding IDs for one taxon in the experimental data sets.
 #' @format A data frame with up to 41 columns and 95 rows corresponding to 95
 #' taxa in the 2 experimental data sets
@@ -31,8 +31,8 @@ NULL
 #'
 #' @docType data
 #' @name rankList
-#' @description Data frame, in which each row contains the complete taxonomy 
-#' ranks from the lowest systematic level (strain/species) upto the taxonomy 
+#' @description Data frame, in which each row contains the complete taxonomy
+#' ranks from the lowest systematic level (strain/species) upto the taxonomy
 #' root for one taxon in the experimental data sets.
 #' @format A data frame with up to 41 columns and 95 rows corresponding to 95
 #' taxa in the 2 experimental data sets
@@ -43,8 +43,8 @@ NULL
 #'
 #' @docType data
 #' @name taxonomyMatrix
-#' @description Data frame containing the fully aligned taxonomy IDs of 95 taxa 
-#' in the experimental data sets. By talking into account both the defined 
+#' @description Data frame containing the fully aligned taxonomy IDs of 95 taxa
+#' in the experimental data sets. By talking into account both the defined
 #' ranks (e.g. strain, This data is used for clustering and then creating a
 #' taxon tree. It is used also for cross-linking between different taxonomy
 #' ranks within a taxon.
@@ -121,12 +121,12 @@ NULL
 #'
 #' @docType data
 #' @name fullProcessedProfile
-#' @format A data frame with 168 rows and 16 variables:
+#' @format A data frame with 168 rows and 14 variables:
 #' \itemize{
 #'     \item{supertaxon}{ Supertaxon name together with its ordered index, e.g.
 #'     "1001_Mammalia"}
-#'     \item{geneID}{ Seed or ortholog group ID, e.g. "100136at6656"}
 #'     \item{ncbiID}{ Taxon ID, e.g. "ncbi10116"}
+#'     \item{geneID}{ Seed or ortholog group ID, e.g. "100136at6656"}
 #'     \item{orthoID}{ Ortholog ID, e.g. "100136at6656|HUMAN@9606@1|Q9UNQ2|1"}
 #'     \item{var1}{ First additional variable}
 #'     \item{var2}{ Second additional variable}
@@ -138,8 +138,6 @@ NULL
 #'     working with higher taxonomy rank than input's). e.g. "40674"}
 #'     \item{rank}{ Rank of the supertaxon, e.g. "class"}
 #'     \item{category}{ "cat}
-#'     \item{mVar1}{ Value of the 1. variable after grouping into supertaxon}
-#'     \item{mVar2}{ Value of the 2. variable after grouping into supertaxon}
 #'     \item{numberSpec}{ Total number of species in each supertaxon}
 #' }
 #' @usage data(fullProcessedProfile)
@@ -149,7 +147,7 @@ NULL
 #'
 #' @docType data
 #' @name filteredProfile
-#' @format A data frame with 168 rows and 18 variables:
+#' @format A data frame with 168 rows and 20 variables:
 #' \itemize{
 #'     \item{geneID}{ Seed or ortholog group ID, e.g. "100136at6656"}
 #'     \item{supertaxon}{ Supertaxon name together with its ordered index, e.g.
@@ -166,11 +164,13 @@ NULL
 #'     working with higher taxonomy rank than input's). e.g. "40674"}
 #'     \item{rank}{ Rank of the supertaxon, e.g. "class"}
 #'     \item{category}{ "cat}
-#'     \item{mVar1}{ Value of the 1. variable after grouping into supertaxon}
-#'     \item{mVar2}{ Value of the 2. variable after grouping into supertaxon}
 #'     \item{numberSpec}{ Total number of species in each supertaxon}
 #'     \item{taxonMod}{ Name of supersupertaxon w/o its index, e.g. "Mammalia"}
-#'     \item{presSpec}{ Percentage of taxa that have ortho in each supertaxon}
+#'     \item{presSpec}{ Percentage of taxa having orthologs in each supertaxon}
+#'     \item{presentTaxa}{ Number of taxa that have ortho in each supertaxon}
+#'     \item{totalTaxa}{ Total number of taxa in each supertaxon}
+#'     \item{mVar1}{ Value of the 1. variable after grouping into supertaxon}
+#'     \item{mVar2}{ Value of the 2. variable after grouping into supertaxon}
 #' }
 #' @usage data(filteredProfile)
 NULL
@@ -200,7 +200,7 @@ NULL
 #'
 #' @docType data
 #' @name finalProcessedProfile
-#' @format A data frame with 91 rows and 10 variables:
+#' @format A data frame with 88 rows and 11 variables:
 #' \itemize{
 #'     \item{geneID}{ Seed or ortholog group ID, e.g. "100136at6656"}
 #'     \item{supertaxon}{ Supertaxon name together with its ordered index, e.g.
@@ -213,7 +213,8 @@ NULL
 #'     \item{orthoID}{ Ortholog ID, e.g. "100136at6656|RAT@10116@1|G3V7R8|1"}
 #'     \item{var2}{ Second additional variable}
 #'     \item{paralog}{ Number of co-orthologs in the current taxon}
-#'     \item{taxonMon}{ Name of supertaxon but without index, e.g. "Mammalia"}
+#'     \item{presentTaxa}{ Number of taxa that have ortho in each supertaxon}
+#'     \item{totalTaxa}{ Total number of taxa in each supertaxon}
 #' }
 #' @usage data(finalProcessedProfile)
 NULL
