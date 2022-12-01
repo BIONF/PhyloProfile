@@ -31,7 +31,7 @@
 #' profileDt <- fullProcessedProfile
 #' taxonIDs <- levels(as.factor(fullProcessedProfile$ncbiID))
 #' sortedInputTaxa <- sortInputTaxa(
-#'     taxonIDs, rankName, refTaxon, NULL
+#'     taxonIDs, rankName, refTaxon, NULL, NULL
 #' )
 #' taxaCount <- plyr::count(sortedInputTaxa, "supertaxon")
 #' var1Cutoff <- c(0.75, 1.0)
@@ -48,7 +48,7 @@
 #' )
 
 getCoreGene <- function(
-    rankName = NULL, taxaCore = c("none"), profileDt = NULL, taxaCount = NULL, 
+    rankName = NULL, taxaCore = c("none"), profileDt = NULL, taxaCount = NULL,
     var1Cutoff = c(0, 1), var2Cutoff = c(0, 1),
     percentCutoff = c(0, 1), coreCoverage = 100
 ) {

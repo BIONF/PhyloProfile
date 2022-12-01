@@ -15,7 +15,7 @@ downloadPlotSettings <- function (settings, outFile, type) {
         } else {
             yaml::write_yaml(settings, paste0(outFile, ".yml"), indent = 4)
             lapply(
-                writePlottingScript(settings), 
+                writePlottingScript(settings),
                 write, paste0(outFile, ".rscript"), append = TRUE
             )
             msg1 <- paste0(
@@ -25,7 +25,7 @@ downloadPlotSettings <- function (settings, outFile, type) {
             msg2 <- paste0(
                 "You can use this command to generate the plot:<br>",
                 "Rscript ", outFile, ".rscript ", outFile, ".yml ",
-                "input.phyloprofile output_plot.pdf" 
+                "input.phyloprofile output_plot.pdf"
             )
             message(msg1, "<br>", msg2)
         }
@@ -36,17 +36,17 @@ writePlottingScript <- function(settingsFile) {
     out <- c(
         "library(PhyloProfile)",
         "library(ggplot2)",
-        
+
         "args = commandArgs(trailingOnly = TRUE)",
         "if (is.na(args[1])) stop('Setting file missing')",
         "if (is.na(args[2])) stop('Input file missing')",
         "if (is.na(args[3])) stop('Output file missing')",
-        
+
         "##### Reading setting file",
         paste(
             "if (!file.exists(args[1]))",
             "stop(paste(args[1], 'not found!'))"
-            
+
         ),
         "settings <- yaml::read_yaml(args[1])",
         "print('Reading setting file...')",
@@ -68,29 +68,30 @@ writePlottingScript <- function(settingsFile) {
         "var2Relation <- settings$var2Relation",
         "groupByCat <- FALSE",
         "catDt <- NULL",
-        
+
         "##### Processing input",
         "print('Processing input...')",
         "inputDf <- createLongMatrix(rawInput)",
         "inputDf <- inputDf[!duplicated(inputDf),]",
         "colnames(inputDf) <- c('geneID', 'ncbiID', 'orthoID', 'var1', 'var2')",
-        
+
         "sortedTaxa <- sortInputTaxa(
             taxonIDs = getInputTaxaID(inputDf),
             rankName = rankName,
             refTaxon = refTaxon,
-            taxaTree = NULL
+            taxaTree = NULL,
+            sortedTaxonList = NULL
         )",
-        
+
         "taxaCount <- plyr::count(sortedTaxa, 'supertaxon')",
-        
+
         "fullData <- parseInfoProfile(
             inputDf = inputDf,
             sortedInputTaxa = sortedTaxa,
             taxaCount = taxaCount,
             coorthoCOMax = coorthologCutoffMax
         )",
-        
+
         "filteredDf <- filterProfileData(
             fullData,
             taxaCount,
@@ -107,7 +108,7 @@ writePlottingScript <- function(settingsFile) {
             var2AggregateBy
         )",
         "dataHeat <- reduceProfile(filteredDf)",
-        
+
         "##### Clustering",
         "if (settings$clusterProfile == TRUE) {",
         "print('Clustering...')",
@@ -134,7 +135,7 @@ writePlottingScript <- function(settingsFile) {
             "[!is.na(clusteredDataHeat$geneID),]"
         ),
         "}",
-        
+
         "print('Generating plot...')",
         "plotDf <- dataMainPlot(dataHeat)",
         paste(
@@ -164,7 +165,7 @@ writePlottingScript <- function(settingsFile) {
             'colorByGroup' = settings$colorByGroup
         )",
         "p <- heatmapPlotting(plotDf, plotParameter)",
-        "ggsave(args[3], plot = p, width = settings$width * 0.056458333, 
+        "ggsave(args[3], plot = p, width = settings$width * 0.056458333,
             height = settings$height * 0.056458333,
             units = 'cm', dpi = 300, device = 'pdf', limitsize = FALSE)",
         "print('DONE! Your plot is saved in', args[3])"

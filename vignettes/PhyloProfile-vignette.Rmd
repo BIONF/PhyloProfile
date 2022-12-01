@@ -193,7 +193,7 @@ refTaxon <- "Mammalia"
 #' Count taxa within each supertaxon
 taxonIDs <- levels(as.factor(fullProcessedProfile$ncbiID))
 sortedInputTaxa <- sortInputTaxa(
-    taxonIDs, rankName, refTaxon, NULL
+    taxonIDs, rankName, refTaxon, NULL, NULL
 )
 taxaCount <- plyr::count(sortedInputTaxa, "supertaxon")
 
@@ -240,7 +240,7 @@ coreCoverage <- 1
 #' Count taxa within each supertaxon
 taxonIDs <- levels(as.factor(fullProcessedProfile$ncbiID))
 sortedInputTaxa <- sortInputTaxa(
-    taxonIDs, rankName, refTaxon, NULL
+    taxonIDs, rankName, refTaxon, NULL, NULL
 )
 taxaCount <- plyr::count(sortedInputTaxa, "supertaxon")
 
@@ -336,6 +336,8 @@ refTaxon <- "Mammalia"
 
 #' Input a user-defined taxonomy tree to replace NCBI taxonomy tree (optional)
 taxaTree <- NULL
+#' Or a sorted taxon list (optional)
+sortedTaxonList <- NULL
 
 #' Choose how to aggregate the additional variables when pocessing the data
 #' into supertaxon
@@ -365,6 +367,7 @@ profileData <- fromInputToProfile(
     rankName,
     refTaxon,
     taxaTree,
+    sortedTaxonList,
     var1AggregateBy,
     var2AggregateBy,
     percentCutoff,
@@ -491,7 +494,8 @@ sortedTaxonomy <- sortInputTaxa(
     taxonIDs = inputTaxonID,
     rankName = rankName,
     refTaxon = refTaxon,
-    taxaTree = inputTaxaTree
+    taxaTree = inputTaxaTree,
+    NULL
 )
 
 head(

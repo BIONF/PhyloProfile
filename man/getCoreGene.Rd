@@ -46,7 +46,7 @@ taxaCore <- c("Mammalia", "Saccharomycetes", "Insecta")
 profileDt <- fullProcessedProfile
 taxonIDs <- levels(as.factor(fullProcessedProfile$ncbiID))
 sortedInputTaxa <- sortInputTaxa(
-    taxonIDs, rankName, refTaxon, NULL
+    taxonIDs, rankName, refTaxon, NULL, NULL
 )
 taxaCount <- plyr::count(sortedInputTaxa, "supertaxon")
 var1Cutoff <- c(0.75, 1.0)

@@ -5,7 +5,7 @@
 \title{Sort list of (super)taxa based on a selected reference (super)taxon}
 \usage{
 sortInputTaxa(taxonIDs = NULL, rankName, refTaxon = NULL,
-    taxaTree = NULL)
+    taxaTree = NULL, sortedTaxonList = NULL)
 }
 \arguments{
 \item{taxonIDs}{list of taxon IDs (e.g.: ncbi1234, ncbi9999, ...). Default =
@@ -16,6 +16,8 @@ NULL.}
 \item{refTaxon}{selected reference taxon. Default = NULL.}
 
 \item{taxaTree}{taxonomy tree for the input taxa (optional). Default = NULL.}
+
+\item{sortedTaxonList}{list of sorted taxa (optional). Default = NULL.}
 }
 \value{
 A taxonomy matrix for the input taxa ordered by the selected
@@ -29,7 +31,7 @@ Sort list of (super)taxa based on a selected reference (super)taxon
 taxonIDs <- c(
     "ncbi10116", "ncbi123851", "ncbi3702", "ncbi13616", "ncbi9606"
 )
-sortInputTaxa(taxonIDs, "species", "Homo sapiens", NULL)
+sortInputTaxa(taxonIDs, "species", "Homo sapiens", NULL, NULL)
 }
 \seealso{
 \code{\link{getNameList}}, \code{\link{getTaxonomyMatrix}},

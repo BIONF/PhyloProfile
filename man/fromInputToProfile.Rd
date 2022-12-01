@@ -5,10 +5,11 @@
 \title{Complete processing of raw input phylogenetic profiles}
 \usage{
 fromInputToProfile(rawInput, rankName, refTaxon = NULL,
-    taxaTree = NULL, var1AggregateBy = "max", var2AggregateBy = "max",
-    percentCutoff = c(0, 1), coorthologCutoffMax = 9999,
-    var1Cutoff = c(0, 1), var2Cutoff = c(0, 1), var1Relation = "protein",
-    var2Relation = "protein", groupByCat = FALSE, catDt = NULL)
+    taxaTree = NULL, sortedTaxonList = NULL, var1AggregateBy = "max", 
+    var2AggregateBy = "max", percentCutoff = c(0, 1), 
+    coorthologCutoffMax = 9999, var1Cutoff = c(0, 1), var2Cutoff = c(0, 1), 
+    var1Relation = "protein", var2Relation = "protein", groupByCat = FALSE,
+    catDt = NULL)
 }
 \arguments{
 \item{rawInput}{input file (in long, wide, multi-fasta or orthoxml format)}
@@ -20,6 +21,8 @@ protected from filtering). Default = NULL.}
 
 \item{taxaTree}{input taxonomy tree for taxa in input profiles (optional).
 Default = NULL.}
+
+\item{sortedTaxonList}{list of sorted taxa (optional). Default = NULL.}
 
 \item{var1AggregateBy}{aggregate method for var1 (min, max, mean or median).
 Default = "max".}
@@ -68,6 +71,7 @@ rawInput <- system.file(
 rankName <- "class"
 refTaxon <- "Mammalia"
 taxaTree <- NULL
+sortedTaxonList <- NULL
 var1AggregateBy <- "max"
 var2AggregateBy <- "mean"
 percentCutoff <- c(0.0, 1.0)
@@ -83,6 +87,7 @@ fromInputToProfile(
     rankName,
     refTaxon,
     taxaTree,
+    sortedTaxonList,
     var1AggregateBy,
     var2AggregateBy,
     percentCutoff,

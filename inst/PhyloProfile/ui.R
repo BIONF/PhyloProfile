@@ -489,24 +489,27 @@ shinyUI(
                             inputId = "orderTaxa",
                             label = "",
                             choices = list(
-                                "automatically", "by user defined tree"
+                                "automatically", "by user defined tree",
+                                "by a sorted list"
                             ),
                             selected = "automatically",
                             inline = TRUE
                         ),
-                        
-                        bsPopover(
-                            "orderTaxa", "", "in newick format", "bottom"
-                        ),
-                        
                         conditionalPanel(
                             condition = "input.orderTaxa
                                         == 'by user defined tree'",
-                            uiOutput("inputTree.ui")
+                            uiOutput("inputTree.ui"),
+                            bsPopover(
+                                "orderTaxa", "", "in newick format", "bottom"
+                            ),
+                            uiOutput("checkNewick.ui")
                         ),
-                        
-                        uiOutput("checkNewick.ui"),
-                        
+                        conditionalPanel(
+                            condition = "input.orderTaxa
+                                        == 'by a sorted list'",
+                            uiOutput("inputSortedTaxa.ui"),
+                            uiOutput("checkSortedTaxa.ui")
+                        ),
                         hr(),
 
                         bsButton(

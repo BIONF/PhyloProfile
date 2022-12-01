@@ -32,7 +32,7 @@ of VAR1 and VAR2.
 data("mainLongRaw", package="PhyloProfile")
 taxonIDs <- getInputTaxaID(mainLongRaw)
 sortedInputTaxa <- sortInputTaxa(
-    taxonIDs, "class", "Mammalia", NULL
+    taxonIDs, "class", "Mammalia", NULL, NULL
 )
 taxaCount <- plyr::count(sortedInputTaxa, "supertaxon")
 coorthoCOMax <- 999

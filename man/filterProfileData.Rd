@@ -81,7 +81,7 @@ var1AggregateBy <- "max"
 var2AggregateBy <- "max"
 taxonIDs <- levels(as.factor(fullProcessedProfile$ncbiID))
 sortedInputTaxa <- sortInputTaxa(
-    taxonIDs, rankName, refTaxon, NULL
+    taxonIDs, rankName, refTaxon, NULL, NULL
 )
 taxaCount <- plyr::count(sortedInputTaxa, "supertaxon")
 filterProfileData(

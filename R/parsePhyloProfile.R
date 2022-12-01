@@ -229,12 +229,13 @@ getSelectedTaxonNames <- function(
 
 #' Sort list of (super)taxa based on a selected reference (super)taxon
 #' @usage sortInputTaxa(taxonIDs = NULL, rankName, refTaxon = NULL,
-#'     taxaTree = NULL)
+#'     taxaTree = NULL, sortedTaxonList = NULL)
 #' @param taxonIDs list of taxon IDs (e.g.: ncbi1234, ncbi9999, ...). Default =
 #' NULL.
 #' @param rankName working taxonomy rank (e.g. "species", "phylum",...)
 #' @param refTaxon selected reference taxon. Default = NULL.
 #' @param taxaTree taxonomy tree for the input taxa (optional). Default = NULL.
+#' @param sortedTaxonList list of sorted taxa (optional). Default = NULL.
 #' @return A taxonomy matrix for the input taxa ordered by the selected
 #' reference taxon. This matrix is sorted either based on the NCBI taxonomy
 #' info, or based on an user-defined taxonomy tree (if provided).
@@ -248,10 +249,11 @@ getSelectedTaxonNames <- function(
 #' taxonIDs <- c(
 #'     "ncbi10116", "ncbi123851", "ncbi3702", "ncbi13616", "ncbi9606"
 #' )
-#' sortInputTaxa(taxonIDs, "species", "Homo sapiens", NULL)
+#' sortInputTaxa(taxonIDs, "species", "Homo sapiens", NULL, NULL)
 
 sortInputTaxa <- function(
-    taxonIDs = NULL, rankName, refTaxon = NULL, taxaTree = NULL
+    taxonIDs = NULL, rankName, refTaxon = NULL, taxaTree = NULL, 
+    sortedTaxonList = NULL
 ){
     ncbiID <- fullName <- abbrName <- NULL
     if (missing(rankName)) return("No taxonomy rank name given!")
@@ -272,16 +274,22 @@ sortInputTaxa <- function(
     # get full taxonomy data & representative taxon
     Dt <- getTaxonomyMatrix()
     repTaxon <- Dt[Dt[, rankName] == superID, ][1, ]
-    # THEN, SORT TAXON LIST BASED ON TAXONOMY TREE
-    if (is.null(taxaTree)) {
-        distDf <- subset(Dt, select = -c(ncbiID, fullName))
-        row.names(distDf) <- distDf$abbrName
-        distDf <- distDf[, -1]
-        taxaTree <- createRootedTree(distDf, as.character(repTaxon$abbrName))
-    } else
-        taxaTree <- ape::root(
-            taxaTree,outgroup=as.character(repTaxon$abbrName),resolve.root=TRUE)
-    taxonList <- sortTaxaFromTree(taxaTree)
+    # THEN, SORT TAXON LIST BASED ON TAXONOMY TREE or SORTED TAXON LIST
+    if (is.null(sortedTaxonList)) {
+        if (is.null(taxaTree)) {
+            distDf <- subset(Dt, select = -c(ncbiID, fullName))
+            row.names(distDf) <- distDf$abbrName
+            distDf <- distDf[, -1]
+            taxaTree <- createRootedTree(distDf,as.character(repTaxon$abbrName))
+        } else
+            taxaTree <- ape::root(
+                taxaTree, outgroup=as.character(repTaxon$abbrName),
+                resolve.root=TRUE
+            )
+        taxonList <- sortTaxaFromTree(taxaTree)
+    } else {
+        taxonList <- sortedTaxonList
+    }
     sortedDt <- Dt[match(taxonList, Dt$abbrName), ]
     # subset to get list of input taxa only
     sortedDt <- subset(sortedDt, abbrName %in% taxonIDs)
@@ -411,7 +419,7 @@ calcPresSpec <- function(profileWithTax, taxaCount){
 #' data("mainLongRaw", package="PhyloProfile")
 #' taxonIDs <- getInputTaxaID(mainLongRaw)
 #' sortedInputTaxa <- sortInputTaxa(
-#'     taxonIDs, "class", "Mammalia", NULL
+#'     taxonIDs, "class", "Mammalia", NULL, NULL
 #' )
 #' taxaCount <- plyr::count(sortedInputTaxa, "supertaxon")
 #' coorthoCOMax <- 999
@@ -511,7 +519,7 @@ parseInfoProfile <- function(
 #' var2AggregateBy <- "max"
 #' taxonIDs <- levels(as.factor(fullProcessedProfile$ncbiID))
 #' sortedInputTaxa <- sortInputTaxa(
-#'     taxonIDs, rankName, refTaxon, NULL
+#'     taxonIDs, rankName, refTaxon, NULL, NULL
 #' )
 #' taxaCount <- plyr::count(sortedInputTaxa, "supertaxon")
 #' filterProfileData(
@@ -721,16 +729,18 @@ reduceProfile <- function(filteredProfile) {
 #' phylogenetic profiles from raw input file (from raw input to final filtered
 #' dataframe)
 #' @usage fromInputToProfile(rawInput, rankName, refTaxon = NULL,
-#'     taxaTree = NULL, var1AggregateBy = "max", var2AggregateBy = "max",
-#'     percentCutoff = c(0, 1), coorthologCutoffMax = 9999,
-#'     var1Cutoff = c(0, 1), var2Cutoff = c(0, 1), var1Relation = "protein",
-#'     var2Relation = "protein", groupByCat = FALSE, catDt = NULL)
+#'     taxaTree = NULL, sortedTaxonList = NULL, var1AggregateBy = "max", 
+#'     var2AggregateBy = "max", percentCutoff = c(0, 1), 
+#'     coorthologCutoffMax = 9999, var1Cutoff = c(0, 1), var2Cutoff = c(0, 1), 
+#'     var1Relation = "protein", var2Relation = "protein", groupByCat = FALSE,
+#'     catDt = NULL)
 #' @param rawInput input file (in long, wide, multi-fasta or orthoxml format)
 #' @param rankName taxonomy rank (e.g. "species","phylum",...)
 #' @param refTaxon selected reference taxon name (used for sorting and will be
 #' protected from filtering). Default = NULL.
 #' @param taxaTree input taxonomy tree for taxa in input profiles (optional).
 #' Default = NULL.
+#' @param sortedTaxonList list of sorted taxa (optional). Default = NULL.
 #' @param var1AggregateBy aggregate method for var1 (min, max, mean or median).
 #' Default = "max".
 #' @param var2AggregateBy aggregate method for VAR2 (min, max, mean or median).
@@ -767,6 +777,7 @@ reduceProfile <- function(filteredProfile) {
 #' rankName <- "class"
 #' refTaxon <- "Mammalia"
 #' taxaTree <- NULL
+#' sortedTaxonList <- NULL
 #' var1AggregateBy <- "max"
 #' var2AggregateBy <- "mean"
 #' percentCutoff <- c(0.0, 1.0)
@@ -782,6 +793,7 @@ reduceProfile <- function(filteredProfile) {
 #'     rankName,
 #'     refTaxon,
 #'     taxaTree,
+#'     sortedTaxonList,
 #'     var1AggregateBy,
 #'     var2AggregateBy,
 #'     percentCutoff,
@@ -799,6 +811,7 @@ fromInputToProfile <- function(
     rankName,
     refTaxon = NULL,
     taxaTree = NULL,
+    sortedTaxonList = NULL,
     var1AggregateBy = "max",
     var2AggregateBy = "max",
     percentCutoff = c(0, 1),
@@ -817,7 +830,9 @@ fromInputToProfile <- function(
     # get input taxon IDs and names
     inputTaxonID <- getInputTaxaID(inputDf)
     # sort input taxa based on selected reference taxon or input taxonomy tree
-    sortedInputTaxa <- sortInputTaxa(inputTaxonID, rankName, refTaxon, taxaTree)
+    sortedInputTaxa <- sortInputTaxa(
+        inputTaxonID, rankName, refTaxon, taxaTree, sortedTaxonList
+    )
     # count present taxa in each supertaxon
     taxaCount <- plyr::count(sortedInputTaxa, "supertaxon")
     # parse info (additional values...) into profile df

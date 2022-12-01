@@ -38,7 +38,7 @@ refTaxon <- "Mammalia"
 processedProfileData <- fullProcessedProfile
 taxonIDs <- levels(as.factor(processedProfileData$ncbiID))
 sortedInputTaxa <- sortInputTaxa(
-    taxonIDs, rankName, refTaxon, NULL
+    taxonIDs, rankName, refTaxon, NULL, NULL
 )
 taxaCount <- plyr::count(sortedInputTaxa, "supertaxon")
 var1Cutoff <- c(0, 1)
