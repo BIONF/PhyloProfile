@@ -17,8 +17,8 @@
 #' (tran@bio.uni-frankfurt.de)
 #' @seealso \code{\link{fromInputToProfile}}
 #' @examples
-#' data("superTaxonProfile", package="PhyloProfile")
-#' data <- superTaxonProfile
+#' data("finalProcessedProfile", package="PhyloProfile")
+#' data <- finalProcessedProfile
 #' profileType <- "binary"
 #' var1AggregateBy <- "max"
 #' var2AggregateBy <- "mean"
