@@ -2,6 +2,12 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.12.3}{
+  \itemize{
+    \item fixed bug customized profile not showed
+  }
+}
+
 \section{Version 1.12.1}{
   \itemize{
     \item added number of co-orthologs and number of taxa in each supertaxon

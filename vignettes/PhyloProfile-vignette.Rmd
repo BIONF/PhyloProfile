@@ -384,16 +384,16 @@ head(profileData)
 Generate phylogenetic profile heatmap after processing the raw input file.
 ```{r, fig.show='hold', dev='png'}
 #' Load built-in processed data
-data("superTaxonProfile", package="PhyloProfile")
+data("finalProcessedProfile", package="PhyloProfile")
 
 #' Create data for plotting
-plotDf <- dataMainPlot(superTaxonProfile)
+plotDf <- dataMainPlot(finalProcessedProfile)
 
 #' You can also choose a subset of genes and/or taxa for plotting with:
 #' selectedTaxa <- c("Mammalia", "Echinoidea", "Gunneridae")
 #' selectedSeq <- "all"
 #' plotDf <- dataCustomizedPlot(
-#'     superTaxonProfile, selectedTaxa, selectedSeq
+#'     finalProcessedProfile, selectedTaxa, selectedSeq
 #' )
 
 #' Identify plot's parameters

@@ -24,8 +24,8 @@ species that have orthologs in each supertaxon (presSpec).
 Create data for main profile plot
 }
 \examples{
-data("superTaxonProfile", package="PhyloProfile")
-dataMainPlot(superTaxonProfile)
+data("finalProcessedProfile", package="PhyloProfile")
+dataMainPlot(finalProcessedProfile)
 }
 \seealso{
 \code{\link{filterProfileData}}

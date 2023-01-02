@@ -175,26 +175,6 @@ NULL
 #' @usage data(filteredProfile)
 NULL
 
-#' An example of a final phylogenetic profile in supertaxon level.
-#'
-#' @docType data
-#' @name superTaxonProfile
-#' @format A data frame with 91 rows and 9 variables:
-#' \itemize{
-#'     \item{geneID}{ Seed or ortholog group ID, e.g. "100136at6656"}
-#'     \item{supertaxon}{ Supertaxon name together with its ordered index, e.g.
-#'     "1001_Mammalia"}
-#'     \item{supertaxonID}{ Supertaxon ID (only different than ncbiID in case
-#'     working with higher taxonomy rank than input's). e.g. "40674"}
-#'     \item{var1}{ First additional variable}
-#'     \item{presSpec}{ Percentage of taxa that have ortho in each supertaxon}
-#'     \item{category}{ "cat}
-#'     \item{orthoID}{ Ortholog ID, e.g. "100136at6656|HUMAN@9606@1|Q9UNQ2|1"}
-#'     \item{var2}{ Second additional variable}
-#'     \item{paralog}{ Number of co-orthologs in the current taxon}
-#' }
-#' @usage data(superTaxonProfile)
-NULL
 
 #' An example of a final processed & filtered phylogenetic profile.
 #'

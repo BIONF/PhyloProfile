@@ -14,8 +14,8 @@
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{filterProfileData}}
 #' @examples
-#' data("superTaxonProfile", package="PhyloProfile")
-#' dataMainPlot(superTaxonProfile)
+#' data("finalProcessedProfile", package="PhyloProfile")
+#' dataMainPlot(finalProcessedProfile)
 
 dataMainPlot <- function(dataHeat = NULL){
     if (is.null(dataHeat)) stop("Input data cannot be NULL!")
@@ -75,10 +75,10 @@ dataMainPlot <- function(dataHeat = NULL){
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{filterProfileData}}
 #' @examples
-#' data("superTaxonProfile", package="PhyloProfile")
+#' data("finalProcessedProfile", package="PhyloProfile")
 #' selectedTaxa <- c("Mammalia", "Saccharomycetes", "Insecta")
 #' selectedSeq <- "all"
-#' dataCustomizedPlot(superTaxonProfile, selectedTaxa, selectedSeq)
+#' dataCustomizedPlot(finalProcessedProfile, selectedTaxa, selectedSeq)
 
 dataCustomizedPlot <- function(
     dataHeat = NULL, selectedTaxa = "all", selectedSeq = "all"
@@ -87,7 +87,7 @@ dataCustomizedPlot <- function(
     geneID <- supertaxonMod <- paralogNew <- NULL
     dataHeat$supertaxonMod <- {
         substr(
-            dataHeat$supertaxon, 6, nchar(as.character(dataHeat$supertaxon))
+            dataHeat$supertaxon, 8, nchar(as.character(dataHeat$supertaxon))
         )
     }
     if (selectedTaxa[1] == "all" & selectedSeq[1] != "all") {
@@ -138,7 +138,7 @@ dataCustomizedPlot <- function(
 #' "genes" - default = "taxa"; (2+3) names of 2 variables var1ID and var2ID -
 #' default = "var1" & "var2"; (4+5) mid value and color for mid value of var1 -
 #' default is 0.5 and #FFFFFF; (6) color for lowest var1 - default = "#FF8C00";
-#' (7) color for highest var1 - default = "#4682B4"; (8+9) mid value and color 
+#' (7) color for highest var1 - default = "#4682B4"; (8+9) mid value and color
 #' for mid value of var2 - default is 1 and #FFFFFF;(10) color for lowest var2 -
 #' default = "#FFFFFF", (11) color for highest var2 - default = "#F0E68C", (12)
 #' color of co-orthologs - default = "#07D000"; (13+14+15) text sizes for x, y
@@ -153,8 +153,8 @@ dataCustomizedPlot <- function(
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{dataMainPlot}}, \code{\link{dataCustomizedPlot}}
 #' @examples
-#' data("superTaxonProfile", package="PhyloProfile")
-#' plotDf <- dataMainPlot(superTaxonProfile)
+#' data("finalProcessedProfile", package="PhyloProfile")
+#' plotDf <- dataMainPlot(finalProcessedProfile)
 #' plotParameter <- list(
 #'     "xAxis" = "taxa",
 #'     "var1ID" = "FAS_FW",
@@ -275,7 +275,7 @@ heatmapPlotting <- function(data = NULL, parm = NULL){
     if (parm$xAngle == 90) vjustValue <- 0.5
     p <- p + theme(
         axis.text.x = element_text(
-            angle = parm$xAngle, hjust = 1, size = parm$xSize, 
+            angle = parm$xAngle, hjust = 1, size = parm$xSize,
             vjust = vjustValue
         ),
         axis.text.y = element_text(size = parm$ySize),
@@ -297,7 +297,7 @@ heatmapPlotting <- function(data = NULL, parm = NULL){
 #' "genes" - default = "taxa"; (2+3) names of 2 variables var1ID and var2ID -
 #' default = "var1" & "var2"; (4+5) mid value and color for mid value of var1 -
 #' default is 0.5 and #FFFFFF; (6) color for lowest var1 - default = "#FF8C00";
-#' (7) color for highest var1 - default = "#4682B4"; (8+9) mid value and color 
+#' (7) color for highest var1 - default = "#4682B4"; (8+9) mid value and color
 #' for mid value of var2 - default is 1 and #FFFFFF;(10) color for lowest var2 -
 #' default = "#FFFFFF", (11) color for highest var2 - default = "#F0E68C", (12)
 #' color of co-orthologs - default = "#07D000"; (13+14+15) text sizes for x, y
@@ -315,8 +315,8 @@ heatmapPlotting <- function(data = NULL, parm = NULL){
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{dataMainPlot}}, \code{\link{dataCustomizedPlot}}
 #' @examples
-#' data("superTaxonProfile", package="PhyloProfile")
-#' plotDf <- dataMainPlot(superTaxonProfile)
+#' data("finalProcessedProfile", package="PhyloProfile")
+#' plotDf <- dataMainPlot(finalProcessedProfile)
 #' plotParameter <- list(
 #'     "xAxis" = "taxa",
 #'     "var1ID" = "FAS_FW",
