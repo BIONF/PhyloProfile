@@ -96,7 +96,7 @@ shinyUI(
                         checkboxInput(
                             "autoUpdateSelected",
                             strong(em("Auto update plot")),
-                            value = TRUE,
+                            value = FALSE,
                             width = NULL
                         )
                     ),
@@ -139,7 +139,7 @@ shinyUI(
 
         # MAIN NARVARPAGE TABS -------------------------------------------------
         navbarPage(
-            em(strong("PhyloProfile v1.12.3")),
+            em(strong("PhyloProfile v1.12.4")),
             id = "tabs",
             collapsible = TRUE,
             inverse = TRUE,

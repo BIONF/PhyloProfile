@@ -2,6 +2,13 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+
+\section{Version 1.12.4}{
+  \itemize{
+    \item fixed bug download data
+  }
+}
+
 \section{Version 1.12.3}{
   \itemize{
     \item fixed bug customized profile not showed
