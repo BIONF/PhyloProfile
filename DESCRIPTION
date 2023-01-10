@@ -1,6 +1,6 @@
 Package: PhyloProfile
-Version: 1.13.3
-Date: 2023-01-02
+Version: 1.13.4
+Date: 2023-01-10 
 Title: PhyloProfile
 Authors@R: c(
     person("Vinh", "Tran", role = c("aut", "cre"), email = "tran@bio.uni-frankfurt.de", comment=c(ORCID="0000-0001-6772-7595")),

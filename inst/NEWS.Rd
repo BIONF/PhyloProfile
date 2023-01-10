@@ -3,16 +3,21 @@
 \encoding{UTF-8}
 
 
-\section{Version 1.12.3}{
+\section{Version 1.14.0}{
   \itemize{
-    \item fixed bug customized profile not showed
+    \item option for uploading sorted taxon list
   }
 }
 
+\section{Version 1.12.4}{
+   \itemize{
+     \item fixed bug download data
+   }
+ }
 
-\section{Version 1.12.2}{
+\section{Version 1.12.3}{
   \itemize{
-    \item option for uploading sorted taxon list
+    \item fixed bug customized profile not showed
   }
 }
 

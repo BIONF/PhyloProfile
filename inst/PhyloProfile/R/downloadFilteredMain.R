@@ -202,7 +202,7 @@ downloadFilteredMain <- function(
         dataOut$fullName <- as.character(dataOut$fullName)
         dataOut$ncbiID <- as.character(dataOut$ncbiID)
         dataOut$supertaxon <- substr(dataOut$supertaxon,
-                                      6,
+                                      8,
                                       nchar(as.character(dataOut$supertaxon)))
         dataOut$var1 <- as.character(dataOut$var1)
         dataOut$var2 <- as.character(dataOut$var2)

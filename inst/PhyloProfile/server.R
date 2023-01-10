@@ -812,6 +812,14 @@ shinyServer(function(input, output, session) {
 
     # =========================== RENDER FILTER SLIDEBARS ======================
 
+    # * Update autoUpdateSelected based on autoUpdate in main plot -------------
+    observe({
+        updateCheckboxInput(
+            session, "autoUpdateSelected", value = input$autoUpdate
+        )
+        shinyjs::disable("autoUpdateSelected")
+    })
+    
     # * render filter slidebars for Main plot ----------------------------------
     output$var1Cutoff.ui <- renderUI({
         createSliderCutoff(

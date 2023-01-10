@@ -96,7 +96,7 @@ shinyUI(
                         checkboxInput(
                             "autoUpdateSelected",
                             strong(em("Auto update plot")),
-                            value = TRUE,
+                            value = FALSE,
                             width = NULL
                         )
                     ),
