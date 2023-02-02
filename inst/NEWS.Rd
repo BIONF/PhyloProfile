@@ -9,11 +9,18 @@
   }
 }
 
+
+\section{Version 1.12.5}{
+  \itemize{
+    \item fixed bug multiple entries for one (super)taxon ID
+  }
+}
+
 \section{Version 1.12.4}{
-   \itemize{
-     \item fixed bug download data
-   }
- }
+  \itemize{
+    \item fixed bug download data
+  }
+}
 
 \section{Version 1.12.3}{
   \itemize{

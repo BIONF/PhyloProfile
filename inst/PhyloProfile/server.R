@@ -1397,8 +1397,11 @@ shinyServer(function(input, output, session) {
                             list(oldRankList, rankList), fill = TRUE
                         )
                         newNameList <- rbindlist(
-                            list(oldNameList, reducedInfoList), fill = TRUE
+                            list(reducedInfoList, oldNameList), fill = TRUE
                         )
+                        newNameList <- newNameList[
+                            !duplicated(newNameList$ncbiID),
+                        ]
 
                         # write output files
                         # (idList, rankList and taxonNamesReduced)

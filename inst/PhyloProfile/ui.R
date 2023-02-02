@@ -1230,8 +1230,8 @@ shinyUI(
             ),
             textInput(
                 "newRank",
-                "Rank (e.g. \"norank\" (for strain), species, order, etc.)",
-                "norank",
+                "Rank (e.g. strain, species, order, etc.)",
+                "species",
                 width = 500
             ),
             textInput(
