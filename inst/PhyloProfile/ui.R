@@ -139,7 +139,7 @@ shinyUI(
 
         # MAIN NARVARPAGE TABS -------------------------------------------------
         navbarPage(
-            em(strong("PhyloProfile v1.12.4")),
+            em(strong("PhyloProfile v1.12.5")),
             id = "tabs",
             collapsible = TRUE,
             inverse = TRUE,
@@ -1227,8 +1227,8 @@ shinyUI(
             ),
             textInput(
                 "newRank",
-                "Rank (e.g. \"norank\" (for strain), species, order, etc.)",
-                "norank",
+                "Rank (e.g. strain, species, order, etc.)",
+                "species",
                 width = 500
             ),
             textInput(

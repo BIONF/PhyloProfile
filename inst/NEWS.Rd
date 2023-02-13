@@ -3,6 +3,12 @@
 \encoding{UTF-8}
 
 
+\section{Version 1.12.5}{
+  \itemize{
+    \item fixed bug multiple entries for one (super)taxon ID
+  }
+}
+
 \section{Version 1.12.4}{
   \itemize{
     \item fixed bug download data
