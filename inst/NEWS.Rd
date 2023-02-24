@@ -2,6 +2,11 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.12.6}{
+  \itemize{
+    \item fixed bug ordering gene IDs when using gene categories
+  }
+}
 
 \section{Version 1.12.5}{
   \itemize{

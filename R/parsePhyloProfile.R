@@ -635,9 +635,10 @@ filterProfileData <- function(
         list(DF, scoreDf))
     
     ### add gene categories (if provided)
+    originalOrder = levels(as.factor(DF$geneID))
     if (groupByCat == TRUE) {
         if (is.null(catDt)) {
-            catDt <- data.frame( geneID = levels(DF$geneID))
+            catDt <- data.frame(geneID = levels(DF$geneID))
             catDt$group <- "noCategory"
         }
         dfCat <- data.frame(
@@ -646,6 +647,7 @@ filterProfileData <- function(
         dfCat <- merge(dfCat, catDt, by = "geneID")
         DF <- merge(dfCat, DF, by = c("geneID","supertaxon"), all.x = TRUE)
         DF$category <- DF$group
+        DF$geneID <- factor(DF$geneID, levels = originalOrder)
     }
     return(DF) #[!is.na(DF$orthoID),])
 }
