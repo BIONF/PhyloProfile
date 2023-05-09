@@ -25,7 +25,7 @@ e.g. estimation of gene age (?estimateGeneAge) or identification of core gene
 \description{
 Creating main dataframe for the input phylogenetic profiles
 based on selected input taxonomy level (e.g. strain, species) and reference
-taxon. The output contains the number of paralogs, the max/min/mean/median 
+taxon. The output contains the number of paralogs, the max/min/mean/median
 of VAR1 and VAR2.
 }
 \examples{

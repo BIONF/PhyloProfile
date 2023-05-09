@@ -49,37 +49,30 @@ checkNewick <- function(tree, inputTaxonID = NULL){
     return(0)
 }
 
-#' Create rooted tree from a taxonomy matrix
+#' Create unrooted tree from a taxonomy matrix
 #' @export
 #' @param df data frame contains taxonomy matrix used for generating tree
-#' (see distDf in example)
-#' @param rootTaxon taxon used for rooting the taxonomy tree
 #' @importFrom ape as.phylo
-#' @importFrom ape root
-#' @return A rooted taxonomy tree as an object of class "phylo".
+#' @return A unrooted taxonomy tree as an object of class "phylo".
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{taxa2dist}} for distance matrix generation from a
 #' taxonomy matrix, \code{\link{getTaxonomyMatrix}} for getting taxonomy
 #' matrix, \code{\link{ppTaxonomyMatrix}} for a demo taxonomy matrix data
 #' @examples
 #' data("ppTaxonomyMatrix", package = "PhyloProfile")
-#' # prepare matrix for calculating distances
-#' distDf <- subset(ppTaxonomyMatrix, select = -c(ncbiID, fullName))
-#' row.names(distDf) <- distDf$abbrName
-#' distDf <- distDf[, -1]
-#' # create taxonomy tree rooted by ncbi10090
-#' createRootedTree(distDf, "ncbi10090")
+#' createUnrootedTree(ppTaxonomyMatrix)
 
-createRootedTree <- function(df, rootTaxon = NULL){
+createUnrootedTree <- function(df){
     if (missing(df)) return("No taxonomy matrix given!")
+    fullName <- ncbiID <- NULL
+    # prepare matrix for calculating distances
+    distDf <- subset(df, select = -c(ncbiID, fullName))
+    row.names(distDf) <- distDf$abbrName
+    distDf <- distDf[, -1]
     # calculate distance matrix
-    taxdis <- tryCatch(taxa2dist(df), error = function(e) e)
+    taxdis <- tryCatch(taxa2dist(distDf), error = function(e) e)
     # create tree
     tree <- ape::as.phylo(stats::hclust(taxdis))
-    # root tree
-    if (missing(rootTaxon)) rootTaxon <- tree$tip.label[1]
-    if (!(rootTaxon %in% tree$tip.label)) rootTaxon <- tree$tip.label[1]
-    tree <- ape::root(tree, outgroup = rootTaxon, resolve.root = TRUE)
     # return
     return(tree)
 }
@@ -92,12 +85,9 @@ createRootedTree <- function(df, rootTaxon = NULL){
 #' @seealso \code{\link{ppTaxonomyMatrix}} for a demo taxonomy matrix data
 #' @examples
 #' data("ppTaxonomyMatrix", package = "PhyloProfile")
-#' # prepare matrix for calculating distances
-#' distDf <- subset(ppTaxonomyMatrix, select = -c(ncbiID, fullName))
-#' row.names(distDf) <- distDf$abbrName
-#' distDf <- distDf[, -1]
 #' # create taxonomy tree rooted by ncbi10090
-#' rootedTree <- createRootedTree(distDf, "ncbi10090")
+#' tree <- createUnrootedTree(ppTaxonomyMatrix)
+#' rootedTree <- ape::root(tree, outgroup = "ncbi10090", resolve.root = TRUE)
 #' # get taxon list sorted from tree
 #' sortTaxaFromTree(rootedTree)
 

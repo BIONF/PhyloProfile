@@ -46,7 +46,7 @@ shinyServer(function(input, output, session) {
 
     observe({
         if (!file.exists(isolate("data/rankList.txt"))) {
-            withProgress(message = '1/5 rankList.txt...', value = 0.5, {
+            withProgress(message = '1/6 rankList.txt...', value = 0.5, {
                 data(rankList)
                 write.table(
                     rankList, file = "data/rankList.txt",
@@ -61,7 +61,7 @@ shinyServer(function(input, output, session) {
 
     observe({
         if (!file.exists(isolate("data/idList.txt"))) {
-            withProgress(message = '2/5 idList.txt...', value = 0.5, {
+            withProgress(message = '2/6 idList.txt...', value = 0.5, {
                 data(idList)
                 write.table(
                     idList, file = "data/idList.txt",
@@ -76,7 +76,7 @@ shinyServer(function(input, output, session) {
 
     observe({
         if (!file.exists(isolate("data/taxonNamesReduced.txt"))) {
-            withProgress(message = '3/5 taxonNamesReduced.txt...', value = 0.5,{
+            withProgress(message = '3/6 taxonNamesReduced.txt...', value = 0.5,{
                 data(taxonNamesReduced)
                 write.table(
                     taxonNamesReduced, file = "data/taxonNamesReduced.txt",
@@ -91,7 +91,7 @@ shinyServer(function(input, output, session) {
 
     observe({
         if (!file.exists(isolate("data/taxonomyMatrix.txt"))) {
-            withProgress(message = '4/5 taxonomyMatrix.txt...', value = 0.5, {
+            withProgress(message = '4/6 taxonomyMatrix.txt...', value = 0.5, {
                 data(taxonomyMatrix)
                 write.table(
                     taxonomyMatrix, file = "data/taxonomyMatrix.txt",
@@ -107,7 +107,7 @@ shinyServer(function(input, output, session) {
     observe({
         if (!file.exists(isolate("data/preProcessedTaxonomy.txt"))) {
             withProgress(
-                message = '5/5 preProcessedTaxonomy.txt...', value = 0.5, {
+                message = '5/6 preProcessedTaxonomy.txt...', value = 0.5, {
                     if (hasInternet() == TRUE) {
                         preProcessedTaxonomy <- processNcbiTaxonomy()
                         write.table(
@@ -121,6 +121,19 @@ shinyServer(function(input, output, session) {
                     } else {
                         system("cp data/newTaxa.txt data/preProcessedTaxonomy.txt")
                     }
+                }
+            )
+            closeAlert(session, "fileExistMsg")
+        }
+    })
+
+    observe({
+        if (!file.exists(isolate("data/preCalcTree.nw"))) {
+            withProgress(
+                message = '6/6 preCalcTree.nw...', value = 0.5, {
+                    ppTaxonomyMatrix <- getTaxonomyMatrix()
+                    preCalcTree <- createUnrootedTree(ppTaxonomyMatrix)
+                    ape::write.tree(preCalcTree, file = "data/preCalcTree.nw")
                 }
             )
             closeAlert(session, "fileExistMsg")
@@ -591,11 +604,11 @@ shinyServer(function(input, output, session) {
             fileInput("inputSortedTaxa", "")
         }
     })
-    
+
     output$checkSortedTaxa.ui <- renderUI({
         msg <- paste0(
             "<p><em>Check <a href=\"https://github.com/BIONF/PhyloProfile/",
-            "wiki/Input-Data#list-of-sorted-taxa\">this link</a> for more ", 
+            "wiki/Input-Data#list-of-sorted-taxa\">this link</a> for more ",
             "details!</em></p>"
         )
         sortedTaxonInputDf <- NULL
@@ -634,7 +647,7 @@ shinyServer(function(input, output, session) {
         }
         HTML(msg)
     })
-    
+
     observeEvent(input$inputSortedTaxa,  ({
         if (!is.null(input$inputSortedTaxa)) {
             toggleState("rankSelect")
@@ -807,19 +820,12 @@ shinyServer(function(input, output, session) {
             toggleState("mainInput")
             toggleState("geneListSelected")
             toggleState("demoData")
+            toggleState("rankSelect")
         }
     })
 
     # =========================== RENDER FILTER SLIDEBARS ======================
 
-    # * Update autoUpdateSelected based on autoUpdate in main plot -------------
-    observe({
-        updateCheckboxInput(
-            session, "autoUpdateSelected", value = input$autoUpdate
-        )
-        shinyjs::disable("autoUpdateSelected")
-    })
-    
     # * render filter slidebars for Main plot ----------------------------------
     output$var1Cutoff.ui <- renderUI({
         createSliderCutoff(
@@ -1257,7 +1263,8 @@ shinyServer(function(input, output, session) {
         toggleState("mainInput")
     })
 
-    # * create rankList, idList, taxonNamesReduced and taxonomyMatrix ----------
+    # * create rankList, idList, taxonNamesReduced, taxonomyMatrix -------------
+    # * and preCalcTree files
     invalidID <- reactive({
         filein <- input$mainInput
         req(filein)
@@ -1442,6 +1449,16 @@ shinyServer(function(input, output, session) {
                             row.names = FALSE,
                             quote = FALSE
                         )
+
+                        # prepare matrix for calculating distances
+                        # ppTaxonomyMatrix <- taxMatrix
+                        # distDf <- subset(ppTaxonomyMatrix, select = -c(ncbiID, fullName))
+                        # row.names(distDf) <- distDf$abbrName
+                        # distDf <- distDf[, -1]
+                        # # create and save tree to preCalcTree.nw
+                        # preCalcTree <- createUnrootedTree(distDf)
+                        preCalcTree <- createUnrootedTree(taxMatrix)
+                        ape::write.tree(preCalcTree, file = "data/preCalcTree.nw")
                     }
                 )
             }
@@ -1738,7 +1755,7 @@ shinyServer(function(input, output, session) {
                     inputTaxaTree <- read.tree(file = treeIn$datapath)
                 }
             }
-            
+
             # get list of sorted taxa
             sortedTaxaFile <- input$inputSortedTaxa
             if (!is.null(sortedTaxaFile)) {
@@ -1751,7 +1768,7 @@ shinyServer(function(input, output, session) {
                 )
                 sortedTaxonList <- sortedTaxonInputDf$V1
             } else sortedTaxonList <- NULL
-            
+
             # sort taxonomy matrix based on selected refTaxon
             sortedOut <- sortInputTaxa(
                 taxonIDs = inputTaxonID(),
@@ -1832,7 +1849,6 @@ shinyServer(function(input, output, session) {
         req(getCountTaxa())
         req(sortedtaxaList())
         {
-            input$plotCustom
             input$updateBtn
         }
         withProgress(message = 'Parsing profile data...', value = 0.5, {
@@ -2105,7 +2121,8 @@ shinyServer(function(input, output, session) {
                 "guideline" = 1,
                 "width" = input$width,
                 "height" = input$height,
-                "colorByGroup" = input$colorByGroup
+                "colorByGroup" = input$colorByGroup,
+                "colorByOrthoID" = input$colorByOrthoID
             )
         } else {
             inputPara <- isolate(
@@ -2131,7 +2148,8 @@ shinyServer(function(input, output, session) {
                     "guideline" = 1,
                     "width" = input$width,
                     "height" = input$height,
-                    "colorByGroup" = input$colorByGroup
+                    "colorByGroup" = input$colorByGroup,
+                    "colorByOrthoID" = input$colorByOrthoID
                 )
             )
         }
@@ -2358,8 +2376,8 @@ shinyServer(function(input, output, session) {
     # * parameters for the customized profile plot -----------------------------
     getParameterInputCustomized <- reactive({
         input$plotCustom
-        if (input$autoUpdateSelected == TRUE) {
-            inputPara <- list(
+        inputPara <- isolate(
+            list(
                 "xAxis" = input$xAxisSelected,
                 "var1ID" = input$var1ID,
                 "var2ID"  = input$var2ID,
@@ -2381,36 +2399,10 @@ shinyServer(function(input, output, session) {
                 "guideline" = 0,
                 "width" = input$selectedWidth,
                 "height" = input$selectedHeight,
-                "colorByGroup" = input$colorByGroup
+                "colorByGroup" = input$colorByGroup,
+                "colorByOrthoID" = input$colorByOrthoID
             )
-        } else {
-            inputPara <- isolate(
-                list(
-                    "xAxis" = input$xAxisSelected,
-                    "var1ID" = input$var1ID,
-                    "var2ID"  = input$var2ID,
-                    "midVar1" = input$midVar1,
-                    "midVar2" = input$midVar2,
-                    "lowColorVar1" =  input$lowColorVar1,
-                    "midColorVar1" =  input$midColorVar1,
-                    "highColorVar1" = input$highColorVar1,
-                    "lowColorVar2" = input$lowColorVar2,
-                    "midColorVar2" =  input$midColorVar2,
-                    "highColorVar2" = input$highColorVar2,
-                    "paraColor" = input$paraColor,
-                    "xSize" = input$xSizeSelect,
-                    "ySize" = input$ySizeSelect,
-                    "legendSize" = input$legendSizeSelect,
-                    "mainLegend" = input$selectedLegend,
-                    "dotZoom" = input$dotZoomSelect,
-                    "xAngle" = input$xAngleSelect,
-                    "guideline" = 0,
-                    "width" = input$selectedWidth,
-                    "height" = input$selectedHeight,
-                    "colorByGroup" = input$colorByGroup
-                )
-            )
-        }
+        )
         return(inputPara)
     })
 
@@ -3138,12 +3130,8 @@ shinyServer(function(input, output, session) {
                 "profileType",
                 label = h5("Select the profile type"),
                 choiceNames = list(
-                    "binary profile",
-                    variable1,
-                    variable2),
-                choiceValues = list(
-                    "binary", "var1", "var2"
-                ),
+                    "binary profile", variable1, variable2, "orthoID"),
+                choiceValues = list("binary", "var1", "var2", "orthoID"),
                 selected = selectedType,
                 inline = FALSE)
         } else {
@@ -3151,12 +3139,8 @@ shinyServer(function(input, output, session) {
             radioButtons(
                 "profileType",
                 label = h5("Select the profile type"),
-                choiceNames = list(
-                    "binary profile",
-                    variable1),
-                choiceValues = list(
-                    "binary", "var1"
-                ),
+                choiceNames = list("binary profile", variable1, "orthoID"),
+                choiceValues = list("binary", "var1", "orthoID"),
                 selected = selectedType,
                 inline = FALSE)
         }
@@ -3933,8 +3917,9 @@ shinyServer(function(input, output, session) {
             analysesto <em>PhyloProfile</em> by providing the folder that
             contains these files: <code>newTaxa.txt</code>,
             <code>idList.txt</code>, <code>rankList.txt</code>,
-            <code>taxonNamesReduced.txt</code>, and
-            <code>taxonomyMatrix.txt</code>.</p>"
+            <code>taxonNamesReduced.txt</code>,
+            <code>taxonomyMatrix.txt</code> and
+            <code>preCalcTree.nw</code> (optional).</p>"
         )
 
         if (input$tabs == "NCBI taxonomy data") {

@@ -25,7 +25,7 @@ reduceProfile(filteredProfile)
 }
 \seealso{
 \code{\link{parseInfoProfile}} for creating a full processed
-profile dataframe, \code{\link{filterProfileData}} for filter processed 
+profile dataframe, \code{\link{filterProfileData}} for filter processed
 profile and \code{\link{filteredProfile}} for a demo filtered
 profile dataframe
 }

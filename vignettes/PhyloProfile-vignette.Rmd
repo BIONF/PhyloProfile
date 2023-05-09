@@ -182,7 +182,6 @@ upon filtering of the data.
 ```{r}
 ### An example for calculating gene age for the built-in data set.
 ### See ?estimateGeneAge for more details.
-
 #' Load built-in data
 data("fullProcessedProfile", package="PhyloProfile")
 
@@ -420,7 +419,8 @@ plotParameter <- list(
     "dotZoom" = 0,
     "xAngle" = 60,
     "guideline" = 0,
-    "colorByGroup" = FALSE
+    "colorByGroup" = FALSE,
+    "colorByOrthoID" = FALSE
 )
 
 #' Generate profile plot
@@ -489,7 +489,7 @@ inputTaxonID <- getInputTaxaID(inputDf)
 inputTaxaTree <- NULL
 
 #' Sort taxonomy list based on a selected refTaxon
-refTaxon <- "Microsporidia"
+refTaxon <- "Chordata"
 sortedTaxonomy <- sortInputTaxa(
     taxonIDs = inputTaxonID,
     rankName = rankName,

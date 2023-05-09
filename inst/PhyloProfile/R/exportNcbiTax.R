@@ -3,7 +3,7 @@
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 exportNcbiTax <- function(outDir) {
     taxFiles <- c(
-        "newTaxa.txt", 
+        "newTaxa.txt",
         "taxonNamesReduced.txt",
         "idList.txt",
         "rankList.txt",
@@ -23,11 +23,13 @@ exportNcbiTax <- function(outDir) {
     } else {
         packagePath <- find.package("PhyloProfile")
         message("2) Exporting data from ", packagePath, "...")
+        if (file.exists(paste0(packagePath, "/PhyloProfile/data/preCalcTree.nw")))
+            c(taxFiles, "preCalcTree.nw")
         for (file in taxFiles) {
             system(
                 paste(
-                    "cp", 
-                    paste0(packagePath, "/PhyloProfile/data/", file), 
+                    "cp",
+                    paste0(packagePath, "/PhyloProfile/data/", file),
                     paste0(outDir, "/", file)
                 )
             )

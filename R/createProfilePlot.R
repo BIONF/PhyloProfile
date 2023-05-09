@@ -1,3 +1,56 @@
+#' Process ortholog IDs
+#' @description Process ortholog IDs to identify duplicated IDs
+#' @param dataHeat a data frame contains processed profiles (see
+#' ?fullProcessedProfile, ?filterProfileData)
+#' @return the same dataframe as input, but the ortholog IDs are changed into
+#' <taxID:orthoID>. New column {orthoFreq} specifies if the ortholog IDs are
+#' single or duplicated
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+#' @export
+#' @examples
+#' ?processOrthoID
+#' \dontrun{
+#' data("finalProcessedProfile", package="PhyloProfile")
+#' processOrthoID(finalProcessedProfile)
+#' }
+
+processOrthoID <- function(dataHeat = NULL) {
+    if (is.null(dataHeat)) stop("Input data cannot be NULL!")
+    orthoID <- NULL
+    # predict if ortho ID in BIONF format
+    idFormat <- "other"
+    firstOrtho<-strsplit(as.character(dataHeat[1,]$orthoID),'|',fixed=TRUE)[[1]]
+    if (
+        length(firstOrtho) >= 3 && firstOrtho[1] == dataHeat[1,]$geneID &&
+        grepl(dataHeat[1,]$supertaxonID, firstOrtho[2])
+    ) idFormat <- "bionf"
+    # parse orthoID
+    if (idFormat == "bionf") {
+        dataHeat <- within(
+            dataHeat, 
+            orthoMod <- data.frame(
+                do.call('rbind', strsplit(as.character(orthoID),'|',fixed=TRUE))
+            )
+        )
+        dataHeat$orthoID <- paste(
+            dataHeat$orthoMod$X2, dataHeat$orthoMod$X3, sep = "#"
+        )
+    } else {
+        dataHeat$orthoID <- paste(
+            dataHeat$supertaxonID, dataHeat$orthoID, sep = "#"
+        )
+    }
+    dataHeat <- dataHeat[ , !(names(dataHeat) %in% ("orthoMod"))]
+    # count occurrences of ortho IDs
+    countOrthoDf <- as.data.frame(table(dataHeat$orthoID))
+    colnames(countOrthoDf) <- c("orthoID", "orthoFreq")
+    dataHeat <- merge(dataHeat, countOrthoDf, by = "orthoID", all.x = TRUE)
+    dataHeat$orthoFreq[dataHeat$orthoFreq > 1] <- "Multiple"
+    dataHeat$orthoFreq[dataHeat$orthoFreq == 1] <- "Single"
+    return(dataHeat)
+}
+
+
 #' Create data for main profile plot
 #' @export
 #' @param dataHeat a data frame contains processed profiles (see
@@ -19,7 +72,7 @@
 
 dataMainPlot <- function(dataHeat = NULL){
     if (is.null(dataHeat)) stop("Input data cannot be NULL!")
-    paralogNew <- NULL
+    paralogNew <- orthoID <- NULL
 
     # reduce number of inparalogs based on filtered dataHeat
     dataHeatTb <- data.table(stats::na.omit(dataHeat))
@@ -51,6 +104,8 @@ dataMainPlot <- function(dataHeat = NULL){
         levels = substr(
             levels(as.factor(dataHeat$supertaxon)), 8,
             nchar(levels(as.factor(dataHeat$supertaxon)))))
+    # count ortholog IDs for each taxon
+    dataHeat <- processOrthoID(dataHeat)
     return(dataHeat)
 }
 
@@ -127,6 +182,9 @@ dataCustomizedPlot <- function(
         levels = substr(
             levels(dataHeat$supertaxon), 8,
             nchar(levels(dataHeat$supertaxon))))
+    # count ortholog IDs for each taxon
+    if (nrow(dataHeat) == 0) return(dataHeat)
+    dataHeat <- processOrthoID(dataHeat)
     return(dataHeat)
 }
 
@@ -147,7 +205,8 @@ dataCustomizedPlot <- function(
 #' co-ortholog dots from -1 to 3 - default = 0; (18) angle of x-axis from 0 to
 #' 90 - default = 60; (19) show/hide separate line for reference taxon 1/0 -
 #' default = 0; (20) enable/disable coloring gene categories TRUE/FALSE -
-#' default = FALSE). NOTE: Leave blank or NULL to use default values.
+#' default = FALSE; (21) enable/disable coloring duplicated ortholog IDs 
+#' TRUE/FALSE - default=FALSE). NOTE: Leave blank or NULL to use default values.
 #' @return A profile heatmap plot as a ggplot object.
 #' @import ggplot2
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
@@ -175,7 +234,8 @@ dataCustomizedPlot <- function(
 #'     "dotZoom" = 0,
 #'     "xAngle" = 60,
 #'     "guideline" = 0,
-#'     "colorByGroup" = FALSE
+#'     "colorByGroup" = FALSE,
+#'     "colorByOrthoID" = FALSE
 #' )
 #'
 #' heatmapPlotting(plotDf, plotParameter)
@@ -191,11 +251,11 @@ heatmapPlotting <- function(data = NULL, parm = NULL){
             "lowColorVar2" = "#CB4C4E", "highColorVar2" = "#3E436F",
             "paraColor" = "#07D000", "xSize" = 8, "ySize" = 8, "legendSize" = 8,
             "mainLegend" = "top", "dotZoom" = 0, "xAngle" = 60, "guideline" = 0,
-            "colorByGroup" = FALSE)
+            "colorByGroup" = FALSE, "colorByOrthoID" = FALSE)
     geneID <- supertaxon <- category <-var1<-var2 <- presSpec <- paralog <- NULL
-    xmin <- xmax <- ymin <- ymax <- NULL
-    # create heatmap plot with geom_point & scale_color_gradient for present
-    # ortho & var1, geom_tile & scale_fill_gradient for var2
+    orthoFreq <- xmin <- xmax <- ymin <- ymax <- NULL
+    ### create heatmap plot 
+    # create geom_tile & scale_fill_gradient for var2 OR gene category
     if (parm$xAxis == "genes") p <- ggplot(data,aes(x = geneID, y = supertaxon))
     else p <- ggplot(data, aes(y = geneID, x = supertaxon))
     if (parm$colorByGroup == TRUE) {
@@ -208,57 +268,79 @@ heatmapPlotting <- function(data = NULL, parm = NULL){
                 na.value = "gray95", limits = c(0, 1)) +
                 geom_tile(aes(fill = var2))
     }
-    if (length(unique(stats::na.omit(data$presSpec))) < 3) {
-        if (length(unique(stats::na.omit(data$var1))) == 1) {
+    
+    # create geom_point for found ortho; coloring by var1 or 
+    # orthoIDs (only when working on lowest taxonomy rank)
+    # and inparalogs (co-orthologs)
+    if (length(unique(stats::na.omit(data$presSpec))) < 2) {
+        # working on the lowest taxonomy rank
+        if (parm$colorByOrthoID == TRUE) {
             p <- p + geom_point(
-                aes(colour = var1), na.rm = TRUE,
-                size = data$presSpec*5*(1+parm$dotZoom), show.legend = FALSE
+                aes(colour = factor(orthoFreq)), na.rm = TRUE, 
+                size = data$presSpec*5*(1+parm$dotZoom), show.legend = TRUE
             )
-        } else
-            p <- p +
-                geom_point(
+        } else {
+            if (length(unique(stats::na.omit(data$var1))) == 1) {
+                p <- p + geom_point(
                     aes(colour = var1), na.rm = TRUE,
-                    size = data$presSpec * 5 * (1 + parm$dotZoom)) +
-                scale_color_gradient2(
-                    low = parm$lowColorVar1, high = parm$highColorVar1,
-                    mid = parm$midColorVar1, midpoint = parm$midVar1,
-                    limits = c(0,1)
+                    size = data$presSpec*5*(1+parm$dotZoom), show.legend = FALSE
                 )
+            } else {
+                p <- p +
+                    geom_point(
+                        aes(colour = var1), na.rm = TRUE,
+                        size = data$presSpec * 5 * (1 + parm$dotZoom)) +
+                    scale_color_gradient2(
+                        low = parm$lowColorVar1, high = parm$highColorVar1,
+                        mid = parm$midColorVar1, midpoint = parm$midVar1,
+                        limits = c(0,1)
+                    )
+            }
+            # plot inparalogs (if available)
+            if (length(unique(stats::na.omit(data$paralog))) > 0) {
+                p <- p +
+                    geom_point(
+                        data = data, aes(size = paralog), color=parm$paraColor,
+                        na.rm = TRUE, show.legend = TRUE) +
+                    guides(size = guide_legend(title = "# of co-orthologs")) +
+                    scale_size_continuous(range = c(
+                        min(stats::na.omit(data$paralogSize))*(1+parm$dotZoom),
+                        max(stats::na.omit(data$paralogSize))*(1+parm$dotZoom)))
+            }
+        }
     } else {
+        # scale dot size based on % preSpec in each super taxon
         if (length(unique(stats::na.omit(data$var1))) == 1) {
             p <- p + geom_point(aes(size=presSpec),color="#336a98",na.rm = TRUE)
-        } else
+        } else {
             p <- p + geom_point(aes(colour=var1, size = presSpec),na.rm = TRUE)+
                 scale_color_gradient2(
                     low = parm$lowColorVar1, high = parm$highColorVar1,
                     mid = parm$midColorVar1, midpoint = parm$midVar1,
                     limits = c(0,1)
                 )
-    }
-    # plot inparalogs (if available)
-    if (length(unique(stats::na.omit(data$paralog))) > 0) {
-        p <- p +
-            geom_point(
-                data = data, aes(size = paralog), color = parm$paraColor,
-                na.rm = TRUE, show.legend = TRUE) +
-            guides(size = guide_legend(title = "# of co-orthologs")) +
-            scale_size_continuous(range = c(
-                min(stats::na.omit(data$paralogSize)) * (1 + parm$dotZoom),
-                max(stats::na.omit(data$paralogSize)) * (1 + parm$dotZoom)))
-    } else {
-        # remain the scale of point while filtering
+        }
+        # remain the scale of point while filtering % presSpec
         presentVl <- data$presSpec[!is.na(data$presSpec)]
         p <- p + scale_size_continuous(range = c(
             (floor(min(presentVl) * 10) / 10 * 5) * (1 + parm$dotZoom),
             (floor(max(presentVl) * 10) / 10 * 5) * (1 + parm$dotZoom)))
     }
-    # color gene categories
+    
+    # create legend
     if (parm$colorByGroup == FALSE) {
-        p <- p + guides(fill = guide_colourbar(title = parm$var2ID),
-                        color = guide_colourbar(title = parm$var1ID))
-    } else
+        if (parm$colorByOrthoID == FALSE) {
+            p <- p + guides(fill = guide_colourbar(title = parm$var2ID),
+                            color = guide_colourbar(title = parm$var1ID))
+        } else {
+            p <- p + guides(fill = guide_colourbar(title = parm$var2ID),
+                            color = guide_legend(title = 'OrthoID copy number'))
+        }
+    } else {
         p <- p + guides(fill = guide_legend("Category"),
                         color = guide_colourbar(title = parm$var1ID))
+    }
+    
     # guideline for separating ref species
     if (parm$guideline == 1) {
         if (parm$xAxis == "genes") {
@@ -337,7 +419,8 @@ heatmapPlotting <- function(data = NULL, parm = NULL){
 #'     "dotZoom" = 0,
 #'     "xAngle" = 60,
 #'     "guideline" = 0,
-#'     "colorByGroup" = FALSE
+#'     "colorByGroup" = FALSE,
+#'     "colorByOrthoID" = FALSE
 #' )
 #' taxonHighlight <- "none"
 #' rankName <- "class"
@@ -372,7 +455,9 @@ highlightProfilePlot <- function(
         if (length(taxonHighlightID) == 0L)
             taxonHighlightID <- taxName$ncbiID[taxName$fullName==taxonHighlight]
         # get taxonID together with it sorted index
-        selTaxon <- toString(data[data$supertaxonID == taxonHighlightID, 2][1])
+        selTaxon <- toString(
+            data$supertaxon[data$supertaxonID == taxonHighlightID][1]
+        )
         selIndex <- grep(selTaxon, levels(as.factor(data$supertaxon)))
         if (plotParameter$xAxis == "taxa") {
             rect <- data.frame(
@@ -380,7 +465,7 @@ highlightProfilePlot <- function(
         } else
             rect <- data.frame(
                 ymin=selIndex-0.5, ymax = selIndex+0.5, xmin = -Inf, xmax = Inf)
-        p <- heatmapPlotting(data, plotParameter) + geom_rect(
+        p <- p + geom_rect(
             data = rect, color = "yellow", alpha = 0.3, inherit.aes = FALSE,
             aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax))
     }
@@ -393,7 +478,7 @@ highlightProfilePlot <- function(
         } else
             rect <- data.frame(
                 xmin=selIndex-0.5, xmax = selIndex+0.5, ymin = -Inf, ymax = Inf)
-        p <- heatmapPlotting(data, plotParameter) + geom_rect(
+        p <- p + geom_rect(
             data = rect, color = "yellow", alpha = 0.3, inherit.aes = FALSE,
             aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax))
     }

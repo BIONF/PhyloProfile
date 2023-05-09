@@ -62,7 +62,8 @@ plotParameter <- list(
     "dotZoom" = 0,
     "xAngle" = 60,
     "guideline" = 0,
-    "colorByGroup" = FALSE
+    "colorByGroup" = FALSE,
+    "colorByOrthoID" = FALSE
 )
 taxonHighlight <- "none"
 rankName <- "class"

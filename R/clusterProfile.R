@@ -5,7 +5,8 @@
 #' @param data a data frame contains processed and filtered profiles (see
 #' ?fullProcessedProfile and ?filterProfileData, ?fromInputToProfile)
 #' @param profileType type of data used for calculating the distance matrix.
-#' Either "binary" (consider only the presence/absence status of orthlogs), or
+#' Either "binary" (consider only the presence/absence status of orthlogs),
+#' "orthoID" (consider ortholog IDs as values for clustering),
 #' "var1"/"var2" for taking values of the additional variables into account.
 #' Default = "binary".
 #' @param var1AggBy aggregate method for VAR1 (min, max, mean or median).
@@ -28,9 +29,17 @@ getDataClustering <- function(
     data = NULL, profileType = "binary", var1AggBy = "max", var2AggBy = "max"
 ) {
     if (is.null(data)) stop("Input data cannot be NULL!")
-    supertaxon <- presSpec <- NULL
+    supertaxon <- presSpec <- orthoID <- NULL
     # remove lines where there is no found ortholog
     subDataHeat <- subset(data, data$presSpec > 0)
+    # predict if ortho ID in BIONF format
+    idFormat <- "other"
+    firstOrtho <- strsplit(
+        as.character(subDataHeat[1,]$orthoID), '|', fixed = TRUE)[[1]]
+    if (
+        length(firstOrtho) >= 3 && firstOrtho[1] == subDataHeat[1,]$geneID &&
+        grepl(subDataHeat[1,]$supertaxonID, firstOrtho[2])
+    ) idFormat <- "bionf"
     # transform data into wide matrix
     if (profileType == "binary") {
         subDataHeat <- subDataHeat[, c("geneID", "supertaxon", "presSpec")]
@@ -39,6 +48,32 @@ getDataClustering <- function(
         wideData <- data.table::dcast(
             data.table::setDT(subDataHeat),
             geneID ~ supertaxon, value.var = "presSpec")
+    } else if(profileType == "orthoID") {
+        subDataHeat <- subDataHeat[, c("geneID", "supertaxon", "orthoID")]
+        if (idFormat == "bionf") {
+            subDataHeat <- within(
+                subDataHeat, 
+                orthoMod <- data.frame(
+                    do.call(
+                        'rbind', strsplit(as.character(orthoID),'|',fixed=TRUE)
+                    )
+                )
+            )
+            subDataHeat$orthoID <- paste(
+                subDataHeat$orthoMod$X2, subDataHeat$orthoMod$X3, sep = "#"
+            )
+            subDataHeat <- subDataHeat[,!(names(subDataHeat) %in% ("orthoMod"))]
+        } else {
+            subDataHeat$orthoID <- paste(
+                subDataHeat$supertaxon, subDataHeat$orthoID, sep = "#"
+            )
+        }
+        subDataHeat <- subDataHeat[!duplicated(subDataHeat), ]
+        l <- unique(subDataHeat$orthoID)
+        subDataHeat$orthoID <- as.numeric(factor(subDataHeat$orthoID, levels=l))
+        wideData <- data.table::dcast(
+            data.table::setDT(subDataHeat),
+            geneID ~ supertaxon, value.var = "orthoID", fun.aggregate = sum)
     } else {
         var <- profileType
         subDataHeat <- subDataHeat[, c("geneID", "supertaxon", var)]

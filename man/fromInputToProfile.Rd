@@ -5,9 +5,9 @@
 \title{Complete processing of raw input phylogenetic profiles}
 \usage{
 fromInputToProfile(rawInput, rankName, refTaxon = NULL,
-    taxaTree = NULL, sortedTaxonList = NULL, var1AggregateBy = "max", 
-    var2AggregateBy = "max", percentCutoff = c(0, 1), 
-    coorthologCutoffMax = 9999, var1Cutoff = c(0, 1), var2Cutoff = c(0, 1), 
+    taxaTree = NULL, sortedTaxonList = NULL, var1AggregateBy = "max",
+    var2AggregateBy = "max", percentCutoff = c(0, 1),
+    coorthologCutoffMax = 9999, var1Cutoff = c(0, 1), var2Cutoff = c(0, 1),
     var1Relation = "protein", var2Relation = "protein", groupByCat = FALSE,
     catDt = NULL)
 }
