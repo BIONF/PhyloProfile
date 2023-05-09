@@ -7,7 +7,7 @@
 filterProfileData(DF, taxaCount, refTaxon = NULL,
     percentCO = c(0, 1), coorthoCOMax = 9999,
     var1CO  = c(0, 1), var2CO = c(0, 1), var1Rel = "protein",
-    var2Rel = "protein", groupByCat = FALSE, catDt = NULL, 
+    var2Rel = "protein", groupByCat = FALSE, catDt = NULL,
     var1AggregateBy = "max", var2AggregateBy = "max")
 }
 \arguments{

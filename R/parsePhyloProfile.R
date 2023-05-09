@@ -44,7 +44,7 @@ getNameList <- function() {
         utils::data(taxonNamesReduced)
     } else {
         taxonNamesReduced <- utils::read.table(
-            nameReducedFile, sep = "\t", header = TRUE, fill = TRUE, 
+            nameReducedFile, sep = "\t", header = TRUE, fill = TRUE,
             comment.char = ""
         )
     }
@@ -239,10 +239,11 @@ getSelectedTaxonNames <- function(
 #' @return A taxonomy matrix for the input taxa ordered by the selected
 #' reference taxon. This matrix is sorted either based on the NCBI taxonomy
 #' info, or based on an user-defined taxonomy tree (if provided).
+#' @importFrom ape read.tree
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @export
 #' @seealso \code{\link{getNameList}}, \code{\link{getTaxonomyMatrix}},
-#' \code{\link{createRootedTree}}, \code{\link{sortTaxaFromTree}},
+#' \code{\link{createUnrootedTree}}, \code{\link{sortTaxaFromTree}},
 #' \code{\link{getInputTaxaName}}, \code{\link{getInputTaxaID}},
 #' \code{\link{createLongMatrix}}
 #' @examples
@@ -252,17 +253,17 @@ getSelectedTaxonNames <- function(
 #' sortInputTaxa(taxonIDs, "species", "Homo sapiens", NULL, NULL)
 
 sortInputTaxa <- function(
-    taxonIDs = NULL, rankName, refTaxon = NULL, taxaTree = NULL, 
+    taxonIDs = NULL, rankName, refTaxon = NULL, taxaTree = NULL,
     sortedTaxonList = NULL
 ){
     ncbiID <- fullName <- abbrName <- NULL
     if (missing(rankName)) return("No taxonomy rank name given!")
     allMainRanks <- getTaxonomyRanks()
     if (!(rankName[1] %in% allMainRanks)) return("Invalid taxonomy rank given!")
-    if (is.null(refTaxon))  refTaxon <- taxonNames$fullName[1]
     # get list of taxon names
     fullnameList <- getNameList()
     taxonNames <- getInputTaxaName(rankName, taxonIDs)
+    if (is.null(refTaxon))  refTaxon <- taxonNames$fullName[1]
     # get selected supertaxon ID(s)
     rankNameTMP <- taxonNames$rank[taxonNames$fullName == refTaxon]
     if (rankName == "strain") {
@@ -277,10 +278,18 @@ sortInputTaxa <- function(
     # THEN, SORT TAXON LIST BASED ON TAXONOMY TREE or SORTED TAXON LIST
     if (is.null(sortedTaxonList)) {
         if (is.null(taxaTree)) {
-            distDf <- subset(Dt, select = -c(ncbiID, fullName))
-            row.names(distDf) <- distDf$abbrName
-            distDf <- distDf[, -1]
-            taxaTree <- createRootedTree(distDf,as.character(repTaxon$abbrName))
+            preCalcTreeFile <- paste(
+                system.file(package="PhyloProfile"),
+                "PhyloProfile/data/preCalcTree.nw",
+                sep="/"
+            )
+            preTree <- ape::read.tree(preCalcTreeFile)
+            if (!(repTaxon$abbrName %in% preTree$tip.label))
+                message(c(repTaxon$abbrName, " not found in ", preCalcTreeFile))
+            taxaTree <- ape::root(
+                preTree, outgroup=as.character(repTaxon$abbrName),
+                resolve.root=TRUE
+            )
         } else
             taxaTree <- ape::root(
                 taxaTree, outgroup=as.character(repTaxon$abbrName),
@@ -399,7 +408,7 @@ calcPresSpec <- function(profileWithTax, taxaCount){
 #' Parsing info for phylogenetic profiles
 #' @description Creating main dataframe for the input phylogenetic profiles
 #' based on selected input taxonomy level (e.g. strain, species) and reference
-#' taxon. The output contains the number of paralogs, the max/min/mean/median 
+#' taxon. The output contains the number of paralogs, the max/min/mean/median
 #' of VAR1 and VAR2.
 #' @usage parseInfoProfile(inputDf, sortedInputTaxa, taxaCount, coorthoCOMax)
 #' @param inputDf input profiles in long format
@@ -463,7 +472,7 @@ parseInfoProfile <- function(
 #' @usage filterProfileData(DF, taxaCount, refTaxon = NULL,
 #'     percentCO = c(0, 1), coorthoCOMax = 9999,
 #'     var1CO  = c(0, 1), var2CO = c(0, 1), var1Rel = "protein",
-#'     var2Rel = "protein", groupByCat = FALSE, catDt = NULL, 
+#'     var2Rel = "protein", groupByCat = FALSE, catDt = NULL,
 #'     var1AggregateBy = "max", var2AggregateBy = "max")
 #' @param DF a reduced dataframe contains info for all phylogenetic
 #' profiles in the selected taxonomy rank.
@@ -611,11 +620,11 @@ filterProfileData <- function(
 
     ### remove paralog count if NOT working with lowest rank (species/strain)
     if (flag == 1) DF$paralog <- 1
-    
+
     DF <- droplevels(DF)  # delete unused levels
     DF$geneID <- as.factor(DF$geneID)
     DF$supertaxon <- as.factor(DF$supertaxon)
-    
+
     # calculate max/min/mean/median VAR1 for every supertaxon of each gene
     DFNoNA <- DF[!is.na(DF$var1), ]
     mVar1Dt <- stats::aggregate(
@@ -641,9 +650,9 @@ filterProfileData <- function(
     DF <- Reduce(
         function(x, y) merge(x, y, by = c("geneID", "supertaxon"), all.x=TRUE),
         list(DF, scoreDf))
-    
+
     ### add gene categories (if provided)
-    originalOrder = levels(as.factor(DF$geneID))
+    originalOrder <- levels(as.factor(DF$geneID))
     if (groupByCat == TRUE) {
         if (is.null(catDt)) {
             catDt <- data.frame( geneID = levels(DF$geneID))
@@ -671,7 +680,7 @@ filterProfileData <- function(
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @export
 #' @seealso \code{\link{parseInfoProfile}} for creating a full processed
-#' profile dataframe, \code{\link{filterProfileData}} for filter processed 
+#' profile dataframe, \code{\link{filterProfileData}} for filter processed
 #' profile and \code{\link{filteredProfile}} for a demo filtered
 #' profile dataframe
 #' @examples
@@ -707,7 +716,7 @@ reduceProfile <- function(filteredProfile) {
         mOrthoID <- mOrthoID[!duplicated(mOrthoID[, seq_len(2)]), ]
         # get data set for PhyloProfile plotting (contains only supertaxa info)
         superDf <- subset(filteredProfile, select = c(
-            "geneID", "supertaxon", "supertaxonID", "mVar1", "category", 
+            "geneID", "supertaxon", "supertaxonID", "mVar1", "category",
             "mVar2", "paralog", "presentTaxa", "totalTaxa"
         ))
         superDf <- superDf[!duplicated(superDf), ]
@@ -731,9 +740,9 @@ reduceProfile <- function(filteredProfile) {
 #' phylogenetic profiles from raw input file (from raw input to final filtered
 #' dataframe)
 #' @usage fromInputToProfile(rawInput, rankName, refTaxon = NULL,
-#'     taxaTree = NULL, sortedTaxonList = NULL, var1AggregateBy = "max", 
-#'     var2AggregateBy = "max", percentCutoff = c(0, 1), 
-#'     coorthologCutoffMax = 9999, var1Cutoff = c(0, 1), var2Cutoff = c(0, 1), 
+#'     taxaTree = NULL, sortedTaxonList = NULL, var1AggregateBy = "max",
+#'     var2AggregateBy = "max", percentCutoff = c(0, 1),
+#'     coorthologCutoffMax = 9999, var1Cutoff = c(0, 1), var2Cutoff = c(0, 1),
 #'     var1Relation = "protein", var2Relation = "protein", groupByCat = FALSE,
 #'     catDt = NULL)
 #' @param rawInput input file (in long, wide, multi-fasta or orthoxml format)
@@ -851,7 +860,7 @@ fromInputToProfile <- function(
         var1Relation,
         var2Relation,
         groupByCat = FALSE,
-        catDt = NULL, 
+        catDt = NULL,
         var1AggregateBy, var2AggregateBy
     )
     # reduce profile df into supertaxon level

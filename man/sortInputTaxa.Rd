@@ -35,7 +35,7 @@ sortInputTaxa(taxonIDs, "species", "Homo sapiens", NULL, NULL)
 }
 \seealso{
 \code{\link{getNameList}}, \code{\link{getTaxonomyMatrix}},
-\code{\link{createRootedTree}}, \code{\link{sortTaxaFromTree}},
+\code{\link{createUnrootedTree}}, \code{\link{sortTaxaFromTree}},
 \code{\link{getInputTaxaName}}, \code{\link{getInputTaxaID}},
 \code{\link{createLongMatrix}}
 }

@@ -3,12 +3,23 @@
 \encoding{UTF-8}
 
 
+\section{Version 1.14.1}{
+  \itemize{
+    \item option for highlight duplicated ortholog IDs
+    \item option for cluster profiles based on ortholog IDs
+    \item speedup by pre-calculating taxonomy tree (#123)
+    \item disable rank selection after plotting
+    \item turn on profile clustering by default
+    \item changed "ftp://" to "https://" for taxdmp.zip
+    \item fixed #126
+  }
+}
+
 \section{Version 1.14.0}{
   \itemize{
     \item option for uploading sorted taxon list
   }
 }
-
 
 \section{Version 1.12.6}{
   \itemize{

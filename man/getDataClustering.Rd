@@ -12,7 +12,8 @@ getDataClustering(data, profileType = "binary", var1AggBy = "max",
 ?fullProcessedProfile and ?filterProfileData, ?fromInputToProfile)}
 
 \item{profileType}{type of data used for calculating the distance matrix.
-Either "binary" (consider only the presence/absence status of orthlogs), or
+Either "binary" (consider only the presence/absence status of orthlogs),
+"orthoID" (consider ortholog IDs as values for clustering),
 "var1"/"var2" for taking values of the additional variables into account.
 Default = "binary".}
 

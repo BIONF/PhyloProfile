@@ -93,12 +93,6 @@ shinyUI(
                             inline = TRUE
                         ),
                         hr(),
-                        checkboxInput(
-                            "autoUpdateSelected",
-                            strong(em("Auto update plot")),
-                            value = FALSE,
-                            width = NULL
-                        )
                     ),
                     column(
                         1,
@@ -139,7 +133,7 @@ shinyUI(
 
         # MAIN NARVARPAGE TABS -------------------------------------------------
         navbarPage(
-            em(strong("PhyloProfile v1.14.0")),
+            em(strong("PhyloProfile v1.14.1")),
             id = "tabs",
             collapsible = TRUE,
             inverse = TRUE,
@@ -592,6 +586,11 @@ shinyUI(
                             strong("Highlight genes by categories"),
                             value = FALSE
                         ),
+                        checkboxInput(
+                            "colorByOrthoID",
+                            strong("Highlight duplicated ortholog IDs"),
+                            value = FALSE
+                        ),
 
                         conditionalPanel(
                             condition = "input.autoUpdate == false",
@@ -665,14 +664,11 @@ shinyUI(
                         ),
 
                         h5(""),
-                        conditionalPanel(
-                            condition = "input.autoUpdateSelected == false",
-                            bsButton(
-                                "plotCustom",
-                                "Update plot",
-                                style = "warning",
-                                icon("sync")
-                            )
+                        bsButton(
+                            "plotCustom",
+                            "Update plot",
+                            style = "warning",
+                            icon("sync")
                         )
                     ),
 
@@ -749,7 +745,13 @@ shinyUI(
                                         "Apply clustering to profile plot",
                                         style = "color:darkblue"
                                     )),
-                                    value = FALSE
+                                    value = TRUE
+                                ),
+                                bsPopover(
+                                    "applyCluster",
+                                    "",
+                                    "Uncheck this to sort genes by alphabet",
+                                    "bottom"
                                 ),
 
                                 uiOutput("applyClusterCheck.ui"),

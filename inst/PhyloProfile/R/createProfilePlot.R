@@ -36,8 +36,7 @@ createProfilePlot <- function(input, output, session,
                                 inSeq, inTaxa,
                                 rankSelect, inSelect,
                                 taxonHighlight, geneHighlight,
-                                typeProfile,
-                                colorByGroup) {
+                                typeProfile) {
     # data for heatmap ---------------------------------------------------------
     dataHeat <- reactive({
         if (is.null(data())) stop("Profile data is NULL!")

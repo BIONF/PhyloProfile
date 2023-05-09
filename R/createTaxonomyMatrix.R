@@ -53,7 +53,7 @@ mainTaxonomyRank <- function() {
 processNcbiTaxonomy <- function() {
     temp <- tempfile()
     utils::download.file(
-        "ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdmp.zip", temp
+        "https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdmp.zip", temp
     )
     names <- utils::read.table(
         unz(temp, "names.dmp"), header = FALSE, fill = TRUE, sep = "\t",
@@ -370,10 +370,10 @@ rankIndexing <- function (rankListFile = NULL) {
 #' (see rankListFile in example)
 #' @return An aligned taxonomy dataframe which contains all the available
 #' taxonomy ranks from the id and rank list file. This dataframe can be used for
-#' creating a well resolved taxonomy tree (see ?createRootedTree) and sorting
+#' creating a well resolved taxonomy tree (see ?createUnrootedTree) and sorting
 #' taxa based on a selected reference taxon (see ?sortInputTaxa).
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
-#' @seealso \code{\link{rankIndexing}}, \code{\link{createRootedTree}},
+#' @seealso \code{\link{rankIndexing}}, \code{\link{createUnrootedTree}},
 #' \code{\link{sortInputTaxa}}
 #' @examples
 #' idListFile <- system.file(

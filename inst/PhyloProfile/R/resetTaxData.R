@@ -49,6 +49,9 @@ resetTaxData <- function() {
         quote = FALSE,
         sep = "\t"
     )
+    preCalcTree <- createUnrootedTree(taxonomyMatrix)
+    ape::write.tree(
+        preCalcTree,file=paste0(packgePath,"/PhyloProfile/data/preCalcTree.nw"))
     message("2) FINISHED!<br>")
     message("Now you can restart PhyloProfile or re-upload your input file.")
 }

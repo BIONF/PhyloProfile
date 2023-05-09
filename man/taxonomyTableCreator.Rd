@@ -16,7 +16,7 @@ taxonomyTableCreator(idListFile = NULL, rankListFile = NULL)
 \value{
 An aligned taxonomy dataframe which contains all the available
 taxonomy ranks from the id and rank list file. This dataframe can be used for
-creating a well resolved taxonomy tree (see ?createRootedTree) and sorting
+creating a well resolved taxonomy tree (see ?createUnrootedTree) and sorting
 taxa based on a selected reference taxon (see ?sortInputTaxa).
 }
 \description{
@@ -32,7 +32,7 @@ rankListFile <- system.file(
 taxonomyTableCreator(idListFile, rankListFile)
 }
 \seealso{
-\code{\link{rankIndexing}}, \code{\link{createRootedTree}},
+\code{\link{rankIndexing}}, \code{\link{createUnrootedTree}},
 \code{\link{sortInputTaxa}}
 }
 \author{

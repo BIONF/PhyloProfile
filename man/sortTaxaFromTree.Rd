@@ -17,12 +17,9 @@ Get sorted supertaxon list based on a rooted taxonomy tree
 }
 \examples{
 data("ppTaxonomyMatrix", package = "PhyloProfile")
-# prepare matrix for calculating distances
-distDf <- subset(ppTaxonomyMatrix, select = -c(ncbiID, fullName))
-row.names(distDf) <- distDf$abbrName
-distDf <- distDf[, -1]
 # create taxonomy tree rooted by ncbi10090
-rootedTree <- createRootedTree(distDf, "ncbi10090")
+tree <- createUnrootedTree(ppTaxonomyMatrix)
+rootedTree <- ape::root(tree, outgroup = "ncbi10090", resolve.root = TRUE)
 # get taxon list sorted from tree
 sortTaxaFromTree(rootedTree)
 }
