@@ -5,7 +5,7 @@
 \title{Compare the score distributions between 2 taxon groups}
 \usage{
 compareTaxonGroups(data, inGroup, useCommonAncestor, variable,
-    significanceLevel)
+    significanceLevel, taxDB)
 }
 \arguments{
 \item{data}{input phylogenetic profile in long format (see ?mainLongRaw and
@@ -21,6 +21,8 @@ Default = TRUE.}
 
 \item{significanceLevel}{significant cutoff for the statistic test (between
 0 and 1). Default = 0.05.}
+
+\item{taxDB}{Path to the taxonomy DB files}
 }
 \value{
 list of genes that have a significant difference in the variable

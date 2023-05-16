@@ -4,14 +4,14 @@
 \name{ppTree}
 \alias{ppTree}
 \title{An example of a taxonomy tree in newick format.}
-\format{
+\usage{
+data(ppTree)
+}
+\value{
 A data frame with only one entry
 \describe{
     \item{V1}{ tree in newick format}
 }
-}
-\usage{
-data(ppTree)
 }
 \description{
 An example of a taxonomy tree in newick format.

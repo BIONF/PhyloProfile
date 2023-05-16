@@ -192,7 +192,7 @@ refTaxon <- "Mammalia"
 #' Count taxa within each supertaxon
 taxonIDs <- levels(as.factor(fullProcessedProfile$ncbiID))
 sortedInputTaxa <- sortInputTaxa(
-    taxonIDs, rankName, refTaxon, NULL, NULL
+    taxonIDs, rankName, refTaxon, NULL, NULL, NULL
 )
 taxaCount <- plyr::count(sortedInputTaxa, "supertaxon")
 
@@ -239,7 +239,7 @@ coreCoverage <- 1
 #' Count taxa within each supertaxon
 taxonIDs <- levels(as.factor(fullProcessedProfile$ncbiID))
 sortedInputTaxa <- sortInputTaxa(
-    taxonIDs, rankName, refTaxon, NULL, NULL
+    taxonIDs, rankName, refTaxon, NULL, NULL, NULL
 )
 taxaCount <- plyr::count(sortedInputTaxa, "supertaxon")
 
@@ -495,6 +495,7 @@ sortedTaxonomy <- sortInputTaxa(
     rankName = rankName,
     refTaxon = refTaxon,
     taxaTree = inputTaxaTree,
+    NULL,
     NULL
 )
 

@@ -255,7 +255,8 @@ shinyUI(
                             selectInput(
                                 "var2Relation", label = h5("Relationship:"),
                                 choices = list(
-                                    "Prot-Prot" = "protein", "Prot-Spec" = "species"
+                                    "Prot-Prot" = "protein", 
+                                    "Prot-Spec" = "species"
                                 ),
                                 selected = "protein",
                                 width = 130
@@ -382,6 +383,27 @@ shinyUI(
                 # * 3rd column -------------------------------------------------
                 column(
                     4,
+                    # ** Location for taxonomy files ---------------------------
+                    strong(h4("Taxonomy DB location:")),
+                    radioButtons(
+                        inputId = "taxDbLoc", label = "",
+                        choices = list("Default", "User-defined"),
+                        selected = "Default",
+                        inline = TRUE
+                    ),
+                    conditionalPanel(
+                        condition = "input.taxDbLoc == 'User-defined'",
+                        shinyDirButton(
+                            "taxDbDir", "Select taxonomy DB" ,
+                            title = "Please select a folder",
+                            buttonType = "default", class = NULL
+                        ),
+                        br(), br(),
+                        uiOutput("userTaxDBwarning")
+                    ),
+                    verbatimTextOutput("taxDbPath"),
+                    hr(),
+        
                     # ** Msg for parsing new taxa ------------------------------
                     conditionalPanel(
                         condition = "output.unkTaxaStatus == 'unknown' ||
@@ -474,9 +496,10 @@ shinyUI(
                         br(),
 
                         strong(h5("Choose (super)taxon of interest:")),
-                        uiOutput("select"),
-                        # br(),
-                        
+                        selectizeInput(
+                            "inSelect", "", choices = NULL, selected = NULL
+                        ),
+
                         hr(),
                         strong(h4("Order taxa")),
                         radioButtons(
@@ -554,14 +577,15 @@ shinyUI(
                         ),
 
                         column(
-                            4, uiOutput("highlightGeneUI")
+                            4, 
+                            selectizeInput("geneHighlight", "Highlight:", NULL)
                         ),
 
                         bsPopover(
-                            "highlightGeneUI",
+                            "geneHighlight",
                             "",
                             "Select gene to highlight",
-                            "bottom"
+                            "right"
                         ),
 
                         bsPopover(
@@ -579,7 +603,11 @@ shinyUI(
                         ),
 
                         br(),
-                        uiOutput("highlightTaxonUI"),
+                        selectizeInput(
+                            "taxonHighlight", 
+                            "Select (super)taxon to highlight:",
+                            choices = NULL, selected = NULL
+                        ),
 
                         checkboxInput(
                             "colorByGroup",
@@ -631,7 +659,7 @@ shinyUI(
                                 column(
                                     8,
                                     style = "padding:0px;",
-                                    uiOutput("geneIn")
+                                    uiOutput("cusGene.ui")
                                 ),
                                 column(
                                     4,
@@ -653,7 +681,7 @@ shinyUI(
                                 column(
                                     8,
                                     style = "padding:0px;",
-                                    uiOutput("taxaIn")
+                                    uiOutput("cusTaxa.ui")
                                 ),
                                 column(
                                     4,
@@ -1049,6 +1077,8 @@ shinyUI(
                         conditionalPanel(
                             condition = "input.taxDB=='reset'",
                             h4(strong("Reset taxonomy data")),
+                            uiOutput("taxResetWarning.ui"),
+                            br(),
                             bsButton(
                                 "doResetTax",
                                 "Do reset",
@@ -1062,6 +1092,8 @@ shinyUI(
                             condition =
                                 "input.taxDB=='export'",
                             h4(strong("Export current taxonomy files")),
+                            uiOutput("taxExportWarning.ui"),
+                            br(),
                             shinyDirButton(
                                 "taxDirOut", 
                                 "Select output directory" ,
@@ -1086,6 +1118,8 @@ shinyUI(
                             condition =
                                 "input.taxDB=='import'",
                             h4(strong("Import your own taxonomy files")),
+                            uiOutput("taxImportWarning.ui"),
+                            br(),
                             shinyDirButton(
                                 "taxDir", 
                                 "Select input directory" ,

@@ -4,7 +4,10 @@
 \name{profileWithTaxonomy}
 \alias{profileWithTaxonomy}
 \title{An example of a raw long input file together with the taxonomy info.}
-\format{
+\usage{
+data(profileWithTaxonomy)
+}
+\value{
 A data frame with 20 rows and 12 variables:
 \itemize{
     \item{geneID}{ Seed or ortholog group ID, e.g. "OG_1017"}
@@ -21,9 +24,6 @@ A data frame with 20 rows and 12 variables:
     \item{supertaxon}{ Name of the corresponding supertaxon}
     \item{rank}{ Rank of the supertaxon}
 }
-}
-\usage{
-data(profileWithTaxonomy)
 }
 \description{
 An example of a raw long input file together with the taxonomy info.

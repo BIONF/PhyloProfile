@@ -4,8 +4,8 @@
 \alias{getSelectedTaxonNames}
 \title{Get a subset of input taxa based on a selected taxonomy rank}
 \usage{
-getSelectedTaxonNames(inputTaxonIDs, rank, higherRank, higherID,
-    higherName)
+getSelectedTaxonNames(inputTaxonIDs = NULL, rank = NULL,
+    higherRank = NULL, higherID = NULL, higherName = NULL, taxDB = NULL)
 }
 \arguments{
 \item{inputTaxonIDs}{list of input taxon IDs (e.g. c("10116", "122586"))}
@@ -15,10 +15,12 @@ getSelectedTaxonNames(inputTaxonIDs, rank, higherRank, higherID,
 \item{higherRank}{selected taxonomy rank (e.g. "phylum")}
 
 \item{higherID}{supertaxon ID (e.g. 7711). NOTE: either supertaxon ID or
-name is required, not neccessary to give both.}
+name is required, not neccessary to give both}
 
 \item{higherName}{supertaxon name (e.g. "Chordata"). NOTE: either
-supertaxon ID or name is required, not neccessary to give both.}
+supertaxon ID or name is required, not neccessary to give both}
+
+\item{taxDB}{Path to the taxonomy DB files}
 }
 \value{
 A data frame contains ncbi IDs and names of taxa from the input taxon
@@ -37,7 +39,7 @@ higherRank <- "phylum"
 higherID <- 7711
 getSelectedTaxonNames(inputTaxonIDs, rank, higherRank, higherID, NULL)
 higherName <- "Chordata"
-getSelectedTaxonNames(inputTaxonIDs, rank, higherRank, NULL, higherName)
+getSelectedTaxonNames(inputTaxonIDs, rank, higherRank, NULL, higherName,NULL)
 }
 \author{
 Vinh Tran {tran@bio.uni-frankfurt.de}

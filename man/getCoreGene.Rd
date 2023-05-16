@@ -6,7 +6,7 @@
 \usage{
 getCoreGene(rankName, taxaCore = c("none"), profileDt, taxaCount,
     var1Cutoff = c(0, 1), var2Cutoff = c(0, 1), percentCutoff = c(0, 1),
-    coreCoverage = 100)
+    coreCoverage = 100, taxDB = NULL)
 }
 \arguments{
 \item{rankName}{working taxonomy rank (e.g. "species", "genus", "family")}
@@ -27,6 +27,8 @@ supertaxon. Default = c(0, 1).}
 
 \item{coreCoverage}{the least percentage of selected taxa should be
 considered. Default = 1.}
+
+\item{taxDB}{Path to the taxonomy DB files}
 }
 \value{
 A list of identified core genes.

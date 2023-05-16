@@ -27,18 +27,20 @@ getTaxonomyRanks <- function(){
 #' @description Get all NCBI taxon names from
 #' "PhyloProfile/data/taxonNamesReduced.txt"
 #' @export
+#' @param taxDB Path to the taxonomy DB files
 #' @return List of taxon IDs, their full names, taxonomy ranks and parent IDs
 #' obtained from "PhyloProfile/data/taxonNamesReduced.txt"
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @examples
 #' getNameList()
 
-getNameList <- function() {
-    nameReducedFile <- paste(
-        system.file(package="PhyloProfile"),
-        "PhyloProfile/data/taxonNamesReduced.txt",
-        sep="/"
-    )
+getNameList <- function(taxDB = NULL) {
+    if (is.null(taxDB)) {
+        nameReducedFile <- paste(
+            system.file(package = "PhyloProfile"),
+            "PhyloProfile/data/taxonNamesReduced.txt", sep = "/"
+        )
+    } else nameReducedFile <- paste(taxDB, "taxonNamesReduced.txt", sep = "/")
 
     if (!file.exists(nameReducedFile)) {
         utils::data(taxonNamesReduced)
@@ -60,25 +62,30 @@ getNameList <- function() {
 #' @description Get the (full or subset) taxonomy matrix from
 #' "data/taxonomyMatrix.txt" based on an input taxon list
 #' @export
+#' @param taxDB Path to the taxonomy DB files
 #' @param subsetTaxaCheck TRUE/FALSE subset taxonomy matrix based on input taxon
-#' IDs. Default = FALSE.
-#' @param taxonIDs list of input taxon IDs (e.g. ncbi1234). Default = NULL.
+#' IDs. Default = FALSE
+#' @param taxonIDs list of input taxon IDs (e.g. ncbi1234). Default = NULL
 #' @return Data frame contains the (subset of) taxonomy matrix for list of
 #' input taxa.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @examples
 #' # get full pre-installed taxonomy matrix
-#' getTaxonomyMatrix(FALSE, NULL)
+#' getTaxonomyMatrix()
 #' # get taxonomy matrix for a list of taxon IDs
 #' taxonIDs <- c("ncbi9606", "ncbi10116")
-#' getTaxonomyMatrix(TRUE, taxonIDs)
+#' getTaxonomyMatrix(NULL, TRUE, taxonIDs)
 
-getTaxonomyMatrix <- function(subsetTaxaCheck = FALSE, taxonIDs = NULL){
-    taxonomyMatrixFile <- paste(
-        system.file(package="PhyloProfile"),
-        "PhyloProfile/data/taxonomyMatrix.txt",
-        sep="/"
-    )
+getTaxonomyMatrix <- function(
+        taxDB = NULL, subsetTaxaCheck = FALSE, taxonIDs = NULL
+){
+    if (is.null(taxDB)) {
+        taxonomyMatrixFile <- paste(
+            system.file(package = "PhyloProfile"),
+            "PhyloProfile/data/taxonomyMatrix.txt", sep = "/"
+        )
+    } else taxonomyMatrixFile <- paste(taxDB, "taxonomyMatrix.txt", sep = "/")
+
 
     if (!file.exists(taxonomyMatrixFile)) {
         utils::data(taxonomyMatrix)
@@ -122,6 +129,7 @@ getInputTaxaID <- function(rawProfile = NULL){
 #' "PhyloProfile/data/taxonNamesReduced.txt" for a list of input taxa
 #' @param rankName taxonomy rank (e.g. "species","phylum",...)
 #' @param taxonIDs list of taxon IDs (e.g. ncbi1234). Default = NULL
+#' @param taxDB Path to the taxonomy DB files
 #' @return Data frame contains a list of full names, taxonomy ranks and parent
 #' IDs for the input taxa.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
@@ -132,15 +140,15 @@ getInputTaxaID <- function(rawProfile = NULL){
 #' taxonIDs <- c("ncbi9606", "ncbi10116")
 #' getInputTaxaName("species", taxonIDs)
 
-getInputTaxaName <- function(rankName, taxonIDs = NULL){
+getInputTaxaName <- function(rankName, taxonIDs = NULL, taxDB = NULL){
     # check input parameters
     if (missing(rankName)) return("No taxonomy rank name given!")
     allMainRanks <- getTaxonomyRanks()
     if (!(rankName[1] %in% allMainRanks)) return("Invalid taxonomy rank given!")
     # load list of unsorted taxa
-    Dt <- getTaxonomyMatrix(TRUE, taxonIDs)
+    Dt <- getTaxonomyMatrix(taxDB, TRUE, taxonIDs)
     # load list of taxon name
-    nameList <- getNameList()
+    nameList <- getNameList(taxDB)
     # return
     choice <- data.frame(
         "ncbiID" = unlist(Dt[rankName]), stringsAsFactors = FALSE
@@ -153,15 +161,16 @@ getInputTaxaName <- function(rankName, taxonIDs = NULL){
 #' @description Get a subset of taxon ncbi IDs and names from an input list of
 #' taxa based on a selected supertaxon (identified by its taxonomy rank and
 #' supertaxon name or supertaxon ID).
-#' @usage getSelectedTaxonNames(inputTaxonIDs, rank, higherRank, higherID,
-#'     higherName)
+#' @usage getSelectedTaxonNames(inputTaxonIDs = NULL, rank = NULL,
+#'     higherRank = NULL, higherID = NULL, higherName = NULL, taxDB = NULL)
 #' @param inputTaxonIDs list of input taxon IDs (e.g. c("10116", "122586"))
 #' @param rank taxonomy rank of input taxa (e.g. "species")
 #' @param higherRank selected taxonomy rank (e.g. "phylum")
 #' @param higherID supertaxon ID (e.g. 7711). NOTE: either supertaxon ID or
-#' name is required, not neccessary to give both.
+#' name is required, not neccessary to give both
 #' @param higherName supertaxon name (e.g. "Chordata"). NOTE: either
-#' supertaxon ID or name is required, not neccessary to give both.
+#' supertaxon ID or name is required, not neccessary to give both
+#' @param taxDB Path to the taxonomy DB files
 #' @export
 #' @return A data frame contains ncbi IDs and names of taxa from the input taxon
 #' list that belong to the selected supertaxon.
@@ -174,16 +183,16 @@ getInputTaxaName <- function(rankName, taxonIDs = NULL){
 #' higherID <- 7711
 #' getSelectedTaxonNames(inputTaxonIDs, rank, higherRank, higherID, NULL)
 #' higherName <- "Chordata"
-#' getSelectedTaxonNames(inputTaxonIDs, rank, higherRank, NULL, higherName)
+#' getSelectedTaxonNames(inputTaxonIDs, rank, higherRank, NULL, higherName,NULL)
 
 getSelectedTaxonNames <- function(
     inputTaxonIDs = NULL, rank = NULL,
-    higherRank = NULL, higherID = NULL, higherName = NULL
+    higherRank = NULL, higherID = NULL, higherName = NULL, taxDB = NULL
 ) {
     rankName <- NULL
     if (is.null(inputTaxonIDs) | is.null(rank))
         stop("Input taxa and taxonomy rank cannot be NULL!")
-    taxDf <- getTaxonomyMatrix(TRUE, paste0("ncbi", inputTaxonIDs))
+    taxDf <- getTaxonomyMatrix(taxDB, TRUE, paste0("ncbi", inputTaxonIDs))
     if (is.null(higherID) & is.null(higherName))
         return(
             data.frame(
@@ -202,7 +211,7 @@ getSelectedTaxonNames <- function(
                 stringsAsFactors = FALSE))
     } else {
         if (!is.null(higherName) & is.null(higherID)) {
-            taxaList <- getNameList()
+            taxaList <- getNameList(taxDB)
             superID <- taxaList$ncbiID[
                 taxaList$fullName == higherName
                 & taxaList$rank %in% c(higherRank, "norank")]
@@ -229,13 +238,14 @@ getSelectedTaxonNames <- function(
 
 #' Sort list of (super)taxa based on a selected reference (super)taxon
 #' @usage sortInputTaxa(taxonIDs = NULL, rankName, refTaxon = NULL,
-#'     taxaTree = NULL, sortedTaxonList = NULL)
+#'     taxaTree = NULL, sortedTaxonList = NULL, taxDB = NULL)
 #' @param taxonIDs list of taxon IDs (e.g.: ncbi1234, ncbi9999, ...). Default =
-#' NULL.
+#' NULL
 #' @param rankName working taxonomy rank (e.g. "species", "phylum",...)
-#' @param refTaxon selected reference taxon. Default = NULL.
-#' @param taxaTree taxonomy tree for the input taxa (optional). Default = NULL.
-#' @param sortedTaxonList list of sorted taxa (optional). Default = NULL.
+#' @param refTaxon selected reference taxon. Default = NULL
+#' @param taxaTree taxonomy tree for the input taxa (optional). Default = NULL
+#' @param sortedTaxonList list of sorted taxa (optional). Default = NULL
+#' @param taxDB Path to the taxonomy DB files
 #' @return A taxonomy matrix for the input taxa ordered by the selected
 #' reference taxon. This matrix is sorted either based on the NCBI taxonomy
 #' info, or based on an user-defined taxonomy tree (if provided).
@@ -254,15 +264,15 @@ getSelectedTaxonNames <- function(
 
 sortInputTaxa <- function(
     taxonIDs = NULL, rankName, refTaxon = NULL, taxaTree = NULL,
-    sortedTaxonList = NULL
+    sortedTaxonList = NULL, taxDB = NULL
 ){
     ncbiID <- fullName <- abbrName <- NULL
     if (missing(rankName)) return("No taxonomy rank name given!")
     allMainRanks <- getTaxonomyRanks()
     if (!(rankName[1] %in% allMainRanks)) return("Invalid taxonomy rank given!")
     # get list of taxon names
-    fullnameList <- getNameList()
-    taxonNames <- getInputTaxaName(rankName, taxonIDs)
+    fullnameList <- getNameList(taxDB)
+    taxonNames <- getInputTaxaName(rankName, taxonIDs, taxDB)
     if (is.null(refTaxon))  refTaxon <- taxonNames$fullName[1]
     # get selected supertaxon ID(s)
     rankNameTMP <- taxonNames$rank[taxonNames$fullName == refTaxon]
@@ -273,16 +283,18 @@ sortInputTaxa <- function(
             fullnameList$fullName == refTaxon
             & fullnameList$rank == rankNameTMP[1]]
     # get full taxonomy data & representative taxon
-    Dt <- getTaxonomyMatrix()
+    Dt <- getTaxonomyMatrix(taxDB)
     repTaxon <- Dt[Dt[, rankName] == superID, ][1, ]
     # THEN, SORT TAXON LIST BASED ON TAXONOMY TREE or SORTED TAXON LIST
     if (is.null(sortedTaxonList)) {
         if (is.null(taxaTree)) {
-            preCalcTreeFile <- paste(
-                system.file(package="PhyloProfile"),
-                "PhyloProfile/data/preCalcTree.nw",
-                sep="/"
-            )
+            if (is.null(taxDB)) {
+                preCalcTreeFile <- paste(
+                    system.file(package = "PhyloProfile"),
+                    "PhyloProfile/data/preCalcTree.nw", sep = "/"
+                )
+            } else preCalcTreeFile <- paste(taxDB, "preCalcTree.nw", sep = "/")
+
             preTree <- ape::read.tree(preCalcTreeFile)
             if (!(repTaxon$abbrName %in% preTree$tip.label))
                 message(c(repTaxon$abbrName, " not found in ", preCalcTreeFile))
@@ -744,7 +756,7 @@ reduceProfile <- function(filteredProfile) {
 #'     var2AggregateBy = "max", percentCutoff = c(0, 1),
 #'     coorthologCutoffMax = 9999, var1Cutoff = c(0, 1), var2Cutoff = c(0, 1),
 #'     var1Relation = "protein", var2Relation = "protein", groupByCat = FALSE,
-#'     catDt = NULL)
+#'     catDt = NULL, taxDB = NULL)
 #' @param rawInput input file (in long, wide, multi-fasta or orthoxml format)
 #' @param rankName taxonomy rank (e.g. "species","phylum",...)
 #' @param refTaxon selected reference taxon name (used for sorting and will be
@@ -768,7 +780,8 @@ reduceProfile <- function(filteredProfile) {
 #' "species" for protein-species). Default = "protein".
 #' @param groupByCat group genes by their categories (TRUE or FALSE). Default =
 #' FALSE.
-#' @param catDt dataframe contains gene categories. Default = NULL.
+#' @param catDt dataframe contains gene categories. Default = NULL
+#' @param taxDB Path to the taxonomy DB files
 #' @return Dataframe required for generating phylogenetic profile plot or
 #' clustering analysis. It contains seed gene IDs (or orthologous group IDs),
 #' their ortholog IDs and the corresponding (super)taxa, (super)taxon IDs,
@@ -832,7 +845,8 @@ fromInputToProfile <- function(
     var1Relation = "protein",
     var2Relation = "protein",
     groupByCat = FALSE,
-    catDt = NULL
+    catDt = NULL,
+    taxDB = NULL
 ) {
     if (missing(rawInput) | missing(rankName)) return("Missing input")
     if (is.null(rawInput) | is.null(rankName)) return("Missing input")
@@ -842,7 +856,7 @@ fromInputToProfile <- function(
     inputTaxonID <- getInputTaxaID(inputDf)
     # sort input taxa based on selected reference taxon or input taxonomy tree
     sortedInputTaxa <- sortInputTaxa(
-        inputTaxonID, rankName, refTaxon, taxaTree, sortedTaxonList
+        inputTaxonID, rankName, refTaxon, taxaTree, sortedTaxonList, taxDB
     )
     # count present taxa in each supertaxon
     taxaCount <- plyr::count(sortedInputTaxa, "supertaxon")

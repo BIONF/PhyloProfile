@@ -18,6 +18,6 @@ Imports:
     ape, bioDist, BiocStyle, Biostrings, colourpicker, data.table, DT, energy, 
     ExperimentHub, ggplot2, gridExtra, pbapply, RColorBrewer, RCurl,
     shiny, shinyBS, shinyFiles, shinyjs, OmaDB, plyr, xml2, zoo, yaml
-RoxygenNote: 7.2.2
+RoxygenNote: 7.2.3
 Suggests: knitr, rmarkdown, testthat
 VignetteBuilder: knitr

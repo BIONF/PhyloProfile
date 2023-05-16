@@ -9,7 +9,7 @@ fromInputToProfile(rawInput, rankName, refTaxon = NULL,
     var2AggregateBy = "max", percentCutoff = c(0, 1),
     coorthologCutoffMax = 9999, var1Cutoff = c(0, 1), var2Cutoff = c(0, 1),
     var1Relation = "protein", var2Relation = "protein", groupByCat = FALSE,
-    catDt = NULL)
+    catDt = NULL, taxDB = NULL)
 }
 \arguments{
 \item{rawInput}{input file (in long, wide, multi-fasta or orthoxml format)}
@@ -49,7 +49,9 @@ in a supertaxon. Default = c(0, 1).}
 \item{groupByCat}{group genes by their categories (TRUE or FALSE). Default =
 FALSE.}
 
-\item{catDt}{dataframe contains gene categories. Default = NULL.}
+\item{catDt}{dataframe contains gene categories. Default = NULL}
+
+\item{taxDB}{Path to the taxonomy DB files}
 }
 \value{
 Dataframe required for generating phylogenetic profile plot or

@@ -3,6 +3,12 @@
 \encoding{UTF-8}
 
 
+\section{Version 1.14.2}{
+  \itemize{
+    \item option to use user defined taxonomy DB (#124)
+  }
+}
+
 \section{Version 1.14.1}{
   \itemize{
     \item option for highlight duplicated ortholog IDs

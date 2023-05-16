@@ -14,6 +14,7 @@
 #' @param domainDf dataframe of domain architectures
 #' @param doCompare check if Compare button clicked (input$doCompare)
 #' @param doUpdate check if Update button clicked (input$updateGC)
+#' @param taxDB Path to the taxonomy DB files
 #' @return list of candidate genes and their p-values (or delta means)
 #' @authors Carla Mölbert {carla.moelbert@gmx.de}, Vinh Tran
 #' {tran@bio.uni-frankfurt.de}
@@ -80,12 +81,13 @@ groupComparison <- function (
     plotParameters,
     domainDf,
     doCompare,
-    doUpdate
+    doUpdate,
+    taxDB
 ) {
     ### get candidate genes and their p-values
     candidateGenes <- reactive({
         if (is.null(inGroup())) return()
-        if (is.null(variable()) | variable()[1] == "none") 
+        if (is.null(variable()) | variable()[1] == "none")
             stop("No variable available or selected!")
 
         if (compareType() == "Statistical tests") {
@@ -94,7 +96,8 @@ groupComparison <- function (
                 inGroup(),
                 FALSE,
                 variable(),
-                significanceLevel()
+                significanceLevel(),
+                taxDB()
             )
             return(pvalues[pvalues <= significanceLevel()])
         } else {
@@ -102,7 +105,8 @@ groupComparison <- function (
                 filteredDf(),
                 inGroup(),
                 FALSE,
-                variable()
+                variable(),
+                taxDB()
             )
             return(deltaMean[deltaMean <= significanceLevel()])
         }
@@ -349,7 +353,7 @@ groupComparison <- function (
             shinyjs::disable("downloadPlot")
         else shinyjs::enable("downloadPlot")
     })
-    
+
     ### return list of candidate genes
     outGenes <- reactive({
         return(names(candidateGenes()))

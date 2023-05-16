@@ -4,12 +4,14 @@
 \alias{getInputTaxaName}
 \title{Get NCBI taxon names for a selected list of taxa}
 \usage{
-getInputTaxaName(rankName, taxonIDs = NULL)
+getInputTaxaName(rankName, taxonIDs = NULL, taxDB = NULL)
 }
 \arguments{
 \item{rankName}{taxonomy rank (e.g. "species","phylum",...)}
 
 \item{taxonIDs}{list of taxon IDs (e.g. ncbi1234). Default = NULL}
+
+\item{taxDB}{Path to the taxonomy DB files}
 }
 \value{
 Data frame contains a list of full names, taxonomy ranks and parent

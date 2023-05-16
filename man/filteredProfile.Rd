@@ -4,7 +4,10 @@
 \name{filteredProfile}
 \alias{filteredProfile}
 \title{An example of a filtered phylogenetic profile.}
-\format{
+\usage{
+data(filteredProfile)
+}
+\value{
 A data frame with 168 rows and 20 variables:
 \itemize{
     \item{geneID}{ Seed or ortholog group ID, e.g. "100136at6656"}
@@ -30,9 +33,6 @@ A data frame with 168 rows and 20 variables:
     \item{mVar1}{ Value of the 1. variable after grouping into supertaxon}
     \item{mVar2}{ Value of the 2. variable after grouping into supertaxon}
 }
-}
-\usage{
-data(filteredProfile)
 }
 \description{
 An example of a filtered phylogenetic profile.

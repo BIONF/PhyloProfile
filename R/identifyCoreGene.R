@@ -7,7 +7,7 @@
 #' @export
 #' @usage getCoreGene(rankName, taxaCore = c("none"), profileDt, taxaCount,
 #'     var1Cutoff = c(0, 1), var2Cutoff = c(0, 1), percentCutoff = c(0, 1),
-#'     coreCoverage = 100)
+#'     coreCoverage = 100, taxDB = NULL)
 #' @param rankName working taxonomy rank (e.g. "species", "genus", "family")
 #' @param taxaCore list of selected taxon names
 #' @param profileDt dataframe contains the full processed
@@ -19,6 +19,7 @@
 #' supertaxon. Default = c(0, 1).
 #' @param coreCoverage the least percentage of selected taxa should be
 #' considered. Default = 1.
+#' @param taxDB Path to the taxonomy DB files
 #' @return A list of identified core genes.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{parseInfoProfile}} for creating a full processed
@@ -50,14 +51,14 @@
 getCoreGene <- function(
     rankName = NULL, taxaCore = c("none"), profileDt = NULL, taxaCount = NULL,
     var1Cutoff = c(0, 1), var2Cutoff = c(0, 1),
-    percentCutoff = c(0, 1), coreCoverage = 100
+    percentCutoff = c(0, 1), coreCoverage = 100, taxDB = NULL
 ) {
     var1 <- var2 <- 0
     if (is.null(profileDt)) stop("Processed profile cannot be NULL!")
     if (is.null(rankName)) stop("Rank name cannot be NULL!")
     supertaxonID <- mVar1 <- mVar2 <- presSpec <- Freq <- NULL
     # get ID list of chosen taxa & main input profile
-    taxaList <- getNameList()
+    taxaList <- getNameList(taxDB)
     if ("none" %in% taxaCore) {
         superID <- NA
     } else superID <- taxaList$ncbiID[

@@ -4,13 +4,15 @@
 \alias{getTaxonomyMatrix}
 \title{Get taxonomy matrix}
 \usage{
-getTaxonomyMatrix(subsetTaxaCheck = FALSE, taxonIDs = NULL)
+getTaxonomyMatrix(taxDB = NULL, subsetTaxaCheck = FALSE, taxonIDs = NULL)
 }
 \arguments{
-\item{subsetTaxaCheck}{TRUE/FALSE subset taxonomy matrix based on input taxon
-IDs. Default = FALSE.}
+\item{taxDB}{Path to the taxonomy DB files}
 
-\item{taxonIDs}{list of input taxon IDs (e.g. ncbi1234). Default = NULL.}
+\item{subsetTaxaCheck}{TRUE/FALSE subset taxonomy matrix based on input taxon
+IDs. Default = FALSE}
+
+\item{taxonIDs}{list of input taxon IDs (e.g. ncbi1234). Default = NULL}
 }
 \value{
 Data frame contains the (subset of) taxonomy matrix for list of
@@ -22,10 +24,10 @@ Get the (full or subset) taxonomy matrix from
 }
 \examples{
 # get full pre-installed taxonomy matrix
-getTaxonomyMatrix(FALSE, NULL)
+getTaxonomyMatrix()
 # get taxonomy matrix for a list of taxon IDs
 taxonIDs <- c("ncbi9606", "ncbi10116")
-getTaxonomyMatrix(TRUE, taxonIDs)
+getTaxonomyMatrix(NULL, TRUE, taxonIDs)
 }
 \author{
 Vinh Tran {tran@bio.uni-frankfurt.de}

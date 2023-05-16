@@ -4,7 +4,10 @@
 \name{mainLongRaw}
 \alias{mainLongRaw}
 \title{An example of a raw long input file.}
-\format{
+\usage{
+data(mainLongRaw)
+}
+\value{
 A data frame with 168 rows and 5 variables:
 \itemize{
     \item{geneID}{ Seed or ortholog group ID, e.g. "100136at6656"}
@@ -13,9 +16,6 @@ A data frame with 168 rows and 5 variables:
     \item{FAS_F}{ First additional variable}
     \item{FAS_B}{ Second additional variable}
 }
-}
-\usage{
-data(mainLongRaw)
 }
 \description{
 An example of a raw long input file.
