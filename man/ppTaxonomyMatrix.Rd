@@ -4,7 +4,10 @@
 \name{ppTaxonomyMatrix}
 \alias{ppTaxonomyMatrix}
 \title{An example of a taxonomy matrix.}
-\format{
+\usage{
+data(ppTaxonomyMatrix)
+}
+\value{
 A data frame with 10 rows and 162 variables:
 \itemize{
     \item{abbrName}{ e.g. "ncbi10090"}
@@ -13,9 +16,6 @@ A data frame with 10 rows and 162 variables:
     \item{strain}{ e.g. "10090"}
     ...
 }
-}
-\usage{
-data(ppTaxonomyMatrix)
 }
 \description{
 An example of a taxonomy matrix.

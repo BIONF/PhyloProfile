@@ -4,7 +4,10 @@
 \alias{getNameList}
 \title{Get list of pre-installed NCBI taxon names}
 \usage{
-getNameList()
+getNameList(taxDB = NULL)
+}
+\arguments{
+\item{taxDB}{Path to the taxonomy DB files}
 }
 \value{
 List of taxon IDs, their full names, taxonomy ranks and parent IDs

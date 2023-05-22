@@ -4,7 +4,8 @@
 \alias{compareMedianTaxonGroups}
 \title{Compare the median values of a variable between 2 taxon groups}
 \usage{
-compareMedianTaxonGroups(data, inGroup, useCommonAncestor, variable)
+compareMedianTaxonGroups(data, inGroup, useCommonAncestor, variable,
+    taxDB)
 }
 \arguments{
 \item{data}{input phylogenetic profile in long format (see ?mainLongRaw and
@@ -17,6 +18,8 @@ common ancestor with the pre-selected in-group as the in-group taxa.
 Default = TRUE.}
 
 \item{variable}{name of the variable that need to be compared}
+
+\item{taxDB}{Path to the taxonomy DB files}
 }
 \value{
 List of genes that have a difference in the variable's median scores

@@ -5,7 +5,7 @@
 \title{Calculate the phylogenetic gene age from the phylogenetic profiles}
 \usage{
 estimateGeneAge(processedProfileData, taxaCount, rankName, refTaxon,
-    var1CO, var2CO, percentCO)
+    var1CO, var2CO, percentCO, taxDB = NULL)
 }
 \arguments{
 \item{processedProfileData}{dataframe contains the full processed
@@ -24,6 +24,8 @@ phylogenetic profiles (see ?fullProcessedProfile or ?parseInfoProfile)}
 
 \item{percentCO}{cutoff for percentage of species present in each
 supertaxon. Default: c(0, 1)}
+
+\item{taxDB}{Path to the taxonomy DB files}
 }
 \value{
 A dataframe contains estimated gene ages for the seed proteins.

@@ -5,6 +5,7 @@
 #' @param inputTaxa ID list of all input taxa (e.g. "ncbi12345")
 #' @param inGroup ID list of selected taxa used for identify the common ancestor
 #' (e.g.: "ncbi55555")
+#' @param taxDB Path to the taxonomy DB files
 #' @return A list containing the taxonomy rank and name of the common ancestor,
 #' together with a dataframe storing the full taxonomy info of all taxa that
 #' share that corresponding common ancestor.
@@ -16,11 +17,11 @@
 #' inGroup <-  c("ncbi9606", "ncbi10116")
 #' getCommonAncestor(inputTaxa, inGroup)
 
-getCommonAncestor <- function(inputTaxa = NULL, inGroup = NULL) {
+getCommonAncestor <- function(inputTaxa = NULL, inGroup = NULL, taxDB = NULL) {
     if (is.null(inputTaxa) | is.null(inGroup))
         stop("Input taxa and in-group ID list cannot be NULL!")
     # get list of pre-calculated taxonomy info
-    taxMatrix <- getTaxonomyMatrix(TRUE, inputTaxa)
+    taxMatrix <- getTaxonomyMatrix(taxDB, TRUE, inputTaxa)
     # get subset taxonomy info for selected in-group taxa
     selectedTaxMatrix <- taxMatrix[
         taxMatrix$abbrName %in% inGroup,
@@ -52,7 +53,7 @@ getCommonAncestor <- function(inputTaxa = NULL, inGroup = NULL) {
 #' by the user. Out-group contains all taxa in the input phylogenetic profiles
 #' that are not part of the in-group.
 #' @usage compareTaxonGroups(data, inGroup, useCommonAncestor, variable,
-#'     significanceLevel)
+#'     significanceLevel, taxDB)
 #' @export
 #' @param data input phylogenetic profile in long format (see ?mainLongRaw and
 #' ?createLongMatrix)
@@ -63,6 +64,7 @@ getCommonAncestor <- function(inputTaxa = NULL, inGroup = NULL) {
 #' @param variable name of the variable that need to be compared
 #' @param significanceLevel significant cutoff for the statistic test (between
 #' 0 and 1). Default = 0.05.
+#' @param taxDB Path to the taxonomy DB files
 #' @return list of genes that have a significant difference in the variable
 #' distributions between the in-group and out-group taxa and their corresponding
 #' p-values.
@@ -79,13 +81,16 @@ compareTaxonGroups <- function(
     inGroup = NULL,
     useCommonAncestor = TRUE,
     variable = NULL,
-    significanceLevel = 0.05
+    significanceLevel = 0.05,
+    taxDB = NULL
 ) {
     if (is.null(data) | is.null(inGroup) | is.null(variable))
         stop("Input profiles, in-group IDs and variable name cannot be NULL!")
     if (!(variable %in% colnames(data))) stop("Invalid variable")
     # add other taxa that share a common ancestor with the given in-group
-    commonTaxa <- getCommonAncestor(levels(as.factor(data$ncbiID)), inGroup)
+    commonTaxa <- getCommonAncestor(
+        levels(as.factor(data$ncbiID)), inGroup, taxDB
+    )
     if (useCommonAncestor == TRUE)
         inGroup <- as.character(commonTaxa[[3]]$abbrName)
 
@@ -161,7 +166,8 @@ distributionTest <- function(
 #' species), which are defined as in-group and out-group. In-group is identified
 #' by the user. Out-group contains all taxa in the input phylogenetic profiles
 #' that are not part of the in-group.
-#' @usage compareMedianTaxonGroups(data, inGroup, useCommonAncestor, variable)
+#' @usage compareMedianTaxonGroups(data, inGroup, useCommonAncestor, variable,
+#'     taxDB)
 #' @export
 #' @param data input phylogenetic profile in long format (see ?mainLongRaw and
 #' ?createLongMatrix)
@@ -170,6 +176,7 @@ distributionTest <- function(
 #' common ancestor with the pre-selected in-group as the in-group taxa.
 #' Default = TRUE.
 #' @param variable name of the variable that need to be compared
+#' @param taxDB Path to the taxonomy DB files
 #' @return List of genes that have a difference in the variable's median scores
 #' between the in-group and out-group taxa and their corresponding delta-median.
 #' @author Vinh Tran (tran@bio.uni-frankfurt.de)
@@ -181,13 +188,16 @@ distributionTest <- function(
 #' compareMedianTaxonGroups(data, inGroup, TRUE, variable)
 
 compareMedianTaxonGroups <- function(
-    data = NULL, inGroup = NULL, useCommonAncestor = TRUE, variable = NULL
+    data = NULL, inGroup = NULL, useCommonAncestor = TRUE, variable = NULL,
+    taxDB = NULL
 ) {
     if (is.null(data) | is.null(inGroup) | is.null(variable))
         stop("Input profiles, in-group IDs and variable name cannot be NULL!")
     if (!(variable %in% colnames(data))) stop("Invalid variable")
     # add other taxa that share a common ancestor with the given in-group
-    commonTaxa <- getCommonAncestor(levels(as.factor(data$ncbiID)), inGroup)
+    commonTaxa <- getCommonAncestor(
+        levels(as.factor(data$ncbiID)), inGroup, taxDB
+    )
     if (useCommonAncestor == TRUE)
         inGroup <- as.character(commonTaxa[[3]]$abbrName)
 
@@ -255,7 +265,7 @@ dataVarDistTaxGroup <- function(
     varIn$type <- "In-group"
     varOut$type <- "Out-group"
     out <- rbind(
-        varIn[stats::complete.cases(varIn),], 
+        varIn[stats::complete.cases(varIn),],
         varOut[stats::complete.cases(varOut),]
     )
     return(out[, c(variable, "type")])

@@ -5,7 +5,7 @@
 #' @description A list of NCBI taxonomy info (including taxon IDs, taxon names,
 #' their systematic taxonomy rank and IDs of their next rank - parent IDs) for
 #' 95 taxa in two experimental sets included in PhyloProfilData package.
-#' @format A data frame with 4 columns:
+#' @return A data frame with 4 columns:
 #' \itemize{
 #'     \item{ncbiID}{ e.g. "10090"}
 #'     \item{fullName}{ e.g. "Mus musculus"}
@@ -22,8 +22,8 @@ NULL
 #' @description Data frame, in which each row contains the complete taxonomy
 #' ranks from the lowest systematic level (strain/species) upto the taxonomy
 #' root and the corresponding IDs for one taxon in the experimental data sets.
-#' @format A data frame with up to 41 columns and 95 rows corresponding to 95
-#' taxa in the 2 experimental data sets
+#' @return A data frame with up to 41 columns and 95 rows corresponding to 95
+#'     taxa in the 2 experimental data sets
 #' @usage data(idList)
 NULL
 
@@ -34,8 +34,8 @@ NULL
 #' @description Data frame, in which each row contains the complete taxonomy
 #' ranks from the lowest systematic level (strain/species) upto the taxonomy
 #' root for one taxon in the experimental data sets.
-#' @format A data frame with up to 41 columns and 95 rows corresponding to 95
-#' taxa in the 2 experimental data sets
+#' @return A data frame with up to 41 columns and 95 rows corresponding to 95
+#'     taxa in the 2 experimental data sets
 #' @usage data(rankList)
 NULL
 
@@ -48,8 +48,8 @@ NULL
 #' ranks (e.g. strain, This data is used for clustering and then creating a
 #' taxon tree. It is used also for cross-linking between different taxonomy
 #' ranks within a taxon.
-#' @format A data frame with up to 149 columns and 95 rows corresponding to 95
-#' taxa in the 2 experimental data sets
+#' @return A data frame with up to 149 columns and 95 rows corresponding to 95
+#'     taxa in the 2 experimental data sets
 #' @usage data(taxonomyMatrix)
 NULL
 
@@ -57,7 +57,7 @@ NULL
 #'
 #' @docType data
 #' @name ppTree
-#' @format A data frame with only one entry
+#' @return A data frame with only one entry
 #' \describe{
 #'     \item{V1}{ tree in newick format}
 #' }
@@ -68,7 +68,7 @@ NULL
 #'
 #' @docType data
 #' @name ppTaxonomyMatrix
-#' @format A data frame with 10 rows and 162 variables:
+#' @return A data frame with 10 rows and 162 variables:
 #' \itemize{
 #'     \item{abbrName}{ e.g. "ncbi10090"}
 #'     \item{ncbiID}{ e.g. "10090"}
@@ -83,7 +83,7 @@ NULL
 #'
 #' @docType data
 #' @name mainLongRaw
-#' @format A data frame with 168 rows and 5 variables:
+#' @return A data frame with 168 rows and 5 variables:
 #' \itemize{
 #'     \item{geneID}{ Seed or ortholog group ID, e.g. "100136at6656"}
 #'     \item{ncbiID}{ Taxon ID, e.g. "ncbi36329"}
@@ -98,7 +98,7 @@ NULL
 #'
 #' @docType data
 #' @name profileWithTaxonomy
-#' @format A data frame with 20 rows and 12 variables:
+#' @return A data frame with 20 rows and 12 variables:
 #' \itemize{
 #'     \item{geneID}{ Seed or ortholog group ID, e.g. "OG_1017"}
 #'     \item{ncbiID}{ Taxon ID, e.g. "ncbi176299"}
@@ -121,7 +121,7 @@ NULL
 #'
 #' @docType data
 #' @name fullProcessedProfile
-#' @format A data frame with 168 rows and 14 variables:
+#' @return A data frame with 168 rows and 14 variables:
 #' \itemize{
 #'     \item{supertaxon}{ Supertaxon name together with its ordered index, e.g.
 #'     "1001_Mammalia"}
@@ -147,7 +147,7 @@ NULL
 #'
 #' @docType data
 #' @name filteredProfile
-#' @format A data frame with 168 rows and 20 variables:
+#' @return A data frame with 168 rows and 20 variables:
 #' \itemize{
 #'     \item{geneID}{ Seed or ortholog group ID, e.g. "100136at6656"}
 #'     \item{supertaxon}{ Supertaxon name together with its ordered index, e.g.
@@ -179,7 +179,7 @@ NULL
 #'
 #' @docType data
 #' @name finalProcessedProfile
-#' @format A data frame with 88 rows and 11 variables:
+#' @return A data frame with 88 rows and 11 variables:
 #' \itemize{
 #'     \item{geneID}{ Seed or ortholog group ID, e.g. "100136at6656"}
 #'     \item{supertaxon}{ Supertaxon name together with its ordered index, e.g.

@@ -4,7 +4,10 @@
 \name{fullProcessedProfile}
 \alias{fullProcessedProfile}
 \title{An example of a fully processed phylogenetic profile.}
-\format{
+\usage{
+data(fullProcessedProfile)
+}
+\value{
 A data frame with 168 rows and 14 variables:
 \itemize{
     \item{supertaxon}{ Supertaxon name together with its ordered index, e.g.
@@ -24,9 +27,6 @@ A data frame with 168 rows and 14 variables:
     \item{category}{ "cat}
     \item{numberSpec}{ Total number of species in each supertaxon}
 }
-}
-\usage{
-data(fullProcessedProfile)
 }
 \description{
 An example of a fully processed phylogenetic profile.

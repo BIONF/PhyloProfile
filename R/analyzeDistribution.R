@@ -1,7 +1,10 @@
 #' Create data for percentage present taxa distribution
+#' @usage createPercentageDistributionData(inputData = NULL, rankName = NULL, 
+#'     taxDB = NULL)
 #' @param inputData dataframe contains raw input data in long format
 #' (see ?mainLongRaw)
 #' @param rankName name of the working taxonomy rank (e.g. "species", "family")
+#' @param taxDB Path to the taxonomy DB files
 #' @return A dataframe for analysing the distribution of the percentage of
 #' species in the selected supertaxa, containing the seed protein IDs,
 #' percentage of their orthologs in each supertaxon and the corresponding
@@ -13,7 +16,9 @@
 #' data("mainLongRaw", package="PhyloProfile")
 #' createPercentageDistributionData(mainLongRaw, "class")
 
-createPercentageDistributionData <- function(inputData, rankName = NULL) {
+createPercentageDistributionData <- function(
+    inputData = NULL, rankName = NULL, taxDB = NULL
+) {
     if (is.null(inputData) | is.null(rankName))
         stop("Input data or rank name cannot be NULL!")
     allMainRanks <- getTaxonomyRanks()
@@ -31,10 +36,10 @@ createPercentageDistributionData <- function(inputData, rankName = NULL) {
     colnames(inputData)[ncol(inputData)] <- "paralog"
     # get sorted taxonomy list
     inputTaxonID <- getInputTaxaID(inputData)
-    inputTaxonName <- getInputTaxaName(rankName, inputTaxonID)
+    inputTaxonName <- getInputTaxaName(rankName, inputTaxonID, taxDB)
     refTaxon <- inputTaxonName$fullName[1]
     taxaTree <- NULL
-    taxaList <- sortInputTaxa(inputTaxonID, rankName, refTaxon, taxaTree)
+    taxaList <- sortInputTaxa(inputTaxonID, rankName, refTaxon, taxaTree, taxDB)
     # calculate frequency of all supertaxa
     taxaCount <- plyr::count(taxaList, "supertaxon")
     # merge inputData, inputDatavar2 and taxaList to get taxonomy info

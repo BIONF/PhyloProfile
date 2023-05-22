@@ -4,7 +4,10 @@
 \name{finalProcessedProfile}
 \alias{finalProcessedProfile}
 \title{An example of a final processed & filtered phylogenetic profile.}
-\format{
+\usage{
+data(finalProcessedProfile)
+}
+\value{
 A data frame with 88 rows and 11 variables:
 \itemize{
     \item{geneID}{ Seed or ortholog group ID, e.g. "100136at6656"}
@@ -21,9 +24,6 @@ A data frame with 88 rows and 11 variables:
     \item{presentTaxa}{ Number of taxa that have ortho in each supertaxon}
     \item{totalTaxa}{ Total number of taxa in each supertaxon}
 }
-}
-\usage{
-data(finalProcessedProfile)
 }
 \description{
 An example of a final processed & filtered phylogenetic profile.

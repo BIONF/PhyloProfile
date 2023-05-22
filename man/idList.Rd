@@ -4,12 +4,12 @@
 \name{idList}
 \alias{idList}
 \title{NCBI ID list for experimental data sets}
-\format{
-A data frame with up to 41 columns and 95 rows corresponding to 95
-taxa in the 2 experimental data sets
-}
 \usage{
 data(idList)
+}
+\value{
+A data frame with up to 41 columns and 95 rows corresponding to 95
+    taxa in the 2 experimental data sets
 }
 \description{
 Data frame, in which each row contains the complete taxonomy

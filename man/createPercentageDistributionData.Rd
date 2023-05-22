@@ -4,13 +4,16 @@
 \alias{createPercentageDistributionData}
 \title{Create data for percentage present taxa distribution}
 \usage{
-createPercentageDistributionData(inputData, rankName = NULL)
+createPercentageDistributionData(inputData = NULL, rankName = NULL, 
+    taxDB = NULL)
 }
 \arguments{
 \item{inputData}{dataframe contains raw input data in long format
 (see ?mainLongRaw)}
 
 \item{rankName}{name of the working taxonomy rank (e.g. "species", "family")}
+
+\item{taxDB}{Path to the taxonomy DB files}
 }
 \value{
 A dataframe for analysing the distribution of the percentage of

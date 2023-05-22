@@ -1,7 +1,7 @@
 #' Import user defined NCBI taxonomy database
 #' @return none (imported files will be saved in PhyloProfile package folder)
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
-exportNcbiTax <- function(outDir) {
+exportNcbiTax <- function(outDir, taxDB) {
     taxFiles <- c(
         "newTaxa.txt",
         "taxonNamesReduced.txt",
@@ -18,18 +18,17 @@ exportNcbiTax <- function(outDir) {
 
     if (flag == 0) {
         message(
-            "<p><span style=\"color: #ff0000;\"><strong>WARNING</strong></span>: Some of the taxonomy files already exist! Please rename or move them to another place!</p>"
+            "<p><span style=\"color: #ff0000;\"><strong>WARNING</strong></span>: Some of the taxonomy files already exist in the selected folder! Please rename or move them to another place!</p>"
         )
     } else {
-        packagePath <- find.package("PhyloProfile")
-        message("2) Exporting data from ", packagePath, "...")
-        if (file.exists(paste0(packagePath, "/PhyloProfile/data/preCalcTree.nw")))
-            c(taxFiles, "preCalcTree.nw")
+        message("2) Exporting data from ", taxDB, "...")
+        if (file.exists(paste0(taxDB, "/preCalcTree.nw")))
+            taxFiles <- c(taxFiles, "preCalcTree.nw")
         for (file in taxFiles) {
             system(
                 paste(
                     "cp",
-                    paste0(packagePath, "/PhyloProfile/data/", file),
+                    paste0(taxDB, "/", file),
                     paste0(outDir, "/", file)
                 )
             )

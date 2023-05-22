@@ -1,7 +1,7 @@
 #' Calculate the phylogenetic gene age from the phylogenetic profiles
 #' @export
 #' @usage estimateGeneAge(processedProfileData, taxaCount, rankName, refTaxon,
-#'     var1CO, var2CO, percentCO)
+#'     var1CO, var2CO, percentCO, taxDB = NULL)
 #' @param processedProfileData dataframe contains the full processed
 #' phylogenetic profiles (see ?fullProcessedProfile or ?parseInfoProfile)
 #' @param taxaCount dataframe counting present taxa in each supertaxon
@@ -12,6 +12,7 @@
 #' @param var2CO cutoff for var2. Default: c(0, 1)
 #' @param percentCO cutoff for percentage of species present in each
 #' supertaxon. Default: c(0, 1)
+#' @param taxDB Path to the taxonomy DB files
 #' @return A dataframe contains estimated gene ages for the seed proteins.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 #' @seealso \code{\link{parseInfoProfile}} for creating a full processed
@@ -41,18 +42,18 @@
 
 estimateGeneAge <- function(
     processedProfileData, taxaCount, rankName, refTaxon,
-    var1CO = c(0, 1), var2CO = c(0, 1), percentCO = c(0, 1)
+    var1CO = c(0, 1), var2CO = c(0, 1), percentCO = c(0, 1), taxDB = NULL
 ){
     rankList <- c(
         "genus", "family", "class", "phylum", "kingdom", "norank_33154",
         "superkingdom", "root"
     )
     # get selected (super)taxon ID
-    taxList <- getNameList()
+    taxList <- getNameList(taxDB)
     superID <- taxList[
         taxList$fullName == refTaxon & taxList$rank == rankName,]$ncbiID
     # full non-duplicated taxonomy data
-    Dt <- getTaxonomyMatrix(FALSE, NULL)
+    Dt <- getTaxonomyMatrix(taxDB)
     # subset of taxonomy data, containing only ranks from rankList
     subDt <- Dt[, c("abbrName", rankList)]
     # get (super)taxa IDs for one of representative species

@@ -4,13 +4,15 @@
 \alias{getCommonAncestor}
 \title{Get all taxa that share a common ancestor}
 \usage{
-getCommonAncestor(inputTaxa = NULL, inGroup = NULL)
+getCommonAncestor(inputTaxa = NULL, inGroup = NULL, taxDB = NULL)
 }
 \arguments{
 \item{inputTaxa}{ID list of all input taxa (e.g. "ncbi12345")}
 
 \item{inGroup}{ID list of selected taxa used for identify the common ancestor
 (e.g.: "ncbi55555")}
+
+\item{taxDB}{Path to the taxonomy DB files}
 }
 \value{
 A list containing the taxonomy rank and name of the common ancestor,

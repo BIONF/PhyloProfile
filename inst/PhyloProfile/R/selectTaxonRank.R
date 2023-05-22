@@ -1,6 +1,7 @@
 #' Popup windows for (sub-)selecting rank & (super)taxon of interest
 #' @param rankSelect initial selected taxonomy rank (input$rankSelect)
 #' @param inputTaxonID list of all input taxon IDs
+#' @taxDB Path to the taxonomy DB files
 #' (from reactive fn inputTaxonID)
 #' @return list of all taxa in the initial taxonomy rank based on selected
 #' supertaxon from input$taxaSelectCus
@@ -16,7 +17,9 @@ selectTaxonRankUI <- function(id) {
     )
 }
 
-selectTaxonRank <- function(input, output, session, rankSelect, inputTaxonID) {
+selectTaxonRank <- function(
+    input, output, session, rankSelect, inputTaxonID, taxDB
+){
 
     # render list of available taxonomy ranks
     # (where the lowest rank is the same as the chosen main rank)
@@ -51,12 +54,12 @@ selectTaxonRank <- function(input, output, session, rankSelect, inputTaxonID) {
         if (length(rankSelectCus) == 0) return()
         else {
             # load list of unsorted taxa
-            Dt <- getTaxonomyMatrix(TRUE, inputTaxonID())
+            Dt <- getTaxonomyMatrix(taxDB(), TRUE, inputTaxonID())
             # load list of taxon name
-            nameList <- getNameList()
+            nameList <- getNameList(taxDB())
             # get rank name from rankSelect
             rankName <- rankSelectCus
-            
+
             choice <- data.frame(
                 ncbiID = unlist(Dt[rankName]), stringsAsFactors = FALSE
             )
@@ -86,10 +89,10 @@ selectTaxonRank <- function(input, output, session, rankSelect, inputTaxonID) {
         if (taxaSelectCus == "") return()
 
         # load list of unsorted taxa
-        Dt <- getTaxonomyMatrix(TRUE, inputTaxonID())
+        Dt <- getTaxonomyMatrix(taxDB(), TRUE, inputTaxonID())
 
         # get ID of selected (super)taxon from input$taxaSelectCus
-        taxaList <- getNameList()
+        taxaList <- getNameList(taxDB())
         superID <- taxaList$ncbiID[taxaList$fullName == taxaSelectCus
                                     & taxaList$rank %in% c(rankName, "norank")]
 

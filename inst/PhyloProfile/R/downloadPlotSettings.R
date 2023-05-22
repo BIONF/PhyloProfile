@@ -68,6 +68,7 @@ writePlottingScript <- function(settingsFile) {
         "var2Relation <- settings$var2Relation",
         "groupByCat <- FALSE",
         "catDt <- NULL",
+        "taxDB <- settings$taxDB",
 
         "##### Processing input",
         "print('Processing input...')",
@@ -80,7 +81,8 @@ writePlottingScript <- function(settingsFile) {
             rankName = rankName,
             refTaxon = refTaxon,
             taxaTree = NULL,
-            sortedTaxonList = NULL
+            sortedTaxonList = NULL,
+            taxDB = taxDB
         )",
 
         "taxaCount <- plyr::count(sortedTaxa, 'supertaxon')",

@@ -10,6 +10,7 @@
 #' @param taxonHighlight highlighted taxon (input$taxonHighlight)
 #' @param geneHighlight highlighted gene (input$geneHighlight)
 #' @param typeProfile either "mainProfile" or "customizedProfile"
+#' @taxDB Path to the taxonomy DB files
 #' @return info for selected point on the profile
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 
@@ -36,7 +37,7 @@ createProfilePlot <- function(input, output, session,
                                 inSeq, inTaxa,
                                 rankSelect, inSelect,
                                 taxonHighlight, geneHighlight,
-                                typeProfile) {
+                                typeProfile, taxDB) {
     # data for heatmap ---------------------------------------------------------
     dataHeat <- reactive({
         if (is.null(data())) stop("Profile data is NULL!")
@@ -74,7 +75,7 @@ createProfilePlot <- function(input, output, session,
                 geneHighlight()
             )
         })
-        
+
     })
 
     output$plot.ui <- renderUI({
@@ -115,7 +116,7 @@ createProfilePlot <- function(input, output, session,
     # get info of clicked point on heatmap plot --------------------------------
     selectedpointInfo <- reactive({
         # get selected supertaxon name
-        taxaList <- getNameList()
+        taxaList <- getNameList(taxDB())
         rankName <- rankSelect()
         inSelect <- taxaList$ncbiID[taxaList$fullName == inSelect()]
 
@@ -124,7 +125,7 @@ createProfilePlot <- function(input, output, session,
 
         if (typeProfile() == "customizedProfile") {
             # get sub-dataframe of selected taxa and sequences
-            if (is.null(inSeq()[1]) | is.null(inTaxa()[1]))  
+            if (is.null(inSeq()[1]) | is.null(inTaxa()[1]))
                 stop("Subset taxa or genes is NULL!")
             if (inTaxa()[1] == "all" & inSeq()[1] != "all") {
                 # select data from dataHeat for selected sequences only
@@ -142,7 +143,7 @@ createProfilePlot <- function(input, output, session,
             dataHeat$supertaxon <- factor(dataHeat$supertaxon)
             dataHeat$geneID <- factor(dataHeat$geneID)
         }
-        
+
         # get values
         if (is.null(input$plotClick$x)) return()
         else {
@@ -178,7 +179,7 @@ createProfilePlot <- function(input, output, session,
                                               & dataHeat$supertaxon == spec]))
                 }
             }
-            # get percentage of present species and total of taxa 
+            # get percentage of present species and total of taxa
             Percent <- NA
             if (!is.na(dataHeat$presSpec[dataHeat$geneID == geneID
                                          & dataHeat$supertaxon == spec][1])) {
@@ -211,7 +212,7 @@ createProfilePlot <- function(input, output, session,
                     )
                 )
             }
-            
+
 
             # get ortholog ID
             orthoID <- dataHeat$orthoID[dataHeat$geneID == geneID
@@ -220,7 +221,7 @@ createProfilePlot <- function(input, output, session,
             if (length(orthoID) > 1) {
                 orthoID <- paste0(orthoID[1], ",...")
             }
-            
+
             # get working taxonomy level
             strain <- "Y"
             if (nlevels(as.factor(dataHeat$totalTaxa)) > 1) strain <- "N"

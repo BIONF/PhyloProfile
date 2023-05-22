@@ -5,19 +5,21 @@
 \title{Sort list of (super)taxa based on a selected reference (super)taxon}
 \usage{
 sortInputTaxa(taxonIDs = NULL, rankName, refTaxon = NULL,
-    taxaTree = NULL, sortedTaxonList = NULL)
+    taxaTree = NULL, sortedTaxonList = NULL, taxDB = NULL)
 }
 \arguments{
 \item{taxonIDs}{list of taxon IDs (e.g.: ncbi1234, ncbi9999, ...). Default =
-NULL.}
+NULL}
 
 \item{rankName}{working taxonomy rank (e.g. "species", "phylum",...)}
 
-\item{refTaxon}{selected reference taxon. Default = NULL.}
+\item{refTaxon}{selected reference taxon. Default = NULL}
 
-\item{taxaTree}{taxonomy tree for the input taxa (optional). Default = NULL.}
+\item{taxaTree}{taxonomy tree for the input taxa (optional). Default = NULL}
 
-\item{sortedTaxonList}{list of sorted taxa (optional). Default = NULL.}
+\item{sortedTaxonList}{list of sorted taxa (optional). Default = NULL}
+
+\item{taxDB}{Path to the taxonomy DB files}
 }
 \value{
 A taxonomy matrix for the input taxa ordered by the selected
