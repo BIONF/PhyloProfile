@@ -33,7 +33,9 @@ runPhyloProfile <- function(configFile = NULL){
 
     shiny::runApp(
         appDir,
-        launch.browser = TRUE,
+        launch.browser = ifelse(
+            is.null(configFile), TRUE, endsWith(configFile, '.phyloconfig.yml')
+        ),
         display.mode = "normal"
     )
 }
