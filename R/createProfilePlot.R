@@ -235,6 +235,7 @@ dataCustomizedPlot <- function(
 #'     "xAngle" = 60,
 #'     "guideline" = 0,
 #'     "colorByGroup" = FALSE,
+#'     "catColors" = NULL,
 #'     "colorByOrthoID" = FALSE
 #' )
 #'
@@ -251,15 +252,18 @@ heatmapPlotting <- function(data = NULL, parm = NULL){
             "lowColorVar2" = "#CB4C4E", "highColorVar2" = "#3E436F",
             "paraColor" = "#07D000", "xSize" = 8, "ySize" = 8, "legendSize" = 8,
             "mainLegend" = "top", "dotZoom" = 0, "xAngle" = 60, "guideline" = 0,
-            "colorByGroup" = FALSE, "colorByOrthoID" = FALSE)
+            "colorByGroup" = FALSE,"catColors" = NULL,"colorByOrthoID" = FALSE)
     geneID <- supertaxon <- category <-var1<-var2 <- presSpec <- paralog <- NULL
     orthoFreq <- xmin <- xmax <- ymin <- ymax <- NULL
+    
     ### create heatmap plot 
     # create geom_tile & scale_fill_gradient for var2 OR gene category
     if (parm$xAxis == "genes") p <- ggplot(data,aes(x = geneID, y = supertaxon))
     else p <- ggplot(data, aes(y = geneID, x = supertaxon))
     if (parm$colorByGroup == TRUE) {
         p <- p + geom_tile(aes(fill = factor(category)), alpha = 0.3)
+        if (!is.null(parm$catColors))
+            p <- p + scale_fill_manual(values = parm$catColors)
     } else {
         if (length(unique(stats::na.omit(data$var2))) != 1)
             p <- p + scale_fill_gradient2(

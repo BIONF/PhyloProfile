@@ -151,13 +151,14 @@ shinyServer(function(input, output, session) {
     i_cluster <- FALSE
     i_profileType <- i_distMethod <- i_clusterMethod <- NULL
     i_xAxis <- NULL
+    i_colorByGroup <- i_ordering <- i_geneCategory <- NULL
     if (!is.null(configFile)) {
         if (file.exists(configFile)) {
             configs <- yaml::read_yaml(configFile)
             i_mainInput <- configs$mainInput
             i_domainInput <- configs$domainInput
             i_treeInput <- configs$treeInput
-            i_sortedTaxaInput <- config$sortedTaxaInput
+            i_sortedTaxaInput <- configs$sortedTaxaInput
             i_fastaInput <- configs$fastaInput
             i_rank <- configs$rank
             i_refspec <- configs$refspec
@@ -166,12 +167,16 @@ shinyServer(function(input, output, session) {
             i_distMethod <- configs$distMethodClustering
             i_clusterMethod <- configs$clusterMethod
             i_xAxis <- configs$xAxis
+            i_colorByGroup <- configs$colorByGroup
+            i_ordering <- configs$ordering
+            i_geneCategory <- configs$geneCategory
         } else configFile <- NULL
 
         if (!file.exists(i_mainInput))
             stop(paste("Main input file", i_mainInput ,"not found!"))
     }
-    if (is.null(i_cluster)) i_cluster <- FALSE
+    if (!is.logical(i_cluster)) i_cluster <- FALSE
+    
     # * render main input ------------------------------------------------------
     observe({
         if (!is.null(i_mainInput)) {
@@ -227,6 +232,42 @@ shinyServer(function(input, output, session) {
             }
         }
     })
+    # * render colorByGroup option ---------------------------------------------
+    output$colorByGroup.ui <- renderUI({
+        if (!is.null(i_colorByGroup)) {
+            checkboxInput(
+                "colorByGroup",
+                strong("Highlight genes by categories"),
+                value = as.logical(i_colorByGroup)
+            )
+        } else {
+            checkboxInput(
+                "colorByGroup",
+                strong("Highlight genes by categories"),
+                value = FALSE
+            )
+        }
+    })
+    # * render ordering option -------------------------------------------------
+    output$ordering.ui <- renderUI({
+        if (!is.null(i_ordering)) {
+            checkboxInput(
+                "ordering",
+                strong("Order seed IDs"),
+                value = as.logical(i_ordering)
+            )
+        } else {
+            checkboxInput(
+                "ordering",
+                strong("Order seed IDs"),
+                value = TRUE
+            )
+        }
+    })
+    # * prepare gene categories-------------------------------------------------
+    if (!is.null(i_geneCategory) && !file.exists(i_geneCategory)){
+        stop(paste("Gene categories file ", i_geneCategory ,"not found!"))
+    }
     # * apply clustering profiles ----------------------------------------------
     if (is.null(i_profileType) ||
         (i_profileType != "binary" && i_profileType != "var1" &&
@@ -1614,6 +1655,7 @@ shinyServer(function(input, output, session) {
 
     # * to enable clustering ---------------------------------------------------
     observe({
+        req(input$ordering)
         if (input$ordering == FALSE) shinyjs::disable("applyCluster")
         else shinyjs::enable("applyCluster")
     })
@@ -1982,7 +2024,7 @@ shinyServer(function(input, output, session) {
 
             # get gene categories
             inputCatDt <- NULL
-            if (colorByGroup == TRUE) {
+            if (length(colorByGroup) > 0 && colorByGroup == TRUE) {
                 # get gene category
                 geneCategoryFile <- input$geneCategory
                 if (!is.null(geneCategoryFile)) {
@@ -1995,8 +2037,18 @@ shinyServer(function(input, output, session) {
                         fill = TRUE
                     )
                     colnames(inputCatDt) <- c("geneID","group")
+                } else if (!is.null(i_geneCategory)){
+                    inputCatDt <- read.table(
+                        file = i_geneCategory,
+                        sep = "\t",
+                        header = FALSE,
+                        check.names = FALSE,
+                        comment.char = "",
+                        fill = TRUE
+                    )
+                    colnames(inputCatDt) <- c("geneID","group")
                 } else inputCatDt <- NULL
-            }
+            } else colorByGroup = FALSE
 
             # create data for heatmap plotting
             filteredDf <- filterProfileData(
@@ -2180,6 +2232,19 @@ shinyServer(function(input, output, session) {
     # * parameters for the main profile plot -----------------------------------
     getParameterInputMain <- reactive({
         input$updateBtn
+
+        colorByGroup <- input$colorByGroup
+        # get category colors
+        catColors <- NULL
+        if (length(colorByGroup) > 0 && colorByGroup == TRUE) {
+            geneCategoryFile <- input$geneCategory
+            if (!is.null(geneCategoryFile)) {
+                catColors <- getCatColors(geneCategoryFile, type = "file")
+            } else if (!is.null(i_geneCategory)){
+                catColors <- getCatColors(i_geneCategory, type = "config")
+            }
+        } else colorByGroup == FALSE
+
         if (input$autoUpdate == TRUE) {
             inputPara <- list(
                 "xAxis" = input$xAxis,
@@ -2203,7 +2268,8 @@ shinyServer(function(input, output, session) {
                 "guideline" = 1,
                 "width" = input$width,
                 "height" = input$height,
-                "colorByGroup" = input$colorByGroup,
+                "colorByGroup" = colorByGroup,
+                "catColors" = catColors,
                 "colorByOrthoID" = input$colorByOrthoID
             )
         } else {
@@ -2230,7 +2296,8 @@ shinyServer(function(input, output, session) {
                     "guideline" = 1,
                     "width" = input$width,
                     "height" = input$height,
-                    "colorByGroup" = input$colorByGroup,
+                    "colorByGroup" = colorByGroup,
+                    "catColors" = catColors,
                     "colorByOrthoID" = input$colorByOrthoID
                 )
             )
@@ -2460,6 +2527,19 @@ shinyServer(function(input, output, session) {
     # * parameters for the customized profile plot -----------------------------
     getParameterInputCustomized <- reactive({
         input$plotCustom
+        
+        colorByGroup <- input$colorByGroup
+        # get category colors
+        catColors <- NULL
+        if (length(colorByGroup) > 0 && colorByGroup == TRUE) {
+            geneCategoryFile <- input$geneCategory
+            if (!is.null(geneCategoryFile)) {
+                catColors <- getCatColors(geneCategoryFile, type = "file")
+            } else if (!is.null(i_geneCategory)){
+                catColors <- getCatColors(i_geneCategory, type = "config")
+            }
+        } else colorByGroup = FALSE
+        
         inputPara <- isolate(
             list(
                 "xAxis" = input$xAxisSelected,
@@ -2483,7 +2563,8 @@ shinyServer(function(input, output, session) {
                 "guideline" = 0,
                 "width" = input$selectedWidth,
                 "height" = input$selectedHeight,
-                "colorByGroup" = input$colorByGroup,
+                "colorByGroup" = colorByGroup,
+                "catColors" = catColors,
                 "colorByOrthoID" = input$colorByOrthoID
             )
         )

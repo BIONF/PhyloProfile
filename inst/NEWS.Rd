@@ -2,6 +2,12 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.16.0}{
+  \itemize{
+    \item extended options in config file
+    \item option to specify IP and port
+  }
+}
 
 \section{Version 1.14.2}{
   \itemize{

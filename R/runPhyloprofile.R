@@ -30,12 +30,28 @@ runPhyloProfile <- function(configFile = NULL){
 
     .GlobalEnv$configFile <- configFile
     on.exit(rm(configFile, envir=.GlobalEnv))
-
-    shiny::runApp(
-        appDir,
-        launch.browser = ifelse(
-            is.null(configFile), TRUE, endsWith(configFile, '.phyloconfig.yml')
-        ),
-        display.mode = "normal"
-    )
+    
+    i_host <- i_port <- NULL
+    i_launchBrowser <- TRUE
+    if (!is.null(configFile) && file.exists(configFile)) {
+        configs <- yaml::read_yaml(configFile)
+        i_host <- configs$host
+        i_port <- configs$port
+        i_launchBrowser <- configs$launchBrowser
+    }
+    
+    if (!is.logical(i_launchBrowser)) i_launchBrowser <- TRUE
+    if (!is.null(i_host) && !is.null(i_port)) {
+        shiny::runApp(
+            appDir,
+            host = i_host, port = i_port, launch.browser = i_launchBrowser,
+            display.mode = "normal"
+        )
+    } else {
+        shiny::runApp(
+            appDir,
+            launch.browser = TRUE,
+            display.mode = "normal"
+        )
+    }
 }

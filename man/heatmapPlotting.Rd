@@ -56,6 +56,7 @@ plotParameter <- list(
     "xAngle" = 60,
     "guideline" = 0,
     "colorByGroup" = FALSE,
+    "catColors" = NULL,
     "colorByOrthoID" = FALSE
 )
 

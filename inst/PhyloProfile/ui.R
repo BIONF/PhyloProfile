@@ -355,11 +355,7 @@ shinyUI(
                         h5(""),
                         hr(),
                         
-                        checkboxInput(
-                            "ordering",
-                            strong("Order seed IDs"),
-                            value = TRUE
-                        ),
+                        uiOutput("ordering.ui"),
                         hr(),
                         
                         strong(h4("Color configuration:")),
@@ -609,11 +605,7 @@ shinyUI(
                             choices = NULL, selected = NULL
                         ),
 
-                        checkboxInput(
-                            "colorByGroup",
-                            strong("Highlight genes by categories"),
-                            value = FALSE
-                        ),
+                        uiOutput("colorByGroup.ui"),
                         checkboxInput(
                             "colorByOrthoID",
                             strong("Highlight duplicated ortholog IDs"),

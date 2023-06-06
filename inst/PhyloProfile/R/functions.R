@@ -82,6 +82,43 @@ createDBlink <- function(id, source, type = ""){
     return(linkText)
 }
 
+
+#' Get colors for gene categoies
+#' @param geneCategoryFile gene category file
+#' @param type Either from manually uploaded file or predefined in config file
+#' @return named vector of gene categories and their colors
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+
+getCatColors <- function(geneCategoryFile, type = "file"){
+    catColors <- NULL
+    if (type == "file") {
+        inputCatDt <- read.table(
+            file = geneCategoryFile$datapath,
+            sep = "\t",
+            header = FALSE,
+            check.names = FALSE,
+            comment.char = "",
+            fill = TRUE
+        )
+        
+    } else if (type == "config"){
+        inputCatDt <- read.table(
+            file = geneCategoryFile,
+            sep = "\t",
+            header = FALSE,
+            check.names = FALSE,
+            comment.char = "",
+            fill = TRUE
+        )
+    }
+    if (ncol(inputCatDt) == 3) {
+        catColorDf <- unique(inputCatDt[,c(2,3)])
+        catColors <- as.character(catColorDf$V3)
+        names(catColors) <- catColorDf$V2
+    }
+    return(catColors)
+}
+
 # FUNCTIONS FOR RENDER UI ELEMENTS ============================================
 createSliderCutoff <- function(id, title, start, stop, varID){
     if (is.null(varID)) return()
@@ -149,8 +186,10 @@ createSelectGene <- function(id, list, selected) {
 #' @examples 
 #' replaceHomeCharacter("~/path/to/something")
 replaceHomeCharacter <- function (fullPath = NULL) {
-    homeName <- system("echo $HOME", intern = TRUE)
-    stringr::str_replace(fullPath, "~", homeName)
+    if (!(Sys.info()['sysname'] == "Windows")){
+        homeName <- system("echo $HOME", intern = TRUE)
+        return(stringr::str_replace(fullPath, "~", homeName))
+    } else return(fullPath)
 }
 
 substrRight <- function(x, n) {
