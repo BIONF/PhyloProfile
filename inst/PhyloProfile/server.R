@@ -233,34 +233,18 @@ shinyServer(function(input, output, session) {
         }
     })
     # * render colorByGroup option ---------------------------------------------
-    output$colorByGroup.ui <- renderUI({
+    observe({
         if (!is.null(i_colorByGroup)) {
-            checkboxInput(
-                "colorByGroup",
-                strong("Highlight genes by categories"),
-                value = as.logical(i_colorByGroup)
-            )
-        } else {
-            checkboxInput(
-                "colorByGroup",
-                strong("Highlight genes by categories"),
-                value = FALSE
+            updateCheckboxInput(
+                session, "colorByGroup", value = as.logical(i_colorByGroup)
             )
         }
     })
     # * render ordering option -------------------------------------------------
-    output$ordering.ui <- renderUI({
+    observe({
         if (!is.null(i_ordering)) {
-            checkboxInput(
-                "ordering",
-                strong("Order seed IDs"),
-                value = as.logical(i_ordering)
-            )
-        } else {
-            checkboxInput(
-                "ordering",
-                strong("Order seed IDs"),
-                value = TRUE
+            updateCheckboxInput(
+                session, "ordering", value = as.logical(i_ordering)
             )
         }
     })
