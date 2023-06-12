@@ -769,11 +769,22 @@ shinyServer(function(input, output, session) {
                 selected = selectedRank
             )
         } else {
-            selectInput(
-                "rankSelect", label = "",
-                choices = getTaxonomyRanks(),
-                selected = "species"
-            )
+            longDataframe <- getMainInput()
+            req(longDataframe)
+            lowestRank <- getLowestRank(longDataframe, getTaxDBpath())
+            if (lowestRank %in% getTaxonomyRanks()) {
+                selectInput(
+                    "rankSelect", label = "",
+                    choices = getTaxonomyRanks(),
+                    selected = lowestRank
+                )
+            } else {
+                selectInput(
+                    "rankSelect", label = "",
+                    choices = getTaxonomyRanks(),
+                    selected = "species"
+                )
+            }
         }
     })
 
@@ -1612,10 +1623,14 @@ shinyServer(function(input, output, session) {
         }
     })
 
-    # * to enable clustering ---------------------------------------------------
+    # * enable clustering ------------------------------------------------------
     observe({
-        if (input$ordering == FALSE) shinyjs::disable("applyCluster")
-        else shinyjs::enable("applyCluster")
+        if (input$ordering == FALSE) {
+            updateCheckboxInput(
+                session, "applyCluster", value = FALSE
+            )
+            shinyjs::disable("applyCluster")
+        } else shinyjs::enable("applyCluster")
     })
 
     # * get OMA data for input list --------------------------------------------
@@ -1811,6 +1826,20 @@ shinyServer(function(input, output, session) {
             )
             return(inputTaxaName)
         })
+    })
+    
+    # * get most specific input taxonomy rank ----------------------------------
+    # * normally either species or strain!
+    lowestRank <- reactive({
+        longDataframe <- getMainInput()
+        req(longDataframe)
+        unkTaxa <- unkTaxa()
+        if (length(unkTaxa) == 0) {
+            inputTaxa <- gsub("ncbi","",levels(as.factor(longDataframe$ncbiID)))
+            taxDB <- getTaxDBpath()
+            inputRank <- input$rankSelect
+            lowestRank <- getLowestRank(inputTaxa, taxDB, inputRank)
+        }
     })
 
     # * sort taxonomy data of input taxa ---------------------------------------
@@ -2092,6 +2121,18 @@ shinyServer(function(input, output, session) {
             session, "geneHighlight", "Highlight:", server = TRUE,
             choices = out, selected = out[1]
         )
+    })
+    
+    # * disable/enable highlighing orthologs having the same ID ----------------
+    observe({
+        longDataframe <- getMainInput()
+        req(longDataframe)
+        req(input$rankSelect)
+        lowestRank <- getLowestRank(longDataframe, getTaxDBpath())
+        if (!(lowestRank == input$rankSelect)) 
+            shinyjs::disable("colorByOrthoID")
+        else
+            shinyjs::enable("colorByOrthoID")
     })
 
     # * update plot size based on input ----------------------------------------

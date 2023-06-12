@@ -82,6 +82,19 @@ createDBlink <- function(id, source, type = ""){
     return(linkText)
 }
 
+
+
+#' Get the most specific taxonomy rank from input taxa
+#' @return the most specific taxonomy rank
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+getLowestRank <- function(longInput, taxDB) {
+    inputTaxa <- gsub("ncbi","",levels(as.factor(longInput$ncbiID)))
+    allDB <- getNameList(taxDB)
+    allRanks <- getTaxonomyRanks()
+    inputRanks <- levels(as.factor(allDB[allDB$ncbiID %in% inputTaxa,]$rank))
+    return(allRanks[min(match(inputRanks, allRanks))][1])
+}
+
 # FUNCTIONS FOR RENDER UI ELEMENTS ============================================
 createSliderCutoff <- function(id, title, start, stop, varID){
     if (is.null(varID)) return()

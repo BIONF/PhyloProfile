@@ -3,6 +3,13 @@
 \encoding{UTF-8}
 
 
+\section{Version 1.14.4}{
+  \itemize{
+    \item fixed bug ordering genes
+    \item auto identify lowest rank
+  }
+}
+
 \section{Version 1.14.2}{
   \itemize{
     \item option to use user defined taxonomy DB (#124)
