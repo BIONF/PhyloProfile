@@ -2,6 +2,11 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.14.5}{
+  \itemize{
+    \item improved highlighted duplicated ortho IDs
+  }
+}
 
 \section{Version 1.14.4}{
   \itemize{

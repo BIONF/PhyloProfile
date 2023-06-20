@@ -133,7 +133,7 @@ shinyUI(
 
         # MAIN NARVARPAGE TABS -------------------------------------------------
         navbarPage(
-            em(strong("PhyloProfile v1.14.4")),
+            em(strong("PhyloProfile v1.14.5")),
             id = "tabs",
             collapsible = TRUE,
             inverse = TRUE,
@@ -618,6 +618,14 @@ shinyUI(
                             "colorByOrthoID",
                             strong("Highlight duplicated ortholog IDs"),
                             value = FALSE
+                        ),                         
+                        bsPopover(
+                            "colorByOrthoID",
+                            "",
+                            paste("Please check in the Clustering profiles",
+                                  "function, if the profiles are clustered",
+                                  "using ortho IDs"),
+                            "bottom"
                         ),
 
                         conditionalPanel(

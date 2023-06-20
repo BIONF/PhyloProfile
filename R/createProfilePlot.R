@@ -16,7 +16,7 @@
 
 processOrthoID <- function(dataHeat = NULL) {
     if (is.null(dataHeat)) stop("Input data cannot be NULL!")
-    orthoID <- NULL
+    orthoID <- orthoFreqCount <- orthoFreqNew <- NULL
     # predict if ortho ID in BIONF format
     idFormat <- "other"
     firstOrtho<-strsplit(as.character(dataHeat[1,]$orthoID),'|',fixed=TRUE)[[1]]
@@ -47,6 +47,19 @@ processOrthoID <- function(dataHeat = NULL) {
     dataHeat <- merge(dataHeat, countOrthoDf, by = "orthoID", all.x = TRUE)
     dataHeat$orthoFreq[dataHeat$orthoFreq > 1] <- "Multiple"
     dataHeat$orthoFreq[dataHeat$orthoFreq == 1] <- "Single"
+    # assign "Multiple" for pair seed - supertaxon if 
+    # any of their co-orthologs are multiple
+    dt <- data.table(dataHeat[, c("geneID", "supertaxonID", "orthoFreq")])
+    dt <- dt[!duplicated(dt),]
+    dt[, orthoFreqCount := .N, by = c("geneID", "supertaxonID")]
+    dt$orthoFreq[dt$orthoFreqCount == 2] <- "Multiple"
+    dt <- dt[,c("geneID", "supertaxonID", "orthoFreq")][
+        !duplicated(dt[,c("geneID", "supertaxonID", "orthoFreq")]),
+    ]
+    colnames(dt) <- c("geneID", "supertaxonID", "orthoFreqNew")
+    dataHeat <- merge(dataHeat, dt, by = c("geneID","supertaxonID"), all.x=TRUE)
+    dataHeat$orthoFreq <- dataHeat$orthoFreqNew
+    dataHeat <- subset(dataHeat, select = -c(orthoFreqNew))
     return(dataHeat)
 }
 
@@ -259,6 +272,7 @@ heatmapPlotting <- function(data = NULL, parm = NULL){
     if (parm$xAxis == "genes") p <- ggplot(data,aes(x = geneID, y = supertaxon))
     else p <- ggplot(data, aes(y = geneID, x = supertaxon))
     if (parm$colorByGroup == TRUE) {
+        # color by ortho IDs
         p <- p + geom_tile(aes(fill = factor(category)), alpha = 0.3)
     } else {
         if (length(unique(stats::na.omit(data$var2))) != 1)
