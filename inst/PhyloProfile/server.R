@@ -3299,14 +3299,13 @@ shinyServer(function(input, output, session) {
     output$selectProfileType <- renderUI({
         selectedType <- "binary"
         if (!is.null(i_profileType)) selectedType <- i_profileType
-        variable1 <- paste0("profile using ", input$var1ID)
+        if (input$colorByOrthoID == TRUE) selectedType <- "orthoID"
         if (input$var2ID != "") {
-            variable2 <- paste0("profile using ", input$var2ID)
             radioButtons(
                 "profileType",
-                label = h5("Select the profile type"),
+                label = h5("Clustering profiles using"),
                 choiceNames = list(
-                    "binary profile", variable1, variable2, "orthoID"),
+                    "Binary profile", input$var1ID,input$var2ID,"Ortholog IDs"),
                 choiceValues = list("binary", "var1", "var2", "orthoID"),
                 selected = selectedType,
                 inline = FALSE)
@@ -3314,8 +3313,8 @@ shinyServer(function(input, output, session) {
             if (selectedType == "var2") selectedType <- "binary"
             radioButtons(
                 "profileType",
-                label = h5("Select the profile type"),
-                choiceNames = list("binary profile", variable1, "orthoID"),
+                label = h5("Clustering profiles using"),
+                choiceNames =list("binary profile",input$var1ID,"Ortholog IDs"),
                 choiceValues = list("binary", "var1", "orthoID"),
                 selected = selectedType,
                 inline = FALSE)

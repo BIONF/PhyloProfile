@@ -618,6 +618,14 @@ shinyUI(
                             strong("Highlight duplicated ortholog IDs"),
                             value = FALSE
                         ),
+                        bsPopover(
+                            "colorByOrthoID",
+                            "",
+                            paste("Please check in the Clustering profiles",
+                                  "function, if the profiles are clustered",
+                                  "using ortho IDs"),
+                            "bottom"
+                        ),
 
                         conditionalPanel(
                             condition = "input.autoUpdate == false",
