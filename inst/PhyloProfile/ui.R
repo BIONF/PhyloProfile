@@ -5,7 +5,7 @@ lapply(sourceFiles, source, .GlobalEnv)
 #' MAIN UI ====================================================================
 shinyUI(
     fluidPage(
-
+        includeCSS("www/custom.css"),
         tags$style(type = "text/css", "body {padding-top: 80px;}"),
         useShinyjs(),
 
@@ -32,6 +32,18 @@ shinyUI(
                             strong(em("Auto update plot")),
                             value = FALSE,
                             width = NULL
+                        ),
+                        checkboxInput(
+                            "keepOrder",
+                            strong(em("Retain gene order")),
+                            value = FALSE,
+                            width = NULL
+                        ),
+                        bsPopover(
+                            "keepOrder",
+                            "",
+                            "Do no change gene order while filtering data",
+                            "bottom"
                         )
                     ),
                     column(
@@ -313,8 +325,45 @@ shinyUI(
                             condition = "input.geneListSelected == 'from file'",
                             fileInput("geneList", "")
                         ),
-                        hr(),
+                        uiOutput("totalGeneNumber.ui"),
+                        column(
+                            6,
+                            numericInput(
+                                "stIndex",
+                                h5("Show from:"),
+                                min = 1,
+                                max = 1600,
+                                value = 1,
+                                width = 130
+                            )
+                        ),
                         
+                        column(
+                            6,
+                            numericInput(
+                                "endIndex",
+                                h5("...to:"),
+                                min = 1,
+                                max = 1600,
+                                value = 1000,
+                                width = 130
+                            )
+                        ),
+                        bsPopover(
+                            "stIndex",
+                            "",
+                            "Set start index for sequence range",
+                            "bottom"
+                        ),
+                        
+                        bsPopover(
+                            "endIndex",
+                            "",
+                            "Set end index for sequence range",
+                            "bottom"
+                        ),
+                        hr(),
+
                         strong(h4("Sequence source:")),
                         column(
                             6,
@@ -548,93 +597,73 @@ shinyUI(
                 sidebarLayout(
                     # * sidebar panel for profile highlight --------------------
                     sidebarPanel(
-                        uiOutput("totalGeneNumber.ui"),
-
+                        width = 4,
                         column(
-                            4,
-                            numericInput(
-                                "stIndex",
-                                "Show from:",
-                                min = 1,
-                                max = 1600,
-                                value = 1,
-                                width = 100
-                            ),
-                            style = "padding:0px;"
+                            12,
+                            style = "padding:0px;",
+                            strong("Select gene to highlight:")
                         ),
-
                         column(
-                            4,
-                            numericInput(
-                                "endIndex",
-                                "...to:",
-                                min = 1,
-                                max = 1600,
-                                value = 1000,
-                                width = 100
-                            ),
-                            style = "padding:0px;"
-                        ),
-
-                        column(
-                            4, 
-                            selectizeInput("geneHighlight", "Highlight:", NULL)
-                        ),
-
-                        bsPopover(
-                            "geneHighlight",
-                            "",
-                            "Select gene to highlight",
-                            "right"
-                        ),
-
-                        bsPopover(
-                            "stIndex",
-                            "",
-                            "Set start index for sequence range",
-                            "bottom"
-                        ),
-
-                        bsPopover(
-                            "endIndex",
-                            "",
-                            "Set end index for sequence range",
-                            "bottom"
-                        ),
-
-                        br(),
-                        selectizeInput(
-                            "taxonHighlight", 
-                            "Select (super)taxon to highlight:",
-                            choices = NULL, selected = NULL
-                        ),
-                        checkboxInput(
-                            "colorByGroup",
-                            strong("Highlight genes by categories"),
-                            value = FALSE
-                        ),
-                        checkboxInput(
-                            "colorByOrthoID",
-                            strong("Highlight duplicated ortholog IDs"),
-                            value = FALSE
-                        ),
-                        bsPopover(
-                            "colorByOrthoID",
-                            "",
-                            paste("Please check in the Clustering profiles",
-                                  "function, if the profiles are clustered",
-                                  "using ortho IDs"),
-                            "bottom"
-                        ),
-
-                        conditionalPanel(
-                            condition = "input.autoUpdate == false",
-                            bsButton(
-                                "updateBtn",
-                                "Update plot",
-                                style = "warning",
-                                icon("sync")
+                            12,
+                            fluidRow(
+                                column(
+                                    8,
+                                    style = "padding:0px;",
+                                    selectizeInput(
+                                        "geneHighlight","", NULL, multiple=TRUE, 
+                                        options=list(placeholder = 'none')
+                                    ),
+                                    bsPopover(
+                                        "geneHighlight",
+                                        "",
+                                        "Select gene to highlight",
+                                        "right"
+                                    )
+                                ),
+                                column(
+                                    4,
+                                    fileInput(
+                                        "geneHighlightFile", "", width = "100%"
+                                    )
+                                )
                             )
+                        ),
+                        column(
+                            12,
+                            style = "padding:0px;",
+                            selectizeInput(
+                                "taxonHighlight", 
+                                "Select (super)taxon to highlight:",
+                                choices = NULL, #selected = NULL,
+                                options=list(placeholder = 'none')
+                            ),
+                            checkboxInput(
+                                "colorByGroup",
+                                strong("Highlight genes by categories"),
+                                value = FALSE
+                            ),
+                            checkboxInput(
+                                "colorByOrthoID",
+                                strong("Highlight duplicated ortholog IDs"),
+                                value = FALSE
+                            ),
+                            bsPopover(
+                                "colorByOrthoID",
+                                "",
+                                paste(
+                                    "Please check in the Clustering profiles",
+                                    "function, if the profiles are clustered",
+                                    "using ortho IDs"
+                                ),
+                                "bottom"
+                            ),
+                            hr()
+                        ),
+                        uiOutput("superRankSelect.ui"),
+                        hr(),
+                        bsButton(
+                            "updateBtn", "Update plot", style = "warning",
+                            icon("sync"), disabled = FALSE
                         )
                     ),
                     # * main panel for profile plot ----------------------------
@@ -1356,7 +1385,7 @@ shinyUI(
             verbatimTextOutput("fasta"),
             br(),
             h4("Links:"),
-            uiOutput("dbLink")
+            uiOutput("dbLink.ui")
         ),
 
         # * popup for plotting domain architecture plot ------------------------
@@ -1378,11 +1407,33 @@ shinyUI(
                 ),
                 column(
                     2,
-                    createTextSize("labelArchiSize","Domain ID size(px)",12,150)
+                    createTextSize("labelArchiSize","X-axis size(px)",12,150)
                 )
             ),
-            uiOutput("test.ui"),
             createArchitecturePlotUI("archiPlot")
+        ),
+        bsModal(
+            "plotArchiFromMain",
+            "Domain architecture",
+            "doDomainPlotMain",
+            size = "large",
+            fluidRow(
+                column(
+                    2, createPlotSize("archiHeightM", "Plot height(px)", 400)
+                ),
+                column(
+                    2, createPlotSize("archiWidthM", "Plot width(px)", 800)
+                ),
+                column(
+                    2,
+                    createTextSize("titleArchiSizeM", "Title size(px)", 14, 150)
+                ),
+                column(
+                    2,
+                    createTextSize("labelArchiSizeM","X-axis size(px)",12,150)
+                )
+            ),
+            createArchitecturePlotUI("archiPlotMain")
         ),
 
         # * popup for setting plot colors (profiles) ---------------------------
@@ -1577,6 +1628,31 @@ shinyUI(
                     selected = "right",
                     width = 150
                 )
+            ),
+            column(
+                6, 
+                createTextSize("groupLabelSize", "Group label size (px)",7,100)
+            ),
+            column(
+                6,
+                numericInput(
+                    "groupLabelDist", "Height for group label",
+                    min = 0, max = 10, step = 1, value = 2, width = 100
+                )
+            ),
+            column(
+                12,
+                HTML("<strong>Angle for group label</strong>:<br>"),
+                sliderInput(
+                    "groupLabelAngle",
+                    "",
+                    min = 0,
+                    max = 90,
+                    step = 10,
+                    value = 90,
+                    width = 250
+                ),
+                br()
             ),
             column(
                 12,
@@ -1933,6 +2009,13 @@ shinyUI(
                         "Detailed plot",
                         style = "success",
                         disabled = FALSE
+                    ),
+                    # uiOutput("doDomainPlotMain.ui"),
+                    bsButton(
+                        "doDomainPlotMain",
+                        "Domain plot",
+                        style = "success",
+                        disabled = TRUE
                     )
                 ),
                 style = "opacity: 0.80"

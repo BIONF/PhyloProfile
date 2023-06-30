@@ -424,15 +424,15 @@ plotParameter <- list(
 )
 
 #' Generate profile plot
-heatmapPlotting(plotDf, plotParameter)
-
+p <- heatmapPlotting(plotDf, plotParameter)
+p
 #' To highlight a gene and/or taxon of interest
 taxonHighlight <- "Mammalia"
-rankName <- "class"
+workingRank <- "class"
 geneHighlight <- "none"
 #' Then use ?highlightProfilePlot function
 # highlightProfilePlot(
-#    plotDf, plotParameter, taxonHighlight, rankName, geneHighlight
+#    p, plotDf, taxonHighlight, workingRank, geneHighlight, plotParameter$xAxis
 # )
 ```
 

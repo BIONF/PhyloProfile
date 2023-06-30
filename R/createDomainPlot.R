@@ -5,7 +5,7 @@
 #' which normally is also the orthologous group ID.
 #' @export
 #' @usage createArchiPlot(info = NULL, domainDf = NULL, labelArchiSize = 12,
-#'     titleArchiSize = 12)
+#'     titleArchiSize = 12, showFeature = "all", seqIdFormat = "unknown")
 #' @param info a list contains seed and ortholog's IDs
 #' @param domainDf dataframe contains domain info for the seed and ortholog.
 #' This including the seed ID, orthologs IDs, sequence lengths, feature names,
@@ -14,6 +14,10 @@
 #' between 2 proteins* (e.g. seed protein vs ortholog) (optional).
 #' @param labelArchiSize lable size (in px). Default = 12.
 #' @param titleArchiSize title size (in px). Default = 12.
+#' @param showFeature choose to show all, common or unique features. 
+#' Default = "all"
+#' @param seqIdFormat sequence ID format (either bionf or unknown). 
+#' Default = "unknown"
 #' @importFrom gridExtra arrangeGrob
 #' @import ggplot2
 #' @return A domain plot as arrangeGrob object. Use grid::grid.draw(plot) to
@@ -34,7 +38,8 @@
 #' grid::grid.draw(plot)
 
 createArchiPlot <- function(
-    info = NULL, domainDf = NULL, labelArchiSize = 12, titleArchiSize = 12
+    info = NULL, domainDf = NULL, labelArchiSize = 12, titleArchiSize = 12,
+    showFeature = "all", seqIdFormat = "unknown"
 ){
     if (is.null(info) | is.null(domainDf)) return(ggplot() + theme_void())
     group <- as.character(info[1])
@@ -51,13 +56,36 @@ createArchiPlot <- function(
         # ortho & seed domains df
         orthoDf <- subdomainDf[subdomainDf$orthoID == ortho,]
         seedDf <- subdomainDf[subdomainDf$orthoID != ortho,]
+        # filter common features
+        if (!(showFeature == "all")) {
+            allFeats <- c(
+                levels(as.factor(orthoDf$feature)), 
+                levels(as.factor(seedDf$feature))
+            )
+            countFeats <- as.data.frame(table(allFeats))
+            commonFeats <- countFeats$allFeats[countFeats$Freq > 1]
+            if (showFeature == "common") {
+                orthoDf <- orthoDf[orthoDf$feature %in% commonFeats,]
+                seedDf <- seedDf[seedDf$feature %in% commonFeats,]
+            } else {
+                orthoDf <- orthoDf[!(orthoDf$feature %in% commonFeats),]
+                seedDf <- seedDf[!(seedDf$feature %in% commonFeats),]
+            }
+        }
+        # final check
         if (nrow(seedDf) == 0) seedDf <- orthoDf
         seed <- as.character(seedDf$orthoID[1])
         if (nrow(seedDf) == 0) return(paste0("No domain info available!"))
+        if (nrow(orthoDf) == 0) {
+            ortho <- seed
+            orthoDf <- seedDf
+        }
         # change order of one df's features based on order of other df's
         if (length(orthoDf$feature) < length(seedDf$feature)) {
-            orderedOrthoDf <- orthoDf[order(orthoDf$feature), ]
-            orderedSeedDf <- sortDomains(orderedOrthoDf, seedDf)
+            if (nrow(orthoDf) > 0) {
+                orderedOrthoDf <- orthoDf[order(orthoDf$feature), ]
+                orderedSeedDf <- sortDomains(orderedOrthoDf, seedDf)
+            }
         } else {
             orderedSeedDf <- seedDf[order(seedDf$feature), ]
             orderedOrthoDf <- sortDomains(orderedSeedDf, orthoDf)
@@ -71,6 +99,13 @@ createArchiPlot <- function(
             orderedSeedDf$yLabel <- paste0(
                 orderedSeedDf$feature," (",round(orderedSeedDf$weight, 2),")")
         } else orderedSeedDf$yLabel <- orderedSeedDf$feature
+        # simplify seq IDs if they are in bionf format
+        if (seqIdFormat == "bionf") {
+            seedTmp <- strsplit(as.character(seed),':', fixed = TRUE)[[1]]
+            seed <- paste0(seedTmp[2], " - ", seedTmp[3])
+            orthoTmp <- strsplit(as.character(ortho),':', fixed = TRUE)[[1]]
+            ortho <- paste0(orthoTmp[2], " - ", orthoTmp[3])
+        }
         # plotting
         minStart <- min(subdomainDf$start)
         maxEnd <- max(subdomainDf$end)
@@ -153,25 +188,25 @@ singleDomainPlotting <- function(
             .Names = levels(as.factor(df$feature)))}
     gg <- ggplot(df, aes(y = feature, x = end, color = as.factor(feature))) +
         geom_segment(
-            data = df, color = "white", size = 0,
+            data = df, color = "white", linewidth = 0,
             aes(y = feature, yend = feature, x = minStart, xend = maxEnd)) +
         scale_color_manual(values = colorScheme)
     # draw lines for representing sequence length
     if ("length" %in% colnames(df))
         gg <- gg + geom_segment(
-            data = df, size = 1, color = "#b2b2b2",
+            data = df, linewidth = 1, color = "#b2b2b2",
             aes(x = 0, xend = length, y = feature, yend = feature))
     # draw line and points
     gg <- gg + geom_segment(
         data = df, aes(x = start, xend = end, y = feature, yend = feature),
-        size = 1.5) +
+        linewidth = 1.5) +
         geom_point(data = df, aes(y = feature, x = start),
                     color = "#b2b2b2", size = 3, shape = 3) +
         geom_point(data = df, aes(y = feature, x = end),
                     color = "#edae52", size = 3, shape = 5)
     # draw dashed line for domain path
     gg <- gg + geom_segment(
-        data = df[df$path == "Y", ], size = 3, linetype = "dashed",
+        data = df[df$path == "Y", ], linewidth = 3, linetype = "dashed",
         aes(x = start, xend = end, y = feature, yend = feature))
     # theme format
     gg <- gg + scale_y_discrete(
@@ -310,3 +345,4 @@ sortDomains <- function(seedDf, orthoDf){
     #return sorted df
     return(orderedOrthoDf)
 }
+

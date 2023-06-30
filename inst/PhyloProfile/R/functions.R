@@ -129,6 +129,20 @@ getCatColors <- function(geneCategoryFile, type = "file"){
     return(catColors)
 }
 
+#' Get if ortho ID is in BIONF format (e.g. Q6PCB6|SACCE@4932@qfo|PROTID|1)
+#' @param orthoID one ortholog ID
+#' @param seedID seed ID of that ortholog
+#' @param ncbiID ncbi ID of that ortholog
+#' @return TRUE (if it is in BIONF format) or FALSE 
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+
+checkBionfFormat <- function(orthoID, seedID, ncbiID) {
+    ortho <- strsplit(as.character(orthoID),'|',fixed = TRUE)[[1]]
+    if (length(ortho) >= 3 && ortho[1] == seedID && grepl(ncbiID, ortho[2])) 
+        return(TRUE)
+    return(FALSE)
+}
+
 # FUNCTIONS FOR RENDER UI ELEMENTS ============================================
 createSliderCutoff <- function(id, title, start, stop, varID){
     if (is.null(varID)) return()
@@ -176,15 +190,6 @@ createTextSize <- function(id, title, value, width) {
                  step = 1,
                  value = value,
                  width = width)
-}
-
-createSelectGene <- function(id, list, selected) {
-    selectInput(id,
-                "",
-                list,
-                selected = selected,
-                multiple = TRUE,
-                selectize = FALSE)
 }
 
 #' Replace ~ symbol by the name of home folder

@@ -465,3 +465,45 @@ taxonomyTableCreator <- function(idListFile = NULL, rankListFile = NULL) {
         as.numeric(as.character(unlist(fullRankIDdfOut[,numericCol])))
     return(fullRankIDdfOut)
 }
+
+#' Get taxonomy hierarchy for a list of taxon IDs
+#' @description Get NCBI taxonomy hierarchy and URLs for an input taxon list.
+#' @param inputTaxa NCBI ID list of input taxa.
+#' @param currentNCBIinfo table/dataframe of the pre-processed NCBI taxonomy
+#' data (/PhyloProfile/data/preProcessedTaxonomy.txt)
+#' @return A list of dataframs containing taxonomy hierarchy and its URL to
+#' NCBI database for input taxon IDs
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+#' @examples
+#' inputTaxa <- c("272557", "176299")
+#' ncbiFilein <- system.file(
+#'     "extdata", "data/preProcessedTaxonomy.txt",
+#'     package = "PhyloProfile", mustWork = TRUE
+#' )
+#' currentNCBIinfo <- as.data.frame(data.table::fread(ncbiFilein))
+#' PhyloProfile:::getTaxHierarchy(inputTaxa, currentNCBIinfo)
+
+getTaxHierarchy <- function(inputTaxa = NULL, currentNCBIinfo = NULL){
+    if (is.null(currentNCBIinfo)) stop("Pre-processed NCBI tax data is NULL!")
+    inputTaxaInfo <- PhyloProfile::getTaxonomyInfo(inputTaxa, currentNCBIinfo)
+    ## get reduced taxonomy info (subset of preProcessedTaxonomy.txt)
+    reducedDf <- unique(rbindlist(inputTaxaInfo))
+    ## get list of all rank#IDs
+    rankMod <- ncbiID <- NULL
+    inputRankIDDf <- lapply(
+        seq_len(length(inputTaxaInfo)),
+        function (x) {
+            inputTaxaInfo[[x]]$url <- paste0(
+                "https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=",
+                inputTaxaInfo[[x]]$ncbiID
+            )
+            inputTaxaInfo[[x]]$link <- paste0(
+                "<p><a href='", inputTaxaInfo[[x]]$url, "' target='_blank'>",
+                inputTaxaInfo[[x]]$fullName, "</a>",
+                " (", inputTaxaInfo[[x]]$rank, ")", "</p>"
+            )
+            return(inputTaxaInfo[[x]][ , c("fullName", "ncbiID", "link")])
+        }
+    )
+    return(inputRankIDDf)
+}

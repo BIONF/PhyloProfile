@@ -7,6 +7,7 @@
 #' @param titleArchiSize title size (from input$titleArchiSize)
 #' @param archiHeight plot height (from input$archiHeight)
 #' @param archiWidth plot width (from input$archiWidth)
+#' @param seqIdFormat sequence ID format (either bionf or unknown)
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 
 source("R/functions.R")
@@ -14,7 +15,32 @@ source("R/functions.R")
 createArchitecturePlotUI <- function(id) {
     ns <- NS(id)
     tagList(
-        uiOutput(ns("archiPlot.ui")),
+        column(
+            4,
+            selectInput(
+                ns("showFeature"),
+                "Show",
+                choices = c(
+                    "all features" = "all",
+                    "shared features" = "common",
+                    "unique features" = "unique"
+                ),
+                selected = "all"
+            )
+        ),
+        column(
+            4,
+            selectizeInput(
+                ns("excludeFeature"),
+                "Exclude feature type(s)",
+                choices = c(
+                    "flps","seg","coils","signalp","tmhmm","smart","pfam"
+                ),
+                multiple = TRUE, options=list(placeholder = 'Show all')
+            )
+        ),
+        column(4, uiOutput(ns("featureList.ui"))),
+        column(12, uiOutput(ns("archiPlot.ui"))),
         downloadButton(ns("archiDownload"), "Download plot", class = "butDL"),
         tags$head(
             tags$style(HTML(
@@ -39,14 +65,37 @@ createArchitecturePlotUI <- function(id) {
 }
 
 createArchitecturePlot <- function(
-    input, output, session,
-    pointInfo, domainInfo,
-    labelArchiSize, titleArchiSize, archiHeight, archiWidth
+    input, output, session, pointInfo, domainInfo,
+    labelArchiSize, titleArchiSize, archiHeight, archiWidth, seqIdFormat
 ){
+    # * filter domain features -------------------------------------------------
+    filterDomainDf <- reactive({
+        df <- domainInfo()
+        if (is.null(nrow(df))) stop("Domain info is NULL!")
+        # filter domain df by feature type
+        df[c("feature_type","feature_id")] <- 
+            stringr::str_split_fixed(df$feature, '_', 2)
+        df <- df[!(df$feature_type %in% input$excludeFeature),]
+        # # remove user specified features (from input$featureList)
+        # df <- df[!(df$feature_id %in% input$featureList),]
+        return(df)
+    })
+    
+    getSeqIdFormat <- reactive({
+        if (seqIdFormat() == 1) return("bionf")
+        return("unknown")
+    })
+    
+    # * render plot ------------------------------------------------------------
     output$archiPlot <- renderPlot({
-        if (is.null(nrow(domainInfo()))) stop("Domain info is NULL!")
+        if (is.null(nrow(filterDomainDf()))) stop("Domain info is NULL!")
+        # remove user specified features (from input$featureList)
+        df <- filterDomainDf()
+        df <- df[!(df$feature_id %in% input$featureList),]
+        # generate plot
         g <- createArchiPlot(
-            pointInfo(), domainInfo(), labelArchiSize(), titleArchiSize()
+            pointInfo(), df, labelArchiSize(), titleArchiSize(),
+            input$showFeature, getSeqIdFormat()
         )
         if (any(g == "No domain info available!")) {
             msgPlot()
@@ -57,7 +106,7 @@ createArchitecturePlot <- function(
 
     output$archiPlot.ui <- renderUI({
         ns <- session$ns
-        if (is.null(nrow(domainInfo()))) {
+        if (is.null(nrow(filterDomainDf()))) {
             msg <- paste0(
                 "<p><em>Wrong domain file has been uploaded!
         Please check the correct format in
@@ -83,10 +132,16 @@ createArchitecturePlot <- function(
             c("domains.pdf")
         },
         content = function(file) {
+            # remove user specified features (from input$featureList)
+            df <- filterDomainDf()
+            df <- df[!(df$feature_id %in% input$featureList),]
+            # generate plot
             g <- createArchiPlot(
-                pointInfo(), domainInfo(), labelArchiSize(), titleArchiSize()
+                pointInfo(), filterDomainDf(),labelArchiSize(),titleArchiSize(),
+                input$showFeature, getSeqIdFormat()
             )
             grid.draw(g)
+            # save plot to file
             ggsave(
                 file, plot = g,
                 width = archiWidth() * 0.056458333,
@@ -103,9 +158,19 @@ createArchitecturePlot <- function(
     #     
     # })
     
+    output$featureList.ui <- renderUI({
+        ns <- session$ns
+        allFeats <- getAllFeatures(pointInfo(), filterDomainDf())
+        selectizeInput(
+            ns("featureList"), "Choose feature(s) to exclude", multiple = TRUE,
+            choices = stringr::str_split_fixed(allFeats, '_', 2)[,2], 
+            options=list(placeholder = 'Show all')
+        )
+    })
+    
     output$domainTable <- renderTable({
-        if (is.null(nrow(domainInfo()))) return("No domain info available!")
-        features <- getDomainLink(pointInfo(), domainInfo())
+        if (is.null(nrow(filterDomainDf()))) return("No domain info available!")
+        features <- getDomainLink(pointInfo(), filterDomainDf())
         features
     }, sanitize.text.function = function(x) x)
 }
@@ -138,10 +203,10 @@ msgPlot <- function() {
     return(g)
 }
 
-#' get pfam and smart domain links
-#' @return dataframe with domain IDs and their database links
+#' Get list of all features
+#' @return A list of all features
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
-getDomainLink <- function(info, domainDf) {
+getAllFeatures <- function(info, domainDf) {
     group <- as.character(info[1])
     ortho <- as.character(info[2])
     # get sub dataframe based on selected groupID and orthoID
@@ -166,6 +231,14 @@ getDomainLink <- function(info, domainDf) {
             levels(as.factor(seedDf$feature))
         )
     }
+    return(levels(as.factor(feature)))
+}
+
+#' get pfam and smart domain links
+#' @return dataframe with domain IDs and their database links
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+getDomainLink <- function(info, domainDf) {
+    feature <- getAllFeatures(info, domainDf)
     # get URLs
     featurePfam <- unique(feature[grep("pfam", feature)])
     pfamDf <- data.frame(ID = character(), PFAM = character())

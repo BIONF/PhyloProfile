@@ -25,22 +25,43 @@ createDetailedPlotUI <- function(id) {
 createDetailedPlot <- function(
     input, output, session, data, var1ID, var2ID, detailedText, detailedHeight
 ){
-
+    # simplify ortho IDs if they are in BIONF format ---------------------------
+    plotData <- reactive({
+        plotDf <- data()
+        if (
+            checkBionfFormat(
+                plotDf$orthoID[1], plotDf$geneID[1], 
+                gsub('ncbi','',plotDf$abbrName[1])
+            )
+        ) {
+            plotDf <- within(
+                plotDf, 
+                orthoMod <- data.frame(
+                    do.call(
+                        'rbind', strsplit(as.character(orthoID),'|', fixed=TRUE)
+                    )
+                )
+            )
+            plotDf$orthoID <- plotDf$orthoMod$X3
+        }
+        return(plotDf)
+    })
+    
     # render detailed plot -----------------------------------------------------
     output$detailPlot <- renderPlot({
-        detailPlot(data(), detailedText(), var1ID(), var2ID())
+        detailPlot(plotData(), detailedText(), var1ID(), var2ID())
     })
 
     output$detailPlot.ui <- renderUI({
         ns <- session$ns
-        # shinycssloaders::withSpinner(
+        shinycssloaders::withSpinner(
             plotOutput(
                 ns("detailPlot"),
                 width = 800,
                 height = detailedHeight(),
                 click = ns("plotClickDetail")
             )
-        # )
+        )
     })
 
     output$downloadDetailed <- downloadHandler(
@@ -62,29 +83,37 @@ createDetailedPlot <- function(
         }
     )
 
-    # get info when clicking on detailed plot ----------------------------------
+    # get info of detailed plot ------------------------------------------------
     pointInfoDetail <- reactive({
         selDf <- data()
         selDf$orthoID <- as.character(selDf$orthoID)
-
-        # get coordinates of plotClickDetail
-        if (is.null(input$plotClickDetail$x)) return(NULL)
-        else {
-            corX <- round(input$plotClickDetail$y)
-            corY <- round(input$plotClickDetail$x)
+        
+        # if only one ortholog, get directly from data()
+        if (nrow(selDf) == 1) {
+            seedID <- as.character(selDf$geneID)
+            orthoID <- as.character(selDf$orthoID)
+            taxID <- as.character(selDf$abbrName)
         }
-
-        # get pair of sequence IDs & var1
-        seedID <- as.character(selDf$geneID[!is.na(selDf$geneID)][1])
-        orthoID <- as.character(selDf$orthoID[corX])
-        taxID <- as.character(selDf$abbrName[corX])
-
+        # else, get from plotClickDetail
+        else {
+            if (is.null(input$plotClickDetail$x)) return(NULL)
+            else {
+                corX <- round(input$plotClickDetail$y)
+                corY <- round(input$plotClickDetail$x)
+            }
+            # get pair of sequence IDs
+            seedID <- as.character(selDf$geneID[!is.na(selDf$geneID)][1])
+            orthoID <- as.character(selDf$orthoID[corX])
+            taxID <- as.character(selDf$abbrName[corX])
+        }
+        
+        # get var1, var2
         var1 <- as.list(selDf$var1[selDf$orthoID == orthoID])
         var1 <- as.character(var1[!is.na(var1)])
         var2 <- as.list(selDf$var2[selDf$orthoID == orthoID])
         var2 <- as.character(var2[!is.na(var2)])
         if (length(var2) == 0) var2 = "NA"
-
+        
         ncbiID <- selDf[selDf$orthoID == orthoID, ]$abbrName
         ncbiID <- as.character(ncbiID[!is.na(ncbiID)][1])
 
@@ -148,7 +177,7 @@ detailPlot <- function(selDf, detailedText, var1ID, var2ID){
     }
 
     # keep order of ID (xLabel)
-    detailedDf$id <- factor(detailedDf$id, levels = unique(detailedDf$id))
+    # detailedDf$id <- factor(detailedDf$id, levels = unique(detailedDf$id))
 
     # create plot
     gp <- ggplot(detailedDf, aes(y = score, x = id, fill = var)) +

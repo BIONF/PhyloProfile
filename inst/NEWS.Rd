@@ -6,6 +6,16 @@
   \itemize{
     \item extended options in config file
     \item option to specify IP and port
+    \item able to generate domain plot from main/customized profile tab
+    \item highlight multiple genes; division lines for taxon group (#110)
+    \item simplify gene IDs in detailed plot; show taxonomy hierarchy (#110)
+    \item option to filter features in architecture plot (#110)
+  }
+}
+
+\section{Version 1.14.5}{
+  \itemize{
+    \item improved highlighted duplicated ortho IDs
   }
 }
 

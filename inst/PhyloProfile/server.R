@@ -14,6 +14,11 @@ shinyServer(function(input, output, session) {
     homePath = c(wd='~/')
     # Automatically stop a Shiny app when closing the browser tab
     session$allowReconnect(TRUE)
+    
+    nameFullFile <- paste0(
+        getwd(), "/data/preProcessedTaxonomy.txt"
+    )
+    currentNCBIinfo <- as.data.frame(data.table::fread(nameFullFile))
 
     # =========================== INITIAL CHECKING  ============================
     # * check for internet connection ------------------------------------------
@@ -930,6 +935,15 @@ shinyServer(function(input, output, session) {
             toggleState("demoData")
             toggleState("rankSelect")
             toggleState("taxDbLoc")
+        }
+    })
+    
+    # * enable/disable update plot button --------------------------------------
+    observe({
+        if (input$autoUpdate == TRUE) {
+            updateButton(session, "updateBtn", disabled = TRUE)
+        } else {
+            updateButton(session, "updateBtn", disabled = FALSE)
         }
     })
 
@@ -2124,7 +2138,7 @@ shinyServer(function(input, output, session) {
     observeEvent(inputTaxonName(), {
         if (length(inputTaxonName()) > 0) {
             choice <- inputTaxonName()
-            out <- as.list(levels(factor(choice$fullName)))
+            out <- levels(factor(choice$fullName))
             out <- append("none", out)
             updateSelectizeInput(
                 session, "taxonHighlight", server = TRUE,
@@ -2136,12 +2150,23 @@ shinyServer(function(input, output, session) {
     # * get list of genes for highlighting -------------------------------------
    observe({
         geneList <- dataHeat()
-        out <- as.list(levels(factor(geneList$geneID)))
-        out <- append("none", out)
-        updateSelectizeInput(
-            session, "geneHighlight", "Highlight:", server = TRUE,
-            choices = out, selected = out[1]
-        )
+        out <- levels(factor(geneList$geneID))
+        
+        if (!(is.null(input$geneHighlightFile))) {
+            fileHighlight <- input$geneHighlightFile
+            highlightList <- read.table(
+                file = fileHighlight$datapath, header = FALSE
+            )
+            updateSelectizeInput(
+                session, "geneHighlight", server = TRUE, 
+                choices = out, selected = intersect(out, highlightList$V1)
+            )
+        } else {
+            updateSelectizeInput(
+                session, "geneHighlight", server = TRUE, 
+                choices = out
+            )
+        }
     })
     
     # * disable/enable highlighing orthologs having the same ID ----------------
@@ -2154,6 +2179,16 @@ shinyServer(function(input, output, session) {
             shinyjs::disable("colorByOrthoID")
         else
             shinyjs::enable("colorByOrthoID")
+    })
+    
+    # * render list of superRanks for adding vertical lines --------------------
+    output$superRankSelect.ui <- renderUI({
+        allRanks <- getTaxonomyRanks()
+        selectInput(
+            "superRankSelect", label = "Add division lines for:",
+            choices = c(allRanks[!(allRanks %in% c("strain"))]),
+            selected = ""
+        )
     })
 
     # * update plot size based on input ----------------------------------------
@@ -2275,12 +2310,15 @@ shinyServer(function(input, output, session) {
                 "mainLegend" = input$mainLegend,
                 "dotZoom" = input$dotZoom,
                 "xAngle" = input$xAngle,
-                "guideline" = 1,
+                "guideline" = 0,
                 "width" = input$width,
                 "height" = input$height,
                 "colorByGroup" = colorByGroup,
                 "catColors" = catColors,
-                "colorByOrthoID" = input$colorByOrthoID
+                "colorByOrthoID" = input$colorByOrthoID,
+                "groupLabelSize" = input$groupLabelSize,
+                "groupLabelDist" = input$groupLabelDist,
+                "groupLabelAngle" = input$groupLabelAngle
             )
         } else {
             inputPara <- isolate(
@@ -2303,12 +2341,15 @@ shinyServer(function(input, output, session) {
                     "mainLegend" = input$mainLegend,
                     "dotZoom" = input$dotZoom,
                     "xAngle" = input$xAngle,
-                    "guideline" = 1,
+                    "guideline" = 0,
                     "width" = input$width,
                     "height" = input$height,
                     "colorByGroup" = colorByGroup,
                     "catColors" = catColors,
-                    "colorByOrthoID" = input$colorByOrthoID
+                    "colorByOrthoID" = input$colorByOrthoID,
+                    "groupLabelSize" = input$groupLabelSize,
+                    "groupLabelDist" = input$groupLabelDist,
+                    "groupLabelAngle" = input$groupLabelAngle
                 )
             )
         }
@@ -2343,7 +2384,8 @@ shinyServer(function(input, output, session) {
         taxonHighlight = reactive(input$taxonHighlight),
         geneHighlight = reactive(input$geneHighlight),
         typeProfile = reactive("mainProfile"),
-        taxDB = getTaxDBpath
+        taxDB = getTaxDBpath,
+        superRank = reactive(input$superRankSelect)
     )
 
     # ======================== CUSTOMIZED PROFILE TAB ==========================
@@ -2361,9 +2403,9 @@ shinyServer(function(input, output, session) {
         }
 
         if (is.null(filein) & is.null(fileCustom)) {
-            return(selectInput("inSeq", "", "all"))
+            return(selectizeInput("inSeq", "", "all"))
         }
-        if (v$doPlot == FALSE) return(selectInput("inSeq", "", "all"))
+        if (v$doPlot == FALSE) return(selectizeInput("inSeq", "", "all"))
         else {
             data <- getFullData()
             outAll <- c("all", as.list(levels(factor(data$geneID))))
@@ -2386,9 +2428,13 @@ shinyServer(function(input, output, session) {
                 }
             }
             if (outAll[1] == "all") {
-                createSelectGene("inSeq", outAll, "all")
+                selectizeInput(
+                    "inSeq", "", outAll, selected = "all", multiple = TRUE
+                )
             } else {
-                createSelectGene("inSeq", outAll, outAll)
+                selectizeInput(
+                    "inSeq", "", outAll, selected = outAll, multiple = TRUE
+                )
             }
         }
     })
@@ -2419,17 +2465,9 @@ shinyServer(function(input, output, session) {
             out <- c("all", as.list(levels(factor(choice$fullName))))
             if (input$applyCusTaxa == TRUE) {
                 out <- cusTaxaName()
-                selectInput("inTaxa", "",
-                            out,
-                            selected = out,
-                            multiple = TRUE,
-                            selectize = FALSE)
+                selectizeInput("inTaxa","",out, selected = out, multiple = TRUE)
             } else {
-                selectInput("inTaxa", "",
-                            out,
-                            selected = out[1],
-                            multiple = TRUE,
-                            selectize = FALSE)
+                selectizeInput("inTaxa","",out,selected = out[1], multiple=TRUE)
             }
         }
     })
@@ -2439,6 +2477,8 @@ shinyServer(function(input, output, session) {
         if (v$doPlot == FALSE) return(FALSE)
         if (length(input$inSeq[1]) == 0) return(FALSE)
         else {
+            if (length(input$inSeq) == 0 || length(input$inTaxa) == 0) 
+                return(TRUE)
             if (input$inSeq[1] == "all" & input$inTaxa[1] == "all") return(TRUE)
         }
     })
@@ -2575,7 +2615,10 @@ shinyServer(function(input, output, session) {
                 "height" = input$selectedHeight,
                 "colorByGroup" = colorByGroup,
                 "catColors" = catColors,
-                "colorByOrthoID" = input$colorByOrthoID
+                "colorByOrthoID" = input$colorByOrthoID,
+                "groupLabelSize" = input$groupLabelSize,
+                "groupLabelDist" = input$groupLabelDist,
+                "groupLabelAngle" = input$groupLabelAngle
             )
         )
         return(inputPara)
@@ -2595,7 +2638,8 @@ shinyServer(function(input, output, session) {
         taxonHighlight = reactive("none"),
         geneHighlight = reactive("none"),
         typeProfile = reactive("customizedProfile"),
-        taxDB = getTaxDBpath
+        taxDB = getTaxDBpath,
+        superRank = reactive(input$superRankSelect)
     )
 
     # ============================== POINT INFO ================================
@@ -2623,44 +2667,45 @@ shinyServer(function(input, output, session) {
         } else return()
 
         req(info)
-        orthoID <- info[2]
+        orthoID <- info[[2]]
+        if (length(info[[2]]) > 1) orthoID <- paste0(info[[2]][1], ",...")
 
         if (is.na(orthoID)) return()
         else {
-            a <- toString(paste("Seed-ID:", info[1]))
+            a <- toString(paste("Seed-ID:", info[[1]]))
             b <- toString(paste0(
                 "Hit-ID: ", orthoID
             ))
             c <- ""
             if (input$var1ID != "") {
                 c <- toString(paste(
-                    input$var1AggregateBy, input$var1ID, ":", info[5]
+                    input$var1AggregateBy, input$var1ID, ":", info[[5]]
                 ))
             }
             d <- ""
             if (input$var2ID != "") {
                 d <- toString(paste(
-                    input$var2AggregateBy, input$var2ID, ":", info[7]
+                    input$var2AggregateBy, input$var2ID, ":", info[[7]]
                 ))
             }
 
-            if (info[10] == "Y") {
-                if (info[3] == 1) {
+            if (info[[10]] == "Y") {
+                if (info[[3]] == 1) {
                     s <- toString(
-                        paste0(info[3], " ortholog in ", info[4], ":")
+                        paste0(info[[3]], " ortholog in ", info[[4]], ":")
                     )
                 } else {
                     s <- toString(
-                        paste0(info[3], " co-orthologs in ", info[4], ":")
+                        paste0(info[[3]], " co-orthologs in ", info[[4]], ":")
                     )
                 }
                 e <- ""
             } else {
-                s <- toString(paste0("Best ortholog in ", info[4], ":"))
+                s <- toString(paste0("Best ortholog in ", info[[4]], ":"))
                 e <- toString(
                     paste0(
-                        "% present taxa: ", info[6], " (", info[8], " out of ",
-                        info[9],  ")", collapse = ""
+                        "% present taxa: ", info[[6]], " (", info[[8]], " out of ",
+                        info[[9]],  ")", collapse = ""
                     )
                 )
             }
@@ -2672,7 +2717,7 @@ shinyServer(function(input, output, session) {
     # * data for detailed plot -------------------------------------------------
     detailPlotDt <- reactive({
         req(v$doPlot)
-
+        req(input$detailedBtn)
         # GET INFO BASED ON CURRENT TAB
         if (input$tabs == "Main profile") {
             # info contains groupID,orthoID,supertaxon,mVar1,%spec,var2
@@ -2680,7 +2725,6 @@ shinyServer(function(input, output, session) {
         } else if (input$tabs == "Customized profile") {
             info <- selectedpointInfo()
         }
-
         req(info)
         withProgress(message = 'Getting data for detailed plot...', value=0.5, {
             ### get refspec name
@@ -2692,7 +2736,7 @@ shinyServer(function(input, output, session) {
             ### filter data if needed
             if  (input$detailedFilter == TRUE) {
                 fullDf <- filteredDataHeat()
-                if (info[4] == inSelect) {
+                if (info[[4]] == inSelect) {
                     fullDf <- fullDf[
                         fullDf$var1 >= input$var1[1]
                         & fullDf$var1 <= input$var1[2],
@@ -2707,9 +2751,9 @@ shinyServer(function(input, output, session) {
                 )
             }
             plotTaxon <- unique(
-                fullDf$supertaxon[grep(info[4], fullDf$supertaxon)]
+                fullDf$supertaxon[grep(paste0(info[[4]],"$"), fullDf$supertaxon)]
             )
-            plotGeneID <- info[1]
+            plotGeneID <- info[[1]]
             selDf <- fullDf[fullDf$geneID == plotGeneID
                             & fullDf$supertaxon == plotTaxon, ]
             ### get all taxa of this supertaxon (2)
@@ -2784,20 +2828,10 @@ shinyServer(function(input, output, session) {
         return(protId)
     }
 
-    output$dbLink <- renderUI({
+    output$dbLink.ui <- renderUI({
         info <- pointInfoDetail() # info = seedID, orthoID, var1, var2, ncbiID
         req(info)
         linkText <- ""
-        # get taxon ID
-        taxId <- gsub("ncbi", "", info[5])
-        taxUrl <- paste0(
-            "https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=",
-            taxId
-        )
-        linkText <- paste0(
-            "<p><a href='", taxUrl, "' target='_blank'>",
-            "NCBI taxonomy entry for <strong>", taxId , "</strong></a></p>"
-        )
         # get seed ID
         seedId <- toString(info[1])
         separators <- c("|", "@", "#", ";")
@@ -2831,6 +2865,24 @@ shinyServer(function(input, output, session) {
                 linkText <- paste0(linkText, createDBlink(protId, "OMA", "gene"))
             }
         }
+        # get taxon ID
+        taxId <- gsub("ncbi", "", info[5])
+        # taxUrl <- paste0(
+        #     "https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=",
+        #     taxId
+        # )
+        # linkText <- paste0(linkText,
+        #     "<p><a href='", taxUrl, "' target='_blank'>",
+        #     "NCBI taxonomy entry for <strong>", taxId , "</strong></a></p>"
+        # )
+        taxHierarchy <- PhyloProfile:::getTaxHierarchy(taxId, currentNCBIinfo)
+        taxUrls <- paste(taxHierarchy[[1]]$link, collapse = ", ")
+        taxUrls <- gsub("<p>", "", taxUrls)
+        taxUrls <- gsub("</p>", "", taxUrls)
+        linkText <- paste0(
+            linkText, "<p><strong>NCBI taxonomy: </strong>", taxUrls, "</p>"
+        )
+        
         # render links
         linkText <- paste0(
             linkText,
@@ -2898,16 +2950,46 @@ shinyServer(function(input, output, session) {
     })
 
     # ======================== FEATURE ARCHITECTURE PLOT =======================
-    # * get domain file/path ---------------------------------------------------
-    checkDomainFile <- reactive({
-        # click info
-        info <- pointInfoDetail() # info = seedID, orthoID, var1
-        group <- as.character(info[1])
-        ortho <- as.character(info[2])
-        var1 <- as.character(info[3])
-
+    # * check if seed and orthoID are specified and get domain file/path -------
+    observe({
+        infoTmp <- c()
+        if (input$tabs == "Main profile") {
+            infoTmp <- mainpointInfo()
+        } else if (input$tabs == "Customized profile") {
+            infoTmp <-selectedpointInfo()
+        }
+        if (!is.null(infoTmp)) {
+            tmp <- getDomainFile()
+        }
+    })
+    
+    getDomainFile <- reactive({
+        # get info from POINT INFO box
+        info <- c()
+        infoTmp <- c()
+        if (input$tabs == "Main profile") {
+            # info contains groupID,orthoID,supertaxon,mVar1,%spec,var2
+            infoTmp <- mainpointInfo()
+        } else if (input$tabs == "Customized profile") {
+            infoTmp <- selectedpointInfo()
+        }
+        # only when no co-ortholog exists
+        if (length(infoTmp[[2]]) == 1) {
+            info <- c(infoTmp[[1]], as.character(infoTmp[[2]]))
+        } else {
+            # else, get info from detailed plot
+            updateButton(session, "doDomainPlotMain", disabled = TRUE)
+            if (!is.null(pointInfoDetail())) {
+                info <- pointInfoDetail() # info = seedID, orthoID, var1
+                group <- as.character(info[1])
+                ortho <- as.character(info[2])
+                var1 <- as.character(info[3])
+            }
+        }
+        
         if (is.null(info)) {
             updateButton(session, "doDomainPlot", disabled = TRUE)
+            updateButton(session, "doDomainPlotMain", disabled = TRUE)
             return("noSelectHit")
         } else {
             if (
@@ -2915,9 +2997,11 @@ shinyServer(function(input, output, session) {
                 input$demoData == "preCalcDt"
             ) {
                 updateButton(session, "doDomainPlot", disabled = FALSE)
+                updateButton(session, "doDomainPlotMain", disabled = FALSE)
             } else {
                 if (checkInputValidity(input$mainInput$datapath) == "oma") {
                     updateButton(session, "doDomainPlot", disabled = FALSE)
+                    updateButton(session, "doDomainPlotMain", disabled = FALSE)
                 } else {
                     if (input$annoLocation == "from file") {
                         inputDomain <- input$fileDomainInput
@@ -2925,10 +3009,16 @@ shinyServer(function(input, output, session) {
                             updateButton(
                                 session, "doDomainPlot", disabled = TRUE
                             )
+                            updateButton(
+                                session, "doDomainPlotMain", disabled = TRUE
+                            )
                             return("noFileInput")
                         } else {
                             updateButton(
                                 session, "doDomainPlot", disabled = FALSE
+                            )
+                            updateButton(
+                                session, "doDomainPlotMain", disabled = FALSE
                             )
                         }
                     } else {
@@ -2941,41 +3031,52 @@ shinyServer(function(input, output, session) {
                                 updateButton(
                                     session, "doDomainPlot", disabled = TRUE
                                 )
+                                updateButton(
+                                    session, "doDomainPlotMain", disabled = TRUE
+                                )
                                 return(domainDf)
                             } else {
                                 updateButton(
                                     session, "doDomainPlot", disabled = FALSE
+                                )
+                                updateButton(
+                                    session, "doDomainPlotMain",disabled = FALSE
                                 )
                             }
                         } else {
                             updateButton(
                                 session, "doDomainPlot", disabled = FALSE
                             )
+                            updateButton(
+                                session, "doDomainPlotMain", disabled = FALSE
+                            )
                         }
                     }
                 }
             }
         }
-        return("correct")
+        return(info)
     })
 
     # * check domain file ------------------------------------------------------
     output$checkDomainFiles <- renderUI({
-        fileDomain <- checkDomainFile()
-        if (fileDomain == "noFileInput") {
-            em("Domain file not provided!!")
-        } else if (fileDomain == "noFileInFolder") {
-            msg <- paste0(
-                "<p><em>Domain file not found!! </em></p>
+        fileDomain <- getDomainFile()
+        if (length(fileDomain) == 1) {
+            if (fileDomain == "noFileInput") {
+                em("Domain file not provided!!")
+            } else if (fileDomain == "noFileInFolder") {
+                msg <- paste0(
+                    "<p><em>Domain file not found!! </em></p>
                 <p><em>Please make sure that file name has to be in this format:
                 <strong>&lt;seedID&gt;.extension</strong>, where extension is
                 limited to <strong>txt</strong>, <strong>csv</strong>,
                 <strong>list</strong>, <strong>domains</strong> or
                 <strong>architecture</strong>.</em></p>"
-            )
-            HTML(msg)
-        } else if (fileDomain == "noSelectHit") {
-            em("Please select one ortholog sequence!!")
+                )
+                HTML(msg)
+            } else if (fileDomain == "noSelectHit") {
+                em("Please select one ortholog sequence!!")
+            }
         }
     })
 
@@ -2983,12 +3084,25 @@ shinyServer(function(input, output, session) {
     observeEvent(input$doDomainPlot, {
         callModule(
             createArchitecturePlot, "archiPlot",
-            pointInfo = pointInfoDetail,
+            pointInfo = getDomainFile,
             domainInfo = getDomainInformation,
             labelArchiSize = reactive(input$labelArchiSize),
             titleArchiSize = reactive(input$titleArchiSize),
             archiHeight = reactive(input$archiHeight),
-            archiWidth = reactive(input$archiWidth)
+            archiWidth = reactive(input$archiWidth),
+            seqIdFormat = reactive(input$seqIdFormat)
+        )
+    })
+    observeEvent(input$doDomainPlotMain, {
+        callModule(
+            createArchitecturePlot, "archiPlotMain",
+            pointInfo = getDomainFile,
+            domainInfo = getDomainInformation,
+            labelArchiSize = reactive(input$labelArchiSizeM),
+            titleArchiSize = reactive(input$titleArchiSizeM),
+            archiHeight = reactive(input$archiHeightM),
+            archiWidth = reactive(input$archiWidthM),
+            seqIdFormat = reactive(input$seqIdFormat)
         )
     })
 
@@ -3365,12 +3479,29 @@ shinyServer(function(input, output, session) {
             req(dataHeat())
             if (is.null(input$profileType)) profileType <- i_profileType
             else profileType <- input$profileType
-            profiles <- getDataClustering(
-                dataHeat(),
-                profileType,
-                input$var1AggregateBy,
-                input$var2AggregateBy
-            )
+            if (input$keepOrder == TRUE) {
+                fullDt <- getFullData()
+                tmpDf <- calcPresSpec(fullDt, getCountTaxa())
+                fullDt <- Reduce(
+                    function(x, y) 
+                        merge(x, y, by = c("geneID", "supertaxon"), all.x=TRUE),
+                    list(fullDt, tmpDf))
+                fullDt$orthoID[fullDt$presSpec == 0] <- NA
+                profiles <- getDataClustering(
+                    fullDt,
+                    profileType,
+                    input$var1AggregateBy,
+                    input$var2AggregateBy
+                )
+            } 
+            else {
+                profiles <- getDataClustering(
+                    dataHeat(),
+                    profileType,
+                    input$var1AggregateBy,
+                    input$var2AggregateBy
+                )
+            }
             return(profiles)
         })
     })

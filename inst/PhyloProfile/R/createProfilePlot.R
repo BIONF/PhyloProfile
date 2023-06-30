@@ -37,7 +37,7 @@ createProfilePlot <- function(input, output, session,
                                 inSeq, inTaxa,
                                 rankSelect, inSelect,
                                 taxonHighlight, geneHighlight,
-                                typeProfile, taxDB) {
+                                typeProfile, taxDB, superRank) {
     # data for heatmap ---------------------------------------------------------
     dataHeat <- reactive({
         if (is.null(data())) stop("Profile data is NULL!")
@@ -60,22 +60,36 @@ createProfilePlot <- function(input, output, session,
         return(dataHeat)
     })
 
-    # render heatmap profile ---------------------------------------------------
-    output$plot <- renderPlot({
-        if (is.null(data())) stop("Profile data is NULL!")
+    # basic profile plot -------------------------------------------------------
+    basicProfile <- reactive({
+        if (is.null(dataHeat())) stop("Profile data is NULL!")
         if (typeProfile() == "customizedProfile") {
+            if (length(inSeq()) == 0 || length(inTaxa()) == 0) return()
             if (inSeq()[1] == "all" & inTaxa()[1] == "all") return()
         }
+        return(heatmapPlotting(dataHeat(), parameters()))
+    })
+
+    # get superRank ------------------------------------------------------------
+    getSuperRank <- reactive({
+        if (!is.null(superRank()) && superRank() == "") return(NULL)
+        else return(superRank())
+    })
+
+    # render heatmap profile ---------------------------------------------------
+    output$plot <- renderPlot({
+        if (is.null(basicProfile())) return()
         withProgress(message = 'PLOTTING...', value = 0.5, {
-            highlightProfilePlot(
-                dataHeat(),
-                parameters(),
-                taxonHighlight(),
-                rankSelect(),
-                geneHighlight()
+            p <- highlightProfilePlot(
+                basicProfile(), dataHeat(), taxonHighlight(), rankSelect(), 
+                geneHighlight(), parameters()$xAxis
+            )
+            addRankDivisionPlot(
+                p, dataHeat(), taxDB(), rankSelect(), getSuperRank(), 
+                parameters()$xAxis, parameters()$groupLabelSize,
+                parameters()$groupLabelDist, parameters()$groupLabelAngle
             )
         })
-
     })
 
     output$plot.ui <- renderUI({
@@ -103,10 +117,12 @@ createProfilePlot <- function(input, output, session,
         content = function(file) {
             ggsave(
                 file,
-                plot = highlightProfilePlot(
-                    dataHeat(), parameters(), "none", rankSelect(), "none"
+                plot = addRankDivisionPlot(
+                    basicProfile(), dataHeat(), taxDB(), rankSelect(), 
+                    getSuperRank(), parameters()$xAxis, 
+                    parameters()$groupLabelSize, parameters()$groupLabelDist, 
+                    parameters()$groupLabelAngle
                 ),
-
                 width = parameters()$width * 0.056458333,
                 height = parameters()$height * 0.056458333,
                 units = "cm", dpi = 300, device = "pdf", limitsize = FALSE
@@ -121,12 +137,17 @@ createProfilePlot <- function(input, output, session,
         inSelect <- taxaList$ncbiID[taxaList$fullName == inSelect()]
 
         dataHeat <- dataHeat()
-        if (is.null(dataHeat)) stop("Data for heatmap is NULL!")
+        if (is.null(dataHeat)) {
+            message("WARNING: Data for heatmap is NULL!")
+            return()
+        }
 
         if (typeProfile() == "customizedProfile") {
             # get sub-dataframe of selected taxa and sequences
-            if (is.null(inSeq()[1]) | is.null(inTaxa()[1]))
-                stop("Subset taxa or genes is NULL!")
+            if (is.null(inSeq()[1]) | is.null(inTaxa()[1])) {
+                message("WARNING: Subset taxa or genes is NULL!")
+                return()
+            }
             if (inTaxa()[1] == "all" & inSeq()[1] != "all") {
                 # select data from dataHeat for selected sequences only
                 dataHeat <- subset(dataHeat, geneID %in% inSeq())
@@ -218,9 +239,6 @@ createProfilePlot <- function(input, output, session,
             orthoID <- dataHeat$orthoID[dataHeat$geneID == geneID
                                         & dataHeat$supertaxon == spec]
             totalOrtho <- length(orthoID)
-            if (length(orthoID) > 1) {
-                orthoID <- paste0(orthoID[1], ",...")
-            }
 
             # get working taxonomy level
             strain <- "Y"
@@ -230,7 +248,7 @@ createProfilePlot <- function(input, output, session,
             else {
                 info <- c(
                     geneID,
-                    as.character(orthoID),
+                    list(orthoID),
                     totalOrtho,
                     spec,
                     round(var1, 2),

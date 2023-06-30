@@ -5,7 +5,7 @@
 \title{Create protein's domain architecure plot}
 \usage{
 createArchiPlot(info = NULL, domainDf = NULL, labelArchiSize = 12,
-    titleArchiSize = 12)
+    titleArchiSize = 12, showFeature = "all", seqIdFormat = "unknown")
 }
 \arguments{
 \item{info}{a list contains seed and ortholog's IDs}
@@ -19,6 +19,12 @@ between 2 proteins* (e.g. seed protein vs ortholog) (optional).}
 \item{labelArchiSize}{lable size (in px). Default = 12.}
 
 \item{titleArchiSize}{title size (in px). Default = 12.}
+
+\item{showFeature}{choose to show all, common or unique features. 
+Default = "all"}
+
+\item{seqIdFormat}{sequence ID format (either bionf or unknown). 
+Default = "unknown"}
 }
 \value{
 A domain plot as arrangeGrob object. Use grid::grid.draw(plot) to

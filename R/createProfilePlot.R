@@ -32,19 +32,19 @@ processOrthoID <- function(dataHeat = NULL) {
                 do.call('rbind', strsplit(as.character(orthoID),'|',fixed=TRUE))
             )
         )
-        dataHeat$orthoID <- paste(
+        dataHeat$orthoIDNew <- paste(
             dataHeat$orthoMod$X2, dataHeat$orthoMod$X3, sep = "#"
         )
     } else {
-        dataHeat$orthoID <- paste(
+        dataHeat$orthoIDNew <- paste(
             dataHeat$supertaxonID, dataHeat$orthoID, sep = "#"
         )
     }
     dataHeat <- dataHeat[ , !(names(dataHeat) %in% ("orthoMod"))]
     # count occurrences of ortho IDs
-    countOrthoDf <- as.data.frame(table(dataHeat$orthoID))
-    colnames(countOrthoDf) <- c("orthoID", "orthoFreq")
-    dataHeat <- merge(dataHeat, countOrthoDf, by = "orthoID", all.x = TRUE)
+    countOrthoDf <- as.data.frame(table(dataHeat$orthoIDNew))
+    colnames(countOrthoDf) <- c("orthoIDNew", "orthoFreq")
+    dataHeat <- merge(dataHeat, countOrthoDf, by = "orthoIDNew", all.x = TRUE)
     dataHeat$orthoFreq[dataHeat$orthoFreq > 1] <- "Multiple"
     dataHeat$orthoFreq[dataHeat$orthoFreq == 1] <- "Single"
     
@@ -371,6 +371,8 @@ heatmapPlotting <- function(data = NULL, parm = NULL){
                 geom_vline(xintercept = 0.5, colour = "dodgerblue4") +
                 geom_vline(xintercept = 1.5, colour = "dodgerblue4")
     }
+    
+    # text size, legend position
     p <- p + theme_minimal(base_size = 9)
     vjustValue <- 1
     if (parm$xAngle == 90) vjustValue <- 0.5
@@ -390,31 +392,20 @@ heatmapPlotting <- function(data = NULL, parm = NULL){
 
 #' Highlight gene and/or taxon of interest on the phylogenetic profile plot
 #' @export
-#' @usage highlightProfilePlot(data, plotParameter = NULL, taxonHighlight =
-#'     "none", rankName = "none", geneHighlight = "none")
-#' @param data dataframe for plotting the heatmap phylogentic profile (either
-#' full or subset profiles)
-#' @param plotParameter plot parameters, including (1) type of x-axis "taxa" or
-#' "genes" - default = "taxa"; (2+3) names of 2 variables var1ID and var2ID -
-#' default = "var1" & "var2"; (4+5) mid value and color for mid value of var1 -
-#' default is 0.5 and #FFFFFF; (6) color for lowest var1 - default = "#FF8C00";
-#' (7) color for highest var1 - default = "#4682B4"; (8+9) mid value and color
-#' for mid value of var2 - default is 1 and #FFFFFF;(10) color for lowest var2 -
-#' default = "#FFFFFF", (11) color for highest var2 - default = "#F0E68C", (12)
-#' color of co-orthologs - default = "#07D000"; (13+14+15) text sizes for x, y
-#' axis and legend - default = 9 for each; (16) legend position "top", "bottom",
-#' "right", "left" or "none" - default = "top"; (17) zoom ratio of the
-#' co-ortholog dots from -1 to 3 - default = 0; (18) angle of x-axis from 0 to
-#' 90 - default = 60; (19) show/hide separate line for reference taxon 1/0 -
-#' default = 0; (20) enable/disable coloring gene categories TRUE/FALSE -
-#' default = FALSE). NOTE: Leave blank or NULL to use default values.
+#' @usage highlightProfilePlot(profilePlot = NULL, plotDf = NULL, 
+#'     taxonHighlight = "none", workingRank = "none", geneHighlight = NULL, 
+#'     xAxis = "taxa")
+#' @param profilePlot initial (highlighted) profile plot
+#' @param plotDf dataframe for plotting the heatmap phylogentic profile
 #' @param taxonHighlight taxon of interst. Default = "none".
-#' @param rankName working taxonomy rank (needed only for highlight taxon).
-#' @param geneHighlight gene of interest. Default = "none".
+#' @param workingRank working taxonomy rank (needed only for highlight taxon).
+#' @param geneHighlight gene of interest. Default = NULL.
+#' @param xAxis type of x-axis (either "genes" or "taxa")
 #' @return A profile heatmap plot with highlighted gene and/or taxon of interest
 #' as ggplot object.
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
-#' @seealso \code{\link{dataMainPlot}}, \code{\link{dataCustomizedPlot}}
+#' @seealso \code{\link{dataMainPlot}}, \code{\link{dataCustomizedPlot}},
+#' \code{\link{heatmapPlotting}}
 #' @examples
 #' data("finalProcessedProfile", package="PhyloProfile")
 #' plotDf <- dataMainPlot(finalProcessedProfile)
@@ -441,20 +432,23 @@ heatmapPlotting <- function(data = NULL, parm = NULL){
 #'     "colorByGroup" = FALSE,
 #'     "colorByOrthoID" = FALSE
 #' )
+#' profilePlot <- heatmapPlotting(plotDf, plotParameter)
 #' taxonHighlight <- "none"
-#' rankName <- "class"
+#' workingRank <- "class"
 #' geneHighlight <- "100265at6656"
 #' highlightProfilePlot(
-#'     plotDf, plotParameter, taxonHighlight, rankName, geneHighlight
+#'     profilePlot, plotDf, taxonHighlight, workingRank, geneHighlight, 
+#'     plotParameter$xAxis
 #' )
 
 highlightProfilePlot <- function(
-    data = NULL, plotParameter = NULL, taxonHighlight = "none",
-    rankName = "none", geneHighlight = "none"
+        profilePlot = NULL, plotDf = NULL, taxonHighlight = "none",
+        workingRank = "none", geneHighlight = NULL, xAxis = "taxa"
 ){
-    if (is.null(data)) stop("Input data cannot be NULL!")
+    if (is.null(plotDf)) stop("Input data cannot be NULL!")
+    if (is.null(profilePlot)) stop("Profile plot cannot be NULL!")
     xmin <- xmax <- ymin <- ymax <- NULL
-    p <- heatmapPlotting(data, plotParameter)
+    if (taxonHighlight == "none" && is.null(geneHighlight)) return(profilePlot)
     # highlight taxon
     if (taxonHighlight != "none") {
         # get selected highlight taxon ID
@@ -470,36 +464,195 @@ highlightProfilePlot <- function(
             )
         }
         taxonHighlightID <- taxName$ncbiID[
-            taxName$fullName == taxonHighlight & taxName$rank == rankName]
+            taxName$fullName == taxonHighlight & taxName$rank == workingRank]
         if (length(taxonHighlightID) == 0L)
             taxonHighlightID <- taxName$ncbiID[taxName$fullName==taxonHighlight]
         # get taxonID together with it sorted index
         selTaxon <- toString(
-            data$supertaxon[data$supertaxonID == taxonHighlightID][1]
+            plotDf$supertaxon[plotDf$supertaxonID == taxonHighlightID][1]
         )
-        selIndex <- grep(selTaxon, levels(as.factor(data$supertaxon)))
-        if (plotParameter$xAxis == "taxa") {
+        selIndex <- grep(selTaxon, levels(as.factor(plotDf$supertaxon)))
+        if (xAxis == "taxa") {
             rect <- data.frame(
                 xmin=selIndex-0.5, xmax = selIndex+0.5, ymin = -Inf, ymax = Inf)
         } else
             rect <- data.frame(
                 ymin=selIndex-0.5, ymax = selIndex+0.5, xmin = -Inf, xmax = Inf)
-        p <- p + geom_rect(
+        profilePlot <- profilePlot + geom_rect(
             data = rect, color = "yellow", alpha = 0.3, inherit.aes = FALSE,
             aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax))
     }
     # highlight gene
-    if (geneHighlight != "none") {
-        selIndex <- match(geneHighlight, levels(as.factor(data$geneID)))
-        if (plotParameter$xAxis == "taxa") {
+    if (length(geneHighlight) > 0 && !("none" %in% geneHighlight)) {
+        selIndex <- match(geneHighlight, levels(as.factor(plotDf$geneID)))
+        if (xAxis == "taxa") {
             rect <- data.frame(
                 ymin=selIndex-0.5, ymax = selIndex+0.5, xmin = -Inf, xmax = Inf)
         } else
             rect <- data.frame(
                 xmin=selIndex-0.5, xmax = selIndex+0.5, ymin = -Inf, ymax = Inf)
-        p <- p + geom_rect(
+        profilePlot <- profilePlot + geom_rect(
             data = rect, color = "yellow", alpha = 0.3, inherit.aes = FALSE,
             aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax))
     }
-    return(p)
+    return(profilePlot)
+}
+
+#' Add taxonomy rank division lines to the heatmap plot
+#' @export
+#' @usage addRankDivisionPlot(profilePlot = NULL, plotDf = NULL, 
+#'     taxDB = NULL, workingRank = NULL, superRank = NULL, xAxis = "taxa",
+#'     groupLabelSize = 14, groupLabelDist = 2, groupLabelAngle = 90)
+#' @param profilePlot initial (highlighted) profile plot
+#' @param plotDf dataframe for plotting the heatmap phylogentic profile
+#' @param taxDB path to taxonomy database (taxonomyMatrix.txt file required!)
+#' @param workingRank working taxonomy rank (e.g. species)
+#' @param superRank taxonomy rank for division lines (e.g. superkingdom)
+#' @param xAxis type of x-axis (either "genes" or "taxa")
+#' @param groupLabelSize size of rank labels
+#' @param groupLabelDist size of the plot area for rank labels
+#' @param groupLabelAngle angle of rank labels
+#' @return A profile heatmap plot with highlighted gene and/or taxon of interest
+#' as ggplot object.
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+#' @seealso \code{\link{heatmapPlotting}}, \code{\link{highlightProfilePlot}},
+#' \code{\link{getTaxonomyMatrix}}
+#' @examples
+#' data("finalProcessedProfile", package="PhyloProfile")
+#' plotDf <- dataMainPlot(finalProcessedProfile)
+#' plotParameter <- list(
+#'     "xAxis" = "taxa",
+#'     "var1ID" = "FAS_FW",
+#'     "var2ID"  = "FAS_BW",
+#'     "midVar1" = 0.5,
+#'     "midColorVar1" =  "#FFFFFF",
+#'     "lowColorVar1" =  "#FF8C00",
+#'     "highColorVar1" = "#4682B4",
+#'     "midVar2" = 1,
+#'     "midColorVar2" =  "#FFFFFF",
+#'     "lowColorVar2" = "#CB4C4E",
+#'     "highColorVar2" = "#3E436F",
+#'     "paraColor" = "#07D000",
+#'     "xSize" = 8,
+#'     "ySize" = 8,
+#'     "legendSize" = 8,
+#'     "mainLegend" = "top",
+#'     "dotZoom" = 0,
+#'     "xAngle" = 60,
+#'     "guideline" = 0,
+#'     "colorByGroup" = FALSE,
+#'     "colorByOrthoID" = FALSE
+#' )
+#' profilePlot <- heatmapPlotting(plotDf, plotParameter)
+#' workingRank <- "class"
+#' superRank <- "superkingdom"
+#' addRankDivisionPlot(
+#'     profilePlot, plotDf, NULL, workingRank, superRank, "taxa"
+#' )
+
+addRankDivisionPlot <- function(
+        profilePlot = NULL, plotDf = NULL, taxDB = NULL,
+        workingRank = NULL, superRank = NULL, xAxis = "taxa",
+        groupLabelSize = 14, groupLabelDist = 2, groupLabelAngle = 90
+) {
+    if (is.null(plotDf)) stop("Input data cannot be NULL!")
+    if (is.null(profilePlot)) stop("Profile plot cannot be NULL!")
+    
+    if (is.null(workingRank) || is.null(superRank)) {
+        # guideline for separating ref species
+        if (xAxis == "genes") {
+            profilePlot <- profilePlot + labs(y = "Taxon") +
+                geom_hline(yintercept = 0.5, colour = "dodgerblue4") +
+                geom_hline(yintercept = 1.5, colour = "dodgerblue4")
+        } else
+            profilePlot <- profilePlot + labs(x = "Taxon") +
+                geom_vline(xintercept = 0.5, colour = "dodgerblue4") +
+                geom_vline(xintercept = 1.5, colour = "dodgerblue4")
+        return(profilePlot)
+    } else {
+        # sort supertaxonID based on the sorted supertaxon
+        plotDf <- plotDf[with(plotDf,order(supertaxon)),]
+        plotDf$supertaxonID <- factor(
+            plotDf$supertaxonID, levels = unique(plotDf$supertaxonID)
+        )
+        # get input (super)taxa
+        inputTax <- levels(as.factor(plotDf$supertaxonID))
+        # subset taxonomy matrix to contain only superrank for division line
+        taxMatrix <- getTaxonomyMatrix(taxDB)
+        subTaxMatrix <- subset(
+            taxMatrix[taxMatrix[[workingRank]] %in% inputTax,],
+            select = c(as.character(workingRank), as.character(superRank))
+        )
+        subTaxMatrix <- subTaxMatrix[!duplicated(subTaxMatrix),]
+        # remove IDs that do not have real NCBI superRank
+        nameList <- getNameList(taxDB)
+        subNameList <- nameList[
+            nameList$ncbiID %in% subTaxMatrix[[superRank]], 
+            c("ncbiID", "rank", "fullName")
+        ]
+        colnames(subNameList) <- c(superRank, "rank", "name")
+        mergedDf <- merge(subTaxMatrix, subNameList, by = superRank, all.x=TRUE)
+        mergedDf <- mergedDf[mergedDf$rank == superRank,]
+        subTaxMatrix <- mergedDf
+        # group input taxa based on superrank and get their index
+        groupedList <- lapply(
+            levels(as.factor(subTaxMatrix[[superRank]])),
+            function(x) {
+                tmp <- subTaxMatrix[subTaxMatrix[[superRank]] == x,]
+                tmp$index <- which(
+                    levels(as.factor(plotDf$supertaxonID)) 
+                    %in% tmp[[workingRank]]
+                ) 
+                return(tmp)
+            }
+        )
+        # add vertical line to divide taxon groups
+        for(i in groupedList) {
+            min <- min(i$index)
+            max <- max(i$index)
+            if (xAxis == "taxa") {
+                profilePlot <- profilePlot +
+                    geom_vline(xintercept = min - 0.5, colour = "dodgerblue4") +
+                    geom_vline(xintercept = max + 0.5, colour = "dodgerblue4") +
+                    annotate(
+                        geom = "text", angle = groupLabelAngle, hjust = 0,
+                        size = groupLabelSize, 
+                        x = min,
+                        y = nlevels(as.factor(plotDf$geneID)) + 0.5,
+                        label = unique(as.character(i$name))
+                    )
+                
+            } else {
+                profilePlot <- profilePlot +
+                    geom_vline(yintercept = min - 0.5, colour = "dodgerblue4") +
+                    geom_vline(yintercept = max + 0.5, colour = "dodgerblue4") +
+                    annotate(
+                        geom = "text", angle = groupLabelAngle, hjust = 0,
+                        size = groupLabelSize, 
+                        x = min,
+                        y = nlevels(as.factor(plotDf$supertaxonID)) + 0.5,
+                        label = unique(as.character(i$name))
+                    )
+            }
+        }
+        if (xAxis == "taxa") {
+            return(
+                profilePlot + coord_cartesian(
+                    clip = 'off', 
+                    ylim = c(
+                        1, nlevels(as.factor(plotDf$geneID)) + groupLabelDist
+                    )
+                )
+            )
+        } else 
+            return(
+                profilePlot + coord_cartesian(
+                    clip = 'off', 
+                    ylim = c(
+                        1, 
+                        nlevels(as.factor(plotDf$supertaxonID)) + groupLabelDist
+                    )
+                )
+            )
+    }
 }

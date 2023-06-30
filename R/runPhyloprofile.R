@@ -9,7 +9,9 @@
 #' @import energy
 #' @import ExperimentHub
 #' @import shinyBS
+#' @import shinycssloaders
 #' @import shinyFiles
+#' @import stringr
 #' @import yaml
 #' @rawNamespace import(RCurl, except = reset)
 #' @rawNamespace import(shinyjs, except = colourInput)
