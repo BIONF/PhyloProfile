@@ -90,15 +90,9 @@ createArchiPlot <- function(
             orderedSeedDf <- seedDf[order(seedDf$feature), ]
             orderedOrthoDf <- sortDomains(orderedSeedDf, orthoDf)
         }
-        # join weight values and feature names
-        if ("weight" %in% colnames(orderedOrthoDf)) {
-            orderedOrthoDf$yLabel <- paste0(
-                orderedOrthoDf$feature," (",round(orderedOrthoDf$weight, 2),")")
-        } else orderedOrthoDf$yLabel <- orderedOrthoDf$feature
-        if ("weight" %in% colnames(orderedSeedDf)) {
-            orderedSeedDf$yLabel <- paste0(
-                orderedSeedDf$feature," (",round(orderedSeedDf$weight, 2),")")
-        } else orderedSeedDf$yLabel <- orderedSeedDf$feature
+        # modify feature (domain) names (used as x-axis label in domain plot)
+        orderedOrthoDf <- modifyFeatureName(orderedOrthoDf)
+        orderedSeedDf <- modifyFeatureName(orderedSeedDf)
         # simplify seq IDs if they are in bionf format
         if (seqIdFormat == "bionf") {
             seedTmp <- strsplit(as.character(seed),':', fixed = TRUE)[[1]]
@@ -145,9 +139,10 @@ createArchiPlot <- function(
 #'     "extdata", "domainFiles/101621at6656.domains",
 #'     package = "PhyloProfile", mustWork = TRUE
 #' )
+#' seedID <- "101621at6656"
 #' domainDf <- parseDomainInput(seedID, domainFile, "file")
 #' df <- domainDf[
-#'     domainDf$orthoID == "101621at6656|AGRPL@224129@0|224129_0:001955|1",]
+#'     domainDf$orthoID == "101621at6656:AGRPL@224129@0:224129_0:001955:1",]
 #' # create color scheme for all domain types
 #' allFeatures <- levels(as.factor(df$feature))
 #' allColors <- getQualColForVector(allFeatures)
@@ -346,3 +341,34 @@ sortDomains <- function(seedDf, orthoDf){
     return(orderedOrthoDf)
 }
 
+
+#' Modify feature names
+#' @description Simplify feature names (e.g. TM for transmembrane domain, 
+#' LCR for low complexity regions, remove tool names from domain name) and add
+#' weight to feature names (if available)
+#' @param domainDf domain data as a dataframe object
+#' @return Dataframe contains simlified domain names in yLabel column
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+#' @examples
+#' \dontrun{
+#' domainFile <- system.file(
+#'     "extdata", "domainFiles/101621at6656.domains",
+#'     package = "PhyloProfile", mustWork = TRUE
+#' )
+#' domainDf <- parseDomainInput(seedID, domainFile, "file")
+#' PhyloProfile:::modifyFeatureName(domainDf)
+#' }
+
+modifyFeatureName <- function(domainDf = NULL) {
+    if (is.null(domainDf)) stop("Domain data cannot be NULL!")
+    if (!("feature_id" %in% colnames(domainDf)))
+        domainDf[c("feature_type","feature_id")] <- 
+            stringr::str_split_fixed(domainDf$feature, '_', 2)
+    if ("weight" %in% colnames(domainDf)) {
+        domainDf$yLabel <- paste0(
+            domainDf$feature_id," (",round(domainDf$weight, 2),")")
+    } else domainDf$yLabel <- domainDf$feature_id
+    domainDf$yLabel[domainDf$yLabel == "transmembrane"] <- "TM"
+    domainDf$yLabel[domainDf$yLabel == "low complexity regions"] <- "LCR"
+    return(domainDf)
+}

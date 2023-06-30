@@ -17,13 +17,14 @@ createArchitecturePlotUI <- function(id) {
     tagList(
         column(
             4,
+            style = "padding:0px;",
             selectInput(
                 ns("showFeature"),
                 "Show",
                 choices = c(
-                    "all features" = "all",
-                    "shared features" = "common",
-                    "unique features" = "unique"
+                    "All features" = "all",
+                    "Shared features" = "common",
+                    "Unique features" = "unique"
                 ),
                 selected = "all"
             )
@@ -76,8 +77,6 @@ createArchitecturePlot <- function(
         df[c("feature_type","feature_id")] <- 
             stringr::str_split_fixed(df$feature, '_', 2)
         df <- df[!(df$feature_type %in% input$excludeFeature),]
-        # # remove user specified features (from input$featureList)
-        # df <- df[!(df$feature_id %in% input$featureList),]
         return(df)
     })
     

@@ -41,9 +41,10 @@ domainFile <- system.file(
     "extdata", "domainFiles/101621at6656.domains",
     package = "PhyloProfile", mustWork = TRUE
 )
+seedID <- "101621at6656"
 domainDf <- parseDomainInput(seedID, domainFile, "file")
 df <- domainDf[
-    domainDf$orthoID == "101621at6656|AGRPL@224129@0|224129_0:001955|1",]
+    domainDf$orthoID == "101621at6656:AGRPL@224129@0:224129_0:001955:1",]
 # create color scheme for all domain types
 allFeatures <- levels(as.factor(df$feature))
 allColors <- getQualColForVector(allFeatures)
