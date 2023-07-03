@@ -214,7 +214,7 @@ singleDomainPlotting <- function(
     gg <- gg + theme(
         legend.position = "none", axis.title.x = element_blank(),
         axis.text.y = element_text(size = labelSize),
-        axis.title.y = element_text(size = labelSize),
+        axis.title.y = element_blank(),
         panel.grid.minor.x=element_blank(), panel.grid.major.x=element_blank())
     return(gg)
 }

@@ -611,7 +611,7 @@ shinyUI(
                                     style = "padding:0px;",
                                     selectizeInput(
                                         "geneHighlight","", NULL, multiple=TRUE, 
-                                        options=list(placeholder = 'none')
+                                        options = list(placeholder = 'none')
                                     ),
                                     bsPopover(
                                         "geneHighlight",
@@ -631,12 +631,22 @@ shinyUI(
                         column(
                             12,
                             style = "padding:0px;",
-                            selectizeInput(
-                                "taxonHighlight", 
-                                "Select (super)taxon to highlight:",
-                                choices = NULL, #selected = NULL,
-                                options=list(placeholder = 'none')
-                            ),
+                            strong(
+                                "Select (super)taxon to highlight:"
+                            )
+                        ),
+                        column(
+                            8,
+                            style = "padding:0px;",
+                            uiOutput("taxonHighlight.ui")
+                        ),
+                        column(
+                            4,
+                            h3(""),
+                            bsButton("taxonHighlightBrowse", "Browse...")
+                        ),
+                        column(
+                            12,
                             checkboxInput(
                                 "colorByGroup",
                                 strong("Highlight genes by categories"),
@@ -726,6 +736,7 @@ shinyUI(
                                 )
                             )
                         ),
+                        uiOutput("cusSuperRankSelect.ui"),
 
                         h5(""),
                         bsButton(
@@ -1637,12 +1648,12 @@ shinyUI(
                 6,
                 numericInput(
                     "groupLabelDist", "Height for group label",
-                    min = 0, max = 10, step = 1, value = 2, width = 100
+                    min = 0, max = 100, step = 1, value = 7, width = 100
                 )
             ),
             column(
                 12,
-                HTML("<strong>Angle for group label</strong>:<br>"),
+                HTML("<strong>Angle for taxonomic group label</strong>:<br>"),
                 sliderInput(
                     "groupLabelAngle",
                     "",
@@ -1723,6 +1734,33 @@ shinyUI(
                     selected = "right",
                     width = 150
                 )
+            ),
+            column(
+                6, 
+                createTextSize(
+                    "groupLabelSizeSelect", "Group label size (px)", 7, 100
+                )
+            ),
+            column(
+                6,
+                numericInput(
+                    "groupLabelDistSelect", "Height for group label",
+                    min = 0, max = 100, step = 1, value = 3, width = 100
+                )
+            ),
+            column(
+                12,
+                HTML("<strong>Angle for taxonomic group label</strong>:<br>"),
+                sliderInput(
+                    "groupLabelAngleSelect",
+                    "",
+                    min = 0,
+                    max = 90,
+                    step = 10,
+                    value = 90,
+                    width = 250
+                ),
+                br()
             ),
             column(
                 12,
@@ -1914,6 +1952,21 @@ shinyUI(
             hr(),
             bsButton("resetConfigGC", "Reset", style = "danger"),
             bsButton("applyConfigGC", "Done", style = "warning")
+        ),
+        
+        # * popup for select taxa on Main Profile ------------------------
+        bsModal(
+            "highlight",
+            "Select taxon/taxa of interest",
+            "taxonHighlightBrowse",
+            size = "small",
+            selectTaxonRankUI("selectTaxonRankMain"),
+            checkboxInput(
+                "applyMainTaxa",
+                strong("Apply to main profile",
+                       style = "color:red"),
+                value = FALSE
+            )
         ),
 
         # * popup for select taxa on Customized Profile ------------------------

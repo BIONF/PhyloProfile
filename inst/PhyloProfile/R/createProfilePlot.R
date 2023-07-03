@@ -65,7 +65,7 @@ createProfilePlot <- function(input, output, session,
         if (is.null(dataHeat())) stop("Profile data is NULL!")
         if (typeProfile() == "customizedProfile") {
             if (length(inSeq()) == 0 || length(inTaxa()) == 0) return()
-            if (inSeq()[1] == "all" & inTaxa()[1] == "all") return()
+            if ("all" %in% inSeq() & "all" %in% inTaxa()) return()
         }
         return(heatmapPlotting(dataHeat(), parameters()))
     })

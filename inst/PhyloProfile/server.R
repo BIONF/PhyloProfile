@@ -541,6 +541,21 @@ shinyServer(function(input, output, session) {
             )
         }
     })
+    
+    # * get total number of genes ----------------------------------------------
+    output$totalGeneNumber.ui <- renderUI({
+        geneList <- getMainInput()
+        out <- as.list(levels(factor(geneList$geneID)))
+        
+        listIn <- input$geneList
+        if (!is.null(listIn)) {
+            list <- read.table(file = listIn$datapath, header = FALSE)
+            out <- as.list(unique(list$V1))
+        }
+        if (length(out) > 0) {
+            strong(paste0("Total number of genes:  ", length(out)))
+        }
+    })
 
     # * check the existance of the input concatenate fasta file ----------------
     output$concatFasta.existCheck <- renderUI({
@@ -2118,32 +2133,43 @@ shinyServer(function(input, output, session) {
     })
 
     # =========================== MAIN PROFILE TAB =============================
-
-    # * get total number of genes ----------------------------------------------
-    output$totalGeneNumber.ui <- renderUI({
-        geneList <- getMainInput()
-        out <- as.list(levels(factor(geneList$geneID)))
-
-        listIn <- input$geneList
-        if (!is.null(listIn)) {
-            list <- read.table(file = listIn$datapath, header = FALSE)
-            out <- as.list(unique(list$V1))
-        }
-        if (length(out) > 0) {
-            strong(paste0("Total number of genes:  ", length(out)))
-        }
-    })
-
+    
+    # * render popup for selecting rank and return list of subset taxa ---------
+    mainTaxaName <- callModule(
+        selectTaxonRank,
+        "selectTaxonRankMain",
+        rankSelect = reactive(input$rankSelect),
+        inputTaxonID = inputTaxonID,
+        taxDB = getTaxDBpath
+    )
+    
     # * get list of taxa for highlighting --------------------------------------
-    observeEvent(inputTaxonName(), {
-        if (length(inputTaxonName()) > 0) {
+    output$taxonHighlight.ui <- renderUI({
+        filein <- input$mainInput
+        if (
+            input$demoData == "arthropoda" | input$demoData == "ampk-tor" |
+            input$demoData == "preCalcDt"
+        ) {
+            filein <- 1
+        }
+        
+        if (is.null(filein)) return(selectInput("taxonHighlight", "", "none"))
+        if (v$doPlot == FALSE) return(selectInput("taxonHighlight", "", "none"))
+        else {
             choice <- inputTaxonName()
             out <- levels(factor(choice$fullName))
-            out <- append("none", out)
-            updateSelectizeInput(
-                session, "taxonHighlight", server = TRUE,
-                choices = out, selected = out[1]
-            )
+            if (input$applyMainTaxa == TRUE) {
+                out <- mainTaxaName()
+                selectizeInput(
+                    "taxonHighlight", "", out, selected = out, multiple = TRUE, 
+                    options = list(placeholder = 'none')
+                )
+            } else {
+                selectizeInput(
+                    "taxonHighlight", "", out, multiple = TRUE, 
+                    options = list(placeholder = 'none')
+                )
+            }
         }
     })
 
@@ -2185,7 +2211,7 @@ shinyServer(function(input, output, session) {
     output$superRankSelect.ui <- renderUI({
         allRanks <- getTaxonomyRanks()
         selectInput(
-            "superRankSelect", label = "Add division lines for:",
+            "superRankSelect", label = "Display taxonomic labels for:",
             choices = c(allRanks[!(allRanks %in% c("strain"))]),
             selected = ""
         )
@@ -2471,6 +2497,18 @@ shinyServer(function(input, output, session) {
             }
         }
     })
+    
+    
+    
+    # * render list of superRanks for adding vertical lines --------------------
+    output$cusSuperRankSelect.ui <- renderUI({
+        allRanks <- getTaxonomyRanks()
+        selectInput(
+            "cusSuperRankSelect", label = "Display taxonomic labels for:",
+            choices = c(allRanks[!(allRanks %in% c("strain"))]),
+            selected = ""
+        )
+    })
 
     # * check if all genes and all species are selected ------------------------
     output$sameProfile <- reactive({
@@ -2479,7 +2517,7 @@ shinyServer(function(input, output, session) {
         else {
             if (length(input$inSeq) == 0 || length(input$inTaxa) == 0) 
                 return(TRUE)
-            if (input$inSeq[1] == "all" & input$inTaxa[1] == "all") return(TRUE)
+            if ("all" %in% input$inSeq & "all" %in% input$inTaxa) return(TRUE)
         }
     })
     outputOptions(output, "sameProfile", suspendWhenHidden = FALSE)
@@ -2494,11 +2532,11 @@ shinyServer(function(input, output, session) {
             nrTaxa <- length(input$inTaxa)
             nrGene <- length(input$inSeq)
             if (nrTaxa < 10000 && nrGene < 10000) {
-                if (input$inTaxa[1] == "all") {
+                if ("all" %in% input$inTaxa) {
                     inputSuperTaxon <- inputTaxonName()
                     nrTaxa <- nlevels(as.factor(inputSuperTaxon$fullName))
                 }
-                if (input$inSeq[1] == "all") {
+                if ("all" %in% input$inSeq) {
                     nrGene <- input$endIndex
                 }
                 # adapte to axis type
@@ -2616,9 +2654,9 @@ shinyServer(function(input, output, session) {
                 "colorByGroup" = colorByGroup,
                 "catColors" = catColors,
                 "colorByOrthoID" = input$colorByOrthoID,
-                "groupLabelSize" = input$groupLabelSize,
-                "groupLabelDist" = input$groupLabelDist,
-                "groupLabelAngle" = input$groupLabelAngle
+                "groupLabelSize" = input$groupLabelSizeSelect,
+                "groupLabelDist" = input$groupLabelDistSelect,
+                "groupLabelAngle" = input$groupLabelAngleSelect
             )
         )
         return(inputPara)
@@ -2639,7 +2677,7 @@ shinyServer(function(input, output, session) {
         geneHighlight = reactive("none"),
         typeProfile = reactive("customizedProfile"),
         taxDB = getTaxDBpath,
-        superRank = reactive(input$superRankSelect)
+        superRank = reactive(input$cusSuperRankSelect)
     )
 
     # ============================== POINT INFO ================================

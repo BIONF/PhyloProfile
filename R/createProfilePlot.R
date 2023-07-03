@@ -448,9 +448,9 @@ highlightProfilePlot <- function(
     if (is.null(plotDf)) stop("Input data cannot be NULL!")
     if (is.null(profilePlot)) stop("Profile plot cannot be NULL!")
     xmin <- xmax <- ymin <- ymax <- NULL
-    if (taxonHighlight == "none" && is.null(geneHighlight)) return(profilePlot)
+    if (is.null(taxonHighlight) && is.null(geneHighlight)) return(profilePlot)
     # highlight taxon
-    if (taxonHighlight != "none") {
+    if (length(taxonHighlight) > 0 && !("none" %in% taxonHighlight)) {
         # get selected highlight taxon ID
         nameReducedFile <- paste(
             system.file(package = "PhyloProfile"),
@@ -464,14 +464,16 @@ highlightProfilePlot <- function(
             )
         }
         taxonHighlightID <- taxName$ncbiID[
-            taxName$fullName == taxonHighlight & taxName$rank == workingRank]
+            taxName$fullName %in% taxonHighlight & taxName$rank == workingRank]
         if (length(taxonHighlightID) == 0L)
-            taxonHighlightID <- taxName$ncbiID[taxName$fullName==taxonHighlight]
+            taxonHighlightID <- taxName$ncbiID[
+                taxName$fullName %in% taxonHighlight
+            ]
         # get taxonID together with it sorted index
-        selTaxon <- toString(
-            plotDf$supertaxon[plotDf$supertaxonID == taxonHighlightID][1]
-        )
-        selIndex <- grep(selTaxon, levels(as.factor(plotDf$supertaxon)))
+        selTaxon <- unique(as.character(
+            plotDf$supertaxon[plotDf$supertaxonID %in% taxonHighlightID]
+        ))
+        selIndex <- match(selTaxon, levels(as.factor(plotDf$supertaxon)))
         if (xAxis == "taxa") {
             rect <- data.frame(
                 xmin=selIndex-0.5, xmax = selIndex+0.5, ymin = -Inf, ymax = Inf)
@@ -607,6 +609,8 @@ addRankDivisionPlot <- function(
             }
         )
         # add vertical line to divide taxon groups
+        y_max_taxa <- length(unique(as.character(plotDf$geneID)))
+        y_max_gene <- length(unique(as.character(plotDf$supertaxonID)))
         for(i in groupedList) {
             min <- min(i$index)
             max <- max(i$index)
@@ -618,7 +622,7 @@ addRankDivisionPlot <- function(
                         geom = "text", angle = groupLabelAngle, hjust = 0,
                         size = groupLabelSize, 
                         x = min,
-                        y = nlevels(as.factor(plotDf$geneID)) + 0.5,
+                        y = y_max_taxa + 0.5,
                         label = unique(as.character(i$name))
                     )
                 
@@ -630,7 +634,7 @@ addRankDivisionPlot <- function(
                         geom = "text", angle = groupLabelAngle, hjust = 0,
                         size = groupLabelSize, 
                         x = min,
-                        y = nlevels(as.factor(plotDf$supertaxonID)) + 0.5,
+                        y = y_max_gene + 0.5,
                         label = unique(as.character(i$name))
                     )
             }
@@ -638,20 +642,13 @@ addRankDivisionPlot <- function(
         if (xAxis == "taxa") {
             return(
                 profilePlot + coord_cartesian(
-                    clip = 'off', 
-                    ylim = c(
-                        1, nlevels(as.factor(plotDf$geneID)) + groupLabelDist
-                    )
+                    clip = 'off', ylim = c(1, y_max_taxa + groupLabelDist)
                 )
             )
         } else 
             return(
                 profilePlot + coord_cartesian(
-                    clip = 'off', 
-                    ylim = c(
-                        1, 
-                        nlevels(as.factor(plotDf$supertaxonID)) + groupLabelDist
-                    )
+                    clip = 'off', ylim = c(1, y_max_gene + groupLabelDist)
                 )
             )
     }
