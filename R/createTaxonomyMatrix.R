@@ -507,3 +507,35 @@ getTaxHierarchy <- function(inputTaxa = NULL, currentNCBIinfo = NULL){
     )
     return(inputRankIDDf)
 }
+
+#' Get taxon names for a list of taxon IDs
+#' @export
+#' @param idList list of taxonomy IDs
+#' @param currentNCBIinfo table/dataframe of the pre-processed NCBI taxonomy
+#' data (/PhyloProfile/data/preProcessedTaxonomy.txt)
+#' @return A dataframe contains input taxon Ids and their full names.
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+#' @examples
+#' ncbiFilein <- system.file(
+#'     "extdata", "data/preProcessedTaxonomy.txt",
+#'     package = "PhyloProfile", mustWork = TRUE
+#' )
+#' currentNCBIinfo <- as.data.frame(data.table::fread(ncbiFilein))
+#' idList <- c("9606", "5207", "40674", "4751")
+#' id2name(idList, currentNCBIinfo)
+
+id2name <- function(idList = NULL, currentNCBIinfo = NULL) {
+    if (is.null(idList)) stop("No list of taxon IDs given!")
+    if (is.null(currentNCBIinfo)) {
+        ncbiFilein <- system.file(
+            "PhyloProfile", "data/preProcessedTaxonomy.txt", 
+            package = "PhyloProfile", mustWork = TRUE
+        )
+        currentNCBIinfo <- as.data.frame(data.table::fread(ncbiFilein))
+    }
+    # get taxon names
+    nameList <- currentNCBIinfo[
+        currentNCBIinfo$ncbiID %in% idList, c("ncbiID","fullName")
+    ]
+    return(nameList)
+}

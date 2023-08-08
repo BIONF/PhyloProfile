@@ -2109,27 +2109,50 @@ shinyServer(function(input, output, session) {
     clusteredDataHeat <- reactive({
         req(v$doPlot)
         dataHeat <- dataHeat()
-        withProgress(message = 'Clustering profile data...', value = 0.5, {
-            dat <- getProfiles()
-            # do clustering based on distance matrix
-            if (!is.null(i_clusterMethod)) clusterMethod <- i_clusterMethod
-            else clusterMethod <- input$clusterMethod
-            row.order <- hclust(
-                getDistanceMatrixProfiles(), method = clusterMethod
-            )$order
-
-            # re-order distance matrix accoring to clustering
-            datNew <- dat[row.order, ] #col.order
-
-            # return clustered gene ID list
-            clusteredGeneIDs <- as.factor(row.names(datNew))
-
-            # sort original data according to clusteredGeneIDs
-            dataHeat$geneID <- factor(dataHeat$geneID, levels=clusteredGeneIDs)
-
-            dataHeat <- dataHeat[!is.na(dataHeat$geneID),]
-            return(dataHeat)
-        })
+        if (nlevels(as.factor(dataHeat$geneID)) > 1) {
+            withProgress(message = 'Clustering profile data...', value = 0.5, {
+                dat <- getProfiles()
+                # do clustering based on distance matrix
+                if (!is.null(i_clusterMethod)) clusterMethod <- i_clusterMethod
+                else clusterMethod <- input$clusterMethod
+                row.order <- hclust(
+                    getDistanceMatrixProfiles(), method = clusterMethod
+                )$order
+                
+                # re-order distance matrix accoring to clustering
+                datNew <- dat[row.order, ] #col.order
+                
+                # return clustered gene ID list
+                clusteredGeneIDs <- as.factor(row.names(datNew))
+                
+                # sort original data according to clusteredGeneIDs
+                dataHeat$geneID <- factor(dataHeat$geneID, levels=clusteredGeneIDs)
+                
+                dataHeat <- dataHeat[!is.na(dataHeat$geneID),]
+                return(dataHeat)
+            })
+        } else return(dataHeat)
+    })
+    
+    # * get list of all input (super)taxa and their ncbi IDs -------------------
+    allInputTaxa <- reactive({
+        req(v$doPlot)
+        {
+            input$plotCustom
+            input$updateBtn
+        }
+        allTaxa <- sortedtaxaList()
+        allTaxa <- allTaxa[,c("supertaxonID", "supertaxon")]
+        allTaxa$supertaxon <- factor(
+            substr(
+                as.character(allTaxa$supertaxon), 8 ,
+                nchar(as.character(allTaxa$supertaxon))),
+            levels = substr(
+                levels(as.factor(allTaxa$supertaxon)), 8,
+                nchar(levels(as.factor(allTaxa$supertaxon)))))
+        if (input$showAllTaxa) {
+            return(allTaxa[!duplicated(allTaxa),])
+        } else return()
     })
 
     # =========================== MAIN PROFILE TAB =============================
@@ -2221,6 +2244,7 @@ shinyServer(function(input, output, session) {
     observe({
         longDataframe <- getMainInput()
         req(longDataframe)
+        req(input$endIndex)
         if (input$autoSizing) {
             inputSuperTaxon <- inputTaxonName()
             nrTaxa <- nlevels(as.factor(inputSuperTaxon$fullName))
@@ -2411,7 +2435,8 @@ shinyServer(function(input, output, session) {
         geneHighlight = reactive(input$geneHighlight),
         typeProfile = reactive("mainProfile"),
         taxDB = getTaxDBpath,
-        superRank = reactive(input$superRankSelect)
+        superRank = reactive(input$superRankSelect),
+        allTaxa = allInputTaxa
     )
 
     # ======================== CUSTOMIZED PROFILE TAB ==========================
@@ -2677,7 +2702,8 @@ shinyServer(function(input, output, session) {
         geneHighlight = reactive("none"),
         typeProfile = reactive("customizedProfile"),
         taxDB = getTaxDBpath,
-        superRank = reactive(input$cusSuperRankSelect)
+        superRank = reactive(input$cusSuperRankSelect),
+        allTaxa = allInputTaxa
     )
 
     # ============================== POINT INFO ================================
@@ -2905,14 +2931,6 @@ shinyServer(function(input, output, session) {
         }
         # get taxon ID
         taxId <- gsub("ncbi", "", info[5])
-        # taxUrl <- paste0(
-        #     "https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=",
-        #     taxId
-        # )
-        # linkText <- paste0(linkText,
-        #     "<p><a href='", taxUrl, "' target='_blank'>",
-        #     "NCBI taxonomy entry for <strong>", taxId , "</strong></a></p>"
-        # )
         taxHierarchy <- PhyloProfile:::getTaxHierarchy(taxId, currentNCBIinfo)
         taxUrls <- paste(taxHierarchy[[1]]$link, collapse = ", ")
         taxUrls <- gsub("<p>", "", taxUrls)
@@ -3019,9 +3037,6 @@ shinyServer(function(input, output, session) {
             updateButton(session, "doDomainPlotMain", disabled = TRUE)
             if (!is.null(pointInfoDetail())) {
                 info <- pointInfoDetail() # info = seedID, orthoID, var1
-                group <- as.character(info[1])
-                ortho <- as.character(info[2])
-                var1 <- as.character(info[3])
             }
         }
         
@@ -3128,7 +3143,8 @@ shinyServer(function(input, output, session) {
             titleArchiSize = reactive(input$titleArchiSize),
             archiHeight = reactive(input$archiHeight),
             archiWidth = reactive(input$archiWidth),
-            seqIdFormat = reactive(input$seqIdFormat)
+            seqIdFormat = reactive(input$seqIdFormat),
+            currentNCBIinfo = reactive(currentNCBIinfo)
         )
     })
     observeEvent(input$doDomainPlotMain, {
@@ -3140,7 +3156,8 @@ shinyServer(function(input, output, session) {
             titleArchiSize = reactive(input$titleArchiSizeM),
             archiHeight = reactive(input$archiHeightM),
             archiWidth = reactive(input$archiWidthM),
-            seqIdFormat = reactive(input$seqIdFormat)
+            seqIdFormat = reactive(input$seqIdFormat),
+            currentNCBIinfo = reactive(currentNCBIinfo)
         )
     })
 

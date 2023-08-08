@@ -36,7 +36,7 @@ shinyUI(
                         checkboxInput(
                             "keepOrder",
                             strong(em("Retain gene order")),
-                            value = FALSE,
+                            value = TRUE,
                             width = NULL
                         ),
                         bsPopover(
@@ -576,6 +576,19 @@ shinyUI(
                             uiOutput("inputSortedTaxa.ui"),
                             uiOutput("checkSortedTaxa.ui")
                         ),
+                        
+                        checkboxInput(
+                            "showAllTaxa",
+                            strong("Display all input taxa"),
+                            value = FALSE,
+                            width = NULL
+                        ),
+                        bsPopover(
+                            "showAllTaxa",
+                            "",
+                            "Including taxa with no orthologs",
+                            "bottom"
+                        ), 
                         hr(),
 
                         bsButton(

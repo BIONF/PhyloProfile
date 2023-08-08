@@ -5,7 +5,8 @@
 \title{Create protein's domain architecure plot}
 \usage{
 createArchiPlot(info = NULL, domainDf = NULL, labelArchiSize = 12,
-    titleArchiSize = 12, showFeature = "all", seqIdFormat = "unknown")
+    titleArchiSize = 12, showFeature = "all", seqIdFormat = "unknown",
+    currentNCBIinfo = NULL)
 }
 \arguments{
 \item{info}{a list contains seed and ortholog's IDs}
@@ -25,6 +26,9 @@ Default = "all"}
 
 \item{seqIdFormat}{sequence ID format (either bionf or unknown). 
 Default = "unknown"}
+
+\item{currentNCBIinfo}{dataframe of the pre-processed NCBI taxonomy
+data. Default = NULL (will be automatically retrieved from PhyloProfile app)}
 }
 \value{
 A domain plot as arrangeGrob object. Use grid::grid.draw(plot) to
@@ -45,7 +49,7 @@ domainFile <- system.file(
     package = "PhyloProfile", mustWork = TRUE
 )
 domainDf <- parseDomainInput(seedID, domainFile, "file")
-plot <- createArchiPlot(info, domainDf, 9, 9)
+plot <- createArchiPlot(info, domainDf, 9, 9, seqIdFormat = "bionf")
 grid::grid.draw(plot)
 }
 \seealso{

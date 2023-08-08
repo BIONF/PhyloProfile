@@ -8,6 +8,7 @@
 #' @param archiHeight plot height (from input$archiHeight)
 #' @param archiWidth plot width (from input$archiWidth)
 #' @param seqIdFormat sequence ID format (either bionf or unknown)
+#' @param currentNCBIinfo dataframe of the pre-processed NCBI taxonomy data
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 
 source("R/functions.R")
@@ -37,7 +38,7 @@ createArchitecturePlotUI <- function(id) {
                 choices = c(
                     "flps","seg","coils","signalp","tmhmm","smart","pfam"
                 ),
-                multiple = TRUE, options=list(placeholder = 'Show all')
+                multiple = TRUE, options=list(placeholder = 'None')
             )
         ),
         column(4, uiOutput(ns("featureList.ui"))),
@@ -66,8 +67,8 @@ createArchitecturePlotUI <- function(id) {
 }
 
 createArchitecturePlot <- function(
-    input, output, session, pointInfo, domainInfo,
-    labelArchiSize, titleArchiSize, archiHeight, archiWidth, seqIdFormat
+    input, output, session, pointInfo, domainInfo, labelArchiSize, 
+    titleArchiSize, archiHeight, archiWidth, seqIdFormat, currentNCBIinfo
 ){
     # * filter domain features -------------------------------------------------
     filterDomainDf <- reactive({
@@ -94,7 +95,7 @@ createArchitecturePlot <- function(
         # generate plot
         g <- createArchiPlot(
             pointInfo(), df, labelArchiSize(), titleArchiSize(),
-            input$showFeature, getSeqIdFormat()
+            input$showFeature, getSeqIdFormat(), currentNCBIinfo()
         )
         if (any(g == "No domain info available!")) {
             msgPlot()
@@ -115,14 +116,14 @@ createArchitecturePlot <- function(
             )
             HTML(msg)
         } else {
-            # shinycssloaders::withSpinner(
+            shinycssloaders::withSpinner(
                 plotOutput(
                     ns("archiPlot"),
                     height = archiHeight(),
                     width = archiWidth(),
                     click = ns("archiClick")
                 )
-            # )
+            )
         }
     })
 
@@ -137,7 +138,7 @@ createArchitecturePlot <- function(
             # generate plot
             g <- createArchiPlot(
                 pointInfo(), filterDomainDf(),labelArchiSize(),titleArchiSize(),
-                input$showFeature, getSeqIdFormat()
+                input$showFeature, getSeqIdFormat(), currentNCBIinfo()
             )
             grid.draw(g)
             # save plot to file
@@ -161,9 +162,9 @@ createArchitecturePlot <- function(
         ns <- session$ns
         allFeats <- getAllFeatures(pointInfo(), filterDomainDf())
         selectizeInput(
-            ns("featureList"), "Choose feature(s) to exclude", multiple = TRUE,
+            ns("featureList"), "Exclude individual feature(s)", multiple = TRUE,
             choices = stringr::str_split_fixed(allFeats, '_', 2)[,2], 
-            options=list(placeholder = 'Show all')
+            options=list(placeholder = 'None')
         )
     })
     
@@ -267,7 +268,6 @@ createLinkTable <- function(featureList, featureType) {
           data.table::tstrsplit(as.character(feature), '@', fixed = TRUE)
         )
       )
-      
       featDf <- data.frame("ID" = levels(as.factor(tmpDf$X2)))
       if (featureType == "pfam") {
         if (ncol(tmpDf) == 3) {
@@ -277,7 +277,7 @@ createLinkTable <- function(featureList, featureType) {
             )
         } else {
             featDf$link <- paste0(
-                "<a href='https://pfam.xfam.org/family/", featDf$ID,
+                "<a href='http://pfam-legacy.xfam.org/family/", featDf$ID,
                 "' target='_blank'>", featDf$ID, "</a>"
             )
         }

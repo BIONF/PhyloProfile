@@ -5,7 +5,8 @@
 #' which normally is also the orthologous group ID.
 #' @export
 #' @usage createArchiPlot(info = NULL, domainDf = NULL, labelArchiSize = 12,
-#'     titleArchiSize = 12, showFeature = "all", seqIdFormat = "unknown")
+#'     titleArchiSize = 12, showFeature = "all", seqIdFormat = "unknown",
+#'     currentNCBIinfo = NULL)
 #' @param info a list contains seed and ortholog's IDs
 #' @param domainDf dataframe contains domain info for the seed and ortholog.
 #' This including the seed ID, orthologs IDs, sequence lengths, feature names,
@@ -18,6 +19,8 @@
 #' Default = "all"
 #' @param seqIdFormat sequence ID format (either bionf or unknown). 
 #' Default = "unknown"
+#' @param currentNCBIinfo dataframe of the pre-processed NCBI taxonomy
+#' data. Default = NULL (will be automatically retrieved from PhyloProfile app)
 #' @importFrom gridExtra arrangeGrob
 #' @import ggplot2
 #' @return A domain plot as arrangeGrob object. Use grid::grid.draw(plot) to
@@ -34,12 +37,12 @@
 #'     package = "PhyloProfile", mustWork = TRUE
 #' )
 #' domainDf <- parseDomainInput(seedID, domainFile, "file")
-#' plot <- createArchiPlot(info, domainDf, 9, 9)
+#' plot <- createArchiPlot(info, domainDf, 9, 9, seqIdFormat = "bionf")
 #' grid::grid.draw(plot)
 
 createArchiPlot <- function(
     info = NULL, domainDf = NULL, labelArchiSize = 12, titleArchiSize = 12,
-    showFeature = "all", seqIdFormat = "unknown"
+    showFeature = "all", seqIdFormat = "unknown", currentNCBIinfo = NULL
 ){
     if (is.null(info) | is.null(domainDf)) return(ggplot() + theme_void())
     group <- as.character(info[1])
@@ -96,9 +99,19 @@ createArchiPlot <- function(
         # simplify seq IDs if they are in bionf format
         if (seqIdFormat == "bionf") {
             seedTmp <- strsplit(as.character(seed),':', fixed = TRUE)[[1]]
-            seed <- paste0(seedTmp[2], " - ", seedTmp[3])
-            orthoTmp <- strsplit(as.character(ortho),':', fixed = TRUE)[[1]]
-            ortho <- paste0(orthoTmp[2], " - ", orthoTmp[3])
+            seedSpec <- 
+                strsplit(as.character(seedTmp[2]),'@', fixed = TRUE)[[1]][2]
+            seed <- paste0(
+                id2name(seedSpec, currentNCBIinfo)[,2], " - ", seedTmp[3]
+            )
+            if (ortho != seed) {
+                orthoTmp <- strsplit(as.character(ortho),':', fixed = TRUE)[[1]]
+                orthoSpec <- 
+                    strsplit(as.character(orthoTmp[2]),'@',fixed = TRUE)[[1]][2]
+                ortho <- paste0(
+                    id2name(orthoSpec, currentNCBIinfo)[,2], " - ", orthoTmp[3]
+                )
+            }
         }
         # plotting
         minStart <- min(subdomainDf$start)

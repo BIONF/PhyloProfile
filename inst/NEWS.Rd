@@ -10,6 +10,7 @@
     \item highlight multiple genes/taxa; division lines for taxon group (#110)
     \item simplify gene IDs in detailed plot; show taxonomy hierarchy (#110)
     \item option to filter features in architecture plot (#110)
+    \item option to show all input taxa (#110)
   }
 }
 
