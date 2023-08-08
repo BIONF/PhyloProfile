@@ -368,6 +368,7 @@ sortDomains <- function(seedDf, orthoDf){
 #'     "extdata", "domainFiles/101621at6656.domains",
 #'     package = "PhyloProfile", mustWork = TRUE
 #' )
+#' seedID <- "101621at6656"
 #' domainDf <- parseDomainInput(seedID, domainFile, "file")
 #' PhyloProfile:::modifyFeatureName(domainDf)
 #' }
@@ -377,11 +378,13 @@ modifyFeatureName <- function(domainDf = NULL) {
     if (!("feature_id" %in% colnames(domainDf)))
         domainDf[c("feature_type","feature_id")] <- 
             stringr::str_split_fixed(domainDf$feature, '_', 2)
-    if ("weight" %in% colnames(domainDf)) {
-        domainDf$yLabel <- paste0(
-            domainDf$feature_id," (",round(domainDf$weight, 2),")")
-    } else domainDf$yLabel <- domainDf$feature_id
+    # if ("weight" %in% colnames(domainDf)) {
+    #     domainDf$yLabel <- paste0(
+    #         domainDf$feature_id," (",round(domainDf$weight, 2),")")
+    # } else domainDf$yLabel <- domainDf$feature_id
+    domainDf$yLabel <- domainDf$feature_id
     domainDf$yLabel[domainDf$yLabel == "transmembrane"] <- "TM"
     domainDf$yLabel[domainDf$yLabel == "low complexity regions"] <- "LCR"
+    domainDf$yLabel[domainDf$yLabel == "low_complexity_regions"] <- "LCR"
     return(domainDf)
 }

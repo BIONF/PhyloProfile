@@ -23,6 +23,7 @@ domainFile <- system.file(
     "extdata", "domainFiles/101621at6656.domains",
     package = "PhyloProfile", mustWork = TRUE
 )
+seedID <- "101621at6656"
 domainDf <- parseDomainInput(seedID, domainFile, "file")
 PhyloProfile:::modifyFeatureName(domainDf)
 }

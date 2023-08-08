@@ -234,63 +234,80 @@ getAllFeatures <- function(info, domainDf) {
     return(levels(as.factor(feature)))
 }
 
+#' get pfam and smart domain info (domain name, acc, profile HMM,...)
+#' @return dataframe for each type of database
+#' @author Vinh Tran {tran@bio.uni-frankfurt.de}
+getDomainInfo <- function(info, domainDf, type) {
+    group <- as.character(info[1])
+    ortho <- as.character(info[2])
+    # get sub dataframe based on selected groupID and orthoID
+    group <- gsub("\\|", ":", group)
+    ortho <- gsub("\\|", ":", ortho)
+    grepID <- paste(group, "#", ortho, sep = "")
+    domainDf <- domainDf[grep(grepID, domainDf$seedID),]
+    domainDf <- domainDf[domainDf$feature_type == type,]
+    domainInfoDf <- data.frame()
+    if (nrow(domainDf) > 0) {
+        # get all features of for this pair proteins
+        feature <- getAllFeatures(info, domainDf)
+        # filter domain info
+        if ("acc" %in% colnames(domainDf)) {
+            domainInfoDf <- domainDf[, c("feature_id", "acc", "evalue", "bitscore")]
+        } else {
+            feat_id <- unique(domainDf$feature_id)
+            domainInfoDf <- data.frame(
+                feature_id = feat_id,
+                acc = rep(NA, length(feat_id)),
+                evalue = rep(NA, length(feat_id)),
+                bitscore = rep(NA, length(feat_id))
+            )
+        }
+    }
+    return(domainInfoDf)
+}
+
 #' get pfam and smart domain links
 #' @return dataframe with domain IDs and their database links
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 getDomainLink <- function(info, domainDf) {
-    feature <- getAllFeatures(info, domainDf)
-    # get URLs
-    featurePfam <- unique(feature[grep("pfam", feature)])
-    pfamDf <- data.frame(ID = character(), PFAM = character())
-    if (length(featurePfam) > 0)
-        pfamDf <- createLinkTable(featurePfam, "pfam")
+    featurePfam <- getDomainInfo(info, domainDf, "pfam")
+    pfamDf <- createLinkTable(featurePfam, "pfam")
+    featureSmart <- getDomainInfo(info, domainDf, "smart")
+    smartDf <- createLinkTable(featureSmart, "smart")
     
-    featureSmart <- unique(feature[grep("smart", feature)])
-    smartDf <- data.frame(ID = character(), SMART = character())
-    if (length(featureSmart) > 0)
-        smartDf <- createLinkTable(featureSmart, "smart")
-    
-    featDf <- merge(pfamDf, smartDf, by = "ID", all = TRUE)
-    colnames(featDf) <- c("ID", "PFAM", "SMART")
+    featDf <- rbind(pfamDf, smartDf)
+    featDf <- subset(featDf, select = c(feature_id, link, evalue, bitscore))
+    colnames(featDf) <- c("ID", "URL", "E-value", "Bit-score")
     return(featDf)
 }
 
 #' plot error message
-#' @return error message in a ggplot object
+#' @param featureDf dataframe contains 2 columns feature_id and acc
+#' @param featureType pfam or smart
+#' @return dataframe contains 2 columns feature_id and link
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
-createLinkTable <- function(featureList, featureType) {
-    feature <- gsub("_","@", featureList)
-    featDf <- NULL
-    if (length(feature) > 0) {
-      tmpDf <- data.frame(
-        do.call(
-          'cbind', 
-          data.table::tstrsplit(as.character(feature), '@', fixed = TRUE)
-        )
-      )
-      featDf <- data.frame("ID" = levels(as.factor(tmpDf$X2)))
-      if (featureType == "pfam") {
-        if (ncol(tmpDf) == 3) {
-            featDf$link <- paste0(
-                "<a href='https://www.ebi.ac.uk/interpro/entry/pfam/", tmpDf$X3, 
-                "' target='_blank'>", tmpDf$X3, "</a>"
+createLinkTable <- function(featureDf, featureType) {
+    featureDf <- featureDf[!(duplicated(featureDf)),]
+    if (nrow(featureDf) > 0) {
+        if (featureType == "pfam") {
+            featureDf$link[is.na(featureDf$acc)] <- paste0(
+                "<a href='http://pfam-legacy.xfam.org/family/", featureDf$ID,
+                "' target='_blank'>", "PFAM", "</a>"
+            )
+            featureDf$link[!(is.na(featureDf$acc))] <- paste0(
+                "<a href='https://www.ebi.ac.uk/interpro/entry/pfam/", featureDf$acc, 
+                "' target='_blank'>", "INTERPRO", "</a>"
             )
         } else {
-            featDf$link <- paste0(
-                "<a href='http://pfam-legacy.xfam.org/family/", featDf$ID,
-                "' target='_blank'>", featDf$ID, "</a>"
+            featureDf$link <- paste0(
+                "<a href='http://smart.embl-heidelberg.de/smart/",
+                "do_annotation.pl?BLAST=DUMMY&DOMAIN=",
+                featureDf$feature_id, "' target='_blank'>",
+                "SMART", "</a>"
             )
         }
-      } else {
-        featDf$link <- paste0(
-          "<a href='http://smart.embl-heidelberg.de/smart/", 
-          "do_annotation.pl?BLAST=DUMMY&DOMAIN=", 
-          featDf$ID, "' target='_blank'>",
-          featDf$ID, "</a>"
-        )
-      }
     }
-    return(featDf)
+    return(featureDf)
 }
  
 

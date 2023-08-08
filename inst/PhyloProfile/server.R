@@ -18,7 +18,9 @@ shinyServer(function(input, output, session) {
     nameFullFile <- paste0(
         getwd(), "/data/preProcessedTaxonomy.txt"
     )
-    currentNCBIinfo <- as.data.frame(data.table::fread(nameFullFile))
+    currentNCBIinfo <- NULL
+    if (file.exists(nameFullFile))
+        currentNCBIinfo <- as.data.frame(data.table::fread(nameFullFile))
 
     # =========================== INITIAL CHECKING  ============================
     # * check for internet connection ------------------------------------------

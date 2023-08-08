@@ -57,10 +57,19 @@ parseDomainInput <- function(seed = NULL, inputFile = NULL, type = "file") {
         colnames(domains) <- c(
             "seedID", "orthoID", "length", "feature", "start", "end","weight",
             "path")
-    } else if (ncol(domains) == 9) {
+    } else if (ncol(domains) == 14) {
+        domains <- domains[-1,]
         colnames(domains) <- c(
             "seedID", "orthoID", "length", "feature", "start", "end","weight",
-            "path","acc")
+            "path","acc","evalue","bitscore","pStart","pEnd","pLen")
+        domains$length <- as.integer(domains$length)
+        domains$start <- as.integer(domains$start)
+        domains$end <- as.integer(domains$end)
+        domains$pStart <- as.integer(domains$pStart)
+        domains$pEnd <- as.integer(domains$pEnd)
+        domains$pLen <- as.integer(domains$pLen)
+        domains$evalue <- as.numeric(domains$evalue)
+        domains$bitscore <- as.numeric(domains$bitscore)
     } else {
         return("ERR")
     }
