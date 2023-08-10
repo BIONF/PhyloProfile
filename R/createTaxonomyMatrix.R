@@ -528,14 +528,22 @@ id2name <- function(idList = NULL, currentNCBIinfo = NULL) {
     if (is.null(idList)) stop("No list of taxon IDs given!")
     if (is.null(currentNCBIinfo)) {
         ncbiFilein <- system.file(
-            "PhyloProfile", "data/preProcessedTaxonomy.txt", 
-            package = "PhyloProfile", mustWork = TRUE
+            "PhyloProfile", "data/preProcessedTaxonomy.txt",
+            package = "PhyloProfile", mustWork = FALSE
         )
-        currentNCBIinfo <- as.data.frame(data.table::fread(ncbiFilein))
+        if (file.exists(ncbiFilein)) {
+            currentNCBIinfo <- as.data.frame(data.table::fread(ncbiFilein))
+            # get taxon names
+            nameList <- currentNCBIinfo[
+                currentNCBIinfo$ncbiID %in% idList, c("ncbiID","fullName")
+            ]
+            return(nameList)
+        } else {
+            nameList <- data.frame(
+                ncbiID = idList,
+                fullName = paste0("NCBI taxID ", idList)
+            )
+            return(nameList)
+        }
     }
-    # get taxon names
-    nameList <- currentNCBIinfo[
-        currentNCBIinfo$ncbiID %in% idList, c("ncbiID","fullName")
-    ]
-    return(nameList)
 }

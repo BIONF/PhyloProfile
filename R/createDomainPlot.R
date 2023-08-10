@@ -375,13 +375,6 @@ sortDomains <- function(seedDf, orthoDf){
 
 modifyFeatureName <- function(domainDf = NULL) {
     if (is.null(domainDf)) stop("Domain data cannot be NULL!")
-    if (!("feature_id" %in% colnames(domainDf)))
-        domainDf[c("feature_type","feature_id")] <- 
-            stringr::str_split_fixed(domainDf$feature, '_', 2)
-    # if ("weight" %in% colnames(domainDf)) {
-    #     domainDf$yLabel <- paste0(
-    #         domainDf$feature_id," (",round(domainDf$weight, 2),")")
-    # } else domainDf$yLabel <- domainDf$feature_id
     domainDf$yLabel <- domainDf$feature_id
     domainDf$yLabel[domainDf$yLabel == "transmembrane"] <- "TM"
     domainDf$yLabel[domainDf$yLabel == "low complexity regions"] <- "LCR"

@@ -294,8 +294,11 @@ sortInputTaxa <- function(
                     "PhyloProfile/data/preCalcTree.nw", sep = "/"
                 )
             } else preCalcTreeFile <- paste(taxDB, "preCalcTree.nw", sep = "/")
-
-            preTree <- ape::read.tree(preCalcTreeFile)
+            
+            if (file.exists(preCalcTreeFile)) {
+                preTree <- ape::read.tree(preCalcTreeFile)
+            } else preTree <- createUnrootedTree(Dt)
+            
             if (!(repTaxon$abbrName %in% preTree$tip.label))
                 message(c(repTaxon$abbrName, " not found in ", preCalcTreeFile))
             taxaTree <- ape::root(

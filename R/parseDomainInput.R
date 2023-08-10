@@ -78,6 +78,10 @@ parseDomainInput <- function(seed = NULL, inputFile = NULL, type = "file") {
     domains$orthoID <- as.character(domains$orthoID)
     domains$seedID <- gsub("\\|",":",domains$seedID)
     domains$orthoID <- gsub("\\|",":",domains$orthoID)
+    domains[c("feature_type","feature_id")] <-
+        stringr::str_split_fixed(domains$feature, '_', 2)
+    domains$feature_id[domains$feature_type == "smart"] <-
+        paste0(domains$feature_id[domains$feature_type == "smart"], "_smart")
     return(domains)
 }
 

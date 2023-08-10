@@ -75,8 +75,12 @@ createArchitecturePlot <- function(
         df <- domainInfo()
         if (is.null(nrow(df))) stop("Domain info is NULL!")
         # filter domain df by feature type
-        df[c("feature_type","feature_id")] <- 
-            stringr::str_split_fixed(df$feature, '_', 2)
+        if (!("feature_type" %in% colnames(df))) {
+            df[c("feature_type","feature_id")] <- 
+                stringr::str_split_fixed(df$feature, '_', 2)
+            df$feature_id[df$feature_type == "smart"] <-
+                paste0(df$feature_id[df$feature_type == "smart"], "_smart")
+        }
         df <- df[!(df$feature_type %in% input$excludeFeature),]
         return(df)
     })
@@ -163,14 +167,14 @@ createArchitecturePlot <- function(
         allFeats <- getAllFeatures(pointInfo(), filterDomainDf())
         selectizeInput(
             ns("featureList"), "Exclude individual feature(s)", multiple = TRUE,
-            choices = stringr::str_split_fixed(allFeats, '_', 2)[,2], 
+            choices = allFeats,
             options=list(placeholder = 'None')
         )
     })
     
     output$domainTable <- renderTable({
         if (is.null(nrow(filterDomainDf()))) return("No domain info available!")
-        features <- getDomainLink(pointInfo(), filterDomainDf())
+        features <- getDomainLink(pointInfo(), filterDomainDf(), getSeqIdFormat())
         features
     }, sanitize.text.function = function(x) x)
 }
@@ -214,21 +218,15 @@ getAllFeatures <- function(info, domainDf) {
     ortho <- gsub("\\|", ":", ortho)
     grepID <- paste(group, "#", ortho, sep = "")
     subdomainDf <- domainDf[grep(grepID, domainDf$seedID), ]
-    if (ncol(subdomainDf) == 9)
-        subdomainDf$feature <- paste(
-            subdomainDf$feature, subdomainDf$acc, sep = "_"
-        )
-    subdomainDf$feature <- as.character(subdomainDf$feature)
-    orthoID <- NULL
-    feature <- NULL
+    orthoID <- feature <- NULL
     if (nrow(subdomainDf) < 1) return(paste0("No domain info available!"))
     else {
         # ortho & seed domains df
         orthoDf <- subdomainDf[subdomainDf$orthoID == ortho,]
         seedDf <- subdomainDf[subdomainDf$orthoID != ortho,]
         feature <- c(
-            levels(as.factor(orthoDf$feature)), 
-            levels(as.factor(seedDf$feature))
+            levels(as.factor(orthoDf$feature_id)), 
+            levels(as.factor(seedDf$feature_id))
         )
     }
     return(levels(as.factor(feature)))
@@ -252,15 +250,16 @@ getDomainInfo <- function(info, domainDf, type) {
         feature <- getAllFeatures(info, domainDf)
         # filter domain info
         if ("acc" %in% colnames(domainDf)) {
-            domainInfoDf <- domainDf[, c("feature_id", "acc", "evalue", "bitscore")]
+            domainInfoDf <- domainDf[
+                , c("orthoID", "feature_id", "acc", "evalue", "bitscore")
+            ]
+            domainInfoDf$evalue <- format(domainInfoDf$evalue, scientific=TRUE)
         } else {
-            feat_id <- unique(domainDf$feature_id)
-            domainInfoDf <- data.frame(
-                feature_id = feat_id,
-                acc = rep(NA, length(feat_id)),
-                evalue = rep(NA, length(feat_id)),
-                bitscore = rep(NA, length(feat_id))
-            )
+            domainInfoDf <- domainDf[, c("orthoID", "feature_id")]
+            domainInfoDf <- domainInfoDf[!(duplicated(domainInfoDf)),]
+            domainInfoDf$acc <- rep(NA, nrow(domainInfoDf))
+            domainInfoDf$evalue <- rep(NA, nrow(domainInfoDf))
+            domainInfoDf$bitscore <- rep(NA, nrow(domainInfoDf))
         }
     }
     return(domainInfoDf)
@@ -269,15 +268,21 @@ getDomainInfo <- function(info, domainDf, type) {
 #' get pfam and smart domain links
 #' @return dataframe with domain IDs and their database links
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
-getDomainLink <- function(info, domainDf) {
+getDomainLink <- function(info, domainDf, seqIdFormat) {
     featurePfam <- getDomainInfo(info, domainDf, "pfam")
     pfamDf <- createLinkTable(featurePfam, "pfam")
     featureSmart <- getDomainInfo(info, domainDf, "smart")
     smartDf <- createLinkTable(featureSmart, "smart")
     
     featDf <- rbind(pfamDf, smartDf)
-    featDf <- subset(featDf, select = c(feature_id, link, evalue, bitscore))
-    colnames(featDf) <- c("ID", "URL", "E-value", "Bit-score")
+    featDf <- subset(featDf, select=c(orthoID,feature_id,link,evalue,bitscore))
+    featDf <-featDf[order(featDf$orthoID),]
+    if (seqIdFormat == "bionf") {
+        featDf[c("groupID", "spec", "geneID", "misc")] <- 
+            stringr::str_split_fixed(featDf$orthoID, ":", 4)
+        featDf <- subset(featDf,select=c(geneID,feature_id,link,evalue,bitscore))
+    }
+    colnames(featDf) <- c("Gene ID", "Domain ID", "URL", "E-value", "Bit-score")
     return(featDf)
 }
 
@@ -291,7 +296,7 @@ createLinkTable <- function(featureDf, featureType) {
     if (nrow(featureDf) > 0) {
         if (featureType == "pfam") {
             featureDf$link[is.na(featureDf$acc)] <- paste0(
-                "<a href='http://pfam-legacy.xfam.org/family/", featureDf$ID,
+                "<a href='http://pfam-legacy.xfam.org/family/", featureDf$feature_id,
                 "' target='_blank'>", "PFAM", "</a>"
             )
             featureDf$link[!(is.na(featureDf$acc))] <- paste0(
@@ -302,7 +307,8 @@ createLinkTable <- function(featureDf, featureType) {
             featureDf$link <- paste0(
                 "<a href='http://smart.embl-heidelberg.de/smart/",
                 "do_annotation.pl?BLAST=DUMMY&DOMAIN=",
-                featureDf$feature_id, "' target='_blank'>",
+                # featureDf$feature_id, "' target='_blank'>",
+                gsub("_smart", "",featureDf$feature_id), "' target='_blank'>",
                 "SMART", "</a>"
             )
         }
