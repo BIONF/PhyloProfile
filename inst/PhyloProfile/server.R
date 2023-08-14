@@ -2059,27 +2059,29 @@ shinyServer(function(input, output, session) {
     clusteredDataHeat <- reactive({
         req(v$doPlot)
         dataHeat <- dataHeat()
-        withProgress(message = 'Clustering profile data...', value = 0.5, {
-            dat <- getProfiles()
-            # do clustering based on distance matrix
-            if (!is.null(i_clusterMethod)) clusterMethod <- i_clusterMethod
-            else clusterMethod <- input$clusterMethod
-            row.order <- hclust(
-                getDistanceMatrixProfiles(), method = clusterMethod
-            )$order
-
-            # re-order distance matrix accoring to clustering
-            datNew <- dat[row.order, ] #col.order
-
-            # return clustered gene ID list
-            clusteredGeneIDs <- as.factor(row.names(datNew))
-
-            # sort original data according to clusteredGeneIDs
-            dataHeat$geneID <- factor(dataHeat$geneID, levels=clusteredGeneIDs)
-
-            dataHeat <- dataHeat[!is.na(dataHeat$geneID),]
-            return(dataHeat)
-        })
+        if (nlevels(as.factor(dataHeat$geneID)) > 1) {
+            withProgress(message = 'Clustering profile data...', value = 0.5, {
+                dat <- getProfiles()
+                # do clustering based on distance matrix
+                if (!is.null(i_clusterMethod)) clusterMethod <- i_clusterMethod
+                else clusterMethod <- input$clusterMethod
+                row.order <- hclust(
+                    getDistanceMatrixProfiles(), method = clusterMethod
+                )$order
+    
+                # re-order distance matrix accoring to clustering
+                datNew <- dat[row.order, ] #col.order
+    
+                # return clustered gene ID list
+                clusteredGeneIDs <- as.factor(row.names(datNew))
+    
+                # sort original data according to clusteredGeneIDs
+                dataHeat$geneID <- factor(dataHeat$geneID, levels=clusteredGeneIDs)
+    
+                dataHeat <- dataHeat[!is.na(dataHeat$geneID),]
+                return(dataHeat)
+            })
+        } else return(dataHeat)
     })
 
     # =========================== MAIN PROFILE TAB =============================
