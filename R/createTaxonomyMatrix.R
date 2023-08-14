@@ -526,6 +526,10 @@ getTaxHierarchy <- function(inputTaxa = NULL, currentNCBIinfo = NULL){
 
 id2name <- function(idList = NULL, currentNCBIinfo = NULL) {
     if (is.null(idList)) stop("No list of taxon IDs given!")
+    nameList <- data.frame(
+        ncbiID = idList,
+        fullName = paste0("NCBI taxID ", idList)
+    )
     if (is.null(currentNCBIinfo)) {
         ncbiFilein <- system.file(
             "PhyloProfile", "data/preProcessedTaxonomy.txt",
@@ -537,13 +541,16 @@ id2name <- function(idList = NULL, currentNCBIinfo = NULL) {
             nameList <- currentNCBIinfo[
                 currentNCBIinfo$ncbiID %in% idList, c("ncbiID","fullName")
             ]
-            return(nameList)
-        } else {
-            nameList <- data.frame(
-                ncbiID = idList,
-                fullName = paste0("NCBI taxID ", idList)
-            )
-            return(nameList)
         }
+    } else {
+        nameListTmp <- currentNCBIinfo[
+            currentNCBIinfo$ncbiID %in% idList, c("ncbiID","fullName")
+        ]
+        nameList <- merge(nameList, nameListTmp, by = "ncbiID", all.x = TRUE)
+        nameList$fullName.y[is.na(nameList$fullName.y)] <- 
+            nameList$fullName.x[is.na(nameList$fullName.y)]
+        nameList <- nameList[, c("ncbiID","fullName.y")]
+        colnames(nameList) <- c("ncbiID", "fullName")
     }
+    return(nameList)
 }

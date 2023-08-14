@@ -2076,7 +2076,6 @@ shinyUI(
                         style = "success",
                         disabled = FALSE
                     ),
-                    # uiOutput("doDomainPlotMain.ui"),
                     bsButton(
                         "doDomainPlotMain",
                         "Domain plot",

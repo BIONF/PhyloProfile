@@ -14,7 +14,7 @@ shinyServer(function(input, output, session) {
     homePath = c(wd='~/')
     # Automatically stop a Shiny app when closing the browser tab
     session$allowReconnect(TRUE)
-    
+
     nameFullFile <- paste0(
         getwd(), "/data/preProcessedTaxonomy.txt"
     )
@@ -183,7 +183,7 @@ shinyServer(function(input, output, session) {
             stop(paste("Main input file", i_mainInput ,"not found!"))
     }
     if (!is.logical(i_cluster)) i_cluster <- FALSE
-    
+
     # * render main input ------------------------------------------------------
     observe({
         if (!is.null(i_mainInput)) {
@@ -543,12 +543,12 @@ shinyServer(function(input, output, session) {
             )
         }
     })
-    
+
     # * get total number of genes ----------------------------------------------
     output$totalGeneNumber.ui <- renderUI({
         geneList <- getMainInput()
         out <- as.list(levels(factor(geneList$geneID)))
-        
+
         listIn <- input$geneList
         if (!is.null(listIn)) {
             list <- read.table(file = listIn$datapath, header = FALSE)
@@ -839,7 +839,7 @@ shinyServer(function(input, output, session) {
     observe({
         choice <- inputTaxonName()
         choice$fullName <- as.factor(choice$fullName)
-        
+
         if (input$demoData == "arthropoda") {
             hellemDf <- data.frame(
                 "name" = c(
@@ -866,7 +866,7 @@ shinyServer(function(input, output, session) {
                 )
             )
             rankName <- input$rankSelect
-            
+
             updateSelectizeInput(
                 session, "inSelect", "", server = TRUE,
                 choices = as.list(levels(choice$fullName)),
@@ -898,7 +898,7 @@ shinyServer(function(input, output, session) {
                 )
             )
             rankName <- input$rankSelect
-            
+
             updateSelectizeInput(
                 session, "inSelect", "", server = TRUE,
                 choices = as.list(levels(choice$fullName)),
@@ -922,7 +922,7 @@ shinyServer(function(input, output, session) {
                     choices = as.list(levels(choice$fullName)),
                     selected = levels(choice$fullName)[1]
                 )
-            }   
+            }
         }
     })
 
@@ -954,7 +954,7 @@ shinyServer(function(input, output, session) {
             toggleState("taxDbLoc")
         }
     })
-    
+
     # * enable/disable update plot button --------------------------------------
     observe({
         if (input$autoUpdate == TRUE) {
@@ -1213,7 +1213,7 @@ shinyServer(function(input, output, session) {
                 # remove "geneID" element from vector inputTaxa
                 inputTaxa <- inputTaxa[-1]
             }
-            
+
             taxDB <- getTaxDBpath()
             if (!file.exists(isolate(paste0(taxDB, "/rankList.txt")))) {
                 return(inputTaxa)
@@ -1443,7 +1443,7 @@ shinyServer(function(input, output, session) {
                 ## join all ncbi taxa and new taxa together
                 ncbiTaxonInfo <- fread("data/preProcessedTaxonomy.txt")
                 newTaxaFromFile <- fread(
-                    paste0(taxDB, "/newTaxa.txt"), 
+                    paste0(taxDB, "/newTaxa.txt"),
                     colClasses = c("ncbiID" = "character")
                 )
                 allTaxonInfo <- as.data.frame(
@@ -1582,7 +1582,7 @@ shinyServer(function(input, output, session) {
 
                         # create taxonomy matrix (taxonomyMatrix.txt)
                         taxMatrix <- taxonomyTableCreator(
-                            paste0(taxDB, "/idList.txt"), 
+                            paste0(taxDB, "/idList.txt"),
                             paste0(taxDB, "/rankList.txt")
                         )
                         write.table(
@@ -1883,7 +1883,7 @@ shinyServer(function(input, output, session) {
             return(inputTaxaName)
         })
     })
-    
+
     # * sort taxonomy data of input taxa ---------------------------------------
     sortedtaxaList <- reactive({
         req(v$doPlot)
@@ -2120,22 +2120,22 @@ shinyServer(function(input, output, session) {
                 row.order <- hclust(
                     getDistanceMatrixProfiles(), method = clusterMethod
                 )$order
-                
+
                 # re-order distance matrix accoring to clustering
                 datNew <- dat[row.order, ] #col.order
-                
+
                 # return clustered gene ID list
                 clusteredGeneIDs <- as.factor(row.names(datNew))
-                
+
                 # sort original data according to clusteredGeneIDs
                 dataHeat$geneID <- factor(dataHeat$geneID, levels=clusteredGeneIDs)
-                
+
                 dataHeat <- dataHeat[!is.na(dataHeat$geneID),]
                 return(dataHeat)
             })
         } else return(dataHeat)
     })
-    
+
     # * get list of all input (super)taxa and their ncbi IDs -------------------
     allInputTaxa <- reactive({
         req(v$doPlot)
@@ -2158,7 +2158,7 @@ shinyServer(function(input, output, session) {
     })
 
     # =========================== MAIN PROFILE TAB =============================
-    
+
     # * render popup for selecting rank and return list of subset taxa ---------
     mainTaxaName <- callModule(
         selectTaxonRank,
@@ -2167,7 +2167,7 @@ shinyServer(function(input, output, session) {
         inputTaxonID = inputTaxonID,
         taxDB = getTaxDBpath
     )
-    
+
     # * get list of taxa for highlighting --------------------------------------
     output$taxonHighlight.ui <- renderUI({
         filein <- input$mainInput
@@ -2177,7 +2177,7 @@ shinyServer(function(input, output, session) {
         ) {
             filein <- 1
         }
-        
+
         if (is.null(filein)) return(selectInput("taxonHighlight", "", "none"))
         if (v$doPlot == FALSE) return(selectInput("taxonHighlight", "", "none"))
         else {
@@ -2186,12 +2186,12 @@ shinyServer(function(input, output, session) {
             if (input$applyMainTaxa == TRUE) {
                 out <- mainTaxaName()
                 selectizeInput(
-                    "taxonHighlight", "", out, selected = out, multiple = TRUE, 
+                    "taxonHighlight", "", out, selected = out, multiple = TRUE,
                     options = list(placeholder = 'none')
                 )
             } else {
                 selectizeInput(
-                    "taxonHighlight", "", out, multiple = TRUE, 
+                    "taxonHighlight", "", out, multiple = TRUE,
                     options = list(placeholder = 'none')
                 )
             }
@@ -2202,36 +2202,36 @@ shinyServer(function(input, output, session) {
    observe({
         geneList <- dataHeat()
         out <- levels(factor(geneList$geneID))
-        
+
         if (!(is.null(input$geneHighlightFile))) {
             fileHighlight <- input$geneHighlightFile
             highlightList <- read.table(
                 file = fileHighlight$datapath, header = FALSE
             )
             updateSelectizeInput(
-                session, "geneHighlight", server = TRUE, 
+                session, "geneHighlight", server = TRUE,
                 choices = out, selected = intersect(out, highlightList$V1)
             )
         } else {
             updateSelectizeInput(
-                session, "geneHighlight", server = TRUE, 
+                session, "geneHighlight", server = TRUE,
                 choices = out
             )
         }
     })
-    
+
     # * disable/enable highlighing orthologs having the same ID ----------------
     observe({
         longDataframe <- getMainInput()
         req(longDataframe)
         req(input$rankSelect)
         lowestRank <- getLowestRank(longDataframe, getTaxDBpath())
-        if (!(lowestRank == input$rankSelect)) 
+        if (!(lowestRank == input$rankSelect))
             shinyjs::disable("colorByOrthoID")
         else
             shinyjs::enable("colorByOrthoID")
     })
-    
+
     # * render list of superRanks for adding vertical lines --------------------
     output$superRankSelect.ui <- renderUI({
         allRanks <- getTaxonomyRanks()
@@ -2524,9 +2524,9 @@ shinyServer(function(input, output, session) {
             }
         }
     })
-    
-    
-    
+
+
+
     # * render list of superRanks for adding vertical lines --------------------
     output$cusSuperRankSelect.ui <- renderUI({
         allRanks <- getTaxonomyRanks()
@@ -2542,7 +2542,7 @@ shinyServer(function(input, output, session) {
         if (v$doPlot == FALSE) return(FALSE)
         if (length(input$inSeq[1]) == 0) return(FALSE)
         else {
-            if (length(input$inSeq) == 0 || length(input$inTaxa) == 0) 
+            if (length(input$inSeq) == 0 || length(input$inTaxa) == 0)
                 return(TRUE)
             if ("all" %in% input$inSeq & "all" %in% input$inTaxa) return(TRUE)
         }
@@ -2642,7 +2642,7 @@ shinyServer(function(input, output, session) {
     # * parameters for the customized profile plot -----------------------------
     getParameterInputCustomized <- reactive({
         input$plotCustom
-        
+
         colorByGroup <- input$colorByGroup
         # get category colors
         catColors <- NULL
@@ -2654,7 +2654,7 @@ shinyServer(function(input, output, session) {
                 catColors <- getCatColors(i_geneCategory, type = "config")
             }
         } else colorByGroup = FALSE
-        
+
         inputPara <- isolate(
             list(
                 "xAxis" = input$xAxisSelected,
@@ -2940,7 +2940,7 @@ shinyServer(function(input, output, session) {
         linkText <- paste0(
             linkText, "<p><strong>NCBI taxonomy: </strong>", taxUrls, "</p>"
         )
-        
+
         # render links
         linkText <- paste0(
             linkText,
@@ -3020,8 +3020,16 @@ shinyServer(function(input, output, session) {
             tmp <- getDomainFile()
         }
     })
-    
+
     getDomainFile <- reactive({
+        # get lowest rank
+        # activate doDomainPlotMain if either working on the lowest rank
+        # or only 1 ortholog present
+        longDataframe <- getMainInput()
+        req(longDataframe)
+        req(input$rankSelect)
+        lowestRank <- getLowestRank(longDataframe, getTaxDBpath())
+
         # get info from POINT INFO box
         info <- c()
         infoTmp <- c()
@@ -3041,7 +3049,7 @@ shinyServer(function(input, output, session) {
                 info <- pointInfoDetail() # info = seedID, orthoID, var1
             }
         }
-        
+
         if (is.null(info)) {
             updateButton(session, "doDomainPlot", disabled = TRUE)
             updateButton(session, "doDomainPlotMain", disabled = TRUE)
@@ -3052,11 +3060,17 @@ shinyServer(function(input, output, session) {
                 input$demoData == "preCalcDt"
             ) {
                 updateButton(session, "doDomainPlot", disabled = FALSE)
-                updateButton(session, "doDomainPlotMain", disabled = FALSE)
+                if (lowestRank == input$rankSelect || infoTmp[[8]][1] == 1)
+                    updateButton(session, "doDomainPlotMain", disabled = FALSE)
+                else
+                    updateButton(session, "doDomainPlotMain", disabled = TRUE)
             } else {
                 if (checkInputValidity(input$mainInput$datapath) == "oma") {
                     updateButton(session, "doDomainPlot", disabled = FALSE)
-                    updateButton(session, "doDomainPlotMain", disabled = FALSE)
+                    if (lowestRank == input$rankSelect || infoTmp[[8]][1] == 1)
+                        updateButton(session, "doDomainPlotMain", disabled = FALSE)
+                    else
+                        updateButton(session, "doDomainPlotMain", disabled = TRUE)
                 } else {
                     if (input$annoLocation == "from file") {
                         inputDomain <- input$fileDomainInput
@@ -3072,9 +3086,10 @@ shinyServer(function(input, output, session) {
                             updateButton(
                                 session, "doDomainPlot", disabled = FALSE
                             )
-                            updateButton(
-                                session, "doDomainPlotMain", disabled = FALSE
-                            )
+                            if (lowestRank == input$rankSelect || infoTmp[[8]][1] == 1)
+                                updateButton(session, "doDomainPlotMain", disabled = FALSE)
+                            else
+                                updateButton(session, "doDomainPlotMain", disabled = TRUE)
                         }
                     } else {
                         domainDf <- parseDomainInput(
@@ -3094,17 +3109,19 @@ shinyServer(function(input, output, session) {
                                 updateButton(
                                     session, "doDomainPlot", disabled = FALSE
                                 )
-                                updateButton(
-                                    session, "doDomainPlotMain",disabled = FALSE
-                                )
+                                if (lowestRank == input$rankSelect || infoTmp[[8]][1] == 1)
+                                    updateButton(session, "doDomainPlotMain", disabled = FALSE)
+                                else
+                                    updateButton(session, "doDomainPlotMain", disabled = TRUE)
                             }
                         } else {
                             updateButton(
                                 session, "doDomainPlot", disabled = FALSE
                             )
-                            updateButton(
-                                session, "doDomainPlotMain", disabled = FALSE
-                            )
+                            if (lowestRank == input$rankSelect || infoTmp[[8]][1] == 1)
+                                updateButton(session, "doDomainPlotMain", disabled = FALSE)
+                            else
+                                updateButton(session, "doDomainPlotMain", disabled = TRUE)
                         }
                     }
                 }
@@ -3540,7 +3557,7 @@ shinyServer(function(input, output, session) {
                 fullDt <- getFullData()
                 tmpDf <- calcPresSpec(fullDt, getCountTaxa())
                 fullDt <- Reduce(
-                    function(x, y) 
+                    function(x, y)
                         merge(x, y, by = c("geneID", "supertaxon"), all.x=TRUE),
                     list(fullDt, tmpDf))
                 fullDt$orthoID[fullDt$presSpec == 0] <- NA
@@ -3550,7 +3567,7 @@ shinyServer(function(input, output, session) {
                     input$var1AggregateBy,
                     input$var2AggregateBy
                 )
-            } 
+            }
             else {
                 profiles <- getDataClustering(
                     dataHeat(),
@@ -4324,7 +4341,7 @@ shinyServer(function(input, output, session) {
         )
         em(paste("NOTE: Only reset data in", defaultTaxDB))
     })
-    
+
     observeEvent(input$doResetTax, {
         withCallingHandlers({
             shinyjs::html("resetTaxonomyDataStatus", "")
@@ -4342,7 +4359,7 @@ shinyServer(function(input, output, session) {
     output$taxExportWarning.ui <- renderUI({
         em(paste("from", getTaxDBpath()))
     })
-    
+
     getTaxPathOut <- reactive({
         shinyDirChoose(
             input, "taxDirOut", roots = homePath, session = session
@@ -4375,13 +4392,13 @@ shinyServer(function(input, output, session) {
     # ** do import taxonomy data -----------------------------------------------
     output$taxImportWarning.ui <- renderUI({
         msg <- paste(
-            "*** WARNING: This function will OVERWRITE the data in", 
+            "*** WARNING: This function will OVERWRITE the data in",
             getTaxDBpath(),
             "!!!"
         )
         strong(em(msg))
     })
-    
+
     getInTaxPath <- reactive({
         shinyDirChoose(
             input, "taxDir", roots = homePath, session = session

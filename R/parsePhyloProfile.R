@@ -722,10 +722,13 @@ reduceProfile <- function(filteredProfile) {
         mOrthoID <- filteredProfile[, c(
             "geneID", "supertaxon", "var1", "mVar1", "orthoID", "presSpec"
         )]
-        mOrthoID <- subset(mOrthoID, mOrthoID$var1 == mOrthoID$mVar1)
+        mOrthoID$sVar1 <- mOrthoID$mVar1 - mOrthoID$var1
+        # mOrthoID <- subset(mOrthoID, mOrthoID$var1 == mOrthoID$mVar1)
+        mOrthoID <- subset(mOrthoID, mOrthoID$sVar1 <= 0)
         colnames(mOrthoID) <- c(
-            "geneID", "supertaxon", "var1", "mVar1", "orthoID", "presSpec"
+            "geneID","supertaxon","var1","mVar1","orthoID","presSpec","sVar1"
         )
+        mOrthoID <- mOrthoID[order(mOrthoID$sVar1, decreasing = TRUE), ]
         mOrthoID <- mOrthoID[!is.na(mOrthoID$orthoID), ]
         mOrthoID <- mOrthoID[, c("geneID", "supertaxon", "orthoID", "presSpec")]
         mOrthoID <- mOrthoID[!duplicated(mOrthoID[, seq_len(2)]), ]
