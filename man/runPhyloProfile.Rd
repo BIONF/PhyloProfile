@@ -4,11 +4,15 @@
 \alias{runPhyloProfile}
 \title{Run PhyloProfile app}
 \usage{
-runPhyloProfile(configFile = NULL)
+runPhyloProfile(configFile = NULL, host = NULL, port = NULL)
 }
 \arguments{
 \item{configFile}{Configuration file for specifying path to input files,
 taxonomy rank and reference taxon, and some other settings}
+
+\item{host}{IP adress (e.g. host = "127.0.0.1")}
+
+\item{port}{Port (e.g. port = 8888)}
 }
 \value{
 A shiny application - GUI version of PhyloProfile

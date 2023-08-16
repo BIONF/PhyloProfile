@@ -2,6 +2,8 @@
 #' @export
 #' @param configFile Configuration file for specifying path to input files,
 #' taxonomy rank and reference taxon, and some other settings
+#' @param host IP adress (e.g. host = "127.0.0.1")
+#' @param port Port (e.g. port = 8888)
 #' @return A shiny application - GUI version of PhyloProfile
 #' @import BiocStyle
 #' @import DT
@@ -21,7 +23,7 @@
 #' runPhyloProfile()
 #' }
 
-runPhyloProfile <- function(configFile = NULL){
+runPhyloProfile <- function(configFile = NULL, host = NULL, port = NULL){
     appDir <- system.file("PhyloProfile", package = "PhyloProfile")
     if (appDir == "") {
         stop(
@@ -41,6 +43,8 @@ runPhyloProfile <- function(configFile = NULL){
         i_port <- configs$port
         i_launchBrowser <- configs$launchBrowser
     }
+    if (!is.null(host)) i_host <- host
+    if (!is.null(port)) i_port <- port
     
     if (!is.logical(i_launchBrowser)) i_launchBrowser <- TRUE
     if (!is.null(i_host) && !is.null(i_port)) {

@@ -1761,6 +1761,12 @@ shinyServer(function(input, output, session) {
                     "endIndex", value = nlevels(as.factor(longDataframe$geneID))
                 )
             }
+            # remove fdogMA orthologs
+            if (input$showAllTaxa == FALSE) {
+                longDataframe <- longDataframe[
+                    !(longDataframe$orthoID == "fdogMA"),
+                ]
+            }
             # return
             return(longDataframe)
         })
