@@ -90,6 +90,7 @@ getLowestRank <- function(longInput, taxDB) {
     allDB <- getNameList(taxDB)
     allRanks <- getTaxonomyRanks()
     inputRanks <- levels(as.factor(allDB[allDB$ncbiID %in% inputTaxa,]$rank))
+    if ("subspecies" %in% inputRanks) inputRanks <- c(inputRanks, "strain")
     inputRanks <- inputRanks[inputRanks %in% allRanks]
     return(allRanks[min(match(inputRanks, allRanks))][1])
 }

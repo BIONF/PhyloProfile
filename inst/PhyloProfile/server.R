@@ -1763,9 +1763,7 @@ shinyServer(function(input, output, session) {
             }
             # remove fdogMA orthologs
             if (input$showAllTaxa == FALSE) {
-                longDataframe <- longDataframe[
-                    !(longDataframe$orthoID == "fdogMA"),
-                ]
+                longDataframe<-longDataframe[longDataframe$orthoID != "fdogMA",]
             }
             # return
             return(longDataframe)

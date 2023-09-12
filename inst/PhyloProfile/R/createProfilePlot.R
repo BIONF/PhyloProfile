@@ -93,11 +93,11 @@ createProfilePlot <- function(input, output, session,
         if (is.null(basicProfile())) return()
         withProgress(message = 'PLOTTING...', value = 0.5, {
             p <- highlightProfilePlot(
-                basicProfile(), dataHeat(), taxonHighlight(), rankSelect(), 
-                geneHighlight(), parameters()$xAxis
+                basicProfile(), dataHeat(), taxonHighlight(), rankSelect(),
+                geneHighlight(), taxDB(), parameters()$xAxis
             )
             addRankDivisionPlot(
-                p, dataHeat(), taxDB(), rankSelect(), getSuperRank(), 
+                p, dataHeat(), taxDB(), rankSelect(), getSuperRank(),
                 parameters()$xAxis, parameters()$groupLabelSize,
                 parameters()$groupLabelDist, parameters()$groupLabelAngle
             )
@@ -130,9 +130,9 @@ createProfilePlot <- function(input, output, session,
             ggsave(
                 file,
                 plot = addRankDivisionPlot(
-                    basicProfile(), dataHeat(), taxDB(), rankSelect(), 
-                    getSuperRank(), parameters()$xAxis, 
-                    parameters()$groupLabelSize, parameters()$groupLabelDist, 
+                    basicProfile(), dataHeat(), taxDB(), rankSelect(),
+                    getSuperRank(), parameters()$xAxis,
+                    parameters()$groupLabelSize, parameters()$groupLabelDist,
                     parameters()$groupLabelAngle
                 ),
                 width = parameters()$width * 0.056458333,

@@ -13,6 +13,7 @@
     \item option to show all input taxa (#110)
     \item added more info to domain plot (e-value, bit-score, pHMM)
     \item option to specify host and port for runPhyloProfile() fn
+    \item fixed bug when lowest rank is subspecies
   }
 }
 

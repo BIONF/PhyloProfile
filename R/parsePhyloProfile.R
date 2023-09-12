@@ -116,10 +116,8 @@ getTaxonomyMatrix <- function(
 
 getInputTaxaID <- function(rawProfile = NULL){
     if (is.null(rawProfile)) stop("Input profile data cannot be NULL!")
-    inputTaxa <- levels(as.factor(rawProfile$ncbiID))
-    inputTaxa <- unlist(strsplit(inputTaxa, split = "\t"))
-    # remove "geneID" element from vector inputTaxa
-    if (inputTaxa[1] == "geneID") inputTaxa <- inputTaxa[-1]
+    inputTaxa <- unique(rawProfile$ncbiID)
+    inputTaxa <- inputTaxa[inputTaxa != "geneID"]
     # return input taxa
     return(inputTaxa)
 }

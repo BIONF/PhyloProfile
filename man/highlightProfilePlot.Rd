@@ -6,7 +6,7 @@
 \usage{
 highlightProfilePlot(profilePlot = NULL, plotDf = NULL, 
     taxonHighlight = "none", workingRank = "none", geneHighlight = NULL, 
-    xAxis = "taxa")
+    taxDB = NULL, xAxis = "taxa")
 }
 \arguments{
 \item{profilePlot}{initial (highlighted) profile plot}
@@ -18,6 +18,8 @@ highlightProfilePlot(profilePlot = NULL, plotDf = NULL,
 \item{workingRank}{working taxonomy rank (needed only for highlight taxon).}
 
 \item{geneHighlight}{gene of interest. Default = NULL.}
+
+\item{taxDB}{Path to the taxonomy DB files}
 
 \item{xAxis}{type of x-axis (either "genes" or "taxa")}
 }
@@ -60,7 +62,7 @@ workingRank <- "class"
 geneHighlight <- "100265at6656"
 highlightProfilePlot(
     profilePlot, plotDf, taxonHighlight, workingRank, geneHighlight, 
-    plotParameter$xAxis
+    NULL, plotParameter$xAxis
 )
 }
 \seealso{

@@ -295,7 +295,7 @@ heatmapPlotting <- function(data = NULL, parm = NULL){
         if (parm$colorByOrthoID == TRUE) {
             # color by ortho IDs
             p <- p + geom_point(
-                aes(colour = factor(orthoFreq)), na.rm = TRUE, 
+                aes(colour = factor(orthoFreq)), na.rm = TRUE,
                 size = data$presSpec*5*(1+parm$dotZoom), show.legend = TRUE
             )
         } else {
@@ -394,12 +394,13 @@ heatmapPlotting <- function(data = NULL, parm = NULL){
 #' @export
 #' @usage highlightProfilePlot(profilePlot = NULL, plotDf = NULL, 
 #'     taxonHighlight = "none", workingRank = "none", geneHighlight = NULL, 
-#'     xAxis = "taxa")
+#'     taxDB = NULL, xAxis = "taxa")
 #' @param profilePlot initial (highlighted) profile plot
 #' @param plotDf dataframe for plotting the heatmap phylogentic profile
 #' @param taxonHighlight taxon of interst. Default = "none".
 #' @param workingRank working taxonomy rank (needed only for highlight taxon).
 #' @param geneHighlight gene of interest. Default = NULL.
+#' @param taxDB Path to the taxonomy DB files
 #' @param xAxis type of x-axis (either "genes" or "taxa")
 #' @return A profile heatmap plot with highlighted gene and/or taxon of interest
 #' as ggplot object.
@@ -438,12 +439,12 @@ heatmapPlotting <- function(data = NULL, parm = NULL){
 #' geneHighlight <- "100265at6656"
 #' highlightProfilePlot(
 #'     profilePlot, plotDf, taxonHighlight, workingRank, geneHighlight, 
-#'     plotParameter$xAxis
+#'     NULL, plotParameter$xAxis
 #' )
 
 highlightProfilePlot <- function(
         profilePlot = NULL, plotDf = NULL, taxonHighlight = "none",
-        workingRank = "none", geneHighlight = NULL, xAxis = "taxa"
+        workingRank = "none", geneHighlight = NULL, taxDB = NULL, xAxis = "taxa"
 ){
     if (is.null(plotDf)) stop("Input data cannot be NULL!")
     if (is.null(profilePlot)) stop("Profile plot cannot be NULL!")
@@ -452,23 +453,20 @@ highlightProfilePlot <- function(
     # highlight taxon
     if (length(taxonHighlight) > 0 && !("none" %in% taxonHighlight)) {
         # get selected highlight taxon ID
-        nameReducedFile <- paste(
-            system.file(package = "PhyloProfile"),
-            "PhyloProfile/data/taxonNamesReduced.txt", sep="/")
-        if (!file.exists(nameReducedFile)) {
-            taxonNamesReduced <- NULL
-            delayedAssign("taxName", taxonNamesReduced)
-        } else {
-            taxName <- utils::read.table(
-                nameReducedFile, sep="\t", header = TRUE, comment.char = ""
-            )
-        }
+        taxName <- getNameList(taxDB)
         taxonHighlightID <- taxName$ncbiID[
             taxName$fullName %in% taxonHighlight & taxName$rank == workingRank]
-        if (length(taxonHighlightID) == 0L)
+        if (length(taxonHighlightID) == 0L) {
             taxonHighlightID <- taxName$ncbiID[
                 taxName$fullName %in% taxonHighlight
             ]
+        } else if(length(taxonHighlightID) < length(taxonHighlight)) {
+            missingID <- taxName$ncbiID[
+                taxName$fullName %in% taxonHighlight
+            ]
+            missingID <- missingID[!(missingID %in% taxonHighlightID)]
+            taxonHighlightID <- c(taxonHighlightID, missingID)
+        }
         # get taxonID together with it sorted index
         selTaxon <- unique(as.character(
             plotDf$supertaxon[plotDf$supertaxonID %in% taxonHighlightID]
