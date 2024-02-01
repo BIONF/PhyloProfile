@@ -148,6 +148,11 @@ createDetailedPlot <- function(
     return(pointInfoDetail)
 }
 
+prepareDf <- function(selDf) {
+    selDf <- selDf[with(dataframe, order(fullName, orthoID)),]
+    selDf$xLabel <- paste(selDf$orthoID, " (", selDf$fullName, ")", sep = "")
+    return(selDf)
+}
 
 #' create detailed plot
 #' @param selDf data for plotting  (from reactive fn "detailPlotDt")
@@ -177,7 +182,7 @@ detailPlot <- function(selDf, detailedText, var1ID, var2ID){
     }
 
     # keep order of ID (xLabel)
-    # detailedDf$id <- factor(detailedDf$id, levels = unique(detailedDf$id))
+    detailedDf$id <- factor(detailedDf$id, levels = unique(detailedDf$id))
 
     # create plot
     gp <- ggplot(detailedDf, aes(y = score, x = id, fill = var)) +
