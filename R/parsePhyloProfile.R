@@ -707,11 +707,14 @@ reduceProfile <- function(filteredProfile) {
     if (length(unique(levels(as.factor(filteredProfile$numberSpec)))) == 1) {
         if (unique(levels(as.factor(filteredProfile$numberSpec))) == 1) {
             superDfExt <- filteredProfile[, c(
-                "geneID", "supertaxon", "supertaxonID",
-                "var1", "presSpec", "category", "orthoID", "var2", "paralog"
+                "geneID", "supertaxon", "supertaxonID", "orthoID", "category", 
+                "presSpec", "paralog", "mVar1", "mVar2"
             )]
             superDfExt$presentTaxa <- 1
-            superDfExt$totalTaxa <- 1
+            superDfExt$totalTaxa <- 1             
+            # rename mVar to var
+            names(superDfExt)[names(superDfExt) == "mVar1"] <- "var1"
+            names(superDfExt)[names(superDfExt) == "mVar2"] <- "var2"
             flag <- 0
         }
     }

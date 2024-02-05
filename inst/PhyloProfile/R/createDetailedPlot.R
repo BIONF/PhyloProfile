@@ -148,7 +148,6 @@ createDetailedPlot <- function(
     return(pointInfoDetail)
 }
 
-
 #' create detailed plot
 #' @param selDf data for plotting  (from reactive fn "detailPlotDt")
 #' @param detailedText text size (input$detailedText)
@@ -177,7 +176,7 @@ detailPlot <- function(selDf, detailedText, var1ID, var2ID){
     }
 
     # keep order of ID (xLabel)
-    # detailedDf$id <- factor(detailedDf$id, levels = unique(detailedDf$id))
+    detailedDf$id <- factor(detailedDf$id, levels = unique(detailedDf$id))
 
     # create plot
     gp <- ggplot(detailedDf, aes(y = score, x = id, fill = var)) +
