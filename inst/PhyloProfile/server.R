@@ -635,6 +635,11 @@ shinyServer(function(input, output, session) {
         defaultTaxDB <- system.file(
             "PhyloProfile", "data", package = "PhyloProfile", mustWork = TRUE
         )
+        if (!file.exists(paste0(defaultTaxDB, "/taxonomyMatrix.txt"))) {
+            if (file.exists(paste0(getwd(), "/data/taxonomyMatrix.txt"))) {
+                return(paste0(getwd(), "/data"))
+            }
+        }
         if (length(getUserTaxDBpath()) > 0) {
             if (length(checkUserTaxDB() > 0))
                 return(defaultTaxDB)
@@ -1289,7 +1294,7 @@ shinyServer(function(input, output, session) {
 
     # * check the status of unkTaxa --------------------------------------------
     output$unkTaxaStatus <- reactive({
-        unkTaxa <- unkTaxa()
+        unkTaxa <- unkTaxa() 
         if (length(unkTaxa) > 0) {
             if ("invalid" %in% unkTaxa$Source) return("invalid")
             if ("unknown" %in% unkTaxa$Source) return("unknown")

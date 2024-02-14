@@ -148,12 +148,6 @@ createDetailedPlot <- function(
     return(pointInfoDetail)
 }
 
-prepareDf <- function(selDf) {
-    selDf <- selDf[with(dataframe, order(fullName, orthoID)),]
-    selDf$xLabel <- paste(selDf$orthoID, " (", selDf$fullName, ")", sep = "")
-    return(selDf)
-}
-
 #' create detailed plot
 #' @param selDf data for plotting  (from reactive fn "detailPlotDt")
 #' @param detailedText text size (input$detailedText)

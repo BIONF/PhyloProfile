@@ -2,6 +2,20 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+
+\section{Version 1.16.2}{
+  \itemize{
+    \item check if taxonomy DB exists in cwd instead of r/library
+  }
+}
+
+\section{Version 1.16.1}{
+  \itemize{
+    \item fixed bug wrong order in detailed plot
+    \item fixed bug mVar for co-orthologs
+  }
+}
+
 \section{Version 1.16.0}{
   \itemize{
     \item extended options in config file
