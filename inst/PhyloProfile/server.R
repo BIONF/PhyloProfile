@@ -280,16 +280,6 @@ shinyServer(function(input, output, session) {
         ) i_distMethod <- "euclidean"
     }
 
-    if (
-        is.null(i_clusterMethod) ||
-        (i_clusterMethod != "single" &&
-         i_clusterMethod != "complete" &&
-         i_clusterMethod != "average" &&
-         i_clusterMethod != "mcquitty" &&
-         i_clusterMethod != "median" &&
-         i_clusterMethod != "centroid")
-    ) i_clusterMethod <- "complete"
-
     observe({
         if (i_cluster) {
             updateCheckboxInput(
@@ -298,21 +288,37 @@ shinyServer(function(input, output, session) {
                 "Apply clustering to profile plot",
                 value = TRUE
             )
-
-            updateSelectInput(
-                session,
-                "clusterMethod",
-                label = "Cluster method:",
-                choices = list(
-                    "single" = "single",
-                    "complete" = "complete",
-                    "average (UPGMA)" = "average",
-                    "mcquitty (WPGMA)" = "mcquitty",
-                    "median (WPGMC)" = "median",
-                    "centroid (UPGMC)" = "centroid"
-                ),
-                selected = i_clusterMethod
-            )
+            if (i_clusterMethod) {
+                updateSelectInput(
+                    session,
+                    "clusterMethod",
+                    label = "Cluster method:",
+                    choices = list(
+                        "single" = "single",
+                        "complete" = "complete",
+                        "average (UPGMA)" = "average",
+                        "mcquitty (WPGMA)" = "mcquitty",
+                        "median (WPGMC)" = "median",
+                        "centroid (UPGMC)" = "centroid"
+                    ),
+                    selected = i_clusterMethod
+                )
+            } else {
+                updateSelectInput(
+                    session,
+                    "clusterMethod",
+                    label = "Cluster method:",
+                    choices = list(
+                        "single" = "single",
+                        "complete" = "complete",
+                        "average (UPGMA)" = "average",
+                        "mcquitty (WPGMA)" = "mcquitty",
+                        "median (WPGMC)" = "median",
+                        "centroid (UPGMC)" = "centroid"
+                    ),
+                    selected = "complete"
+                )
+            }
         }
     })
 
@@ -2120,12 +2126,12 @@ shinyServer(function(input, output, session) {
     clusteredDataHeat <- reactive({
         req(v$doPlot)
         dataHeat <- dataHeat()
+        if (!is.null(i_clusterMethod)) clusterMethod <- i_clusterMethod
+        else clusterMethod <- input$clusterMethod
+        
         if (nlevels(as.factor(dataHeat$geneID)) > 1) {
             withProgress(message = 'Clustering profile data...', value = 0.5, {
                 dat <- getProfiles()
-                # do clustering based on distance matrix
-                if (!is.null(i_clusterMethod)) clusterMethod <- i_clusterMethod
-                else clusterMethod <- input$clusterMethod
                 row.order <- hclust(
                     getDistanceMatrixProfiles(), method = clusterMethod
                 )$order
