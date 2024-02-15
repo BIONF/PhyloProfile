@@ -3,6 +3,12 @@
 \encoding{UTF-8}
 
 
+\section{Version 1.16.3}{
+  \itemize{
+    \item fixed clustering method not applied
+  }
+}
+
 \section{Version 1.16.2}{
   \itemize{
     \item check if taxonomy DB exists in cwd instead of r/library
