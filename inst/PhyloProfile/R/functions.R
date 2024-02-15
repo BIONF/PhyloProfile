@@ -51,18 +51,27 @@ hasInternet <- function(){
 #' @return link to public database
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
 
-createDBlink <- function(id, source, type = ""){
+createDBlink <- function(id, source, type = "", version = ""){
     linkText <- ""
     url <- ""
-    if (source == "NCBI") {
+    if (source == "NCBI") { 
         url <- paste0("https://www.ncbi.nlm.nih.gov/protein/", id)
     } else if (source == "UniProt") {
         url <- paste0("https://www.uniprot.org/uniprot/", id)
     } else if (source == "OrthoDB") {
-        url <- paste0("https://www.orthodb.org/?query=", id)
+        if (version == "") {
+            url <- paste0("https://www.orthodb.org/?query=", id)
+        } else {
+            version <- gsub("\\.", "-", version)
+            url <- paste0("https://v", version, ".orthodb.org/?query=", id)
+        }
         if (type == "gene") {
             idMod <- gsub(":", "%3A", id)
-            url <- paste0("https://www.orthodb.org/?gene=", idMod) 
+            if (version == "") {
+                url <- paste0("https://www.orthodb.org/?gene=", idMod) 
+            } else {
+                url <- paste0("https://v", version, ".orthodb.org/?gene=", idMod) 
+            }
         }
     } else if (source == "OMA") {
         url <- paste0("https://omabrowser.org/oma/omagroup/", id, "/members/")

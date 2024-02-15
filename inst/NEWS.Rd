@@ -2,6 +2,11 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 1.18.0}{
+  \itemize{
+    \item option to specify version for OrthoDB
+  }
+}
 
 \section{Version 1.16.3}{
   \itemize{

@@ -379,6 +379,23 @@ shinyUI(
                                 ),
                                 selected = "uniprot",
                                 width = 130
+                            ),
+                            conditionalPanel(
+                                condition = "input.seedSource == 'orthodb'",
+                                textInput(
+                                    "orthodbSeedVer",
+                                    h5("OrthoDB version"),
+                                    value = "",
+                                    placeholder = "latest"
+                                ),
+                                bsPopover(
+                                    "orthodbSeedVer",
+                                    "",
+                                    paste(
+                                        "Leave blank for latest version"
+                                    ),
+                                    "bottom"
+                                )
                             )
                         ),
                         column(
@@ -395,6 +412,23 @@ shinyUI(
                                 ),
                                 selected = "ncbi",
                                 width = 130
+                            ),
+                            conditionalPanel(
+                                condition = "input.orthoSource == 'orthodb'",
+                                textInput(
+                                    "orthodbOrthoVer",
+                                    h5("OrthoDB version"),
+                                    value = "",
+                                    placeholder = "e.g. 10-1"
+                                ),
+                                bsPopover(
+                                    "orthodbOrthoVer",
+                                    "",
+                                    paste(
+                                        "Leave blank for latest version"
+                                    ),
+                                    "bottom"
+                                )
                             )
                         ),
                         actionButton(

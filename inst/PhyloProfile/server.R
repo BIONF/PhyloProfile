@@ -2927,7 +2927,7 @@ shinyServer(function(input, output, session) {
             } else if (input$seedSource == "uniprot") {
                 linkText <- paste0(linkText, createDBlink(seedId, "UniProt"))
             } else if (input$seedSource == "orthodb") {
-                linkText <- paste0(linkText, createDBlink(seedId, "OrthoDB"))
+                linkText <- paste0(linkText, createDBlink(seedId, "OrthoDB", input$orthodbSeedVer))
             } else if (input$seedSource == "oma") {
                 linkText <- paste0(linkText, createDBlink(seedId, "OMA"))
             }
@@ -2943,7 +2943,7 @@ shinyServer(function(input, output, session) {
             } else if (input$orthoSource == "uniprot") {
                 linkText <- paste0(linkText, createDBlink(protId, "UniProt"))
             } else if (input$orthoSource == "orthodb") {
-                linkText <- paste0(linkText,createDBlink(protId, "OrthoDB", "gene"))
+                linkText <- paste0(linkText,createDBlink(protId, "OrthoDB", "gene", input$orthodbOrthoVer))
             } else if (input$orthoSource == "oma") {
                 linkText <- paste0(linkText, createDBlink(protId, "OMA", "gene"))
             }
