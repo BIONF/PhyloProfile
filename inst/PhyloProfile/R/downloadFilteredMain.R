@@ -113,9 +113,11 @@ downloadFilteredMain <- function(
         if (length(var1()) == 1) {
             dataOut <- dataOut[dataOut$var1 >= var1()[1], ]
         } else {
-            dataOut <- dataOut[
-                dataOut$var1 >= var1()[1] & dataOut$var1 <= var1()[2], 
-            ]
+            if (max(dataOut$var1) <= var1()[2]) {
+                dataOut <- dataOut[
+                    dataOut$var1 >= var1()[1] & dataOut$var1 <= var1()[2], 
+                ]
+            }
         }
         if (!all(is.na(dataOut$var2))) {
             if (length(var2()) == 1) {
