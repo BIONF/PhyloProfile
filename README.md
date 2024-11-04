@@ -64,7 +64,7 @@ The dev version of *PhyloProfile* can be installed from this github repository u
 ```r
 if (!requireNamespace("devtools"))
     install.packages("devtools")
-devtools::install_github("BIONF/PhyloProfile", INSTALL_opts = c('--no-lock'), build_vignettes = TRUE)
+devtools::install_github("BIONF/PhyloProfile", INSTALL_opts = c('--no-lock'))
 ```
 
 ## Using Conda
