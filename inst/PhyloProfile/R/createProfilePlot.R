@@ -67,7 +67,7 @@ createProfilePlotUI <- function(id) {
                 selectInput(
                     ns("legendPosSub"), label = "Legend position:",
                     choices = list(
-                        "Right" = "right", "Left" = "left", "Top" = "top", 
+                        "Right" = "right", "Left" = "left", "Top" = "top",
                         "Bottom" = "bottom", "Hide" = "none"
                     ),
                     selected = "right"
@@ -101,8 +101,7 @@ createProfilePlot <- function(
         if (rtCheck) {
             checkpointp101 <- Sys.time()
             print(paste("checkpoint-P101 - before data heatmap",checkpointp101))
-        } 
-        saveRDS(clusteredDataHeat(),"~/Downloads/clusteredDataHeat.rds")
+        }
         if (typeProfile() == "customizedProfile") {
             if (is.null(inTaxa()) | is.null(inSeq())) return()
             if (applyCluster() == TRUE) {
@@ -130,9 +129,9 @@ createProfilePlot <- function(
         if (rtCheck) {
             checkpointp102 <- Sys.time()
             print(paste(
-                "checkpoint-P102 - data heatmap done", checkpointp102, 
+                "checkpoint-P102 - data heatmap done", checkpointp102,
                 " --- ",  checkpointp102 - checkpointp101
-            ))   
+            ))
         }
         return(dataHeat)
     })
@@ -153,7 +152,7 @@ createProfilePlot <- function(
             if (rtCheck) {
                 checkpointp202 <- Sys.time()
                 print(paste(
-                    "checkpoint-P202 - basic plot done", checkpointp202, 
+                    "checkpoint-P202 - basic plot done", checkpointp202,
                     " --- ",  checkpointp202 - checkpointp201
                 ))
             }
@@ -163,7 +162,7 @@ createProfilePlot <- function(
             if (rtCheck) {
                 checkpointp202 <- Sys.time()
                 print(paste(
-                    "checkpoint-P202 - basic plot done", checkpointp202, 
+                    "checkpoint-P202 - basic plot done", checkpointp202,
                     " --- ",  checkpointp202 - checkpointp201
                 ))
             }
@@ -193,14 +192,14 @@ createProfilePlot <- function(
             if (mode() == "fast") refLine <- FALSE
             p <- addRankDivisionPlot(
                 p, dataHeat(), taxDB(), rankSelect(), getSuperRank(),
-                parameters()$xAxis, parameters()$font, 
-                parameters()$groupLabelSize, parameters()$groupLabelDist, 
+                parameters()$xAxis, parameters()$font,
+                parameters()$groupLabelSize, parameters()$groupLabelDist,
                 parameters()$groupLabelAngle, refLine
             )
             if (rtCheck) {
                 checkpointp302 <- Sys.time()
                 print(paste(
-                    "checkpoint-P302 - final plot done", checkpointp302, 
+                    "checkpoint-P302 - final plot done", checkpointp302,
                     " --- ",  checkpointp302 - checkpointp301
                 ))
             }
@@ -223,7 +222,7 @@ createProfilePlot <- function(
                     height = parameters()$height,
                     brush = ns("plotBrush")
                 )
-            } else 
+            } else
                 plotOutput(
                     ns("plot"),
                     width = parameters()$width,
@@ -263,7 +262,7 @@ createProfilePlot <- function(
         dt$supertaxon <- droplevels(dt$supertaxon)
         return(dt)
     })
-    
+
     # create subplot -----------------------------------------------------------
     # ** show/hide subplot settings --------------------------------------------
     observe({
@@ -279,7 +278,7 @@ createProfilePlot <- function(
             )
         }
     })
-    
+
     # ** auto update subplot size ----------------------------------------------
     observe({
         req(nrow(brushedData()) > 0)
@@ -314,7 +313,7 @@ createProfilePlot <- function(
             updateNumericInput(session, "heightSub", value = hv)
         }
     })
-    
+
     # ** get settings for subplot; replace xAxis, font size and legend pos -----
     subPlotParameters <- reactive({
         plotParameters <- parameters()
@@ -325,7 +324,7 @@ createProfilePlot <- function(
         plotParameters$legendSize <- input$legendSizeSub
         return(plotParameters)
     })
-    
+
     # ** render subplot --------------------------------------------------------
     output$brushedInfo.ui <- renderUI({
         ns <- session$ns
@@ -341,7 +340,7 @@ createProfilePlot <- function(
             )
         )
     })
-    
+
     output$subPlot <- renderPlot({
         req(nrow(brushedData()) > 0)
         p <- heatmapPlotting(brushedData(), subPlotParameters())
@@ -351,7 +350,7 @@ createProfilePlot <- function(
         )
         p
     })
-    
+
     # ** download subplot ------------------------------------------------------
     output$profileSubDownload <- downloadHandler(
         filename = function() {
@@ -366,7 +365,7 @@ createProfilePlot <- function(
             )
         }
     )
-    
+
     # ** download data of subplot ----------------------------------------------
     output$dataSubDownload <- downloadHandler(
         filename = function() {
@@ -392,7 +391,7 @@ createProfilePlot <- function(
             )
         }
     )
-    
+
     # get info of clicked point on heatmap plot --------------------------------
     selectedpointInfo <- reactive({
         req(dataHeat())
@@ -404,16 +403,16 @@ createProfilePlot <- function(
         taxaList <- getNameList(taxDB())
         rankName <- rankSelect()
         inSelect <- taxaList$ncbiID[taxaList$fullName == inSelect()]
-        
+
         dataHeat <- dataHeat()
         if (mode() == "fast" & typeProfile() == "mainProfile")
             dataHeat <- brushedData()
-        
+
         if (is.null(dataHeat) | nrow(dataHeat) == 0) {
             message("WARNING: Data for heatmap is NULL!")
             return()
         }
-        
+
         if (typeProfile() == "customizedProfile") {
             # get sub-dataframe of selected taxa and sequences
             if (is.null(inSeq()[1]) | is.null(inTaxa()[1])) {
@@ -431,12 +430,12 @@ createProfilePlot <- function(
                 dataHeat <- subset(dataHeat, geneID %in% inSeq()
                                    & supertaxon %in% inTaxa())
             }
-            
+
             # drop all other supertaxon that are not in sub-dataframe
             dataHeat$supertaxon <- factor(dataHeat$supertaxon)
             dataHeat$geneID <- factor(dataHeat$geneID)
         }
-        
+
         # get values
         if (is.null(input$plotClick$x)) return()
         else {
@@ -504,17 +503,17 @@ createProfilePlot <- function(
                     )
                 )
             }
-            
-            
+
+
             # get ortholog ID
             orthoID <- dataHeat$orthoID[dataHeat$geneID == geneID
                                         & dataHeat$supertaxon == spec]
             totalOrtho <- length(orthoID)
-            
+
             # get working taxonomy level
             strain <- "Y"
             if (nlevels(as.factor(dataHeat$totalTaxa)) > 1) strain <- "N"
-            
+
             if (is.na(Percent)) return()
             else {
                 info <- c(
@@ -533,7 +532,7 @@ createProfilePlot <- function(
             }
         }
     })
-    
-    
+
+
     return(selectedpointInfo)
 }

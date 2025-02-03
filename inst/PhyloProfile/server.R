@@ -1044,7 +1044,6 @@ shinyServer(function(input, output, session) {
                       " --- ",  checkpoint122 - checkpoint121)
             )
         }
-        
         return(refsecpName)
     })
 
@@ -3859,7 +3858,7 @@ shinyServer(function(input, output, session) {
         df <- as.data.frame(brushedDimRedData())
         if (nrow(df) > 0) {
             removeDf <- df %>% dplyr::select(where(~ all(. == -1)))
-            subDf <- df %>% dplyr::select(-c(colnames(removeDf), Label, Freq, X, Y, n))
+            subDf <- df %>% dplyr::select(-c(colnames(removeDf), Label, Freq, X, Y, Z, n))
             if ("fullName" %in% colnames(subDf))
                 subDf <- subDf %>% dplyr::select(-c("fullName"))
             if ("ncbiID" %in% colnames(df)) {
@@ -3900,6 +3899,7 @@ shinyServer(function(input, output, session) {
             colnames(geneCountDf) <- c("geneID", "Taxa count")
             geneDf <- merge(geneDf, geneCountDf, by = "geneID", all.x = TRUE)
             # return(geneDf)
+            geneCountDf <- geneCountDf[ order(as.numeric(row.names(geneCountDf))), ]
             return(geneCountDf)
         } else {
             shinyjs::disable("addGeneDimRed")
