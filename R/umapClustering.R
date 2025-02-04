@@ -456,7 +456,7 @@ plotDimRed3D <- function(
         )
     }
     if (legendPos == "none") plot <- plot %>% hide_legend()
-    return(plot)
+    return(plot |> layout(dragmode = "lasso"))
 }
 
 

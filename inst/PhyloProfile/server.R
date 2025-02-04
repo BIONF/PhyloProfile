@@ -3866,14 +3866,17 @@ shinyServer(function(input, output, session) {
                     as.data.table(subDf),
                     id.vars = "ncbiID", variable.name = "geneID"
                 ))
-            } else
+            } else {
                 meltedDf <- data.frame(melt(
                     as.data.table(subDf),
                     id.vars = "geneID", variable.name = "ncbiID"
                 ))
+            }
             geneDf <- meltedDf %>% filter(value >= 0) %>%
                 select(geneID, ncbiID, value)
             geneDf$value <- round(geneDf$value,2)
+            # get total number of taxa
+            totalTaxa <- length(unique(geneDf$ncbiID))
             # rename "value" based on variable name(s)
             longDf <- getMainInput()
             if (ncol(longDf) >= 5) {
@@ -3895,11 +3898,10 @@ shinyServer(function(input, output, session) {
             joinedIDs <- paste(geneDf$geneID, geneDf$ncbiID)
             t <- as.data.frame(do.call(rbind, strsplit(unique(joinedIDs), " ")))
             geneCountDf <- data.frame(table(t$V1))
-            geneCountDf <- geneCountDf[order(geneCountDf$Freq, decreasing=TRUE),]
-            colnames(geneCountDf) <- c("geneID", "Taxa count")
+            geneCountDf$Percentage <- round((geneCountDf$Freq / totalTaxa)*100, 1)
+            colnames(geneCountDf) <- c("geneID", "Taxa count", "% taxa")
             geneDf <- merge(geneDf, geneCountDf, by = "geneID", all.x = TRUE)
             # return(geneDf)
-            geneCountDf <- geneCountDf[ order(as.numeric(row.names(geneCountDf))), ]
             return(geneCountDf)
         } else {
             shinyjs::disable("addGeneDimRed")
