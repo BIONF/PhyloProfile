@@ -2086,12 +2086,10 @@ shinyServer(function(input, output, session) {
                     longDataframe <- longDataframe[longDataframe$orthoID != "fdogMA",]
             }
             # update number of genes to plot based on input
-            if (nlevels(as.factor(longDataframe$geneID)) <= 1500) {
-                updateNumericInput(
-                    session, "endIndex",
-                    value = nlevels(as.factor(longDataframe$geneID))
-                )
-            }
+            updateNumericInput(
+                session, "endIndex",
+                value = nlevels(as.factor(longDataframe$geneID))
+            )
             # add geneName column if not yet exist
             if (!("geneName" %in% colnames(longDataframe))) {
                 if (!(is.null(getGeneNames()))) {
@@ -2425,11 +2423,6 @@ shinyServer(function(input, output, session) {
                 if (!is.null(geneList)) {
                     geneListDf <- read.table(file = geneList$datapath, header = FALSE)
                     listGeneOri <- unique(geneListDf$V1)
-
-                    # Update endIndex if gene list is small
-                    if (length(listGeneOri) <= 1500) {
-                        updateNumericInput(session, "endIndex", value = length(listGeneOri))
-                    }
 
                     listGene <- listGeneOri[startIndex:min(endIndex, length(listGeneOri))]
                     data <- longDataframe[longDataframe$geneID %in% listGene[!is.na(listGene)], ]
@@ -2865,13 +2858,13 @@ shinyServer(function(input, output, session) {
                                    "Hide" = "none"),
                     selected = "top"
                 )
-                updateNumericInput(session, "width", value = wv  + 50)
+                updateNumericInput(session, "width", value = min(20000, wv  + 50))
             } else if (h <= 30) {
-                updateNumericInput(session, "width", value = wv + 50)
+                updateNumericInput(session, "width", value = min(20000, wv + 50))
             } else {
-                updateNumericInput(session, "width", value = wv)
+                updateNumericInput(session, "width", value = min(20000, wv))
             }
-            updateNumericInput(session, "height", value = hv)
+            updateNumericInput(session, "height", value = min(20000, hv))
         }
         if (rtCheck) {
             checkpoint152 <- Sys.time()
@@ -3231,22 +3224,22 @@ shinyServer(function(input, output, session) {
                     )
                     updateNumericInput(
                         session,
-                        "selectedWidth", value = wv  + 50
+                        "selectedWidth", value = min(20000, wv  + 50)
                     )
                 } else if (h <= 30) {
                     updateNumericInput(
                         session,
-                        "selectedWidth", value = wv + 50
+                        "selectedWidth", value = min(20000, wv + 50)
                     )
                 } else {
                     updateNumericInput(
                         session,
-                        "selectedWidth", value = wv
+                        "selectedWidth", value = min(20000, wv)
                     )
                 }
                 updateNumericInput(
                     session,
-                    "selectedHeight", value = hv
+                    "selectedHeight", value = min(20000, hv)
                 )
             }
         }
