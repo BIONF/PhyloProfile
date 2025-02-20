@@ -348,6 +348,12 @@ createProfilePlot <- function(
             p, brushedData(), taxonHighlight(), rankSelect(),
             geneHighlight(), taxDB(), subPlotParameters()$xAxis
         )
+        p <- addRankDivisionPlot(
+            p, brushedData(), taxDB(), rankSelect(),
+            getSuperRank(), parameters()$xAxis, parameters()$font,
+            parameters()$groupLabelSize, parameters()$groupLabelDist,
+            parameters()$groupLabelAngle, FALSE
+        )
         p
     })
 
@@ -357,9 +363,15 @@ createProfilePlot <- function(
             c("subProfile.svg")
         },
         content = function(file) {
+            p <- heatmapPlotting(brushedData(), subPlotParameters())
+            p <- addRankDivisionPlot(
+                p, brushedData(), taxDB(), rankSelect(),
+                getSuperRank(), parameters()$xAxis, parameters()$font,
+                parameters()$groupLabelSize, parameters()$groupLabelDist,
+                parameters()$groupLabelAngle, FALSE
+            )
             ggsave(
-                file,
-                plot = heatmapPlotting(brushedData(), subPlotParameters()),
+                file, plot = p,
                 width = input$widthSub * 0.035, height = input$heightSub *0.035,
                 units = "cm", dpi = 300, device = "svg", limitsize = FALSE
             )

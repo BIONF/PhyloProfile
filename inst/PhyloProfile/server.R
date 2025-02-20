@@ -3709,7 +3709,7 @@ shinyServer(function(input, output, session) {
     # * download DIM reduction plot & data -------------------------------------
     output$dimRedDownloadPlot <- downloadHandler(
         filename = function() {
-            c("dimReduction.pdf")
+            c("dimReduction.svg")
         },
         content = function(file) {
             ggsave(
@@ -3741,6 +3741,12 @@ shinyServer(function(input, output, session) {
             save(data4dimRed, dimRedCoord, dimRedPlotData, file = fileName)
         }
     )
+    
+    # * disable download button for 3D DIM plot --------------------------------
+    observe({
+        if(input$dimRedPlotType == "plotly") shinyjs::disable("dimRedDownloadPlot")
+        if(input$dimRedPlotType == "ggplot") shinyjs::enable("dimRedDownloadPlot")
+    })
 
     # * create brushed DIM reduction table -------------------------------------
     brushedDimRedData <- reactive({
