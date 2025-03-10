@@ -917,7 +917,8 @@ shinyUI(
                                 selectInput(
                                     "reductionTechnique", label = "Technique",
                                     choices = list("UMAP" = "umap",
-                                                   "t-SNE" = "tsne"),
+                                                   "t-SNE" = "tsne",
+                                                   "PCA" = "pca"),
                                     selected = "umap"
                                 )
                             ),

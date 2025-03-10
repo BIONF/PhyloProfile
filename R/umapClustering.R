@@ -158,6 +158,7 @@ dimReduction <- function(
         tsne = {
             tsne::tsne(subsetDt, initial_dims=dim, k=dim, max_iter = tsneIter)
         },
+        pca = {performPCA(subsetDt)},
         stop("Unsupported reduction technique: ", reductionTechnique)
     )
     return(outDf)
@@ -204,6 +205,39 @@ fallbackUmap <- function(umapDt, randomSeed, dim) {
         n_neighbors = max(1, nrow(umapDt) - 1), n_components = dim
     )$layout
 }
+
+
+#' Helper function to perform PCA
+#' @param pcaDt data matrix for PCA
+#' @return A table contains coordinates of the first 3 PCs
+#' @author Vinh Tran tran@bio.uni-frankfurt.de
+
+performPCA <- function(pcaDt) {
+    if (!is.data.frame(pcaDt)) as.data.frame(pcaDt)
+    # Perform PCA
+    prin_comp <- stats::prcomp(pcaDt)
+    
+    # Extract the importance (proportion of variance explained by each PC)
+    importancePCs <- as.data.frame(prin_comp$sdev^2) / sum(prin_comp$sdev^2)
+    colnames(importancePCs) <- "Proportion of Variance"
+    # Print the Proportion of Variance for the first 3 PCs
+    importancePCs <- importancePCs[seq_len(3), , drop = FALSE]
+    # Check if the first 3 PCs explain at least 80% of the variance
+    sumVariance <- sum(importancePCs$`Proportion of Variance`)
+    if (sumVariance < 0.8) {
+        msg <- paste0(
+            "The first 3 PCs can only explain ", round(sumVariance*100),
+            "% of the data variance (<80%)!"
+        )
+        warning(msg)
+    }
+    
+    # Extract the principal components scores
+    components <- as.data.frame(prin_comp$x)
+    # Return only the first 3 principal components
+    return(components[, seq_len(3), drop = FALSE])
+}
+
 
 #' Reduce the number of labels for DIM reduction plot based on the
 #' gene/taxon frequency
