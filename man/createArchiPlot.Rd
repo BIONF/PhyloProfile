@@ -5,10 +5,10 @@
 \title{Create protein's domain architecure plot}
 \usage{
 createArchiPlot(info, domainDf, labelArchiSize, titleArchiSize,
-    showScore, showWeight, namePosition, firstDist, nameType, nameSize,
-    segmentSize, nameColor, labelPos, colorType, ignoreInstanceNo,
-    currentNCBIinfo, featureClassSort, featureClassOrder, colorPalette,
-    resolveOverlap, font)
+    legendArchiSize, showScore, showWeight, namePosition, firstDist, 
+    nameType, nameSize, segmentSize, nameColor, labelPos, colorType, 
+    ignoreInstanceNo, currentNCBIinfo, featureClassSort, featureClassOrder, 
+    colorPalette, resolveOverlap, font)
 }
 \arguments{
 \item{info}{A list contains seed and ortholog's IDs}
@@ -22,6 +22,8 @@ between 2 proteins* (e.g. seed protein vs ortholog) (optional).}
 \item{labelArchiSize}{Lable size (in px). Default = 12.}
 
 \item{titleArchiSize}{Title size (in px). Default = 12.}
+
+\item{legendArchiSize}{Title size (in px). Default = 12.}
 
 \item{showScore}{Show/hide E-values and Bit-scores. Default = NULL (hide)}
 

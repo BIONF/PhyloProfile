@@ -183,6 +183,9 @@ createArchitecturePlotUI <- function(id) {
                     ),
                     createTextSize(
                         ns("labelArchiSize"), "Axis label size(px)", 12, 200
+                    ),
+                    createTextSize(
+                        ns("legendArchiSize"), "Legend font size(px)", 12, 200
                     )
                 ),
                 column(
@@ -422,12 +425,13 @@ createArchitecturePlot <- function(
         df <- df[!(df$feature_id %in% input$featureList),]
         g <- createArchiPlot(
             pointInfo(), df,
-            input$labelArchiSize, input$titleArchiSize, input$showScore,
-            input$showWeight, input$namePostion, input$firstDist,input$nameType,
-            input$nameSize, input$segmentSize, input$nameColor, input$labelPos,
-            input$colorType, input$ignoreInstanceNo, currentNCBIinfo(),
-            input$featureClassSort, input$featureClassOrder, input$colorPallete,
-            input$resolveOverlap, font()
+            input$labelArchiSize, input$titleArchiSize, input$legendArchiSize,
+            input$showScore, input$showWeight, input$namePostion, 
+            input$firstDist,input$nameType, input$nameSize, input$segmentSize, 
+            input$nameColor, input$labelPos, input$colorType, 
+            input$ignoreInstanceNo, currentNCBIinfo(), input$featureClassSort, 
+            input$featureClassOrder, input$colorPallete, input$resolveOverlap, 
+            font()
         )
         if (any(g == "No domain info available!")) {
             msgPlot()
@@ -469,11 +473,11 @@ createArchitecturePlot <- function(
             df <- df[!(df$feature_id %in% input$featureList),]
             g <- createArchiPlot(
                 pointInfo(), df,
-                input$labelArchiSize, input$titleArchiSize, input$showScore,
-                input$showWeight, input$namePostion, input$firstDist,
-                input$nameType, input$nameSize, input$segmentSize,
-                input$nameColor, input$labelPos, input$colorType,
-                input$ignoreInstanceNo, currentNCBIinfo(),
+                input$labelArchiSize,input$titleArchiSize,input$legendArchiSize, 
+                input$showScore, input$showWeight, input$namePostion, 
+                input$firstDist, input$nameType, input$nameSize, 
+                input$segmentSize, input$nameColor, input$labelPos, 
+                input$colorType, input$ignoreInstanceNo, currentNCBIinfo(),
                 input$featureClassSort, input$featureClassOrder,
                 input$colorPallete, input$resolveOverlap, font()
             )

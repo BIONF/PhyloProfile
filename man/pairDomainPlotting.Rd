@@ -5,8 +5,9 @@
 \title{Create architecure plot for a pair of seed and ortholog protein}
 \usage{
 pairDomainPlotting(seed, ortho, seedDf, orthoDf, minStart, maxEnd,
-    labelSize, titleSize, showScore, showWeight, namePosition, firstDist,
-    nameType, nameSize, segmentSize, nameColor, labelPos, colorPalette, font)
+    labelSize, titleSize, legendSize, showScore, showWeight, namePosition, 
+    firstDist, nameType, nameSize, segmentSize, nameColor, labelPos, 
+    colorPalette, font)
 }
 \arguments{
 \item{seed}{Seed ID}
@@ -28,6 +29,8 @@ protein vs ortholog) (optional)}
 \item{labelSize}{lable size. Default = 12}
 
 \item{titleSize}{title size. Default = 12}
+
+\item{legendSize}{legend size. Default = 12}
 
 \item{showScore}{show/hide E-values and Bit-scores. Default = NULL (hide)}
 

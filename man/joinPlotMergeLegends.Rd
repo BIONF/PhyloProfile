@@ -10,7 +10,8 @@ joinPlotMergeLegends(
   plot1 = NULL,
   plot2 = NULL,
   position = c("bottom", "right"),
-  font = "Arial"
+  font = "Arial",
+  legendSize = 12
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ joinPlotMergeLegends(
 \item{position}{position of legend (bottom or right)}
 
 \item{font}{font of text}
+
+\item{legendSize}{font size}
 }
 \value{
 joined plots with merged legend as a grid object
@@ -65,7 +68,8 @@ plotOrtho <- PhyloProfile:::singleDomainPlotting(
 )
 # merge plots
 PhyloProfile:::joinPlotMergeLegends(
-    seedDf, orthoDf, plotSeed, plotOrtho, "bottom", font = "sans")
+    seedDf, orthoDf, plotSeed, plotOrtho, "bottom", font = "sans", 
+    legendSize = 12)
 }
 \author{
 Vinh Tran tran@bio.uni-frankfurt.de

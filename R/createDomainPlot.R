@@ -5,10 +5,10 @@
 #' which normally is also the orthologous group ID.
 #' @export
 #' @usage createArchiPlot(info, domainDf, labelArchiSize, titleArchiSize,
-#'     showScore, showWeight, namePosition, firstDist, nameType, nameSize,
-#'     segmentSize, nameColor, labelPos, colorType, ignoreInstanceNo,
-#'     currentNCBIinfo, featureClassSort, featureClassOrder, colorPalette,
-#'     resolveOverlap, font)
+#'     legendArchiSize, showScore, showWeight, namePosition, firstDist, 
+#'     nameType, nameSize, segmentSize, nameColor, labelPos, colorType, 
+#'     ignoreInstanceNo, currentNCBIinfo, featureClassSort, featureClassOrder, 
+#'     colorPalette, resolveOverlap, font)
 #' @param info A list contains seed and ortholog's IDs
 #' @param domainDf Dataframe contains domain info for the seed and ortholog.
 #' This including the seed ID, orthologs IDs, sequence lengths, feature names,
@@ -17,6 +17,7 @@
 #' between 2 proteins* (e.g. seed protein vs ortholog) (optional).
 #' @param labelArchiSize Lable size (in px). Default = 12.
 #' @param titleArchiSize Title size (in px). Default = 12.
+#' @param legendArchiSize Title size (in px). Default = 12.
 #' @param showScore Show/hide E-values and Bit-scores. Default = NULL (hide)
 #' @param showWeight Show/hide feature weights. Default = NULL (hide)
 #' @param namePosition list of positions for domain names, choose from "plot",
@@ -64,13 +65,13 @@
 #' grid::grid.draw(plot)
 
 createArchiPlot <- function(
-        info = NULL, domainDf = NULL, labelArchiSize = 12, titleArchiSize = 12,
-        showScore = NULL, showWeight = NULL, namePosition = "plot",
-        firstDist = 0.5, nameType = "Labels", nameSize = 3, segmentSize = 5,
-        nameColor = "#000000", labelPos = "Above", colorType = "Unique",
-        ignoreInstanceNo = FALSE, currentNCBIinfo = NULL,
-        featureClassSort = "Yes", featureClassOrder = NULL,
-        colorPalette = "Paired", resolveOverlap = "Yes", font = "Arial"
+    info = NULL, domainDf = NULL, labelArchiSize = 12, titleArchiSize = 12,
+    legendArchiSize = 12, showScore = NULL, showWeight = NULL, 
+    namePosition = "plot", firstDist = 0.5, nameType = "Labels", 
+    nameSize = 3, segmentSize = 5,nameColor = "#000000", labelPos = "Above", 
+    colorType = "Unique", ignoreInstanceNo = FALSE, currentNCBIinfo = NULL,
+    featureClassSort = "Yes", featureClassOrder = NULL,
+    colorPalette = "Paired", resolveOverlap = "Yes", font = "Arial"
 ){
     if (is.null(info) | is.null(domainDf)) return(ggplot() + theme_void())
     group <- as.character(info[1])
@@ -164,17 +165,17 @@ createArchiPlot <- function(
             # plotting
             g <- pairDomainPlotting(
                 seed, ortho, orderedSeedDf, orderedOrthoDf, minStart, maxEnd,
-                labelArchiSize, titleArchiSize, showScore, showWeight,
-                namePosition, firstDist, nameType, nameSize, segmentSize,
-                nameColor, labelPos, colorPalette, font)
+                labelArchiSize, titleArchiSize, legendArchiSize, showScore, 
+                showWeight, namePosition, firstDist, nameType, nameSize, 
+                segmentSize, nameColor, labelPos, colorPalette, font)
         } else {
             orderedSeedDf <- sortDomainsByList(seedDf, featureClassOrder)
             # plotting
             g <- pairDomainPlotting(
                 seed, seed, orderedSeedDf, orderedSeedDf, minStart, maxEnd,
-                labelArchiSize, titleArchiSize, showScore, showWeight,
-                namePosition, firstDist, nameType, nameSize, segmentSize,
-                nameColor, labelPos, colorPalette, font)
+                labelArchiSize, titleArchiSize, legendArchiSize, showScore, 
+                showWeight, namePosition, firstDist, nameType, nameSize, 
+                segmentSize, nameColor, labelPos, colorPalette, font)
         }
         return(g)
     }
@@ -421,8 +422,9 @@ singleDomainPlotting <- function(
 
 #' Create architecure plot for a pair of seed and ortholog protein
 #' @usage pairDomainPlotting(seed, ortho, seedDf, orthoDf, minStart, maxEnd,
-#'     labelSize, titleSize, showScore, showWeight, namePosition, firstDist,
-#'     nameType, nameSize, segmentSize, nameColor, labelPos, colorPalette, font)
+#'     labelSize, titleSize, legendSize, showScore, showWeight, namePosition, 
+#'     firstDist, nameType, nameSize, segmentSize, nameColor, labelPos, 
+#'     colorPalette, font)
 #' @param seed Seed ID
 #' @param ortho Ortho ID
 #' @param seedDf domain dataframe for seed domains containing the seed ID,
@@ -435,6 +437,7 @@ singleDomainPlotting <- function(
 #' @param maxEnd the highest stop position of all domains
 #' @param labelSize lable size. Default = 12
 #' @param titleSize title size. Default = 12
+#' @param legendSize legend size. Default = 12
 #' @param showScore show/hide E-values and Bit-scores. Default = NULL (hide)
 #' @param showWeight Show/hide feature weights. Default = NULL (hide)
 #' @param namePosition list of positions for domain names, choose from "plot",
@@ -486,10 +489,10 @@ singleDomainPlotting <- function(
 pairDomainPlotting <- function(
         seed = NULL, ortho = NULL, seedDf = NULL, orthoDf = NULL,
         minStart = 0, maxEnd = 999, labelSize = 12, titleSize = 12,
-        showScore = NULL, showWeight = NULL, namePosition = "plot",
-        firstDist = 0.5, nameType = "Labels", nameSize = 3, segmentSize = 5,
-        nameColor = "#000000",  labelPos = "Above", colorPalette = "Paired",
-        font = "Arial"
+        legendSize = 12, showScore = NULL, showWeight = NULL, 
+        namePosition = "plot", firstDist = 0.5, nameType = "Labels", 
+        nameSize = 3, segmentSize = 5, nameColor = "#000000",  
+        labelPos = "Above", colorPalette = "Paired", font = "Arial"
 ) {
     if(is.null(seed) | is.null(ortho) | is.null(seedDf) | is.null(orthoDf))
         stop("Seed/Ortho ID or domain dataframe is NULL!")
@@ -510,7 +513,8 @@ pairDomainPlotting <- function(
         )
         if ("legend" %in% namePosition) {
             g <- joinPlotMergeLegends(
-                seedDf, orthoDf, plotSeed, plotOrtho, position = "bottom", font
+                seedDf, orthoDf, plotSeed, plotOrtho, position = "bottom", font,
+                legendSize
             )
         } else {
             seedHeight <- length(levels(as.factor(seedDf$feature)))
@@ -652,6 +656,7 @@ modifyFeatureName <- function(domainDf = NULL) {
 #' @param plot2 ggplot object of plot 2
 #' @param position position of legend (bottom or right)
 #' @param font font of text
+#' @param legendSize font size
 #' @return joined plots with merged legend as a grid object
 #' @author Vinh Tran tran@bio.uni-frankfurt.de
 #' @importFrom gridExtra grid.arrange
@@ -688,11 +693,12 @@ modifyFeatureName <- function(domainDf = NULL) {
 #' )
 #' # merge plots
 #' PhyloProfile:::joinPlotMergeLegends(
-#'     seedDf, orthoDf, plotSeed, plotOrtho, "bottom", font = "sans")
+#'     seedDf, orthoDf, plotSeed, plotOrtho, "bottom", font = "sans", 
+#'     legendSize = 12)
 
 joinPlotMergeLegends <- function(
-        df1 = NULL, df2 = NULL, plot1 = NULL, plot2 = NULL,
-        position = c("bottom", "right"), font = "Arial")
+    df1 = NULL, df2 = NULL, plot1 = NULL, plot2 = NULL, 
+    position = c("bottom", "right"), font = "Arial", legendSize = 12)
 {
     if (is.null(plot1) | is.null(df1)) stop("No plot data given!")
     if (is.null(plot2) | is.null(df2))
@@ -726,7 +732,10 @@ joinPlotMergeLegends <- function(
         scale_color_manual(values = colorScheme) +
         labs(color = "Feature") +
         theme_minimal() +
-        theme(legend.position = position, text = element_text(family = font))
+        theme(
+            legend.position = position, 
+            text = element_text(family = font, size = legendSize)
+        )
     # extract legend from the temp plot above
     getOnlyLegend <- function(plot) {
         plotTable <- ggplot_gtable(ggplot_build(plot))
