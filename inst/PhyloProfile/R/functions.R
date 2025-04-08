@@ -221,6 +221,12 @@ adaptPlotSize <- function(nrTaxa = 0, nrGene = 0, xAxis = "taxa", dotZoom = 0) {
     } else return(c())
 }
 
+#' Scale a list of values into 0-1
+#' @param x a numeric vector
+#' @return a vector with values scaled from 0 to 1
+
+scale01 <- function(x){(x-min(x))/(max(x)-min(x))}
+
 # FUNCTIONS FOR RENDER UI ELEMENTS ============================================
 createSliderCutoff <- function(id, title, start, stop, varID){
     if (is.null(varID)) return()

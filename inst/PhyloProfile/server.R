@@ -2090,6 +2090,10 @@ shinyServer(function(input, output, session) {
                 session, "endIndex",
                 value = nlevels(as.factor(longDataframe$geneID))
             )
+            # ensure a minimum of 5 columns
+            while (ncol(longDataframe) < 5) {
+                longDataframe[paste0("newVar", ncol(longDataframe) + 1)] <- 1
+            }
             # add geneName column if not yet exist
             if (!("geneName" %in% colnames(longDataframe))) {
                 if (!(is.null(getGeneNames()))) {
@@ -2431,11 +2435,7 @@ shinyServer(function(input, output, session) {
                     data <- longDataframe[longDataframe$geneID %in% subsetID, ]
                 }
             }
-            # ensure a minimum of 5 columns
-            while (ncol(data) < 5) {
-                data[paste0("newVar", ncol(data) + 1)] <- 1
-            }
-            # return preData
+            # rename columns
             if (nrow(data) == 0) return()
             if (ncol(data) < 6) {
                 colnames(data) <- c("geneID","ncbiID","orthoID","var1","var2")
@@ -2445,6 +2445,24 @@ shinyServer(function(input, output, session) {
                 )
             }
             data$geneID <- droplevels(data$geneID)
+            # scale var1 and var2 to 0 and 1 if needed
+            msg1 <- "*** PLEASE NOTE: VALUES IN COLUMN"
+            msg2 <- "HAVE BEEN SCALED TO RANGE FROM 0 TO 1 !!!"
+            if (any(data$var1 > 1)) {
+                warning(paste(msg1, input$var1ID, msg2))
+                data <- data.frame(
+                    data %>% group_by(geneID) %>% mutate(var1 = scale01(var1)) %>%
+                        ungroup()
+                )
+            }
+            if (any(data$var2 > 1)) {
+                warning(paste(msg1, input$var2ID, msg2))
+                data <- data.frame(
+                    data %>% group_by(geneID) %>% mutate(var2 = scale01(var2)) %>%
+                        ungroup()
+                )
+            }
+            # return preData
             if (rtCheck) {
                 checkpoint72 <- Sys.time()
                 print(paste(
@@ -2455,7 +2473,7 @@ shinyServer(function(input, output, session) {
             return(data)
         })
     })
-
+    
     # * creating main dataframe for subset taxa (in species/strain level) ------
     getFullData <- reactive({
         req(isTruthy(v$doPlot)|isTruthy(w$doCusPlot))
@@ -2659,7 +2677,6 @@ shinyServer(function(input, output, session) {
 
                 # return clustered gene ID list
                 clusteredGeneIDs <- as.factor(row.names(datNew))
-
                 # sort original data according to clusteredGeneIDs
                 dataHeat$geneID <- factor(
                     dataHeat$geneID, levels = clusteredGeneIDs
@@ -2671,7 +2688,7 @@ shinyServer(function(input, output, session) {
                     ]
                 )
                 dataHeat$geneName <- factor(
-                    dataHeat$geneName, levels = orderedName
+                    dataHeat$geneName, levels = orderedName$geneName
                 )
                 dataHeat <- dataHeat[!is.na(dataHeat$geneID),]
                 if (rtCheck) {
