@@ -399,7 +399,7 @@ shinyUI(
                                     "orthodbSeedVer",
                                     h5("OrthoDB version"),
                                     value = "",
-                                    placeholder = "latest"
+                                    placeholder = "e.g. 10-1"
                                 ),
                                 shinyBS::bsPopover(
                                     "orthodbSeedVer",
