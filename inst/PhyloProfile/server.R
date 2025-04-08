@@ -4216,7 +4216,7 @@ shinyServer(function(input, output, session) {
             } else if (input$seedSource == "uniprot") {
                 linkText <- paste0(linkText, createDBlink(seedId, "UniProt"))
             } else if (input$seedSource == "orthodb") {
-                linkText <- paste0(linkText, createDBlink(seedId, "OrthoDB", input$orthodbSeedVer))
+                linkText <- paste0(linkText, createDBlink(seedId, "OrthoDB", "", input$orthodbSeedVer))
             } else if (input$seedSource == "oma") {
                 linkText <- paste0(linkText, createDBlink(seedId, "OMA"))
             }
