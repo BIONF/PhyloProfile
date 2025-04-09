@@ -171,7 +171,12 @@ detailPlot <- function(selDf, detailedText, var1ID, var2ID, font = "Arial"){
     colnames(var2Df) <- c("id", "score", "var")
 
     detailedDf <- rbind(var1Df, var2Df)
-
+    if(any(is.na(detailedDf$score))) {
+        detailedDf[
+            detailedDf$id %in% detailedDf$id[is.na(detailedDf$score)],
+        ]$score <- NA
+    }
+    
     # remove ONE missing variable
     if (nlevels(as.factor(detailedDf$var)) > 1) {
         detailedDf <- detailedDf[nchar(detailedDf$var) > 0, ]

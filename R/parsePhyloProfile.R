@@ -595,15 +595,9 @@ filterProfileData <- function(
         }
         return(var)
     }
-
-    if (flag == 0) {
-        DF$var1 <- filter_var(DF$var1, var1CO, var1Rel, refTaxon, DF$taxonMod)
-        DF$var2 <- filter_var(DF$var2, var2CO, var2Rel, refTaxon, DF$taxonMod)
-    } else {
-        DF$var1 <- filter_var(DF$var1, var1CO, var1Rel, NA, NA)
-        DF$var2 <- filter_var(DF$var2, var2CO, var2Rel, NA, NA)
-    }
-
+    DF$var1 <- filter_var(DF$var1, var1CO, var1Rel, refTaxon, DF$taxonMod)
+    DF$var2 <- filter_var(DF$var2, var2CO, var2Rel, refTaxon, DF$taxonMod)
+    
     DFtmp <- DF[stats::complete.cases(DF), ]
     finalPresSpecDt <- calcPresSpec(DFtmp, taxaCount)
     DF <- DF %>% left_join(finalPresSpecDt, by = c("geneID", "supertaxon"))
@@ -680,6 +674,7 @@ filterProfileData <- function(
 #' (mVar1 & mVar2) for each gene.
 #' @author Vinh Tran tran@bio.uni-frankfurt.de
 #' @export
+#' @importFrom dplyr tibble
 #' @seealso \code{\link{parseInfoProfile}} for creating a full processed
 #' profile dataframe, \code{\link{filterProfileData}} for filter processed
 #' profile and \code{\link{filteredProfile}} for a demo filtered
@@ -742,7 +737,7 @@ reduceProfile <- function(filteredProfile) {
         names(superDfExt)[names(superDfExt) == "mVar2"] <- "var2"
     }
     superDfExt$orthoID <- as.character(superDfExt$orthoID)
-    return(superDfExt)
+    return(dplyr::tibble(superDfExt))
 }
 
 #' Complete processing of raw input phylogenetic profiles
