@@ -3572,18 +3572,21 @@ shinyServer(function(input, output, session) {
     })
 
     # * generate list of dimRed plot labels ------------------------------------
-    output$dimRedTaxa.ui <- renderUI({
+    observe({
         req(renameLabelsDimRed())
         df <- groupLabelDimRedData(renameLabelsDimRed(), input$dimRedLabelNr)
-        list(
-            selectInput(
-                "excludeDimRedTaxa", "Choose labels to hide", multiple = TRUE,
-                c(levels(as.factor(df$Label))), selected = NULL
-            ),
-            selectInput(
-                "highlightDimRedTaxa", "Choose labels to highlight",
-                c(levels(as.factor(df$Label))), selected = NULL, multiple = TRUE
-            )
+        allLabels <- levels(as.factor(df$Label))
+        
+        selectedExcludeLabels <- readSingleColFile(input$excludeDimRedTaxaFile)
+        selectedHighlightLabels <- readSingleColFile(input$highlightDimRedTaxaFile)
+        
+        updateSelectizeInput(
+            session, "excludeDimRedTaxa", "", server = TRUE, choices = allLabels, 
+            selected = unique(selectedExcludeLabels[selectedExcludeLabels %in% allLabels])
+        )
+        updateSelectizeInput(
+            session, "highlightDimRedTaxa", "", server = TRUE,  choices = allLabels, 
+            selected = unique(selectedHighlightLabels[selectedHighlightLabels %in% allLabels])
         )
     })
 

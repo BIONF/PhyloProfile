@@ -1,19 +1,26 @@
-citHeader("To cite PhyloProfile in publications use:")
+citHeader("To cite PhyloProfile in publications, please use:")
 
-citEntry(entry = "Article",
-         title        = "{PhyloProfile}: Dynamic visualization and exploration of multi-layered phylogenetic profiles",
-         author       = personList(as.person("Ngoc Vinh Tran"),
-                                   as.person("Bastian Greshake Tzovaras"),
-                                   as.person("Ingo Ebersberger")),
-         journal      = "Bioinformatics",
-         volume       = "34(17)",
-         pages        = "3041–3043",
-         year         = "2018",
-         url          = "https://doi.org/10.1093/bioinformatics/bty225",
+bibentry(
+  bibtype = "Unpublished",
+  title = "PhyloProfile v2 - Exploring multi-layered phylogenetic profiles at scale",
+  author = c(person("Vinh Tran"), person("Ingo Ebersberger")),
+  year = 2025,
+  note = "Preprint available at arXiv: https://doi.org/10.48550/arXiv.2504.19710"
+)
 
-         textVersion  =
-           paste("Ngoc-Vinh Tran, Bastian Greshake Tzovaras, Ingo Ebersberger;",
-                 "PhyloProfile: Dynamic visualization and exploration of multi-layered phylogenetic profiles,",
-                 "Bioinformatics, Volume 34, Issue 17, 01 September 2018, Pages 3041–3043",
-                 "https://doi.org/10.1093/bioinformatics/bty225")
+bibentry(
+  bibtype = "Article",
+  title = "{PhyloProfile}: Dynamic visualization and exploration of multi-layered phylogenetic profiles",
+  author = c(person("Ngoc-Vinh Tran"), person("Bastian Greshake Tzovaras"), person("Ingo Ebersberger")),
+  journal = "Bioinformatics",
+  year = 2018,
+  volume = "34(17)",
+  pages = "3041-3043",
+  url = "https://doi.org/10.1093/bioinformatics/bty225",
+  textVersion = paste(
+    "Ngoc-Vinh Tran, Bastian Greshake Tzovaras, Ingo Ebersberger;",
+    "PhyloProfile: Dynamic visualization and exploration of multi-layered phylogenetic profiles,",
+    "Bioinformatics, Volume 34, Issue 17, 01 September 2018, Pages 3041-3043",
+    "https://doi.org/10.1093/bioinformatics/bty225"
+  )
 )

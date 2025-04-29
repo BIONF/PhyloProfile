@@ -156,7 +156,7 @@ shinyUI(
 
         # MAIN NARVARPAGE TABS -------------------------------------------------
         navbarPage(
-            em(strong("PhyloProfile v2.0.0")),
+            em(strong("PhyloProfile v2.0.1")),
             id = "tabs",
             collapsible = TRUE,
             inverse = TRUE,
@@ -1065,7 +1065,58 @@ shinyUI(
                             "bottom"
                         ),
                         hr(),
-                        uiOutput("dimRedTaxa.ui"),
+                        
+                        column(
+                            12,
+                            style = "padding:0px;",
+                            strong("Choose labels to hide")
+                        ),
+                        column(
+                            12,
+                            fluidRow(
+                                column(
+                                    8,
+                                    style = "padding:0px;",
+                                    selectInput(
+                                        "excludeDimRedTaxa", label = "",
+                                        choices = "", selected = NULL, 
+                                        multiple = TRUE
+                                    )
+                                ),
+                                column(
+                                    4,
+                                    fileInput(
+                                        "excludeDimRedTaxaFile", "", width = "100%"
+                                    )
+                                )
+                            )
+                        ),
+                        column(
+                            12,
+                            style = "padding:0px;",
+                            strong("Choose labels to highlight")
+                        ),
+                        column(
+                            12,
+                            fluidRow(
+                                column(
+                                    8,
+                                    style = "padding:0px;",
+                                    selectInput(
+                                        "highlightDimRedTaxa", label = "",
+                                        choices = "", selected = NULL, 
+                                        multiple = TRUE
+                                    )
+                                ),
+                                column(
+                                    4,
+                                    fileInput(
+                                        "highlightDimRedTaxaFile", "", width = "100%"
+                                    )
+                                )
+                            )
+                        ),
+                        hr(),
                         selectInput(
                             "colorPalleteDimRed",
                             "Color pallete",
