@@ -227,6 +227,18 @@ adaptPlotSize <- function(nrTaxa = 0, nrGene = 0, xAxis = "taxa", dotZoom = 0) {
 
 scale01 <- function(x){(x-min(x))/(max(x)-min(x))}
 
+#' Helper function to read single-column files
+#' @param fileInput fileInput object
+#' @return vector of unique values in input file
+
+readSingleColFile <- function(fileInput) {
+    if (!is.null(fileInput)) {
+        labels <- readLines(fileInput$datapath)
+        return(unique(labels))
+    }
+    return(NULL)
+}
+
 # FUNCTIONS FOR RENDER UI ELEMENTS ============================================
 createSliderCutoff <- function(id, title, start, stop, varID){
     if (is.null(varID)) return()

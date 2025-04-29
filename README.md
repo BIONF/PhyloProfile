@@ -122,6 +122,8 @@ We would like to thank
 This tool is released under [MIT license](https://github.com/BIONF/PhyloProfile/blob/master/LICENSE).
 
 # How-To Cite
+Vinh Tran, Ingo Ebersberger, PhyloProfile v2 - Exploring multi-layered phylogenetic profiles at scale, 2025, Preprint available at arXiv: https://doi.org/10.48550/arXiv.2504.19710.
+  
 Ngoc-Vinh Tran, Bastian Greshake Tzovaras, Ingo Ebersberger, PhyloProfile: dynamic visualization and exploration of multi-layered phylogenetic profiles, Bioinformatics, Volume 34, Issue 17, 01 September 2018, Pages 3041–3043, https://doi.org/10.1093/bioinformatics/bty225
 
 or use the citation function in R CMD to have it directly in BibTex or LaTeX format
