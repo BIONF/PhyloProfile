@@ -3610,18 +3610,10 @@ shinyServer(function(input, output, session) {
                 session, "dimRedPlot.dotzoom", "Dot size zooming",
                 min = 0, max = 100, step = 5, value = 0
             )
-            updateSliderInput(
-                session, "dimRedDotAlpha", "Transparent level", min = 0,
-                max = 1, step = 0.05, value = 0
-            )
         } else {
             updateSliderInput(
                 session, "dimRedPlot.dotzoom", "Dot size zooming",
                 min = -3, max = 10, step = 1, value = 0
-            )
-            updateSliderInput(
-                session, "dimRedDotAlpha", "Transparent level", min = 0,
-                max = 1, step = 0.05, value = 0.5
             )
         }
     })
