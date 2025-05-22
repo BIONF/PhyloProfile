@@ -1020,7 +1020,7 @@ shinyUI(
                             2,
                             sliderInput(
                                 "dimRedDotAlpha", "Transparent level", min = 0,
-                                max = 1, step = 0.05, value = 0.5, width=200
+                                max = 1, step = 0.05, value = 0.0, width = 200
                             ),
                             numericInput(
                                 "randomSeed", "Random seed",
@@ -1151,33 +1151,55 @@ shinyUI(
                     ),
                     # * Main panel for DIM red plot and tables -----------------
                     mainPanel(
-                        column(
-                            6,
-                            em(
-                                "Brush to select and double-click to zoom in/out",
-                                style = "color:darkblue"
+                        conditionalPanel(
+                            condition = 'input.dimRedPlotType == "ggplot"',
+                            column(
+                                12,
+                                em(
+                                    "Drag to select, then double click to zoom in. Double click empty space to zoom out",
+                                    style = "color:darkblue"
+                                )
                             )
                         ),
+                        conditionalPanel(
+                            condition = 'input.dimRedPlotType == "plotly"',
+                            column(
+                                12,
+                                em(
+                                    "Click on data point to select",
+                                    style = "color:darkblue"
+                                )
+                            )
+                        ),      
                         uiOutput("dimRedPlot.ui"),
                         br(),
                         column(
-                            7,
+                            10,
                             column(
-                                4,
+                                3,
                                 shinyBS::bsButton(
                                     "plotDimRed", "PLOT", type = "action",
                                     style = "danger", disabled = FALSE
                                 )
                             ),
+                            conditionalPanel(
+                                condition = 'input.dimRedPlotType == "plotly"',
+                                column(
+                                    3,
+                                    actionButton(
+                                        "clear", "CLEAR selected points"
+                                    )
+                                )
+                            ),
                             column(
-                                4,
+                                3,
                                 downloadButton(
                                     "dimRedDownloadPlot", "Download plot",
                                     class = "butDL"
                                 )
                             ),
                             column(
-                                4,
+                                3,
                                 downloadButton(
                                     "dimRedDownloadData", "Download data",
                                     class = "butDL"
