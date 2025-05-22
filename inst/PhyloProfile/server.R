@@ -3610,18 +3610,10 @@ shinyServer(function(input, output, session) {
                 session, "dimRedPlot.dotzoom", "Dot size zooming",
                 min = 0, max = 100, step = 5, value = 0
             )
-            updateSliderInput(
-                session, "dimRedDotAlpha", "Transparent level", min = 0,
-                max = 1, step = 0.05, value = 0
-            )
         } else {
             updateSliderInput(
                 session, "dimRedPlot.dotzoom", "Dot size zooming",
                 min = -3, max = 10, step = 1, value = 0
-            )
-            updateSliderInput(
-                session, "dimRedDotAlpha", "Transparent level", min = 0,
-                max = 1, step = 0.05, value = 0.5
             )
         }
     })
@@ -3674,6 +3666,7 @@ shinyServer(function(input, output, session) {
                     highlightTaxa = input$highlightDimRedTaxa,
                     dotZoom = input$dimRedPlot.dotzoom
                 )
+                g <- event_register(g, "plotly_click")
                 return(g)
             }
         )
@@ -3768,9 +3761,9 @@ shinyServer(function(input, output, session) {
         if(input$dimRedPlotType == "ggplot") shinyjs::enable("dimRedDownloadPlot")
     })
 
-    # * create brushed DIM reduction table -------------------------------------
+    # * get selected data on DIM plot ------------------------------------------
+    # ** brushed DIM reduction table (2D plot) ---------------------------------
     brushedDimRedData <- reactive({
-        # get list of selected gene(s)
         if (is.null(input$dimRedBrush))
             return()
         else {
@@ -3784,7 +3777,23 @@ shinyServer(function(input, output, session) {
             )
         }
     })
+    
+    # ** clicked DIM reduction table (3D plot) ---------------------------------
+    rv <- reactiveValues(clickedData = data.frame())
+    observeEvent(event_data("plotly_click"), {
+        click_data <- event_data("plotly_click")
+        if (!is.null(click_data)) {
+            clicked_df <- dimRedPlotData() %>% filter(
+                X == click_data$x, Y == click_data$y, Z == click_data$z
+            )
+            rv$clickedData <- rbind(rv$clickedData, clicked_df)
+        }
+    })
+    observeEvent(input$clear, {
+        rv$clickedData <- data.frame()
+    })
 
+    # * create tables for selected points in DIM plot --------------------------
     output$dimRedTable.ui <- renderUI({
         if (input$dimRedType == "taxa") {
             list(
@@ -3818,7 +3827,7 @@ shinyServer(function(input, output, session) {
 
     # ** DIM reduction selected taxa table -------------------------------------
     dimRedSelectedTaxa <- reactive({
-        if (is.null(input$dimRedBrush$ymin)) {
+        if (is.null(input$dimRedBrush$ymin) & is.null(event_data("plotly_click"))) {
             shinyjs::disable("addSpecDimRed")
             return()
         } else {
@@ -3828,7 +3837,11 @@ shinyServer(function(input, output, session) {
                 shinyjs::enable("addSpecDimRed")
             } else shinyjs::disable("addSpecDimRed")
         }
-        df <- as.data.frame(brushedDimRedData())
+        
+        if(input$dimRedPlotType == "ggplot") {
+            df <- as.data.frame(brushedDimRedData())
+        } else df <- as.data.frame(rv$clickedData)
+        
         if (nrow(df) > 0) {
             specDf <- df %>% dplyr::select(ncbiID, fullName, Label, Freq, n)
             colnames(specDf) <- c(
@@ -3861,7 +3874,7 @@ shinyServer(function(input, output, session) {
 
     # ** DIM reduction selected genes table ------------------------------------
     dimRedSelectedGenes <- reactive({
-        if (is.null(input$dimRedBrush$ymin)){
+        if (is.null(input$dimRedBrush$ymin) & is.null(event_data("plotly_click"))) {
             shinyjs::disable("addGeneDimRed")
             return()
         } else {
@@ -3874,7 +3887,11 @@ shinyServer(function(input, output, session) {
                 shinyjs::disable("addGeneDimRed")
             }
         }
-        df <- as.data.frame(brushedDimRedData())
+        
+        if(input$dimRedPlotType == "ggplot") {
+            df <- as.data.frame(brushedDimRedData())
+        } else df <- as.data.frame(rv$clickedData)
+        
         if (nrow(df) > 0) {
             removeDf <- df %>% dplyr::select(where(~ all(. == -1)))
             subDf <- df %>% dplyr::select(-c(colnames(removeDf), Label, Freq, X, Y, Z, n))

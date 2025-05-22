@@ -2,6 +2,12 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 2.0.2}{
+  \itemize{
+    \item data selection in 3D DIM plot
+  }
+}
+
 \section{Version 2.0.0}{
   \itemize{
     \item runtime significantly improved #105
