@@ -19,6 +19,7 @@
 #' @importFrom shinyFiles shinyDirButton shinyDirChoose parseDirPath
 #' @importFrom yaml read_yaml write_yaml
 #' @importFrom RCurl url.exists
+#' @importFrom htmlwidgets saveWidget
 #' @import svglite
 #' @examples
 #' \dontrun{

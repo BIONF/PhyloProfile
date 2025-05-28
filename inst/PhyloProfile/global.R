@@ -5,9 +5,10 @@ library(PhyloProfile)
 source("R/functions.R")
 
 # List of dependent packages --------------------------------------------------
-packages <- c("ape", "BiocStyle","data.table", "dplyr", "ggplot2", "shiny", "shinyBS",
-    "shinyFiles", "shinyjs", "scattermore", "svglite", "plotly"
-)
+packages <- c(
+    "ape", "BiocStyle","data.table", "dplyr", "ggplot2", "htmlwidgets",
+    "shiny", "shinyBS", "shinyFiles", "shinyjs", "scattermore", 
+    "svglite", "plotly")
 
 # Load packages
 lapply(packages, library, character.only = TRUE)

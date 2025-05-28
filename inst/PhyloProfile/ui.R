@@ -156,7 +156,7 @@ shinyUI(
 
         # MAIN NARVARPAGE TABS -------------------------------------------------
         navbarPage(
-            em(strong("PhyloProfile v2.0.2")),
+            em(strong("PhyloProfile v2.0.3")),
             id = "tabs",
             collapsible = TRUE,
             inverse = TRUE,
@@ -1194,9 +1194,21 @@ shinyUI(
                             ),
                             column(
                                 3,
-                                downloadButton(
-                                    "dimRedDownloadPlot", "Download plot",
-                                    class = "butDL"
+                                conditionalPanel(
+                                    condition = 'input.dimRedPlotType == "plotly"',
+                                    
+                                    downloadButton(
+                                        "dimRedDownloadPlot3D", "Download 3D plot",
+                                        class = "butDL"
+                                    )
+                                ),
+                                conditionalPanel(
+                                    condition = 'input.dimRedPlotType == "ggplot"',
+                                    
+                                    downloadButton(
+                                        "dimRedDownloadPlot", "Download 2D plot",
+                                        class = "butDL"
+                                    )
                                 )
                             ),
                             column(

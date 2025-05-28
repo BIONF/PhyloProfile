@@ -3451,7 +3451,7 @@ shinyServer(function(input, output, session) {
             fileInput("dimRedCustomLabel", "Add customized labels")
     })
 
-    observeEvent(input$input$dimRedCustomLabel, {
+    observeEvent(input$dimRedCustomLabel, {
         values$uploadLabelState <- 'uploaded'
     })
 
@@ -3720,9 +3720,11 @@ shinyServer(function(input, output, session) {
     })
 
     # * download DIM reduction plot & data -------------------------------------
+    
+    # * download 2D plot -------------------------------------------------------
     output$dimRedDownloadPlot <- downloadHandler(
         filename = function() {
-            c("dimReduction.svg")
+            paste("dimReduction2D_", Sys.Date(), ".svg", sep = "")
         },
         content = function(file) {
             ggsave(
@@ -3742,7 +3744,27 @@ shinyServer(function(input, output, session) {
             )
         }
     )
-
+    
+    # * download 3D plot -------------------------------------------------------
+    output$dimRedDownloadPlot3D <- downloadHandler(
+        filename = function() {
+            paste("dimReduction3D_", Sys.Date(), ".html", sep = "")
+        },
+        content = function(file) {
+            plot3d <- plotDimRed3D(
+                dimRedPlotData(), legendPos = input$dimRedPlot.legend,
+                colorPalette = input$colorPalleteDimRed,
+                transparent = input$dimRedDotAlpha,
+                highlightTaxa = input$highlightDimRedTaxa,
+                dotZoom = input$dimRedPlot.dotzoom
+            )
+            htmlwidgets::saveWidget(
+                widget = plot3d, file = file, selfcontained = TRUE
+            )
+        }
+    )
+    
+    # * download DIM reduction data --------------------------------------------
     output$dimRedDownloadData <- downloadHandler(
         filename = function() {
             c("dimRedData.RData")
@@ -3786,13 +3808,21 @@ shinyServer(function(input, output, session) {
             clicked_df <- dimRedPlotData() %>% filter(
                 X == click_data$x, Y == click_data$y, Z == click_data$z
             )
-            rv$clickedData <- rbind(rv$clickedData, clicked_df)
+            if (
+                length(rv$clickedData) == 0 || 
+                !(clicked_df[1,1] %in% rv$clickedData[,1])
+            ) {
+                rv$clickedData <- rbind(rv$clickedData, clicked_df)
+            }
         }
     })
     observeEvent(input$clear, {
         rv$clickedData <- data.frame()
     })
-
+    observeEvent(input$plotDimRed, {
+        rv$clickedData <- data.frame()
+    })
+    
     # * create tables for selected points in DIM plot --------------------------
     output$dimRedTable.ui <- renderUI({
         if (input$dimRedType == "taxa") {
@@ -5093,7 +5123,7 @@ shinyServer(function(input, output, session) {
         } else {
             varList <- as.list(c(input$var1ID, input$var2ID, "% present taxa"))
         }
-
+        varList <- varList[!(varList %in% "% present taxa")]
         selectInput(
             "selectedDist", "Choose variable to plot:", varList, varList[1]
         )
@@ -5131,7 +5161,8 @@ shinyServer(function(input, output, session) {
                 analyzeDistribution, "distPlot",
                 data = reactive(
                     createPercentageDistributionData(
-                        getMainInput(), input$rankSelect, getTaxDBpath()
+                        # getMainInput(), 
+                        getFullData(), input$rankSelect, getTaxDBpath()
                     )
                 ),
                 varID = reactive(input$selectedDist),
