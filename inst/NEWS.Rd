@@ -2,6 +2,12 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 2.0.3}{
+  \itemize{
+    \item option to download 3D DIM plot as HTML
+  }
+}
+
 \section{Version 2.0.2}{
   \itemize{
     \item data selection in 3D DIM plot

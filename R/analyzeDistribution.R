@@ -25,13 +25,15 @@ createPercentageDistributionData <- function(
     geneID <- ncbiID <- supertaxon <- NULL
     allMainRanks <- getTaxonomyRanks()
     if (!(rankName[1] %in% allMainRanks)) stop("Invalid taxonomy rank given!")
-    if (ncol(inputData) < 4) {
-        colnames(inputData) <- c("geneID", "ncbiID", "orthoID")
-    } else if (ncol(inputData) < 5) {
-        colnames(inputData) <- c("geneID", "ncbiID", "orthoID", "var1")
-    } else {
-        colnames(inputData) <- c("geneID", "ncbiID", "orthoID", "var1", "var2")
-    }
+    # if (ncol(inputData) < 4) {
+    #     colnames(inputData) <- c("geneID", "ncbiID", "orthoID")
+    # } else if (ncol(inputData) < 5) {
+    #     colnames(inputData) <- c("geneID", "ncbiID", "orthoID", "var1")
+    # } else {
+    #     colnames(inputData) <- c("geneID","ncbiID","orthoID","var1","var2")
+    # }
+    inputData <- inputData[, seq_len(3)]
+    colnames(inputData) <- c("geneID", "ncbiID", "orthoID")
     # count number of inparalogs
     paralogCount <- inputData %>% dplyr::count(geneID, ncbiID)
     inputData <- merge(inputData, paralogCount, by = c("geneID", "ncbiID"))

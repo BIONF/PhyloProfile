@@ -1193,9 +1193,21 @@ shinyUI(
                             ),
                             column(
                                 3,
-                                downloadButton(
-                                    "dimRedDownloadPlot", "Download plot",
-                                    class = "butDL"
+                                conditionalPanel(
+                                    condition = 'input.dimRedPlotType == "plotly"',
+                                    
+                                    downloadButton(
+                                        "dimRedDownloadPlot3D", "Download 3D plot",
+                                        class = "butDL"
+                                    )
+                                ),
+                                conditionalPanel(
+                                    condition = 'input.dimRedPlotType == "ggplot"',
+                                    
+                                    downloadButton(
+                                        "dimRedDownloadPlot", "Download 2D plot",
+                                        class = "butDL"
+                                    )
                                 )
                             ),
                             column(

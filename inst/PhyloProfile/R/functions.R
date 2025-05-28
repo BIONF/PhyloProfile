@@ -7,20 +7,7 @@
 #' input list) or "sortedGenes" (genes should be ordered by this list)
 #' @return data either sorted or non-sorted
 #' @author Vinh Tran {tran@bio.uni-frankfurt.de}
-# sortGeneIDs <- function(data, orderType, geneOrder){
-#     data$geneID <- as.factor(data$geneID)
-#     if (orderType == "none") {
-#         # keep user defined geneID order
-#         data$geneID <- factor(data$geneID, levels = unique(data$geneID))
-#     } else if (orderType == "user defined") {
-#         # keep user defined geneID order
-#         if (length(geneOrder[1]) == 0) return(data)
-#         if (names(geneOrder[1]) == "sortedGenes") {
-#             data$geneID <- factor(data$geneID, levels = geneOrder$sortedGenes)
-#         }
-#     }
-#     return(data)
-# }
+
 sortGeneIDs <- function(data, orderType, geneOrder) {
     # Check if geneID is already a factor; if not, convert it
     if (!is.factor(data$geneID)) {
