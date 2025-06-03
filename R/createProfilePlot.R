@@ -329,14 +329,39 @@ heatmapPlotting <- function(data = NULL, parm = NULL){
             }
             # plot inparalogs (if available)
             if (length(unique(stats::na.omit(data$paralog))) > 0) {
+                # Define min and max for your desired size range
+                min_size <- 1
+                max_size <- 3*(1+parm$dotZoom)
+                # Manually rescale paralog size
+                min_val <- min(data$paralog, na.rm = TRUE)
+                max_val <- max(data$paralog, na.rm = TRUE)
+                # Avoid division by zero (when min == max)
+                if (min_val == max_val) {
+                    data$paralogSize <- max_size
+                } else {
+                    data$paralogSize <- 
+                        ((data$paralog - min_val) / (max_val - min_val)) * 
+                        (max_size - min_size) + min_size
+                }
+                # create breaks for legend
+                paralog_vals <- sort(unique(na.omit(data$paralog)))
+                n_vals <- length(paralog_vals)
+                custom_breaks <- if (n_vals <= 5) {
+                    paralog_vals
+                } else {
+                    paralog_vals[round(seq(2, n_vals, length.out = 5))]
+                }
                 p <- p +
                     geom_point(
                         data = data, aes(size = paralog), color=parm$paraColor,
                         na.rm = TRUE, show.legend = TRUE) +
                     guides(size = guide_legend(title = "# of co-orthologs")) +
-                    scale_size_continuous(range = c(
-                        min(stats::na.omit(data$paralogSize))*(1+parm$dotZoom),
-                        max(stats::na.omit(data$paralogSize))*(1+parm$dotZoom)))
+                    scale_size_continuous(#range = c(
+                        # min(stats::na.omit(data$paralogSize))*(1+parm$dotZoom),
+                        # max(stats::na.omit(data$paralogSize))*(1+parm$dotZoom)),
+                        # breaks = sort(unique(na.omit(data$paralog))))
+                        breaks = custom_breaks,
+                        range = c(min_size, max_size))
             }
         }
     } else {
@@ -455,7 +480,7 @@ heatmapPlottingFast <- function(data = NULL, parm = NULL) {
             "paraColor" = "#07D000", "xSize" = 8, "ySize" = 8, "legendSize" = 8,
             "mainLegend" = "top", "dotZoom" = 0, "colorVar" = "var1")
     geneID<-geneName<-supertaxon<-category<-var1<-var2<- presSpec<-paralog<-NULL
-    orthoFreq <- xmin <- xmax <- ymin <- ymax <- x <- NULL
+    orthoFreq <- xmin <- xmax <- ymin <- ymax <- x <- y <- NULL
     if (is.null(parm$colorVar)) parm$colorVar <- "var1"
     ### create heatmap plot
     if (!(is.null(parm$geneIdType))) {
@@ -463,7 +488,7 @@ heatmapPlottingFast <- function(data = NULL, parm = NULL) {
     }   
     # create a canvas
     if (parm$xAxis == "genes") {
-        p <- ggplot(data,aes(x=geneID, y=supertaxon)) +
+        p <- ggplot(data,aes(x = geneID, y = supertaxon)) +
             labs(x = "Gene ID", y = "Taxon")
     } else {
         p <- ggplot(data, aes(y = geneID, x = supertaxon)) +
@@ -481,6 +506,7 @@ heatmapPlottingFast <- function(data = NULL, parm = NULL) {
     # Extract x, y, and color values
     x_values <- as.numeric(data$supertaxon)
     y_values <- as.numeric(data$geneID)
+    # Create color vector: green if paralog > 1, else gradient by var1 or var2
     if (parm$colorVar == "var1") {
         cl <- colorRampPalette(c(parm$lowColorVar1, parm$highColorVar1))(100)[
             cut(data$var1, breaks = 100)
@@ -489,33 +515,44 @@ heatmapPlottingFast <- function(data = NULL, parm = NULL) {
         cl <- colorRampPalette(c(parm$lowColorVar2, parm$highColorVar2))(100)[
             cut(data$var2, breaks = 100)
         ]
+    cl[data$paralog > 1] <- parm$paraColor
     # Add scatter plot
     p <- p + 
         geom_scattermost(
             cbind(x_values, y_values), color = cl,
             pointsize = 2 * (1 + parm$dotZoom), pixels = c(1000, 1000)
         )
+    # Add legend (gradient color) for var1 or var2
     if (parm$colorVar == "var1") {
         p <- p +
             geom_point(data=data.frame(x = double(0)), aes(x, x, color = x)) +
             scale_color_gradientn(
                 colors = colorRampPalette(
-                    c(parm$lowColorVar1, parm$highColorVar1)
-                )(100),
-                limits = c(0,1),
-                name = parm$var1ID
+                    c(parm$lowColorVar1, parm$highColorVar1))(100),
+                limits = c(0,1), name = parm$var1ID
             )
     } else {
         p <- p +
             geom_point(data=data.frame(x = double(0)), aes(x, x, color = x)) +
             scale_color_gradientn(
                 colors = colorRampPalette(
-                    c(parm$lowColorVar2, parm$highColorVar2)
-                )(100),
-                limits = c(0,1),
-                name = parm$var2ID
+                    c(parm$lowColorVar2, parm$highColorVar2))(100),
+                limits = c(0,1), name = parm$var2ID
             )
-    }   
+    }
+
+    # Add only one real co-ortholog point with fill = green to generate legend
+    if(any(data$paralog > 1, na.rm = TRUE)) {
+        co_point <- data[data$paralog > 1, ][1, ]
+        co_point$x <- as.numeric(co_point$supertaxon)
+        co_point$y <- as.numeric(co_point$geneID)
+        p <- p + geom_point(
+            data = co_point, aes(x = x, y = y, fill = "Co-orthologs"),
+            shape = 21, size = 3
+        ) + scale_fill_manual(
+            values = c("Co-orthologs" = parm$paraColor), name = NULL
+        )
+    }
     return(p)
 }
 

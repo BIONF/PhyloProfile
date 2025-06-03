@@ -2,6 +2,12 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 2.0.4}{
+  \itemize{
+    \item show co-orthologs in overview plot
+  }
+}
+
 \section{Version 2.0.3}{
   \itemize{
     \item option to download 3D DIM plot as HTML
