@@ -4,7 +4,7 @@
 \alias{getCoreGene}
 \title{Identify core genes for a list of selected taxa}
 \usage{
-getCoreGene(rankName, taxaCore = c("none"), profileDt, taxaCount,
+getCoreGene(rankName, taxaCore, profileDt, taxaCount,
     var1Cutoff = c(0, 1), var2Cutoff = c(0, 1), percentCutoff = c(0, 1),
     coreCoverage = 100, taxDB = NULL)
 }

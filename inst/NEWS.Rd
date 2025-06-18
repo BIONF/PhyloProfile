@@ -2,6 +2,13 @@
 \title{PhyloProfile news}
 \encoding{UTF-8}
 
+\section{Version 2.0.5}{
+  \itemize{
+    \item auto adjust plot hight for taxonomic labels
+    \item consider 90 percent of input taxa for core gene ident. by default
+  }
+}
+
 \section{Version 2.0.4}{
   \itemize{
     \item show co-orthologs in overview plot

@@ -5,7 +5,7 @@
 #' that criteria must be fullfilled for a certain percentage of selected taxa
 #' or all of them (determined via coreCoverage).
 #' @export
-#' @usage getCoreGene(rankName, taxaCore = c("none"), profileDt, taxaCount,
+#' @usage getCoreGene(rankName, taxaCore, profileDt, taxaCount,
 #'     var1Cutoff = c(0, 1), var2Cutoff = c(0, 1), percentCutoff = c(0, 1),
 #'     coreCoverage = 100, taxDB = NULL)
 #' @param rankName working taxonomy rank (e.g. "species", "genus", "family")
@@ -51,7 +51,7 @@
 #' )
 
 getCoreGene <- function(
-    rankName = NULL, taxaCore = c("none"), profileDt = NULL, taxaCount = NULL,
+    rankName = NULL, taxaCore = c(), profileDt = NULL, taxaCount = NULL,
     var1Cutoff = c(0, 1), var2Cutoff = c(0, 1),
     percentCutoff = c(0, 1), coreCoverage = 100, taxDB = NULL
 ) {
@@ -61,9 +61,10 @@ getCoreGene <- function(
     supertaxonID <- mVar1 <- mVar2 <- presSpec <- geneID <- Freq <- NULL
     # get ID list of chosen taxa & main input profile
     taxaList <- getNameList(taxDB)
-    if ("none" %in% taxaCore) {
-        superID <- NA
-    } else superID <- taxaList$ncbiID[
+    if (length(taxaCore) == 0) {
+        stop("WARNING: Please select taxa of interest!")
+    }
+    superID <- taxaList$ncbiID[
         taxaList$fullName%in%taxaCore & taxaList$rank %in% c(rankName,"norank")]
     # filter by var1 and var2 cutoffs
     if (!is.null(var1Cutoff[2])) {

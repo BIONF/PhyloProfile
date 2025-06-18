@@ -356,12 +356,8 @@ heatmapPlotting <- function(data = NULL, parm = NULL){
                         data = data, aes(size = paralog), color=parm$paraColor,
                         na.rm = TRUE, show.legend = TRUE) +
                     guides(size = guide_legend(title = "# of co-orthologs")) +
-                    scale_size_continuous(#range = c(
-                        # min(stats::na.omit(data$paralogSize))*(1+parm$dotZoom),
-                        # max(stats::na.omit(data$paralogSize))*(1+parm$dotZoom)),
-                        # breaks = sort(unique(na.omit(data$paralog))))
-                        breaks = custom_breaks,
-                        range = c(min_size, max_size))
+                    scale_size_continuous(
+                        breaks = custom_breaks, range = c(min_size, max_size))
             }
         }
     } else {
@@ -816,17 +812,27 @@ addRankDivisionPlot <- function(
                     )
             }
         }
+        longestLabelLen <- max(nchar(unique(as.character(subTaxMatrix$name))))
+        marginSize <- longestLabelLen * groupLabelSize * groupLabelDist
         if (xAxis == "taxa") {
             return(
-                profilePlot + coord_cartesian(
-                    clip = 'off', ylim = c(1, max_taxa + groupLabelDist)
-                )
+                profilePlot +
+                    coord_cartesian(clip = "off") +
+                    theme(
+                        plot.margin = margin(
+                            t = marginSize, r = 10, b = 10, l = 10
+                        )
+                    )
             )
         } else
             return(
-                profilePlot + coord_cartesian(
-                    clip = 'off', xlim = c(1, max_taxa + groupLabelDist)
-                )
+                profilePlot +
+                    coord_cartesian(clip = "off") +
+                    theme(
+                        plot.margin = margin(
+                            t = 10, r = marginSize, b = 10, l = 10
+                        )
+                    )
             )
     }
 }

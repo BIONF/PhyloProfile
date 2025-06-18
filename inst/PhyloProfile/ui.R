@@ -156,7 +156,7 @@ shinyUI(
 
         # MAIN NARVARPAGE TABS -------------------------------------------------
         navbarPage(
-            em(strong("PhyloProfile v2.0.4")),
+            em(strong("PhyloProfile v2.0.5")),
             id = "tabs",
             collapsible = TRUE,
             inverse = TRUE,
@@ -804,10 +804,6 @@ shinyUI(
                             value = FALSE,
                             width = NULL
                         ),
-                        # shinyBS::bsButton(
-                        #     "applyFilter", "Apply filter", style = "warning",
-                        #     icon("check"), disabled = FALSE
-                        # ),
                         shinyBS::bsButton(
                             "updateBtn", "Update apperance", style = "warning",
                             icon("sync"), disabled = FALSE
@@ -1424,7 +1420,7 @@ shinyUI(
                                     "Core taxa coverage",
                                     min = 0,
                                     max = 100,
-                                    value = 100,
+                                    value = 90,
                                     step = 5
                                 )
                             ),
@@ -2127,7 +2123,7 @@ shinyUI(
                 6,
                 numericInput(
                     "groupLabelDist", "Height for group label",
-                    min = 0, max = 100, step = 1, value = 7, width = 100
+                    min = 1, max = 2, step = 0.1, value = 1.5, width = 100
                 )
             ),
             column(
@@ -2224,7 +2220,7 @@ shinyUI(
                 6,
                 numericInput(
                     "groupLabelDistSelect", "Height for group label",
-                    min = 0, max = 100, step = 1, value = 3, width = 100
+                    min = 1, max = 2, step = 0.1, value = 1.5, width = 100
                 )
             ),
             column(
