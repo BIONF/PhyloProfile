@@ -1324,7 +1324,7 @@ shinyServer(function(input, output, session) {
     })
 
     output$var2Age.ui <- renderUI({
-        if(is.null(input$var1[1])) {
+        if(is.null(input$var2[1])) {
             createSliderCutoff(
                 "var2Age", paste(input$var2ID, "cutoff:"), 0.0,1.0, input$var2ID
             )
@@ -2225,7 +2225,6 @@ shinyServer(function(input, output, session) {
                     }
                 }
             }
-            print(head(domainDf))
             return(domainDf)
         })
     })

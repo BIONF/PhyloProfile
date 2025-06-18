@@ -2219,7 +2219,7 @@ shinyUI(
                 6,
                 numericInput(
                     "groupLabelDistSelect", "Height for group label",
-                    min = 0, max = 100, step = 1, value = 3, width = 100
+                    min = 1, max = 2, step = 0.1, value = 1.5, width = 100
                 )
             ),
             column(
