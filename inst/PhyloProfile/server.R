@@ -968,13 +968,13 @@ shinyServer(function(input, output, session) {
             selectInput(
                 "rankSelect", label = "",
                 choices = getTaxonomyRanks(),
-                selected = "class"
+                selected = "strain"
             )
         } else if (input$demoData == "ampk-tor") {
             selectInput(
                 "rankSelect", label = "",
                 choices = getTaxonomyRanks(),
-                selected = "species"
+                selected = "strain"
             )
         } else if (input$demoData == "preCalcDt") {
             selectedRank <- "species"
@@ -1310,19 +1310,31 @@ shinyServer(function(input, output, session) {
 
     # * render filter slidebars for Gene age estimation plot -------------------
     output$var1Age.ui <- renderUI({
-        createSliderCutoff(
-            "var1Age",
-            paste(input$var1ID, "cutoff:"),
-            input$var1[1], input$var1[2], input$var1ID
-        )
+        if(is.null(input$var1[1])) {
+            createSliderCutoff(
+                "var1Age", paste(input$var1ID, "cutoff:"), 0.0,1.0, input$var1ID
+            )
+        } else {
+            createSliderCutoff(
+                "var1Age",
+                paste(input$var1ID, "cutoff:"),
+                input$var1[1], input$var1[2], input$var1ID
+            )
+        }
     })
 
     output$var2Age.ui <- renderUI({
-        createSliderCutoff(
-            "var2Age",
-            paste(input$var2ID, "cutoff:"),
-            input$var2[1], input$var2[2], input$var2ID
-        )
+        if(is.null(input$var1[1])) {
+            createSliderCutoff(
+                "var2Age", paste(input$var2ID, "cutoff:"), 0.0,1.0, input$var2ID
+            )
+        } else {
+            createSliderCutoff(
+                "var2Age",
+                paste(input$var2ID, "cutoff:"),
+                input$var2[1], input$var2[2], input$var2ID
+            )
+        }
     })
 
     output$percentAge.ui <- renderUI({
@@ -1947,6 +1959,12 @@ shinyServer(function(input, output, session) {
             shinyBS::updateButton(session, "plotCustom", disabled = TRUE)
         }
     })
+    
+    # * disable the Function navbarMenu until PLOT button is clicked -----------
+    shinyjs::disable(selector = "a[data-value='Function']")
+    observeEvent(input$do, {
+        shinyjs::enable(selector = "a[data-value='Function']")
+    })
 
     # * check if genes ordered by distances has been selected ------------------
     output$applyClusterCheck.ui <- renderUI({
@@ -2207,6 +2225,7 @@ shinyServer(function(input, output, session) {
                     }
                 }
             }
+            print(head(domainDf))
             return(domainDf)
         })
     })
@@ -2865,16 +2884,27 @@ shinyServer(function(input, output, session) {
             hv <- adaptedSize[2]
             wv <- adaptedSize[3]
             if (h <= 20) {
-                updateSelectInput(
-                    session, "mainLegend",
-                    label = "Legend position:",
-                    choices = list("Right" = "right",
-                                   "Left" = "left",
-                                   "Top" = "top",
-                                   "Bottom" = "bottom",
-                                   "Hide" = "none"),
-                    selected = "top"
-                )
+                if (input$superRankSelect == "") {
+                    updateSelectInput(
+                        session, "mainLegend", label = "Legend position:",
+                        choices = list("Right" = "right",
+                                       "Left" = "left",
+                                       "Top" = "top",
+                                       "Bottom" = "bottom",
+                                       "Hide" = "none"),
+                        selected = "top"
+                    )
+                } else {
+                    updateSelectInput(
+                        session, "mainLegend", label = "Legend position:",
+                        choices = list("Right" = "right",
+                                       "Left" = "left",
+                                       "Top" = "top",
+                                       "Bottom" = "bottom",
+                                       "Hide" = "none"),
+                        selected = "right"
+                    )
+                }
                 updateNumericInput(session, "width", value = min(20000, wv  + 50))
             } else if (h <= 30) {
                 updateNumericInput(session, "width", value = min(20000, wv + 50))
@@ -3229,16 +3259,6 @@ shinyServer(function(input, output, session) {
                 hv <- hv + 300
                 wv <- wv + 300
                 if (h <= 20) {
-                    updateSelectInput(
-                        session, "selectedLegend",
-                        label = "Legend position:",
-                        choices = list("Right" = "right",
-                                       "Left" = "left",
-                                       "Top" = "top",
-                                       "Bottom" = "bottom",
-                                       "Hide" = "none"),
-                        selected = "top"
-                    )
                     updateNumericInput(
                         session,
                         "selectedWidth", value = min(20000, wv  + 50)
@@ -5271,14 +5291,13 @@ shinyServer(function(input, output, session) {
     observe({
         desc = paste(
             "IDENTIFY GENES THAT ARE SHARED AMONG SELECTED TAXA.",
-            "You can set the minimal taxa that should be taken into
-            account by using the \"Core taxa coverage\" cutoff.",
-            "If you are working with a taxonomy level (e.g. Family)
-            that is higher than the one in the input profile (e.g.
-            Species), you can also identify a minimal fragtion of species
-            that need to have an ortholog in each supertaxon with
-            \"% of present taxa\" cutoff. WARNING: You should set the cutoffs
-            before selecting taxa of interest!"
+            "You can set the minnimum number of taxa to be considered by using
+            the \"Core taxa coverage\" cutoff.", "If you are working with a 
+            higher taxonomy level (e.g. Family) than the one in the input 
+            profile (e.g. Species), you can also specify a minimum fraction of 
+            species that must have an ortholog in each supertaxon using the
+            \"% of present taxa\" cutoff. These cutoffs should be adjusted 
+            according to your specifc needs!"
         )
 
         if (input$tabs == "Core gene identification") {
@@ -5307,26 +5326,17 @@ shinyServer(function(input, output, session) {
             choice$fullName <- as.factor(choice$fullName)
 
             out <- as.list(levels(choice$fullName))
-            out <- append("none", out)
 
             if (input$applyCoreTaxa == TRUE) {
                 out <- coreTaxaName()
-                return(selectInput(
-                    "taxaCore",
-                    "Select taxa of interest:",
-                    out,
-                    selected = out,
-                    multiple = TRUE
-                ))
-            } else {
-                return(selectInput(
-                    "taxaCore",
-                    "Select taxa of interest:",
-                    out,
-                    selected = out[1],
-                    multiple = TRUE
-                ))
-            }
+            } 
+            return(selectInput(
+                "taxaCore",
+                "Select taxa of interest:",
+                out,
+                selected = out,
+                multiple = TRUE
+            ))
         }
     })
 

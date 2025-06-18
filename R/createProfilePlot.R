@@ -810,17 +810,27 @@ addRankDivisionPlot <- function(
                     )
             }
         }
+        longestLabelLen <- max(nchar(unique(as.character(subTaxMatrix$name))))
+        marginSize <- longestLabelLen * groupLabelSize * groupLabelDist
         if (xAxis == "taxa") {
             return(
-                profilePlot + coord_cartesian(
-                    clip = 'off', ylim = c(1, max_taxa + groupLabelDist)
-                )
+                profilePlot +
+                    coord_cartesian(clip = "off") +
+                    theme(
+                        plot.margin = margin(
+                            t = marginSize, r = 10, b = 10, l = 10
+                        )
+                    )
             )
         } else
             return(
-                profilePlot + coord_cartesian(
-                    clip = 'off', xlim = c(1, max_taxa + groupLabelDist)
-                )
+                profilePlot +
+                    coord_cartesian(clip = "off") +
+                    theme(
+                        plot.margin = margin(
+                            t = 10, r = marginSize, b = 10, l = 10
+                        )
+                    )
             )
     }
 }
