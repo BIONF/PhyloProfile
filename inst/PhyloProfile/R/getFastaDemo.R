@@ -13,11 +13,14 @@
 
 getFastaDemo <- function(seqIDs = NULL, demoData = "arthropoda") {
     if (is.null(seqIDs)) stop("No sequence ID given!")
+    demoBaseUrl<-"https://github.com/BIONF/phyloprofile-data/raw/master/rdata/"
     if (demoData == "ampk-tor" | demoData == "arthropoda") {
         if (demoData == "ampk-tor") {
-            faFile <- myData[["EH2545"]]
+            load(url(paste0(demoBaseUrl, "ampkTorFasta.RData")))
+            faFile <- ampkTorFasta
         } else {
-            faFile <- myData[["EH2548"]]
+            load(url(paste0(demoBaseUrl, "arthropodaFasta.RData")))
+            faFile <- arthropodaFasta
         }
         
         # get sequences

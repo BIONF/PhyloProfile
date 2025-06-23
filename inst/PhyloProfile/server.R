@@ -27,6 +27,7 @@ shinyServer(function(input, output, session) {
         currentNCBIinfo <- as.data.frame(data.table::fread(nameFullFile))
 
     fastModeCutoff <- 600
+    demoBaseUrl <- "https://github.com/BIONF/phyloprofile-data/raw/master/rdata/"
     # =========================== INITIAL CHECKING  ============================
     # * check for internet connection ------------------------------------------
     observe({
@@ -155,7 +156,7 @@ shinyServer(function(input, output, session) {
             shinyBS::closeAlert(session, "fileExistMsg")
         }
     })
-
+    
     # ========================== LOAD CONFIG FILE ==============================
     configFile <- .GlobalEnv$configFile
     i_mainInput <- i_domainInput <- i_fastaInput <- NULL
@@ -2067,9 +2068,11 @@ shinyServer(function(input, output, session) {
                 } else return()
             } else {
                 if (input$demoData == "arthropoda") {
-                    longDataframe <- myData[["EH2547"]]
+                    load(url(paste0(demoBaseUrl, "arthropodaPhyloProfile.RData")))
+                    longDataframe <- arthropodaPhyloProfile
                 } else if (input$demoData == "ampk-tor") {
-                    longDataframe <- myData[["EH2544"]]
+                    load(url(paste0(demoBaseUrl, "ampkTorPhyloProfile.RData")))
+                    longDataframe <- ampkTorPhyloProfile
                 } else if (input$demoData == "preCalcDt") {
                     longDataframe <- createLongMatrix(i_mainInput)
                 } else {
@@ -2191,9 +2194,11 @@ shinyServer(function(input, output, session) {
                         }
                     } else {
                         if (input$demoData == "arthropoda") {
-                            domainDf <- myData[["EH2549"]]
+                            load(url(paste0(demoBaseUrl, "arthropodaDomains.RData")))
+                            domainDf <- arthropodaDomains
                         } else {
-                            domainDf <- myData[["EH2546"]]
+                            load(url(paste0(demoBaseUrl, "ampkTorDomains.RData")))
+                            domainDf <- ampkTorDomains
                         }
 
                         domainDf$seedID <- as.character(domainDf$seedID)
