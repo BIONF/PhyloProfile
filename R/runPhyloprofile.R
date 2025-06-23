@@ -10,7 +10,6 @@
 #' @rawNamespace import(data.table, except = c(first, last, between))
 #' @import dplyr
 #' @importFrom DT dataTableOutput renderDataTable
-#' @import ExperimentHub
 #' @importFrom extrafont fonts font_import
 #' @importFrom shinyBS bsPopover bsButton bsAlert popify bsModal updateButton 
 #' closeAlert createAlert

@@ -1,6 +1,6 @@
 Package: PhyloProfile
-Version: 2.0.5
-Date: 2025-06-18
+Version: 2.0.6
+Date: 2025-06-23
 Title: PhyloProfile
 Authors@R: c(
     person("Vinh", "Tran", role = c("aut", "cre"), email = "tran@bio.uni-frankfurt.de", comment=c(ORCID="0000-0001-6772-7595")),
@@ -11,15 +11,15 @@ Description: PhyloProfile is a tool for exploring complex phylogenetic profiles.
 URL: https://github.com/BIONF/PhyloProfile/
 BugReports: https://github.com/BIONF/PhyloProfile/issues
 License: MIT + file LICENSE
-Depends: R (>= 4.4.0)
+Depends: R (>= 4.5.0)
 Encoding: UTF-8
 biocViews: Software, Visualization, DataRepresentation, MultipleComparison, FunctionalPrediction, DimensionReduction
 Imports:
     ape, bioDist, BiocStyle, Biostrings, colourpicker, data.table, dplyr, DT,
-    energy, ExperimentHub, extrafont, fastcluster, ggplot2, gridExtra,
-    htmlwidgets, pbapply, plotly, RColorBrewer, RCurl, Rfast, scattermore, 
-    shiny, shinyBS, shinycssloaders, shinyFiles, shinyjs, stringr, tsne, 
-    svglite, umap, xml2, zoo, yaml
+    energy, extrafont, fastcluster, ggplot2, gridExtra, htmlwidgets, pbapply, 
+    plotly, RColorBrewer, RCurl, Rfast, scattermore, shiny, shinyBS, 
+    shinycssloaders, shinyFiles, shinyjs, stringr, tsne, svglite, umap, xml2, 
+    zoo, yaml
 RoxygenNote: 7.3.2
 Suggests: knitr, rmarkdown, testthat, OmaDB
 VignetteBuilder: knitr
