@@ -1,7 +1,6 @@
 #' Import function files
 sourceFiles = list.files(path = "R", pattern = "*.R$", full.names = TRUE)
 lapply(sourceFiles, source, .GlobalEnv)
-if (is.null(extrafont::fonts())) extrafont::font_import()
 
 #' MAIN UI =====================================================================
 shinyUI(
@@ -476,7 +475,8 @@ shinyUI(
                             6,
                             strong("Font"),
                             selectInput(
-                                "font","", choices = extrafont::fonts(),
+                                "font","", 
+                                choices = sort(unique(systemfonts::system_fonts()$family)),
                                 selected = "Arial"
                             ),
                             shinyBS::bsPopover(
@@ -577,11 +577,11 @@ shinyUI(
                                 taxa!</em></strong></p>'
                             ),
                             h5(""),
-                            shinyBS::bsButton(
-                                "butParse",
-                                "Get taxonomy info",
-                                disabled = FALSE,
-                                style = "warning"
+                            actionButton(
+                                inputId = "butParse",
+                                label = "Get taxonomy info",
+                                class = "btn btn-warning",
+                                disabled = FALSE
                             ),
 
                             hr(),
@@ -1229,10 +1229,10 @@ shinyUI(
             # FUNCTION TAB =====================================================
             navbarMenu(
                 "Function",
-                # * Profiles clustering ----------------------------------------
+                # * Profile clustering ----------------------------------------
                 tabPanel(
-                    "Profiles clustering",
-                    h4(strong("Profiles clustering")),
+                    "Profile clustering", value = "profile_clustering",
+                    h4(strong("Profile clustering")),
                     shinyBS::bsAlert("descClusteringUI"),
 
                     wellPanel(
@@ -1312,7 +1312,7 @@ shinyUI(
 
                 # * Distribution analysis --------------------------------------
                 tabPanel(
-                    "Distribution analysis",
+                    "Distribution analysis", value = "distribution_analysis",
                     h4(strong("Distribution analysis")),
                     shinyBS::bsAlert("descDistributionUI"),
 
@@ -1356,7 +1356,7 @@ shinyUI(
 
                 # * Gene age estimation ----------------------------------------
                 tabPanel(
-                    "Gene age estimation",
+                    "Gene age estimation", value = "gene_age_estimation",
                     h4(strong("Gene age estimation")),
                     shinyBS::bsAlert("descGeneAgeUI"),
 
@@ -1397,7 +1397,7 @@ shinyUI(
 
                 # * Core gene identification  ----------------------------------
                 tabPanel(
-                    "Core gene identification",
+                    "Core gene identification", value = "core_gene_ident",
                     h4(strong("Core gene identification")),
                     shinyBS::bsAlert("descCoreGeneUI"),
 
@@ -1451,7 +1451,7 @@ shinyUI(
 
                 # * Group Comparison  ------------------------------------------
                 tabPanel(
-                    "Group comparison",
+                    "Group comparison", value = "group_comparison",
                     h4(strong("Group comparison")),
                     shinyBS::bsAlert("descGCUI"),
                     wellPanel(
@@ -1553,7 +1553,7 @@ shinyUI(
 
                 # * NCBI taxonomy data -----------------------------------------
                 tabPanel(
-                    "NCBI taxonomy data",
+                    "NCBI taxonomy data", value = "ncbi_tax_data",
                     shinyBS::bsAlert("descNcbiTaxDbUI"),
                     column(
                         3,
@@ -1829,80 +1829,6 @@ shinyUI(
             shinyBS::bsButton(
                 "newDone", "Finish adding", style = "warning", disabled = TRUE
             )
-        ),
-
-        # * popup for confirming parsing taxa from input file ------------------
-        shinyBS::bsModal(
-            "parseConfirm",
-            "Get taxonomy info",
-            "butParse",
-            size = "small",
-            HTML(
-                '<p>Fetching Missing Taxonomy Information and
-                Post-processing.</p><p><em>This windows will close
-                automatically when eveything is done. Please wait...</em></p>
-                <p><strong><span style="color: #ff0000;">PLEASE RELOAD THIS
-                TOOL WHEN FINISHED!!!</span></strong></p>'
-            )
-        ),
-
-        # * popup for plotting detailed plot -----------------------------------
-        shinyBS::bsModal(
-            "modalBs",
-            "Detailed plot",
-            "detailedBtn",
-            size = "large",
-            fluidRow(
-                column(
-                    2, createPlotSize("detailedHeight", "Height (px)", 100)
-                ),
-                column(
-                    3, createTextSize("detailedText", "Text size (px)", 12, 150)
-                ),
-                column(
-                    7,
-                    checkboxInput(
-                        "detailedRemoveNA",
-                        strong("Hide taxa that have no ortholog (NAs)",
-                               style = "color:red"),
-                        value = FALSE
-                    ),
-                    checkboxInput(
-                        "detailedFilter",
-                        strong("Apply filters",
-                               style = "color:red"),
-                        value = FALSE
-                    )
-                )
-            ),
-            hr(),
-            createDetailedPlotUI("detailedPlot"),
-            shinyBS::bsButton(
-                "doDomainPlot", "Show domain architecture", disabled = TRUE
-            ),
-            uiOutput("checkDomainFiles"),
-            br(),
-            h4("Sequence:"),
-            verbatimTextOutput("fasta"),
-            br(),
-            h4("Links:"),
-            uiOutput("dbLink.ui")
-        ),
-
-        # * popup for plotting domain architecture plot ------------------------
-        shinyBS::bsModal(
-            "plotArchi",
-            "Domain architecture",
-            "doDomainPlot",
-            size = "large",
-            createArchitecturePlotUI("archiPlot")
-        ),
-        shinyBS::bsModal(
-            "plotArchiFromMain",
-            "Domain architecture",
-            "doDomainPlotMain",
-            size = "large",
-            createArchitecturePlotUI("archiPlotMain")
         ),
 
         # * popup for setting plot colors (profiles) ---------------------------

@@ -1668,9 +1668,9 @@ shinyServer(function(input, output, session) {
     # * check if data is loaded and "parse" button is clicked and confirmed ----
     v1 <- reactiveValues(parse = FALSE)
     observeEvent(input$butParse, {
-        toggleModal(session, "parseConfirm", toggle = "close")
+        showModal(parseConfirmModal())
         v1$parse <- input$butParse
-        shinyBS::updateButton(session, "butParse", disabled = TRUE)
+        shinyjs::disable("butParse")
         shinyjs::toggleState("newTaxaAsk")
         shinyjs::toggleState("mainInput")
     })
@@ -1879,6 +1879,7 @@ shinyServer(function(input, output, session) {
                 )
             }
         }
+        removeModal()
         return()
     })
 
@@ -1962,9 +1963,20 @@ shinyServer(function(input, output, session) {
     })
     
     # * disable the Function navbarMenu until PLOT button is clicked -----------
-    shinyjs::disable(selector = "a[data-value='Function']")
+    to_hide <- c(
+        "profile_clustering",
+        "distribution_analysis",
+        "gene_age_estimation",
+        "core_gene_ident",
+        "group_comparison"
+    )
+    observe({
+        for (v in to_hide) {
+            shinyjs::runjs(paste0('$("a[data-value=\'', v, '\']").hide();'))
+        }
+    })
     observeEvent(input$do, {
-        shinyjs::enable(selector = "a[data-value='Function']")
+        shinyjs::runjs('$("a[data-value]").show();')
     })
 
     # * check if genes ordered by distances has been selected ------------------
@@ -2777,7 +2789,7 @@ shinyServer(function(input, output, session) {
         }
         choice <- inputTaxonName()
         out <- levels(factor(choice$fullName))
-        if (input$applyMainTaxa == TRUE) {
+        if (!is.null(input$applyMainTaxa) && input$applyMainTaxa == TRUE) {
             outSub <- mainTaxaName()
             updateSelectizeInput(
                 session, "taxonHighlight", server = TRUE,
@@ -2888,7 +2900,7 @@ shinyServer(function(input, output, session) {
             hv <- adaptedSize[2]
             wv <- adaptedSize[3]
             if (h <= 20) {
-                if (input$superRankSelect == "") {
+                if (!is.null(input$superRankSelect) && input$superRankSelect == "") {
                     updateSelectInput(
                         session, "mainLegend", label = "Legend position:",
                         choices = list("Right" = "right",
@@ -4242,6 +4254,10 @@ shinyServer(function(input, output, session) {
     })
 
     # * render detailed plot ---------------------------------------------------
+    observeEvent(input$detailedBtn, {
+        showModal(detailedPlotModal())
+    })
+    
     pointInfoDetail <- callModule(
         createDetailedPlot, "detailedPlot",
         data = detailPlotDt,
@@ -4400,6 +4416,10 @@ shinyServer(function(input, output, session) {
 
     # ======================== FEATURE ARCHITECTURE PLOT =======================
     # * check if seed and orthoID are specified and get domain file/path -------
+    observeEvent(input$doDomainPlot, {
+        showModal(archiPlotModal())
+    })
+    
     observe({
         infoTmp <- c()
         if (input$tabs == "Main profile") {
@@ -4547,24 +4567,21 @@ shinyServer(function(input, output, session) {
     })
 
     # * render domain plot -----------------------------------------------------
-    observeEvent(input$doDomainPlot, {
-        callModule(
-            createArchitecturePlot, "archiPlot",
-            pointInfo = getDomainFile,
-            domainInfo = getDomainInformation,
-            currentNCBIinfo = reactive(currentNCBIinfo),
-            font = reactive(input$font)
-        )
-    })
-    observeEvent(input$doDomainPlotMain, {
-        callModule(
-            createArchitecturePlot, "archiPlotMain",
-            pointInfo = getDomainFile,
-            domainInfo = getDomainInformation,
-            currentNCBIinfo = reactive(currentNCBIinfo),
-            font = reactive(input$font)
-        )
-    })
+    renderArchiModal <- function(triggerId, moduleId) {
+        observeEvent(input[[triggerId]], {
+            showModal(archiPlotModal(moduleId))
+            
+            callModule(
+                createArchitecturePlot, moduleId,
+                pointInfo = getDomainFile,
+                domainInfo = getDomainInformation,
+                currentNCBIinfo = reactive(currentNCBIinfo),
+                font = reactive(input$font)
+            )
+        })
+    }
+    renderArchiModal("doDomainPlot", "archiPlot")
+    renderArchiModal("doDomainPlotMain", "archiPlotMain")
 
     # ======================== FILTERED DATA DOWNLOADING =======================
 
