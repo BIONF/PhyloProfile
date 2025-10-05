@@ -329,7 +329,7 @@ generateSinglePlot <- function(plotDf, parameters, variable) {
         ) +
         scale_color_manual("", values = c("red")) +
         # add title and theme
-        labs(x = element_blank(), y = variable) +
+        labs(x = "", y = variable) +
         theme_minimal() +
         theme(
             axis.text.x = element_text(size = parameters$xSize, hjust = 1),
@@ -404,7 +404,7 @@ gridArrangeSharedLegend <- function(
     combined <- switch(
         position,
         "bottom" = gridExtra::arrangeGrob(
-            do.call(arrangeGrob, gl),
+            do.call(gridExtra::arrangeGrob, gl),
             legend,
             ncol = 1,
             heights = grid::unit.c(grid::unit(1, "npc") - lheight, lheight),
@@ -417,7 +417,7 @@ gridArrangeSharedLegend <- function(
             )
         ),
         "right" = gridExtra::arrangeGrob(
-            do.call(arrangeGrob, gl),
+            do.call(gridExtra::arrangeGrob, gl),
             legend,
             ncol = 2,
             widths = grid::unit.c(grid::unit(1, "npc") - lwidth, lwidth),
@@ -470,6 +470,17 @@ gridArrangeSharedLegend <- function(
 varDistTaxPlot <- function(data, plotParameters) {
     if (is.null(data)) stop("Input data cannot be NULL!")
     if (missing(plotParameters)) stop("Plot parameters are missing!")
+    if (is.null(plotParameters)) {
+        plotParameters <- list(
+            "xSizeGC" = 12, "ySizeGC" = 12, 
+            "titleSizeGC" = 15, "legendSizeGC"  = 12,
+            "widthVarGC" = 600, "heightVarGC" =  400,
+            "legendGC" =  "right", "mValueGC" = "mean",
+            "widthFeatureGC" = 600, "heightFeatureGC" =  400,
+            "xAxisGC" = "no", "angleGC" = 60,
+            "inGroupName" = "In-group", "outGroupName" = "Out-group")
+    }
+    
     # rename in-group and out-group
     data$type[data$type == "In-group"] <- plotParameters$inGroupName
     data$type[data$type == "Out-group"] <- plotParameters$outGroupName
@@ -477,7 +488,7 @@ varDistTaxPlot <- function(data, plotParameters) {
     if (ncol(data) == 2) {
         plotVar1 <- generateSinglePlot(data, plotParameters, colnames(data)[1])
         return(
-            arrangeGrob(
+            gridExtra::arrangeGrob(
                 plotVar1,
                 top = grid::textGrob(
                     plotParameters$title, vjust = 1,
@@ -492,7 +503,7 @@ varDistTaxPlot <- function(data, plotParameters) {
         plotVar2 <- generateSinglePlot(data, plotParameters, colnames(data)[2])
         if (plotParameters$legendPosition == "none") {
             return(
-                arrangeGrob(
+                gridExtra::arrangeGrob(
                     plotVar1, plotVar2,
                     nrow = 1,
                     top = grid::textGrob(
@@ -636,7 +647,17 @@ featureDistTaxPlot <- function(data, plotParameters) {
     Taxon_group <- NULL
     if (is.null(data)) stop("Input data cannot be NULL!")
     if (missing(plotParameters)) stop("Plot parameters are missing!")
-
+    if (is.null(plotParameters)) {
+        plotParameters <- list(
+            "xSizeGC" = 12, "ySizeGC" = 12, 
+            "titleSizeGC" = 15, "legendSizeGC"  = 12,
+            "widthVarGC" = 600, "heightVarGC" =  400,
+            "legendGC" =  "right", "mValueGC" = "mean",
+            "widthFeatureGC" = 600, "heightFeatureGC" =  400,
+            "xAxisGC" = "no", "angleGC" = 60,
+            "inGroupName" = "In-group", "outGroupName" = "Out-group")
+    }
+        
     data$Taxon_group[data$Taxon_group == "In-group"] <-
         plotParameters$inGroupName
     data$Taxon_group[data$Taxon_group == "Out-group"] <-

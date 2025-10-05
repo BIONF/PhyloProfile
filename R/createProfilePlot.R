@@ -22,10 +22,10 @@ processOrthoID <- function(dataHeat = NULL) {
     firstGeneID <- dataHeat$geneID[1]
     firstSupertaxonID <- dataHeat$supertaxonID[1]
     if (
-        length(firstOrtho) >= 3 && firstOrtho[1] == firstGeneID && 
+        length(firstOrtho) >= 3 && firstOrtho[1] == firstGeneID &&
         grepl(firstSupertaxonID, firstOrtho[2])
     ) { idFormat <- "bionf" }
-    
+
     # parse orthoID
     if (idFormat == "bionf") {
         dataHeat <- within(
@@ -59,7 +59,7 @@ processOrthoID <- function(dataHeat = NULL) {
         ) %>% ungroup()
     # Merge the updated frequency labels back to the main data
     dataHeat <- dataHeat %>% left_join(
-        freqDt, by = c("geneID", "supertaxonID"), suffix = c("", "New"), 
+        freqDt, by = c("geneID", "supertaxonID"), suffix = c("", "New"),
         relationship = "many-to-many"
     )
     # Step 3: Update orthoFreq with the new frequency labels and clean up
@@ -209,7 +209,7 @@ dataCustomizedPlot <- function(
 #' full or subset profiles)
 #' @param parm plot parameters, including (1) type of x-axis "taxa" or
 #' "genes" - default = "taxa"; (2) display gene IDs (default) or gene names;
-#' (3+4) names of 2 variables var1ID and var2ID - default = "var1" & "var2"; 
+#' (3+4) names of 2 variables var1ID and var2ID - default = "var1" & "var2";
 #' (5+6) mid value and color for mid value of var1 -
 #' default is 0.5 and #FFFFFF; (7) color for lowest var1 - default = "#FF8C00";
 #' (8) color for highest var1 - default = "#4682B4"; (9+10) mid value and color
@@ -262,7 +262,7 @@ heatmapPlotting <- function(data = NULL, parm = NULL){
     if (is.null(data)) stop("Input data cannot be NULL!")
     if (is.null(parm))
         parm <- list(
-            "xAxis" = "taxa", "geneIdType" = "geneName", 
+            "xAxis" = "taxa", "geneIdType" = "geneName",
             "var1ID" = "var1", "var2ID"  = "var2",
             "midVar1" = 0.5, "midColorVar1" =  "#FFFFFF",
             "lowColorVar1" =  "#FF8C00", "highColorVar1" = "#4682B4",
@@ -339,8 +339,8 @@ heatmapPlotting <- function(data = NULL, parm = NULL){
                 if (min_val == max_val) {
                     data$paralogSize <- max_size
                 } else {
-                    data$paralogSize <- 
-                        ((data$paralog - min_val) / (max_val - min_val)) * 
+                    data$paralogSize <-
+                        ((data$paralog - min_val) / (max_val - min_val)) *
                         (max_size - min_size) + min_size
                 }
                 # create breaks for legend
@@ -418,7 +418,7 @@ heatmapPlotting <- function(data = NULL, parm = NULL){
 #' full or subset profiles)
 #' @param parm plot parameters, including (1) type of x-axis "taxa" or
 #' "genes" - default = "taxa"; (2) display gene IDs (default) or gene names;
-#' (3+4) names of 2 variables var1ID and var2ID - default = "var1" & "var2"; 
+#' (3+4) names of 2 variables var1ID and var2ID - default = "var1" & "var2";
 #' (5+6) mid value and color for mid value of var1 -
 #' default is 0.5 and #FFFFFF; (7) color for lowest var1 - default = "#FF8C00";
 #' (8) color for highest var1 - default = "#4682B4"; (9+10) mid value and color
@@ -427,8 +427,8 @@ heatmapPlotting <- function(data = NULL, parm = NULL){
 #' color of co-orthologs - default = "#07D000"; (14+15+16) text sizes for x, y
 #' axis and legend - default = 9 for each; (17) legend position "top", "bottom",
 #' "right", "left" or "none" - default = "top"; (18) zoom ratio of the
-#' co-ortholog dots from -1 to 3 - default = 0; (19) color dots based on either 
-#' "var1" or "var2". NOTE: Leave blank or NULL to 
+#' co-ortholog dots from -1 to 3 - default = 0; (19) color dots based on either
+#' "var1" or "var2". NOTE: Leave blank or NULL to
 #' use default values.
 #' @return A profile heatmap plot as a ggplot object.
 #' @import ggplot2
@@ -467,7 +467,7 @@ heatmapPlottingFast <- function(data = NULL, parm = NULL) {
     if (is.null(data)) stop("Input data cannot be NULL!")
     if (is.null(parm))
         parm <- list(
-            "xAxis" = "taxa", "geneIdType" = "geneName", 
+            "xAxis" = "taxa", "geneIdType" = "geneName",
             "var1ID" = "var1", "var2ID"  = "var2",
             "midVar1" = 0.5, "midColorVar1" =  "#FFFFFF",
             "lowColorVar1" =  "#FF8C00", "highColorVar1" = "#4682B4",
@@ -481,7 +481,7 @@ heatmapPlottingFast <- function(data = NULL, parm = NULL) {
     ### create heatmap plot
     if (!(is.null(parm$geneIdType))) {
         if (parm$geneIdType == "geneName") data$geneID <- data$geneName
-    }   
+    }
     # create a canvas
     if (parm$xAxis == "genes") {
         p <- ggplot(data,aes(x = geneID, y = supertaxon)) +
@@ -513,7 +513,7 @@ heatmapPlottingFast <- function(data = NULL, parm = NULL) {
         ]
     cl[data$paralog > 1] <- parm$paraColor
     # Add scatter plot
-    p <- p + 
+    p <- p +
         geom_scattermost(
             cbind(x_values, y_values), color = cl,
             pointsize = 2 * (1 + parm$dotZoom), pixels = c(1000, 1000)

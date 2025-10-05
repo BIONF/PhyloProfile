@@ -50,12 +50,12 @@ shinyServer(function(input, output, session) {
             msg <- paste0(
                 "Please wait while preprocessed data are being downloaded!!!"
             )
-            shinyBS::createAlert(
-                session, "fileExistMsgUI", "fileExistMsg", title = "",
-                content = msg,
-                append = FALSE
-            )
-        } else shinyBS::closeAlert(session, "fileExistMsg")
+            output$fileExistMsgUI <- renderUI({
+                div(class = "alert alert-warning", msg)
+            })
+        } else {
+            output$fileExistMsgUI <- renderUI(NULL)
+        }
     })
 
     observe({
@@ -140,7 +140,7 @@ shinyServer(function(input, output, session) {
                     }
                 }
             )
-            shinyBS::closeAlert(session, "fileExistMsg")
+            output$fileExistMsgUI <- renderUI(NULL)
         }
     })
 
@@ -153,10 +153,10 @@ shinyServer(function(input, output, session) {
                     ape::write.tree(preCalcTree, file = "data/preCalcTree.nw")
                 }
             )
-            shinyBS::closeAlert(session, "fileExistMsg")
+            output$fileExistMsgUI <- renderUI(NULL)
         }
     })
-    
+
     # ========================== LOAD CONFIG FILE ==============================
     configFile <- .GlobalEnv$configFile
     i_mainInput <- i_domainInput <- i_fastaInput <- NULL
@@ -335,6 +335,114 @@ shinyServer(function(input, output, session) {
         }
     })
 
+    # ======================== TRIGGER INPUT MODALS ============================
+    observeEvent(input$uploadGeneCategory,{showModal(uploadGeneCategoryModal())})
+    observeEvent(input$fastaUpload, { showModal(uploadFastaModal()) })
+    observeEvent(input$addTaxa, { showModal(addTaxaModal()) })
+    observeEvent(input$openOmaWindows, { showModal(getOmaModal()) })
+    observeEvent(input$selectSequenceID, { showModal(seqIdFormatModal()) })
+
+    # Default colors of profile plot
+    defaultColors <- list(
+        lowColorVar1  = "#FF8C00",
+        midColorVar1  = "#40ABCF",
+        highColorVar1 = "#164294",
+        midVar1       = 0.5,
+        lowColorVar2  = "#CC8D8D",
+        midColorVar2  = "#FFFFFF",
+        highColorVar2 = "#616587",
+        midVar2       = 1,
+        paraColor     = "#07d000"
+    )
+    getInputOrDefaultColor <- function(input, id) {
+        val <- input[[id]]
+        if (is.null(val)) defaultColors[[id]] else val
+    }
+    observeEvent(input$setColor, {
+      showModal(colorSettingsModal())
+      # save color values after closing the modal
+      updateColourInput(session, "lowColorVar1", value = getInputOrDefaultColor(input, "lowColorVar1"))
+      updateColourInput(session, "midColorVar1", value = getInputOrDefaultColor(input, "midColorVar1"))
+      updateColourInput(session, "highColorVar1", value = getInputOrDefaultColor(input, "highColorVar1"))
+      updateNumericInput(session, "midVar1", value = getInputOrDefaultColor(input, "midVar1"))
+      updateColourInput(session, "lowColorVar2", value = getInputOrDefaultColor(input, "lowColorVar2"))
+      updateColourInput(session, "midColorVar2", value = getInputOrDefaultColor(input, "midColorVar2"))
+      updateColourInput(session, "highColorVar2", value = getInputOrDefaultColor(input, "highColorVar2"))
+      updateNumericInput(session, "midVar2", value = getInputOrDefaultColor(input, "midVar2"))
+      updateColourInput(session, "paraColor", value = getInputOrDefaultColor(input, "paraColor"))
+    })
+
+    # Default profile plot settings
+    # ---------------- Default configuration ----------------
+    defaultPlotConfig <- list(
+      xSize = 14,
+      ySize = 14,
+      legendSize = 12,
+      legend = "right",
+      groupLabelSize = 7,
+      groupLabelDist = 1.5,
+      groupLabelAngle = 90,
+      xAngle = 60,
+      dotZoom = 0
+    )
+
+    # ---------------- Helpers ----------------
+    #idWithSuffix <- function(base, suffix) {
+    #  if (suffix == "") base else paste0(base, suffix)
+    #}
+
+    getInputOrDefault <- function(input, id, defaults, suffix = "") {
+      fullId <- idWithSuffix(id, suffix)
+      val <- input[[fullId]]
+      if (is.null(val)) defaults[[id]] else val
+    }
+
+    # ---------------- Main Plot Modal ----------------
+    observeEvent(input$mainPlotConfig, {
+      showModal(
+        plotConfigModal(
+          suffix = "",
+          defaults = defaultPlotConfig,
+          resetId = "resetMainConfig",
+          applyId = "applyMainConfig"
+        )
+      )
+
+      # Update values inside modal from last state or defaults
+      updateNumericInput(session, "xSize", value = getInputOrDefault(input, "xSize", defaultPlotConfig))
+      updateNumericInput(session, "ySize", value = getInputOrDefault(input, "ySize", defaultPlotConfig))
+      updateNumericInput(session, "legendSize", value = getInputOrDefault(input, "legendSize", defaultPlotConfig))
+      updateSelectInput(session, "mainLegend", selected = getInputOrDefault(input, "legend", defaultPlotConfig))
+      updateNumericInput(session, "groupLabelSize", value = getInputOrDefault(input, "groupLabelSize", defaultPlotConfig))
+      updateNumericInput(session, "groupLabelDist", value = getInputOrDefault(input, "groupLabelDist", defaultPlotConfig))
+      updateSliderInput(session, "groupLabelAngle", value = getInputOrDefault(input, "groupLabelAngle", defaultPlotConfig))
+      updateSliderInput(session, "xAngle", value = getInputOrDefault(input, "xAngle", defaultPlotConfig))
+      updateSliderInput(session, "dotZoom", value = getInputOrDefault(input, "dotZoom", defaultPlotConfig))
+    })
+
+    # ---------------- Selected Plot Modal ----------------
+    observeEvent(input$selectedPlotConfig, {
+      showModal(
+        plotConfigModal(
+          suffix = "Select",
+          defaults = defaultPlotConfig,
+          resetId = "resetSelectedConfig",
+          applyId = "applySelectedConfig"
+        )
+      )
+
+      updateNumericInput(session, "xSizeSelect", value = getInputOrDefault(input, "xSize", defaultPlotConfig, "Select"))
+      updateNumericInput(session, "ySizeSelect", value = getInputOrDefault(input, "ySize", defaultPlotConfig, "Select"))
+      updateNumericInput(session, "legendSizeSelect", value = getInputOrDefault(input, "legendSize", defaultPlotConfig, "Select"))
+      updateSelectInput(session, "selectedLegend", selected = getInputOrDefault(input, "legend", defaultPlotConfig, "Select"))
+      updateNumericInput(session, "groupLabelSizeSelect", value = getInputOrDefault(input, "groupLabelSize", defaultPlotConfig, "Select"))
+      updateNumericInput(session, "groupLabelDistSelect", value = getInputOrDefault(input, "groupLabelDist", defaultPlotConfig, "Select"))
+      updateSliderInput(session, "groupLabelAngleSelect", value = getInputOrDefault(input, "groupLabelAngle", defaultPlotConfig, "Select"))
+      updateSliderInput(session, "xAngleSelect", value = getInputOrDefault(input, "xAngle", defaultPlotConfig, "Select"))
+      updateSliderInput(session, "dotZoomSelect", value = getInputOrDefault(input, "dotZoom", defaultPlotConfig, "Select"))
+    })
+
+
     # ======================== INPUT & SETTINGS TAB ============================
     # * Render input message ---------------------------------------------------
     observe({
@@ -349,12 +457,10 @@ shinyServer(function(input, output, session) {
         <a href=\"https://github.com/BIONF/PhyloProfile/wiki/Input-Data\">
         <span style=\"color: #ff0000;\">our wiki</span></span></a>."
             )
-            shinyBS::createAlert(
-                session, "inputMsgUI", "inputMsg", title = "",
-                content = msg,
-                append = FALSE
-            )
-        } else shinyBS::closeAlert(session, "inputMsg")
+            output$inputMsgUI <- renderUI({
+                div(class = "alert alert-warning", HTML(msg))
+            })
+        } else output$inputMsgUI <- renderUI(NULL)
     })
 
     # * check the validity of input file and render inputCheck.ui --------------
@@ -364,7 +470,7 @@ shinyServer(function(input, output, session) {
         inputType <- inputType()
 
         if (inputType[1] == "noGeneID") {
-            shinyBS::updateButton(session, "do", disabled = TRUE)
+            shinyjs::disable("do")
             HTML(
                 "<font color=\"red\"><em><strong>ERROR: Unsupported input
                 format.<a
@@ -373,27 +479,27 @@ shinyServer(function(input, output, session) {
                 info</a></em></strong></font>"
             )
         } else if (inputType[1] == "emptyCell") {
-            shinyBS::updateButton(session, "do", disabled = TRUE)
+            shinyjs::disable("do")
             em(strong("ERROR: Rows have unequal length",style= "color:red"))
         } else if (inputType[1] == "moreCol") {
-            shinyBS::updateButton(session, "do", disabled = TRUE)
+            shinyjs::disable("do")
             em(strong(
                 "ERROR: More columns than column names", style = "color:red"
             ))
         } else if (inputType[1] == "invalidFormat") {
-            shinyBS::updateButton(session, "do", disabled = TRUE)
+            shinyjs::disable("do")
             em(strong(
                 "ERROR: Invalid format", style = "color:red"
             ))
         } else {
             validType = c("xml", "fasta", "wide", "long", "oma")
             if (!(inputType[1] %in% validType)) {
-                shinyBS::updateButton(session, "do", disabled = TRUE)
+                shinyjs::disable("do")
                 invalidOma <- paste(inputType, collapse = "; ")
                 msg <- paste0("ERROR: Invalid IDs found! ", invalidOma)
                 em(strong(msg, style = "color:red"))
             } else {
-                shinyBS::updateButton(session, "do", disabled = FALSE)
+                shinyjs::enable("do")
                 return()
             }
         }
@@ -523,7 +629,7 @@ shinyServer(function(input, output, session) {
                 "Please upload a single input file!"
             )
         } else {
-            shinyBS::closeAlert(session, "inputMsg")
+            output$inputMsgUI <- renderUI(NULL)
             getMainInputDir()
         }
     })
@@ -577,7 +683,7 @@ shinyServer(function(input, output, session) {
     # * close OMA parsing popup windows -------------------------------------
     observeEvent(input$getDataOma, {
         toggleModal(session, "getOmaDataWindows", toggle = "close")
-        shinyBS::updateButton(session, "getDataOma", disabled = TRUE)
+        shinyjs::disable("getDataOma")
         shinyjs::toggleState("mainInput")
         shinyjs::toggleState("fileDomainInput")
         shinyjs::toggleState("fastaUpload")
@@ -855,7 +961,7 @@ shinyServer(function(input, output, session) {
         }
         if (!is.null(tree)) {
             checkNewick <- checkNewick(tree, inputTaxonID())
-            if (checkNewick == 0) shinyBS::updateButton(session, "do", disabled = FALSE)
+            if (checkNewick == 0) shinyjs::enable("do")
             return(checkNewick)
         } else return()
     })
@@ -864,21 +970,21 @@ shinyServer(function(input, output, session) {
         checkNewick <- checkNewickID()
         req(checkNewick)
         if (checkNewick == 1) {
-            shinyBS::updateButton(session, "do", disabled = TRUE)
+            shinyjs::disable("do")
             HTML("<p><em><span style=\"color: #ff0000;\"><strong>
             ERROR: Parenthesis(-es) missing!</strong></span></em></p>")
         } else if (checkNewick == 2) {
-            shinyBS::updateButton(session, "do", disabled = TRUE)
+            shinyjs::disable("do")
             HTML("<p><em><span style=\"color: #ff0000;\"><strong>
             ERROR: Comma(s) missing!</strong></span></em></p>")
         } else if (checkNewick == 3) {
-            shinyBS::updateButton(session, "do", disabled = TRUE)
+            shinyjs::disable("do")
             HTML("<p><em><span style=\"color: #ff0000;\"><strong>
             ERROR: Tree contains singleton!</strong></span></em></p>")
         } else if (checkNewick == 0) {
             return()
         } else {
-            shinyBS::updateButton(session, "do", disabled = TRUE)
+            shinyjs::disable("do")
             strong(
                 em(paste0(checkNewick, " not exist in main input file!")),
                 style = "color:red"
@@ -927,7 +1033,7 @@ shinyServer(function(input, output, session) {
         sortedTaxonList <- sortedTaxonInputDf$V1
         if (length(sortedTaxonList) > 0) {
             if ("FALSE" %in% grepl("ncbi", sortedTaxonList)) {
-                shinyBS::updateButton(session, "do", disabled = TRUE)
+                shinyjs::disable("do")
                 msg <- paste0("<p><em><span style=\"color: #ff0000;\"><strong>
             ERROR: Invalid input!</strong></span></em></p>")
             } else {
@@ -1033,7 +1139,7 @@ shinyServer(function(input, output, session) {
         tmp <- as.data.table(
             getMainInput() %>% dplyr::select(geneID, ncbiID) %>% distinct()
         )
-        
+
         refspecID <- tmp[, .N, by = ncbiID][order(-N)][1, ncbiID]
         refsecpName <- getInputTaxaName(
             input$rankSelect, refspecID, getTaxDBpath()
@@ -1041,7 +1147,7 @@ shinyServer(function(input, output, session) {
         if (rtCheck) {
             checkpoint122 <- Sys.time()
             print(
-                paste("checkpoint122 - predict refspec done", checkpoint122, 
+                paste("checkpoint122 - predict refspec done", checkpoint122,
                       " --- ",  checkpoint122 - checkpoint121)
             )
         }
@@ -1167,11 +1273,11 @@ shinyServer(function(input, output, session) {
     # * enable "PLOT" button ---------------------------------------------------
     observeEvent(input$rankSelect,  ({
         if (input$rankSelect == "") {
-            shinyBS::updateButton(session, "do", disabled = TRUE)
+            shinyjs::disable("do")
         } else {
             unkTaxa <- unkTaxa()
             if (length(unkTaxa) == 0) {
-                shinyBS::updateButton(session, "do", disabled = FALSE)
+                shinyjs::enable("do")
             }
         }
     }))
@@ -1193,6 +1299,8 @@ shinyServer(function(input, output, session) {
             shinyjs::disable("demoData")
             shinyjs::disable("rankSelect")
             shinyjs::disable("taxDbLoc")
+            shinyjs::disable("doDomainPlot")
+            shinyjs::disable("newDone")
         }
     })
 
@@ -1215,11 +1323,11 @@ shinyServer(function(input, output, session) {
     # * enable/disable update plot button --------------------------------------
     observe({
         if (input$autoUpdate == TRUE) {
-            shinyBS::updateButton(session, "applyFilter", disabled = TRUE)
-            shinyBS::updateButton(session, "updateBtn", disabled = TRUE)
+            shinyjs::disable("applyFilter")
+            shinyjs::disable("updateBtn")
         } else {
-            shinyBS::updateButton(session, "applyFilter", disabled = FALSE)
-            shinyBS::updateButton(session, "updateBtn", disabled = FALSE)
+            shinyjs::enable("applyFilter")
+            shinyjs::enable("updateBtn")
         }
     })
 
@@ -1605,10 +1713,13 @@ shinyServer(function(input, output, session) {
     newIndex$value <- 1
 
     observeEvent(input$newAdd, {
+        req(input$newID, input$newName, input$newRank, input$newParent)
         newTaxa$Df[newIndex$value, ] <- c(
             input$newID, input$newName, input$newRank, input$newParent
         )
         newIndex$value <- newIndex$value + 1
+
+        req(input$newID)
         updateTextInput(session, "newID", value = as.numeric(input$newID) + 1)
         updateTextInput(session, "newName", value = "")
         updateTextInput(session, "newRank", value = "norank")
@@ -1629,19 +1740,21 @@ shinyServer(function(input, output, session) {
             comment.char = ""
         )
         if (ncol(tmpDf) != 4) {
-            shinyBS::createAlert(
-                session, "wrongNewTaxa", "wrongNewTaxaMsg",
-                content = "Wrong format. Please check your file!",
-                append = FALSE
-            )
+            output$wrongNewTaxaUI <- renderUI({
+                div(
+                    class = "alert alert-danger",
+                    "Wrong format. Please check your file!"
+                )
+            })
             shinyjs::disable("newDone")
             return()
         } else {
-            shinyBS::createAlert(
-                session, "wrongNewTaxa", "wrongNewTaxaMsg",
-                content = "Click Finish adding to continue!",
-                append = FALSE
-            )
+            output$wrongNewTaxaUI <- renderUI({
+                div(
+                    class = "alert alert-danger",
+                    "Click Finish adding to continue!"
+                )
+            })
             shinyjs::enable("newDone")
             colnames(tmpDf) <- c("ncbiID", "fullName", "rank", "parentID")
             newTaxa$Df <- tmpDf
@@ -1655,7 +1768,7 @@ shinyServer(function(input, output, session) {
 
     # * close adding taxa windows ----------------------------------------------
     observeEvent(input$newDone, {
-        toggleModal(session, "addTaxaWindows", toggle = "close")
+        removeModal()
         write.table(
             newTaxa$Df, "data/newTaxa.txt",
             sep = "\t",
@@ -1946,7 +2059,7 @@ shinyServer(function(input, output, session) {
             input$demoData == "none"
         ) {
             v$doPlot <- FALSE
-            shinyBS::updateButton(session, "do", disabled = TRUE)
+            shinyjs::disable("do")
         }
     })
     w <- reactiveValues(doCusPlot = FALSE)
@@ -1958,10 +2071,10 @@ shinyServer(function(input, output, session) {
             input$demoData == "none"
         ) {
             w$doCusPlot <- FALSE
-            shinyBS::updateButton(session, "plotCustom", disabled = TRUE)
+            shinyjs::disable("plotCustom")
         }
     })
-    
+
     # * disable the Function navbarMenu until PLOT button is clicked -----------
     to_hide <- c(
         "profile_clustering",
@@ -2016,18 +2129,22 @@ shinyServer(function(input, output, session) {
         filein <- input$mainInput
         req(filein)
         if (inputType() == "oma") {
-            if (input$getDataOma[1] == 0) return()
+            req(input$selectedOmaType)
+            if (is.null(input$selectedOmaType) || input$getDataOma[1] == 0)
+                return()
             omaIDs <- fread(
                 file = filein$datapath,
                 header = FALSE,
                 stringsAsFactors = FALSE,
                 select = 1
             )
+            req(input$selectedOmaType)
             return(getOmaBrowser(omaIDs$V1, input$selectedOmaType))
         } else return()
     })
 
     # * get gene names (if provided) -------------------------------------------
+    observeEvent(input$uploadGeneName, { showModal(uploadGeneNameModal()) })
     getGeneNames <- reactive({
         geneNameFile <- input$geneName
         if (!is.null(geneNameFile)) {
@@ -2053,7 +2170,7 @@ shinyServer(function(input, output, session) {
         } else inputNameDt <- NULL
         return(inputNameDt)
     })
-    
+
     # * check main input format (wide, long, xml, fasta, or invalidFormat) -----
     inputType <- reactive ({
         req(input$mainInputType)
@@ -2069,7 +2186,7 @@ shinyServer(function(input, output, session) {
             checkpoint11 <- Sys.time()
             print(paste("checkpoint11 - before reading main input",checkpoint11))
         }
-        
+
         withProgress(message = 'Reading main input...', value = 0.5, {
             if (input$mainInputType == "folder") {
                 req(getMainInputDir())
@@ -2098,7 +2215,7 @@ shinyServer(function(input, output, session) {
                         longDataframe <- createLongMatrix(filein$datapath)
                     }
                 }
-                
+
                 if (input$demoData == "arthropoda" | input$demoData == "ampk-tor") {
                     # convert geneID, ncbiID and orthoID into factor and
                     # var1, var2 into numeric
@@ -2113,7 +2230,7 @@ shinyServer(function(input, output, session) {
                         }
                     }
                 }
-                
+
                 # remove fdogMA orthologs if required
                 if (input$showAllTaxa == FALSE)
                     longDataframe <- longDataframe[longDataframe$orthoID != "fdogMA",]
@@ -2143,11 +2260,11 @@ shinyServer(function(input, output, session) {
             if (rtCheck) {
                 checkpoint12 <- Sys.time()
                 print(paste(
-                    "checkpoint12 - reading main input done at", checkpoint12, 
+                    "checkpoint12 - reading main input done at", checkpoint12,
                     " --- ",  checkpoint12 - checkpoint11
                 ))
             }
-            
+
             return(longDataframe)
         })
     })
@@ -2245,7 +2362,7 @@ shinyServer(function(input, output, session) {
             return(domainDf)
         })
     })
-
+    
     # * get ID list of input taxa from main input ------------------------------
     inputTaxonID <- reactive({
         if (rtCheck) st <- Sys.time()
@@ -2258,7 +2375,7 @@ shinyServer(function(input, output, session) {
                 if (rtCheck) {
                     checkpoint21 <- Sys.time()
                     print(paste(
-                        "checkpoint21 - get input tax IDs done", checkpoint21, 
+                        "checkpoint21 - get input tax IDs done", checkpoint21,
                         " --- ",  checkpoint21 - st
                     ))
                 }
@@ -2281,9 +2398,9 @@ shinyServer(function(input, output, session) {
             if (rtCheck) {
                 checkpoint31 <- Sys.time()
                 print(paste(
-                    "checkpoint31 - get input tax names done", checkpoint31, 
+                    "checkpoint31 - get input tax names done", checkpoint31,
                     " --- ",  checkpoint31 - st
-                ))    
+                ))
             }
             return(inputTaxaName)
         })
@@ -2294,12 +2411,12 @@ shinyServer(function(input, output, session) {
         req(isTruthy(v$doPlot)|isTruthy(w$doCusPlot))
         req(input$rankSelect)
         req(input$inSelect)
-        
+
         if (rtCheck) {
             checkpoint41 <- Sys.time()
             print(paste("checkpoint41 - before sorting taxa", checkpoint41))
         }
-        
+
         withProgress(message = 'Sorting input taxa...', value = 0.5, {
             if (input$mainInputType == "folder") {
                 req(getMainInputDir())
@@ -2321,7 +2438,7 @@ shinyServer(function(input, output, session) {
                         inputTaxaTree <- ape::read.tree(file = treeIn$datapath)
                     } else {
                         preCalcTree <- paste0(getTaxDBpath(), "/preCalcTree.nw")
-                        if (file.exists(preCalcTree)) 
+                        if (file.exists(preCalcTree))
                             inputTaxaTree <- ape::read.tree(file = preCalcTree)
                     }
                 }
@@ -2337,7 +2454,7 @@ shinyServer(function(input, output, session) {
                     )
                     sortedTaxonList <- sortedTaxonInputDf$V1
                 } else sortedTaxonList <- NULL
-                
+
                 # sort taxonomy matrix based on selected refTaxon
                 sortedOut <- sortInputTaxa(
                     taxonIDs = inputTaxonID(),
@@ -2352,11 +2469,11 @@ shinyServer(function(input, output, session) {
             if (rtCheck) {
                 checkpoint42 <- Sys.time()
                 print(paste(
-                    "checkpoint42 - sorting taxa done", checkpoint42, " --- ",  
+                    "checkpoint42 - sorting taxa done", checkpoint42, " --- ",
                     checkpoint42 - checkpoint41
                 ))
             }
-            
+
             return(sortedOut)
         })
     })
@@ -2381,7 +2498,7 @@ shinyServer(function(input, output, session) {
         if (rtCheck) {
             checkpoint51 <- Sys.time()
             print(paste(
-                "checkpoint51 - get all input (super)taxa done", checkpoint51, 
+                "checkpoint51 - get all input (super)taxa done", checkpoint51,
                 " --- ",  checkpoint51 - st
             ))
         }
@@ -2501,14 +2618,14 @@ shinyServer(function(input, output, session) {
             if (rtCheck) {
                 checkpoint72 <- Sys.time()
                 print(paste(
-                    "checkpoint72 - subseting input done", checkpoint72, 
+                    "checkpoint72 - subseting input done", checkpoint72,
                     " --- ",  checkpoint72 - checkpoint71
                 ))
             }
             return(data)
         })
     })
-    
+
     # * creating main dataframe for subset taxa (in species/strain level) ------
     getFullData <- reactive({
         req(isTruthy(v$doPlot)|isTruthy(w$doCusPlot))
@@ -2541,7 +2658,7 @@ shinyServer(function(input, output, session) {
                 if (rtCheck) {
                     checkpoint81a <- Sys.time()
                     print(paste(
-                        "checkpoint81a - start get full data", checkpoint81a, 
+                        "checkpoint81a - start get full data", checkpoint81a,
                         " --- ", checkpoint81a- checkpoint81
                     ))
                 }
@@ -2554,7 +2671,7 @@ shinyServer(function(input, output, session) {
                 if (rtCheck) {
                     checkpoint82 <- Sys.time()
                     print(paste(
-                        "checkpoint82 - get full data done", checkpoint82, 
+                        "checkpoint82 - get full data done", checkpoint82,
                         " --- ",  checkpoint82- checkpoint81a
                     ))
                 }
@@ -2636,7 +2753,7 @@ shinyServer(function(input, output, session) {
             if (rtCheck) {
                 checkpoint91a <- Sys.time()
                 print(paste(
-                    "checkpoint91a - start filter full data", checkpoint91a, 
+                    "checkpoint91a - start filter full data", checkpoint91a,
                     " --- ", checkpoint91a- checkpoint91
                 ))
             }
@@ -2658,7 +2775,7 @@ shinyServer(function(input, output, session) {
             if (rtCheck) {
                 checkpoint92 <- Sys.time()
                 print(paste(
-                    "checkpoint92 - filter full data done", checkpoint92, 
+                    "checkpoint92 - filter full data done", checkpoint92,
                     " --- ",  checkpoint92- checkpoint91a
                 ))
             }
@@ -2729,7 +2846,7 @@ shinyServer(function(input, output, session) {
                 if (rtCheck) {
                     checkpoint112 <- Sys.time()
                     print(paste(
-                        "checkpoint112 - cluster heatmap data done", 
+                        "checkpoint112 - cluster heatmap data done",
                         checkpoint112, " --- ",  checkpoint112 - checkpoint111
                     ))
                 }
@@ -2761,6 +2878,13 @@ shinyServer(function(input, output, session) {
     })
 
     # * render popup for selecting rank and return list of subset taxa ---------
+    observeEvent(input$taxonHighlightBrowse, {
+        showModal(taxaSelectModal(
+            "selectTaxonRankMain", "Select taxon/taxa of interest",
+            "applyMainTaxa", "Apply to main profile"
+        ))
+    })
+
     mainTaxaName <- callModule(
         selectTaxonRank,
         "selectTaxonRankMain",
@@ -2804,7 +2928,7 @@ shinyServer(function(input, output, session) {
         if (rtCheck) {
             checkpoint132 <- Sys.time()
             print(paste(
-                "checkpoint132 - render tax highlight done", checkpoint132, 
+                "checkpoint132 - render tax highlight done", checkpoint132,
                 " --- ",  checkpoint132 - checkpoint131
             ))
         }
@@ -2828,7 +2952,7 @@ shinyServer(function(input, output, session) {
         if (rtCheck) {
             checkpoint142 <- Sys.time()
             print(paste(
-                "checkpoint142 - render gene highlight done", checkpoint142, 
+                "checkpoint142 - render gene highlight done", checkpoint142,
                 " --- ",  checkpoint142 - checkpoint141
             ))
         }
@@ -2893,7 +3017,7 @@ shinyServer(function(input, output, session) {
             nrGene <- input$endIndex
 
             adaptedSize <- adaptPlotSize(
-                nrTaxa, nrGene, input$xAxis, input$dotZoom
+                nrTaxa, nrGene, input$xAxis, getInputOrDefault(input, "dotZoom", defaultPlotConfig)
             )
             req(length(adaptedSize) > 0)
             h <- adaptedSize[1]
@@ -2932,7 +3056,7 @@ shinyServer(function(input, output, session) {
         if (rtCheck) {
             checkpoint152 <- Sys.time()
             print(paste(
-                "checkpoint152 - update plot size done", checkpoint152, 
+                "checkpoint152 - update plot size done", checkpoint152,
                 " --- ",  checkpoint152 - checkpoint151
             ))
         }
@@ -2985,77 +3109,77 @@ shinyServer(function(input, output, session) {
         } else colorByGroup == FALSE
         if (input$autoUpdate == TRUE) {
             inputPara <- list(
-                "xAxis" = input$xAxis,
-                "geneIdType" = input$geneIdType,
-                "var1ID" = input$var1ID,
-                "var2ID"  = input$var2ID,
-                "midVar1" = input$midVar1,
-                "midVar2" = input$midVar2,
-                "lowColorVar1" =  input$lowColorVar1,
-                "midColorVar1" =  input$midColorVar1,
-                "highColorVar1" = input$highColorVar1,
-                "lowColorVar2" = input$lowColorVar2,
-                "midColorVar2" =  input$midColorVar2,
-                "highColorVar2" = input$highColorVar2,
-                "paraColor" = input$paraColor,
-                "xSize" = input$xSize,
-                "ySize" = input$ySize,
-                "legendSize" = input$legendSize,
-                "mainLegend" = input$mainLegend,
-                "dotZoom" = input$dotZoom,
-                "xAngle" = input$xAngle,
-                "font" = input$font,
-                "guideline" = 0,
-                "width" = input$width,
-                "height" = input$height,
-                "colorByGroup" = colorByGroup,
-                "catColors" = catColors,
-                "colorByOrthoID" = input$colorByOrthoID,
-                "groupLabelSize" = input$groupLabelSize,
-                "groupLabelDist" = input$groupLabelDist,
-                "groupLabelAngle" = input$groupLabelAngle,
-                "colorVar" = input$colorVar
+                xAxis = input$xAxis,
+                geneIdType = input$geneIdType,
+                var1ID = input$var1ID,
+                var2ID = input$var2ID,
+                font = input$font,
+                guideline = 0,
+                width = input$width,
+                height = input$height,
+                colorByGroup = colorByGroup,
+                catColors = catColors,
+                colorByOrthoID = input$colorByOrthoID,
+                colorVar = input$colorVar,
+                midVar1 = getInputOrDefaultColor(input, "midVar1"),
+                midVar2 = getInputOrDefaultColor(input, "midVar2"),
+                lowColorVar1 = getInputOrDefaultColor(input, "lowColorVar1"),
+                midColorVar1 = getInputOrDefaultColor(input, "midColorVar1"),
+                highColorVar1 = getInputOrDefaultColor(input, "highColorVar1"),
+                lowColorVar2 = getInputOrDefaultColor(input, "lowColorVar2"),
+                midColorVar2 = getInputOrDefaultColor(input, "midColorVar2"),
+                highColorVar2 = getInputOrDefaultColor(input, "highColorVar2"),
+                paraColor = getInputOrDefaultColor(input, "paraColor"),
+                xSize = getInputOrDefault(input, "xSize", defaultPlotConfig),
+                ySize = getInputOrDefault(input, "ySize", defaultPlotConfig),
+                legendSize = getInputOrDefault(input, "legendSize", defaultPlotConfig),
+                mainLegend = getInputOrDefault(input, "legend", defaultPlotConfig),
+                dotZoom = getInputOrDefault(input, "dotZoom", defaultPlotConfig),
+                xAngle = getInputOrDefault(input, "xAngle", defaultPlotConfig),
+                groupLabelSize = getInputOrDefault(input, "groupLabelSize", defaultPlotConfig),
+                groupLabelDist = getInputOrDefault(input, "groupLabelDist", defaultPlotConfig),
+                groupLabelAngle = getInputOrDefault(input, "groupLabelAngle", defaultPlotConfig)
             )
         } else {
             inputPara <- isolate(
-                list(
-                    "xAxis" = input$xAxis,
-                    "geneIdType" = input$geneIdType,
-                    "var1ID" = input$var1ID,
-                    "var2ID"  = input$var2ID,
-                    "midVar1" = input$midVar1,
-                    "midVar2" = input$midVar2,
-                    "lowColorVar1" =  input$lowColorVar1,
-                    "midColorVar1" =  input$midColorVar1,
-                    "highColorVar1" = input$highColorVar1,
-                    "lowColorVar2" = input$lowColorVar2,
-                    "midColorVar2" =  input$midColorVar2,
-                    "highColorVar2" = input$highColorVar2,
-                    "paraColor" = input$paraColor,
-                    "font" = input$font,
-                    "xSize" = input$xSize,
-                    "ySize" = input$ySize,
-                    "legendSize" = input$legendSize,
-                    "mainLegend" = input$mainLegend,
-                    "dotZoom" = input$dotZoom,
-                    "xAngle" = input$xAngle,
-                    "guideline" = 0,
-                    "width" = input$width,
-                    "height" = input$height,
-                    "colorByGroup" = colorByGroup,
-                    "catColors" = catColors,
-                    "colorByOrthoID" = input$colorByOrthoID,
-                    "groupLabelSize" = input$groupLabelSize,
-                    "groupLabelDist" = input$groupLabelDist,
-                    "groupLabelAngle" = input$groupLabelAngle,
-                    "colorVar" = input$colorVar
+                inputPara <- list(
+                    xAxis = input$xAxis,
+                    geneIdType = input$geneIdType,
+                    var1ID = input$var1ID,
+                    var2ID = input$var2ID,
+                    font = input$font,
+                    guideline = 0,
+                    width = input$width,
+                    height = input$height,
+                    colorByGroup = colorByGroup,
+                    catColors = catColors,
+                    colorByOrthoID = input$colorByOrthoID,
+                    colorVar = input$colorVar,
+                    midVar1 = getInputOrDefaultColor(input, "midVar1"),
+                    midVar2 = getInputOrDefaultColor(input, "midVar2"),
+                    lowColorVar1 = getInputOrDefaultColor(input, "lowColorVar1"),
+                    midColorVar1 = getInputOrDefaultColor(input, "midColorVar1"),
+                    highColorVar1 = getInputOrDefaultColor(input, "highColorVar1"),
+                    lowColorVar2 = getInputOrDefaultColor(input, "lowColorVar2"),
+                    midColorVar2 = getInputOrDefaultColor(input, "midColorVar2"),
+                    highColorVar2 = getInputOrDefaultColor(input, "highColorVar2"),
+                    paraColor = getInputOrDefaultColor(input, "paraColor"),
+                    xSize = getInputOrDefault(input, "xSize", defaultPlotConfig),
+                    ySize = getInputOrDefault(input, "ySize", defaultPlotConfig),
+                    legendSize = getInputOrDefault(input, "legendSize", defaultPlotConfig),
+                    mainLegend = getInputOrDefault(input, "legend", defaultPlotConfig),
+                    dotZoom = getInputOrDefault(input, "dotZoom", defaultPlotConfig),
+                    xAngle = getInputOrDefault(input, "xAngle", defaultPlotConfig),
+                    groupLabelSize = getInputOrDefault(input, "groupLabelSize", defaultPlotConfig),
+                    groupLabelDist = getInputOrDefault(input, "groupLabelDist", defaultPlotConfig),
+                    groupLabelAngle = getInputOrDefault(input, "groupLabelAngle", defaultPlotConfig)
                 )
             )
         }
         if (rtCheck) {
             checkpoint162 <- Sys.time()
             print(paste(
-                "checkpoint162 - get plot main para done", checkpoint162, 
+                "checkpoint162 - get plot main para done", checkpoint162,
                 " --- ",  checkpoint162 - checkpoint161
             ))
         }
@@ -3165,6 +3289,13 @@ shinyServer(function(input, output, session) {
     })
 
     # * render popup for selecting rank and return list of subset taxa ---------
+    observeEvent(input$cusTaxa, {
+        showModal(taxaSelectModal(
+            "selectTaxonRank", "Select taxon/taxa of interest",
+            "applyCusTaxa", "Apply to customized profile"
+        ))
+    })
+
     cusTaxaName <- callModule(
         selectTaxonRank,
         "selectTaxonRank",
@@ -3195,7 +3326,7 @@ shinyServer(function(input, output, session) {
         } else {
             choice <- inputTaxonName()
             out <- c("all", as.list(levels(factor(choice$fullName))))
-            if (input$applyCusTaxa == TRUE) {
+            if (!is.null(input$applyCusTaxa) && input$applyCusTaxa == TRUE) {
                 out <- cusTaxaName()
                 selectizeInput("inTaxa","",out, selected = out, multiple = TRUE)
             } else if (input$addSpecDimRed == TRUE) {
@@ -3258,15 +3389,16 @@ shinyServer(function(input, output, session) {
                     h <- nrTaxa
                 }
                 # adapt to dot zoom factor
-                if (input$dotZoomSelect < -0.5){
-                    hv <- (200 + 12 * h) * (1 + input$dotZoomSelect) + 500
-                    wv <- (200 + 12 * w) * (1 + input$dotZoomSelect) + 500
-                }  else if ((input$dotZoomSelect < 0)) {
-                    hv <- (200 + 12 * h) * (1 + input$dotZoomSelect) + 200
-                    wv <- (200 + 12 * w) * (1 + input$dotZoomSelect) + 200
+                dotZoomSelect <- getInputOrDefault(input, "dotZoom", defaultPlotConfig, suffix = "Select")
+                if (dotZoomSelect < -0.5){
+                    hv <- (200 + 12 * h) * (1 + dotZoomSelect) + 500
+                    wv <- (200 + 12 * w) * (1 + dotZoomSelect) + 500
+                }  else if ((dotZoomSelect < 0)) {
+                    hv <- (200 + 12 * h) * (1 + dotZoomSelect) + 200
+                    wv <- (200 + 12 * w) * (1 + dotZoomSelect) + 200
                 } else {
-                    hv <- (200 + 12 * h) * (1 + input$dotZoomSelect)
-                    wv <- (200 + 12 * w) * (1 + input$dotZoomSelect)
+                    hv <- (200 + 12 * h) * (1 + dotZoomSelect)
+                    wv <- (200 + 12 * w) * (1 + dotZoomSelect)
                 }
                 # minimum size
                 if (hv < 300) hv <- 300
@@ -3330,35 +3462,36 @@ shinyServer(function(input, output, session) {
 
         inputPara <- isolate(
             list(
-                "xAxis" = input$xAxisSelected,
-                "geneIdType" = input$geneIdType,
-                "var1ID" = input$var1ID,
-                "var2ID"  = input$var2ID,
-                "midVar1" = input$midVar1,
-                "midVar2" = input$midVar2,
-                "lowColorVar1" =  input$lowColorVar1,
-                "midColorVar1" =  input$midColorVar1,
-                "highColorVar1" = input$highColorVar1,
-                "lowColorVar2" = input$lowColorVar2,
-                "midColorVar2" =  input$midColorVar2,
-                "highColorVar2" = input$highColorVar2,
-                "paraColor" = input$paraColor,
-                "xSize" = input$xSizeSelect,
-                "ySize" = input$ySizeSelect,
-                "legendSize" = input$legendSizeSelect,
-                "mainLegend" = input$selectedLegend,
-                "dotZoom" = input$dotZoomSelect,
-                "xAngle" = input$xAngleSelect,
-                "font" = input$font,
-                "guideline" = 0,
-                "width" = input$selectedWidth,
-                "height" = input$selectedHeight,
-                "colorByGroup" = colorByGroup,
-                "catColors" = catColors,
-                "colorByOrthoID" = input$colorByOrthoID,
-                "groupLabelSize" = input$groupLabelSizeSelect,
-                "groupLabelDist" = input$groupLabelDistSelect,
-                "groupLabelAngle" = input$groupLabelAngleSelect
+                xAxis = input$xAxisSelected,
+                geneIdType = input$geneIdType,
+                var1ID = input$var1ID,
+                var2ID = input$var2ID,
+                font = input$font,
+                guideline = 0,
+                width = input$selectedWidth,
+                height = input$selectedHeight,
+                colorByGroup = colorByGroup,
+                catColors = catColors,
+                colorByOrthoID = input$colorByOrthoID,
+                colorVar = input$colorVar,
+                midVar1 = getInputOrDefaultColor(input, "midVar1"),
+                midVar2 = getInputOrDefaultColor(input, "midVar2"),
+                lowColorVar1 = getInputOrDefaultColor(input, "lowColorVar1"),
+                midColorVar1 = getInputOrDefaultColor(input, "midColorVar1"),
+                highColorVar1 = getInputOrDefaultColor(input, "highColorVar1"),
+                lowColorVar2 = getInputOrDefaultColor(input, "lowColorVar2"),
+                midColorVar2 = getInputOrDefaultColor(input, "midColorVar2"),
+                highColorVar2 = getInputOrDefaultColor(input, "highColorVar2"),
+                paraColor = getInputOrDefaultColor(input, "paraColor"),
+                xSize = getInputOrDefault(input, "xSize", defaultPlotConfig, suffix = "Select"),
+                ySize = getInputOrDefault(input, "ySize", defaultPlotConfig, suffix = "Select"),
+                legendSize = getInputOrDefault(input, "legendSize", defaultPlotConfig, suffix = "Select"),
+                mainLegend = getInputOrDefault(input, "legend", defaultPlotConfig, suffix = "Select"),
+                dotZoom = getInputOrDefault(input, "dotZoom", defaultPlotConfig, suffix = "Select"),
+                xAngle = getInputOrDefault(input, "xAngle", defaultPlotConfig, suffix = "Select"),
+                groupLabelSize = getInputOrDefault(input, "groupLabelSize", defaultPlotConfig, suffix = "Select"),
+                groupLabelDist = getInputOrDefault(input, "groupLabelDist", defaultPlotConfig, suffix = "Select"),
+                groupLabelAngle = getInputOrDefault(input, "groupLabelAngle", defaultPlotConfig, suffix = "Select")
             )
         )
         return(inputPara)
@@ -3400,9 +3533,9 @@ shinyServer(function(input, output, session) {
             input$demoData == "none"
         ) {
             u$doDimRedPlot <- FALSE
-            shinyBS::updateButton(session, "plotDimRed", disabled = TRUE)
+            shinyjs::disable("plotDimRed")
         }
-        shinyBS::updateButton(session, "plotDimRed", "Update plot")
+        updateActionButton(session, "plotDimRed", label = "Update plot")
     })
 
     # * toggle dimRedRank based on dimRedType genes or taax --------------
@@ -3455,7 +3588,7 @@ shinyServer(function(input, output, session) {
         req(getMainInput())
         req(u$doDimRedPlot)
         if(is.null(getMainInput())) stop("Input data is NULL!")
-        
+
         input$plotDimRed
         dimRedParams <- isolate(list(
             rank = input$dimRedRank,
@@ -3464,12 +3597,12 @@ shinyServer(function(input, output, session) {
             cutoff = input$dimRedCutoff,
             groupLabelsBy = input$dimRedGroupLabelsBy
         ))
-        
+
         withProgress(
             message = "Preparing data for clustering...", value = 0.5, {
                 dimRedData <- prepareDimRedData(
-                    getMainInput(), dimRedParams$rank, dimRedParams$type, 
-                    getTaxDBpath(), dimRedParams$filterVar, dimRedParams$cutoff, 
+                    getMainInput(), dimRedParams$rank, dimRedParams$type,
+                    getTaxDBpath(), dimRedParams$filterVar, dimRedParams$cutoff,
                     dimRedParams$groupLabelsBy
                 )
                 return(dimRedData)
@@ -3598,8 +3731,8 @@ shinyServer(function(input, output, session) {
         set.seed(params$randomSeed)
         withProgress(
             message = "Performing dimension reduction...", value = 0.5, {
-                dimRedData.coord <- dimReduction(renameLabelsDimRed(), 
-                    params$type, params$dataType, params$randomSeed, 
+                dimRedData.coord <- dimReduction(renameLabelsDimRed(),
+                    params$type, params$dataType, params$randomSeed,
                     params$reductionTechnique, params$dim, params$tsneIter
                 )
                 return(dimRedData.coord)
@@ -3612,16 +3745,16 @@ shinyServer(function(input, output, session) {
         req(renameLabelsDimRed())
         df <- groupLabelDimRedData(renameLabelsDimRed(), input$dimRedLabelNr)
         allLabels <- levels(as.factor(df$Label))
-        
+
         selectedExcludeLabels <- readSingleColFile(input$excludeDimRedTaxaFile)
         selectedHighlightLabels <- readSingleColFile(input$highlightDimRedTaxaFile)
-        
+
         updateSelectizeInput(
-            session, "excludeDimRedTaxa", "", server = TRUE, choices = allLabels, 
+            session, "excludeDimRedTaxa", "", server = TRUE, choices = allLabels,
             selected = unique(selectedExcludeLabels[selectedExcludeLabels %in% allLabels])
         )
         updateSelectizeInput(
-            session, "highlightDimRedTaxa", "", server = TRUE,  choices = allLabels, 
+            session, "highlightDimRedTaxa", "", server = TRUE,  choices = allLabels,
             selected = unique(selectedHighlightLabels[selectedHighlightLabels %in% allLabels])
         )
     })
@@ -3661,8 +3794,8 @@ shinyServer(function(input, output, session) {
         req(dimRedCoord())
         req(renameLabelsDimRed())
         plotDf <- createDimRedPlotData(
-            dimRedCoord(), renameLabelsDimRed(), 
-            freqCutoff = input$dimRedLabelNr, 
+            dimRedCoord(), renameLabelsDimRed(),
+            freqCutoff = input$dimRedLabelNr,
             excludeTaxa = input$excludeDimRedTaxa,
             currentNCBIinfo = currentNCBIinfo
         )
@@ -3756,7 +3889,7 @@ shinyServer(function(input, output, session) {
     })
 
     # * download DIM reduction plot & data -------------------------------------
-    
+
     # * download 2D plot -------------------------------------------------------
     output$dimRedDownloadPlot <- downloadHandler(
         filename = function() {
@@ -3799,7 +3932,7 @@ shinyServer(function(input, output, session) {
             )
         }
     )
-    
+
     # * download DIM reduction data --------------------------------------------
     output$dimRedDownloadData <- downloadHandler(
         filename = function() {
@@ -3829,7 +3962,7 @@ shinyServer(function(input, output, session) {
             )
         }
     })
-    
+
     # ** clicked DIM reduction table (3D plot) ---------------------------------
     rv <- reactiveValues(clickedData = data.frame())
     observeEvent(event_data("plotly_click"), {
@@ -3839,7 +3972,7 @@ shinyServer(function(input, output, session) {
                 X == click_data$x, Y == click_data$y, Z == click_data$z
             )
             if (
-                length(rv$clickedData) == 0 || 
+                length(rv$clickedData) == 0 ||
                 !(clicked_df[1,1] %in% rv$clickedData[,1])
             ) {
                 rv$clickedData <- rbind(rv$clickedData, clicked_df)
@@ -3884,7 +4017,7 @@ shinyServer(function(input, output, session) {
             )
         }
     })
-    
+
     # ** DIM reduction selected taxa table -------------------------------------
     dimRedSelectedTaxa <- reactive({
         if (is.null(input$dimRedBrush$ymin) & is.null(event_data("plotly_click"))) {
@@ -3897,7 +4030,7 @@ shinyServer(function(input, output, session) {
                 shinyjs::enable("addSpecDimRed")
             } else shinyjs::disable("addSpecDimRed")
         }
-        
+
         if(input$dimRedPlotType == "ggplot") {
             df <- as.data.frame(brushedDimRedData())
         } else df <- as.data.frame(rv$clickedData)
@@ -3947,11 +4080,11 @@ shinyServer(function(input, output, session) {
                 shinyjs::disable("addGeneDimRed")
             }
         }
-        
+
         if(input$dimRedPlotType == "ggplot") {
             df <- as.data.frame(brushedDimRedData())
         } else df <- as.data.frame(rv$clickedData)
-        
+
         if (nrow(df) > 0) {
             removeDf <- df %>% dplyr::select(where(~ all(. == -1)))
             subDf <- df %>% dplyr::select(-c(colnames(removeDf), Label, Freq, X, Y, Z, n))
@@ -4154,7 +4287,7 @@ shinyServer(function(input, output, session) {
             paste(a, s, b, c, d, e, sep = "\n")
         }
     })
-    
+
     # * update highlight gene/taxa by selected point ---------------------------
     observe({
         input$highlightMain
@@ -4199,7 +4332,7 @@ shinyServer(function(input, output, session) {
             ### get info for present taxa in selected supertaxon (1)
             fullDf <- getFullData()
             ### filter data if needed
-            if  (input$detailedFilter == TRUE) {
+            if  (!is.null(input$detailedFilter) && input$detailedFilter == TRUE) {
                 fullDf <- filteredDataHeat()
                 if (info[[4]] == inSelect) {
                     fullDf <- fullDf[
@@ -4244,7 +4377,7 @@ shinyServer(function(input, output, session) {
             joinedDf$var2[is.na(joinedDf$orthoID)] <- NA
 
             # remove NA orthologs if required
-            if (input$detailedRemoveNA == TRUE) {
+            if (!is.null(input$detailedRemoveNA) && input$detailedRemoveNA == TRUE) {
                 joinedDf <- joinedDf[!is.na(joinedDf$orthoID), ]
             }
 
@@ -4257,7 +4390,7 @@ shinyServer(function(input, output, session) {
     observeEvent(input$detailedBtn, {
         showModal(detailedPlotModal())
     })
-    
+
     pointInfoDetail <- callModule(
         createDetailedPlot, "detailedPlot",
         data = detailPlotDt,
@@ -4271,16 +4404,16 @@ shinyServer(function(input, output, session) {
     # * render database links --------------------------------------------------
     parseProId <- function(protId, separator, seqIdFormat) {
         tmp <- ""
-        if (separator == 1) {
+        if (separator == "|") {
             if (grepl("\\|", protId))
                 tmp <- as.list(strsplit(protId, "\\|")[[1]])
-        } else if (separator == 2) {
+        } else if (separator == "@") {
             if (grepl("@", protId))
                 tmp <- as.list(strsplit(protId, "@")[[1]])
-        } else if (separator == 3) {
+        } else if (separator == "#") {
             if (grepl("#", protId))
                 tmp <- as.list(strsplit(protId, "#")[[1]])
-        } else if (separator == 4) {
+        } else if (separator == ";") {
             if (grepl(";", protId))
                 tmp <- as.list(strsplit(protId, ";")[[1]])
         }
@@ -4304,12 +4437,18 @@ shinyServer(function(input, output, session) {
     output$dbLink.ui <- renderUI({
         info <- pointInfoDetail() # info = seedID, orthoID, var1, var2, ncbiID
         req(info)
-        linkText <- ""
-        # get seed ID
-        seedId <- toString(info[1])
+
+        # ensure inputs exist (with fallback defaults)
+        sep <- if (!is.null(input$separator)) input$separator else "|"
+        fmt <- if (!is.null(input$seqIdFormat)) input$seqIdFormat else 1
+
         separators <- c("|", "@", "#", ";")
+        linkText <- ""
+
+        # ---- get seed ID ----
+        seedId <- toString(info[1])
         if (grepl(paste(separators, collapse = "|"), seedId)) {
-            seedId <- parseProId(seedId, input$separator, input$seqIdFormat)
+            seedId <- parseProId(seedId, sep, fmt)
         }
         if (length(seedId) > 0) {
             if (input$seedSource == "ncbi") {
@@ -4322,10 +4461,11 @@ shinyServer(function(input, output, session) {
                 linkText <- paste0(linkText, createDBlink(seedId, "OMA"))
             }
         }
-        # get ortho ID
+
+        # ---- get ortho ID ----
         protId <- toString(info[2])
         if (grepl(paste(separators, collapse = "|"), protId)) {
-            protId <- parseProId(protId, input$separator, input$seqIdFormat)
+            protId <- parseProId(protId, sep, fmt)
         }
         if (length(protId) > 0) {
             if (input$orthoSource == "ncbi") {
@@ -4333,12 +4473,13 @@ shinyServer(function(input, output, session) {
             } else if (input$orthoSource == "uniprot") {
                 linkText <- paste0(linkText, createDBlink(protId, "UniProt"))
             } else if (input$orthoSource == "orthodb") {
-                linkText <- paste0(linkText,createDBlink(protId, "OrthoDB", "gene", input$orthodbOrthoVer))
+                linkText <- paste0(linkText, createDBlink(protId, "OrthoDB", "gene", input$orthodbOrthoVer))
             } else if (input$orthoSource == "oma") {
                 linkText <- paste0(linkText, createDBlink(protId, "OMA", "gene"))
             }
         }
-        # get taxon ID
+
+        # ---- get taxon ID ----
         taxId <- gsub("ncbi", "", info[5])
         taxHierarchy <- PhyloProfile:::getTaxHierarchy(taxId, currentNCBIinfo)
         taxUrls <- paste(taxHierarchy[[1]]$link, collapse = ", ")
@@ -4348,7 +4489,7 @@ shinyServer(function(input, output, session) {
             linkText, "<p><strong>NCBI taxonomy: </strong>", taxUrls, "</p>"
         )
 
-        # render links
+        # ---- disclaimer ----
         linkText <- paste0(
             linkText,
             "<p><em><strong>Disclaimer:</strong> ",
@@ -4359,8 +4500,10 @@ shinyServer(function(input, output, session) {
             "#wrong-info-from-public-databases\" ",
             "target=\"_blank\">FAQ</a>)</em></p>"
         )
+
         HTML(linkText)
     })
+
 
     # * render FASTA sequence --------------------------------------------------
     output$fasta <- renderText({
@@ -4384,6 +4527,7 @@ shinyServer(function(input, output, session) {
                     seqIDMod, file = filein$datapath
                 )
             } else {
+                req(input$inputType)
                 # get from concaternated file
                 if (input$inputType == "Concatenated fasta file") {
                     fastain <- input$concatFasta
@@ -4419,7 +4563,7 @@ shinyServer(function(input, output, session) {
     observeEvent(input$doDomainPlot, {
         showModal(archiPlotModal())
     })
-    
+
     observe({
         infoTmp <- c()
         if (input$tabs == "Main profile") {
@@ -4455,55 +4599,49 @@ shinyServer(function(input, output, session) {
             info <- c(infoTmp[[1]], as.character(infoTmp[[2]]))
         } else {
             # else, get info from detailed plot
-            shinyBS::updateButton(session, "doDomainPlotMain", disabled = TRUE)
+            shinyjs::disable("doDomainPlotMain")
             if (!is.null(pointInfoDetail())) {
                 info <- pointInfoDetail() # info = seedID, orthoID, var1
             }
         }
 
         if (is.null(info)) {
-            shinyBS::updateButton(session, "doDomainPlot", disabled = TRUE)
-            shinyBS::updateButton(session, "doDomainPlotMain", disabled = TRUE)
+            shinyjs::disable("doDomainPlot")
+            shinyjs::disable("doDomainPlotMain")
             return("noSelectHit")
         } else {
             if (
                 input$demoData == "arthropoda" | input$demoData == "ampk-tor" |
                 input$demoData == "preCalcDt"
             ) {
-                shinyBS::updateButton(session, "doDomainPlot", disabled = FALSE)
+                shinyjs::enable("doDomainPlot")
                 if (lowestRank == input$rankSelect || infoTmp[[8]][1] == 1)
-                    shinyBS::updateButton(session, "doDomainPlotMain", disabled = FALSE)
+                    shinyjs::enable("doDomainPlotMain")
                 else
-                    shinyBS::updateButton(session, "doDomainPlotMain", disabled = TRUE)
+                    shinyjs::disable("doDomainPlotMain")
             } else {
                 if (
                     input$mainInputType == "file" &
                     inputType() == "oma"
                 ) {
-                    shinyBS::updateButton(session, "doDomainPlot", disabled = FALSE)
+                    shinyjs::enable("doDomainPlot")
                     if (lowestRank == input$rankSelect || infoTmp[[8]][1] == 1)
-                        shinyBS::updateButton(session, "doDomainPlotMain", disabled = FALSE)
+                        shinyjs::enable("doDomainPlotMain")
                     else
-                        shinyBS::updateButton(session, "doDomainPlotMain", disabled = TRUE)
+                        shinyjs::disable("doDomainPlotMain")
                 } else {
                     if (input$annoLocation == "from file") {
                         inputDomain <- input$fileDomainInput
                         if (is.null(inputDomain)) {
-                            shinyBS::updateButton(
-                                session, "doDomainPlot", disabled = TRUE
-                            )
-                            shinyBS::updateButton(
-                                session, "doDomainPlotMain", disabled = TRUE
-                            )
+                            shinyjs::disable("doDomainPlot")
+                            shinyjs::disable("doDomainPlotMain")
                             return("noFileInput")
                         } else {
-                            shinyBS::updateButton(
-                                session, "doDomainPlot", disabled = FALSE
-                            )
+                            shinyjs::enable("doDomainPlot")
                             if (lowestRank == input$rankSelect || infoTmp[[8]][1] == 1)
-                                shinyBS::updateButton(session, "doDomainPlotMain", disabled = FALSE)
+                                shinyjs::enable("doDomainPlotMain")
                             else
-                                shinyBS::updateButton(session, "doDomainPlotMain", disabled = TRUE)
+                                shinyjs::disable("doDomainPlotMain")
                         }
                     } else {
                         domainDf <- parseDomainInput(
@@ -4512,30 +4650,22 @@ shinyServer(function(input, output, session) {
                         if (length(domainDf) == 1) {
                             if (domainDf == "noSelectHit" |
                                 domainDf == "noFileInFolder") {
-                                shinyBS::updateButton(
-                                    session, "doDomainPlot", disabled = TRUE
-                                )
-                                shinyBS::updateButton(
-                                    session, "doDomainPlotMain", disabled = TRUE
-                                )
+                                shinyjs::disable("doDomainPlot")
+                                shinyjs::disable("doDomainPlotMain")
                                 return(domainDf)
                             } else {
-                                shinyBS::updateButton(
-                                    session, "doDomainPlot", disabled = FALSE
-                                )
+                                shinyjs::enable("doDomainPlot")
                                 if (lowestRank == input$rankSelect || infoTmp[[8]][1] == 1)
-                                    shinyBS::updateButton(session, "doDomainPlotMain", disabled = FALSE)
+                                    shinyjs::enable("doDomainPlotMain")
                                 else
-                                    shinyBS::updateButton(session, "doDomainPlotMain", disabled = TRUE)
+                                    shinyjs::disable("doDomainPlotMain")
                             }
                         } else {
-                            shinyBS::updateButton(
-                                session, "doDomainPlot", disabled = FALSE
-                            )
+                            shinyjs::enable("doDomainPlot")
                             if (lowestRank == input$rankSelect || infoTmp[[8]][1] == 1)
-                                shinyBS::updateButton(session, "doDomainPlotMain", disabled = FALSE)
+                                shinyjs::enable("doDomainPlotMain")
                             else
-                                shinyBS::updateButton(session, "doDomainPlotMain", disabled = TRUE)
+                                shinyjs::disable("doDomainPlotMain")
                         }
                     }
                 }
@@ -4550,6 +4680,7 @@ shinyServer(function(input, output, session) {
         if (length(fileDomain) == 1) {
             if (fileDomain == "noFileInput") {
                 em("Domain file not provided!!")
+                shinyjs::disable("doDomainPlot")
             } else if (fileDomain == "noFileInFolder") {
                 msg <- paste0(
                     "<p><em>Domain file not found!! </em></p>
@@ -4560,8 +4691,10 @@ shinyServer(function(input, output, session) {
                 <strong>architecture</strong>.</em></p>"
                 )
                 HTML(msg)
+                shinyjs::disable("doDomainPlot")
             } else if (fileDomain == "noSelectHit") {
                 em("Please select one ortholog sequence!!")
+                shinyjs::disable("doDomainPlot")
             }
         }
     })
@@ -4570,7 +4703,7 @@ shinyServer(function(input, output, session) {
     renderArchiModal <- function(triggerId, moduleId) {
         observeEvent(input[[triggerId]], {
             showModal(archiPlotModal(moduleId))
-            
+
             callModule(
                 createArchitecturePlot, moduleId,
                 pointInfo = getDomainFile,
@@ -4732,10 +4865,9 @@ shinyServer(function(input, output, session) {
         )
 
         if (input$tabs == "Processed data") {
-            shinyBS::createAlert(
-                session, "descDownloadProcessedDataUI",
-                "descDownloadProcessedData", content = desc, append = FALSE
-            )
+            output$descDownloadProcessedDataUI <- renderUI({
+                div(class = "alert alert-info", desc)
+            })
         }
     })
 
@@ -4814,10 +4946,9 @@ shinyServer(function(input, output, session) {
         )
 
         if (input$tabs == "Export plot settings") {
-            shinyBS::createAlert(
-                session, "descExportSettingUI", "descExportSetting",
-                content = desc, append = FALSE
-            )
+            output$descExportSettingUI <- renderUI({
+                div(class = "alert alert-info", HTML(desc))
+            })
         }
     })
 
@@ -4929,16 +5060,14 @@ shinyServer(function(input, output, session) {
     # * PROFILE CLUSTERING =====================================================
     # ** description for profile clustering function ---------------------------
     observe({
-        desc = paste(
-            "Cluster genes according to the distance of their phylogenetic
-            profiles."
-        )
+        desc <- "Cluster genes according to the distance of their phylogenetic profiles."
 
-        if (input$tabs == "Profiles clustering") {
-            shinyBS::createAlert(
-                session, "descClusteringUI", "descClustering",
-                content = desc, append = FALSE
-            )
+        if (input$tabs == "profile_clustering") {
+            output$descClusteringUI <- renderUI({
+                div(class = "alert alert-info", desc)
+            })
+        } else {
+            output$descClusteringUI <- renderUI(NULL)
         }
     })
 
@@ -5037,7 +5166,7 @@ shinyServer(function(input, output, session) {
         if (rtCheck) {
             checkpointc101 <- Sys.time()
             print(paste(
-                "checkpoint-C101 - before get profiles for clustering", 
+                "checkpoint-C101 - before get profiles for clustering",
                 checkpointc101
             ))
         }
@@ -5060,7 +5189,7 @@ shinyServer(function(input, output, session) {
                 if (rtCheck) {
                     checkpointc101a <- Sys.time()
                     print(paste(
-                        "checkpoint-C101a - start get profiles for clustering", 
+                        "checkpoint-C101a - start get profiles for clustering",
                         checkpointc101a," --- ",checkpointc101a - checkpointc101
                     ))
                 }
@@ -5075,7 +5204,7 @@ shinyServer(function(input, output, session) {
                 if (rtCheck) {
                     checkpointc101a <- Sys.time()
                     print(paste(
-                        "checkpoint-C101b - start get profiles for clustering", 
+                        "checkpoint-C101b - start get profiles for clustering",
                         checkpointc101a," --- ",checkpointc101a - checkpointc101
                     ))
                 }
@@ -5089,9 +5218,9 @@ shinyServer(function(input, output, session) {
             if (rtCheck) {
                 checkpointc102 <- Sys.time()
                 print(paste(
-                    "checkpoint-C102 - get profiles for clustering done", 
+                    "checkpoint-C102 - get profiles for clustering done",
                     checkpointc102, " --- ",  checkpointc102 - checkpointc101a
-                ))   
+                ))
             }
             return(profiles)
         })
@@ -5114,7 +5243,7 @@ shinyServer(function(input, output, session) {
             if (rtCheck) {
                 checkpointc202 <- Sys.time()
                 print(paste(
-                    "checkpoint-C202 - calculate dist matrix done", 
+                    "checkpoint-C202 - calculate dist matrix done",
                     checkpointc202, " --- ",  checkpointc202 - checkpointc201
                 ))
             }
@@ -5138,12 +5267,10 @@ shinyServer(function(input, output, session) {
             "Plot the distributions of the values incurred by the integrated
             information layers."
         )
-
-        if (input$tabs == "Distribution analysis") {
-            shinyBS::createAlert(
-                session, "descDistributionUI", "descDistribution",
-                content = desc, append = FALSE
-            )
+        if (input$tabs == "distribution_analysis") {
+            output$descDistributionUI <- renderUI({
+                div(class = "alert alert-info", desc)
+            })
         }
     })
 
@@ -5196,7 +5323,7 @@ shinyServer(function(input, output, session) {
                 analyzeDistribution, "distPlot",
                 data = reactive(
                     createPercentageDistributionData(
-                        # getMainInput(), 
+                        # getMainInput(),
                         getFullData(), input$rankSelect, getTaxDBpath()
                     )
                 ),
@@ -5241,11 +5368,10 @@ shinyServer(function(input, output, session) {
             a given gene serves as the minimal gene age."
         )
 
-        if (input$tabs == "Gene age estimation") {
-            shinyBS::createAlert(
-                session, "descGeneAgeUI", "descGeneAge",
-                title = "", content = desc, append = FALSE
-            )
+        if (input$tabs == "gene_age_estimation") {
+            output$descGeneAgeUI <- renderUI({
+                div(class = "alert alert-info", desc)
+            })
         }
     })
 
@@ -5298,14 +5424,37 @@ shinyServer(function(input, output, session) {
     })
 
     # ** render age distribution plot ------------------------------------------
-    selectedgeneAge <- callModule(
-        plotGeneAge, "geneAge",
-        data = geneAgeDf,
-        geneAgeWidth = reactive(input$geneAgeWidth),
-        geneAgeHeight = reactive(input$geneAgeHeight),
-        geneAgeText = reactive(input$geneAgeText),
-        font = reactive(input$font)
-    )
+    # selectedgeneAge <- callModule(
+    #     plotGeneAge, "geneAge",
+    #     data = geneAgeDf,
+    #     geneAgeWidth = reactive(input$geneAgeWidth),
+    #     geneAgeHeight = reactive(input$geneAgeHeight),
+    #     geneAgeText = reactive(input$geneAgeText),
+    #     font = reactive(input$font)
+    # )
+    observeEvent(input$geneAgeProtConfig, { showModal(geneAgeConfigModal()) })
+    selectedgeneAge <- reactiveVal(NULL)
+    observeEvent(input$tabs, {
+        if (input$tabs == "gene_age_estimation") {
+            result <- callModule(
+                plotGeneAge, "geneAge",
+                data = geneAgeDf,
+                geneAgeWidth = reactive({
+                    if (is.null(input$geneAgeWidth)) 1 else input$geneAgeWidth
+                }),
+                geneAgeHeight = reactive({
+                    if (is.null(input$geneAgeHeight)) 1 else input$geneAgeHeight
+                }),
+                geneAgeText = reactive({
+                    if (is.null(input$geneAgeText)) 1 else input$geneAgeText
+                }),
+                font = reactive({
+                    if (is.null(input$font)) "Arial" else input$font
+                })
+            )
+            selectedgeneAge(result)
+        }
+    })
 
     # * CORE GENES IDENTIFICATION ==============================================
     # ** description for core gene identification function ---------------------
@@ -5313,19 +5462,18 @@ shinyServer(function(input, output, session) {
         desc = paste(
             "IDENTIFY GENES THAT ARE SHARED AMONG SELECTED TAXA.",
             "You can set the minnimum number of taxa to be considered by using
-            the \"Core taxa coverage\" cutoff.", "If you are working with a 
-            higher taxonomy level (e.g. Family) than the one in the input 
-            profile (e.g. Species), you can also specify a minimum fraction of 
+            the \"Core taxa coverage\" cutoff.", "If you are working with a
+            higher taxonomy level (e.g. Family) than the one in the input
+            profile (e.g. Species), you can also specify a minimum fraction of
             species that must have an ortholog in each supertaxon using the
-            \"% of present taxa\" cutoff. These cutoffs should be adjusted 
+            \"% of present taxa\" cutoff. These cutoffs should be adjusted
             according to your specifc needs!"
         )
 
-        if (input$tabs == "Core gene identification") {
-            shinyBS::createAlert(
-                session, "descCoreGeneUI", "descCoreGene",
-                title = "", content = desc, append = FALSE
-            )
+        if (input$tabs == "core_gene_ident") {
+            output$descCoreGeneUI <- renderUI({
+                div(class = "alert alert-info", desc)
+            })
         }
     })
 
@@ -5348,9 +5496,9 @@ shinyServer(function(input, output, session) {
 
             out <- as.list(levels(choice$fullName))
 
-            if (input$applyCoreTaxa == TRUE) {
+            if (!is.null(input$applyCoreTaxa) && input$applyCoreTaxa == TRUE) {
                 out <- coreTaxaName()
-            } 
+            }
             return(selectInput(
                 "taxaCore",
                 "Select taxa of interest:",
@@ -5362,6 +5510,11 @@ shinyServer(function(input, output, session) {
     })
 
     # ** render popup for selecting group of taxa to find core genes -----------
+    observeEvent(input$browseTaxaCore, {
+        showModal(taxaSelectModal(
+            "selectTaxonRankCore", "Select taxon/taxa of interest",
+            "applyCoreTaxa", "Apply"))
+    })
     coreTaxaName <- callModule(
         selectTaxonRank,
         "selectTaxonRankCore",
@@ -5447,11 +5600,10 @@ shinyServer(function(input, output, session) {
             shown in the candidate gene list below."
         )
 
-        if (input$tabs == "Group comparison") {
-            shinyBS::createAlert(
-                session, "descGCUI", "descGC", title = "",
-                content = desc, append = FALSE
-            )
+        if (input$tabs == "group_comparison") {
+            output$descGCUI <- renderUI({
+                div(class = "alert alert-info", desc)
+            })
         }
     })
 
@@ -5562,6 +5714,12 @@ shinyServer(function(input, output, session) {
 
     # ** render popup for selecting rank and return list of belonging taxa -----
     # ** (same as core gene identification)
+    observeEvent(input$taxaGC, {
+        showModal(taxaSelectModal(
+            "selectTaxonRankGC", "Select taxon/taxa of interest",
+            "applyTaxonGC", "Apply"
+        ))
+    })
     gcTaxaName <- callModule(
         selectTaxonRank,
         "selectTaxonRankGC",
@@ -5624,7 +5782,7 @@ shinyServer(function(input, output, session) {
                 out <- as.list(levels(choice$fullName))
 
                 #' when the taxonomy rank was changed --------------------------
-                if (input$applyTaxonGC == TRUE) {
+                if (!is.null(input$applyTaxonGC) && input$applyTaxonGC == TRUE) {
                     out <- gcTaxaName()
                     selectInput(
                         "selectedInGroupGC", "In-group taxa:",
@@ -5734,22 +5892,22 @@ shinyServer(function(input, output, session) {
 
     # ** parameters for the plots in Group Comparison --------------------------
     plotParametersGC <- reactive({
-        input$updateGC # for trigger changes
-        inputData <- list(
-            "xSize" = isolate(input$xSizeGC),
-            "ySize" = isolate(input$ySizeGC),
-            "angle" = isolate(input$angleGC),
-            "legendPosition" = isolate(input$legendGC),
-            "legendSize" = isolate(input$legendSizeGC),
-            "titleSize" = isolate(input$titleSizeGC),
-            "flipPlot" = isolate(input$xAxisGC),
-            "mValue" = isolate(input$mValueGC),
-            "widthVar" = isolate(input$widthVarGC),
-            "heightVar" = isolate(input$heightVarGC),
-            "widthFeature" = isolate(input$widthFeatureGC),
-            "heightFeature" = isolate(input$heightFeatureGC),
-            "inGroupName" = isolate(input$inGroupName),
-            "outGroupName" = isolate(input$outGroupName)
+        input$updateGC
+        list(
+            "xSize" = if (is.null(input$xSizeGC)) 12 else isolate(input$xSizeGC),
+            "ySize" = if (is.null(input$ySizeGC)) 12 else isolate(input$ySizeGC),
+            "angle" = if (is.null(input$angleGC)) 60 else isolate(input$angleGC),
+            "legendPosition" = if (is.null(input$legendGC)) "right" else isolate(input$legendGC),
+            "legendSize" = if (is.null(input$legendSizeGC)) 12 else isolate(input$legendSizeGC),
+            "titleSize" = if (is.null(input$titleSizeGC)) 15 else isolate(input$titleSizeGC),
+            "flipPlot" = if (is.null(input$xAxisGC)) "no" else isolate(input$xAxisGC),
+            "mValue" = if (is.null(input$mValueGC)) "mean" else isolate(input$mValueGC),
+            "widthVar" = if (is.null(input$widthVarGC)) 600 else isolate(input$widthVarGC),
+            "heightVar" = if (is.null(input$heightVarGC)) 400 else isolate(input$heightVarGC),
+            "widthFeature" = if (is.null(input$widthFeatureGC)) 600 else isolate(input$widthFeatureGC),
+            "heightFeature" = if (is.null(input$heightFeatureGC)) 400 else isolate(input$heightFeatureGC),
+            "inGroupName" = if (is.null(input$inGroupName)) "In-group" else isolate(input$inGroupName),
+            "outGroupName" = if (is.null(input$outGroupName)) "Out-group" else isolate(input$outGroupName)
         )
     })
 
@@ -5769,20 +5927,28 @@ shinyServer(function(input, output, session) {
     })
 
     # ** render plots for group comparison -------------------------------------
-    candidateGenes <- callModule(
-        groupComparison, "groupComparison",
-        filteredDf = groupComparisonData,
-        inGroup = getInGroup,
-        variable = reactive(input$varNameGC),
-        varName = reactive(c(input$var1ID, input$var2ID)),
-        compareType = reactive(input$compareType),
-        significanceLevel = reactive(input$significance),
-        plotParameters = plotParametersGC,
-        domainDf = getDomainInformation,
-        doCompare = reactive(input$doCompare),
-        doUpdate = reactive(input$updateGC),
-        taxDB = getTaxDBpath
-    )
+    observeEvent(input$uploadGC, { showModal(gcUploadModal()) })
+    observeEvent(input$gcPlotConfig, { showModal(gcPlotConfigModal()) })
+    candidateGenes <- reactiveVal(NULL)
+    observeEvent(input$doCompare, {
+        if (input$tabs == "group_comparison") {
+            result <- callModule(
+                groupComparison, "groupComparison",
+                filteredDf = groupComparisonData,
+                inGroup = getInGroup,
+                variable = reactive(input$varNameGC),
+                varName = reactive(c(input$var1ID, input$var2ID)),
+                compareType = reactive(input$compareType),
+                significanceLevel = reactive(input$significance),
+                plotParameters = plotParametersGC,
+                domainDf = getDomainInformation,
+                doCompare = reactive(input$doCompare),
+                doUpdate = reactive(input$updateGC),
+                taxDB = getTaxDBpath
+            )
+            candidateGenes(result)
+        }
+    })
 
     # * WORKING WITH NCBI TAXONOMY DATABASE ====================================
     observe({
@@ -5839,11 +6005,10 @@ shinyServer(function(input, output, session) {
             <code>preCalcTree.nw</code> (optional).</p>"
         )
 
-        if (input$tabs == "NCBI taxonomy data") {
-            shinyBS::createAlert(
-                session, "descNcbiTaxDbUI", "descNcbiTaxDb", title = "",
-                content = desc, append = FALSE
-            )
+        if (input$tabs == "ncbi_tax_data") {
+            output$descNcbiTaxDbUI <- renderUI({
+                div(class = "alert alert-info", HTML(desc))
+            })
         }
     })
 
@@ -5858,7 +6023,7 @@ shinyServer(function(input, output, session) {
                 id = "updateNCBITaxStatus", html = m$message, add = TRUE
             )
         })
-        shinyBS::updateButton(session, "doUpdateNcbi", disabled = TRUE)
+        shinyjs::disable("doUpdateNcbi")
     })
 
     # ** do reset taxonomy data ------------------------------------------------
@@ -5879,7 +6044,7 @@ shinyServer(function(input, output, session) {
                 id = "resetTaxonomyDataStatus", html = m$message, add = TRUE
             )
         })
-        shinyBS::updateButton(session, "doResetTax", disabled = TRUE)
+        shinyjs::disable("doResetTax")
     })
 
     # ** do export taxonomy data -----------------------------------------------
@@ -5913,7 +6078,7 @@ shinyServer(function(input, output, session) {
                 id = "exportTaxonomyDataStatus", html = m$message, add = TRUE
             )
         })
-        shinyBS::updateButton(session, "doExportTax", disabled = TRUE)
+        shinyjs::disable("doExportTax")
     })
 
     # ** do import taxonomy data -----------------------------------------------
@@ -5953,6 +6118,6 @@ shinyServer(function(input, output, session) {
                 id = "importTaxonomyDataStatus", html = m$message, add = TRUE
             )
         })
-        shinyBS::updateButton(session, "doImportTax", disabled = TRUE)
+        shinyjs::disable("doImportTax")
     })
 })

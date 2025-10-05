@@ -12,7 +12,7 @@ full or subset profiles)}
 
 \item{parm}{plot parameters, including (1) type of x-axis "taxa" or
 "genes" - default = "taxa"; (2) display gene IDs (default) or gene names;
-(3+4) names of 2 variables var1ID and var2ID - default = "var1" & "var2"; 
+(3+4) names of 2 variables var1ID and var2ID - default = "var1" & "var2";
 (5+6) mid value and color for mid value of var1 -
 default is 0.5 and #FFFFFF; (7) color for lowest var1 - default = "#FF8C00";
 (8) color for highest var1 - default = "#4682B4"; (9+10) mid value and color

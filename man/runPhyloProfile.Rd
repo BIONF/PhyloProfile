@@ -21,8 +21,6 @@ A shiny application - GUI version of PhyloProfile
 Run PhyloProfile app
 }
 \examples{
-\dontrun{
 ?runPhyloProfile
-runPhyloProfile()
-}
+# runPhyloProfile()
 }

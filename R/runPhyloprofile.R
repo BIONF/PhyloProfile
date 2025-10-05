@@ -6,12 +6,11 @@
 #' @param port Port (e.g. port = 8888)
 #' @return A shiny application - GUI version of PhyloProfile
 #' @import BiocStyle
+#' @import bsplus
 #' @importFrom colourpicker colourInput
 #' @rawNamespace import(data.table, except = c(first, last, between))
 #' @import dplyr
 #' @importFrom DT dataTableOutput renderDataTable
-#' @importFrom shinyBS bsPopover bsButton bsAlert popify bsModal updateButton 
-#' closeAlert createAlert
 #' @importFrom shinycssloaders withSpinner
 #' @importFrom shinyjs enable disable reset html toggleState
 #' @importFrom shinyFiles shinyDirButton shinyDirChoose parseDirPath
@@ -20,10 +19,8 @@
 #' @importFrom htmlwidgets saveWidget
 #' @import svglite
 #' @examples
-#' \dontrun{
 #' ?runPhyloProfile
-#' runPhyloProfile()
-#' }
+#' # runPhyloProfile()
 
 runPhyloProfile <- function(configFile = NULL, host = NULL, port = NULL){
     appDir <- system.file("PhyloProfile", package = "PhyloProfile")

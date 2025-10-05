@@ -8,6 +8,7 @@ shinyUI(
         includeCSS("www/custom.css"),
         tags$style(type = "text/css", "body {padding-top: 80px;}"),
         shinyjs::useShinyjs(),
+        use_bs_popover(),
 
         # Application title
         titlePanel("", windowTitle = "PhyloProfile"),
@@ -39,14 +40,14 @@ shinyUI(
                             "keepOrder",
                             strong(em("Retain gene order")),
                             value = TRUE,
-                            width = NULL
-                        ),
-                        shinyBS::bsPopover(
-                            "keepOrder",
-                            "",
-                            "Do no change gene order while filtering data",
-                            "bottom"
-                        )
+                            width = NULL 
+                        ) %>%
+                            bs_embed_popover(
+                                title = "",
+                                content = "Do not change gene order while filtering data",
+                                placement = "bottom",
+                                trigger = "hover"
+                            )
                     ),
                     column(
                         1,
@@ -70,9 +71,11 @@ shinyUI(
                     ),
                     column(
                         2, uiOutput("percentCutoff.ui"),
-                        shinyBS::bsButton(
-                            "applyFilter", "Apply filter", style = "warning",
-                            icon("check"), disabled = FALSE
+                        actionButton(
+                            "applyFilter",
+                            label = "Apply filter",
+                            icon = icon("check"),
+                            class = "btn btn-warning"
                         )
                     ),
                     column(
@@ -86,11 +89,11 @@ shinyUI(
                             value = 999,
                             width = 150
                         ),
-                        shinyBS::bsButton(
+                        actionButton(
                             "resetMain",
-                            "Reset cutoffs",
-                            style = "danger",
-                            icon = icon("backward")
+                            label = "Reset cutoffs",
+                            icon = icon("backward"),
+                            class = "btn btn-danger"
                         )
                     )
                 )
@@ -134,19 +137,22 @@ shinyUI(
                     ),
                     column(
                         2, uiOutput("percentFilter.ui"),
-                        shinyBS::bsButton(
-                            "applyFilterCustom", "Apply filter", style="warning",
-                            icon("check"), disabled = FALSE
+                        actionButton(
+                            "applyFilterCustom",
+                            label = "Apply filter",
+                            icon = icon("check"),
+                            class = "btn btn-warning"
                         )
+                        
                     ),
                     column(
                         2,
                         uiOutput("coorthologFilter.ui"),
-                        shinyBS::bsButton(
+                        actionButton(
                             "resetSelected",
                             "Reset cutoffs",
-                            style = "danger",
-                            icon = icon("backward")
+                            icon = icon("backward"),
+                            class = "btn btn-danger"
                         )
                     )
                 )
@@ -201,7 +207,7 @@ shinyUI(
                             6,
                             conditionalPanel(
                                 condition = "output.checkOmaInput",
-                                shinyBS::bsButton(
+                                actionButton(
                                     "openOmaWindows", "Get data from OMA"
                                 ),
                                 br()
@@ -239,18 +245,18 @@ shinyUI(
                                 ),
                                 selected = "protein",
                                 width = 130
-                            ),
-                            shinyBS::bsPopover(
-                                "var1Relation",
-                                "",
-                                paste(
-                                    "select if variable is the value between ",
-                                    "seed protein - ortholog protein",
-                                    " or seed protein - search taxon",
-                                    sep = "<br>"
-                                ),
-                                "bottom"
-                            )
+                            ) %>%
+                                bs_embed_popover(
+                                    title = "",
+                                    content = paste(
+                                        "select if variable is the value between",
+                                        "seed protein - ortholog protein",
+                                        "or seed protein - search taxon",
+                                        sep = " "
+                                    ),
+                                    placement = "bottom",
+                                    trigger = "hover"
+                                )
                         )
                     ),
 
@@ -307,8 +313,8 @@ shinyUI(
                 # * 2nd column -------------------------------------------------
                 column(
                     3,
-                    shinyBS::bsAlert("fileExistMsgUI"),
-                    shinyBS::bsAlert("inputMsgUI"),
+                    uiOutput("fileExistMsgUI"),
+                    uiOutput("inputMsgUI"),
 
                     # ** List of new taxa --------------------------------------
                     conditionalPanel(
@@ -347,7 +353,13 @@ shinyUI(
                                 max = 1600,
                                 value = 1,
                                 width = 130
-                            )
+                            ) %>%
+                                bs_embed_popover(
+                                    title = "",
+                                    content = "Set start index for sequence range",
+                                    placement = "bottom",
+                                    trigger = "hover"
+                                )
                         ),
 
                         column(
@@ -359,20 +371,13 @@ shinyUI(
                                 max = 1600,
                                 value = 1000,
                                 width = 130
-                            )
-                        ),
-                        shinyBS::bsPopover(
-                            "stIndex",
-                            "",
-                            "Set start index for sequence range",
-                            "bottom"
-                        ),
-
-                        shinyBS::bsPopover(
-                            "endIndex",
-                            "",
-                            "Set end index for sequence range",
-                            "bottom"
+                            ) %>%
+                                bs_embed_popover(
+                                    title = "",
+                                    content = "Set end index for sequence range",
+                                    placement = "bottom",
+                                    trigger = "hover"
+                                )
                         ),
                         hr(),
 
@@ -399,15 +404,13 @@ shinyUI(
                                     h5("OrthoDB version"),
                                     value = "",
                                     placeholder = "e.g. 10-1"
-                                ),
-                                shinyBS::bsPopover(
-                                    "orthodbSeedVer",
-                                    "",
-                                    paste(
-                                        "Leave blank for latest version"
-                                    ),
-                                    "bottom"
-                                )
+                                ) %>%
+                                    bs_embed_popover(
+                                        title = "",
+                                        content = "Leave blank for latest version",
+                                        placement = "bottom",
+                                        trigger = "hover"
+                                    )
                             )
                         ),
                         column(
@@ -432,15 +435,13 @@ shinyUI(
                                     h5("OrthoDB version"),
                                     value = "",
                                     placeholder = "e.g. 10-1"
-                                ),
-                                shinyBS::bsPopover(
-                                    "orthodbOrthoVer",
-                                    "",
-                                    paste(
-                                        "Leave blank for latest version"
-                                    ),
-                                    "bottom"
-                                )
+                                ) %>%
+                                    bs_embed_popover(
+                                        title = "",
+                                        content = "Leave blank for latest version",
+                                        placement = "bottom",
+                                        trigger = "hover"
+                                    )
                             )
                         ),
                         actionButton(
@@ -452,13 +453,13 @@ shinyUI(
 
                         strong(h4("Other optional input:")),
 
-                        shinyBS::bsButton("fastaUpload", "FASTA file(s)"),
+                        actionButton("fastaUpload", "FASTA file(s)"),
                         h5(""),
 
-                        shinyBS::bsButton("uploadGeneCategory", "Gene categories"),
+                        actionButton("uploadGeneCategory", "Gene categories"),
                         h5(""),
 
-                        shinyBS::bsButton("uploadGeneName", "Gene names"),
+                        actionButton("uploadGeneName", "Gene names"),
                         hr(),
 
                         strong(h4("General configuration:")),
@@ -478,15 +479,13 @@ shinyUI(
                                 "font","", 
                                 choices = sort(unique(systemfonts::system_fonts()$family)),
                                 selected = "Arial"
-                            ),
-                            shinyBS::bsPopover(
-                                "font",
-                                "",
-                                paste(
-                                    "Note: This will be appled for all plots!"
-                                ),
-                                "bottom"
-                            )
+                            ) %>%
+                                bs_embed_popover(
+                                    title = "",
+                                    content = "Note: This will be applied for all plots!",
+                                    placement = "bottom",
+                                    trigger = "hover"
+                                )
                         ),
                         h5(""),
                         hr()
@@ -553,11 +552,11 @@ shinyUI(
                                 </span> to continue!</em></strong></p>'
                             ),
                             h5(""),
-                            shinyBS::bsButton(
+                            actionButton(
                                 "addTaxa",
                                 "Add taxonomy info",
-                                disabled = FALSE,
-                                style = "warning"
+                                icon = icon("plus"),
+                                class = "btn btn-warning"
                             )
                         ),
 
@@ -648,10 +647,13 @@ shinyUI(
                         conditionalPanel(
                             condition = "input.orderTaxa
                                         == 'by user defined tree'",
-                            uiOutput("inputTree.ui"),
-                            shinyBS::bsPopover(
-                                "orderTaxa", "", "in newick format", "bottom"
-                            ),
+                            uiOutput("inputTree.ui") %>%
+                                bsplus::bs_embed_popover(
+                                    title = "",
+                                    content = "in newick format",
+                                    placement = "bottom",
+                                    trigger = "hover"
+                                ),
                             uiOutput("checkNewick.ui")
                         ),
                         conditionalPanel(
@@ -666,22 +668,18 @@ shinyUI(
                             strong("Display all input taxa"),
                             value = FALSE,
                             width = NULL
-                        ),
-                        shinyBS::bsPopover(
-                            "showAllTaxa",
-                            "",
-                            "Including taxa with no orthologs",
-                            "bottom"
-                        ),
+                        ) %>%
+                            bsplus::bs_embed_popover(
+                                title = "",
+                                content = "Including taxa with no orthologs",
+                                placement = "bottom",
+                                trigger = "hover"
+                            ),
                         hr(),
 
-                        shinyBS::bsButton(
-                            "do",
-                            "PLOT",
-                            type = "action",
-                            style = "danger",
-                            size = "large",
-                            disabled = FALSE
+                        actionButton(
+                            "do", "PLOT",
+                            class = "btn btn-danger btn-lg"
                         ),
                         h5("")
                     )
@@ -709,13 +707,13 @@ shinyUI(
                                     ),
                                     selected = "normal",
                                     inline = TRUE
-                                ),
-                                shinyBS::bsPopover(
-                                    "plotMode",
-                                    "",
-                                    "Fast mode is only recommended for large data",
-                                    "top"
-                                )
+                                )  %>%
+                                    bsplus::bs_embed_popover(
+                                        title = "",
+                                        content = "Fast mode is only recommended for large data",
+                                        placement = "top",
+                                        trigger = "hover"
+                                    )
                             ),
                             column(
                                 8,
@@ -736,12 +734,6 @@ shinyUI(
                                     selectizeInput(
                                         "geneHighlight","", NULL, multiple=TRUE,
                                         options = list(placeholder = 'none')
-                                    ),
-                                    shinyBS::bsPopover(
-                                        "geneHighlight",
-                                        "",
-                                        "Select gene to highlight",
-                                        "right"
                                     )
                                 ),
                                 column(
@@ -770,7 +762,7 @@ shinyUI(
                         column(
                             4,
                             h3(""),
-                            shinyBS::bsButton("taxonHighlightBrowse", "Browse...")
+                            actionButton("taxonHighlightBrowse", "Browse...")
                         ),
                         column(
                             12,
@@ -783,17 +775,17 @@ shinyUI(
                                 "colorByOrthoID",
                                 strong("Highlight duplicated ortholog IDs"),
                                 value = FALSE
-                            ),
-                            shinyBS::bsPopover(
-                                "colorByOrthoID",
-                                "",
-                                paste(
-                                    "Please check in the Clustering profiles",
-                                    "function, if the profiles are clustered",
-                                    "using ortho IDs"
+                            ) %>%
+                                bsplus::bs_embed_popover(
+                                    title = "",
+                                    content = paste(
+                                        "Please check in the Clustering profiles",
+                                        "function, if the profiles are clustered",
+                                        "using ortho IDs"
+                                    ),
+                                    placement = "bottom",
+                                    trigger = "hover"
                                 ),
-                                "bottom"
-                            ),
                             hr()
                         ),
                         uiOutput("superRankSelect.ui"),
@@ -804,9 +796,9 @@ shinyUI(
                             value = FALSE,
                             width = NULL
                         ),
-                        shinyBS::bsButton(
-                            "updateBtn", "Update apperance", style = "warning",
-                            icon("sync"), disabled = FALSE
+                        actionButton(
+                            "updateBtn", "Update appearance",
+                            icon = icon("sync"), class = "btn btn-warning"
                         )
                     ),
                     # * main panel for profile plot ----------------------------
@@ -868,16 +860,16 @@ shinyUI(
                                 column(
                                     4,
                                     h3(""),
-                                    shinyBS::bsButton("cusTaxa", "Browse...")
+                                    actionButton("cusTaxa", "Browse...")
                                 )
                             )
                         ),
                         uiOutput("cusSuperRankSelect.ui"),
 
                         h5(""),
-                        shinyBS::bsButton(
-                            "plotCustom", "Update apperance", style = "warning",
-                            icon("sync")
+                        actionButton(
+                            "plotCustom", "Update apperance",
+                            icon = icon("sync"), class = "btn btn-warning"
                         )
                     ),
 
@@ -1047,19 +1039,24 @@ shinyUI(
                         ),
                         uiOutput("dimRedGroupHigherRank.warning"),
                         uiOutput("dimRedCustomLabel.ui"),
-                        shinyBS::bsButton(
-                            "dimRedApplyChangeLables", "Change labels",
-                            style = "success", icon = icon("play")
+                        actionButton(
+                            "dimRedApplyChangeLables",
+                            "Change labels",
+                            icon = icon("play"),
+                            class = "btn btn-success"
                         ),
-                        shinyBS::bsButton(
-                            "dimRedResetLables", "Reset labels",
-                            style = "default", icon = icon("rotate-left")
-                        ),
-                        shinyBS::bsPopover(
-                            "dimRedResetLables", "",
-                            paste("Click `Change labels` after reset!"),
-                            "bottom"
-                        ),
+                        actionButton(
+                            "dimRedResetLables",
+                            "Reset labels",
+                            icon = icon("rotate-left"),
+                            class = "btn btn-secondary"
+                        ) %>%
+                            bsplus::bs_embed_popover(
+                                title = "",
+                                content = "Click `Change labels` after reset!",
+                                placement = "bottom",
+                                trigger = "hover"
+                            ),
                         hr(),
                         column(
                             12,
@@ -1135,13 +1132,14 @@ shinyUI(
                         ),
                         hr(),
                         strong("Add following data to Customized profile"),
-                        checkboxInput("addSpecDimRed", em("Selected taxa")),
-                        shinyBS::bsPopover(
-                            "addSpecDimRed", "",
-                            paste("Only available when working with the",
-                                  "lowest taxonomy rank!"),
-                            "bottom"
-                        ),
+                        checkboxInput("addSpecDimRed", em("Selected taxa")) %>%
+                            bsplus::bs_embed_popover(
+                                title = "",
+                                content = paste("Only available when working with the",
+                                                "lowest taxonomy rank!"),
+                                placement = "bottom",
+                                trigger = "hover"
+                            ),
                         checkboxInput("addGeneDimRed", em("Selected genes")),
                         uiOutput("addDimRedCustomProfileCheck.ui")
                     ),
@@ -1173,9 +1171,10 @@ shinyUI(
                             10,
                             column(
                                 3,
-                                shinyBS::bsButton(
-                                    "plotDimRed", "PLOT", type = "action",
-                                    style = "danger", disabled = FALSE
+                                actionButton(
+                                    inputId = "plotDimRed",
+                                    label = "PLOT",
+                                    class = "btn btn-danger"
                                 )
                             ),
                             conditionalPanel(
@@ -1211,13 +1210,14 @@ shinyUI(
                                 downloadButton(
                                     "dimRedDownloadData", "Download data",
                                     class = "butDL"
-                                ),
-                                shinyBS::bsPopover(
-                                    "dimRedDownloadData", "",
-                                    paste("Use plotDimRed() to manually create",
-                                          "dimension reduction plot!"),
-                                    "bottom"
-                                )
+                                ) %>%
+                                    bsplus::bs_embed_popover(
+                                        title = "",
+                                        content = paste("Use plotDimRed() to manually create",
+                                                        "dimension reduction plot!"),
+                                        placement = "bottom",
+                                        trigger = "hover"
+                                    )
                             )
                         ),
                         br(),
@@ -1233,7 +1233,7 @@ shinyUI(
                 tabPanel(
                     "Profile clustering", value = "profile_clustering",
                     h4(strong("Profile clustering")),
-                    shinyBS::bsAlert("descClusteringUI"),
+                    uiOutput("descClusteringUI"),
 
                     wellPanel(
                         fluidRow(
@@ -1282,13 +1282,13 @@ shinyUI(
                                         style = "color:darkblue"
                                     )),
                                     value = TRUE
-                                ),
-                                shinyBS::bsPopover(
-                                    "applyCluster",
-                                    "",
-                                    "Uncheck this to sort genes by alphabet",
-                                    "bottom"
-                                ),
+                                ) %>%
+                                    bsplus::bs_embed_popover(
+                                        title = "",
+                                        content = "Uncheck this to sort genes by alphabet",
+                                        placement = "bottom",
+                                        trigger = "hover"
+                                    ),
 
                                 uiOutput("applyClusterCheck.ui"),
 
@@ -1314,7 +1314,7 @@ shinyUI(
                 tabPanel(
                     "Distribution analysis", value = "distribution_analysis",
                     h4(strong("Distribution analysis")),
-                    shinyBS::bsAlert("descDistributionUI"),
+                    uiOutput("descDistributionUI"),
 
                     wellPanel(
                         fluidRow(
@@ -1358,7 +1358,7 @@ shinyUI(
                 tabPanel(
                     "Gene age estimation", value = "gene_age_estimation",
                     h4(strong("Gene age estimation")),
-                    shinyBS::bsAlert("descGeneAgeUI"),
+                    uiOutput("descGeneAgeUI"),
 
                     wellPanel(
                         fluidRow(
@@ -1374,7 +1374,7 @@ shinyUI(
                             column(
                                 2,
                                 strong("Appearance"),
-                                shinyBS::bsButton("geneAgeProtConfig", "Plot config")
+                                actionButton("geneAgeProtConfig", "Plot config")
                             ),
                             column(
                                 4,
@@ -1399,7 +1399,7 @@ shinyUI(
                 tabPanel(
                     "Core gene identification", value = "core_gene_ident",
                     h4(strong("Core gene identification")),
-                    shinyBS::bsAlert("descCoreGeneUI"),
+                    uiOutput("descCoreGeneUI"),
 
                     wellPanel(
                         fluidRow(
@@ -1426,7 +1426,7 @@ shinyUI(
                             column(
                                 12,
                                 uiOutput("taxaListCore.ui"),
-                                shinyBS::bsButton("browseTaxaCore", "Browse")
+                                actionButton("browseTaxaCore", "Browse")
                             )
                         )
                     ),
@@ -1453,7 +1453,7 @@ shinyUI(
                 tabPanel(
                     "Group comparison", value = "group_comparison",
                     h4(strong("Group comparison")),
-                    shinyBS::bsAlert("descGCUI"),
+                    uiOutput("descGCUI"),
                     wellPanel(
                         fluidRow(
                             column(
@@ -1464,17 +1464,17 @@ shinyUI(
                                     "Use common ancestor",
                                     value = TRUE,
                                     width = NULL
-                                ),
-                                shinyBS::bsPopover(
-                                    "useCommonAncestor",
-                                    "",
-                                    paste0(
-                                        "All taxa that have the same common ",
-                                        "ancestor with the selected taxa above",
-                                        " will be considered as the in-group"
+                                ) %>%
+                                    bsplus::bs_embed_popover(
+                                        title = "",
+                                        content = paste(
+                                            "All taxa that have the same common",
+                                            "ancestor with the selected taxa above",
+                                            "will be considered as the in-group"
+                                        ),
+                                        placement = "bottom",
+                                        trigger = "hover"
                                     ),
-                                    "bottom"
-                                ),
                                 h5(strong("Select in-group by supertaxon")),
                                 actionButton("taxaGC", "Browse")
                             ),
@@ -1484,7 +1484,7 @@ shinyUI(
                                 h5(strong(
                                     "Upload sequence(s) / In-group taxa"
                                 )),
-                                shinyBS::bsButton("uploadGC", "Upload")
+                                actionButton("uploadGC", "Upload")
                             ),
                             column(
                                 2,
@@ -1499,20 +1499,22 @@ shinyUI(
                             ),
                             column(
                                 2,
-                                shinyBS::popify(
-                                    sliderInput(
-                                        "significance",
-                                        paste("Significance level:"),
-                                        min = 0,
-                                        max = 1,
-                                        step = 0.01,
-                                        value = c(0.05),
-                                        width = 300
+                                sliderInput(
+                                    "significance",
+                                    label = "Significance level:",
+                                    min = 0,
+                                    max = 1,
+                                    step = 0.01,
+                                    value = 0.05,
+                                    width = 300
+                                ) %>%
+                                    bsplus::bs_embed_popover(
+                                        title   = "",
+                                        content = "P-value cut-off of the statistic test, 
+                                                OR cut-off of delta means between 2 groups",
+                                        placement = "bottom",
+                                        trigger = "hover"
                                     ),
-                                    "",
-                                    "P-value cut-off of the statistic test, OR
-                                    cut-off of delta means between 2 groups"
-                                ),
                                 checkboxInput(
                                     "addGCGenesCustomProfile",
                                     strong(em(
@@ -1527,23 +1529,24 @@ shinyUI(
                             ),
                             column(
                                 2,
-                                shinyBS::popify(
-                                    actionButton(
-                                        "gcPlotConfig", "Plot config"
+                                actionButton("gcPlotConfig", "Plot config") %>%
+                                    bsplus::bs_embed_popover(
+                                        title   = "",
+                                        content = "Change the appearance of the plots",
+                                        placement = "bottom",
+                                        trigger = "hover"
                                     ),
-                                    "",
-                                    "Change the appearance of the plots"
-                                ),
                                 hr(),
-                                shinyBS::bsButton(
-                                    "doCompare", "COMPARE!", style = "danger"
+                                actionButton(
+                                    "doCompare", "COMPARE!", 
+                                    class = "btn btn-danger"
                                 ),
                                 h5(),
-                                shinyBS::bsButton(
+                                actionButton(
                                     "updateGC",
                                     "Update plot",
-                                    style = "warning",
-                                    icon("sync")
+                                    icon = icon("sync"),
+                                    class = "btn btn-warning"
                                 )
                             )
                         )
@@ -1554,7 +1557,7 @@ shinyUI(
                 # * NCBI taxonomy data -----------------------------------------
                 tabPanel(
                     "NCBI taxonomy data", value = "ncbi_tax_data",
-                    shinyBS::bsAlert("descNcbiTaxDbUI"),
+                    uiOutput("descNcbiTaxDbUI"),
                     column(
                         3,
                         radioButtons(
@@ -1573,11 +1576,11 @@ shinyUI(
                         conditionalPanel(
                             condition = "input.taxDB=='update'",
                             h4(strong("Update NCBI taxonomy")),
-                            shinyBS::bsButton(
+                            actionButton(
                                 "doUpdateNcbi",
                                 "Do update",
-                                style = "warning",
-                                icon("wrench")
+                                icon = icon("wrench"),
+                                class = "btn btn-warning"
                             ),
                             hr(),
                             verbatimTextOutput("updateNCBITaxStatus")
@@ -1587,11 +1590,11 @@ shinyUI(
                             h4(strong("Reset taxonomy data")),
                             uiOutput("taxResetWarning.ui"),
                             br(),
-                            shinyBS::bsButton(
+                            actionButton(
                                 "doResetTax",
                                 "Do reset",
-                                style = "warning",
-                                icon("wrench")
+                                icon = icon("wrench"),
+                                class = "btn btn-warning"
                             ),
                             hr(),
                             verbatimTextOutput("resetTaxonomyDataStatus")
@@ -1613,11 +1616,11 @@ shinyUI(
                             br(),
                             uiOutput("taxDirOut.ui"),
                             br(),
-                            shinyBS::bsButton(
+                            actionButton(
                                 "doExportTax",
                                 "Do export",
-                                style = "warning",
-                                icon("file-export")
+                                icon = icon("file-export"),
+                                class = "btn btn-warning",
                             ),
                             hr(),
                             verbatimTextOutput("exportTaxonomyDataStatus")
@@ -1640,11 +1643,11 @@ shinyUI(
                             br(),
                             uiOutput("taxDir.ui"),
                             br(),
-                            shinyBS::bsButton(
+                            actionButton(
                                 "doImportTax",
                                 "Do import",
-                                style = "warning",
-                                icon("file-import")
+                                icon = icon("file-import"),
+                                class = "btn btn-warning"
                             ),
                             hr(),
                             verbatimTextOutput("importTaxonomyDataStatus")
@@ -1665,7 +1668,7 @@ shinyUI(
                 tabPanel(
                     "Processed data",
                     h4(strong("Download processed data")),
-                    shinyBS::bsAlert("descDownloadProcessedDataUI"),
+                    uiOutput("descDownloadProcessedDataUI"),
                     strong("Output dir:"),
                     br(), br(),
                     shinyFiles::shinyDirButton(
@@ -1679,11 +1682,11 @@ shinyUI(
                     br(),br(),
                     uiOutput("procDataOutDir.ui"),
                     br(),
-                    shinyBS::bsButton(
+                    actionButton(
                         "doDownloadProcData",
                         "Download",
-                        style = "warning",
-                        icon("file-export")
+                        icon = icon("file-export"),
+                        class = "btn btn-warning"
                     ),
                     hr(),
                     verbatimTextOutput("downloadProcDataStatus")
@@ -1693,7 +1696,7 @@ shinyUI(
                 tabPanel(
                     "Export plot settings",
                     h4(strong("Export plot settings")),
-                    shinyBS::bsAlert("descExportSettingUI"),
+                    uiOutput("descExportSettingUI"),
                     radioButtons(
                         inputId = "exportSetting",
                         label = "Export as:",
@@ -1718,11 +1721,11 @@ shinyUI(
                     uiOutput("settingFile.ui"),
                     uiOutput("settingDir.ui"),
                     br(),
-                    shinyBS::bsButton(
+                    actionButton(
                         "doExportSetting",
                         "Do export",
-                        style = "warning",
-                        icon("file-export")
+                        icon = icon("file-export"),
+                        class = "btn btn-warning"
                     ),
                     hr(),
                     verbatimTextOutput("exportSettingStatus")
@@ -1749,701 +1752,6 @@ shinyUI(
             )
         ),
 
-        # LIST OF POP-UP WINDOWS ===============================================
-
-        # * popup for getting taxa from OMA browser ----------------------------
-        shinyBS::bsModal(
-            "getOmaDataWindows",
-            "Get OMA data",
-            "openOmaWindows",
-            size = "small",
-            selectInput(
-                "selectedOmaType",
-                label = "Select type of OMA orthologs:",
-                choices = list("HOG", "OG"),# "PAIR"),
-                selected = "HOG"
-            ),
-            shinyBS::bsButton("getDataOma", "Get data", style = "danger"),
-            downloadButton("downloadFilesOma", "Save data"),
-            br(),
-            em("This windows will close automatically when eveything is done!",
-               style = "color:red")
-        ),
-
-        # * popup for adding new taxa from input file --------------------------
-        shinyBS::bsModal(
-            "addTaxaWindows",
-            "Add new taxa",
-            "addTaxa",
-            size = "medium",
-            HTML(
-                "<p><em>Use this form to add taxon that does not exist in NCBI
-                taxonomy database (or alternatively you can manually prepare the
-                <span style=\"text-decoration: underline;\">
-                <span style=\"color: #ff0000; text-decoration: underline;\">
-                PhyloProfile/data/newTaxa.txt file with the following
-                description for each field).</em></p>
-                <p><span style=\"color: #ff0000;\"><em><strong>
-                NOTE: ID and name of new taxon must be
-                <span style=\"text-decoration: underline;\">different</span>
-                from any existing NCBI taxa.</strong></em></span></p>"
-            ),
-            textInput(
-                "newID",
-                "ID (must be a number and greater than 999999005,
-                e.g. 999999901)",
-                999999901,
-                width = 500
-            ),
-            textInput(
-                "newName",
-                "Name (e.g. Saccharomyces cerevisiae strain ABC)",
-                "",
-                width = 500
-            ),
-            textInput(
-                "newRank",
-                "Rank (e.g. strain, species, order, etc.)",
-                "species",
-                width = 500
-            ),
-            textInput(
-                "newParent",
-                "Parent ID (NCBI taxonomy ID of the next higher rank,
-                e.g. 4932 (S.cerevisiae species))",
-                4932,
-                width = 500
-            ),
-            actionButton("newAdd", "Add new taxon"),
-            hr(),
-            fileInput("newTaxaFile",
-                      "Or upload file contains IDs for new taxa"),
-            HTML(
-                "<p><em>Taxonomy file for new taxa has to be a tab-delimited
-                text file and has the following header (please follow the rule
-                above):</em></p><p>ncbiID &nbsp;fullName &nbsp;rank
-                &nbsp;parentID</p>"
-            ),
-            shinyBS::bsAlert("wrongNewTaxa"),
-            hr(),
-            shinyBS::bsButton(
-                "newDone", "Finish adding", style = "warning", disabled = TRUE
-            )
-        ),
-
-        # * popup for setting plot colors (profiles) ---------------------------
-        shinyBS::bsModal(
-            "color",
-            "Set colors for profile",
-            "setColor",
-            size = "small",
-            colourpicker::colourInput(
-                "lowColorVar1",
-                "Low variable 1 (dot)",
-                value = "#FF8C00"
-            ),
-            colourpicker::colourInput(
-                "midColorVar1",
-                "Mid variable 1 (dot)",
-                value = "#40ABCF"
-            ),
-            colourpicker::colourInput(
-                "highColorVar1",
-                "High variable 1 (dot)",
-                value = "#164294"
-            ),
-            numericInput(
-                "midVar1",
-                "Mitpoint varriable 1",
-                min = 0,
-                max = 1,
-                step = 0.01,
-                value = 0.5
-            ),
-            actionButton(
-                "defaultColorVar1",
-                "Default",
-                style = "padding:4px; font-size:100%"
-            ),
-            hr(),
-            colourpicker::colourInput(
-                "lowColorVar2",
-                "Low variable 2 (background)",
-                value = "#CC8D8D"
-            ),
-            colourpicker::colourInput(
-                "midColorVar2",
-                "Mid variable 2 (background)",
-                value = "#FFFFFF"
-            ),
-            colourpicker::colourInput(
-                "highColorVar2",
-                "High variable 2 (background)",
-                value = "#616587"
-            ),
-            numericInput(
-                "midVar2",
-                "Mitpoint varriable 2",
-                min = 0,
-                max = 1,
-                step = 0.01,
-                value = 1
-            ),
-            actionButton(
-                "defaultColorVar2",
-                "Default",
-                style = "padding:4px; font-size:100%"
-            ),
-            hr(),
-            colourpicker::colourInput(
-                "paraColor",
-                "Color for inparalogs",
-                value = "#07d000"
-            ),
-            actionButton(
-                "defaultColorPara",
-                "Default",
-                style = "padding:4px; font-size:100%"
-            )
-        ),
-
-        # * popup for FASTA upload ---------------------------------------------
-        shinyBS::bsModal(
-            "fastaUploadBs",
-            "FASTA upload",
-            "fastaUpload",
-            size = "small",
-            selectInput(
-                "inputType", "Choose location for:",
-                c("Concatenated fasta file", "Fasta folder")
-            ),
-            hr(),
-            uiOutput("defaultColorPara.ui"),
-            conditionalPanel(
-                condition = "input.inputType == 'Concatenated fasta file'",
-                fileInput("concatFasta", ""),
-                uiOutput("concatFasta.existCheck")
-            ),
-            conditionalPanel(
-                condition = "input.inputType == 'Fasta folder'",
-                textInput("path", "Main FULL path:", ""),
-                selectInput(
-                    "dirFormat", "Directory format:",
-                    choices = list("path/speciesID.fa*" = 1,
-                                   "path/speciesID/speciesID.fa*" = 2),
-                    selected = "Path/speciesID.fasta"
-                ),
-                selectInput(
-                    "fileExt", "File extension:",
-                    choices = list("fa" = "fa",
-                                   "fasta" = "fasta",
-                                   "fas" = "fas",
-                                   "txt" = "txt"),
-                    selected = "fa"
-                ),
-                selectInput(
-                    "idFormat",
-                    "ID format:",
-                    choices = list(">speciesID:seqID" = 1,
-                                   ">speciesID@seqID" = 2,
-                                   ">speciesID|seqID" = 3,
-                                   ">seqID" = 4),
-                    selected = 4
-                )
-            )
-        ),
-
-        # * popup for upload gene category -------------------------------------
-        shinyBS::bsModal(
-            "uploadGeneCategoryBs",
-            "Upload gene categories",
-            "uploadGeneCategory",
-            size = "small",
-            fileInput("geneCategory", "")
-        ),
-
-        # * popup for upload gene names ----------------------------------------
-        shinyBS::bsModal(
-            "uploadGeneNameBs",
-            "Upload gene names",
-            "uploadGeneName",
-            size = "medium",
-            em(paste(
-                "This option is used to map gene IDs from the main input with",
-                "their gene names. Please upload the mapping file for gene IDs - ",
-                "gene names in tab-delimited format! Check",
-                "https://github.com/BIONF/PhyloProfile/wiki/Input-Data#gene-names",
-                "for more info."
-            )),
-            br(),
-            fileInput("geneName", "")
-        ),
-
-        # * popup for setting ortholog ID format -------------------------------
-        shinyBS::bsModal(
-            "seqIDBs",
-            "Sequence ID format",
-            "selectSequenceID",
-            size = "small",
-            selectInput(
-                "seqIdFormat",
-                "ID format:",
-                choices = list(
-                    "BIONF format (seed|taxon|ortho)" = 1,
-                    "seqID" = 2,
-                    "something<separator>seqID" = 3,
-                    "seqID<separator>something" = 4
-                ),
-                selected = 1
-            ),
-            selectInput(
-                "separator",
-                "Separator:",
-                choices = list(
-                    "none" = "none",
-                    "|" = 1,
-                    "@" = 2,
-                    "#" = 3,
-                    ";" = 4
-                ),
-                selected = 1
-            ),
-            em("Please note! Only these ID formats are accepted!")
-        ),
-
-        # * popup for setting Main plot configurations -------------------------
-        shinyBS::bsModal(
-            "mainPlotConfigBs",
-            "Plot appearance configuration",
-            "mainPlotConfig",
-            size = "small",
-            column(
-                6, createTextSize("xSize", "X-axis label size (px)", 14, 100)
-            ),
-            column(
-                6, createTextSize("ySize", "Y-axis label size (px)", 14, 100)
-            ),
-            column(
-                6,
-                createTextSize("legendSize", "Legend label size (px)", 8, 150)
-            ),
-            column(
-                6,
-                selectInput(
-                    "mainLegend", label = "Legend position:",
-                    choices = list("Right" = "right",
-                                   "Left" = "left",
-                                   "Top" = "top",
-                                   "Bottom" = "bottom",
-                                   "Hide" = "none"),
-                    selected = "right",
-                    width = 150
-                )
-            ),
-            column(
-                6,
-                createTextSize("groupLabelSize", "Group label size (px)",7,100)
-            ),
-            column(
-                6,
-                numericInput(
-                    "groupLabelDist", "Height for group label",
-                    min = 1, max = 2, step = 0.1, value = 1.5, width = 100
-                )
-            ),
-            column(
-                12,
-                HTML("<strong>Angle for taxonomic group label</strong>:<br>"),
-                sliderInput(
-                    "groupLabelAngle",
-                    "",
-                    min = 0,
-                    max = 90,
-                    step = 10,
-                    value = 90,
-                    width = 250
-                ),
-                br()
-            ),
-            column(
-                12,
-                HTML("<strong>Angle for x-axis label</strong>:<br>"),
-                sliderInput(
-                    "xAngle",
-                    "",
-                    min = 0,
-                    max = 90,
-                    step = 10,
-                    value = 60,
-                    width = 250
-                ),
-                br()
-            ),
-            column(
-                12,
-                HTML("<strong>Zooming factor (α) for dots on
-                    profile</strong>:<br>"),
-                sliderInput(
-                    "dotZoom", "",
-                    min = -1,
-                    max = 3,
-                    step = 0.1,
-                    value = 0,
-                    width = 250
-                ),
-                HTML("<em>dot size = (1+α)*defaultSize<br>defaultSize
-                    =[0:5]</em>"),
-                uiOutput("dotSizeInfo"),
-                br()
-            ),
-            br(),
-            hr(),
-            shinyBS::bsButton("resetMainConfig", "Reset", style = "danger"),
-            shinyBS::bsButton("applyMainConfig", "Done", style = "warning")
-        ),
-
-        # * popup for setting Customized plot configurations -------------------
-        shinyBS::bsModal(
-            "selectedPlotConfigBs",
-            "Plot appearance configuration",
-            "selectedPlotConfig",
-            size = "small",
-            column(
-                6,
-                createTextSize("xSizeSelect", "X-axis label size (px)", 14, 100)
-            ),
-            column(
-                6,
-                createTextSize("ySizeSelect", "Y-axis label size (px)", 14, 100)
-            ),
-
-            column(
-                6,
-                createTextSize("legendSizeSelect", "Legend label size (px)",
-                               8, 150)
-            ),
-            column(
-                6,
-                selectInput(
-                    "selectedLegend", label = "Legend position:",
-                    choices = list("Right" = "right",
-                                   "Left" = "left",
-                                   "Top" = "top",
-                                   "Bottom" = "bottom",
-                                   "Hide" = "none"),
-                    selected = "right",
-                    width = 150
-                )
-            ),
-            column(
-                6,
-                createTextSize(
-                    "groupLabelSizeSelect", "Group label size (px)", 7, 100
-                )
-            ),
-            column(
-                6,
-                numericInput(
-                    "groupLabelDistSelect", "Height for group label",
-                    min = 1, max = 2, step = 0.1, value = 1.5, width = 100
-                )
-            ),
-            column(
-                12,
-                HTML("<strong>Angle for taxonomic group label</strong>:<br>"),
-                sliderInput(
-                    "groupLabelAngleSelect",
-                    "",
-                    min = 0,
-                    max = 90,
-                    step = 10,
-                    value = 90,
-                    width = 250
-                ),
-                br()
-            ),
-            column(
-                12,
-                HTML("<strong>Angle for x-axis label</strong>:<br>"),
-                sliderInput(
-                    "xAngleSelect", "",
-                    min = 0,
-                    max = 90,
-                    step = 10,
-                    value = 60,
-                    width = 250
-                ),
-                br()
-            ),
-            column(
-                12,
-                HTML("<strong>Zooming factor (α) for dots on
-                     profile</strong>:<br>"),
-                sliderInput(
-                    "dotZoomSelect", "",
-                    min = -1,
-                    max = 3,
-                    step = 0.1,
-                    value = 0,
-                    width = 250
-                ),
-                HTML("<em>dot size = (1+α)*defaultSize<br>
-                     defaultSize=[0:5]</em>"),
-                uiOutput("dotSizeInfoSelect"),
-                br()
-            ),
-            br(),
-            hr(),
-            shinyBS::bsButton("resetSelectedConfig", "Reset", style = "danger"),
-            shinyBS::bsButton("applySelectedConfig", "Done", style = "warning")
-        ),
-
-        # * popup for setting Gene age plot configurations ---------------------
-        shinyBS::bsModal(
-            "geneAgeProtConfigBs",
-            "Plot appearance configuration",
-            "geneAgeProtConfig",
-            size = "small",
-            sliderInput(
-                "geneAgeWidth",
-                "Width zoom (*600px)",
-                min = 0,
-                max = 5,
-                step = 0.1,
-                value = 1,
-                width = "100%"
-            ),
-            sliderInput(
-                "geneAgeHeight", "Height zoom (*150px)",
-                min = 0,
-                max = 5,
-                step = 0.1,
-                value = 1,
-                width = "100%"
-            ),
-            sliderInput(
-                "geneAgeText", "Text size zoom",
-                min = 0,
-                max = 5,
-                step = 0.1,
-                value = 1,
-                width = "100%"
-            ),
-            br(),
-            hr(),
-            shinyBS::bsButton(
-                "resetGeneAgeProtConfig",
-                "Reset",
-                style = "danger"
-            )
-        ),
-
-        # * popup for setting Group compariosn plot configurations -------------
-        shinyBS::bsModal(
-            "gcPlotConfigBs",
-            "Plot appearance configuration",
-            "gcPlotConfig",
-            size = "large",
-            column(
-                6,
-                createTextSize("xSizeGC", "X-axis label size (px)", 12, '100%')
-            ),
-            column(
-                6,
-                createTextSize("ySizeGC", "Y-axis label size (px)", 12, '100%')
-            ),
-            column(
-                6,
-                createTextSize("titleSizeGC", "Title size (px)", 15, '100%')
-            ),
-            column(
-                6,
-                createTextSize("legendSizeGC", "Legend label size (px)",
-                               12, '100%')
-            ),
-            hr(),
-            column(
-                12,
-                HTML("<p><span style=\"color: #ff0000;\"><strong><em>Options
-                     for variable plot only:</em></strong></span></p>")
-            ),
-            column(
-                6, createPlotSize("widthVarGC", "Width (px)", 600)
-            ),
-            column(
-                6, createPlotSize("heightVarGC", "Height (px)", 400)
-            ),
-            column(
-                6,
-                selectInput(
-                    "legendGC", label = "Legend position:",
-                    choices = list("Right" = "right",
-                                   "Bottom" = "bottom",
-                                   "Hide" = "none"),
-                    selected = "right",
-                    width = '100%'
-                )
-            ),
-            column(
-                6,
-                selectInput(
-                    "mValueGC", label = "Show mean/median point:",
-                    choices = list("Mean" = "mean",
-                                   "Median" = "median"),
-                    selected = "mean",
-                    width = '100%')
-            ),
-            hr(),
-            column(
-                12,
-                HTML("<p><span style=\"color: #ff0000;\"><strong><em>Options
-                     for feature plot only:</em></strong></span></p>")
-            ),
-            column(
-                6, createPlotSize("widthFeatureGC", "Width (px)", 600)
-            ),
-            column(
-                6, createPlotSize("heightFeatureGC", "Height (px)", 400)
-            ),
-            column(
-                6,
-                radioButtons(
-                    inputId = "xAxisGC",
-                    label = "Flip coordinates",
-                    choices = list("Yes", "No"),
-                    selected = "No",
-                    inline = TRUE
-                )
-            ),
-            column(
-                6,
-                sliderInput(
-                    "angleGC", "Angle of the X-axis label",
-                    min = 0,
-                    max = 180,
-                    step = 1,
-                    value = 60,
-                    width = 250
-                )
-            ),
-            hr(),
-            column(
-                12,
-                HTML("<p><span style=\"color: #ff0000;\"><strong><em>Names
-                     of in-group and out-group taxa:</em></strong></span></p>")
-            ),
-            column(
-                6,
-                textInput("inGroupName",
-                          NULL,
-                          value = "In-group",
-                          width = "100%",
-                          placeholder = "Name of in-group taxa")
-            ),
-            column(
-                6,
-                textInput("outGroupName",
-                          NULL,
-                          value = "Out-group",
-                          width = "100%",
-                          placeholder = "Name of in-group taxa")
-            ),
-            br(),
-            hr(),
-            shinyBS::bsButton("resetConfigGC", "Reset", style = "danger"),
-            shinyBS::bsButton("applyConfigGC", "Done", style = "warning")
-        ),
-
-        # * popup for select taxa on Main Profile ------------------------
-        shinyBS::bsModal(
-            "highlight",
-            "Select taxon/taxa of interest",
-            "taxonHighlightBrowse",
-            size = "small",
-            selectTaxonRankUI("selectTaxonRankMain"),
-            checkboxInput(
-                "applyMainTaxa",
-                strong("Apply to main profile",
-                       style = "color:red"),
-                value = FALSE
-            )
-        ),
-
-        # * popup for select taxa on Customized Profile ------------------------
-        shinyBS::bsModal(
-            "cusTaxaBs",
-            "Select taxon/taxa of interest",
-            "cusTaxa",
-            size = "small",
-            selectTaxonRankUI("selectTaxonRank"),
-            checkboxInput(
-                "applyCusTaxa",
-                strong("Apply to customized profile",
-                       style = "color:red"),
-                value = FALSE
-            )
-        ),
-
-        # * popup for select taxa on Core gene finding -------------------------
-        shinyBS::bsModal(
-            "browseTaxaCoreBs",
-            "Select taxon/taxa of interest",
-            "browseTaxaCore",
-            size = "small",
-            selectTaxonRankUI("selectTaxonRankCore"),
-            checkboxInput(
-                "applyCoreTaxa",
-                strong("Apply", style = "color:red"),
-                value = FALSE
-            )
-        ),
-
-        # * popup for select taxa on Group comparison --------------------------
-        shinyBS::bsModal(
-            "taxaGCBs",
-            "Select taxon/taxa of interest",
-            "taxaGC",
-            size = "small",
-            selectTaxonRankUI("selectTaxonRankGC"),
-            checkboxInput(
-                "applyTaxonGC",
-                strong("Apply",
-                       style = "color:red"),
-                value = FALSE
-            )
-        ),
-
-        # * popup for input in-group and out-group on Group comparison ---------
-        shinyBS::bsModal(
-            "uploadGCBs",
-            "Upload files for group comparison",
-            "uploadGC",
-            size = "large",
-            h4(strong("Sequence(s) that need to be compared")),
-            HTML("<p><em>Please use the same sequence IDs as being shown in the
-                 phylogenetic profiles!</em></p>"),
-            fileInput("gcFile", NULL),
-            hr(),
-            h4(strong("In-group and out-group taxa")),
-            HTML("<p><em>Please upload an <strong>tab-delimited ID list</strong>
-                 of in-group and out-group taxa. The ID must follow the format
-                 \"<span style=\"text-decoration: underline;\">
-                 <strong>ncbi12345</strong></span>\".
-                 Example:</em></p>
-                     <p><code>
-                     ncbi12345 &nbsp; &nbsp;in-group</code></p>
-                     <p><code>ncbi24242 &nbsp; &nbsp;in-group</code></p>
-                     <p><code>ncbi33333 &nbsp; &nbsp;out-group
-                 </code></p>"),
-
-            fileInput("taxonGroupGC", NULL),
-            conditionalPanel(
-                condition = "output.checkTaxonGroupGC == false",
-                h5(strong("Invalid taxa were found:")),
-                DT::dataTableOutput("invalidTaxonGroupGC")
-            )
-        ),
-
         # POINT INFO BOX =======================================================
         conditionalPanel(
             condition =
@@ -2457,23 +1765,20 @@ shinyUI(
                 verbatimTextOutput("pointInfo"),
                 conditionalPanel(
                     condition = "output.pointInfoStatus == 0",
-                    shinyBS::bsButton(
+                    actionButton(
                         "detailedBtn",
                         "Detailed plot",
-                        style = "success",
-                        disabled = FALSE
+                        class = "btn btn-success"
                     ),
-                    shinyBS::bsButton(
+                    actionButton(
                         "doDomainPlotMain",
                         "Domain plot",
-                        style = "success",
-                        disabled = TRUE
+                        class = "btn btn-success"
                     ),
-                    shinyBS::bsButton(
+                    actionButton(
                         "highlightMain",
                         "Highlight",
-                        style = "success",
-                        disabled = FALSE
+                        class = "btn btn-success"
                     )
                 ),
                 style = "opacity: 0.80"

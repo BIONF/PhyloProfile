@@ -24,13 +24,13 @@ groupComparisonUI <- function(id){
     sidebarLayout(
         sidebarPanel(
             width = 3,
-            uiOutput(ns("candidateGenes.ui")),
-            shinyBS::bsPopover(
-                "candidateGenes.ui",
-                "",
-                "Select gene to show the plots",
-                "right"
-            ),
+            uiOutput(ns("candidateGenes.ui")) %>%
+                bsplus::bs_embed_popover(
+                  title = "",
+                  content = "Select gene to show the plots",
+                  placement = "right",
+                  trigger = "hover"
+                ),
 
             downloadButton(ns("downloadPlot"),"Download plot",
                            class = "butDL"),
@@ -136,6 +136,7 @@ groupComparison <- function (
     ### generate data for variable distribution plotting
     plotDf <- reactive({
         if (is.null(candidateGenes())) return()
+        req(input$candidateGenes)
         if (length(input$candidateGenes) == 0 | input$candidateGenes == "none")
             return()
 
@@ -346,7 +347,7 @@ groupComparison <- function (
     )
 
     ### disable/enable download functions
-    observe({
+    observeEvent(input$candidateGenes, {
         if (is.null(filteredDf())) shinyjs::disable("downloadPlot")
         else if (doCompare() == FALSE) shinyjs::disable("downloadPlot")
         else if (input$candidateGenes[1] == "all")

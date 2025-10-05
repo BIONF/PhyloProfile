@@ -33,7 +33,7 @@ getDataClustering <- function(
     presSpec <- geneID <- supertaxon <- orthoID <- NULL
     # Filter out rows where presSpec is 0
     subDataHeat <- data %>% dplyr::filter(presSpec > 0)
-
+    
     # Predict orthoID format (default is "other")
     subDataHeat$orthoID <- as.character(subDataHeat$orthoID)
     idFormat <- ifelse(

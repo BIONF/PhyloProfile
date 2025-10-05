@@ -12,7 +12,7 @@ full or subset profiles)}
 
 \item{parm}{plot parameters, including (1) type of x-axis "taxa" or
 "genes" - default = "taxa"; (2) display gene IDs (default) or gene names;
-(3+4) names of 2 variables var1ID and var2ID - default = "var1" & "var2"; 
+(3+4) names of 2 variables var1ID and var2ID - default = "var1" & "var2";
 (5+6) mid value and color for mid value of var1 -
 default is 0.5 and #FFFFFF; (7) color for lowest var1 - default = "#FF8C00";
 (8) color for highest var1 - default = "#4682B4"; (9+10) mid value and color
@@ -21,8 +21,8 @@ default = "#FFFFFF", (12) color for highest var2 - default = "#F0E68C", (13)
 color of co-orthologs - default = "#07D000"; (14+15+16) text sizes for x, y
 axis and legend - default = 9 for each; (17) legend position "top", "bottom",
 "right", "left" or "none" - default = "top"; (18) zoom ratio of the
-co-ortholog dots from -1 to 3 - default = 0; (19) color dots based on either 
-"var1" or "var2". NOTE: Leave blank or NULL to 
+co-ortholog dots from -1 to 3 - default = 0; (19) color dots based on either
+"var1" or "var2". NOTE: Leave blank or NULL to
 use default values.}
 }
 \value{
