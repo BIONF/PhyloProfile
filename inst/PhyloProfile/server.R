@@ -599,7 +599,18 @@ shinyServer(function(input, output, session) {
             em(a("Data description", href = url, target = "_blank"))
         }
     })
-
+    
+    # * update source databases for demo data ----------------------------------
+    observe({
+        if (input$demoData != "none") {
+            updateSelectInput(session, "orthoSource", selected = "uniprot")
+            if (input$demoData == "arthropoda") {
+                updateSelectInput(session, "seedSource", selected = "orthodb")
+                updateTextInput(session, "orthodbSeedVer", value = "10-1")
+            }   
+        }
+    })
+    
     # * check main input folder ------------------------------------------------
     getMainInputDir <- reactive({
         shinyFiles::shinyDirChoose(
