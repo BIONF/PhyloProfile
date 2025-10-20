@@ -56,15 +56,15 @@ BiocManager::install("PhyloProfile")
 ```
 
 or
-*install the dev version of *PhyloProfile* from our github repository using __[devtools](https://cran.r-project.org/web/packages/devtools/index.html)__.*
+*install the dev version of *PhyloProfile* from our github repository using __[remotes](https://cran.r-project.org/web/packages/remotes/index.html)__.*
 
-## Using devtools
-The dev version of *PhyloProfile* can be installed from this github repository using `devtools`:
+## Using remotes package
+The dev version of *PhyloProfile* can be installed from this github repository using `remotes`:
 
 ```r
-if (!requireNamespace("devtools"))
-    install.packages("devtools")
-devtools::install_github("BIONF/PhyloProfile", INSTALL_opts = c('--no-lock'))
+if (!requireNamespace("remotes"))
+    install.packages("remotes")
+remotes::install_github("BIONF/PhyloProfile")
 ```
 
 ## Using Conda

@@ -304,10 +304,7 @@ shinyUI(
                         inline = TRUE
                     ),
 
-                    uiOutput("domainInputFile.ui"),
-
-                    hr(),
-                    uiOutput("downloadDemo.ui")
+                    uiOutput("domainInputFile.ui")
                 ),
 
                 # * 2nd column -------------------------------------------------
@@ -1540,6 +1537,14 @@ shinyUI(
                                 actionButton(
                                     "doCompare", "COMPARE!", 
                                     class = "btn btn-danger"
+                                ),
+                                conditionalPanel(
+                                    condition = 'input.rankSelect == "strain"',
+                                    HTML('<div style="color: red; font-weight: bold;">
+                                      Warning: "strain" is not a supported taxonomy rank
+                                      for this function.<br>
+                                      Please choose another rank.
+                                    </div>')
                                 ),
                                 h5(),
                                 actionButton(

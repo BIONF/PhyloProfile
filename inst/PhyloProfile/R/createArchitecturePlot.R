@@ -433,7 +433,7 @@ createArchitecturePlot <- function(
             input$featureClassOrder, input$colorPallete, input$resolveOverlap, 
             font()
         )
-        if (any(g == "No domain info available!")) {
+        if (is.character(g) && any(g == "No domain info available!")) {
             msgPlot()
         } else {
             suppressWarnings(grid::grid.draw(g))

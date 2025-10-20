@@ -47,7 +47,13 @@ estimateGeneAge <- function(
     processedProfileData, taxaCount, rankName, refTaxon,
     var1CO = c(0, 1), var2CO = c(0, 1), percentCO = c(0, 1), taxDB = NULL
 ){
-    if (rankName == "strain") stop("Please select a higher rank than STRAIN!")
+    infoMsg <- paste(
+        "This function supports only Species, Genus, Family, Class, Phylum,",
+        "Kingdom and Superkingdom taxonomy ranks."
+    )
+    if (rankName == "strain" || rankName == "order") {
+        stop("Invalid taxonomy rank!\n", infoMsg)
+    }
     rankList <- c(
         "genus", "family", "class", "phylum", "kingdom", "norank_33154",
         "superkingdom", "root"

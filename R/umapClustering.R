@@ -400,13 +400,13 @@ plotDimRed <- function(
     # change legend title
     if ("ncbiID" %in% colnames(plotDf)) {
         plot <- plot + guides(
-            color = guide_legend(override.aes = list(alpha = 1), ncols = 5),
-            size = guide_legend(title = "Number of genes", ncols = 2)
+            color = guide_legend(override.aes = list(alpha = 1), ncol = 5),
+            size = guide_legend(title = "Number of genes", ncol = 2)
         )
     } else
         plot <- plot + guides(
-            color = guide_legend(override.aes = list(alpha = 1), ncols = 5),
-            size = guide_legend(title = "Number of taxa", ncols = 1)
+            color = guide_legend(override.aes = list(alpha = 1), ncol = 5),
+            size = guide_legend(title = "Number of taxa", ncol = 1)
         )
     plot <- plot + theme(
             legend.position = legendPos,

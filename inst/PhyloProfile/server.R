@@ -504,18 +504,7 @@ shinyServer(function(input, output, session) {
             }
         }
     })
-
-    # * render download link for Demo online files -----------------------------
-    output$downloadDemo.ui <- renderUI({
-        if (input$demoData == "ampk-tor" || input$demoData == "arthropoda") {
-            em(a(
-                "Click here to download demo files",
-                href = "https://github.com/BIONF/phyloprofile-data",
-                target = "_blank"
-            ))
-        }
-    })
-
+    
     output$mainInputFile.ui <- renderUI({
         if (input$demoData == "arthropoda") {
             url <- paste0(
@@ -1086,13 +1075,13 @@ shinyServer(function(input, output, session) {
             selectInput(
                 "rankSelect", label = "",
                 choices = getTaxonomyRanks(),
-                selected = "strain"
+                selected = "species"
             )
         } else if (input$demoData == "ampk-tor") {
             selectInput(
                 "rankSelect", label = "",
                 choices = getTaxonomyRanks(),
-                selected = "strain"
+                selected = "species"
             )
         } else if (input$demoData == "preCalcDt") {
             selectedRank <- "species"
@@ -2370,6 +2359,10 @@ shinyServer(function(input, output, session) {
                     }
                 }
             }
+            if ("weight" %in% colnames(domainDf)) {
+                domainDf$weight <- as.numeric(domainDf$weight)
+                domainDf$weight <- round(domainDf$weight, 2)
+            }
             return(domainDf)
         })
     })
@@ -3531,6 +3524,10 @@ shinyServer(function(input, output, session) {
     # ==================== DIMENSIONALITY REDUCTION PLOT =======================
     shinyjs::disable("addSpecDimRed")
     observe({
+        if (input$dimRedType == "genes") shinyjs::disable("addSpecDimRed")
+        else shinyjs::enable("addSpecDimRed")
+    })
+    observe({
         if (input$addSpecDimRed) shinyjs::disable("addGeneDimRed")
         else shinyjs::enable("addGeneDimRed")
     })
@@ -4047,9 +4044,9 @@ shinyServer(function(input, output, session) {
         } else df <- as.data.frame(rv$clickedData)
 
         if (nrow(df) > 0) {
-            specDf <- df %>% dplyr::select(ncbiID, fullName, Label, Freq, n)
+            specDf <- df %>% dplyr::select(ncbiID, fullName, Label, n, Freq)
             colnames(specDf) <- c(
-                "NCBI taxon ID", "Taxon name", "Label", "Number of genes", "Freq"
+                "NCBI taxon ID", "Taxon name", "Label", "Number of taxa", "Number of genes"
             )
             return(specDf)
         } else {
@@ -4492,6 +4489,7 @@ shinyServer(function(input, output, session) {
 
         # ---- get taxon ID ----
         taxId <- gsub("ncbi", "", info[5])
+        if (taxId == 237631) taxId <- 5270 # Ustilago maydis
         taxHierarchy <- PhyloProfile:::getTaxHierarchy(taxId, currentNCBIinfo)
         taxUrls <- paste(taxHierarchy[[1]]$link, collapse = ", ")
         taxUrls <- gsub("<p>", "", taxUrls)
@@ -5435,37 +5433,21 @@ shinyServer(function(input, output, session) {
     })
 
     # ** render age distribution plot ------------------------------------------
-    # selectedgeneAge <- callModule(
-    #     plotGeneAge, "geneAge",
-    #     data = geneAgeDf,
-    #     geneAgeWidth = reactive(input$geneAgeWidth),
-    #     geneAgeHeight = reactive(input$geneAgeHeight),
-    #     geneAgeText = reactive(input$geneAgeText),
-    #     font = reactive(input$font)
-    # )
     observeEvent(input$geneAgeProtConfig, { showModal(geneAgeConfigModal()) })
-    selectedgeneAge <- reactiveVal(NULL)
-    observeEvent(input$tabs, {
-        if (input$tabs == "gene_age_estimation") {
-            result <- callModule(
-                plotGeneAge, "geneAge",
-                data = geneAgeDf,
-                geneAgeWidth = reactive({
-                    if (is.null(input$geneAgeWidth)) 1 else input$geneAgeWidth
-                }),
-                geneAgeHeight = reactive({
-                    if (is.null(input$geneAgeHeight)) 1 else input$geneAgeHeight
-                }),
-                geneAgeText = reactive({
-                    if (is.null(input$geneAgeText)) 1 else input$geneAgeText
-                }),
-                font = reactive({
-                    if (is.null(input$font)) "Arial" else input$font
-                })
-            )
-            selectedgeneAge(result)
-        }
-    })
+    selectedgeneAge <- callModule(
+        plotGeneAge, "geneAge",
+        data = geneAgeDf,
+        geneAgeWidth = reactive(
+            { if (is.null(input$geneAgeWidth)) 1 else input$geneAgeWidth }
+        ),
+        geneAgeHeight = reactive(
+            { if (is.null(input$geneAgeHeight)) 1 else input$geneAgeHeight }
+        ),
+        geneAgeText = reactive(
+            { if (is.null(input$geneAgeText)) 1 else input$geneAgeText }
+        ),
+        font = reactive({ if (is.null(input$font)) "Arial" else input$font })
+    )
 
     # * CORE GENES IDENTIFICATION ==============================================
     # ** description for core gene identification function ---------------------
@@ -5588,6 +5570,11 @@ shinyServer(function(input, output, session) {
     )
 
     # * GROUP COMPARISON =======================================================
+    observe({
+        req(input$rankSelect)
+        if (input$rankSelect == "strain") shinyjs::disable("doCompare")
+        else shinyjs::enable("doCompare")
+    })
     # ** description for group comparison function -----------------------------
     observe({
         if (is.null(input$var1ID)) return()
@@ -5791,14 +5778,13 @@ shinyServer(function(input, output, session) {
                 choice <- inputTaxonName()
                 choice$fullName <- as.factor(choice$fullName)
                 out <- as.list(levels(choice$fullName))
-
                 #' when the taxonomy rank was changed --------------------------
                 if (!is.null(input$applyTaxonGC) && input$applyTaxonGC == TRUE) {
-                    out <- gcTaxaName()
+                    selectedTaxa <- gcTaxaName()
                     selectInput(
                         "selectedInGroupGC", "In-group taxa:",
                         out,
-                        selected = out,
+                        selected = selectedTaxa,
                         multiple = TRUE,
                         selectize = FALSE
                     )
@@ -5940,26 +5926,20 @@ shinyServer(function(input, output, session) {
     # ** render plots for group comparison -------------------------------------
     observeEvent(input$uploadGC, { showModal(gcUploadModal()) })
     observeEvent(input$gcPlotConfig, { showModal(gcPlotConfigModal()) })
-    candidateGenes <- reactiveVal(NULL)
-    observeEvent(input$doCompare, {
-        if (input$tabs == "group_comparison") {
-            result <- callModule(
-                groupComparison, "groupComparison",
-                filteredDf = groupComparisonData,
-                inGroup = getInGroup,
-                variable = reactive(input$varNameGC),
-                varName = reactive(c(input$var1ID, input$var2ID)),
-                compareType = reactive(input$compareType),
-                significanceLevel = reactive(input$significance),
-                plotParameters = plotParametersGC,
-                domainDf = getDomainInformation,
-                doCompare = reactive(input$doCompare),
-                doUpdate = reactive(input$updateGC),
-                taxDB = getTaxDBpath
-            )
-            candidateGenes(result)
-        }
-    })
+    candidateGenes <- callModule(
+        groupComparison, "groupComparison",
+        filteredDf = groupComparisonData,
+        inGroup = getInGroup,
+        variable = reactive(input$varNameGC),
+        varName = reactive(c(input$var1ID, input$var2ID)),
+        compareType = reactive(input$compareType),
+        significanceLevel = reactive(input$significance),
+        plotParameters = plotParametersGC,
+        domainDf = getDomainInformation,
+        doCompare = reactive(input$doCompare),
+        doUpdate = reactive(input$updateGC),
+        taxDB = getTaxDBpath
+    )
 
     # * WORKING WITH NCBI TAXONOMY DATABASE ====================================
     observe({

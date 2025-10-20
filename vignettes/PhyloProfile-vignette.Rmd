@@ -57,14 +57,14 @@ To install the PhyloProfile package via
 [Bioconductor](https://bioconductor.org/packages/PhyloProfile)
 using BiocManager:
 
-```r
+```
 if (!requireNamespace("BiocManager"))
     install.packages("BiocManager")
 BiocManager::install("PhyloProfile")
 ```
 
 To install the dev version from Bioconductor:
-```r
+```
 if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 BiocManager::install(version='devel')
@@ -73,10 +73,10 @@ BiocManager::install("PhyloProfile")
 
 To install the dev version from [github](https://github.com/BIONF/PhyloProfile):
 
-```r
-if (!requireNamespace("devtools"))
-    install.packages("devtools", repos = "http://cran.us.r-project.org")
-devtools::install_github(
+```
+if (!requireNamespace("remotes"))
+    install.packages("remotes", repos = "http://cran.us.r-project.org")
+remotes::install_github(
     "BIONF/PhyloProfile",
     INSTALL_opts = c('--no-lock'),
     build_vignettes = TRUE
@@ -97,7 +97,7 @@ as input.
 
 Here is an example of a tab delimited input with two additional annotation
 layers:
-```{r, echo = FALSE, results = 'asis'}
+```{r example_input, echo = FALSE, results = 'asis'}
 data("mainLongRaw", package="PhyloProfile")
 knitr::kable(head(mainLongRaw, 10), row.names = FALSE)
 ```
@@ -111,7 +111,7 @@ Together with several functions for exploring phylogenetic profiles, we provide
 an interactive visualization application implemented with
 [Shiny](https://shiny.rstudio.com) (https://CRAN.R-project.org/package=shiny).
 
-```{r, echo=FALSE, fig.cap="PhyloProfile's GUI", out.width = '100%'}
+```{r poster, echo=FALSE, fig.cap="PhyloProfile's GUI", out.width = '100%'}
 knitr::include_graphics("./posterSub.png")
 ```
 
@@ -150,7 +150,7 @@ step in the identification and characterization of novel functional protein
 interaction networks (Pellegrini, 2012). PhyloProfile offers the option to
 cluster genes according to the distance of their phylogenetic profiles.
 
-```{r, fig.show='hold', dev='png'}
+```{r profile-clustering, fig.show='hold', dev='png'}
 ### An example for plotting the clustered profiles tree.
 ### See ?getDendrogram for more details.
 
@@ -179,7 +179,7 @@ common ancestor of the two most distantly related species displaying a given
 gene serves as the minimal gene age. Age estimates are dynamically updated
 upon filtering of the data.
 
-```{r}
+```{r gene-age}
 ### An example for calculating gene age for the built-in data set.
 ### See ?estimateGeneAge for more details.
 #' Load built-in data
@@ -216,7 +216,7 @@ Phylogenomic reconstructions are typically based on a collection of core genes
 collection. PhyloProfile enables users to select a set of taxa and returns
 their core genes.
 
-```{r}
+```{r core-gene}
 ### An example for calculating core gene set for the built-in data set.
 ### See ?getCoreGene for more details.
 
@@ -264,7 +264,7 @@ distributions of the variables are then compared using statistical tests
 level (*0.05 by default*). Genes that have a significantly different
 distribution will be shown in the candidate gene list for further analysis.
 
-```{r}
+```{r group-comparison}
 #' Load built-in data
 data("mainLongRaw", package="PhyloProfile")
 data <- mainLongRaw
@@ -283,7 +283,7 @@ decide on reasonable filtering thresholds, PhyloProfile provides a function to
 plot the distributions of the values incurred by the integrated information
 layers.
 
-```{r, fig.show='hold', dev='png'}
+```{r distribution-analysis, fig.show='hold', dev='png'}
 ### An example for plotting the distribution of the 1st additional variable.
 ### See ?createVarDistPlot for more details.
 
@@ -322,7 +322,7 @@ createVarDistPlot(
 Process raw input (in different format) into a dataframe that contains all
 required information for the phylogenetic profile analysis.
 
-```{r}
+```{r process-input}
 #' Load built-in data
 #' If input data is in other format (e.g. fasta, OrthoXML, or wide matrix),
 #' see ?createLongMatrix
@@ -385,7 +385,7 @@ head(profileData)
 
 ## Create profile plot
 Generate phylogenetic profile heatmap after processing the raw input file.
-```{r, fig.show='hold', dev='png'}
+```{r profile-plot, fig.show='hold', dev='png'}
 #' Load built-in processed data
 data("finalProcessedProfile", package="PhyloProfile")
 
@@ -439,7 +439,7 @@ geneHighlight <- "none"
 
 ## Create protein domain architecture plot
 Generate the domain architecture plot for a gene of interest and its orthologs.
-```{r, fig.show='hold', dev='png'}
+```{r domain-plot, fig.show='hold', dev='png'}
 #' Load protein domain architecture file
 domainFile <- system.file(
     "extdata", "domainFiles/101621at6656.domains",
@@ -469,7 +469,7 @@ grid::grid.draw(plot)
 ## Other use cases
 
 **Get taxonomy IDs and names in a specified rank for taxa in the input file.**
-```{r}
+```{r get-tax-id-name}
 #' Load raw input
 data("mainLongRaw", package="PhyloProfile")
 inputDf <- mainLongRaw
@@ -486,7 +486,7 @@ head(inputTaxonName)
 
 **Get taxonomy info for list of input taxa and sort it based on the taxonomy**
 **distance to a reference taxon**
-```{r}
+```{r sort-taxa}
 #' Get list of taxon IDs and names for input profile
 data("mainLongRaw", package="PhyloProfile")
 inputDf <- mainLongRaw
@@ -525,7 +525,7 @@ https://doi.org/10.1093/bioinformatics/bty225
 Or use the citation function in R CMD to have the citation in BibTex or
 LaTeX format
 
-```{r}
+```{r citation}
 citation("PhyloProfile")
 ```
 

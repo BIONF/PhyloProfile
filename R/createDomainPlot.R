@@ -334,44 +334,45 @@ singleDomainPlotting <- function(
         }
     }
     # add scores if selected
+    maxVjust <- 2
     if ("Bit-score" %in% showScore & "E-value" %in% showScore) {
-        gg <- gg + geom_label(
+        gg <- gg + geom_text(
             aes(
                 label = ifelse(
                     evalue == "NA" & bitscore == "NA", "", stringr::str_wrap(
-                        paste0("E-value: ", evalue, "; Bitscore: ", bitscore)
+                        paste0("E: ", evalue, "; B: ", bitscore)
                     )
                 ), x = (start+end)/2
-            ), color = "black", vjust = 1.25
+            ), color = "black", vjust = maxVjust, check_overlap = TRUE
         )
     } else if ("Bit-score" %in% showScore) {
-        gg <- gg + geom_label(
+        gg <- gg + geom_text(
             aes(
                 label = ifelse(bitscore == "NA", "", stringr::str_wrap(
-                    paste0("Bitscore: ", bitscore)
+                    paste0("B: ", bitscore)
                 )), x = (start+end)/2
-            ), color = "black", vjust = 1.25
+            ), color = "black", vjust = maxVjust, check_overlap = TRUE
         )
     } else if ("E-value" %in% showScore) {
-        gg <- gg + geom_label(
+        gg <- gg + geom_text(
             aes(
                 label = ifelse(evalue == "NA", "", stringr::str_wrap(
-                    paste0("E-value: ", evalue)
+                    paste0("E: ", evalue)
                 )), x = (start+end)/2
-            ), color = "black", vjust = 1.25
+            ), color = "black", vjust = maxVjust, check_overlap = TRUE
         )
     }
     # add weight if selected
     if ("Weight" %in% showWeight) {
-        vjustValue <- 1.25
-        if ("E-value" %in% showScore |  "Bit-score" %in% showScore)
-            vjustValue <- 2.25
-        gg <- gg + geom_label(
+        if ("E-value" %in% showScore |  "Bit-score" %in% showScore) {
+            maxVjust <- 3.5
+        }
+        gg <- gg + geom_text(
             aes(
                 label = ifelse(weight == "NA", "", stringr::str_wrap(
-                    paste0("Weight: ", weight)
+                    paste0("W: ", weight)
                 )), x = (start+end)/2
-            ), color = "black", vjust = vjustValue
+            ), color = "black", vjust = maxVjust, check_overlap = TRUE
         )
     }
     # theme format
@@ -412,7 +413,7 @@ singleDomainPlotting <- function(
     }
     # add space on the top of the plot (for feature name)
     gg <- gg + coord_cartesian(
-        clip = 'off', ylim = c(1, nlevels(as.factor(df$feature)) + firstDist)
+        clip = "off", ylim = c(1, nlevels(as.factor(df$feature)) + firstDist)
     )
     # scale x-axis to the length of the longest protein
     gg <- gg + xlim(0, maxEnd)
@@ -660,6 +661,7 @@ modifyFeatureName <- function(domainDf = NULL) {
 #' @return joined plots with merged legend as a grid object
 #' @author Vinh Tran tran@bio.uni-frankfurt.de
 #' @importFrom gridExtra grid.arrange
+#' @importFrom grid unit grobHeight convertHeight
 #' @examples
 #' seed <- "101621at6656"
 #' ortho <- "101621at6656|AGRPL@224129@0|224129_0:001955|1"
@@ -707,14 +709,6 @@ joinPlotMergeLegends <- function(
     # remove legend of the original plots
     plot1 <- plot1 + theme(legend.position = "none")
     plot2 <- plot2 + theme(legend.position = "none")
-    # combine plot1 and 2
-    combined_plot <- gridExtra::grid.arrange(
-        plot1, plot2, ncol = 1,
-        heights = c(
-            length(levels(as.factor(df1$feature))),
-            length(levels(as.factor(df2$feature)))
-        )
-    )
     # create a temp plot that contains all features
     mergedDf <- rbind(df1, df2)
     colorScheme <- structure(
@@ -748,9 +742,20 @@ joinPlotMergeLegends <- function(
         return(legend)
     }
     legend <- getOnlyLegend(tmpPlot)
-    # final combined plot with shared legend
+    legend_height <- grid::convertHeight(
+        grid::grobHeight(legend), "cm", valueOnly = TRUE
+    )
+    # Combine all three vertically, using measured heights
     combined <- gridExtra::grid.arrange(
-        combined_plot, legend, nrow = 2, heights = c(10, 1)
+        plot1,
+        plot2,
+        legend,
+        ncol = 1, nrow = 3,
+        heights = grid::unit.c(
+            grid::unit(length(unique(df1$feature)), "null"),
+            grid::unit(length(unique(df2$feature)), "null"),
+            grid::unit(legend_height, "cm")
+        )
     )
     return(combined)
 }
