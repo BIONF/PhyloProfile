@@ -3211,8 +3211,8 @@ shinyServer(function(input, output, session) {
         clusteredDataHeat = clusteredDataHeat,
         applyCluster = reactive(input$applyCluster),
         parameters = getParameterInputMain,
-        inSeq = reactive(input$inSeq),
-        inTaxa = reactive(input$inTaxa),
+        inSeq = reactive(rv2$selectedSeq),
+        inTaxa = reactive(rv2$selectedTaxa),
         rankSelect = reactive(input$rankSelect),
         inSelect = reactive(input$inSelect),
         taxonHighlight = reactive(input$taxonHighlight),
@@ -3236,29 +3236,43 @@ shinyServer(function(input, output, session) {
     })
 
     # * get list of all sequence IDs for customized profile --------------------
+    if (!exists("rv2", inherits = TRUE)) 
+        rv2 <- reactiveValues(selectedSeq = NULL, selectedTaxa = NULL)
     observe({
         fileCustom <- input$customFile
         if (v$doPlot == FALSE) {
             if (input$addGeneDimRed == TRUE) {
                 dimRedGenes <- dimRedSelectedGenes()
                 req(dimRedGenes)
-                if (nrow(dimRedGenes) > 0)
-                    return(updateSelectizeInput(
-                        session, "inSeq", server = TRUE, "",
-                        unique(dimRedGenes$geneID),
-                        selected = unique(dimRedGenes$geneID)
-                    ))
+                if (nrow(dimRedGenes) > 0) {
+                    outAll <- unique(dimRedGenes$geneID)
+                    rv2$selectedSeq <- allOut
+                    if (length(outAll) <= 1000) {
+                        updateSelectizeInput(
+                            session, "inSeq", server = TRUE, "", 
+                            choices = outAll, selected = outAll
+                        )
+                    } else {
+                        updateSelectizeInput(
+                            session, "inSeq", server = TRUE, "",
+                            choices = paste("all", length(outAll), "selected seqs"),
+                            selected = paste("all", length(outAll), "selected seqs")
+                        )
+                    }
+                }
+                return()
             }
         } else {
             idNameList <- getAllGenes()
             outAll <- c(setNames("all", "all"), idNameList)
             if (input$addGeneAgeCustomProfile == TRUE) {
                 outAll <- as.list(selectedgeneAge())
+                req(outAll)
                 outAll <- outAll[[1]]
             } else if (input$addClusterCustomProfile == TRUE) {
                 outAll <- as.list(brushedClusterGene())
             } else if (input$addCoreGeneCustomProfile == TRUE) {
-                outAll <- as.list(coreGeneDf())
+                outAll <- coreGeneDf()
             } else if (input$addGCGenesCustomProfile == TRUE) {
                 outAll <- as.list(candidateGenes())
             } else if (input$addGeneDimRed == TRUE) {
@@ -3285,9 +3299,28 @@ shinyServer(function(input, output, session) {
                     session, "inSeq", server = TRUE,"", outAll, selected = "all"
                 )
             } else {
-                updateSelectizeInput(
-                    session, "inSeq", server = TRUE, "", outAll, selected=outAll
-                )
+                if (length(outAll) <= 1000) {
+                    updateSelectizeInput(
+                        session, "inSeq", server = TRUE, "", 
+                        outAll, selected=outAll
+                    )
+                } else {
+                    updateSelectizeInput(
+                        session, "inSeq", server = TRUE, "",
+                        choices = paste("all", length(outAll), "selected seqs"),
+                        selected = paste("all", length(outAll), "selected seqs")
+                    )
+                }
+                rv2$selectedSeq <- outAll
+            }
+        }
+    })
+    
+    # If user made manual selection, keep rv2$selectedSeq in sync
+    observeEvent(input$inSeq, {
+        if (!is.null(input$inSeq) && length(input$inSeq) > 0) {
+            if (!grepl("selected seqs", input$inSeq[1])) {
+                rv2$selectedSeq <- input$inSeq
             }
         }
     })
@@ -3324,23 +3357,80 @@ shinyServer(function(input, output, session) {
                 dimRedTaxa <- dimRedSelectedTaxa()
                 if (is.null(dimRedTaxa))
                     return(selectInput("inTaxa", "", "all"))
-                if (nrow(dimRedTaxa) > 0) out <- unique(dimRedTaxa$`Taxon name`)
-                selectizeInput("inTaxa","",out, selected = out, multiple = TRUE)
+                if (nrow(dimRedTaxa) > 0) {
+                    out <- unique(dimRedTaxa$`Taxon name`)
+                    rv2$selectedTaxa <- out
+                    if (length(out) <= 1000) {
+                        return(
+                            selectizeInput(
+                                "inTaxa","",out, selected = out, multiple = TRUE
+                            )
+                        )
+                    } else {
+                        label_all <- paste("all", length(out), "selected taxa")
+                        return(
+                            selectizeInput(
+                                "inTaxa", "", label_all, selected = label_all
+                            )
+                        )
+                    }
+                    
+                }
             } else return(selectInput("inTaxa", "", "all"))
         } else {
             choice <- inputTaxonName()
             out <- c("all", as.list(levels(factor(choice$fullName))))
             if (!is.null(input$applyCusTaxa) && input$applyCusTaxa == TRUE) {
                 out <- cusTaxaName()
-                selectizeInput("inTaxa","",out, selected = out, multiple = TRUE)
+                rv2$selectedTaxa <- out
+                if (length(out) <= 1000) {
+                    return(
+                        selectizeInput(
+                            "inTaxa", "", out, selected = out, multiple = TRUE
+                        )
+                    )
+                } else {
+                    label_all <- paste("all", length(out), "selected taxa")
+                    return(
+                        selectizeInput(
+                            "inTaxa", "", label_all, selected = label_all
+                        )
+                    )
+                }
             } else if (input$addSpecDimRed == TRUE) {
                 dimRedTaxa <- dimRedSelectedTaxa()
                 if (is.null(dimRedTaxa))
                     return(selectInput("inTaxa", "", "all"))
-                if (nrow(dimRedTaxa) > 0) out <- unique(dimRedTaxa$`Taxon name`)
-                selectizeInput("inTaxa","",out, selected = out, multiple = TRUE)
+                if (nrow(dimRedTaxa) > 0) {
+                    out <- unique(dimRedTaxa$`Taxon name`)
+                    rv2$selectedTaxa <- out
+                    if (length(out) <= 1000) {
+                        return(
+                            selectizeInput(
+                                "inTaxa", "", out, selected = out, multiple = TRUE
+                            )
+                        )
+                    } else {
+                        label_all <- paste("all", length(out), "selected taxa")
+                        return(
+                            selectizeInput(
+                                "inTaxa", "", label_all, selected = label_all
+                            )
+                        )
+                    }
+                }
             } else {
+                rv2$selectedTaxa <- out
                 selectizeInput("inTaxa","",out,selected = out[1], multiple=TRUE)
+            }
+        }
+    })
+    
+    observeEvent(input$inTaxa, {
+        if (!is.null(input$inTaxa) && length(input$inTaxa) > 0) {
+            first_val <- input$inTaxa[1]
+            if (is.character(first_val) && !grepl("selected taxa", first_val, fixed = TRUE)) {
+                rv2$selectedTaxa <- input$inTaxa
             }
         }
     })
@@ -3374,8 +3464,8 @@ shinyServer(function(input, output, session) {
         req(input$inTaxa)
         req(input$inSeq)
         if (input$selectedAutoSizing) {
-            nrTaxa <- length(input$inTaxa)
-            nrGene <- length(input$inSeq)
+            nrTaxa <- length(rv2$selectedTaxa)
+            nrGene <- length(rv2$selectedSeq)
             if (nrTaxa < 10000 && nrGene < 10000) {
                 if ("all" %in% input$inTaxa) {
                     inputSuperTaxon <- inputTaxonName()
@@ -3508,8 +3598,8 @@ shinyServer(function(input, output, session) {
         clusteredDataHeat = clusteredDataHeat,
         applyCluster = reactive(input$applyCluster),
         parameters = getParameterInputCustomized,
-        inSeq = reactive(input$inSeq),
-        inTaxa = reactive(input$inTaxa),
+        inSeq = reactive(rv2$selectedSeq),
+        inTaxa = reactive(rv2$selectedTaxa),
         rankSelect = reactive(input$rankSelect),
         inSelect = reactive(input$inSelect),
         taxonHighlight = reactive("none"),
@@ -4859,8 +4949,8 @@ shinyServer(function(input, output, session) {
         "filteredCustomizedDownload",
         data = downloadData,
         fasta = customizedFastaDownload,
-        inSeq = reactive(input$inSeq),
-        inTaxa = reactive(input$inTaxa)
+        inSeq = reactive(rv2$selectedSeq),
+        inTaxa = reactive(rv2$selectedTaxa)
     )
 
     # ======================== PROCESSED DATA DOWNLOADING ======================
@@ -5313,8 +5403,8 @@ shinyServer(function(input, output, session) {
                 splitDt <- createVariableDistributionDataSubset(
                     getFullData(),
                     splitDt,
-                    input$inSeq,
-                    input$inTaxa
+                    rv2$selectedSeq,
+                    rv2$selectedTaxa
                 )
             }
             # return dt

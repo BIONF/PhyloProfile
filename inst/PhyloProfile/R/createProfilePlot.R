@@ -258,7 +258,9 @@ createProfilePlot <- function(
         dt <- brushedPoints(
             dataHeat(), input$plotBrush, xvar = "supertaxon", yvar = "geneID"
         )
+        dt$geneID <- factor(dt$geneID)
         dt$geneID <- droplevels(dt$geneID)
+        dt$supertaxon <- factor(dt$supertaxon)
         dt$supertaxon <- droplevels(dt$supertaxon)
         return(dt)
     })
