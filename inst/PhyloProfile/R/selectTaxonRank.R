@@ -99,7 +99,7 @@ selectTaxonRank <- function(
         # from that ID, get list of all taxa for main selected taxon
         mainRankName <- rankSelect()
         customizedtaxaID <-
-            levels(as.factor(Dt[mainRankName][Dt[rankName] == superID, ]))
+            levels(as.factor(Dt[mainRankName][Dt[[rankName]] == superID, ]))
 
         cusTaxaName <-
             taxaList$fullName[taxaList$ncbiID %in% customizedtaxaID]
