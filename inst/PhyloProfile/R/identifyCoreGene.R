@@ -36,6 +36,8 @@ identifyCoreGene <- function(
     })
 
     coreGeneDf <- reactive({
+        req(taxaCore())
+        req(filteredData())
         coreGeneDf <- getCoreGene(
             rankSelect(), taxaCore(), filteredData(), taxaCount(),
             var1Cutoff(), var2Cutoff(), percentCore(), coreCoverage(), taxDB()
