@@ -62,10 +62,10 @@ getCoreGene <- function(
     # get ID list of chosen taxa & main input profile
     taxaList <- getNameList(taxDB)
     if (length(taxaCore) == 0) {
-        stop("WARNING: Please select taxa of interest!")
+        stop("Please select taxa of interest!")
     }
     superID <- taxaList$ncbiID[
-        taxaList$fullName%in%taxaCore & 
+        taxaList$fullName%in%taxaCore &
         taxaList$rank %in% c(rankName,"norank", "species")]
     # filter by var1 and var2 cutoffs
     if (!is.null(var1Cutoff[2])) {

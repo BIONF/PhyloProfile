@@ -31,24 +31,6 @@ mainTaxonomyRank <- function() {
 #' database.
 #' @author Vinh Tran tran@bio.uni-frankfurt.de
 #' @export
-#' @examples
-#' \dontrun{
-#' ?processNcbiTaxonomy
-#' preProcessedTaxonomy <- PhyloProfile:::processNcbiTaxonomy()
-#' # save to text (tab-delimited) file
-#' write.table(
-#'     preProcessedTaxonomy,
-#'     file = "preProcessedTaxonomy.txt",
-#'     col.names = TRUE,
-#'     row.names = FALSE,
-#'     quote = FALSE,
-#'     sep = "\t"
-#' )
-#' # save to rdata file
-#' save(
-#'     preProcessedTaxonomy, file = "preProcessedTaxonomy.RData", compress='xz'
-#' )
-#' }
 
 processNcbiTaxonomy <- function() {
     temp <- tempfile()

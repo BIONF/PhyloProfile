@@ -40,7 +40,7 @@ shinyUI(
                             "keepOrder",
                             strong(em("Retain gene order")),
                             value = TRUE,
-                            width = NULL 
+                            width = NULL
                         ) %>%
                             bs_embed_popover(
                                 title = "",
@@ -143,7 +143,7 @@ shinyUI(
                             icon = icon("check"),
                             class = "btn btn-warning"
                         )
-                        
+
                     ),
                     column(
                         2,
@@ -161,7 +161,7 @@ shinyUI(
 
         # MAIN NARVARPAGE TABS -------------------------------------------------
         navbarPage(
-            em(strong("PhyloProfile v2.2.2")),
+            em(strong("PhyloProfile v2.2.3")),
             id = "tabs",
             collapsible = TRUE,
             inverse = TRUE,
@@ -473,7 +473,7 @@ shinyUI(
                             6,
                             strong("Font"),
                             selectInput(
-                                "font","", 
+                                "font","",
                                 choices = sort(unique(systemfonts::system_fonts()$family)),
                                 selected = "Arial"
                             ) %>%
@@ -607,6 +607,7 @@ shinyUI(
                         selectizeInput(
                             "inSelect", "", choices = NULL, selected = NULL
                         ),
+                        uiOutput("taxonSelectionMsg"),
 
                         hr(),
 
@@ -913,7 +914,7 @@ shinyUI(
                                     condition = 'input.reductionTechnique == "tsne"',
                                     numericInput(
                                         "tsneIter", "# iter.",
-                                        min = 100, max = 5000, step = 100, 
+                                        min = 100, max = 5000, step = 100,
                                         value = 1000
                                     )
                                 )
@@ -953,7 +954,7 @@ shinyUI(
                                     "dimRedPlot.textsize", "Text size", 12
                                 ),
                                 selectInput(
-                                    "dimRedPlot.legend", 
+                                    "dimRedPlot.legend",
                                     label = "Legend position:",
                                     choices = list("Right" = "right",
                                                    "Left" = "left",
@@ -993,7 +994,7 @@ shinyUI(
                                     width = 200
                                 ),
                                 radioButtons(
-                                    "dimRedPlotType", "Plot dimensions", 
+                                    "dimRedPlotType", "Plot dimensions",
                                     choices = list(
                                         "2D" = "ggplot", "3D" = "plotly"
                                     ),
@@ -1068,7 +1069,7 @@ shinyUI(
                                     style = "padding:0px;",
                                     selectInput(
                                         "excludeDimRedTaxa", label = "",
-                                        choices = "", selected = NULL, 
+                                        choices = "", selected = NULL,
                                         multiple = TRUE
                                     )
                                 ),
@@ -1093,7 +1094,7 @@ shinyUI(
                                     style = "padding:0px;",
                                     selectInput(
                                         "highlightDimRedTaxa", label = "",
-                                        choices = "", selected = NULL, 
+                                        choices = "", selected = NULL,
                                         multiple = TRUE
                                     )
                                 ),
@@ -1161,7 +1162,7 @@ shinyUI(
                                     style = "color:darkblue"
                                 )
                             )
-                        ),      
+                        ),
                         uiOutput("dimRedPlot.ui"),
                         br(),
                         column(
@@ -1187,7 +1188,7 @@ shinyUI(
                                 3,
                                 conditionalPanel(
                                     condition = 'input.dimRedPlotType == "plotly"',
-                                    
+
                                     downloadButton(
                                         "dimRedDownloadPlot3D", "Download 3D plot",
                                         class = "butDL"
@@ -1195,7 +1196,7 @@ shinyUI(
                                 ),
                                 conditionalPanel(
                                     condition = 'input.dimRedPlotType == "ggplot"',
-                                    
+
                                     downloadButton(
                                         "dimRedDownloadPlot", "Download 2D plot",
                                         class = "butDL"
@@ -1507,7 +1508,7 @@ shinyUI(
                                 ) %>%
                                     bsplus::bs_embed_popover(
                                         title   = "",
-                                        content = "P-value cut-off of the statistic test, 
+                                        content = "P-value cut-off of the statistic test,
                                                 OR cut-off of delta means between 2 groups",
                                         placement = "bottom",
                                         trigger = "hover"
@@ -1535,7 +1536,7 @@ shinyUI(
                                     ),
                                 hr(),
                                 actionButton(
-                                    "doCompare", "COMPARE!", 
+                                    "doCompare", "COMPARE!",
                                     class = "btn btn-danger"
                                 ),
                                 conditionalPanel(

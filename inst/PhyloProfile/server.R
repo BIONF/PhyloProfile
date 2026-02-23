@@ -504,7 +504,7 @@ shinyServer(function(input, output, session) {
             }
         }
     })
-    
+
     output$mainInputFile.ui <- renderUI({
         if (input$demoData == "arthropoda") {
             url <- paste0(
@@ -588,7 +588,7 @@ shinyServer(function(input, output, session) {
             em(a("Data description", href = url, target = "_blank"))
         }
     })
-    
+
     # * update source databases for demo data ----------------------------------
     observe({
         if (input$demoData != "none") {
@@ -596,10 +596,10 @@ shinyServer(function(input, output, session) {
             if (input$demoData == "arthropoda") {
                 updateSelectInput(session, "seedSource", selected = "orthodb")
                 updateTextInput(session, "orthodbSeedVer", value = "10-1")
-            }   
+            }
         }
     })
-    
+
     # * check main input folder ------------------------------------------------
     getMainInputDir <- reactive({
         shinyFiles::shinyDirChoose(
@@ -1045,10 +1045,19 @@ shinyServer(function(input, output, session) {
 
     observeEvent(input$inputSortedTaxa,  ({
         if (!is.null(input$inputSortedTaxa)) {
-            shinyjs::toggleState("rankSelect")
-            shinyjs::toggleState("inSelect")
+            shinyjs::disable("rankSelect")
+            shinyjs::disable("inSelect")
         }
     }))
+
+    output$taxonSelectionMsg <- renderUI({
+        if (!is.null(input$inputSortedTaxa)) {
+            em("Disabled when using a predefined taxon list!")
+        }
+        if (!is.null(input$inputTree)) {
+            em("Automatic reference taxon identification disabled while using a predefined tree!")
+        }
+    })
 
     # * reset profile plot colors ----------------------------------------------
     observeEvent(input$defaultColorVar2, {
@@ -1268,6 +1277,24 @@ shinyServer(function(input, output, session) {
                 }
             }
         }
+    })
+
+    # * update list of (super)taxa based on taxa from user-defined tree
+    observeEvent(input$inputTree,{
+        req(inputTaxonName())
+        # read tree
+        treeIn <- input$inputTree
+        inputTaxaTree <- ape::read.tree(file = treeIn$datapath)
+        # Update list for taxon selection using taxa from input tree
+        tree_taxa <- gsub("ncbi", "", sortTaxaFromTree(inputTaxaTree))
+        subset_inputTaxa <- inputTaxonName() %>% filter(
+            ncbiID %in% tree_taxa
+        )
+        updateSelectizeInput(
+            session, "inSelect", "", server = TRUE,
+            choices = as.list(levels(as.factor(subset_inputTaxa$fullName))),
+            selected = levels(as.factor(subset_inputTaxa$fullName))[1]
+        )
     })
 
     # * enable "PLOT" button ---------------------------------------------------
@@ -2366,7 +2393,7 @@ shinyServer(function(input, output, session) {
             return(domainDf)
         })
     })
-    
+
     # * get ID list of input taxa from main input ------------------------------
     inputTaxonID <- reactive({
         if (rtCheck) st <- Sys.time()
@@ -2446,6 +2473,7 @@ shinyServer(function(input, output, session) {
                             inputTaxaTree <- ape::read.tree(file = preCalcTree)
                     }
                 }
+
                 # get list of sorted taxa
                 sortedTaxaFile <- input$inputSortedTaxa
                 if (!is.null(sortedTaxaFile)) {
@@ -2477,7 +2505,6 @@ shinyServer(function(input, output, session) {
                     checkpoint42 - checkpoint41
                 ))
             }
-
             return(sortedOut)
         })
     })
@@ -2679,7 +2706,7 @@ shinyServer(function(input, output, session) {
                         " --- ",  checkpoint82- checkpoint81a
                     ))
                 }
-                return(fullMdData)
+                return(fullMdData %>% filter(!is.na(abbrName)))
             })
         }
     })
@@ -3236,7 +3263,7 @@ shinyServer(function(input, output, session) {
     })
 
     # * get list of all sequence IDs for customized profile --------------------
-    if (!exists("rv2", inherits = TRUE)) 
+    if (!exists("rv2", inherits = TRUE))
         rv2 <- reactiveValues(selectedSeq = NULL, selectedTaxa = NULL)
     observe({
         fileCustom <- input$customFile
@@ -3249,7 +3276,7 @@ shinyServer(function(input, output, session) {
                     rv2$selectedSeq <- allOut
                     if (length(outAll) <= 1000) {
                         updateSelectizeInput(
-                            session, "inSeq", server = TRUE, "", 
+                            session, "inSeq", server = TRUE, "",
                             choices = outAll, selected = outAll
                         )
                     } else {
@@ -3301,7 +3328,7 @@ shinyServer(function(input, output, session) {
             } else {
                 if (length(outAll) <= 1000) {
                     updateSelectizeInput(
-                        session, "inSeq", server = TRUE, "", 
+                        session, "inSeq", server = TRUE, "",
                         outAll, selected=outAll
                     )
                 } else {
@@ -3315,7 +3342,7 @@ shinyServer(function(input, output, session) {
             }
         }
     })
-    
+
     # If user made manual selection, keep rv2$selectedSeq in sync
     observeEvent(input$inSeq, {
         if (!is.null(input$inSeq) && length(input$inSeq) > 0) {
@@ -3374,7 +3401,7 @@ shinyServer(function(input, output, session) {
                             )
                         )
                     }
-                    
+
                 }
             } else return(selectInput("inTaxa", "", "all"))
         } else {
@@ -3425,7 +3452,7 @@ shinyServer(function(input, output, session) {
             }
         }
     })
-    
+
     observeEvent(input$inTaxa, {
         if (!is.null(input$inTaxa) && length(input$inTaxa) > 0) {
             first_val <- input$inTaxa[1]

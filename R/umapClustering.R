@@ -182,10 +182,10 @@ performUmap <- function(umapDt, randomSeed = 123, dim = 2) {
             )$layout
         )
     }, error = function(cond) {
-        message("Error with UMAP: ", conditionMessage(cond))
+        message("UMAP failed: ", conditionMessage(cond))
         fallbackUmap(umapDt, randomSeed, dim)
     }, warning = function(cond) {
-        message("Warning with UMAP: ", conditionMessage(cond))
+        message(conditionMessage(cond))
         fallbackUmap(umapDt, randomSeed, dim)
     })
 }
@@ -216,7 +216,7 @@ performPCA <- function(pcaDt) {
     if (!is.data.frame(pcaDt)) as.data.frame(pcaDt)
     # Perform PCA
     prin_comp <- stats::prcomp(pcaDt)
-    
+
     # Extract the importance (proportion of variance explained by each PC)
     importancePCs <- as.data.frame(prin_comp$sdev^2) / sum(prin_comp$sdev^2)
     colnames(importancePCs) <- "Proportion of Variance"
@@ -231,7 +231,7 @@ performPCA <- function(pcaDt) {
         )
         warning(msg)
     }
-    
+
     # Extract the principal components scores
     components <- as.data.frame(prin_comp$x)
     # Return only the first 3 principal components

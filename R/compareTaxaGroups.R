@@ -359,12 +359,13 @@ generateSinglePlot <- function(plotDf, parameters, variable) {
 #' @note adapted from https://rdrr.io/github/PhilBoileau/CLSAR/src/R/
 #' gridArrangeSharedLegend.R
 #' @examples
-#' \dontrun{
 #' data("mainLongRaw", package="PhyloProfile")
 #' data <- mainLongRaw
 #' inGroup <- c("ncbi9606", "ncbi10116")
 #' varNames <- colnames(data)[c(4, 5)]
-#' plotDf <- dataVarDistTaxGroup(data, inGroup, "101621at6656", varNames)
+#' plotDf <- PhyloProfile:::dataVarDistTaxGroup(
+#'     data, inGroup, "101621at6656", varNames
+#' )
 #' plotParameters <- list(
 #'     "xSize" = 12,
 #'     "ySize" = 12,
@@ -376,15 +377,18 @@ generateSinglePlot <- function(plotDf, parameters, variable) {
 #'     "outGroupName" = "Out-group",
 #'     "title" = "101621at6656"
 #' )
-#' plotVar1 <- generateSinglePlot(plotDf, plotParameters, colnames(plotDf)[1])
-#' plotVar2 <- generateSinglePlot(plotDf, plotParameters, colnames(plotDf)[2])
-#' g <- gridArrangeSharedLegend(
+#' plotVar1 <- PhyloProfile:::generateSinglePlot(
+#'     plotDf, plotParameters, colnames(plotDf)[1]
+#' )
+#' plotVar2 <- PhyloProfile:::generateSinglePlot(
+#'     plotDf, plotParameters, colnames(plotDf)[2]
+#' )
+#' g <- PhyloProfile:::gridArrangeSharedLegend(
 #'     plotVar1, plotVar2,
 #'     position = plotParameters$legendPosition,
 #'     title = plotParameters$title,
-#'     size = plotParameters$titleSize
+#'     titleSize = plotParameters$titleSize
 #' )
-#' }
 
 gridArrangeSharedLegend <- function(
     ...,  ncol = length(list(...)), nrow = 1, position = c("bottom", "right"),
@@ -472,7 +476,7 @@ varDistTaxPlot <- function(data, plotParameters) {
     if (missing(plotParameters)) stop("Plot parameters are missing!")
     if (is.null(plotParameters)) {
         plotParameters <- list(
-            "xSizeGC" = 12, "ySizeGC" = 12, 
+            "xSizeGC" = 12, "ySizeGC" = 12,
             "titleSizeGC" = 15, "legendSizeGC"  = 12,
             "widthVarGC" = 600, "heightVarGC" =  400,
             "legendGC" =  "right", "mValueGC" = "mean",
@@ -480,7 +484,7 @@ varDistTaxPlot <- function(data, plotParameters) {
             "xAxisGC" = "no", "angleGC" = 60,
             "inGroupName" = "In-group", "outGroupName" = "Out-group")
     }
-    
+
     # rename in-group and out-group
     data$type[data$type == "In-group"] <- plotParameters$inGroupName
     data$type[data$type == "Out-group"] <- plotParameters$outGroupName
@@ -649,7 +653,7 @@ featureDistTaxPlot <- function(data, plotParameters) {
     if (missing(plotParameters)) stop("Plot parameters are missing!")
     if (is.null(plotParameters)) {
         plotParameters <- list(
-            "xSizeGC" = 12, "ySizeGC" = 12, 
+            "xSizeGC" = 12, "ySizeGC" = 12,
             "titleSizeGC" = 15, "legendSizeGC"  = 12,
             "widthVarGC" = 600, "heightVarGC" =  400,
             "legendGC" =  "right", "mValueGC" = "mean",
@@ -657,7 +661,7 @@ featureDistTaxPlot <- function(data, plotParameters) {
             "xAxisGC" = "no", "angleGC" = 60,
             "inGroupName" = "In-group", "outGroupName" = "Out-group")
     }
-        
+
     data$Taxon_group[data$Taxon_group == "In-group"] <-
         plotParameters$inGroupName
     data$Taxon_group[data$Taxon_group == "Out-group"] <-
