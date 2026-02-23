@@ -62,7 +62,7 @@ getCoreGene <- function(
     # get ID list of chosen taxa & main input profile
     taxaList <- getNameList(taxDB)
     if (length(taxaCore) == 0) {
-        stop("WARNING: Please select taxa of interest!")
+        stop("Please select taxa of interest!")
     }
     superID <- taxaList$ncbiID[
         taxaList$fullName%in%taxaCore & 

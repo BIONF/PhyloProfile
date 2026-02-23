@@ -359,12 +359,13 @@ generateSinglePlot <- function(plotDf, parameters, variable) {
 #' @note adapted from https://rdrr.io/github/PhilBoileau/CLSAR/src/R/
 #' gridArrangeSharedLegend.R
 #' @examples
-#' \dontrun{
 #' data("mainLongRaw", package="PhyloProfile")
 #' data <- mainLongRaw
 #' inGroup <- c("ncbi9606", "ncbi10116")
 #' varNames <- colnames(data)[c(4, 5)]
-#' plotDf <- dataVarDistTaxGroup(data, inGroup, "101621at6656", varNames)
+#' plotDf <- PhyloProfile:::dataVarDistTaxGroup(
+#'     data, inGroup, "101621at6656", varNames
+#' )
 #' plotParameters <- list(
 #'     "xSize" = 12,
 #'     "ySize" = 12,
@@ -376,15 +377,18 @@ generateSinglePlot <- function(plotDf, parameters, variable) {
 #'     "outGroupName" = "Out-group",
 #'     "title" = "101621at6656"
 #' )
-#' plotVar1 <- generateSinglePlot(plotDf, plotParameters, colnames(plotDf)[1])
-#' plotVar2 <- generateSinglePlot(plotDf, plotParameters, colnames(plotDf)[2])
-#' g <- gridArrangeSharedLegend(
+#' plotVar1 <- PhyloProfile:::generateSinglePlot(
+#'     plotDf, plotParameters, colnames(plotDf)[1]
+#' )
+#' plotVar2 <- PhyloProfile:::generateSinglePlot(
+#'     plotDf, plotParameters, colnames(plotDf)[2]
+#' )
+#' g <- PhyloProfile:::gridArrangeSharedLegend(
 #'     plotVar1, plotVar2,
 #'     position = plotParameters$legendPosition,
 #'     title = plotParameters$title,
-#'     size = plotParameters$titleSize
+#'     titleSize = plotParameters$titleSize
 #' )
-#' }
 
 gridArrangeSharedLegend <- function(
     ...,  ncol = length(list(...)), nrow = 1, position = c("bottom", "right"),

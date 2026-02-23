@@ -182,10 +182,10 @@ performUmap <- function(umapDt, randomSeed = 123, dim = 2) {
             )$layout
         )
     }, error = function(cond) {
-        message("Error with UMAP: ", conditionMessage(cond))
+        message("UMAP failed: ", conditionMessage(cond))
         fallbackUmap(umapDt, randomSeed, dim)
     }, warning = function(cond) {
-        message("Warning with UMAP: ", conditionMessage(cond))
+        message(conditionMessage(cond))
         fallbackUmap(umapDt, randomSeed, dim)
     })
 }

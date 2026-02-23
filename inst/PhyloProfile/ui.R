@@ -607,6 +607,7 @@ shinyUI(
                         selectizeInput(
                             "inSelect", "", choices = NULL, selected = NULL
                         ),
+                        uiOutput("taxonSelectionMsg"),
 
                         hr(),
 
