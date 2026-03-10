@@ -504,7 +504,7 @@ shinyServer(function(input, output, session) {
             }
         }
     })
-
+    
     output$mainInputFile.ui <- renderUI({
         if (input$demoData == "arthropoda") {
             url <- paste0(
@@ -588,7 +588,7 @@ shinyServer(function(input, output, session) {
             em(a("Data description", href = url, target = "_blank"))
         }
     })
-
+    
     # * update source databases for demo data ----------------------------------
     observe({
         if (input$demoData != "none") {
@@ -596,10 +596,10 @@ shinyServer(function(input, output, session) {
             if (input$demoData == "arthropoda") {
                 updateSelectInput(session, "seedSource", selected = "orthodb")
                 updateTextInput(session, "orthodbSeedVer", value = "10-1")
-            }
+            }   
         }
     })
-
+    
     # * check main input folder ------------------------------------------------
     getMainInputDir <- reactive({
         shinyFiles::shinyDirChoose(
@@ -1049,7 +1049,7 @@ shinyServer(function(input, output, session) {
             shinyjs::disable("inSelect")
         }
     }))
-
+    
     output$taxonSelectionMsg <- renderUI({
         if (!is.null(input$inputSortedTaxa)) {
             em("Disabled when using a predefined taxon list!")
@@ -1278,7 +1278,7 @@ shinyServer(function(input, output, session) {
             }
         }
     })
-
+    
     # * update list of (super)taxa based on taxa from user-defined tree
     observeEvent(input$inputTree,{
         req(inputTaxonName())
@@ -2171,12 +2171,25 @@ shinyServer(function(input, output, session) {
     })
 
     # * get gene names (if provided) -------------------------------------------
+    geneNames <- reactiveVal(NULL)
     observeEvent(input$uploadGeneName, { showModal(uploadGeneNameModal()) })
-    getGeneNames <- reactive({
-        geneNameFile <- input$geneName
-        if (!is.null(geneNameFile)) {
+    observeEvent(input$geneName, {
+        req(input$geneName)
+        inputNameDt <- read.table(
+            input$geneName$datapath,
+            sep = "\t",
+            header = FALSE,
+            check.names = FALSE,
+            comment.char = "",
+            fill = TRUE
+        )
+        colnames(inputNameDt) <- c("geneID", "geneName")
+        geneNames(inputNameDt)
+    })
+    observe({
+        if (is.null(geneNames()) && !is.null(i_geneName)) {
             inputNameDt <- read.table(
-                file = geneNameFile$datapath,
+                i_geneName,
                 sep = "\t",
                 header = FALSE,
                 check.names = FALSE,
@@ -2184,18 +2197,8 @@ shinyServer(function(input, output, session) {
                 fill = TRUE
             )
             colnames(inputNameDt) <- c("geneID","geneName")
-        } else if (!is.null(i_geneName)){
-            inputNameDt <- read.table(
-                file = i_geneName,
-                sep = "\t",
-                header = FALSE,
-                check.names = FALSE,
-                comment.char = "",
-                fill = TRUE
-            )
-            colnames(inputNameDt) <- c("geneID","geneName")
-        } else inputNameDt <- NULL
-        return(inputNameDt)
+            geneNames(inputNameDt)
+        }
     })
 
     # * check main input format (wide, long, xml, fasta, or invalidFormat) -----
@@ -2273,10 +2276,10 @@ shinyServer(function(input, output, session) {
             }
             # add geneName column if not yet exist
             if (!("geneName" %in% colnames(longDataframe))) {
-                if (!(is.null(getGeneNames()))) {
-                    # add gene names if specified by uploaded file
+                geneNameDf <- geneNames()
+                if (!is.null(geneNameDf)) {
                     longDataframe <- longDataframe %>%
-                        left_join(getGeneNames(), by = "geneID")
+                        left_join(geneNameDf, by = "geneID")
                     longDataframe$geneName[is.na(longDataframe$geneName)] <-
                         longDataframe$geneID[is.na(longDataframe$geneName)]
                 } else {
@@ -2393,7 +2396,7 @@ shinyServer(function(input, output, session) {
             return(domainDf)
         })
     })
-
+    
     # * get ID list of input taxa from main input ------------------------------
     inputTaxonID <- reactive({
         if (rtCheck) st <- Sys.time()
@@ -2473,7 +2476,6 @@ shinyServer(function(input, output, session) {
                             inputTaxaTree <- ape::read.tree(file = preCalcTree)
                     }
                 }
-
                 # get list of sorted taxa
                 sortedTaxaFile <- input$inputSortedTaxa
                 if (!is.null(sortedTaxaFile)) {
@@ -2505,6 +2507,7 @@ shinyServer(function(input, output, session) {
                     checkpoint42 - checkpoint41
                 ))
             }
+
             return(sortedOut)
         })
     })
@@ -2904,8 +2907,8 @@ shinyServer(function(input, output, session) {
 
     # * update choices for geneIdType ------------------------------------------
     observe({
-        if (!(is.null(getGeneNames())))
-            updateRadioButtons(session, "geneIdType", selected = "geneName")
+        req(geneNames())
+        updateRadioButtons(session, "geneIdType", selected = "geneName")
     })
 
     # * render popup for selecting rank and return list of subset taxa ---------
@@ -3263,7 +3266,7 @@ shinyServer(function(input, output, session) {
     })
 
     # * get list of all sequence IDs for customized profile --------------------
-    if (!exists("rv2", inherits = TRUE))
+    if (!exists("rv2", inherits = TRUE)) 
         rv2 <- reactiveValues(selectedSeq = NULL, selectedTaxa = NULL)
     observe({
         fileCustom <- input$customFile
@@ -3276,7 +3279,7 @@ shinyServer(function(input, output, session) {
                     rv2$selectedSeq <- allOut
                     if (length(outAll) <= 1000) {
                         updateSelectizeInput(
-                            session, "inSeq", server = TRUE, "",
+                            session, "inSeq", server = TRUE, "", 
                             choices = outAll, selected = outAll
                         )
                     } else {
@@ -3328,7 +3331,7 @@ shinyServer(function(input, output, session) {
             } else {
                 if (length(outAll) <= 1000) {
                     updateSelectizeInput(
-                        session, "inSeq", server = TRUE, "",
+                        session, "inSeq", server = TRUE, "", 
                         outAll, selected=outAll
                     )
                 } else {
@@ -3342,7 +3345,7 @@ shinyServer(function(input, output, session) {
             }
         }
     })
-
+    
     # If user made manual selection, keep rv2$selectedSeq in sync
     observeEvent(input$inSeq, {
         if (!is.null(input$inSeq) && length(input$inSeq) > 0) {
@@ -3401,7 +3404,7 @@ shinyServer(function(input, output, session) {
                             )
                         )
                     }
-
+                    
                 }
             } else return(selectInput("inTaxa", "", "all"))
         } else {
@@ -3452,7 +3455,7 @@ shinyServer(function(input, output, session) {
             }
         }
     })
-
+    
     observeEvent(input$inTaxa, {
         if (!is.null(input$inTaxa) && length(input$inTaxa) > 0) {
             first_val <- input$inTaxa[1]

@@ -84,12 +84,13 @@ uploadGeneNameModal <- function() {
             "for more info."
         )),
         br(),
-        fileInput("geneName", "")
+        fileInput("geneName", ""),
+        footer = modalButton("Close")
     )   
 }
 
 # * popup for upload gene category -------------------------------------
-uploadGeneNameModal <- function() {
+uploadGeneCategoryModal <- function() {
     modalDialog(
         title = "Upload gene categories",
         size = "s",
