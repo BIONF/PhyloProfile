@@ -2171,12 +2171,25 @@ shinyServer(function(input, output, session) {
     })
 
     # * get gene names (if provided) -------------------------------------------
+    geneNames <- reactiveVal(NULL)
     observeEvent(input$uploadGeneName, { showModal(uploadGeneNameModal()) })
-    getGeneNames <- reactive({
-        geneNameFile <- input$geneName
-        if (!is.null(geneNameFile)) {
+    observeEvent(input$geneName, {
+        req(input$geneName)
+        inputNameDt <- read.table(
+            input$geneName$datapath,
+            sep = "\t",
+            header = FALSE,
+            check.names = FALSE,
+            comment.char = "",
+            fill = TRUE
+        )
+        colnames(inputNameDt) <- c("geneID", "geneName")
+        geneNames(inputNameDt)
+    })
+    observe({
+        if (is.null(geneNames()) && !is.null(i_geneName)) {
             inputNameDt <- read.table(
-                file = geneNameFile$datapath,
+                i_geneName,
                 sep = "\t",
                 header = FALSE,
                 check.names = FALSE,
@@ -2184,18 +2197,8 @@ shinyServer(function(input, output, session) {
                 fill = TRUE
             )
             colnames(inputNameDt) <- c("geneID","geneName")
-        } else if (!is.null(i_geneName)){
-            inputNameDt <- read.table(
-                file = i_geneName,
-                sep = "\t",
-                header = FALSE,
-                check.names = FALSE,
-                comment.char = "",
-                fill = TRUE
-            )
-            colnames(inputNameDt) <- c("geneID","geneName")
-        } else inputNameDt <- NULL
-        return(inputNameDt)
+            geneNames(inputNameDt)
+        }
     })
 
     # * check main input format (wide, long, xml, fasta, or invalidFormat) -----
@@ -2273,10 +2276,10 @@ shinyServer(function(input, output, session) {
             }
             # add geneName column if not yet exist
             if (!("geneName" %in% colnames(longDataframe))) {
-                if (!(is.null(getGeneNames()))) {
-                    # add gene names if specified by uploaded file
+                geneNameDf <- geneNames()
+                if (!is.null(geneNameDf)) {
                     longDataframe <- longDataframe %>%
-                        left_join(getGeneNames(), by = "geneID")
+                        left_join(geneNameDf, by = "geneID")
                     longDataframe$geneName[is.na(longDataframe$geneName)] <-
                         longDataframe$geneID[is.na(longDataframe$geneName)]
                 } else {
@@ -2904,8 +2907,8 @@ shinyServer(function(input, output, session) {
 
     # * update choices for geneIdType ------------------------------------------
     observe({
-        if (!(is.null(getGeneNames())))
-            updateRadioButtons(session, "geneIdType", selected = "geneName")
+        req(geneNames())
+        updateRadioButtons(session, "geneIdType", selected = "geneName")
     })
 
     # * render popup for selecting rank and return list of subset taxa ---------
