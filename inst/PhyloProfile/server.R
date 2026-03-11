@@ -18,16 +18,10 @@ shinyServer(function(input, output, session) {
     homePath = c(wd='~/')
     # Automatically stop a Shiny app when closing the browser tab
     session$allowReconnect(TRUE)
-
-    nameFullFile <- paste0(
-        getwd(), "/data/preProcessedTaxonomy.txt"
-    )
-    currentNCBIinfo <- NULL
-    if (file.exists(nameFullFile))
-        currentNCBIinfo <- as.data.frame(data.table::fread(nameFullFile))
-
+    
     fastModeCutoff <- 600
     demoBaseUrl <- "https://github.com/BIONF/phyloprofile-data/raw/master/rdata/"
+    
     # =========================== INITIAL CHECKING  ============================
     # * check for internet connection ------------------------------------------
     observe({
@@ -132,7 +126,7 @@ shinyServer(function(input, output, session) {
                             quote = FALSE,
                             sep = "\t"
                         )
-                        currentNCBIinfo <- preProcessedTaxonomy
+                        currentNCBIinfo(preProcessedTaxonomy)
                     } else {
                         system(
                             "cp data/newTaxa.txt data/preProcessedTaxonomy.txt"
@@ -156,6 +150,28 @@ shinyServer(function(input, output, session) {
             output$fileExistMsgUI <- renderUI(NULL)
         }
     })
+    
+    # ========================== LOAD TAXONOMY DB ============================== 
+    nameFullFile <- file.path(getwd(), "data", "preProcessedTaxonomy.txt")
+    newTaxaFile <- file.path(getwd(), "data", "newTaxa.txt")
+    
+    currentNCBIinfo <- reactiveVal(NULL)
+    
+    # Load preProcessedTaxonomy.txt if it exists
+    if (file.exists(nameFullFile)) {
+        df <- as.data.frame(data.table::fread(nameFullFile))
+    } else {
+        df <- NULL
+    }
+    
+    # Append newTaxa.txt if it exists
+    if (file.exists(newTaxaFile)) {
+        newDf <- as.data.frame(data.table::fread(newTaxaFile))
+        df <- if (is.null(df)) newDf else rbind(df, newDf)
+    }
+    
+    # Store the result in reactiveVal
+    currentNCBIinfo(df)
 
     # ========================== LOAD CONFIG FILE ==============================
     configFile <- .GlobalEnv$configFile
@@ -779,16 +795,18 @@ shinyServer(function(input, output, session) {
     })
 
     # * render location of taxonomy DB -----------------------------------------
+    shinyFiles::shinyDirChoose(
+        input, "taxDbDir", roots = homePath, session = session
+    )
+    
     getUserTaxDBpath <- reactive({
-        shinyFiles::shinyDirChoose(
-            input, "taxDbDir", roots = homePath, session = session
-        )
+        #req(input$taxDbDir)
         outputPath <- shinyFiles::parseDirPath(homePath, input$taxDbDir)
-        return(replaceHomeCharacter(as.character(outputPath)))
+        replaceHomeCharacter(as.character(outputPath))
     })
 
     checkUserTaxDB <- reactive({
-        req(getUserTaxDBpath())
+        #req(getUserTaxDBpath())
         missingFiles <- c()
         if (!(file.exists(paste0(getUserTaxDBpath(),"/idList.txt"))))
             missingFiles <- c(missingFiles, "idList.txt")
@@ -817,7 +835,7 @@ shinyServer(function(input, output, session) {
 
     output$userTaxDBwarning <- renderUI({
         req(getUserTaxDBpath())
-        if (length(checkUserTaxDB() > 0)) {
+        if (length(checkUserTaxDB()) > 0) {
             msg <- paste0(
                 "These files are missing: ",
                 paste(checkUserTaxDB(), collapse = "; "),
@@ -837,7 +855,7 @@ shinyServer(function(input, output, session) {
             }
         }
         if (length(getUserTaxDBpath()) > 0) {
-            if (length(checkUserTaxDB() > 0))
+            if (length(checkUserTaxDB()) > 0)
                 return(defaultTaxDB)
             else
                 return(getUserTaxDBpath())
@@ -848,6 +866,16 @@ shinyServer(function(input, output, session) {
 
     output$taxDbPath <- renderText({
         return(getTaxDBpath())
+    })
+    
+    # * update currentNCBIinfo by adding taxa from newTaxa.txt
+    observeEvent(getUserTaxDBpath(),{
+        if (is.null(checkUserTaxDB())) {
+            newTaxa <- paste0(getUserTaxDBpath(), "/newTaxa.txt")
+            newTaxaDf <- as.data.frame(data.table::fread(newTaxa))
+            updated <- rbind(currentNCBIinfo(), newTaxaDf)
+            currentNCBIinfo(updated)
+        }
     })
 
     # * render upload input for sorted gene list -------------------------------
@@ -1608,7 +1636,7 @@ shinyServer(function(input, output, session) {
     # ========================= PARSING UNKNOWN TAXA ===========================
     # * get list of "unknown" taxa in main input -------------------------------
     unkTaxa <- reactive({
-        withProgress(message = 'Checking for unknown taxa...', value = 0.5, {
+        # withProgress(message = 'Checking for unknown taxa...', value = 0.5, {
             longDataframe <- getMainInput()
             req(longDataframe)
 
@@ -1619,7 +1647,6 @@ shinyServer(function(input, output, session) {
                 # remove "geneID" element from vector inputTaxa
                 inputTaxa <- inputTaxa[-1]
             }
-
             taxDB <- getTaxDBpath()
             if (!file.exists(isolate(paste0(taxDB, "/rankList.txt")))) {
                 return(inputTaxa)
@@ -1685,12 +1712,11 @@ shinyServer(function(input, output, session) {
                             & as.numeric(unkTaxa$id) < as.numeric(maxNCBI),
                         ]$Source <- "invalid"
                     }
-
                     # return list of unkTaxa
                     return(unkTaxa)
                 }
             }
-        })
+        # })
     })
 
     # * check the status of unkTaxa --------------------------------------------
@@ -3925,7 +3951,7 @@ shinyServer(function(input, output, session) {
             dimRedCoord(), renameLabelsDimRed(),
             freqCutoff = input$dimRedLabelNr,
             excludeTaxa = input$excludeDimRedTaxa,
-            currentNCBIinfo = currentNCBIinfo
+            currentNCBIinfo = currentNCBIinfo()
         )
         return(plotDf)
     })
@@ -4610,7 +4636,7 @@ shinyServer(function(input, output, session) {
         # ---- get taxon ID ----
         taxId <- gsub("ncbi", "", info[5])
         if (taxId == 237631) taxId <- 5270 # Ustilago maydis
-        taxHierarchy <- PhyloProfile:::getTaxHierarchy(taxId, currentNCBIinfo)
+        taxHierarchy <- PhyloProfile:::getTaxHierarchy(taxId, currentNCBIinfo())
         taxUrls <- paste(taxHierarchy[[1]]$link, collapse = ", ")
         taxUrls <- gsub("<p>", "", taxUrls)
         taxUrls <- gsub("</p>", "", taxUrls)
@@ -4837,7 +4863,7 @@ shinyServer(function(input, output, session) {
                 createArchitecturePlot, moduleId,
                 pointInfo = getDomainFile,
                 domainInfo = getDomainInformation,
-                currentNCBIinfo = reactive(currentNCBIinfo),
+                currentNCBIinfo = currentNCBIinfo,
                 font = reactive(input$font)
             )
         })
