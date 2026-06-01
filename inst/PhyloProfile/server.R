@@ -377,15 +377,15 @@ shinyServer(function(input, output, session) {
     observeEvent(input$setColor, {
       showModal(colorSettingsModal())
       # save color values after closing the modal
-      updateColourInput(session, "lowColorVar1", value = getInputOrDefaultColor(input, "lowColorVar1"))
-      updateColourInput(session, "midColorVar1", value = getInputOrDefaultColor(input, "midColorVar1"))
-      updateColourInput(session, "highColorVar1", value = getInputOrDefaultColor(input, "highColorVar1"))
+      colourpicker::updateColourInput(session, "lowColorVar1", value = getInputOrDefaultColor(input, "lowColorVar1"))
+      colourpicker::updateColourInput(session, "midColorVar1", value = getInputOrDefaultColor(input, "midColorVar1"))
+      colourpicker::updateColourInput(session, "highColorVar1", value = getInputOrDefaultColor(input, "highColorVar1"))
       updateNumericInput(session, "midVar1", value = getInputOrDefaultColor(input, "midVar1"))
-      updateColourInput(session, "lowColorVar2", value = getInputOrDefaultColor(input, "lowColorVar2"))
-      updateColourInput(session, "midColorVar2", value = getInputOrDefaultColor(input, "midColorVar2"))
-      updateColourInput(session, "highColorVar2", value = getInputOrDefaultColor(input, "highColorVar2"))
+      colourpicker::updateColourInput(session, "lowColorVar2", value = getInputOrDefaultColor(input, "lowColorVar2"))
+      colourpicker::updateColourInput(session, "midColorVar2", value = getInputOrDefaultColor(input, "midColorVar2"))
+      colourpicker::updateColourInput(session, "highColorVar2", value = getInputOrDefaultColor(input, "highColorVar2"))
       updateNumericInput(session, "midVar2", value = getInputOrDefaultColor(input, "midVar2"))
-      updateColourInput(session, "paraColor", value = getInputOrDefaultColor(input, "paraColor"))
+      colourpicker::updateColourInput(session, "paraColor", value = getInputOrDefaultColor(input, "paraColor"))
     })
 
     # Default profile plot settings
