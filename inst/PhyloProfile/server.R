@@ -2776,6 +2776,10 @@ shinyServer(function(input, output, session) {
                 var2Cutoff <- isolate(input$var2)
                 colorByGroup <- isolate(input$colorByGroup)
             }
+            
+            if (is.null(percentCutoff) || length(percentCutoff) != 2) {
+                percentCutoff <- c(0, 1)
+            }
 
             # get selected supertaxon name
             split <- strsplit(as.character(input$inSelect), "_")

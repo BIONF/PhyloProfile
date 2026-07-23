@@ -242,7 +242,7 @@ createArchiPlot <- function(
 #' orthoDf <- featureColorDf[[2]]
 #' # do plot
 #' g <- PhyloProfile:::singleDomainPlotting(
-#'    seedDf, seed, minStart = minStart, maxEnd = maxEnd, font = "sans"
+#'     seedDf, seed, minStart = minStart, maxEnd = maxEnd, font = "sans"
 #' )
 #' grid::grid.draw(g)
 
@@ -483,7 +483,7 @@ singleDomainPlotting <- function(
 #' orthoDf <- featureColorDf[[2]]
 #' # do plot
 #' g <- PhyloProfile:::pairDomainPlotting(
-#'    seed,ortho,seedDf,orthoDf,minStart,maxEnd, font = "sans"
+#'     seed,ortho,seedDf,orthoDf,minStart,maxEnd, font = "sans"
 #' )
 #' grid::grid.draw(g)
 
@@ -651,6 +651,8 @@ modifyFeatureName <- function(domainDf = NULL) {
 
 
 #' Join multiple plots and merge legends
+#' @usage joinPlotMergeLegends(df1, df2, plot1, plot2, position, font, 
+#'     legendSize)
 #' @param df1 Data frame for plot 1
 #' @param df2 Data frame for plot 2
 #' @param plot1 ggplot object of plot 1
@@ -922,6 +924,8 @@ linearizeArchitecture <- function(
 }
 
 #' Add colors for each feature/domain
+#' @usage addFeatureColors(seedDf, orthoDf, colorType, colorPalette,
+#'     ignoreInstanceNo)
 #' @description Add colors to features/domains of 2 domain dataframes. Users can
 #' choose to color only the shared features, unique features, all features
 #' (default) or based on feature types. Default color pallete is "Paired", but

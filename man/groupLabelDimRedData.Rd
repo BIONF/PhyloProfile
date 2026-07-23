@@ -23,7 +23,7 @@ gene/taxon frequency
 }
 \examples{
 rawInput <- system.file(
-   "extdata", "test.main.long", package = "PhyloProfile", mustWork = TRUE
+    "extdata", "test.main.long", package = "PhyloProfile", mustWork = TRUE
 )
 longDf <- createLongMatrix(rawInput)
 data4dimRed <- prepareDimRedData(longDf, "phylum")

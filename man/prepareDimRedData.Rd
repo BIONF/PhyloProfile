@@ -32,7 +32,7 @@ Prepare data for dimension reduction
 }
 \examples{
 rawInput <- system.file(
-   "extdata", "test.main.long", package = "PhyloProfile", mustWork = TRUE
+    "extdata", "test.main.long", package = "PhyloProfile", mustWork = TRUE
 )
 longDf <- createLongMatrix(rawInput)
 prepareDimRedData(longDf, "phylum")

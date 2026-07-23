@@ -4,15 +4,8 @@
 \alias{joinPlotMergeLegends}
 \title{Join multiple plots and merge legends}
 \usage{
-joinPlotMergeLegends(
-  df1 = NULL,
-  df2 = NULL,
-  plot1 = NULL,
-  plot2 = NULL,
-  position = c("bottom", "right"),
-  font = "Arial",
-  legendSize = 12
-)
+joinPlotMergeLegends(df1, df2, plot1, plot2, position, font, 
+    legendSize)
 }
 \arguments{
 \item{df1}{Data frame for plot 1}
