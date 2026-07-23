@@ -4,13 +4,8 @@
 \alias{addFeatureColors}
 \title{Add colors for each feature/domain}
 \usage{
-addFeatureColors(
-  seedDf = NULL,
-  orthoDf = NULL,
-  colorType = "all",
-  colorPalette = "Paired",
-  ignoreInstanceNo = FALSE
-)
+addFeatureColors(seedDf, orthoDf, colorType, colorPalette,
+    ignoreInstanceNo)
 }
 \arguments{
 \item{seedDf}{Domain dataframe of seed protein (protein 1)}

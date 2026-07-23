@@ -360,7 +360,7 @@ sortInputTaxa <- function(
 #' @return A data frame with % of present species in each supertaxon
 #' @author Vinh Tran tran@bio.uni-frankfurt.de
 #' @importFrom dplyr count select distinct summarise group_by inner_join mutate
-#' filter
+#' @importFrom dplyr filter
 #' @seealso \code{\link{profileWithTaxonomy}} for a demo input data
 #' @examples
 #' # NOTE: for internal testing only

@@ -6,6 +6,7 @@
 #' @param port Port (e.g. port = 8888)
 #' @return A shiny application - GUI version of PhyloProfile
 #' @import BiocStyle
+#' @rawNamespace import(bit64, except = c(setdiff, intersect, union, setequal))
 #' @import bsplus
 #' @importFrom colourpicker colourInput
 #' @rawNamespace import(data.table, except = c(first, last, between))

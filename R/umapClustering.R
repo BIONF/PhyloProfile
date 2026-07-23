@@ -15,7 +15,7 @@
 #' @author Vinh Tran tran@bio.uni-frankfurt.de
 #' @examples
 #' rawInput <- system.file(
-#'    "extdata", "test.main.long", package = "PhyloProfile", mustWork = TRUE
+#'     "extdata", "test.main.long", package = "PhyloProfile", mustWork = TRUE
 #' )
 #' longDf <- createLongMatrix(rawInput)
 #' prepareDimRedData(longDf, "phylum")
@@ -127,7 +127,7 @@ prepareDimRedData <- function(
 #' @seealso \code{\link{prepareDimRedData}}
 #' @examples
 #' rawInput <- system.file(
-#'    "extdata", "test.main.long", package = "PhyloProfile", mustWork = TRUE
+#'     "extdata", "test.main.long", package = "PhyloProfile", mustWork = TRUE
 #' )
 #' longDf <- createLongMatrix(rawInput)
 #' data4dimRed <- prepareDimRedData(longDf, "phylum")
@@ -252,7 +252,7 @@ performPCA <- function(pcaDt) {
 #' @seealso \code{\link{prepareDimRedData}}
 #' @examples
 #' rawInput <- system.file(
-#'    "extdata", "test.main.long", package = "PhyloProfile", mustWork = TRUE
+#'     "extdata", "test.main.long", package = "PhyloProfile", mustWork = TRUE
 #' )
 #' longDf <- createLongMatrix(rawInput)
 #' data4dimRed <- prepareDimRedData(longDf, "phylum")
@@ -285,7 +285,7 @@ groupLabelDimRedData <- function(data4dimRed = NULL, freqCutoff = c(0,200)) {
 #' @seealso \code{\link{prepareDimRedData}}, \code{\link{dimReduction}}
 #' @examples
 #' rawInput <- system.file(
-#'    "extdata", "test.main.long", package = "PhyloProfile", mustWork = TRUE
+#'     "extdata", "test.main.long", package = "PhyloProfile", mustWork = TRUE
 #' )
 #' longDf <- createLongMatrix(rawInput)
 #' data4dimRed <- prepareDimRedData(longDf, "phylum")
@@ -358,7 +358,7 @@ createDimRedPlotData <- function(
 #' \code{\link{createDimRedPlotData}}
 #' @examples
 #' rawInput <- system.file(
-#'    "extdata", "test.main.long", package = "PhyloProfile", mustWork = TRUE
+#'     "extdata", "test.main.long", package = "PhyloProfile", mustWork = TRUE
 #' )
 #' longDf <- createLongMatrix(rawInput)
 #' data4dimRed <- prepareDimRedData(longDf, "phylum")
@@ -439,7 +439,7 @@ plotDimRed <- function(
 #' \code{\link{createDimRedPlotData}}
 #' @examples
 #' rawInput <- system.file(
-#'    "extdata", "test.main.long", package = "PhyloProfile", mustWork = TRUE
+#'     "extdata", "test.main.long", package = "PhyloProfile", mustWork = TRUE
 #' )
 #' longDf <- createLongMatrix(rawInput)
 #' data4dimRed <- prepareDimRedData(longDf, "phylum")
@@ -507,7 +507,7 @@ plotDimRed3D <- function(
 #' \code{\link{createDimRedPlotData}}
 #' @examples
 #' rawInput <- system.file(
-#'    "extdata", "test.main.long", package = "PhyloProfile", mustWork = TRUE
+#'     "extdata", "test.main.long", package = "PhyloProfile", mustWork = TRUE
 #' )
 #' longDf <- createLongMatrix(rawInput)
 #' data4dimRed <- prepareDimRedData(longDf, "phylum")

@@ -88,7 +88,7 @@ seedDf <- featureColorDf[[1]]
 orthoDf <- featureColorDf[[2]]
 # do plot
 g <- PhyloProfile:::pairDomainPlotting(
-   seed,ortho,seedDf,orthoDf,minStart,maxEnd, font = "sans"
+    seed,ortho,seedDf,orthoDf,minStart,maxEnd, font = "sans"
 )
 grid::grid.draw(g)
 }
