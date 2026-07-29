@@ -120,7 +120,7 @@ getDataClustering <- function(
 #' @importFrom bioDist cor.dist
 #' @importFrom stats dist as.dist
 #' @importFrom energy dcor
-#' @importFrom Rfast Dist
+#' @importFrom stats dist
 #' @author Carla Mölbert (carla.moelbert@gmx.de), Vinh Tran
 #' (tran@bio.uni-frankfurt.de)
 #' @seealso \code{\link{getDataClustering}}
@@ -139,7 +139,7 @@ getDistanceMatrix <- function(profiles = NULL, method = "mutualInformation") {
     profiles <-  profiles[rowSums(profiles != 0) > 0, ]
     distMethods <- c("euclidean", "maximum", "manhattan", "canberra", "binary")
     if (method %in% distMethods) {
-        distanceMatrix <- Rfast::Dist(profiles, method = method)
+        distanceMatrix <- as.matrix(stats::dist(profiles, method = method))
         colnames(distanceMatrix)<-rownames(distanceMatrix)<-rownames(profiles)
     } else if (method == "distanceCorrelation") {
         n <- seq_len(nrow(profiles))
