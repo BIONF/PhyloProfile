@@ -103,7 +103,8 @@ uploadGeneCategoryModal <- function() {
             "for more info."
         )),
         br(),
-        fileInput("geneCategory", "")
+        fileInput("geneCategory", ""),
+        footer = modalButton("Close")
     )   
 }
 
@@ -116,6 +117,7 @@ uploadFastaModal <- function() {
             "inputType", "Choose location for:",
             c("Concatenated fasta file", "Fasta folder")
         ),
+        footer = modalButton("Close"),
         hr(),
         conditionalPanel(
             condition = "input.inputType == 'Concatenated fasta file'",
