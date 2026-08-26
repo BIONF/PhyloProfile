@@ -161,7 +161,7 @@ shinyUI(
 
         # MAIN NARVARPAGE TABS -------------------------------------------------
         navbarPage(
-            em(strong("PhyloProfile v2.4.4")),
+            em(strong("PhyloProfile v2.4.5")),
             id = "tabs",
             collapsible = TRUE,
             inverse = TRUE,
@@ -511,6 +511,11 @@ shinyUI(
                         uiOutput("userTaxDBwarning")
                     ),
                     verbatimTextOutput("taxDbPath"),
+                    checkboxGroupInput(
+                        "ignoreTaxa", "Exclude from input:", 
+                        choices = c("invalid taxa", "unknown taxa"),
+                        inline = TRUE
+                    ),
                     hr(),
 
                     # ** Msg for parsing new taxa ------------------------------
@@ -607,6 +612,7 @@ shinyUI(
                         selectizeInput(
                             "inSelect", "", choices = NULL, selected = NULL
                         ),
+                        uiOutput("numberOfInputTaxa.ui"),
                         uiOutput("taxonSelectionMsg"),
 
                         hr(),

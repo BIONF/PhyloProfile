@@ -1,6 +1,6 @@
 Package: PhyloProfile
-Version: 2.4.4
-Date: 2026-08-11
+Version: 2.4.5
+Date: 2026-08-26
 Title: PhyloProfile
 Authors@R: c(
     person("Vinh", "Tran", role = c("aut", "cre"), email = "tran@bio.uni-frankfurt.de", comment=c(ORCID="0000-0001-6772-7595")),
@@ -21,4 +21,4 @@ Imports:
     shinyFiles, shinyjs, stringr, tsne, svglite, umap, xml2, zoo, yaml
 Suggests: knitr, rmarkdown, testthat, OmaDB
 VignetteBuilder: knitr
-Config/roxygen2/version: 8.0.0
+Config/roxygen2/version: 8.1.0
