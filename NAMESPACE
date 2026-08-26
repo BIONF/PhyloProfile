@@ -3,6 +3,7 @@
 export(addRankDivisionPlot)
 export(calcPresSpec)
 export(checkColorPalette)
+export(checkIdNewtaxa)
 export(checkInputValidity)
 export(checkNewick)
 export(checkOmaID)
@@ -90,69 +91,99 @@ import(svglite)
 import(tsne)
 import(umap)
 importFrom(Biostrings,readAAStringSet)
-importFrom(DT,dataTableOutput)
-importFrom(DT,renderDataTable)
-importFrom(RColorBrewer,brewer.pal)
-importFrom(RColorBrewer,brewer.pal.info)
+importFrom(DT,
+  dataTableOutput,
+  renderDataTable
+)
+importFrom(RColorBrewer,
+  brewer.pal,
+  brewer.pal.info
+)
 importFrom(RCurl,url.exists)
-importFrom(ape,as.phylo)
-importFrom(ape,plot.phylo)
-importFrom(ape,read.tree)
-importFrom(ape,root)
-importFrom(bioDist,cor.dist)
-importFrom(bioDist,mutualInfo)
+importFrom(ape,
+  as.phylo,
+  plot.phylo,
+  read.tree,
+  root
+)
+importFrom(bioDist,
+  cor.dist,
+  mutualInfo
+)
 importFrom(colourpicker,colourInput)
-importFrom(data.table,dcast)
-importFrom(data.table,fread)
-importFrom(data.table,melt)
-importFrom(data.table,rbindlist)
-importFrom(data.table,setDT)
-importFrom(data.table,setnames)
-importFrom(data.table,transpose)
-importFrom(dplyr,add_count)
-importFrom(dplyr,arrange)
-importFrom(dplyr,count)
-importFrom(dplyr,distinct)
-importFrom(dplyr,filter)
-importFrom(dplyr,group_by)
-importFrom(dplyr,inner_join)
-importFrom(dplyr,left_join)
-importFrom(dplyr,mutate)
-importFrom(dplyr,select)
-importFrom(dplyr,summarise)
-importFrom(dplyr,tibble)
+importFrom(data.table,
+  dcast,
+  fread,
+  melt,
+  rbindlist,
+  setDT,
+  setnames,
+  transpose
+)
+importFrom(dplyr,
+  add_count,
+  arrange,
+  count,
+  distinct,
+  filter,
+  group_by,
+  inner_join,
+  left_join,
+  mutate,
+  select,
+  summarise,
+  tibble
+)
 importFrom(energy,dcor)
 importFrom(fastcluster,hclust)
 importFrom(grDevices,colorRampPalette)
-importFrom(grid,convertHeight)
-importFrom(grid,grobHeight)
-importFrom(grid,unit)
-importFrom(gridExtra,arrangeGrob)
-importFrom(gridExtra,grid.arrange)
+importFrom(grid,
+  convertHeight,
+  grobHeight,
+  unit
+)
+importFrom(gridExtra,
+  arrangeGrob,
+  grid.arrange
+)
 importFrom(htmlwidgets,saveWidget)
 importFrom(pbapply,pblapply)
-importFrom(shinyFiles,parseDirPath)
-importFrom(shinyFiles,shinyDirButton)
-importFrom(shinyFiles,shinyDirChoose)
+importFrom(shinyFiles,
+  parseDirPath,
+  shinyDirButton,
+  shinyDirChoose
+)
 importFrom(shinycssloaders,withSpinner)
-importFrom(shinyjs,disable)
-importFrom(shinyjs,enable)
-importFrom(shinyjs,html)
-importFrom(shinyjs,reset)
-importFrom(shinyjs,toggleState)
-importFrom(stats,aggregate)
-importFrom(stats,as.dist)
-importFrom(stats,complete.cases)
-importFrom(stats,dist)
-importFrom(stats,na.omit)
-importFrom(stringr,str_count)
-importFrom(stringr,str_split_fixed)
-importFrom(stringr,str_wrap)
-importFrom(utils,head)
-importFrom(utils,tail)
-importFrom(xml2,read_xml)
-importFrom(xml2,xml_attr)
-importFrom(xml2,xml_find_all)
-importFrom(yaml,read_yaml)
-importFrom(yaml,write_yaml)
+importFrom(shinyjs,
+  disable,
+  enable,
+  html,
+  reset,
+  toggleState
+)
+importFrom(stats,
+  aggregate,
+  as.dist,
+  complete.cases,
+  dist,
+  na.omit
+)
+importFrom(stringr,
+  str_count,
+  str_split_fixed,
+  str_wrap
+)
+importFrom(utils,
+  head,
+  tail
+)
+importFrom(xml2,
+  read_xml,
+  xml_attr,
+  xml_find_all
+)
+importFrom(yaml,
+  read_yaml,
+  write_yaml
+)
 importFrom(zoo,na.locf)

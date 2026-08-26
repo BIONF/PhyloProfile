@@ -1305,6 +1305,15 @@ shinyServer(function(input, output, session) {
                 }
             }
         }
+        
+        output$numberOfInputTaxa.ui <- renderUI({
+            n <- length(levels(choice$fullName))
+            tags$small(
+                paste0(
+                    n, if (n == 1) " taxon available." else " taxa available."
+                )
+            )
+        })
     })
     
     # * update list of (super)taxa based on taxa from user-defined tree
@@ -1636,7 +1645,7 @@ shinyServer(function(input, output, session) {
     # ========================= PARSING UNKNOWN TAXA ===========================
     # * get list of "unknown" taxa in main input -------------------------------
     unkTaxa <- reactive({
-        # withProgress(message = 'Checking for unknown taxa...', value = 0.5, {
+        withProgress(message = 'Checking for unknown taxa...', value = 0.5, {
             longDataframe <- getMainInput()
             req(longDataframe)
 
@@ -1712,11 +1721,18 @@ shinyServer(function(input, output, session) {
                             & as.numeric(unkTaxa$id) < as.numeric(maxNCBI),
                         ]$Source <- "invalid"
                     }
+                    # filter out invalid taxa if needed
+                    if ("invalid taxa" %in% input$ignoreTaxa) 
+                        unkTaxa <- unkTaxa %>% filter(Source != "invalid")
+                    if ("unknown taxa" %in% input$ignoreTaxa)
+                        unkTaxa <- unkTaxa %>% filter(Source != "unknown")
+
                     # return list of unkTaxa
+                    if (nrow(unkTaxa) == 0) return()
                     return(unkTaxa)
                 }
             }
-        # })
+        })
     })
 
     # * check the status of unkTaxa --------------------------------------------
@@ -2746,6 +2762,7 @@ shinyServer(function(input, output, session) {
         {
             input$applyFilterCustom
             input$applyFilter
+            input$updateBtn
         }
         if (rtCheck) {
             checkpoint91 <- Sys.time()
@@ -2761,7 +2778,6 @@ shinyServer(function(input, output, session) {
                 filein <- input$mainInput
             }
             req(filein)
-
             # get all cutoffs
             if (input$autoUpdate == TRUE) {
                 percentCutoff <- input$percent
@@ -4640,14 +4656,22 @@ shinyServer(function(input, output, session) {
         # ---- get taxon ID ----
         taxId <- gsub("ncbi", "", info[5])
         if (taxId == 237631) taxId <- 5270 # Ustilago maydis
+        
+        newTaxaFile <- paste0(getUserTaxDBpath(), "/newTaxa.txt")
+        newTaxa <- as.data.frame(data.table::fread(newTaxaFile))
+        validId <- checkIdNewtaxa(taxId, newTaxa)
+        if (!is.null(validId)) taxId <- validId
+        
         taxHierarchy <- PhyloProfile:::getTaxHierarchy(taxId, currentNCBIinfo())
-        taxUrls <- paste(taxHierarchy[[1]]$link, collapse = ", ")
-        taxUrls <- gsub("<p>", "", taxUrls)
-        taxUrls <- gsub("</p>", "", taxUrls)
+        taxUrls <- "Not available"
+        if (length(taxHierarchy) > 0) {
+            taxUrls <- paste(taxHierarchy[[1]]$link, collapse = ", ")
+            taxUrls <- gsub("<p>", "", taxUrls)
+            taxUrls <- gsub("</p>", "", taxUrls)
+        }
         linkText <- paste0(
             linkText, "<p><strong>NCBI taxonomy: </strong>", taxUrls, "</p>"
         )
-
         # ---- disclaimer ----
         linkText <- paste0(
             linkText,

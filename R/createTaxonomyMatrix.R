@@ -567,3 +567,31 @@ id2name <- function(idList = NULL, currentNCBIinfo = NULL) {
     }
     return(nameList)
 }
+
+#' Get valid NCBI taxonomy ID for an pseudo ID
+#' @export
+#' @param id pseudo NCBI taxonomy ID
+#' @param newTaxa dataframe of the newtaxa.txt file that links pseudo IDs with
+#' valid NCBI taxonomy IDs (default: /PhyloProfile/data/newTaxa.txt)
+#' @return A valid NCBI taxonomy ID
+#' @author Vinh Tran tran@bio.uni-frankfurt.de
+#' @importFrom data.table fread
+#' @examples
+#' id <- 9999999999
+#' checkIdNewtaxa(id)
+
+checkIdNewtaxa <- function(id = NULL, newTaxa = NULL) {
+    if (is.null(newTaxa)) {
+        dataPath <- system.file(
+            "PhyloProfile", "data/",
+            package = "PhyloProfile", mustWork = TRUE
+        )
+        newTaxaFile <- paste0(dataPath, "/newTaxa.txt")
+        if (file.exists(newTaxaFile)) {
+            newTaxa <- as.data.frame(data.table::fread(newTaxaFile))
+        } else stop("newTaxa.txt file not found!")
+    }
+    parentID <- newTaxa$parentID[newTaxa$ncbiID == id]
+    if (length(parentID) > 0) return(parentID)
+    return(NULL)
+}
